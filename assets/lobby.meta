@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "e1ecd470-7094-4862-ad7d-9bd95644c886",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isSubpackage": false,
+    "isBundle": true,
+    "bundleName": "lobby",
+    "priority": 1,
+    "compressionType": {},
+    "isRemoteBundle": {},
+    "bundleConfigID": "default"
+  }
+}

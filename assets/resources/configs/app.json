@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "appVersion": "0.1.0",
+  "defaultLanguage": "zh-CN",
+  "designResolution": {
+    "width": 750,
+    "height": 1334,
+    "policy": "fixed-width"
+  },
+  "renderLayers": {
+    "systemUi": "UI_2D",
+    "gameUi": "UI_3D",
+    "game3d": "DEFAULT"
+  },
+  "qualityProfiles": {
+    "low": {
+      "renderScale": 0.75,
+      "realtimeShadows": false,
+      "postProcessing": false,
+      "particleScale": 0.5,
+      "maxActivePhysicsBodies": 32
+    },
+    "medium": {
+      "renderScale": 1,
+      "realtimeShadows": false,
+      "postProcessing": false,
+      "particleScale": 0.75,
+      "maxActivePhysicsBodies": 64
+    },
+    "high": {
+      "renderScale": 1,
+      "realtimeShadows": true,
+      "postProcessing": true,
+      "particleScale": 1,
+      "maxActivePhysicsBodies": 96
+    }
+  },
+  "timeouts": {
+    "platformInitializationMs": 5000,
+    "bundleLoadMs": 15000,
+    "sceneLoadMs": 15000,
+    "gameInitializationMs": 10000
+  },
+  "development": {
+    "debugLogs": false,
+    "mockAds": false
+  }
+}

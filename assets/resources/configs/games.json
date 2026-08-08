@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "games": [
+    {
+      "id": "placeholder",
+      "version": "0.1.0",
+      "name": "流程验证",
+      "description": "用于验证大厅、加载和退出流程。",
+      "bundle": "game-placeholder",
+      "scene": "scenes/Placeholder",
+      "entryComponent": "PlaceholderGame",
+      "icon": "images/icon",
+      "cover": "images/cover",
+      "orientation": "portrait",
+      "renderMode": "2d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "preload": [],
+      "tags": [
+        "validation"
+      ]
+    }
+  ]
+}
