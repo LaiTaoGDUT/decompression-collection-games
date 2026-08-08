@@ -1,0 +1,380 @@
+assets/platform/WebPlatform.ts
+  s_7009450e0e4926::t_c259ecfe3ede9d 1-2,4-17,19-33,39-45,47-56,60-74,87-88,93-155
+  s_7009450e0e4926::t_ea7faa25ff080a 3,18,34-38,46,57-59,89-92
+  s_7009450e0e4926::t_0c31809b23a754 75-86
+docs/IMPLEMENTATION_PLAN.md
+  s_7009450e0e4926::t_5da60fbbbd1a07 119
+  s_7009450e0e4926::t_fce026adff14b6 1-13,15-36,42-44,46-48,51-52,54-56,58,60,62-66,68-70,72-74,76-78,80-82,85-86,90-92,94-96,98-100,102-104,106-110,113-114,116-118,120-122,125-126,128,134-136,138-140,142,144,146-148,150-152,154-156,158-272,276-277,280-285,287-295,297-311
+  s_7009450e0e4926::t_cd55a7064fd817 105
+  s_7009450e0e4926::t_7d171480dd6159 79
+  s_7009450e0e4926::t_f53d1e44c6d47e 50,59,84,88-89,112,124,129,273-275,278-279,286,296
+  s_7009450e0e4926::t_3e462a2a762402 115
+  s_7009450e0e4926::t_646ae4e282cf72 149
+  s_7009450e0e4926::t_ac7acad2fede91 153
+  s_7009450e0e4926::t_0c31809b23a754 37-41
+  s_7009450e0e4926::t_c259ecfe3ede9d 83
+  s_7009450e0e4926::t_8283ae2686744b 45
+  s_7009450e0e4926::t_6b1631e15dfe00 93
+  s_7009450e0e4926::t_7bac596fa68ea3 67
+  s_7009450e0e4926::t_b85821306d4085 53
+  s_7009450e0e4926::t_aaadcc98f65f03 87
+  s_7009450e0e4926::t_2d9eba1fe53b52 75
+  s_7009450e0e4926::t_4e38b25c79d7d4 57
+  s_7009450e0e4926::t_f2267dacca6495 71
+  s_7009450e0e4926::t_62ebdcb2cfe919 127,130,132-133
+  s_7009450e0e4926::t_8ba92625d6c05a 61
+  s_7009450e0e4926::t_af846fc22893dd 49
+  s_7009450e0e4926::t_b4a48255d03574 97
+  s_7009450e0e4926::t_2a683371547d3e 123
+  s_7009450e0e4926::t_1e8e123be1b239 137,143
+  s_7009450e0e4926::t_91f37eaaadd9ec 131
+  s_7009450e0e4926::t_adf722cb9f4161 101
+  s_7009450e0e4926::t_dab000900143eb 145
+  s_7009450e0e4926::t_b8749beab4ca29 111
+  s_7009450e0e4926::t_9a6926bbbf731f 14
+  s_7009450e0e4926::t_fc29411a3e90e2 157
+  s_7009450e0e4926::t_f89c8b49a43e07 141
+assets/app/AppConfig.ts
+  s_7009450e0e4926::t_2829ca34d157c6 1-48,80-125,127,132-134,136
+  s_7009450e0e4926::t_f24b60d86f518b 49-79,126,128-131,135
+assets/games/catch/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/lobby/scripts/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/platform/Platform.ts
+  s_7009450e0e4926::t_0c31809b23a754 17
+  s_7009450e0e4926::t_7d171480dd6159 1,3-16,19-25
+  s_7009450e0e4926::t_ea7faa25ff080a 2,18
+docs/ARCHITECTURE.md
+  s_7009450e0e4926::t_9a6926bbbf731f 13
+  s_7009450e0e4926::t_af846fc22893dd 57-58
+  s_7009450e0e4926::t_7d171480dd6159 274
+  s_7009450e0e4926::t_6b1631e15dfe00 108-110,113-114
+  s_7009450e0e4926::t_427c8bd0c0557e 197-205,374
+  s_7009450e0e4926::t_fce026adff14b6 9-10
+  s_7009450e0e4926::t_f53d1e44c6d47e 83,167,186-187,277,294-295,376,388-419,421,443,456-457,461,492,494,496,509,522-523,525
+  s_7009450e0e4926::t_8ba92625d6c05a 257
+  s_7009450e0e4926::t_81972c1f3db7ee 1-8,11-12,14-56,59-82,84-90,92,94-95,98-107,111-112,115-166,168-185,188-196,206-256,258-273,275,278-293,296-373,375,377-387,420,422-442,444-455,458-460,462-491,493,495,497-508,510-521,524,526-534
+  s_7009450e0e4926::t_200317dad78ec8 91,93,96-97
+  s_7009450e0e4926::t_0c31809b23a754 276
+assets/core/events/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/services/asset/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/services/storage/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/core/version.meta
+  s_7009450e0e4926::t_f1b9dd9ddecedd 1-9
+assets/core/container/ServiceContainer.ts
+  s_7009450e0e4926::t_f2267dacca6495 1-49
+assets/core/events/EventBus.ts
+  s_7009450e0e4926::t_7bac596fa68ea3 1-87
+assets/core/container/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/runtime/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/shared/ui/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/games/blocks3d/.gitkeep
+  s_7009450e0e4926::t_f53d1e44c6d47e 1
+assets/runtime/GameManifestValidator.ts
+  s_7009450e0e4926::t_e15c9f13f3b93e 7-9,145-147,196,203,210,233,245,284-285,287,320
+  s_7009450e0e4926::t_d4be6902e19ac0 30-40,78,84-99,219,267,282,297
+  s_7009450e0e4926::t_8d026b0eaa4492 1,3-6,10-29,41-77,79-83,100-144,148-195,197-202,204-209,211-218,220-232,234-244,246-266,268-281,283,286,288-296,298-319,321
+  s_7009450e0e4926::t_d1607185971bc1 2
+settings/v2/packages/project.json
+  s_7009450e0e4926::t_6bfcc194e663b7 6-8
+  s_7009450e0e4926::t_d05ca98d5e5fbf 2-5,9-10
+assets/shared/shaders/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/lobby/scenes/Lobby.scene
+  s_7009450e0e4926::t_34a0a9e1f3e155 1-13,15-803,805-810,871-875,882-903,905-910,912-913,916-917,920,927,932,934-935,938-939,942,964-965,968-969,971-975,982-1003,1005-1010,1012-1013,1016-1017,1020,1027,1032,1034-1035,1038-1039,1042,1064-1065,1068-1069,1071-1075,1082-1103,1105-1110,1112-1113,1116-1117,1120,1127,1132,1134-1135,1138-1139,1142,1164-1165,1168-1169,1171-1172,1179,1184,1186-1187,1190-1191,1193-1194,1200-1201,1204-1205,1207-1208,1230-1233,1235,1238-1242,1244-1245,1250,1253,1256,1259-1266,1268-1273,1275-1336,1349,1352-1354,1356-1416
+  s_a6aeffe0ed6661::t_41b9c5f83c4dd2 14,804,811-870,876-881,904,911,914-915,918-919,921-926,928-931,933,936-937,940-941,943-963,966-967,970,976-981,1004,1011,1014-1015,1018-1019,1021-1026,1028-1031,1033,1036-1037,1040-1041,1043-1063,1066-1067,1070,1076-1081,1104,1111,1114-1115,1118-1119,1121-1126,1128-1131,1133,1136-1137,1140-1141,1143-1163,1166-1167,1170,1173-1178,1180-1183,1185,1188-1189,1192,1195-1199,1202-1203,1206,1209-1229,1234,1236-1237,1243,1246-1249,1251-1252,1254-1255,1257-1258,1267,1274,1337-1348,1350-1351,1355
+assets/services/config/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/lobby.meta
+  s_7009450e0e4926::t_24d7b2082dbd08 8-16
+  s_7009450e0e4926::t_4c659f20bc071b 5-7
+  s_7009450e0e4926::t_f93bb3d69e59ac 17
+  s_7009450e0e4926::t_8ba6334f31f682 1-4
+assets/lobby/scenes/Lobby.scene.meta
+  s_7009450e0e4926::t_34a0a9e1f3e155 1-11
+assets/lobby/scripts/LobbyEntry.ts
+  s_7009450e0e4926::t_cbc9457498a50c 17,23,35-36,42-50,97,112-131
+  s_7009450e0e4926::t_b366b6e7f1e85e 1,10-15,18,20,24-27,34,37-41,51-69,111,132
+  s_7009450e0e4926::t_67c9079555bb70 2-9,16,21-22,28-33,70-73,78-81,83-86,88-94,96,98-99,101-110
+  s_7009450e0e4926::t_d75d65fc0e57ed 19,74-77,82,87,95,100
+assets/core/version/SemanticVersion.ts.meta
+  s_7009450e0e4926::t_f1b9dd9ddecedd 1-9
+assets/games/switch/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/resources/configs/app.json.meta
+  s_7009450e0e4926::t_84c68fe6bd972f 2
+  s_7009450e0e4926::t_dc68e9ac14d858 5
+  s_7009450e0e4926::t_7418f915b39aa1 1,3-4,6-11
+assets/services/config/ConfigService.ts
+  s_7009450e0e4926::t_7daefc9816dab3 7-11,13-14,16-22,33,44-54,57,60
+  s_7009450e0e4926::t_2829ca34d157c6 1-6,12,15,23-32,34-43,55-56,58-59,61-66
+assets/core/version/SemanticVersion.ts
+  s_7009450e0e4926::t_d1607185971bc1 1-3,7-28,32-35,44-57,62-96,98-108
+  s_7009450e0e4926::t_b3ba90018ccb26 4-6,29-31,36-43,58-61,97
+assets/services/ads/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/core/state/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/lobby/prefabs/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/core/types/CommonTypes.ts
+  s_7009450e0e4926::t_af846fc22893dd 1-28,39-51
+  s_7009450e0e4926::t_ea7faa25ff080a 29-38
+assets/runtime/MiniGame.ts
+  s_7009450e0e4926::t_b85821306d4085 1-35
+assets/core/state/AppStateMachine.ts
+  s_7009450e0e4926::t_2d9eba1fe53b52 1-74
+assets/app/App.ts
+  s_7009450e0e4926::t_7daefc9816dab3 18,28-32,35,38-47,108,119-124,157-161,163-169,171-172,178-181,192-202
+  s_7009450e0e4926::t_b02bafb530122f 87-91
+  s_7009450e0e4926::t_adf722cb9f4161 14,56,58,112,114-116,125-127,134,153-154,156,162,182-183,185-191,203-235
+  s_7009450e0e4926::t_b366b6e7f1e85e 69-73
+  s_7009450e0e4926::t_0c31809b23a754 135-139,184
+  s_7009450e0e4926::t_f84227cea40b0d 5-6,34,36-37,48-49,59,80-83,236-265
+  s_7009450e0e4926::t_b4a48255d03574 1-4,7-13,15-17,20-26,33,50-55,60-68,74-79,84-86,92-106,109-111,128-133,140-152,266-267
+  s_7009450e0e4926::t_2829ca34d157c6 19,27,57,107,113,117-118,155
+  s_7009450e0e4926::t_3e38db613087ff 170,173-177
+assets/services/audio/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+docs/REVIEW_LOG.md
+  s_7009450e0e4926::t_5da60fbbbd1a07 62-76
+  s_7009450e0e4926::t_cd55a7064fd817 17-30
+  s_7009450e0e4926::t_dab000900143eb 166-182
+  s_7009450e0e4926::t_62ebdcb2cfe919 95-112
+  s_7009450e0e4926::t_91f37eaaadd9ec 113-130
+  s_7009450e0e4926::t_b8749beab4ca29 31-44
+  s_7009450e0e4926::t_e91ce4f69d59bd 45-46
+  s_7009450e0e4926::t_646ae4e282cf72 183-200
+  s_7009450e0e4926::t_1e8e123be1b239 131-146
+  s_7009450e0e4926::t_f89c8b49a43e07 147-165
+  s_7009450e0e4926::t_0c31809b23a754 1-16
+  s_7009450e0e4926::t_fc29411a3e90e2 219-236
+  s_7009450e0e4926::t_2a683371547d3e 77-94
+  s_7009450e0e4926::t_ac7acad2fede91 201-218
+  s_7009450e0e4926::t_3e462a2a762402 47-61
+assets/resources/configs/games.json.meta
+  s_7009450e0e4926::t_a8cac60f345f08 1-11
+assets/runtime/GameManifest.ts
+  s_7009450e0e4926::t_f53d1e44c6d47e 1-2
+  s_7009450e0e4926::t_4e38b25c79d7d4 3-30,33-41
+  s_7009450e0e4926::t_ea7faa25ff080a 31-32
+assets/runtime/GameRegistry.ts.meta
+  s_7009450e0e4926::t_f1b9dd9ddecedd 1-9
+assets/lobby/scripts/GameCardView.ts
+  s_7009450e0e4926::t_67c9079555bb70 2-4,6-9,24-38,45-56
+  s_7009450e0e4926::t_d75d65fc0e57ed 1
+  s_7009450e0e4926::t_cbc9457498a50c 5,10-23,39-44
+assets/runtime/GameRegistry.ts
+  s_7009450e0e4926::t_d1607185971bc1 2,43-46,51
+  s_7009450e0e4926::t_d533c4c78f4e90 1,3-42,47-50,52-56
+assets/shared/prefabs/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/resources/configs.meta
+  s_7009450e0e4926::t_dc68e9ac14d858 5
+  s_7009450e0e4926::t_7cf9a423f0c0e8 2-4
+  s_7009450e0e4926::t_644d2538632185 6-8
+  s_7009450e0e4926::t_22de0a505f2da6 1,9
+assets/platform/WeChatPlatform.ts
+  s_7009450e0e4926::t_aaadcc98f65f03 1-2,5-23,27-50,53-79,81-100,102-108,120-129,138-225,259-261
+  s_7009450e0e4926::t_0c31809b23a754 51-52,109-119
+  s_7009450e0e4926::t_ea7faa25ff080a 3-4,24-26,80,101,130-137,226-258
+assets/app/AppConfig.ts.meta
+  s_7009450e0e4926::t_b5da1c09ee2e1d 1-9
+assets/core/state/AppState.ts
+  s_7009450e0e4926::t_8ba92625d6c05a 1-26
+assets/runtime/GameManifestValidator.ts.meta
+  s_7009450e0e4926::t_06288b999be14c 1-9
+assets/resources.meta
+  s_7009450e0e4926::t_dc68e9ac14d858 5-13
+  s_7009450e0e4926::t_84c68fe6bd972f 14-15
+  s_7009450e0e4926::t_1b30372ec9177a 1-4,16-17
+assets/lobby/scenes/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/shared/components/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/resources/configs/app.json
+  s_7009450e0e4926::t_200317dad78ec8 1-44,47-48
+  s_7009450e0e4926::t_90a53eb565edb4 45-46
+assets/services/analytics/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/lobby/scripts/EnterRequestLock.ts
+  s_7009450e0e4926::t_cbc9457498a50c 1-24
+assets/core/lifecycle/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/games/bubble/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/platform/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/services/config/ConfigService.ts.meta
+  s_7009450e0e4926::t_b5da1c09ee2e1d 1-9
+assets/services/navigation/.gitkeep
+  s_7009450e0e4926::t_8283ae2686744b 1
+assets/resources/configs/games.json
+  s_7009450e0e4926::t_d47127e38b50c4 1-25
+settings/tool-manager.json
+  s_386552ec233349::t_dafafda2acf0d5 1-315
+assets/app.meta
+  s_7009450e0e4926::t_04861951b5c1f8 1-9
+assets/app/App.scene
+  s_9132546095cc0f::t_bb1b73462dddba 1-873
+assets/app/App.scene.meta
+  s_7009450e0e4926::t_6df2eb3e160d35 1-11
+assets/app/App.ts.meta
+  s_c63611869c48c0::t_48134cc722d3d4 1-9
+assets/core.meta
+  s_7009450e0e4926::t_62af199e0c4058 1-9
+assets/core/container.meta
+  s_7009450e0e4926::t_ff203152ebab23 1-9
+assets/core/container/ServiceContainer.ts.meta
+  s_7009450e0e4926::t_f59e813c280b71 1-9
+assets/core/events.meta
+  s_7009450e0e4926::t_3477e57069969b 1-9
+assets/core/events/EventBus.ts.meta
+  s_7009450e0e4926::t_cb6ae16af72253 1-9
+assets/core/lifecycle.meta
+  s_7009450e0e4926::t_0378b46fce0f38 1-9
+assets/core/state.meta
+  s_7009450e0e4926::t_c69283b353f622 1-9
+assets/core/state/AppState.ts.meta
+  s_7009450e0e4926::t_11af1d715cd7da 1-9
+assets/core/state/AppStateMachine.ts.meta
+  s_7009450e0e4926::t_8bc9e429d4d754 1-9
+assets/core/types.meta
+  s_7009450e0e4926::t_17c5bab301bf0e 1-9
+assets/core/types/CommonTypes.ts.meta
+  s_7009450e0e4926::t_4391251d3cc49f 1-9
+assets/games.meta
+  s_7009450e0e4926::t_6977c5cb7e72b2 1-9
+assets/games/blocks3d.meta
+  s_7009450e0e4926::t_e50ca4b560e8c1 1-9
+assets/games/bubble.meta
+  s_7009450e0e4926::t_85a9e0d694a9e6 1-9
+assets/games/catch.meta
+  s_7009450e0e4926::t_8d3e2bb7247636 1-9
+assets/games/switch.meta
+  s_7009450e0e4926::t_87f226a608ee3d 1-9
+assets/lobby/prefabs.meta
+  s_7009450e0e4926::t_ecf7379649a01f 1-9
+assets/lobby/prefabs/cards.meta
+  s_3769cc3a743e31::t_8313ac680113ef 1-9
+assets/lobby/prefabs/cards/GameCard.prefab
+  s_3769cc3a743e31::t_9c8a7974019a10 1-855
+assets/lobby/prefabs/cards/GameCard.prefab.meta
+  s_7009450e0e4926::t_5623a556c16f28 1-14
+assets/lobby/scenes.meta
+  s_7009450e0e4926::t_7d60a712068ff6 1-9
+assets/lobby/scripts.meta
+  s_7009450e0e4926::t_de9a77144a1b9e 1-9
+assets/lobby/scripts/EnterRequestLock.ts.meta
+  s_3769cc3a743e31::t_c54b3921e16146 1-9
+assets/lobby/scripts/GameCardView.ts.meta
+  s_3769cc3a743e31::t_c9675627b4ad78 1-9
+assets/lobby/scripts/LobbyEntry.ts.meta
+  s_3769cc3a743e31::t_538f32cd70b7bc 1-9
+assets/platform.meta
+  s_7009450e0e4926::t_42c2198d3b2ba2 1-9
+assets/platform/Platform.ts.meta
+  s_7009450e0e4926::t_7e3d829c50dd23 1-9
+assets/platform/WeChatPlatform.ts.meta
+  s_7009450e0e4926::t_6d7ee80610a422 1-9
+assets/platform/WebPlatform.ts.meta
+  s_7009450e0e4926::t_0cf2450bf7519d 1-9
+assets/runtime.meta
+  s_7009450e0e4926::t_160faaed939dc3 1-9
+assets/runtime/GameManifest.ts.meta
+  s_7009450e0e4926::t_37b117c1bb23b7 1-9
+assets/runtime/MiniGame.ts.meta
+  s_7009450e0e4926::t_51a91b55d20662 1-9
+assets/services.meta
+  s_7009450e0e4926::t_aa7031e24a3a87 1-9
+assets/services/ads.meta
+  s_7009450e0e4926::t_80d1241f4603a7 1-9
+assets/services/analytics.meta
+  s_7009450e0e4926::t_9a9d4969e79a81 1-9
+assets/services/asset.meta
+  s_7009450e0e4926::t_40fa40601945c0 1-9
+assets/services/audio.meta
+  s_7009450e0e4926::t_48307d7dca3fd7 1-9
+assets/services/config.meta
+  s_7009450e0e4926::t_2b34e3756965ca 1-9
+assets/services/navigation.meta
+  s_7009450e0e4926::t_62d3124b4a62d9 1-9
+assets/services/storage.meta
+  s_7009450e0e4926::t_5c5f2315d15524 1-9
+assets/shared.meta
+  s_7009450e0e4926::t_4017bcbe9bd4f5 1-9
+assets/shared/components.meta
+  s_7009450e0e4926::t_04b2d080377e8a 1-9
+assets/shared/prefabs.meta
+  s_7009450e0e4926::t_64b77e744ee4f1 1-9
+assets/shared/shaders.meta
+  s_7009450e0e4926::t_af090d9f89a650 1-9
+assets/shared/ui.meta
+  s_7009450e0e4926::t_93dc6dfb86e969 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b57afbdf3ea2ad25aefb434a717f45eec03d43b0",
+  "prompts": {},
+  "logical_commit_id": "b57afbdf3ea2ad25aefb434a717f45eec03d43b0",
+  "sessions": {
+    "s_3769cc3a743e31": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fc770-8868-7572-9df6-3c05a2c71fed",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_386552ec233349": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fc570-a148-7e82-b412-819af2bf7c6e",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_7009450e0e4926": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb795-4f32-7422-8664-b3070f95c1f5",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 3716,
+      "total_deletions": 326
+    },
+    "s_9132546095cc0f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fc686-e7a4-7100-885e-c182ace7564e",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_a6aeffe0ed6661": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fc792-bdec-7b43-8499-d5b9c10bfa0a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_c63611869c48c0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fbe10-3dda-73d0-835b-4538a2155484",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
