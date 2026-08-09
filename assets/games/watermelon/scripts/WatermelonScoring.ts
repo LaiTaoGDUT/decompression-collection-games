@@ -1,0 +1,56 @@
+import { getFruitConfig } from './FruitCatalog';
+
+export interface WatermelonProgressSnapshot {
+    readonly score: number;
+    readonly maxFruitLevel: number;
+}
+
+export interface WatermelonMergeScoreEvent {
+    readonly resultLevel: number;
+    readonly points: number;
+    readonly chainDepth: number;
+    readonly isChain: boolean;
+    readonly isMilestone: boolean;
+    readonly snapshot: WatermelonProgressSnapshot;
+}
+
+/** 分数只由实际合成结果产生；连锁和里程碑只改变表现，不加倍率。 */
+export class WatermelonRoundProgress {
+    private currentScore = 0;
+    private currentMaxLevel = 0;
+
+    get snapshot(): WatermelonProgressSnapshot {
+        return Object.freeze({
+            score: this.currentScore,
+            maxFruitLevel: this.currentMaxLevel,
+        });
+    }
+
+    recordSpawn(level: number): WatermelonProgressSnapshot {
+        getFruitConfig(level);
+        this.currentMaxLevel = Math.max(this.currentMaxLevel, level);
+        return this.snapshot;
+    }
+
+    recordMerge(resultLevel: number, chainDepth = 1): WatermelonMergeScoreEvent {
+        const config = getFruitConfig(resultLevel);
+        const previousMaxLevel = this.currentMaxLevel;
+        this.currentScore += config.score;
+        this.currentMaxLevel = Math.max(this.currentMaxLevel, resultLevel);
+
+        return Object.freeze({
+            resultLevel,
+            points: config.score,
+            chainDepth: Math.max(1, Math.floor(chainDepth)),
+            isChain: chainDepth >= 2,
+            isMilestone: resultLevel >= 5 && resultLevel > previousMaxLevel,
+            snapshot: this.snapshot,
+        });
+    }
+
+    reset(): WatermelonProgressSnapshot {
+        this.currentScore = 0;
+        this.currentMaxLevel = 0;
+        return this.snapshot;
+    }
+}

@@ -79,7 +79,7 @@ assets/
 │   ├── scripts/
 │   └── lobby.bundle.json
 ├── games/
-│   ├── bubble/
+│   ├── watermelon/
 │   ├── blocks3d/
 │   ├── switch/
 │   └── catch/
@@ -138,16 +138,23 @@ export interface MiniGameContext {
   difficulty?: string;
   services: GameServices;
   reportScore(score: number): void;
+  requestPause(): void;
   requestExit(result?: GameResult): void;
+  requestRestart(result?: GameResult): void;
+  requestLobby(result?: GameResult): void;
 }
 
 export interface MiniGame {
   initialize(context: MiniGameContext): Promise<void>;
-  start(): void;
+  begin(): void;
   pause(): void;
   resume(): void;
   restart(): Promise<void>;
   dispose(): Promise<void>;
+  showPauseMenu?(model: MiniGamePauseModel): void;
+  hidePauseMenu?(): void;
+  showResultView?(model: MiniGameResultModel): void;
+  hideResultView?(): void;
 }
 
 export interface GameResult {
@@ -166,6 +173,10 @@ export interface GameResult {
 - 不持有应释放的 Asset Bundle 资源引用。
 - 3D 游戏不残留物理回调、动画、粒子、RenderTexture、动态 Mesh、材质实例、后处理与 GPU 纹理引用。
 - 再次进入该游戏时得到一个全新的 `GameSession`。
+
+暂停与结果呈现采用“公共行为模型 + 游戏可选自有视图”。运行层始终拥有暂停、恢复、重开、结算和返回大厅的流程与去重逻辑，并通过 `MiniGamePauseModel` / `MiniGameResultModel` 注入动作；小游戏若实现可选 Presenter 方法，则在自己的 Bundle 内绘制独立视觉，否则继续使用 `assets/shared` 的公共回退视图。失败/续玩页可通过 `requestRestart` 或 `requestLobby` 直接表达最终去向，但不得自行切场景、卸载 Bundle 或绕过结果持久化。
+
+本次协议扩展为纯增量：已有小游戏无需实现任何新 Presenter 方法，原有 `requestExit` 路径保持不变，存档、Manifest 和 Session 结构均不变化。迁移时可逐个游戏接入主题视图；若回滚，只需移除游戏的可选 Presenter 实现并恢复调用 `requestExit`，运行层会自动回到公共暂停/结果视图，无需迁移或清空用户数据。
 
 ## 6. 游戏清单与注册中心
 
@@ -218,7 +229,7 @@ interface GameCatalog {
 → 定位 MiniGame 入口组件
 → 注入 MiniGameContext
 → initialize
-→ start
+→ begin
 ```
 
 退出流程：
@@ -349,6 +360,10 @@ interface UserData {
 
 每次结构变化必须提供从上一版本到当前版本的迁移函数。单个小游戏只能读写自己的数据命名空间。
 
+当前根存档版本为 `schemaVersion: 2`。迁移必须按 `vN → vN+1` 顺序逐级执行；首个示例迁移 `v1 → v2` 将早期可缺省的 `settings.vibrationEnabled` 补为 `true`。迁移完成并通过当前结构校验后才能覆盖主存档；迁移失败时先把原始字符串写入独立备份键，再恢复默认数据。
+
+合成大西瓜当前使用游戏内 `dataVersion: 2`，其 `custom` 已知字段为 `maxFruitLevel`、`continueOfferCount` 和 `continueCompletedCount`。读取 `dataVersion: 1` 或字段不完整的数据时，在游戏命名空间内补齐非负默认值并保留未知自定义字段；根存档版本不因此升级。`playCount/lastPlayedAt` 只在新一局开始写入，最高分、历史最大水果和续玩统计只在最终结算写入，中途退出和暂停重开不刷新纪录。回滚到不识别 v2 的旧游戏代码时，公共存储仍会保留该命名空间；安全回滚策略是旧代码忽略新增 `custom` 字段，禁止删除或重置用户根存档。
+
 ## 12. 公共 UI 层级
 
 所有场景遵循统一层级：
@@ -362,7 +377,15 @@ Canvas
 └── SystemLayer
 ```
 
-公共 UI 首期包括：安全区适配、按钮、Toast、确认弹窗、加载页、暂停弹窗、结果弹窗和错误页。小游戏可以自定义玩法界面，但加载、暂停、退出、结果和错误交互保持一致。
+公共 UI 层统一的是层级、状态语义、行为接口、安全区、输入拦截、等待锁和错误恢复，不统一正式视觉皮肤。
+
+- 冷启动、大厅、设置和游戏加载失败使用大厅独立视觉。
+- 每个小游戏独立拥有 HUD、暂停、失败、续玩、结果、图标、动效和音效视觉；合成大西瓜不得复用大厅皮肤。
+- `PausePresenter`、`ResultPresenter`、加载与错误接口可以保持公共行为契约，但候选版本的呈现由当前视觉所有者提供主题化或游戏自有实现。
+- `assets/shared` 中现有公共视图可作为开发回退和行为验证，不作为所有游戏强制共用的正式美术。
+- 大厅和小游戏不得跨 Bundle 引用彼此视觉资源；退出游戏后其主题资源随游戏 Bundle 释放。
+
+迁移策略：第二阶段在实现大厅和合成大西瓜正式 UI 时，保留现有 Presenter 行为接口，优先将皮肤与节点移入各自 Bundle；若需要扩展主题注入，先新增可选接口并保留现有公共视图作为回退，不一次性破坏运行链路。回滚时可重新启用现有公共视图，不回滚 Session、存档、Manifest 或平台服务。
 
 ## 13. Bundle 与微信分包
 
@@ -372,7 +395,7 @@ Canvas
 | `lobby` | 大厅场景与资源 | 主包 |
 | `shared` | 高频公共 UI 和公共资源 | 主包或公共分包 |
 | `game-placeholder` | 首条加载与退出流程的临时验证游戏 | 主包；正式游戏接入后可移除 |
-| `game-bubble` | 泡泡游戏全部内容 | 独立游戏分包 |
+| `game-watermelon` | 合成大西瓜游戏全部内容 | 独立游戏分包 |
 | `game-blocks-3d` | 3D 推倒积木验证游戏全部内容 | 独立游戏分包 |
 | `game-switch` | 开关游戏全部内容 | 独立游戏分包 |
 | `game-catch` | 接球游戏全部内容 | 独立游戏分包 |

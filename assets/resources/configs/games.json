@@ -2,22 +2,48 @@
   "schemaVersion": 1,
   "games": [
     {
-      "id": "placeholder",
-      "version": "0.1.0",
-      "name": "流程验证",
-      "description": "用于验证大厅、加载和退出流程。",
-      "bundle": "game-placeholder",
-      "scene": "scenes/Placeholder",
-      "entryComponent": "PlaceholderGame",
+      "id": "watermelon",
+      "version": "1.0.0",
+      "name": "合成大西瓜",
+      "description": "投放并合成相同水果，挑战最终大西瓜。",
+      "bundle": "game-watermelon",
+      "scene": "scenes/Watermelon",
+      "entryComponent": "WatermelonGame",
       "icon": "images/icon",
-      "cover": "images/cover",
+      "cover": "visual/covers/watermelon/w1-watermelon-cover-v1/texture",
       "orientation": "portrait",
       "renderMode": "2d",
       "minimumDeviceTier": "low",
       "minAppVersion": "0.1.0",
       "enabled": true,
+      "visibility": "public",
       "preload": [],
       "tags": [
+        "merge",
+        "physics",
+        "relaxing"
+      ]
+    },
+    {
+      "id": "blocks3d",
+      "version": "0.1.0",
+      "name": "3D 推倒积木",
+      "description": "点击发射小球，验证3D物理与三档画质。",
+      "bundle": "game-blocks3d",
+      "scene": "scenes/Blocks3D",
+      "entryComponent": "Blocks3DGame",
+      "icon": "images/icon",
+      "cover": "images/cover",
+      "orientation": "portrait",
+      "renderMode": "3d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "visibility": "development",
+      "preload": [],
+      "tags": [
+        "3d",
+        "physics",
         "validation"
       ]
     }

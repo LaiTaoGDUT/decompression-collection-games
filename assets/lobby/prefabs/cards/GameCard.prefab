@@ -69,7 +69,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 8388608,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -119,7 +119,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 8388608,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -255,7 +255,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 8388608,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -314,7 +314,7 @@
       "b": 55,
       "a": 255
     },
-    "_string": "游戏名称",
+    "_string": "游戏",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
     "_actualFontSize": 34,
@@ -414,7 +414,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 8388608,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -473,7 +473,7 @@
       "b": 128,
       "a": 255
     },
-    "_string": "一段简短的游戏介绍",
+    "_string": "",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
     "_actualFontSize": 24,
@@ -573,7 +573,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 8388608,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -632,7 +632,7 @@
       "b": 112,
       "a": 255
     },
-    "_string": "可游玩",
+    "_string": "开始",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 22,

@@ -96,6 +96,10 @@ export class WebPlatform implements Platform {
         return this.launchOptions;
     }
 
+    supportsVibration(): boolean {
+        return false;
+    }
+
     vibrate(_type: 'light' | 'medium' | 'heavy'): void {
         // 浏览器预览不模拟设备振动。
     }

@@ -143,6 +143,10 @@ export class WeChatPlatform implements Platform {
         return this.launchOptions;
     }
 
+    supportsVibration(): boolean {
+        return typeof this.api?.vibrateShort === 'function';
+    }
+
     vibrate(type: 'light' | 'medium' | 'heavy'): void {
         this.api?.vibrateShort?.({ type });
     }

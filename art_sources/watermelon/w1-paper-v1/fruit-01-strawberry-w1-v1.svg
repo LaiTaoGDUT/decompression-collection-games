@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs>
+      <clipPath id="clip-strawberry"><path d="M256 466 C190 414 95 317 112 204 C125 116 210 112 256 165 C302 112 387 116 400 204 C417 317 322 414 256 466 Z"/></clipPath>
+      <filter id="shadow-strawberry" x="-20%" y="-20%" width="150%" height="150%">
+        <feDropShadow dx="10" dy="12" stdDeviation="8" flood-color="#4B2B20" flood-opacity="0.22"/>
+      </filter>
+      <pattern id="fiber-strawberry" width="18" height="18" patternUnits="userSpaceOnUse">
+        <path d="M1 4 L8 3 M11 13 L17 12" stroke="#FFF9E9" stroke-opacity="0.18" stroke-width="2"/>
+      </pattern>
+    </defs><g filter="url(#shadow-strawberry)">
+      <g fill="#F35E65" stroke="#4B2B20" stroke-width="11" stroke-linejoin="round"><path d="M256 466 C190 414 95 317 112 204 C125 116 210 112 256 165 C302 112 387 116 400 204 C417 317 322 414 256 466 Z"/></g>
+      <g clip-path="url(#clip-strawberry)">
+        <path d="M38 92 L303 52 L221 492 L48 425 Z" fill="#FF8B82" opacity="0.78"/>
+        <path d="M303 52 L476 126 L452 440 L221 492 Z" fill="#C83B4A" opacity="0.68"/>
+        <path d="M38 92 L476 126 L221 492 Z" fill="url(#fiber-strawberry)"/>
+        <path d="M303 52 L221 492" stroke="#4B2B20" stroke-opacity="0.22" stroke-width="6"/>
+      </g>
+      <path d="M150 171 L201 103 L256 151 L311 103 L362 171 L306 187 L256 164 L206 187 Z" fill="#287A4E" stroke="#4B2B20" stroke-width="9"/>
+          <ellipse cx="178" cy="247" rx="7" ry="12" fill="#FFE2A8" transform="rotate(-12 178 247)"/><ellipse cx="256" cy="225" rx="7" ry="12" fill="#FFE2A8" transform="rotate(-12 256 225)"/><ellipse cx="330" cy="252" rx="7" ry="12" fill="#FFE2A8" transform="rotate(-12 330 252)"/><ellipse cx="210" cy="320" rx="7" ry="12" fill="#FFE2A8" transform="rotate(-12 210 320)"/><ellipse cx="298" cy="322" rx="7" ry="12" fill="#FFE2A8" transform="rotate(-12 298 322)"/><ellipse cx="254" cy="388" rx="7" ry="12" fill="#FFE2A8" transform="rotate(-12 254 388)"/>
+    </g></svg>

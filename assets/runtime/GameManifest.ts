@@ -32,6 +32,7 @@ export interface GameManifest {
     readonly minimumDeviceTier: DevicePerformanceTier;
     readonly minAppVersion: string;
     readonly enabled: boolean;
+    readonly visibility: 'public' | 'development';
 
     /** 进入场景前必须完成加载的 Bundle 内资源路径。 */
     readonly preload: readonly string[];

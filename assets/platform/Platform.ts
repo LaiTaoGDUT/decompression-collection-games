@@ -18,6 +18,7 @@ export interface Platform {
     getDeviceProfile(): DeviceProfile;
     getSafeArea(): SafeArea;
     getLaunchOptions(): LaunchOptions;
+    supportsVibration(): boolean;
     vibrate(type: 'light' | 'medium' | 'heavy'): void;
     showShareMenu(): void;
     onShow(callback: () => void): Unsubscribe;

@@ -43,10 +43,12 @@ export class GameRegistry {
     getPlayableGames(
         deviceTier: DevicePerformanceTier,
         appVersion: string,
+        includeDevelopment = false,
     ): readonly GameManifest[] {
         const deviceRank = DEVICE_TIER_RANK[deviceTier];
         const playable = [...this.manifests.values()].filter((manifest) => (
             manifest.enabled
+            && (manifest.visibility === 'public' || includeDevelopment)
             && DEVICE_TIER_RANK[manifest.minimumDeviceTier] <= deviceRank
             && compareSemanticVersions(appVersion, manifest.minAppVersion) >= 0
         ));

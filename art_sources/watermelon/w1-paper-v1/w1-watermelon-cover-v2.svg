@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="690" viewBox="0 0 920 690">
+      <defs>
+        <pattern id="paper" width="22" height="22" patternUnits="userSpaceOnUse">
+          <path d="M2 6 L10 5 M13 17 L21 16" stroke="#FFF" stroke-opacity=".16" stroke-width="2"/>
+        </pattern>
+        <filter id="drop" x="-30%" y="-30%" width="170%" height="180%">
+          <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#4B2B20" flood-opacity=".18"/>
+        </filter>
+      </defs>
+      <rect width="920" height="690" rx="42" fill="#FFF0CF"/>
+      <path d="M0 0 H920 V170 L715 122 L588 210 L405 108 L220 190 L0 112 Z" fill="#F28B66"/>
+      <path d="M0 0 H920 V72 L716 122 L588 55 L405 108 L220 48 L0 112 Z" fill="#F9C74F"/>
+      <path d="M0 540 L210 425 L352 510 L535 405 L715 510 L920 395 V690 H0 Z" fill="#C9E8D5"/>
+      <path d="M0 600 L210 425 L352 510 L535 405 L715 510 L920 455 V690 H0 Z" fill="#9ACBAA" opacity=".58"/>
+      <ellipse cx="470" cy="535" rx="345" ry="76" fill="#4B2B20" opacity=".12"/>
+      <circle cx="462" cy="330" r="260" fill="#FFF7E4" stroke="#4B2B20" stroke-opacity=".14" stroke-width="6" filter="url(#drop)"/>
+      <path d="M462 70 V590 M202 330 H722 M278 146 L646 514 M646 146 L278 514" stroke="#D7A95D" stroke-opacity=".18" stroke-width="4" stroke-dasharray="13 12"/>
+      <g fill="#FFF7E4" stroke="#4B2B20" stroke-width="5" stroke-linejoin="round">
+        <path d="M73 242 L122 216 L150 266 L96 279 Z"/>
+        <path d="M770 184 L833 156 L854 221 L794 230 Z"/>
+        <path d="M100 468 L155 439 L178 493 L120 510 Z"/>
+        <path d="M784 474 L840 441 L868 498 L810 516 Z"/>
+      </g>
+      <rect width="920" height="690" rx="42" fill="url(#paper)"/>
+    </svg>

@@ -7,6 +7,7 @@ const COMPONENT_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const ORIENTATIONS = ['portrait', 'landscape'] as const;
 const RENDER_MODES = ['2d', '3d'] as const;
 const DEVICE_TIERS = ['low', 'medium', 'high'] as const;
+const VISIBILITIES = ['public', 'development'] as const;
 
 export interface ManifestValidationError {
     readonly field: string;
@@ -217,6 +218,13 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         errors,
     );
     const enabled = readBoolean(value, 'enabled', `${prefix}.enabled`, errors);
+    const visibility = readEnum(
+        value,
+        'visibility',
+        `${prefix}.visibility`,
+        VISIBILITIES,
+        errors,
+    );
     const preload = readStringArray(
         value,
         'preload',
@@ -265,6 +273,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         minimumDeviceTier: minimumDeviceTier!,
         minAppVersion: minAppVersion!,
         enabled: enabled!,
+        visibility: visibility!,
         preload: Object.freeze([...(preload ?? [])]),
         tags: Object.freeze([...(tags ?? [])]),
     });

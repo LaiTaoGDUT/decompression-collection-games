@@ -1,9 +1,11 @@
 import {
     _decorator,
+    AudioSource,
     Component,
     director,
     find,
     Label,
+    Node,
     sys,
 } from 'cc';
 import {
@@ -16,7 +18,25 @@ import type { Platform } from '../platform/Platform';
 import { WebPlatform } from '../platform/WebPlatform';
 import { WeChatPlatform } from '../platform/WeChatPlatform';
 import { GameRegistry } from '../runtime/GameRegistry';
+import { GameLoader } from '../runtime/GameLoader';
+import { GameRuntime } from '../runtime/GameRuntime';
+import { AssetService } from '../services/asset/AssetService';
+import { AudioService } from '../services/audio/AudioService';
+import {
+    AnalyticsService,
+    ConsoleAnalyticsTransport,
+} from '../services/analytics/AnalyticsService';
+import {
+    AdService,
+    MockRewardedAdProvider,
+} from '../services/ads/AdService';
 import { ConfigService } from '../services/config/ConfigService';
+import { FeedbackService } from '../services/feedback/FeedbackService';
+import { StorageService } from '../services/storage/StorageService';
+import { ErrorView } from '../shared/components/ErrorView';
+import { LoadingView } from '../shared/components/LoadingView';
+import { PauseView } from '../shared/components/PauseView';
+import { ResultView } from '../shared/components/ResultView';
 
 const { ccclass } = _decorator;
 
@@ -28,8 +48,26 @@ export const CONFIG_SERVICE = createServiceToken<ConfigService>('ConfigService')
 export const GAME_REGISTRY_SERVICE = createServiceToken<GameRegistry>(
     'GameRegistry',
 );
+export const ASSET_SERVICE = createServiceToken<AssetService>('AssetService');
+export const GAME_LOADER_SERVICE = createServiceToken<GameLoader>('GameLoader');
+export const GAME_RUNTIME_SERVICE = createServiceToken<GameRuntime>('GameRuntime');
+export const STORAGE_SERVICE = createServiceToken<StorageService>('StorageService');
+export const AUDIO_SERVICE = createServiceToken<AudioService>('AudioService');
+export const ANALYTICS_SERVICE = createServiceToken<AnalyticsService>(
+    'AnalyticsService',
+);
+export const AD_SERVICE = createServiceToken<AdService>('AdService');
+export const FEEDBACK_SERVICE = createServiceToken<FeedbackService>(
+    'FeedbackService',
+);
 
-type AppStartupStage = 'startup' | 'platform-lifecycle' | 'game-catalog';
+type AppStartupStage =
+    | 'startup'
+    | 'platform-lifecycle'
+    | 'storage'
+    | 'audio'
+    | 'game-catalog'
+    | 'lobby';
 
 export interface AppStartupFailure {
     readonly stage: AppStartupStage;
@@ -101,11 +139,80 @@ export class App extends Component {
         const container = new ServiceContainer();
         const stateMachine = new AppStateMachine('booting');
         const platform = this.createPlatform();
+        const configService = new ConfigService();
+        const assetService = new AssetService();
+        const storageService = new StorageService();
+        const audioRoot = find('AudioRoot', this.node);
+
+        if (!audioRoot) {
+            throw new Error('Persistent AudioRoot is missing.');
+        }
+
+        const musicSource = this.createAudioSource(audioRoot, 'MusicChannel');
+        const effectSource = this.createAudioSource(audioRoot, 'EffectChannel');
+        const audioService = new AudioService(
+            musicSource,
+            effectSource,
+            storageService,
+        );
+        const feedbackService = new FeedbackService(
+            audioService,
+            platform,
+            storageService,
+        );
+        const analyticsService = new AnalyticsService(
+            () => ({
+                appVersion: configService.config.appVersion,
+                platformId: platform.id,
+                deviceTier: platform.getDeviceProfile().tier,
+            }),
+            new ConsoleAnalyticsTransport(),
+        );
+        const adService = new AdService(
+            stateMachine,
+            new MockRewardedAdProvider(),
+        );
+        const gameLoader = new GameLoader();
+        const loadingView = find('Canvas/LoadingLayer', this.node)
+            ?.getComponent(LoadingView);
+        const errorView = find('Canvas/ErrorLayer', this.node)
+            ?.getComponent(ErrorView);
+        const pauseView = find('Canvas/PauseLayer', this.node)
+            ?.getComponent(PauseView);
+        const resultView = find('Canvas/ResultLayer', this.node)
+            ?.getComponent(ResultView);
+        const gameRuntime = new GameRuntime(
+            stateMachine,
+            assetService,
+            gameLoader,
+            Object.freeze({
+                audio: audioService,
+                feedback: feedbackService,
+                storage: storageService,
+                analytics: analyticsService,
+                ads: adService,
+                deviceTier: platform.getDeviceProfile().tier,
+            }),
+            director,
+            loadingView ?? undefined,
+            errorView ?? undefined,
+            pauseView ?? undefined,
+            resultView ?? undefined,
+            analyticsService,
+        );
 
         container.register(APP_STATE_MACHINE_SERVICE, stateMachine);
         container.register(PLATFORM_SERVICE, platform);
-        container.register(CONFIG_SERVICE, new ConfigService());
+        container.register(CONFIG_SERVICE, configService);
         container.register(GAME_REGISTRY_SERVICE, new GameRegistry());
+        container.register(ASSET_SERVICE, assetService);
+        container.register(GAME_LOADER_SERVICE, gameLoader);
+        container.register(GAME_RUNTIME_SERVICE, gameRuntime);
+        container.register(STORAGE_SERVICE, storageService);
+        container.register(AUDIO_SERVICE, audioService);
+        container.register(ANALYTICS_SERVICE, analyticsService);
+        container.register(AD_SERVICE, adService);
+        container.register(FEEDBACK_SERVICE, feedbackService);
         this.container = container;
     }
 
@@ -137,6 +244,10 @@ export class App extends Component {
             this.container.get(PLATFORM_SERVICE).dispose();
         }
 
+        if (this.container?.has(AUDIO_SERVICE)) {
+            this.container.get(AUDIO_SERVICE).dispose();
+        }
+
         this.container = undefined;
 
         if (director.isPersistRootNode(this.node)) {
@@ -159,6 +270,14 @@ export class App extends Component {
             'platform-lifecycle',
             () => platform.initialize(),
         );
+
+        await this.runStartupStage('storage', async () => {
+            this.services.get(STORAGE_SERVICE).load();
+        });
+
+        await this.runStartupStage('audio', async () => {
+            this.services.get(AUDIO_SERVICE).initialize();
+        });
 
         if (App.activeInstance !== this) {
             platform.dispose();
@@ -189,6 +308,11 @@ export class App extends Component {
             platform.onHide(this.handlePlatformHide),
             platform.onShow(this.handlePlatformShow),
         );
+
+        await this.runStartupStage(
+            'lobby',
+            () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(),
+        );
     }
 
     private async runStartupStage<TValue>(
@@ -203,6 +327,8 @@ export class App extends Component {
     }
 
     private readonly handlePlatformHide = (): void => {
+        this.services.get(AUDIO_SERVICE).onHide();
+        this.services.get(AD_SERVICE).onHide();
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
 
         if (stateMachine.currentState !== 'playing') {
@@ -213,6 +339,8 @@ export class App extends Component {
     };
 
     private readonly handlePlatformShow = (): void => {
+        this.services.get(AUDIO_SERVICE).onShow();
+        this.services.get(AD_SERVICE).onShow();
         const shouldResume = this.pausedByPlatform;
         this.pausedByPlatform = false;
 
@@ -233,6 +361,17 @@ export class App extends Component {
         }
 
         this.pausedByPlatform = false;
+    }
+
+    private createAudioSource(root: Node, name: string): AudioSource {
+        const existing = root.getChildByName(name);
+        const node = existing ?? new Node(name);
+
+        if (!existing) {
+            node.parent = root;
+        }
+
+        return node.getComponent(AudioSource) ?? node.addComponent(AudioSource);
     }
 
     private handleStartupFailure(
@@ -262,6 +401,7 @@ export class App extends Component {
         }
 
         label.string = '启动失败\n请重新进入小游戏';
+        labelNode.parent!.active = true;
         labelNode.active = true;
     }
 }

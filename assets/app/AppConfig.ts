@@ -31,6 +31,7 @@ export interface TimeoutConfig {
 export interface DevelopmentConfig {
     readonly debugLogs: boolean;
     readonly mockAds: boolean;
+    readonly showDevelopmentGames: boolean;
 }
 
 export interface AppConfig {
@@ -122,6 +123,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     development: {
         debugLogs: false,
         mockAds: false,
+        showDevelopmentGames: false,
     },
 };
 

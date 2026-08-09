@@ -146,49 +146,49 @@
         {
           "category": "debug",
           "name": "debug_console",
-          "enabled": true,
+          "enabled": false,
           "description": "CONSOLE MANAGEMENT: Get console logs or clear console. Use this for monitoring editor output and debugging messages."
         },
         {
           "category": "debug",
           "name": "debug_logs",
-          "enabled": true,
+          "enabled": false,
           "description": "PROJECT LOG ANALYSIS: Read, search, and analyze project log files. Use this for troubleshooting errors and monitoring system activity."
         },
         {
           "category": "debug",
           "name": "debug_system",
-          "enabled": true,
+          "enabled": false,
           "description": "SYSTEM INFORMATION: Get editor version, project details, memory usage, and performance stats. Use this for environment debugging and system monitoring."
         },
         {
           "category": "preferences",
           "name": "preferences_manage",
-          "enabled": true,
+          "enabled": false,
           "description": "PREFERENCES MANAGEMENT: Configure Cocos Creator editor settings and open preferences panel. WORKFLOW: open_panel to access GUI settings, get_config to read current values, set_config to modify settings, reset_config to restore defaults. Supports global/local/default scopes."
         },
         {
           "category": "preferences",
           "name": "preferences_query",
-          "enabled": true,
+          "enabled": false,
           "description": "PREFERENCES QUERY: Get all available preferences, list categories, or search for specific preference settings. Use this for preference discovery and inspection."
         },
         {
           "category": "preferences",
           "name": "preferences_backup",
-          "enabled": true,
+          "enabled": false,
           "description": "PREFERENCES BACKUP: Export current preferences to JSON format or prepare for backup operations. Use this for preference backup and restore workflows."
         },
         {
           "category": "server",
           "name": "server_information",
-          "enabled": true,
+          "enabled": false,
           "description": "SERVER INFORMATION: Get Cocos Creator editor server network details and status. USAGE: Essential for network configuration, debugging connection issues, and understanding server setup. Use \"get_ip_list\" to see available network interfaces, \"get_port\" for current server port."
         },
         {
           "category": "server",
           "name": "server_connectivity",
-          "enabled": true,
+          "enabled": false,
           "description": "SERVER CONNECTIVITY: Test and diagnose network connectivity for the Cocos Creator editor server. USAGE: \"test_connectivity\" to verify server accessibility with custom timeout, \"get_network_interfaces\" for detailed network adapter information. Critical for troubleshooting connection problems."
         },
         {
@@ -307,7 +307,7 @@
         }
       ],
       "createdAt": "2026-08-03T02:25:52.358Z",
-      "updatedAt": "2026-08-03T02:25:52.358Z"
+      "updatedAt": "2026-08-08T09:11:58.325Z"
     }
   ],
   "currentConfigId": "3ff939ca-d8f1-4d25-8c78-5bba3bc438d4",
