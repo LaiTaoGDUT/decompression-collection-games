@@ -60,7 +60,7 @@ export class WatermelonOverlayView {
         this.pause = this.build(
             'W1PauseOverlay',
             '暂停一下',
-            `当前分数  ${score}\n纸片们会在原位等你回来`,
+            `当前分数  ${score}\n猫咪们会在原位等你回来`,
             [
                 { name: 'ResumeButton', label: '继续游戏', action: model.resume, tone: 'leaf' },
                 { name: 'RestartButton', label: '重新开始', action: model.restart, tone: 'coral' },
@@ -84,7 +84,7 @@ export class WatermelonOverlayView {
         this.result = this.build(
             'W1ResultOverlay',
             newRecord ? '新纪录！' : '本局完成',
-            `最终分数  ${model.result.score}\n本局最大水果等级  ${maxFruitLevel}`,
+            `最终分数  ${model.result.score}\n本局最大猫咪等级  ${maxFruitLevel}`,
             [
                 { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'coral' },
                 { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'paper' },
@@ -180,12 +180,12 @@ export class WatermelonOverlayView {
 
         const buttons: Button[] = [];
         const state: OverlayState = { root, buttons, busy: false };
-        const startY = actions.length === 3 ? -14 : -54;
+        const startY = actions.length === 3 ? -18 : -54;
         actions.forEach((action, index) => {
             buttons.push(this.createButton(
                 panel,
                 action,
-                startY - index * 92,
+                startY - index * 88,
                 () => this.run(state, action),
             ));
         });
@@ -206,8 +206,9 @@ export class WatermelonOverlayView {
         node.setParent(parent);
         node.setPosition(0, y);
         const panelWidth = parent.getComponent(UITransform)?.contentSize.width ?? 610;
-        const buttonWidth = Math.min(450, panelWidth - 80);
-        node.addComponent(UITransform).setContentSize(buttonWidth, 88);
+        const buttonWidth = Math.min(400, panelWidth - 130);
+        const buttonHeight = 66;
+        node.addComponent(UITransform).setContentSize(buttonWidth, buttonHeight);
         node.addComponent(UIOpacity);
         const graphics = node.addComponent(Graphics);
         graphics.fillColor = spec.tone === 'leaf'
@@ -215,7 +216,13 @@ export class WatermelonOverlayView {
             : spec.tone === 'coral'
                 ? COLORS.coral
                 : spec.tone === 'danger' ? COLORS.danger : COLORS.paper;
-        graphics.roundRect(-buttonWidth / 2, -44, buttonWidth, 88, 18);
+        graphics.roundRect(
+            -buttonWidth / 2,
+            -buttonHeight / 2,
+            buttonWidth,
+            buttonHeight,
+            16,
+        );
         graphics.fill();
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
@@ -228,12 +235,12 @@ export class WatermelonOverlayView {
             spec.label,
             0,
             0,
-            28,
+            25,
             spec.tone === 'leaf' || spec.tone === 'danger'
                 ? Color.WHITE
                 : COLORS.ink,
             buttonWidth - 30,
-            62,
+            48,
         );
         label.isBold = true;
         return button;

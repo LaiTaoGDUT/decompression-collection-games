@@ -2,7 +2,6 @@ import {
     _decorator,
     CircleCollider2D,
     Collider2D,
-    Color,
     Component,
     Contact2DType,
     ERigidBody2DType,
@@ -11,26 +10,39 @@ import {
     RigidBody2D,
     Sprite,
     SpriteFrame,
-    tween,
-    Tween,
     UITransform,
-    Vec3,
+    Vec2,
 } from 'cc';
-import { getFruitConfig } from './FruitCatalog';
+import {
+    CAT_TOKEN_VISIBLE_DIAMETER_RATIO,
+    getFruitConfig,
+} from './FruitCatalog';
 
 const { ccclass, property } = _decorator;
 const DANGER_SPAWN_GRACE_SECONDS = 0.7;
+// Cocos 2D velocities are expressed in physics-world units. The previous
+// 0.05 linear / 0.08 angular limits were below the solver's normal resting
+// jitter, so a body could keep creeping forever without becoming eligible.
+const SETTLE_LINEAR_SPEED_SQUARED = 0.1024;
+const SETTLE_ANGULAR_SPEED = 0.65;
+const SETTLE_DURATION_SECONDS = 0.65;
 
-/** 单个水果 Prefab 的等级和物理外观配置；不包含生成或合成逻辑。 */
+/** 单只圆滚滚猫咪的等级、圆形碰撞边界与内部动画。 */
 @ccclass('FruitBody')
 export class FruitBody extends Component {
     @property({ min: 0, max: 10, step: 1 })
     level = 0;
 
     private mergeLocked = false;
-    private mergeChainDepth = 0;
+    private dropSequenceId = 0;
+    private dropMergeCount = 0;
     private ageSeconds = 0;
     private enteredSafeZone = false;
+    private animationFrames: readonly SpriteFrame[] = [];
+    private idleFrameIndex = 0;
+    private frameMode: 'idle' | 'fall' = 'idle';
+    private hasPhysicalContact = false;
+    private lowSpeedSeconds = 0;
     private collisionHandler?: (self: FruitBody, other: FruitBody) => void;
 
     protected onLoad(): void {
@@ -55,19 +67,60 @@ export class FruitBody extends Component {
     protected update(deltaTime: number): void {
         if (Number.isFinite(deltaTime) && deltaTime > 0) {
             this.ageSeconds += deltaTime;
+            this.updateNaturalSettle(deltaTime);
         }
+    }
+
+    /** Preserve landing inertia, then eliminate the solver's permanent micro-roll. */
+    private updateNaturalSettle(deltaTime: number): void {
+        if (!this.hasPhysicalContact || this.mergeLocked) {
+            return;
+        }
+
+        const rigidBody = this.node.getComponent(RigidBody2D);
+        if (!rigidBody || rigidBody.type !== ERigidBody2DType.Dynamic) {
+            return;
+        }
+        if (!rigidBody.isAwake()) {
+            this.lowSpeedSeconds = 0;
+            return;
+        }
+
+        const velocity = rigidBody.linearVelocity;
+        const speedSquared = velocity.x * velocity.x + velocity.y * velocity.y;
+        if (speedSquared > SETTLE_LINEAR_SPEED_SQUARED
+            || Math.abs(rigidBody.angularVelocity) > SETTLE_ANGULAR_SPEED) {
+            this.lowSpeedSeconds = 0;
+            return;
+        }
+
+        this.lowSpeedSeconds += deltaTime;
+        if (this.lowSpeedSeconds < SETTLE_DURATION_SECONDS) {
+            return;
+        }
+
+        rigidBody.linearVelocity = new Vec2(0, 0);
+        rigidBody.angularVelocity = 0;
+        rigidBody.sleep();
+        this.lowSpeedSeconds = 0;
     }
 
     get isMergeLocked(): boolean {
         return this.mergeLocked;
     }
 
-    get chainDepth(): number {
-        return this.mergeChainDepth;
+    get sourceDropSequenceId(): number {
+        return this.dropSequenceId;
     }
 
-    setChainDepth(depth: number): void {
-        this.mergeChainDepth = Math.max(0, Math.floor(depth));
+    get sourceDropMergeCount(): number {
+        return this.dropMergeCount;
+    }
+
+    /** Track only the current player's drop and descendants created by it. */
+    setDropChain(sequenceId: number, mergeCount: number): void {
+        this.dropSequenceId = Math.max(0, Math.floor(sequenceId));
+        this.dropMergeCount = Math.max(0, Math.floor(mergeCount));
     }
 
     /** A new fruit starts above the line and must not look like settled overflow. */
@@ -79,85 +132,101 @@ export class FruitBody extends Component {
         return this.enteredSafeZone || this.ageSeconds >= DANGER_SPAWN_GRACE_SECONDS;
     }
 
-    setSpriteFrame(spriteFrame: SpriteFrame): void {
+    setAnimationFrames(spriteFrames: readonly SpriteFrame[]): void {
+        if (spriteFrames.length < 3) {
+            throw new Error(`Cat level ${this.level} requires two idle frames and one fall frame.`);
+        }
+        this.animationFrames = spriteFrames;
+        this.frameMode = 'idle';
         const config = getFruitConfig(this.level);
         const graphics = this.node.getComponent(Graphics);
         if (graphics) {
             graphics.clear();
         }
 
-        let visual = this.node.getChildByName('PaperFruitVisual');
+        let visual = this.node.getChildByName('CatVisual');
         if (!visual) {
-            visual = new Node('PaperFruitVisual');
+            visual = new Node('CatVisual');
             visual.layer = this.node.layer;
             visual.setParent(this.node);
             visual.addComponent(UITransform);
             visual.addComponent(Sprite);
         }
-        const visualSize = config.radius * 2.08;
+        // The visible alpha circle now exactly matches the physical collider.
+        const visualSize = config.radius * 2 / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
         const sprite = visual.getComponent(Sprite)!;
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        sprite.spriteFrame = spriteFrame;
+        sprite.spriteFrame = spriteFrames[0];
         visual.getComponent(UITransform)?.setContentSize(visualSize, visualSize);
-        this.drawFruitOutline(config.radius);
+        this.clearFruitOutline();
+        this.startIdleFrameAnimation();
     }
 
-    private drawFruitOutline(radius: number): void {
-        let ring = this.node.getChildByName('FruitOutline');
-        if (!ring) {
-            ring = new Node('FruitOutline');
-            ring.layer = this.node.layer;
-            ring.setParent(this.node);
-            ring.addComponent(UITransform);
-            ring.addComponent(Graphics);
+    private clearFruitOutline(): void {
+        const ring = this.node.getChildByName('FruitOutline');
+        ring?.getComponent(Graphics)?.clear();
+        if (ring) {
+            ring.active = false;
         }
-        ring.active = true;
-        ring.setSiblingIndex(this.node.children.length - 1);
-        ring.getComponent(UITransform)?.setContentSize(radius * 2.08, radius * 2.08);
-        const graphics = ring.getComponent(Graphics)!;
-        graphics.clear();
-        graphics.strokeColor = new Color(75, 43, 32, 255);
-        graphics.lineWidth = Math.max(4, radius * 0.055);
-        graphics.circle(0, 0, radius * 0.985);
-        graphics.stroke();
-        graphics.strokeColor = new Color(255, 242, 214, 185);
-        graphics.lineWidth = Math.max(1.5, radius * 0.016);
-        graphics.circle(0, 0, radius * 0.93);
-        graphics.stroke();
     }
 
     playDropAnimation(): void {
-        const visual = this.node.getChildByName('PaperFruitVisual');
-        if (!visual) return;
-        Tween.stopAllByTarget(visual);
-        visual.setScale(0.82, 0.82, 1);
-        tween(visual).to(0.14, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        this.hasPhysicalContact = false;
+        this.lowSpeedSeconds = 0;
+        this.frameMode = 'fall';
+        this.stopFrameAnimation();
+        this.showFrame(2);
     }
 
     playCollisionAnimation(): void {
-        const visual = this.node.getChildByName('PaperFruitVisual');
-        if (!visual) return;
-        Tween.stopAllByTarget(visual);
-        visual.setScale(0.96, 1.03, 1);
-        tween(visual).to(0.08, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' }).start();
+        this.frameMode = 'idle';
+        this.startIdleFrameAnimation();
     }
 
-    playMergeReveal(chainDepth: number): void {
-        const visual = this.node.getChildByName('PaperFruitVisual');
-        if (!visual) return;
-        Tween.stopAllByTarget(visual);
-        visual.setScale(0.36, 0.18, 1);
-        tween(visual)
-            .to(0.13, { scale: new Vec3(1.08, 0.82, 1) }, { easing: 'quadOut' })
-            .to(chainDepth >= 2 ? 0.18 : 0.13, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
-            .start();
+    playMergeReveal(): void {
+        this.frameMode = 'idle';
+        this.stopFrameAnimation();
+        this.showFrame(1);
+        this.scheduleOnce(this.startIdleFrameAnimation, 0.18);
     }
 
     stopVisualAnimations(): void {
-        const visual = this.node.getChildByName('PaperFruitVisual');
-        if (visual) {
-            Tween.stopAllByTarget(visual);
-            visual.setScale(1, 1, 1);
+        this.stopFrameAnimation();
+    }
+
+    resumeIdleAnimation(): void {
+        if (this.frameMode === 'fall') {
+            this.showFrame(2);
+        } else {
+            this.startIdleFrameAnimation();
+        }
+    }
+
+    private readonly startIdleFrameAnimation = (): void => {
+        if (!this.node.isValid || this.mergeLocked || this.animationFrames.length < 2) {
+            return;
+        }
+        this.stopFrameAnimation();
+        this.idleFrameIndex = this.level % 2;
+        this.showFrame(this.idleFrameIndex);
+        this.schedule(this.advanceIdleFrame, 0.9 + (this.level % 3) * 0.1);
+    };
+
+    private readonly advanceIdleFrame = (): void => {
+        this.idleFrameIndex = (this.idleFrameIndex + 1) % 2;
+        this.showFrame(this.idleFrameIndex);
+    };
+
+    private stopFrameAnimation(): void {
+        this.unschedule(this.advanceIdleFrame);
+        this.unschedule(this.startIdleFrameAnimation);
+    }
+
+    private showFrame(index: number): void {
+        const sprite = this.node.getChildByName('CatVisual')?.getComponent(Sprite);
+        const frame = this.animationFrames[index];
+        if (sprite && frame?.isValid) {
+            sprite.spriteFrame = frame;
         }
     }
 
@@ -213,17 +282,6 @@ export class FruitBody extends Component {
 
         if (graphics) {
             graphics.clear();
-            graphics.fillColor = new Color(
-                config.color.r,
-                config.color.g,
-                config.color.b,
-                255,
-            );
-            graphics.strokeColor = new Color(255, 255, 255, 220);
-            graphics.lineWidth = 4;
-            graphics.circle(0, 0, config.radius);
-            graphics.fill();
-            graphics.stroke();
         }
 
         const collider = this.node.getComponent(CircleCollider2D);
@@ -257,6 +315,14 @@ export class FruitBody extends Component {
     ): void => {
         if (this.mergeLocked) {
             return;
+        }
+
+        this.hasPhysicalContact = true;
+
+        // The falling frame describes the airborne state, so any first
+        // physical contact (floor, wall or another cat) ends it.
+        if (this.frameMode === 'fall') {
+            this.playCollisionAnimation();
         }
 
         const other = otherCollider.node.getComponent(FruitBody);

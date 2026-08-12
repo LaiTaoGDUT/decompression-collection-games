@@ -7,6 +7,7 @@ import {
     Graphics,
     HorizontalTextAlignment,
     Label,
+    Mask,
     Node,
     Sprite,
     SpriteFrame,
@@ -23,19 +24,19 @@ const { ccclass } = _decorator;
 export type GameCardClickHandler = (manifest: GameManifest) => void;
 
 const COLORS = {
-    surface: new Color(255, 239, 205, 255),
-    mutedSurface: new Color(218, 234, 221, 255),
-    border: new Color(174, 145, 110, 255),
-    primary: new Color(54, 42, 34, 255),
-    secondary: new Color(108, 94, 81, 255),
-    action: new Color(63, 107, 78, 255),
-    disabled: new Color(184, 180, 169, 255),
+    surface: new Color(241, 135, 84, 255),
+    mutedSurface: new Color(250, 218, 176, 178),
+    border: new Color(255, 255, 255, 196),
+    primary: new Color(255, 255, 255, 255),
+    secondary: new Color(255, 247, 231, 235),
+    action: new Color(205, 79, 47, 255),
+    disabled: new Color(215, 185, 157, 255),
     brass: new Color(169, 133, 77, 255),
     sage: new Color(113, 131, 117, 255),
     coral: new Color(238, 133, 103, 255),
     butter: new Color(246, 199, 84, 255),
-    paper: new Color(255, 247, 226, 255),
-    shadow: new Color(58, 48, 38, 35),
+    paper: new Color(255, 246, 224, 255),
+    shadow: new Color(129, 61, 33, 72),
 };
 
 type CardMode = 'game' | 'coming-soon';
@@ -47,16 +48,15 @@ export class GameCardView extends Component {
     private clickHandler?: GameCardClickHandler;
     private mode: CardMode = 'game';
     private cardWidth = 323;
-    private cardHeight = 430;
+    private cardHeight = 410;
     private coverRoot?: Node;
     private coverSprite?: Sprite;
     private cardSurface?: Graphics;
+    private titleOverlay?: Graphics;
     private actionBackground?: Graphics;
     private decorRoot?: Node;
     private ownedCoverFrame?: SpriteFrame;
     private coverLoadToken = 0;
-    private idleScoreText = '';
-
     protected onLoad(): void {
         this.node.on(Button.EventType.CLICK, this.handleClick, this);
         this.ensureStructure();
@@ -71,25 +71,25 @@ export class GameCardView extends Component {
 
     bind(
         manifest: GameManifest,
-        highScore: number | undefined,
+        _highScore: number | undefined,
         clickHandler: GameCardClickHandler,
     ): void {
         this.ensureStructure();
+        this.requireLabel('DescriptionLabel').node.active = true;
         this.mode = 'game';
         this.manifest = manifest;
         this.clickHandler = clickHandler;
         this.node.name = `GameCard-${manifest.id}`;
         this.requireLabel('NameLabel').string = manifest.name;
-        this.requireLabel('DescriptionLabel').string = manifest.description;
-        this.idleScoreText = highScore === undefined
-            ? '尚无记录 · 等你来挑战'
-            : `最高分 ${Math.max(0, Math.floor(highScore))}`;
-        this.requireLabel('ScoreLabel').string = this.idleScoreText;
-        this.configureBadge('PAPER MERGE');
-        this.setIdle();
+        this.requireLabel('DescriptionLabel').string = '';
+        this.requireLabel('ScoreLabel').string = '';
+        this.requireLabel('ScoreLabel').node.active = false;
+        this.requireActionLabel().string = '开始游戏';
+        this.configureBadge('');
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(false);
+        this.setIdle();
         this.loadCover(manifest.cover);
     }
 
@@ -101,12 +101,14 @@ export class GameCardView extends Component {
         this.coverLoadToken += 1;
         this.releaseOwnedCoverFrame();
         this.node.name = 'ComingSoonCard';
-        this.requireLabel('NameLabel').string = '更多游戏';
-        this.requireLabel('DescriptionLabel').string = '下一件解压展品正在制作中';
-        this.requireLabel('ScoreLabel').string = '敬请期待';
+        this.requireLabel('NameLabel').string = '敬请期待';
+        this.requireLabel('DescriptionLabel').string = '';
+        this.requireLabel('DescriptionLabel').node.active = false;
+        this.requireLabel('ScoreLabel').string = '';
+        this.requireLabel('ScoreLabel').node.active = false;
         this.requireActionNode().active = false;
         this.requireButton().interactable = false;
-        this.configureBadge('NEXT EXHIBIT');
+        this.configureBadge('');
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(true);
@@ -115,7 +117,7 @@ export class GameCardView extends Component {
     setCardSize(width: number, height: number): void {
         this.ensureStructure();
         this.cardWidth = Math.max(240, width);
-        this.cardHeight = Math.max(360, height);
+        this.cardHeight = Math.max(350, height);
         this.node.getComponent(UITransform)?.setContentSize(
             this.cardWidth,
             this.cardHeight,
@@ -123,25 +125,30 @@ export class GameCardView extends Component {
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(this.mode === 'coming-soon');
-        this.requireActionNode().active = false;
+        this.requireActionNode().active = this.mode === 'game' && (this.manifest?.enabled ?? false);
+        if (this.mode === 'game') {
+            this.drawActionBackground(!(this.manifest?.enabled ?? false));
+        }
     }
 
     setLoading(): void {
         if (this.mode !== 'game') {
             return;
         }
-        this.requireLabel('ScoreLabel').string = '正在打开这件展品…';
+        this.requireActionLabel().string = '正在进入…';
         this.requireButton().interactable = false;
-        this.requireActionNode().active = false;
+        this.requireActionNode().active = true;
+        this.drawActionBackground(true);
     }
 
     setEnterFailed(): void {
         if (this.mode !== 'game') {
             return;
         }
-        this.requireLabel('ScoreLabel').string = '进入失败 · 点击卡片重试';
+        this.requireActionLabel().string = '重试';
         this.requireButton().interactable = true;
-        this.requireActionNode().active = false;
+        this.requireActionNode().active = true;
+        this.drawActionBackground();
     }
 
     setIdle(): void {
@@ -149,9 +156,12 @@ export class GameCardView extends Component {
             return;
         }
         const enabled = this.manifest?.enabled ?? false;
-        this.requireActionNode().active = false;
-        this.requireLabel('ScoreLabel').string = enabled ? this.idleScoreText : '暂未开放';
+        this.requireActionNode().active = enabled;
+        this.requireActionLabel().string = enabled ? '开始游戏' : '暂未开放';
+        this.requireLabel('ScoreLabel').string = '';
+        this.requireLabel('ScoreLabel').node.active = false;
         this.requireButton().interactable = enabled;
+        this.drawActionBackground(!enabled);
     }
 
     private ensureStructure(): void {
@@ -201,16 +211,50 @@ export class GameCardView extends Component {
             this.coverRoot.addComponent(Graphics);
         }
 
-        let artwork = this.coverRoot.getChildByName('CoverArtwork');
+        let coverClip = this.coverRoot.getChildByName('CoverClip');
+        if (!coverClip) {
+            coverClip = new Node('CoverClip');
+            coverClip.layer = parentLayer;
+            this.coverRoot.addChild(coverClip);
+            coverClip.addComponent(UITransform);
+            const mask = coverClip.addComponent(Mask);
+            mask.type = Mask.Type.GRAPHICS_STENCIL;
+        }
+
+        let artwork = coverClip.getChildByName('CoverArtwork')
+            ?? this.coverRoot.getChildByName('CoverArtwork');
         if (!artwork) {
             artwork = new Node('CoverArtwork');
             artwork.layer = parentLayer;
-            this.coverRoot.addChild(artwork);
+            coverClip.addChild(artwork);
             artwork.addComponent(UITransform);
             const sprite = artwork.addComponent(Sprite);
             sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        } else if (artwork.parent !== coverClip) {
+            artwork.setParent(coverClip);
         }
         this.coverSprite = artwork.getComponent(Sprite) ?? undefined;
+
+        let titleOverlay = this.node.getChildByName('TitleOverlay');
+        if (!titleOverlay) {
+            titleOverlay = new Node('TitleOverlay');
+            titleOverlay.layer = parentLayer;
+            this.node.addChild(titleOverlay);
+            titleOverlay.addComponent(UITransform);
+            titleOverlay.addComponent(Graphics);
+        }
+        const nameLabelIndex = this.node.children.indexOf(this.requireLabel('NameLabel').node);
+        titleOverlay.setSiblingIndex(Math.max(1, nameLabelIndex));
+        this.titleOverlay = titleOverlay.getComponent(Graphics) ?? undefined;
+
+        let nameShadow = this.node.getChildByName('NameShadow');
+        if (!nameShadow) {
+            nameShadow = new Node('NameShadow');
+            nameShadow.layer = parentLayer;
+            this.node.addChild(nameShadow);
+            nameShadow.addComponent(UITransform);
+            nameShadow.addComponent(Label);
+        }
 
         this.ensureLabel('ScoreLabel');
         let action = this.node.getChildByName('ActionBackground');
@@ -264,39 +308,61 @@ export class GameCardView extends Component {
 
     private layoutChildren(): void {
         const halfHeight = this.cardHeight / 2;
-        const innerWidth = this.cardWidth - 48;
-        const coverHeight = Math.min(206, innerWidth * 0.75);
-        const coverY = halfHeight - 24 - coverHeight / 2;
+        const innerWidth = this.mode === 'game' ? this.cardWidth : this.cardWidth - 16;
+        const coverHeight = this.mode === 'coming-soon'
+            ? Math.min(220, innerWidth * 0.72)
+            : Math.min(314, innerWidth * 0.972);
+        const coverTopInset = this.mode === 'game' ? 0 : 8;
+        const coverY = halfHeight - coverTopInset - coverHeight / 2;
 
         if (this.coverRoot) {
             this.coverRoot.setPosition(0, coverY);
             this.coverRoot.getComponent(UITransform)?.setContentSize(innerWidth, coverHeight);
-            const artwork = this.coverRoot.getChildByName('CoverArtwork');
-            artwork?.setPosition(0, 0);
-            artwork?.getComponent(UITransform)?.setContentSize(
-                innerWidth - 8,
-                coverHeight - 8,
+            const coverClip = this.coverRoot.getChildByName('CoverClip');
+            coverClip?.setPosition(0, 0);
+            coverClip?.getComponent(UITransform)?.setContentSize(
+                innerWidth,
+                coverHeight,
             );
+            const maskGraphics = coverClip?.getComponent(Graphics);
+            maskGraphics?.clear();
+            if (maskGraphics) {
+                maskGraphics.roundRect(
+                    -innerWidth / 2,
+                    -coverHeight / 2,
+                    innerWidth,
+                    coverHeight,
+                    24,
+                );
+                maskGraphics.fill();
+            }
+            const artwork = this.coverSprite?.node;
+            artwork?.setPosition(0, 0);
+            this.layoutCoverArtwork(innerWidth, coverHeight);
         }
 
-        this.layoutLabel('NameLabel', -innerWidth / 2, halfHeight - 254, innerWidth, 40);
-        this.layoutLabel('DescriptionLabel', -innerWidth / 2, halfHeight - 302, innerWidth, 52);
-        this.layoutLabel('ScoreLabel', -innerWidth / 2, halfHeight - 350, innerWidth, 28);
+        const coverBottom = coverY - coverHeight / 2;
+        const nameY = this.mode === 'coming-soon' ? -68 : coverBottom + 34;
+        const descriptionY = this.mode === 'coming-soon' ? -halfHeight + 59 : -halfHeight + 88;
+        this.layoutLabel('NameLabel', 0, nameY, innerWidth - 24, 44, 0.5);
+        this.layoutLabel('DescriptionLabel', 0, descriptionY, innerWidth - 32, 30, 0.5);
         const action = this.requireActionNode();
-        action.setPosition(0, -halfHeight + 53);
-        action.getComponent(UITransform)?.setContentSize(innerWidth, 58);
+        action.setPosition(0, -halfHeight + 39);
+        action.getComponent(UITransform)?.setContentSize(this.cardWidth - 28, 56);
         const actionLabel = action.getChildByName('ActionLabel');
         actionLabel?.setPosition(0, 0);
-        actionLabel?.getComponent(UITransform)?.setContentSize(innerWidth, 38);
+        actionLabel?.getComponent(UITransform)?.setContentSize(this.cardWidth - 28, 38);
 
         if (this.decorRoot) {
             this.decorRoot.setPosition(0, 0);
             this.decorRoot.getComponent(UITransform)?.setContentSize(this.cardWidth, this.cardHeight);
             const badge = this.decorRoot.getChildByName('GenreBadge');
-            badge?.setPosition(-innerWidth / 2 + 61, coverY + coverHeight / 2 - 18);
-            badge?.getComponent(UITransform)?.setContentSize(122, 28);
+            badge?.setPosition(innerWidth / 2 - 30, coverY + coverHeight / 2 - 28);
+            badge?.getComponent(UITransform)?.setContentSize(30, 30);
             this.drawDecor();
         }
+        this.drawTitleOverlay();
+        this.raiseCardContent();
     }
 
     private layoutLabel(
@@ -314,17 +380,21 @@ export class GameCardView extends Component {
         transform?.setAnchorPoint(anchorX, 0.5);
 
         if (name === 'NameLabel') {
-            label.fontSize = 31;
+            label.fontSize = this.mode === 'coming-soon' ? 27 : 28;
             label.lineHeight = 38;
-            label.color = COLORS.primary;
+            label.color = Color.WHITE;
+            label.horizontalAlign = HorizontalTextAlignment.CENTER;
+            this.layoutNameShadow(label, x, y, width, height, anchorX);
         } else if (name === 'DescriptionLabel') {
-            label.fontSize = 20;
-            label.lineHeight = 25;
+            label.fontSize = this.mode === 'coming-soon' ? 18 : 16;
+            label.lineHeight = 22;
             label.color = COLORS.secondary;
+            label.horizontalAlign = HorizontalTextAlignment.CENTER;
         } else if (name === 'ScoreLabel') {
-            label.fontSize = 18;
-            label.lineHeight = 26;
-            label.color = COLORS.secondary;
+            label.fontSize = 17;
+            label.lineHeight = 24;
+            label.color = Color.WHITE;
+            label.horizontalAlign = HorizontalTextAlignment.CENTER;
         } else {
             label.fontSize = 24;
             label.lineHeight = 34;
@@ -333,7 +403,46 @@ export class GameCardView extends Component {
         }
         label.verticalAlign = VerticalTextAlignment.CENTER;
         label.overflow = Label.Overflow.SHRINK;
-        label.enableWrapText = name === 'DescriptionLabel';
+        label.enableWrapText = false;
+    }
+
+    private layoutNameShadow(
+        source: Label,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        anchorX: number,
+    ): void {
+        const shadow = this.node.getChildByName('NameShadow')?.getComponent(Label);
+        if (!shadow) {
+            return;
+        }
+        shadow.string = source.string;
+        shadow.node.active = source.node.active;
+        shadow.node.setPosition(x + 1, y - 2);
+        shadow.node.getComponent(UITransform)?.setContentSize(width, height);
+        shadow.node.getComponent(UITransform)?.setAnchorPoint(anchorX, 0.5);
+        shadow.fontSize = source.fontSize;
+        shadow.lineHeight = source.lineHeight;
+        shadow.color = new Color(126, 54, 31, 170);
+        shadow.horizontalAlign = HorizontalTextAlignment.CENTER;
+        shadow.verticalAlign = VerticalTextAlignment.CENTER;
+        shadow.overflow = Label.Overflow.SHRINK;
+        shadow.enableWrapText = false;
+    }
+
+    private raiseCardContent(): void {
+        const moveToTop = (node: Node | undefined): void => {
+            if (node?.isValid) {
+                node.setSiblingIndex(this.node.children.length - 1);
+            }
+        };
+        moveToTop(this.titleOverlay?.node);
+        moveToTop(this.decorRoot);
+        moveToTop(this.node.getChildByName('NameShadow') ?? undefined);
+        moveToTop(this.node.getChildByName('NameLabel') ?? undefined);
+        moveToTop(this.requireActionNode());
     }
 
     private drawCard(): void {
@@ -345,53 +454,40 @@ export class GameCardView extends Component {
         const height = this.cardHeight;
         graphics.node.getComponent(UITransform)?.setContentSize(width, height);
         graphics.clear();
-        graphics.fillColor = COLORS.shadow;
-        graphics.roundRect(-width / 2 + 7, -height / 2 - 10, width, height, 24);
-        graphics.fill();
-        graphics.fillColor = this.mode === 'coming-soon' ? COLORS.mutedSurface : COLORS.surface;
-        graphics.strokeColor = COLORS.border;
-        graphics.lineWidth = 3;
-        graphics.roundRect(-width / 2, -height / 2, width, height, 24);
-        graphics.fill();
-        graphics.stroke();
-        graphics.fillColor = this.mode === 'coming-soon' ? COLORS.sage : COLORS.coral;
-        graphics.roundRect(-width / 2, -height / 2, 10, height, 5);
-        graphics.fill();
-        graphics.fillColor = new Color(255, 255, 255, 135);
-        graphics.roundRect(-width / 2 + 14, -height / 2 + 14, width - 28, 170, 18);
-        graphics.fill();
-
-        if (this.mode === 'coming-soon') {
-            const innerWidth = width - 48;
-            const coverHeight = Math.min(206, innerWidth * 0.75);
-            const coverY = height / 2 - 24 - coverHeight / 2;
-            graphics.fillColor = new Color(195, 220, 202, 255);
-            graphics.roundRect(
-                -innerWidth / 2,
-                coverY - coverHeight / 2,
-                innerWidth,
-                coverHeight,
-                18,
-            );
+        if (this.mode === 'game') {
+            graphics.fillColor = COLORS.surface;
+            graphics.strokeColor = new Color(211, 77, 47, 255);
+            graphics.lineWidth = 2;
+            graphics.roundRect(-width / 2, -height / 2, width, height, 25);
             graphics.fill();
-            graphics.strokeColor = new Color(100, 132, 109, 170);
-            graphics.lineWidth = 3;
-            graphics.circle(0, coverY, 54);
             graphics.stroke();
-            graphics.fillColor = new Color(255, 252, 245, 255);
-            graphics.roundRect(-44, coverY - 30, 66, 82, 10);
+        } else {
+            graphics.fillColor = COLORS.mutedSurface;
+            graphics.roundRect(-width / 2, -height / 2, width, height, 24);
             graphics.fill();
-            graphics.fillColor = COLORS.butter;
-            graphics.roundRect(-18, coverY - 48, 66, 82, 10);
-            graphics.fill();
-            graphics.strokeColor = COLORS.primary;
-            graphics.lineWidth = 4;
-            graphics.moveTo(-3, coverY - 8);
-            graphics.lineTo(31, coverY - 8);
-            graphics.moveTo(14, coverY - 25);
-            graphics.lineTo(14, coverY + 9);
+            graphics.strokeColor = new Color(255, 255, 255, 92);
+            graphics.lineWidth = 2;
+            graphics.roundRect(-width / 2, -height / 2, width, height, 24);
             graphics.stroke();
         }
+    }
+
+    private layoutCoverArtwork(viewportWidth: number, viewportHeight: number): void {
+        const artwork = this.coverSprite?.node;
+        if (!artwork) {
+            return;
+        }
+        const texture = this.ownedCoverFrame?.texture;
+        const sourceWidth = texture?.width ?? viewportWidth;
+        const sourceHeight = texture?.height ?? viewportHeight;
+        const scale = Math.max(
+            viewportWidth / Math.max(1, sourceWidth),
+            viewportHeight / Math.max(1, sourceHeight),
+        );
+        artwork.getComponent(UITransform)?.setContentSize(
+            sourceWidth * scale,
+            sourceHeight * scale,
+        );
     }
 
     private drawCoverFallback(comingSoon: boolean): void {
@@ -404,47 +500,13 @@ export class GameCardView extends Component {
         const width = transform.contentSize.width;
         const height = transform.contentSize.height;
         graphics.clear();
-        graphics.fillColor = new Color(58, 48, 38, 30);
-        graphics.roundRect(-width / 2 + 4, -height / 2 - 6, width, height, 18);
-        graphics.fill();
-        graphics.fillColor = comingSoon ? new Color(230, 233, 224, 255) : COLORS.paper;
-        graphics.strokeColor = COLORS.border;
-        graphics.lineWidth = 3;
-        graphics.roundRect(-width / 2, -height / 2, width, height, 18);
-        graphics.fill();
-        graphics.stroke();
-
-        if (comingSoon) {
-            graphics.strokeColor = new Color(113, 131, 117, 130);
-            graphics.lineWidth = 2;
-            graphics.circle(0, 0, 56);
-            graphics.stroke();
-            graphics.fillColor = new Color(255, 252, 245, 255);
-            graphics.roundRect(-42, -32, 66, 82, 10);
-            graphics.fill();
-            graphics.strokeColor = COLORS.sage;
-            graphics.roundRect(-42, -32, 66, 82, 10);
-            graphics.stroke();
-            graphics.fillColor = COLORS.butter;
-            graphics.roundRect(-20, -50, 66, 82, 10);
-            graphics.fill();
-            graphics.strokeColor = COLORS.primary;
-            graphics.roundRect(-20, -50, 66, 82, 10);
-            graphics.stroke();
-            graphics.lineWidth = 4;
-            graphics.moveTo(-4, -10);
-            graphics.lineTo(26, -10);
-            graphics.moveTo(11, -25);
-            graphics.lineTo(11, 5);
-            graphics.stroke();
-            graphics.fillColor = COLORS.brass;
-            graphics.circle(66, 44, 5);
-            graphics.fill();
-            graphics.fillColor = COLORS.coral;
-            graphics.circle(-70, -42, 5);
+        if (!comingSoon) {
+            graphics.fillColor = COLORS.paper;
+            graphics.roundRect(-width / 2, -height / 2, width, height, 24);
             graphics.fill();
         }
-        const artwork = root.getChildByName('CoverArtwork');
+
+        const artwork = this.coverSprite?.node;
         if (artwork) {
             artwork.active = !comingSoon;
         }
@@ -460,15 +522,24 @@ export class GameCardView extends Component {
         const width = transform.contentSize.width;
         const height = transform.contentSize.height;
         graphics.clear();
-        graphics.fillColor = new Color(58, 48, 38, 34);
-        graphics.roundRect(-width / 2 + 3, -height / 2 - 4, width, height, 16);
+        graphics.fillColor = disabled
+            ? new Color(170, 139, 112, 72)
+            : new Color(145, 50, 25, 82);
+        graphics.roundRect(-width / 2 + 1, -height / 2 - 4, width - 2, height, 24);
         graphics.fill();
-        graphics.fillColor = disabled ? COLORS.disabled : COLORS.action;
-        graphics.roundRect(-width / 2, -height / 2, width, height, 16);
+        graphics.fillColor = disabled ? COLORS.disabled : new Color(255, 238, 207, 255);
+        graphics.strokeColor = disabled ? COLORS.disabled : new Color(250, 253, 255, 255);
+        graphics.lineWidth = 2;
+        graphics.roundRect(-width / 2, -height / 2, width, height, 24);
         graphics.fill();
-        graphics.fillColor = new Color(255, 255, 255, 40);
-        graphics.roundRect(-width / 2 + 4, 4, width - 8, height / 2 - 8, 10);
-        graphics.fill();
+        graphics.stroke();
+        if (!disabled) {
+            graphics.fillColor = new Color(255, 255, 255, 112);
+            graphics.roundRect(-width / 2 + 8, 5, width - 16, 14, 7);
+            graphics.fill();
+        }
+        const label = this.requireActionLabel();
+        label.color = disabled ? COLORS.secondary : COLORS.action;
     }
 
     private drawDecor(): void {
@@ -476,28 +547,58 @@ export class GameCardView extends Component {
         if (!graphics) {
             return;
         }
+        graphics.clear();
+        if (this.mode === 'coming-soon') {
+            graphics.fillColor = new Color(255, 248, 230, 236);
+            graphics.strokeColor = new Color(255, 255, 255, 238);
+            graphics.lineWidth = 3;
+            graphics.roundRect(-92, 8, 184, 100, 40);
+            graphics.fill();
+            graphics.stroke();
+            graphics.strokeColor = new Color(231, 131, 75, 235);
+            graphics.lineWidth = 9;
+            graphics.moveTo(-58, 58);
+            graphics.lineTo(-26, 58);
+            graphics.moveTo(-42, 42);
+            graphics.lineTo(-42, 74);
+            graphics.stroke();
+            graphics.fillColor = new Color(231, 131, 75, 235);
+            graphics.circle(37, 68, 10);
+            graphics.fill();
+            graphics.fillColor = new Color(244, 176, 93, 235);
+            graphics.circle(62, 44, 10);
+            graphics.fill();
+        }
+    }
+
+    private drawTitleOverlay(): void {
+        const graphics = this.titleOverlay;
+        if (!graphics) {
+            return;
+        }
+        graphics.node.getComponent(UITransform)?.setContentSize(this.cardWidth, this.cardHeight);
+        graphics.clear();
+        if (this.mode !== 'game') {
+            return;
+        }
         const halfWidth = this.cardWidth / 2;
         const halfHeight = this.cardHeight / 2;
-        graphics.clear();
-        graphics.fillColor = this.mode === 'coming-soon'
-            ? new Color(201, 232, 213, 245)
-            : new Color(249, 199, 84, 245);
-        graphics.roundRect(-halfWidth + 24, halfHeight - 55, 122, 30, 8);
-        graphics.fill();
-        graphics.fillColor = new Color(255, 255, 255, 110);
-        graphics.moveTo(halfWidth - 62, halfHeight - 24);
-        graphics.lineTo(halfWidth - 24, halfHeight - 24);
-        graphics.lineTo(halfWidth - 24, halfHeight - 62);
-        graphics.close();
-        graphics.fill();
-        graphics.strokeColor = new Color(122, 101, 74, 70);
-        graphics.lineWidth = 2;
-        graphics.moveTo(halfWidth - 62, halfHeight - 24);
-        graphics.lineTo(halfWidth - 24, halfHeight - 62);
-        graphics.stroke();
-        graphics.fillColor = this.mode === 'coming-soon' ? COLORS.brass : COLORS.sage;
-        graphics.circle(halfWidth - 28, -halfHeight + 30, 5);
-        graphics.fill();
+        const coverBottom = halfHeight - Math.min(314, this.cardWidth * 0.972);
+        const gradientHeight = 66;
+        const bandHeight = 6;
+        const bandCount = gradientHeight / bandHeight;
+        for (let index = 0; index < bandCount; index += 1) {
+            const progress = index / (bandCount - 1);
+            const alpha = Math.round(224 - progress * 202);
+            graphics.fillColor = new Color(225, 104, 58, alpha);
+            graphics.rect(
+                -halfWidth,
+                coverBottom + index * bandHeight,
+                this.cardWidth,
+                bandHeight + 1,
+            );
+            graphics.fill();
+        }
     }
 
     private configureBadge(text: string): void {
@@ -506,9 +607,9 @@ export class GameCardView extends Component {
             return;
         }
         label.string = text;
-        label.fontSize = 13;
+        label.fontSize = 16;
         label.lineHeight = 20;
-        label.color = COLORS.primary;
+        label.color = Color.WHITE;
     }
 
     private loadCover(path: string): void {
@@ -531,8 +632,15 @@ export class GameCardView extends Component {
             frame.texture = texture;
             this.ownedCoverFrame = frame;
             if (this.coverSprite) {
+                if (this.mode === 'coming-soon') {
+                    this.coverRoot?.getComponent(Graphics)?.clear();
+                }
                 this.coverSprite.spriteFrame = frame;
                 this.coverSprite.node.active = true;
+                const viewport = this.coverRoot?.getComponent(UITransform)?.contentSize;
+                if (viewport) {
+                    this.layoutCoverArtwork(viewport.width, viewport.height);
+                }
                 this.startCoverMotion();
             }
         });

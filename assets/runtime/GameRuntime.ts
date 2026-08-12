@@ -30,15 +30,24 @@ export interface SceneDirector {
     ): void;
 }
 
+export interface LoadingModel {
+    readonly gameName?: string;
+    readonly cover?: string;
+    readonly message: string;
+    readonly progress: number;
+}
+
 export interface LoadingPresenter {
-    show(message: string): void;
+    show(model: LoadingModel): void;
+    updateProgress(message: string, progress: number): void;
     hide(): void;
 }
 
 export interface GameErrorModel {
+    readonly title?: string;
     readonly message: string;
-    readonly retry: () => Promise<void>;
-    readonly returnToLobby: () => Promise<void>;
+    readonly retry?: () => Promise<void>;
+    readonly returnToLobby?: () => Promise<void>;
 }
 
 export interface GameErrorPresenter {
@@ -136,10 +145,12 @@ export class GameRuntime {
         return this.completedResult;
     }
 
-    async enterLobby(): Promise<void> {
-        return this.runWithLoading('正在进入大厅…', async () => {
+    async enterLobby(showLoading = true): Promise<void> {
+        if (!showLoading) {
             await this.enterLobbyScene();
-        });
+            return;
+        }
+        await this.enterLobbyScene();
     }
 
     private async enterLobbyScene(): Promise<void> {
@@ -388,7 +399,12 @@ export class GameRuntime {
     };
 
     private async performEnter(manifest: GameManifest): Promise<void> {
-        this.loading?.show(`正在加载${manifest.name}…`);
+        this.loading?.show({
+            gameName: manifest.name,
+            cover: manifest.cover,
+            message: '即将进入游戏',
+            progress: 0.04,
+        });
         const session = new GameSession(manifest.id);
         this.session = session;
         this.manifest = manifest;
@@ -400,6 +416,7 @@ export class GameRuntime {
 
             try {
                 bundle = await this.assets.loadBundle(manifest.bundle);
+                this.loading?.updateProgress('游戏资源准备完成', 0.28);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('bundle', manifest.id, cause);
             }
@@ -408,6 +425,7 @@ export class GameRuntime {
 
             try {
                 scene = await this.loadAndLaunchBundleScene(bundle, manifest.scene);
+                this.loading?.updateProgress('正在布置游戏场景', 0.58);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('scene', manifest.id, cause);
             }
@@ -417,6 +435,7 @@ export class GameRuntime {
             try {
                 entry = this.loader.locateEntry(scene, manifest);
                 this.entry = entry;
+                this.loading?.updateProgress('正在启动游戏组件', 0.7);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('entry', manifest.id, cause);
             }
@@ -438,12 +457,17 @@ export class GameRuntime {
                     this.timeouts.initializeMs,
                     'game initialization',
                 );
+                this.loading?.updateProgress('马上就可以开始啦', 0.92);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('initialize', manifest.id, cause);
             }
 
             try {
                 entry.begin();
+                this.loading?.updateProgress('加载完成', 1);
+                await new Promise<void>((resolve) => {
+                    setTimeout(resolve, 180);
+                });
             } catch (cause: unknown) {
                 throw new GameRuntimeError('begin', manifest.id, cause);
             }
@@ -503,8 +527,6 @@ export class GameRuntime {
                 new Error(`Cannot exit from state "${state}".`),
             );
         }
-
-        this.loading?.show('正在返回大厅…');
 
         try {
             if (state === 'playing') {
@@ -574,21 +596,6 @@ export class GameRuntime {
             }
 
             throw error;
-        } finally {
-            this.loading?.hide();
-        }
-    }
-
-    private async runWithLoading<TValue>(
-        message: string,
-        operation: () => Promise<TValue>,
-    ): Promise<TValue> {
-        this.loading?.show(message);
-
-        try {
-            return await operation();
-        } finally {
-            this.loading?.hide();
         }
     }
 
@@ -613,7 +620,8 @@ export class GameRuntime {
             error,
         });
         this.errors?.show(Object.freeze({
-            message: `加载${manifest.name}失败\n${failure.message}\n诊断码：${failure.diagnosticId}`,
+            title: '游戏加载失败',
+            message: `${failure.message}\n诊断码：${failure.diagnosticId}`,
             retry: this.retryFailedGame,
             returnToLobby: this.returnToLobbyAfterError,
         }));

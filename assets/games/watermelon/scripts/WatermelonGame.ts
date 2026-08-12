@@ -43,6 +43,7 @@ import type {
     StorageService,
 } from '../../../services/storage/StorageService';
 import {
+    CAT_TOKEN_VISIBLE_DIAMETER_RATIO,
     FRUIT_LEVELS,
     configureFruitCatalog,
     getFruitConfig,
@@ -53,6 +54,7 @@ import { SingleContinueRule } from './WatermelonContinueRule';
 import {
     createStartedWatermelonSave,
     refreshCompletedWatermelonSave,
+    refreshWatermelonHighScore,
 } from './WatermelonSave';
 import { SinglePointerDropController } from './WatermelonInput';
 import { clampDropX, tryLockMergePair } from './WatermelonPhysicsRules';
@@ -75,6 +77,8 @@ import {
 
 const { ccclass } = _decorator;
 type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
+
+const NEXT_CAT_PREVIEW_SIZE = 64;
 
 export interface WatermelonGameServices {
     readonly feedback: FeedbackService;
@@ -116,7 +120,7 @@ export class DropGate {
     }
 }
 
-/** 合成大西瓜入口：本步只负责预览、瞄准和单次投放。 */
+/** 合成大胖橘入口：保留原合成物理规则并切换为圆猫主题。 */
 @ccclass('WatermelonGame')
 export class WatermelonGame extends Component implements MiniGame {
     private state: WatermelonState = 'idle';
@@ -124,9 +128,10 @@ export class WatermelonGame extends Component implements MiniGame {
     private fruitContainer?: Node;
     private dropPreview?: Node;
     private prefabs: Prefab[] = [];
-    private spriteFrames: SpriteFrame[] = [];
+    private spriteFrames: SpriteFrame[][] = [];
     private currentLevel = 0;
     private nextLevel = 0;
+    private activeDropSequenceId = 0;
     private aimX = 0;
     private readonly dropGate = new DropGate();
     private readonly pointer = new SinglePointerDropController();
@@ -135,6 +140,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private gameplay = DEFAULT_WATERMELON_GAMEPLAY_CONFIG;
     private gameEnding = false;
     private saveData?: GameSaveData;
+    private roundStartingHighScore = 0;
     private resultPersisted = false;
     private continueRule = new SingleContinueRule();
     private frozenResult?: WatermelonProgressSnapshot;
@@ -271,6 +277,7 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.state = 'playing';
+        this.resumeFruitVisualAnimations();
         this.context?.services.audio.resumeMusic();
     }
 
@@ -279,6 +286,7 @@ export class WatermelonGame extends Component implements MiniGame {
             throw new Error(`Cannot restart WatermelonGame from ${this.state}.`);
         }
 
+        this.persistHighScore(this.progress.snapshot.score, 'restart');
         this.state = 'playing';
         this.context?.services.audio.resumeMusic();
         this.resetRound();
@@ -306,6 +314,7 @@ export class WatermelonGame extends Component implements MiniGame {
             return;
         }
 
+        this.persistHighScore(this.progress.snapshot.score, 'exit');
         this.unscheduleAllCallbacks();
         this.fruitContainer?.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_MOVE, this.handleTouchMove, this);
@@ -356,39 +365,36 @@ export class WatermelonGame extends Component implements MiniGame {
         )));
     }
 
-    private loadFruitSpriteFrames(): Promise<SpriteFrame[]> {
+    private loadFruitSpriteFrames(): Promise<SpriteFrame[][]> {
         const bundle = assetManager.getBundle('game-watermelon');
 
         if (!bundle) {
             return Promise.reject(new Error('game-watermelon bundle is unavailable.'));
         }
 
-        return Promise.all(FRUIT_LEVELS.map((config) => new Promise<SpriteFrame>(
-            (resolve, reject) => {
-                bundle.load(
-                    config.sprite,
-                    Texture2D,
-                    (error, texture) => {
-                        if (error || !texture) {
-                            reject(new Error(
-                                `Fruit texture failed: ${config.sprite}. ${error?.message ?? 'Asset missing.'}`,
-                            ));
-                            return;
-                        }
-
-                        const spriteFrame = new SpriteFrame();
-                        spriteFrame.texture = texture;
-                        resolve(spriteFrame);
-                    },
-                );
-            },
+        return Promise.all(FRUIT_LEVELS.map((config) => Promise.all(
+            config.animationSprites.map((path) => new Promise<SpriteFrame>((resolve, reject) => {
+                bundle.load(path, Texture2D, (error, texture) => {
+                    if (error || !texture) {
+                        reject(new Error(
+                            `Cat animation texture failed: ${path}. ${error?.message ?? 'Asset missing.'}`,
+                        ));
+                        return;
+                    }
+                    const spriteFrame = new SpriteFrame();
+                    spriteFrame.texture = texture;
+                    resolve(spriteFrame);
+                });
+            })),
         )));
     }
 
     private destroyFruitSpriteFrames(frames = this.spriteFrames): void {
-        for (const spriteFrame of frames) {
-            if (spriteFrame.isValid) {
-                spriteFrame.destroy();
+        for (const animationFrames of frames) {
+            for (const spriteFrame of animationFrames) {
+                if (spriteFrame.isValid) {
+                    spriteFrame.destroy();
+                }
             }
         }
         if (frames === this.spriteFrames) {
@@ -397,7 +403,12 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     private clearFruitSpriteBindings(): void {
-        const owned = new Set(this.spriteFrames);
+        const owned = new Set<SpriteFrame>();
+        for (const animationFrames of this.spriteFrames) {
+            for (const spriteFrame of animationFrames) {
+                owned.add(spriteFrame);
+            }
+        }
         for (const sprite of this.node.getComponentsInChildren(Sprite)) {
             if (sprite.spriteFrame && owned.has(sprite.spriteFrame)) {
                 sprite.spriteFrame = null;
@@ -448,6 +459,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.cleanupTransientEffects();
         this.clearFruits();
         this.aimX = 0;
+        this.activeDropSequenceId = 0;
         this.currentLevel = chooseInitialFruitLevel(
             this.randomSource(),
             this.gameplay.initialSpawnWeights,
@@ -615,10 +627,12 @@ export class WatermelonGame extends Component implements MiniGame {
         const boardHeight = this.fruitContainer.getComponent(UITransform)
             ?.contentSize.height ?? 800;
         const droppedLevel = this.currentLevel;
+        this.activeDropSequenceId += 1;
         const dropped = this.spawnFruit(
             this.currentLevel,
             this.aimX,
             boardHeight / 2 - config.radius - 12,
+            this.activeDropSequenceId,
         );
         dropped.playDropAnimation();
         this.progress.recordSpawn(droppedLevel);
@@ -682,6 +696,19 @@ export class WatermelonGame extends Component implements MiniGame {
             0,
         );
         const y = (first.node.position.y + second.node.position.y) / 2;
+        const dropSequenceId = this.activeDropSequenceId;
+        const firstContinuesDrop = dropSequenceId > 0
+            && first.sourceDropSequenceId === dropSequenceId;
+        const secondContinuesDrop = dropSequenceId > 0
+            && second.sourceDropSequenceId === dropSequenceId;
+        const continuesCurrentDrop = firstContinuesDrop || secondContinuesDrop;
+        const dropMergeCount = continuesCurrentDrop
+            ? Math.max(
+                firstContinuesDrop ? first.sourceDropMergeCount : 0,
+                secondContinuesDrop ? second.sourceDropMergeCount : 0,
+            ) + 1
+            : 1;
+        const resultDropSequenceId = continuesCurrentDrop ? dropSequenceId : 0;
         this.scheduleOnce(() => {
             if (this.state !== 'playing'
                 || this.gameEnding
@@ -690,12 +717,17 @@ export class WatermelonGame extends Component implements MiniGame {
                 return;
             }
 
-            const chainDepth = Math.max(first.chainDepth, second.chainDepth) + 1;
             first.node.destroy();
             second.node.destroy();
-            const resultBody = this.spawnFruit(nextLevel, x, y, chainDepth);
-            const scoreEvent = this.progress.recordMerge(nextLevel, chainDepth);
-            resultBody.playMergeReveal(chainDepth);
+            const resultBody = this.spawnFruit(
+                nextLevel,
+                x,
+                y,
+                resultDropSequenceId,
+                dropMergeCount,
+            );
+            const scoreEvent = this.progress.recordMerge(nextLevel, dropMergeCount);
+            resultBody.playMergeReveal();
             this.spawnMergeFeedback(scoreEvent, x, y);
             this.updateProgress();
             this.showMergeFeedback(scoreEvent);
@@ -779,6 +811,25 @@ export class WatermelonGame extends Component implements MiniGame {
             this.saveData = refreshed;
         } catch (error: unknown) {
             console.error('[WatermelonGame] Final save failed.', error);
+        }
+    }
+
+    private persistHighScore(score: number, reason: 'score-update' | 'restart' | 'exit'): void {
+        if (!this.context || !this.saveData) {
+            return;
+        }
+
+        const safeScore = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
+        if (safeScore <= (this.saveData.highScore ?? 0)) {
+            return;
+        }
+
+        const refreshed = refreshWatermelonHighScore(this.saveData, safeScore);
+        try {
+            this.context.services.storage.writeGameData('watermelon', refreshed);
+            this.saveData = refreshed;
+        } catch (error: unknown) {
+            console.error(`[WatermelonGame] High score save failed during ${reason}.`, error);
         }
     }
 
@@ -871,7 +922,7 @@ export class WatermelonGame extends Component implements MiniGame {
         if (this.terminalActionPending) return;
         this.terminalActionPending = true;
         this.continueRule.decline();
-        this.setContinueOverlayBusy(true, '正在重新折好纸片…');
+        this.setContinueOverlayBusy(true, '正在安抚猫咪…');
         this.context?.services.feedback.play('uiButton');
         const result = this.completeFrozenRound('failure_restart');
         this.context?.requestRestart(result);
@@ -919,7 +970,7 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private completeFrozenRound(reason: string): GameResult {
         const snapshot = this.frozenResult ?? this.progress.snapshot;
-        const isNewRecord = snapshot.score > (this.saveData?.highScore ?? 0);
+        const isNewRecord = snapshot.score > this.roundStartingHighScore;
         this.persistCompletedResult(snapshot);
         if (isNewRecord) this.context?.services.feedback.play('record');
         return Object.freeze({
@@ -982,7 +1033,7 @@ export class WatermelonGame extends Component implements MiniGame {
         panelGraphics.stroke();
 
         this.createOverlayLabel(panel, 'Title', '再坚持一下？', 0, 242, 38);
-        this.createOverlayLabel(panel, 'Message', '看完视频，清除越线水果并继续本局', 0, 184, 24);
+        this.createOverlayLabel(panel, 'Message', '看完视频，清除越线猫咪并继续本局', 0, 184, 24);
         this.createOverlayLabel(panel, 'Status', '每局仅有一次续玩机会', 0, 139, 21);
         this.createOverlayButton(panel, 'ContinueButton', '看视频续玩', 0, 57, () => {
             void this.requestContinue();
@@ -1112,23 +1163,43 @@ export class WatermelonGame extends Component implements MiniGame {
         scoreNode.layer = container.layer;
         scoreNode.setParent(container);
         scoreNode.setPosition(x, y + 28);
-        scoreNode.addComponent(UITransform).setContentSize(180, 54);
+        const scoreWidth = event.isChain ? 270 : 180;
+        const scoreHeight = event.isChain ? 72 : 54;
+        scoreNode.addComponent(UITransform).setContentSize(scoreWidth, scoreHeight);
         const opacity = scoreNode.addComponent(UIOpacity);
-        const label = scoreNode.addComponent(Label);
+        const labelNode = new Node('ScoreLabel');
+        labelNode.layer = container.layer;
+        labelNode.setParent(scoreNode);
+        labelNode.addComponent(UITransform).setContentSize(scoreWidth - 20, scoreHeight - 8);
+        const label = labelNode.addComponent(Label);
         label.string = event.isChain ? `连锁×${event.chainDepth}  +${event.points}` : `+${event.points}`;
-        label.fontSize = event.isChain ? 25 : 29;
-        label.lineHeight = 38;
-        label.color = event.isMilestone
+        label.fontSize = event.isChain ? 38 : 29;
+        label.lineHeight = event.isChain ? 50 : 38;
+        label.isBold = event.isChain;
+        label.color = event.isChain
+            ? new Color(204, 76, 39, 255)
+            : event.isMilestone
             ? new Color(184, 46, 62, 255)
             : new Color(75, 43, 32, 255);
         label.horizontalAlign = 1;
         label.verticalAlign = 1;
         this.effectNodes.add(scoreNode);
-        tween(opacity).to(0.46, { opacity: 0 }).start();
-        tween(scoreNode)
-            .to(0.46, { position: new Vec3(x, y + 104, 0) }, { easing: 'quadOut' })
-            .call(() => this.releaseEffectNode(scoreNode))
-            .start();
+        const duration = event.isChain ? 0.78 : 0.46;
+        if (event.isChain) {
+            scoreNode.setScale(0.72, 0.72, 1);
+            tween(scoreNode)
+                .to(0.18, { scale: new Vec3(1.08, 1.08, 1) }, { easing: 'backOut' })
+                .to(0.12, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
+                .to(duration - 0.3, { position: new Vec3(x, y + 122, 0) }, { easing: 'quadOut' })
+                .call(() => this.releaseEffectNode(scoreNode))
+                .start();
+        } else {
+            tween(scoreNode)
+                .to(duration, { position: new Vec3(x, y + 104, 0) }, { easing: 'quadOut' })
+                .call(() => this.releaseEffectNode(scoreNode))
+                .start();
+        }
+        tween(opacity).delay(event.isChain ? 0.34 : 0).to(duration - (event.isChain ? 0.34 : 0), { opacity: 0 }).start();
 
         const tier = this.context?.services.deviceTier ?? 'medium';
         const particleCount = tier === 'low' ? 0 : tier === 'high' ? 8 : 4;
@@ -1189,6 +1260,12 @@ export class WatermelonGame extends Component implements MiniGame {
         }
     }
 
+    private resumeFruitVisualAnimations(): void {
+        for (const child of this.fruitContainer?.children ?? []) {
+            child.getComponent(FruitBody)?.resumeIdleAnimation();
+        }
+    }
+
     private recordPlayStart(): void {
         const storage = this.context?.services.storage;
 
@@ -1196,8 +1273,10 @@ export class WatermelonGame extends Component implements MiniGame {
             return;
         }
 
+        const previous = storage.getGameData('watermelon');
+        this.roundStartingHighScore = previous?.highScore ?? 0;
         this.saveData = createStartedWatermelonSave(
-            storage.getGameData('watermelon'),
+            previous,
             Date.now(),
         );
         try {
@@ -1212,7 +1291,8 @@ export class WatermelonGame extends Component implements MiniGame {
         level: number,
         x: number,
         y: number,
-        chainDepth = 0,
+        dropSequenceId = 0,
+        dropMergeCount = 0,
     ): FruitBody {
         const container = this.fruitContainer;
         const prefab = this.prefabs[level];
@@ -1235,9 +1315,9 @@ export class WatermelonGame extends Component implements MiniGame {
         // Prefabs carry their default serialized level, but the requested level
         // is the source of truth at runtime (including a just-created merge).
         body.level = level;
-        body.setChainDepth(chainDepth);
+        body.setDropChain(dropSequenceId, dropMergeCount);
         body.applyConfig();
-        body.setSpriteFrame(this.spriteFrames[level]);
+        body.setAnimationFrames(this.spriteFrames[level]);
         return body;
     }
 
@@ -1253,6 +1333,7 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private updateProgress(): void {
         const snapshot = this.progress.snapshot;
+        this.persistHighScore(snapshot.score, 'score-update');
         const label = this.node.getChildByName('ScoreLabel')?.getComponent(Label);
 
         if (label) {
@@ -1276,22 +1357,32 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         label.string = event.isMilestone
-            ? `新水果！${getFruitConfig(event.resultLevel).displayName}  +${event.points}`
+            ? `新猫咪！${getFruitConfig(event.resultLevel).displayName}  +${event.points}`
             : event.isChain
                 ? `连锁 ×${event.chainDepth}  +${event.points}`
                 : `合成 +${event.points}`;
+        label.fontSize = event.isChain ? 28 : 23;
+        label.lineHeight = event.isChain ? 38 : 33;
+        label.isBold = event.isChain;
+        label.color = event.isChain
+            ? new Color(184, 85, 35, 255)
+            : new Color(75, 43, 32, 230);
         this.scheduleOnce(() => {
             if (label.node.isValid && this.state === 'playing') {
                 label.string = '左右移动，松手投放';
+                label.fontSize = 23;
+                label.lineHeight = 33;
+                label.isBold = false;
+                label.color = new Color(75, 43, 32, 230);
             }
-        }, 0.8);
+        }, event.isChain ? 1.15 : 0.8);
     }
 
     private updateNextPreview(): void {
         const preview = this.node.getChildByName('NextFruitPreview');
 
         if (preview) {
-            this.drawFruitPreview(preview, this.nextLevel);
+            this.drawFruitPreview(preview, this.nextLevel, NEXT_CAT_PREVIEW_SIZE);
         }
     }
 
@@ -1354,9 +1445,13 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     /** Draw UI previews from the same catalog data as the physical fruit. */
-    private drawFruitPreview(preview: Node, level: number): void {
+    private drawFruitPreview(
+        preview: Node,
+        level: number,
+        fixedDisplaySize?: number,
+    ): void {
         const config = getFruitConfig(level);
-        const diameter = config.radius * 2;
+        const diameter = fixedDisplaySize ?? config.radius * 2;
         preview.getComponent(UITransform)?.setContentSize(diameter, diameter);
         const label = preview.getComponent(Label);
 
@@ -1380,22 +1475,21 @@ export class WatermelonGame extends Component implements MiniGame {
         const graphics = graphicsNode.getComponent(Graphics)
             ?? graphicsNode.addComponent(Graphics);
         graphics.clear();
-        let spriteNode = preview.getChildByName('PaperFruitPreview');
+        let spriteNode = preview.getChildByName('CatPreview');
         if (!spriteNode) {
-            spriteNode = new Node('PaperFruitPreview');
+            spriteNode = new Node('CatPreview');
             spriteNode.layer = preview.layer;
             spriteNode.setParent(preview);
             spriteNode.addComponent(UITransform);
             spriteNode.addComponent(Sprite);
         }
-        const previewSize = diameter * 1.04;
+        const previewSize = diameter / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
         const sprite = spriteNode.getComponent(Sprite)!;
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        sprite.spriteFrame = this.spriteFrames[level];
+        sprite.spriteFrame = this.spriteFrames[level]?.[0] ?? null;
         // Assigning a runtime-created SpriteFrame can restore raw texture size.
         // Re-assert the catalog size after the assignment.
         spriteNode.getComponent(UITransform)?.setContentSize(previewSize, previewSize);
-
         let ringNode = preview.getChildByName('FruitPreviewOutline');
         if (!ringNode) {
             ringNode = new Node('FruitPreviewOutline');
@@ -1404,18 +1498,9 @@ export class WatermelonGame extends Component implements MiniGame {
             ringNode.addComponent(UITransform);
             ringNode.addComponent(Graphics);
         }
-        ringNode.active = true;
+        ringNode.active = false;
         ringNode.setSiblingIndex(preview.children.length - 1);
         ringNode.getComponent(UITransform)?.setContentSize(previewSize, previewSize);
-        const ring = ringNode.getComponent(Graphics)!;
-        ring.clear();
-        ring.strokeColor = new Color(75, 43, 32, 255);
-        ring.lineWidth = Math.max(4, config.radius * 0.055);
-        ring.circle(0, 0, config.radius * 0.985);
-        ring.stroke();
-        ring.strokeColor = new Color(255, 242, 214, 185);
-        ring.lineWidth = Math.max(1.5, config.radius * 0.016);
-        ring.circle(0, 0, config.radius * 0.93);
-        ring.stroke();
+        ringNode.getComponent(Graphics)?.clear();
     }
 }

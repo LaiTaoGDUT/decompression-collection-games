@@ -23,22 +23,32 @@ export interface FruitLevelConfig {
     }>;
     readonly prefab: string;
     readonly sprite: string;
+    readonly animationSprites: readonly [string, string, string];
     readonly initialSpawn: boolean;
     readonly nextLevel?: number;
 }
 
+/** C6 sprites keep a two-pixel transparent gutter for safe texture filtering. */
+export const CAT_TOKEN_VISIBLE_DIAMETER_RATIO = 252 / 256;
+
 const DEFINITIONS = [
-    ['cherry', '樱桃', [245, 67, 74]],
-    ['strawberry', '草莓', [255, 96, 112]],
-    ['grape', '葡萄', [132, 81, 201]],
-    ['dekopon', '橘子', [255, 151, 52]],
-    ['orange', '橙子', [255, 181, 43]],
-    ['apple', '苹果', [238, 72, 63]],
-    ['pear', '梨', [189, 213, 77]],
-    ['peach', '桃子', [255, 155, 165]],
-    ['pineapple', '菠萝', [240, 190, 60]],
-    ['melon', '甜瓜', [126, 190, 84]],
-    ['watermelon', '西瓜', [62, 157, 82]],
+    ['cream-kitten', '小奶猫', [247, 221, 176], 'cherry'],
+    ['gray-tabby', '灰灰', [157, 164, 173], 'strawberry'],
+    ['calico', '三花猫', [224, 155, 85], 'grape'],
+    ['tuxedo', '奶牛猫', [62, 65, 74], 'dekopon'],
+    ['white-fluffy', '小白团', [244, 244, 238], 'orange'],
+    ['brown-tabby', '虎斑猫', [153, 104, 62], 'apple'],
+    ['siamese', '暹罗猫', [210, 185, 151], 'pear'],
+    ['golden-shorthair', '金渐层', [230, 169, 73], 'peach'],
+    ['silver-tabby', '银渐层', [151, 156, 165], 'pineapple'],
+    ['orange-tabby', '黑烟虎斑', [67, 65, 76], 'melon'],
+    ['fat-orange', '大胖橘', [235, 128, 28], 'watermelon'],
+] as const;
+
+/** Per-level pair with the smallest measured pixel delta among the old three idle frames. */
+const IDLE_FRAME_PAIRS = [
+    [1, 2], [1, 2], [1, 2], [1, 2], [2, 3], [2, 3],
+    [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
 ] as const;
 
 function createFruitCatalog(
@@ -46,8 +56,15 @@ function createFruitCatalog(
 ): readonly FruitLevelConfig[] {
     return Object.freeze(
     DEFINITIONS.map((definition, level) => {
-        const [id, displayName, rgb] = definition;
+        const [id, displayName, rgb, legacyPrefabId] = definition;
         const physics = gameplay.fruits[level];
+        const assetPrefix = `visual/cats/frames-c6/cat-${level < 10 ? '0' : ''}${level}-${id}`;
+        const [firstIdle, secondIdle] = IDLE_FRAME_PAIRS[level];
+        const animationSprites = Object.freeze([
+            `${assetPrefix}-idle-${firstIdle}-c6-v1/texture`,
+            `${assetPrefix}-idle-${secondIdle}-c6-v1/texture`,
+            `${assetPrefix}-fall-c6-v1/texture`,
+        ]) as readonly [string, string, string];
         return Object.freeze({
             level,
             id,
@@ -62,10 +79,11 @@ function createFruitCatalog(
             angularDamping: gameplay.angularDamping,
             score: gameplay.mergeScores[level],
             color: Object.freeze({ r: rgb[0], g: rgb[1], b: rgb[2] }),
-            prefab: `prefabs/fruits/fruit-${level < 10 ? '0' : ''}${level}-${id}`,
-            // The generated paper fruit PNGs are imported as Texture2D assets.
-            // WatermelonGame owns the runtime SpriteFrames created from them.
-            sprite: `visual/fruits/fruit-${level < 10 ? '0' : ''}${level}-${id}-w1-v1/texture`,
+            // Keep the existing serialized physics prefabs for save and scene
+            // compatibility; only the runtime visual catalog changes to cats.
+            prefab: `prefabs/fruits/fruit-${level < 10 ? '0' : ''}${level}-${legacyPrefabId}`,
+            sprite: animationSprites[0],
+            animationSprites,
             initialSpawn: level <= 4,
             ...(level < DEFINITIONS.length - 1 ? { nextLevel: level + 1 } : {}),
         });
@@ -120,7 +138,9 @@ export function validateFruitCatalog(
             || fruit.angularDamping < 0
             || fruit.score <= 0
             || !fruit.prefab
-            || !fruit.sprite) {
+            || !fruit.sprite
+            || fruit.animationSprites.length !== 3
+            || fruit.animationSprites.some((path) => !path)) {
             errors.push(`Fruit level ${index} has incomplete physical data.`);
         }
 

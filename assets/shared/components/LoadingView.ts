@@ -1,61 +1,420 @@
 import {
     _decorator,
+    assetManager,
     BlockInputEvents,
+    Color,
     Component,
+    Graphics,
+    HorizontalTextAlignment,
     Label,
+    Mask,
+    Node,
+    Sprite,
+    SpriteFrame,
+    Texture2D,
+    tween,
+    Tween,
+    UITransform,
+    VerticalTextAlignment,
+    view,
     Widget,
 } from 'cc';
-import type { LoadingPresenter } from '../../runtime/GameRuntime';
+import type {
+    LoadingModel,
+    LoadingPresenter,
+} from '../../runtime/GameRuntime';
 
 const { ccclass } = _decorator;
 
-/** 常驻场景切换遮罩；只负责提示文字、显隐和拦截输入。 */
+const COLORS = {
+    ink: new Color(33, 42, 76, 255),
+    secondary: new Color(105, 117, 151, 255),
+    blue: new Color(49, 112, 242, 255),
+    cyan: new Color(72, 205, 242, 255),
+    pink: new Color(241, 105, 174, 255),
+    panel: new Color(250, 252, 255, 248),
+};
+
+/** 持久化游戏加载页：展示当前游戏封面与真实分阶段进度。 */
 @ccclass('LoadingView')
 export class LoadingView extends Component implements LoadingPresenter {
     private messageLabel?: Label;
+    private percentLabel?: Label;
+    private nameLabel?: Label;
+    private coverSprite?: Sprite;
+    private ownedCoverFrame?: SpriteFrame;
+    private progress = 0;
+    private progressTweenState?: { value: number };
+    private progressLoadToken = 0;
+    private realProgress = 0;
 
     protected onLoad(): void {
-        this.messageLabel = this.node.getChildByName('LoadingMessage')
-            ?.getComponent(Label) ?? undefined;
-
         if (!this.node.getComponent(BlockInputEvents)) {
             this.node.addComponent(BlockInputEvents);
         }
-
         const widget = this.node.getComponent(Widget) ?? this.node.addComponent(Widget);
-        widget.isAlignLeft = true;
-        widget.isAlignRight = true;
-        widget.isAlignTop = true;
-        widget.isAlignBottom = true;
-        widget.left = 0;
-        widget.right = 0;
-        widget.top = 0;
-        widget.bottom = 0;
+        widget.isAlignLeft = widget.isAlignRight = true;
+        widget.isAlignTop = widget.isAlignBottom = true;
+        widget.left = widget.right = widget.top = widget.bottom = 0;
         widget.updateAlignment();
-
+        this.ensureStructure();
         this.hide();
     }
 
-    show(message: string): void {
-        if (!this.messageLabel) {
-            this.messageLabel = this.node.getChildByName('LoadingMessage')
-                ?.getComponent(Label) ?? undefined;
-        }
-
-        if (this.messageLabel) {
-            this.messageLabel.string = message;
-            this.messageLabel.node.active = true;
-        }
-
+    show(model: LoadingModel): void {
         this.node.active = true;
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
+        this.node.getComponent(Widget)?.updateAlignment();
+        this.ensureStructure();
+        this.layoutAndDraw();
+        if (this.nameLabel) {
+            this.nameLabel.string = model.gameName ?? '休闲解压小游戏大全';
+        }
+        this.progress = 0;
+        this.realProgress = Math.max(0, Math.min(1, model.progress));
+        this.setMessage(model.message);
+        this.setProgress(Math.min(0.08, Math.max(0.03, model.progress)), false);
+        this.unschedule(this.advanceFakeProgress);
+        this.schedule(this.advanceFakeProgress, 0.06);
+        this.loadCover(model.cover);
+    }
+
+    updateProgress(message: string, progress: number): void {
+        if (!this.node.active) return;
+        this.setMessage(message);
+        this.realProgress = Math.max(this.realProgress, Math.min(1, Math.max(0, progress)));
+        if (this.realProgress >= 1) {
+            this.unschedule(this.advanceFakeProgress);
+            this.setProgress(1, true);
+        }
     }
 
     hide(): void {
-        if (this.messageLabel) {
-            this.messageLabel.node.active = false;
-        }
-
+        this.progressLoadToken += 1;
+        this.unschedule(this.advanceFakeProgress);
+        this.stopProgressTween();
+        this.releaseCoverFrame();
         this.node.active = false;
+    }
+
+    protected onDestroy(): void {
+        this.hide();
+    }
+
+    private ensureStructure(): void {
+        const layer = this.node.layer;
+        const ensureGraphics = (name: string, parent = this.node): Node => {
+            let child = parent.getChildByName(name);
+            if (!child) {
+                child = new Node(name);
+                child.layer = layer;
+                child.setParent(parent);
+                child.addComponent(UITransform);
+                child.addComponent(Graphics);
+            }
+            return child;
+        };
+        const ensureLabel = (name: string): Label => {
+            let child = this.node.getChildByName(name);
+            if (!child) {
+                child = new Node(name);
+                child.layer = layer;
+                child.setParent(this.node);
+                child.addComponent(UITransform);
+                child.addComponent(Label);
+            }
+            return child.getComponent(Label)!;
+        };
+
+        ensureGraphics('LoadingBackdrop');
+        ensureGraphics('LoadingPanel');
+        const coverFrame = ensureGraphics('LoadingCoverFrame');
+        let clip = coverFrame.getChildByName('CoverClip');
+        if (!clip) {
+            clip = new Node('CoverClip');
+            clip.layer = layer;
+            clip.setParent(coverFrame);
+            clip.addComponent(UITransform);
+            const mask = clip.addComponent(Mask);
+            mask.type = Mask.Type.GRAPHICS_STENCIL;
+        }
+        let artwork = clip.getChildByName('CoverArtwork');
+        if (!artwork) {
+            artwork = new Node('CoverArtwork');
+            artwork.layer = layer;
+            artwork.setParent(clip);
+            artwork.addComponent(UITransform);
+            const sprite = artwork.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        }
+        this.coverSprite = artwork.getComponent(Sprite) ?? undefined;
+
+        ensureGraphics('ProgressTrack');
+        ensureGraphics('ProgressFill');
+        this.nameLabel = ensureLabel('LoadingGameName');
+        this.messageLabel = this.node.getChildByName('LoadingMessage')
+            ?.getComponent(Label) ?? ensureLabel('LoadingMessage');
+        this.percentLabel = ensureLabel('LoadingPercent');
+        const tip = ensureLabel('LoadingTip');
+        tip.string = '正在为你准备轻松时刻';
+
+        const order = [
+            'LoadingBackdrop',
+            'LoadingPanel',
+            'LoadingCoverFrame',
+            'LoadingGameName',
+            'LoadingMessage',
+            'LoadingPercent',
+            'ProgressTrack',
+            'ProgressFill',
+            'LoadingTip',
+        ];
+        order.forEach((name, index) => this.node.getChildByName(name)?.setSiblingIndex(index));
+        const legacyError = this.node.getChildByName('StartupErrorLabel');
+        if (legacyError) legacyError.active = false;
+    }
+
+    private layoutAndDraw(): void {
+        const size = this.node.getComponent(UITransform)?.contentSize;
+        const visibleSize = view.getVisibleSize();
+        const width = Math.max(750, visibleSize.width, size?.width ?? 750);
+        const height = Math.max(1334, visibleSize.height, size?.height ?? 1334);
+        this.node.getComponent(UITransform)?.setContentSize(width, height);
+        const panelWidth = Math.min(640, width - 64);
+        const panelHeight = 790;
+        const coverWidth = panelWidth - 64;
+        const coverHeight = coverWidth * 0.75;
+
+        const backdrop = this.graphics('LoadingBackdrop');
+        backdrop.node.getComponent(UITransform)?.setContentSize(width, height);
+        backdrop.clear();
+        // 使用中性半透明遮罩保留大厅背景，不再绘制整屏蓝色渐变。
+        backdrop.fillColor = new Color(18, 22, 32, 92);
+        backdrop.rect(-width / 2, -height / 2, width, height);
+        backdrop.fill();
+
+        const panel = this.graphics('LoadingPanel');
+        panel.node.setPosition(0, 0);
+        panel.node.getComponent(UITransform)?.setContentSize(panelWidth, panelHeight);
+        panel.clear();
+        panel.fillColor = new Color(8, 22, 74, 74);
+        panel.roundRect(-panelWidth / 2 + 8, -panelHeight / 2 - 14, panelWidth - 16, panelHeight, 42);
+        panel.fill();
+        panel.fillColor = COLORS.panel;
+        panel.strokeColor = new Color(255, 255, 255, 210);
+        panel.lineWidth = 3;
+        panel.roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 42);
+        panel.fill();
+        panel.stroke();
+
+        const frame = this.graphics('LoadingCoverFrame');
+        // Keep a visible breathing space between the panel top and cover.
+        frame.node.setPosition(0, 155);
+        frame.node.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
+        frame.clear();
+        frame.fillColor = new Color(221, 233, 249, 255);
+        frame.roundRect(-coverWidth / 2, -coverHeight / 2, coverWidth, coverHeight, 28);
+        frame.fill();
+        const clip = frame.node.getChildByName('CoverClip');
+        clip?.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
+        const mask = clip?.getComponent(Graphics);
+        mask?.clear();
+        if (mask) {
+            mask.fillColor = Color.WHITE;
+            mask.roundRect(-coverWidth / 2, -coverHeight / 2, coverWidth, coverHeight, 28);
+            mask.fill();
+        }
+        this.layoutCover(coverWidth, coverHeight);
+
+        this.styleLabel('LoadingGameName', 40, COLORS.ink, 0, -112, panelWidth - 70, 58, true);
+        const trackWidth = panelWidth - 96;
+        const trackLeft = -trackWidth / 2;
+        this.styleLabel(
+            'LoadingMessage',
+            23,
+            COLORS.secondary,
+            trackLeft,
+            -194,
+            trackWidth - 90,
+            42,
+            false,
+            HorizontalTextAlignment.LEFT,
+        );
+        this.styleLabel('LoadingPercent', 23, COLORS.blue, panelWidth / 2 - 72, -194, 72, 42, true);
+        this.styleLabel('LoadingTip', 19, new Color(121, 133, 165, 210), 0, -308, panelWidth - 90, 32, false);
+
+        const track = this.graphics('ProgressTrack');
+        track.node.setPosition(0, -254);
+        track.node.getComponent(UITransform)?.setContentSize(trackWidth, 32);
+        track.clear();
+        track.fillColor = new Color(198, 211, 231, 255);
+        track.roundRect(-trackWidth / 2, -12, trackWidth, 24, 12);
+        track.fill();
+        this.drawProgressFill();
+    }
+
+    private readonly advanceFakeProgress = (): void => {
+        if (!this.node.active || this.realProgress >= 1 || this.progress >= 0.99) {
+            this.unschedule(this.advanceFakeProgress);
+            return;
+        }
+        const increment = this.progress < 0.45
+            ? 0.012
+            : this.progress < 0.75
+                ? 0.008
+                : this.progress < 0.9
+                    ? 0.006
+                    : this.progress < 0.97
+                        ? 0.003
+                        : 0.001;
+        this.progress = Math.min(0.99, this.progress + increment);
+        this.drawProgressFill();
+    };
+
+    private setMessage(message: string): void {
+        if (this.messageLabel) this.messageLabel.string = message;
+    }
+
+    private setProgress(value: number, animated: boolean): void {
+        const target = Math.max(this.progress, Math.min(1, Math.max(0, value)));
+        if (!animated) {
+            this.progress = target;
+            this.drawProgressFill();
+            return;
+        }
+        const fillNode = this.node.getChildByName('ProgressFill');
+        if (!fillNode) return;
+        Tween.stopAllByTarget(fillNode);
+        const start = this.progress;
+        const state = { value: start };
+        this.progressTweenState = state;
+        tween(state)
+            .to(0.24, { value: target }, {
+                easing: 'quadOut',
+                onUpdate: () => {
+                    this.progress = state.value;
+                    this.drawProgressFill();
+                },
+            })
+            .call(() => {
+                this.progress = target;
+                if (this.progressTweenState === state) {
+                    this.progressTweenState = undefined;
+                }
+                this.drawProgressFill();
+            })
+            .start();
+    }
+
+    private drawProgressFill(): void {
+        const width = Math.max(
+            750,
+            view.getVisibleSize().width,
+            this.node.getComponent(UITransform)?.contentSize.width ?? 750,
+        );
+        const panelWidth = Math.min(640, width - 64);
+        const trackWidth = panelWidth - 96;
+        const fill = this.graphics('ProgressFill');
+        fill.node.setPosition(0, -254);
+        fill.node.getComponent(UITransform)?.setContentSize(trackWidth, 32);
+        fill.clear();
+        const inset = 3;
+        const available = trackWidth - inset * 2;
+        const filled = available * this.progress;
+        if (filled > 0.5) {
+            fill.fillColor = COLORS.blue;
+            fill.roundRect(-trackWidth / 2 + inset, -9, filled, 18, 9);
+            fill.fill();
+            if (filled > 28) {
+                fill.fillColor = new Color(100, 220, 247, 175);
+                fill.roundRect(-trackWidth / 2 + inset + 5, 1, Math.max(0, filled - 10), 3, 1.5);
+                fill.fill();
+            }
+        }
+        if (this.percentLabel) this.percentLabel.string = `${Math.round(this.progress * 100)}%`;
+    }
+
+    private loadCover(path?: string): void {
+        const token = ++this.progressLoadToken;
+        this.releaseCoverFrame();
+        if (!path) return;
+        const bundle = assetManager.getBundle('lobby');
+        if (!bundle) return;
+        bundle.load(path, Texture2D, (error, texture) => {
+            if (token !== this.progressLoadToken || !this.node.isValid || error || !texture) return;
+            const frame = new SpriteFrame();
+            frame.texture = texture;
+            this.ownedCoverFrame = frame;
+            if (this.coverSprite) {
+                this.coverSprite.spriteFrame = frame;
+                this.coverSprite.node.active = true;
+                const viewport = this.node.getChildByName('LoadingCoverFrame')?.getComponent(UITransform)?.contentSize;
+                if (viewport) this.layoutCover(viewport.width, viewport.height);
+            }
+        });
+    }
+
+    private layoutCover(viewportWidth: number, viewportHeight: number): void {
+        const node = this.coverSprite?.node;
+        if (!node) return;
+        const texture = this.ownedCoverFrame?.texture;
+        const sourceWidth = texture?.width ?? viewportWidth;
+        const sourceHeight = texture?.height ?? viewportHeight;
+        const scale = Math.max(viewportWidth / sourceWidth, viewportHeight / sourceHeight);
+        node.getComponent(UITransform)?.setContentSize(sourceWidth * scale, sourceHeight * scale);
+    }
+
+    private releaseCoverFrame(): void {
+        if (this.coverSprite) {
+            this.coverSprite.spriteFrame = null;
+            this.coverSprite.node.active = false;
+        }
+        this.ownedCoverFrame?.destroy();
+        this.ownedCoverFrame = undefined;
+    }
+
+    private stopProgressTween(): void {
+        if (this.progressTweenState) {
+            Tween.stopAllByTarget(this.progressTweenState);
+            this.progressTweenState = undefined;
+        }
+    }
+
+    private styleLabel(
+        name: string,
+        fontSize: number,
+        color: Color,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        bold: boolean,
+        align = HorizontalTextAlignment.CENTER,
+    ): void {
+        const label = this.node.getChildByName(name)?.getComponent(Label);
+        if (!label) return;
+        label.node.setPosition(x, y);
+        const transform = label.node.getComponent(UITransform);
+        transform?.setContentSize(width, height);
+        // A left-aligned label must also use a left anchor; otherwise its box
+        // expands half a width to the left of the progress track start.
+        transform?.setAnchorPoint(
+            align === HorizontalTextAlignment.LEFT ? 0 : 0.5,
+            0.5,
+        );
+        label.fontSize = fontSize;
+        label.lineHeight = Math.round(fontSize * 1.35);
+        label.color = color;
+        label.isBold = bold;
+        label.horizontalAlign = align;
+        label.verticalAlign = VerticalTextAlignment.CENTER;
+        label.overflow = Label.Overflow.SHRINK;
+        label.enableWrapText = false;
+    }
+
+    private graphics(name: string): Graphics {
+        const graphics = this.node.getChildByName(name)?.getComponent(Graphics);
+        if (!graphics) throw new Error(`LoadingView is missing ${name}.`);
+        return graphics;
     }
 }

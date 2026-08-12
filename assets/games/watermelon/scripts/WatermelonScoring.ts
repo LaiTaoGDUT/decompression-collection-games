@@ -14,7 +14,10 @@ export interface WatermelonMergeScoreEvent {
     readonly snapshot: WatermelonProgressSnapshot;
 }
 
-/** 分数只由实际合成结果产生；连锁和里程碑只改变表现，不加倍率。 */
+/**
+ * 分数只由实际合成结果产生。同一次投放的第一次合成为普通得分，
+ * 只有该合成结果继续合成才从连锁 ×2 开始展示；连锁和里程碑不加倍率。
+ */
 export class WatermelonRoundProgress {
     private currentScore = 0;
     private currentMaxLevel = 0;

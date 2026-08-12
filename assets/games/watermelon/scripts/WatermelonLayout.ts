@@ -64,7 +64,7 @@ export function calculateWatermelonLayout(
     });
 }
 
-/** W1 纸片果摊 HUD 与常见竖屏比例适配，不包含玩法状态。 */
+/** C1 猫咪屋 HUD 与常见竖屏比例适配，不包含玩法状态。 */
 @ccclass('WatermelonLayout')
 export class WatermelonLayout extends Component {
     private ownedBackgroundFrame?: SpriteFrame;
@@ -253,7 +253,7 @@ export class WatermelonLayout extends Component {
 
         return new Promise((resolve) => {
             bundle.load(
-                'visual/backgrounds/w1-paper-fruit-stand-bg-v1/texture',
+                'visual/backgrounds/c1-cat-room-bg-v1/texture',
                 Texture2D,
                 (error, texture) => {
                     if (!error && texture && this.node.isValid) {
@@ -276,7 +276,7 @@ export class WatermelonLayout extends Component {
                         const size = this.node.getComponent(UITransform)?.contentSize;
                         this.resizeBackground(size?.width ?? 750, size?.height ?? 1334);
                     } else if (error) {
-                        console.warn('[WatermelonLayout] Paper background failed to load.', error);
+                        console.warn('[WatermelonLayout] Cat-room background failed to load.', error);
                     }
                     resolve();
                 },
@@ -356,11 +356,11 @@ export class WatermelonLayout extends Component {
     }
 
     private applyLabelStyles(): void {
-        this.styleLabel('Title', 36, new Color(61, 33, 24, 255), '合成大西瓜');
+        this.styleLabel('Title', 36, new Color(61, 33, 24, 255), '合成大胖橘');
         this.styleLabel('ScoreLabel', 30, new Color(75, 43, 32, 255));
         this.styleLabel('HighScoreLabel', 27, new Color(75, 43, 32, 255));
         this.styleLabel('NextLabel', 23, new Color(75, 43, 32, 255), '下一个');
-        this.styleLabel('DropZone', 21, new Color(75, 43, 32, 210), '拖动纸片，松手投放');
+        this.styleLabel('DropZone', 21, new Color(75, 43, 32, 210), '拖动猫咪，松手投放');
         this.styleLabel('Instruction', 23, new Color(75, 43, 32, 230), '左右移动，松手投放');
     }
 

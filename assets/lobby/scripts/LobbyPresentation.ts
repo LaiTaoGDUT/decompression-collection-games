@@ -3,35 +3,29 @@ import {
     Color,
     find,
     Graphics,
-    HorizontalTextAlignment,
-    Label,
     Node,
     Sprite,
     SpriteFrame,
     Texture2D,
     UITransform,
-    VerticalTextAlignment,
     view,
     Widget,
 } from 'cc';
 import { calculateLobbyBackgroundCover } from './LobbyVisualLayout';
 
-const BACKGROUND_ASSET_PATH = 'visual/backgrounds/l1-soft-light-gallery-v1/texture';
-const BACKGROUND_FALLBACK = new Color(241, 238, 232, 255);
-const PRIMARY_TEXT = new Color(54, 42, 34, 255);
-const SECONDARY_TEXT = new Color(108, 94, 81, 255);
-const BRASS_ACCENT = new Color(169, 133, 77, 255);
-const SAGE_ACCENT = new Color(100, 132, 109, 255);
-const CORAL_ACCENT = new Color(238, 133, 103, 255);
-const BUTTER_ACCENT = new Color(246, 199, 84, 255);
+const BACKGROUND_ASSET_PATH = 'visual/backgrounds/lobby-arcade-warm-rays-v3/texture';
+const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
+const BACKGROUND_FALLBACK = new Color(246, 173, 106, 255);
 
-/** Builds the L1 lobby as a warm independent game gallery. */
+/** Builds a light, playful mini-game lobby while keeping the L1 palette. */
 export class LobbyPresentation {
     private backgroundRoot: Node | null = null;
     private fallbackNode: Node | null = null;
     private artworkNode: Node | null = null;
     private atmosphereNode: Node | null = null;
+    private brandEmblemNode: Node | null = null;
     private ownedBackgroundFrame?: SpriteFrame;
+    private ownedBrandFrame?: SpriteFrame;
     private mounted = false;
 
     mount(contentRoot: Node): void {
@@ -54,6 +48,7 @@ export class LobbyPresentation {
         this.layoutBackground();
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.loadBackgroundArtwork();
+        this.loadBrandArtwork();
     }
 
     unmount(): void {
@@ -67,14 +62,23 @@ export class LobbyPresentation {
         if (sprite) {
             sprite.spriteFrame = null;
         }
+        const brandSprite = this.brandEmblemNode?.isValid
+            ? this.brandEmblemNode.getComponent(Sprite)
+            : null;
+        if (brandSprite) {
+            brandSprite.spriteFrame = null;
+        }
         if (this.ownedBackgroundFrame?.isValid) {
             this.ownedBackgroundFrame.destroy();
         }
         this.ownedBackgroundFrame = undefined;
+        this.ownedBrandFrame?.destroy();
+        this.ownedBrandFrame = undefined;
         this.backgroundRoot = null;
         this.fallbackNode = null;
         this.artworkNode = null;
         this.atmosphereNode = null;
+        this.brandEmblemNode = null;
         this.mounted = false;
     }
 
@@ -127,99 +131,26 @@ export class LobbyPresentation {
         contentRoot.addChild(brand);
         brand.setSiblingIndex(0);
         const transform = brand.addComponent(UITransform);
-        transform.setContentSize(670, 190);
+        transform.setContentSize(670, 330);
         transform.setAnchorPoint(0.5, 1);
         const widget = brand.addComponent(Widget);
         widget.isAlignTop = true;
         widget.isAlignLeft = true;
         widget.isAlignRight = true;
-        widget.top = 28;
+        widget.top = 18;
         widget.left = 40;
         widget.right = 40;
         widget.updateAlignment();
 
-        const plaque = brand.addComponent(Graphics);
-        plaque.fillColor = new Color(255, 252, 245, 224);
-        plaque.roundRect(-335, -178, 670, 168, 28);
-        plaque.fill();
-        plaque.strokeColor = new Color(207, 191, 166, 210);
-        plaque.lineWidth = 3;
-        plaque.roundRect(-335, -178, 670, 168, 28);
-        plaque.stroke();
-        plaque.fillColor = new Color(58, 48, 38, 25);
-        plaque.roundRect(-327, -185, 654, 18, 9);
-        plaque.fill();
-        plaque.fillColor = CORAL_ACCENT;
-        plaque.roundRect(-335, -178, 10, 168, 5);
-        plaque.fill();
+        const emblem = new Node('BrandEmblem');
+        emblem.layer = brand.layer;
+        brand.addChild(emblem);
+        emblem.setPosition(0, -150);
+        emblem.addComponent(UITransform).setContentSize(450, 300);
+        const emblemSprite = emblem.addComponent(Sprite);
+        emblemSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.brandEmblemNode = emblem;
 
-        this.drawBrandMark(brand);
-        this.createLabel(brand, 'CollectionNo', 'COLLECTION 01  ·  PLAY GALLERY', 15, 24, BRASS_ACCENT, -252, -42, 440);
-        this.createLabel(brand, 'BrandTitle', '解压小游戏展厅', 44, 56, PRIMARY_TEXT, -252, -88, 500);
-        this.createLabel(brand, 'BrandSubtitle', '挑一件展品，给情绪松松绑', 21, 30, SECONDARY_TEXT, -252, -138, 510);
-
-        const dots = new Node('BrandDots');
-        dots.layer = brand.layer;
-        brand.addChild(dots);
-        dots.setPosition(238, -139);
-        const graphics = dots.addComponent(Graphics);
-        [CORAL_ACCENT, BUTTER_ACCENT, SAGE_ACCENT].forEach((color, index) => {
-            graphics.fillColor = color;
-            graphics.circle(index * 24, 0, 6);
-            graphics.fill();
-        });
-    }
-
-    private drawBrandMark(parent: Node): void {
-        const markNode = new Node('CollectionMark');
-        markNode.layer = parent.layer;
-        parent.addChild(markNode);
-        markNode.setPosition(-286, -94);
-        const graphics = markNode.addComponent(Graphics);
-        graphics.fillColor = new Color(249, 199, 84, 255);
-        graphics.roundRect(-30, -30, 60, 60, 16);
-        graphics.fill();
-        graphics.strokeColor = PRIMARY_TEXT;
-        graphics.lineWidth = 5;
-        graphics.moveTo(-15, 14);
-        graphics.lineTo(-15, -13);
-        graphics.bezierCurveTo(-15, 5, 15, 5, 15, -13);
-        graphics.stroke();
-        graphics.fillColor = CORAL_ACCENT;
-        graphics.circle(-15, 14, 4);
-        graphics.fill();
-        graphics.fillColor = SAGE_ACCENT;
-        graphics.circle(15, -13, 4);
-        graphics.fill();
-    }
-
-    private createLabel(
-        parent: Node,
-        name: string,
-        text: string,
-        fontSize: number,
-        lineHeight: number,
-        color: Color,
-        x: number,
-        y: number,
-        width: number,
-    ): void {
-        const node = new Node(name);
-        node.layer = parent.layer;
-        parent.addChild(node);
-        node.setPosition(x, y);
-        const transform = node.addComponent(UITransform);
-        transform.setContentSize(width, lineHeight);
-        transform.setAnchorPoint(0, 0.5);
-        const label = node.addComponent(Label);
-        label.string = text;
-        label.fontSize = fontSize;
-        label.lineHeight = lineHeight;
-        label.color = color;
-        label.horizontalAlign = HorizontalTextAlignment.LEFT;
-        label.verticalAlign = VerticalTextAlignment.CENTER;
-        label.overflow = Label.Overflow.SHRINK;
-        label.enableWrapText = false;
     }
 
     private loadBackgroundArtwork(): void {
@@ -244,6 +175,29 @@ export class LobbyPresentation {
             this.ownedBackgroundFrame = spriteFrame;
             sprite.spriteFrame = spriteFrame;
             this.layoutBackground();
+        });
+    }
+
+    private loadBrandArtwork(): void {
+        const bundle = assetManager.getBundle('lobby');
+        if (!bundle) {
+            return;
+        }
+        bundle.load(BRAND_EMBLEM_ASSET_PATH, Texture2D, (error: Error | null, texture: Texture2D) => {
+            const node = this.brandEmblemNode;
+            if (error || !texture || !node?.isValid) {
+                console.error('[LobbyPresentation] Brand emblem failed to load.', error);
+                return;
+            }
+            const sprite = node.getComponent(Sprite);
+            if (!sprite) {
+                return;
+            }
+            this.ownedBrandFrame?.destroy();
+            const frame = new SpriteFrame();
+            frame.texture = texture;
+            this.ownedBrandFrame = frame;
+            sprite.spriteFrame = frame;
         });
     }
 
@@ -283,35 +237,9 @@ export class LobbyPresentation {
         const halfWidth = width / 2;
         const halfHeight = height / 2;
 
-        graphics.fillColor = new Color(249, 199, 84, 28);
-        graphics.circle(-halfWidth + 70, halfHeight - 220, 190);
-        graphics.fill();
-        graphics.fillColor = new Color(238, 133, 103, 22);
-        graphics.circle(halfWidth - 30, 60, 210);
-        graphics.fill();
-        graphics.fillColor = new Color(100, 132, 109, 25);
-        graphics.circle(-halfWidth + 10, -halfHeight + 160, 180);
-        graphics.fill();
-
-        graphics.strokeColor = new Color(169, 133, 77, 70);
-        graphics.lineWidth = 3;
-        graphics.moveTo(-halfWidth, -halfHeight + 94);
-        graphics.bezierCurveTo(-width * 0.22, -halfHeight + 142, width * 0.22, -halfHeight + 142, halfWidth, -halfHeight + 94);
-        graphics.stroke();
-
-        const frameY = halfHeight - 285;
-        graphics.strokeColor = new Color(169, 133, 77, 72);
-        graphics.lineWidth = 2;
-        graphics.roundRect(-halfWidth + 18, frameY - 48, 44, 96, 5);
-        graphics.stroke();
-        graphics.roundRect(halfWidth - 62, frameY - 30, 44, 76, 5);
-        graphics.stroke();
-
-        graphics.fillColor = new Color(238, 133, 103, 120);
-        graphics.circle(-halfWidth + 40, frameY + 64, 5);
-        graphics.fill();
-        graphics.fillColor = new Color(100, 132, 109, 120);
-        graphics.circle(halfWidth - 40, frameY + 54, 5);
-        graphics.fill();
+        // The production background already contains its own light rays and
+        // sparkles; the runtime layer intentionally adds no extra geometry.
+        void halfWidth;
+        void halfHeight;
     }
 }

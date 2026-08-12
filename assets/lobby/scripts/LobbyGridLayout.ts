@@ -1,5 +1,5 @@
-export const LOBBY_GRID_GAP = 24;
-export const LOBBY_CARD_HEIGHT = 430;
+export const LOBBY_GRID_GAP = 22;
+export const LOBBY_CARD_HEIGHT = 410;
 
 export interface LobbyGridItemLayout {
     readonly x: number;

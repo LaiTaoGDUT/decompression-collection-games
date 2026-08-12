@@ -56,6 +56,19 @@ export function createStartedWatermelonSave(
     });
 }
 
+/** 实时刷新最高分，不提前累计只属于正式结算的局末统计。 */
+export function refreshWatermelonHighScore(
+    previous: GameSaveData,
+    score: number,
+): GameSaveData {
+    const migrated = normalizeWatermelonSave(previous);
+    const safeScore = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
+    return Object.freeze({
+        ...migrated,
+        highScore: Math.max(migrated.highScore ?? 0, safeScore),
+    });
+}
+
 export function refreshCompletedWatermelonSave(
     previous: GameSaveData,
     result: WatermelonProgressSnapshot,

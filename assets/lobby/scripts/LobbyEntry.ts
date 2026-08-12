@@ -32,7 +32,9 @@ import type { FeedbackService } from '../../services/feedback/FeedbackService';
 const { ccclass, property } = _decorator;
 const EMPTY_GAMES: readonly GameManifest[] = Object.freeze([]);
 const GRID_SIDE_PADDING = 40;
-const GRID_TOP = 240;
+// Leave a generous hero area above the cards, matching a casual-game lobby
+// rather than the previous compact gallery header.
+const GRID_TOP = 344;
 const GRID_BOTTOM = 40;
 export type EnterGameRequest = (manifest: GameManifest) => Promise<void>;
 

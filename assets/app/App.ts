@@ -4,7 +4,6 @@ import {
     Component,
     director,
     find,
-    Label,
     Node,
     sys,
 } from 'cc';
@@ -311,7 +310,9 @@ export class App extends Component {
 
         await this.runStartupStage(
             'lobby',
-            () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(),
+            // First paint goes directly to the lobby. Loading remains enabled
+            // for later game entry, restart and return-to-lobby transitions.
+            () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(false),
         );
     }
 
@@ -392,16 +393,16 @@ export class App extends Component {
     }
 
     private showStartupFailure(): void {
-        const labelNode = find('Canvas/LoadingLayer/StartupErrorLabel', this.node);
-        const label = labelNode?.getComponent(Label);
-
-        if (!labelNode || !label) {
-            console.error('[App] Startup error label is missing.');
+        const errorView = find('Canvas/ErrorLayer', this.node)?.getComponent(ErrorView);
+        const loadingView = find('Canvas/LoadingLayer', this.node)?.getComponent(LoadingView);
+        loadingView?.hide();
+        if (!errorView) {
+            console.error('[App] Startup error dialog is missing.');
             return;
         }
-
-        label.string = '启动失败\n请重新进入小游戏';
-        labelNode.parent!.active = true;
-        labelNode.active = true;
+        errorView.show(Object.freeze({
+            title: '启动失败',
+            message: '暂时无法完成初始化\n请稍后重新进入游戏',
+        }));
     }
 }
