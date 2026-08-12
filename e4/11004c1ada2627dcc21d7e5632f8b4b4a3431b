@@ -1,0 +1,720 @@
+.workspace/prsrc-web/20260808160954/commit_msg.md
+  s_e59b6685e302d6::t_1dcd66cb292112 1-13
+assets/games/watermelon/scripts/WatermelonSave.ts
+  s_396100c030f1e8::t_74485c6cf48b4c 59-71
+assets/games/watermelon/scripts/WatermelonGameplayConfig.ts
+  s_396100c030f1e8::t_e7ce6d5bc6a162 43-44
+  s_396100c030f1e8::t_ebdf0cdb4b7d6c 42
+assets/games/watermelon/scenes/Watermelon.scene
+  s_396100c030f1e8::t_d18f671cfe6722 402,2095
+assets/games/watermelon/scripts/WatermelonScoring.ts
+  s_f3504033f836fc::t_5da919a22d6b71 17-20
+assets/games/watermelon/scripts/WatermelonLayout.ts
+  s_396100c030f1e8::t_06c7ec8d878e6c 256,279,359,363
+  s_396100c030f1e8::t_d18f671cfe6722 67
+assets/games/watermelon/scripts/FruitCatalog.ts
+  s_396100c030f1e8::t_b0268bfe055a23 26,48-51,62,64-65,67,142
+  s_f3504033f836fc::t_5c78ac0c3fefcb 44-45
+  s_396100c030f1e8::t_06c7ec8d878e6c 35-43,59,82-84
+  s_396100c030f1e8::t_a9d93fe3743340 63,85-86,141,143
+  s_396100c030f1e8::t_bea494cd95445a 31-33,61,66
+  s_f3504033f836fc::t_3dd6aa0a3ba7f1 46-47
+docs/ASSET_LEDGER.md
+  s_396100c030f1e8::t_98885444782cae 42
+  s_396100c030f1e8::t_f3d23c497b1ed9 39
+  s_396100c030f1e8::t_93579b928e42c6 36
+  s_396100c030f1e8::t_14839643d5dc6f 33
+  s_396100c030f1e8::t_d8df77b05dd479 26,37,40
+  s_396100c030f1e8::t_9543b58dfc9f03 34
+assets/shared/components/LoadingView.ts
+  s_396100c030f1e8::t_cc20f995b7b3e5 49,74,76-77,85-89,94,173-174,191-193,248,250-251,255-259,261-263,265,267,270-272,319,326
+  s_396100c030f1e8::t_bb2f023a64ee5d 162-163,166,170-171
+  s_396100c030f1e8::t_21eb7261aa03f6 47,72-73,290,301-303,377-380
+  s_396100c030f1e8::t_b0268bfe055a23 19,179-182,184,197,211-212,229,231-245,247,310-315,318
+  s_396100c030f1e8::t_e7ce6d5bc6a162 397-404
+  s_396100c030f1e8::t_c8d0a7213a121a 3,10,12-14,22-25,29-35,38,42-46,48,56-58,64,70-71,75,79-80,83-84,93,95-96,106-107,111,131-154,157-161,164-165,167-169,172,178,183,185-188,194-196,200-201,203,206,210,213-225,227-228,230,246,253-254,274-275,278-283,285-289,291-300,304-306,309,316-317,320-325,327-332,334-364,367-370,372-374,376,381-382,392,396,409,415,417
+  s_396100c030f1e8::t_382c29838e1320 82
+  s_396100c030f1e8::t_183829bdeec85a 78,264,266,268-269
+  s_396100c030f1e8::t_e2dc929778b11e 5,7-8,11,15-18,36-37,60,62,65-69,90,98-100,102-105,108-110,112-130,155-156,176-177,189-190,198-199,202,204-205,207-209,249,252,307,333,365-366,371,375,383-391,393-395,405-408,410-414,416,418
+  s_396100c030f1e8::t_6aeeeb894e4587 61
+  s_396100c030f1e8::t_a7f2a0e520c22e 63
+  s_396100c030f1e8::t_ac219f707dd9f6 81
+  s_396100c030f1e8::t_d563cd4851dd2e 91-92
+  s_396100c030f1e8::t_544c109be0970a 97
+docs/asset-generation/LOBBY_ARCADE_V2.md
+  s_396100c030f1e8::t_14839643d5dc6f 19,32-46
+  s_396100c030f1e8::t_93579b928e42c6 1-17,20-26,28-29,31,47-50,52
+  s_396100c030f1e8::t_9543b58dfc9f03 18,27,30,51
+assets/resources/configs/games.json
+  s_396100c030f1e8::t_06c7ec8d878e6c 7-8,13
+assets/lobby/scripts/LobbySettingsPanel.ts
+  s_396100c030f1e8::t_e1b2136f2b73c8 84-85,87-88,90-93,96-97,100-110,113-114,148,154,168,170,180,195,199,232,234-235,305-307
+  s_396100c030f1e8::t_fc7522b14c9af5 428,432-433,441,444
+  s_396100c030f1e8::t_07f91e8241e566 181,230,242,246,251-252,268,270,283-284
+  s_396100c030f1e8::t_cd1fd1eb0a667e 99
+  s_396100c030f1e8::t_3b2fe597570748 36,150-151,156,159-160,162-164,167,169,172-174,194,197-198,200-201,203,206-207
+  s_396100c030f1e8::t_1e065990573b4a 179,429,431,434-435,439,442,445,447-449
+  s_396100c030f1e8::t_a0b88bd05c4166 311-312
+  s_396100c030f1e8::t_f8640999e91b03 37-43,233
+  s_396100c030f1e8::t_f0942872ffdef7 44-45
+art_sources/archive/unused-runtime-assets/README.md
+  s_396100c030f1e8::t_f3d23c497b1ed9 1-14
+assets/games/watermelon/visual/backgrounds/c1-cat-room-bg-v1.jpg.meta
+  s_396100c030f1e8::t_99894956ddc0d8 1-42
+assets/lobby/scripts/LobbyEntry.ts
+  s_396100c030f1e8::t_fb910dce40a6ed 35-36
+  s_396100c030f1e8::t_efea743c799880 37
+docs/asset-generation/CAT_MERGE_C1.md
+  s_396100c030f1e8::t_d8df77b05dd479 1-42
+assets/app/App.ts
+  s_396100c030f1e8::t_c6d2aa56712cfa 396-400,403-406
+  s_396100c030f1e8::t_72e4e475767eee 313-315
+assets/lobby/visual/covers/watermelon/c1-fat-orange-cover-v1.jpg.meta
+  s_396100c030f1e8::t_99894956ddc0d8 1-42
+assets/lobby/scripts/LobbyPresentation.ts
+  s_396100c030f1e8::t_efea743c799880 148-149
+  s_396100c030f1e8::t_b0268bfe055a23 16,18
+  s_396100c030f1e8::t_7e7d2f730f4dea 17
+  s_396100c030f1e8::t_34c9f93a44e9d7 20
+  s_396100c030f1e8::t_a52c03a126a3de 26,28,51,64-69,75-76,81,134,140,145-147,150-152,178-200
+  s_396100c030f1e8::t_89bee546b58984 240-243
+  s_41d82d90e5bf3d::t_18008a85621010 19
+assets/games/watermelon/scripts/FruitBody.ts
+  s_396100c030f1e8::t_e7ce6d5bc6a162 23-28
+  s_396100c030f1e8::t_bea494cd95445a 14,16-19,44-45,70-83,88-99,101-105,155-156,174-175,319-320
+  s_396100c030f1e8::t_06c7ec8d878e6c 30,147,149,195-197,203-204,207
+  s_f3504033f836fc::t_5da919a22d6b71 37-38,112-113,116-117,119-123,186
+  s_396100c030f1e8::t_a9d93fe3743340 41-42,110,135,138-139,159,161-170,177,183-184,190,194,205,208-209,211,213-215,217-229,318
+  s_396100c030f1e8::t_d14b221e2d0f5e 43,140,176,182,187-188,198,200-202
+  s_396100c030f1e8::t_2007aedceac757 84-87
+  s_396100c030f1e8::t_b0268bfe055a23 136-137,178,189,199,206,210,216
+  s_396100c030f1e8::t_cc20f995b7b3e5 212
+  s_396100c030f1e8::t_e2dc929778b11e 322-325,327
+  s_396100c030f1e8::t_8b120fe7f0dc3c 29
+  s_396100c030f1e8::t_5d19eb76ed2679 321
+  s_f3504033f836fc::t_0e3a854622ac94 111,185
+assets/games/watermelon/configs/gameplay.json
+  s_396100c030f1e8::t_e7ce6d5bc6a162 10-11
+  s_396100c030f1e8::t_ebdf0cdb4b7d6c 9
+assets/shared/components/ErrorView.ts
+  s_396100c030f1e8::t_c6d2aa56712cfa 5,7-8,10-12,22,34-36,41-42,53-61,71-116,126-221,223,232-233,240,246-249
+  s_396100c030f1e8::t_183829bdeec85a 117-125
+assets/runtime/GameRuntime.ts
+  s_396100c030f1e8::t_cc20f995b7b3e5 47,49-50,405-406,468-470,623-624
+  s_396100c030f1e8::t_c8d0a7213a121a 33-39,41
+  s_396100c030f1e8::t_382c29838e1320 42,419,428,438,460,467
+  s_396100c030f1e8::t_3f16be3349736a 153,402-404,407
+  s_396100c030f1e8::t_72e4e475767eee 148-149,151-152
+assets/games/watermelon/scripts/WatermelonOverlayView.ts
+  s_396100c030f1e8::t_72e4e475767eee 183,188,209-211,219-225,238,243
+  s_396100c030f1e8::t_d18f671cfe6722 63
+  s_396100c030f1e8::t_06c7ec8d878e6c 87
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_396100c030f1e8::t_382c29838e1320 393-397,406-411
+  s_396100c030f1e8::t_bea494cd95445a 46,1486
+  s_396100c030f1e8::t_72e4e475767eee 814,1166-1168,1170-1174,1178-1179,1181,1187-1202,1260
+  s_396100c030f1e8::t_a9d93fe3743340 131,368,375-388,1320,1489,1501,1504
+  s_f3504033f836fc::t_5da919a22d6b71 134,462,630,635,699-711,722-730,1294-1295,1318
+  s_396100c030f1e8::t_706fcfee3ee25e 1176-1177,1180
+  s_396100c030f1e8::t_06c7ec8d878e6c 280,1263-1265,1268,1478,1480
+  s_396100c030f1e8::t_74485c6cf48b4c 57,289,317,817-824,826-833,835,1336
+  s_396100c030f1e8::t_1d9d71480df462 81-82,1385,1448-1452,1454
+  s_396100c030f1e8::t_b7fd572f11fe28 1364-1369,1373-1376,1378
+  s_396100c030f1e8::t_d18f671cfe6722 123,925,1036,1360
+  s_396100c030f1e8::t_7a1aa374500928 143,973,1276-1277,1279
+  s_396100c030f1e8::t_9db62990791bb5 815-816
+  s_396100c030f1e8::t_858a0744b812ee 1261-1262
+assets/lobby/scripts/LobbyGridLayout.ts
+  s_396100c030f1e8::t_3b2fe597570748 2
+  s_396100c030f1e8::t_a363051909dec6 1
+docs/asset-generation/CAT_MERGE_C2.md
+  s_396100c030f1e8::t_a327ca5dfce582 19,69-75,77
+  s_f3504033f836fc::t_d05055ae4946b2 78-80,84
+  s_396100c030f1e8::t_98885444782cae 1-5,7-18,20-49,68,85-86,89-90
+  s_396100c030f1e8::t_f3d23c497b1ed9 76
+  s_396100c030f1e8::t_1d9d71480df462 61-67
+  s_f3504033f836fc::t_5c78ac0c3fefcb 81-83
+  s_396100c030f1e8::t_d14b221e2d0f5e 88
+  s_396100c030f1e8::t_14839643d5dc6f 6,87
+  s_396100c030f1e8::t_7e91e9cf72016f 53-60
+  s_396100c030f1e8::t_a1fab82146ba6b 50-52
+.workspace/prsrc-web/20260808160954/commit_files.md
+  s_e59b6685e302d6::t_eaa48b59adcd9b 1-27
+assets/lobby/scripts/GameCardView.ts
+  s_396100c030f1e8::t_d9d06b1973d136 423,525,528,536-540,587-592,594-600
+  s_396100c030f1e8::t_83a55745327ab5 250-258,365,387,407-422,424-427,429-445
+  s_396100c030f1e8::t_49c097aaa0d2fa 29-30,385,468
+  s_396100c030f1e8::t_6c8739d6bbec46 88,105-106,313,457,469,503-504
+  s_396100c030f1e8::t_a0b88bd05c4166 84,312,346,360-361,610,612
+  s_396100c030f1e8::t_b0268bfe055a23 27-28,31-33,38-39,428,459,526-527,530,552,558,565,568,593
+  s_396100c030f1e8::t_efea743c799880 74,394,397
+  s_396100c030f1e8::t_a9d93fe3743340 341,475-490,640-643
+  s_396100c030f1e8::t_a363051909dec6 344,383
+  s_396100c030f1e8::t_6f15744fcb3ae3 85-86,108,161-162,551
+  s_396100c030f1e8::t_f8640999e91b03 532
+  s_396100c030f1e8::t_bbe62de7b9add7 92,129-131
+  s_396100c030f1e8::t_07f91e8241e566 111,347-348,389,570,578
+  s_396100c030f1e8::t_ee72ffc1352781 10,214-221,223-225,229,233-234,321-323,327-330,336-339,509
+  s_396100c030f1e8::t_cd2ef7b828c34d 212,311,315-316,324-325,331-335,354,458,461,464-466,470,505,601
+  s_396100c030f1e8::t_38ac6ce7e817b9 635-637
+  s_396100c030f1e8::t_3b2fe597570748 51,314,345,350-351,460,531,542,586
+  s_396100c030f1e8::t_842fcaa6016190 55,238-249,364,491,550,571-577,579-583
+  s_396100c030f1e8::t_7627016954576a 553-557,559-564,566-567,569
+  s_396100c030f1e8::t_fb910dce40a6ed 87,104,107,120,128,138,140-141,148,150-151,159-160,164,386,390,392,395-396,406,533,535,541
+  s_396100c030f1e8::t_7bd621570a7f30 78
+  s_396100c030f1e8::t_62b187cdc669b3 213
+  s_396100c030f1e8::t_ae36e0b4314fbc 237
+  s_396100c030f1e8::t_e6ff83e3731575 340
+  s_396100c030f1e8::t_cf860524eefce5 492
+  s_396100c030f1e8::t_49c7f625f74e77 508
+assets/games/watermelon/visual/cats.meta
+  s_396100c030f1e8::t_99894956ddc0d8 1-9
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-00-cream-kitten-c1-v1.png.meta
+  s_396100c030f1e8::t_44086a6546f29c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-01-gray-tabby-c1-v1.png.meta
+  s_396100c030f1e8::t_a8693651125e76 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-02-calico-c1-v1.png.meta
+  s_396100c030f1e8::t_0458a1acd5bac3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-03-tuxedo-c1-v1.png.meta
+  s_396100c030f1e8::t_1b3bf4b152c146 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-04-white-fluffy-c1-v1.png.meta
+  s_396100c030f1e8::t_192a44c15b5441 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-05-brown-tabby-c1-v1.png.meta
+  s_396100c030f1e8::t_491862b866fcdd 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-06-siamese-c1-v1.png.meta
+  s_396100c030f1e8::t_198586a7c46c02 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-07-golden-shorthair-c1-v1.png.meta
+  s_396100c030f1e8::t_10298bab5e4153 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-08-silver-tabby-c1-v1.png.meta
+  s_396100c030f1e8::t_e671fb1a407521 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-09-orange-tabby-c1-v1.png.meta
+  s_396100c030f1e8::t_ba7480687c7bf6 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/cat-10-fat-orange-c1-v1.png.meta
+  s_396100c030f1e8::t_a1ce4eb828abb7 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3.meta
+  s_396100c030f1e8::t_7c3bd2894a2d7c 1-9
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-00-cream-kitten-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_ac47c7169ad8ca 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-00-cream-kitten-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_4427f71effa4ad 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-00-cream-kitten-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_05b4248085ff8b 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-00-cream-kitten-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_ccef176f986241 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-01-gray-tabby-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_89011012becc91 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-01-gray-tabby-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_c3b0e71b4a9e05 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-01-gray-tabby-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_451559e8529332 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-01-gray-tabby-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_af0959a99eb55c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-02-calico-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_81ac15f1f928c1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-02-calico-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_e394b706a0923c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-02-calico-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_1fd3d4225c4aab 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-02-calico-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_08a5be082200b0 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-03-tuxedo-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_c0cc06ac4be986 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-03-tuxedo-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_70614f4e6e9747 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-03-tuxedo-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_664dbb58287647 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-03-tuxedo-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_46cc555ec0da84 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-04-white-fluffy-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_6409f2ac3b93a8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-04-white-fluffy-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_85cbcf7eee02eb 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-04-white-fluffy-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_2a479a01d6688d 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-04-white-fluffy-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_cfd939f10ff61e 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-05-brown-tabby-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_2d83165ca4c6c3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-05-brown-tabby-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_0c12f5e112d3b5 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-05-brown-tabby-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_6aa2aa2c4115d2 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-05-brown-tabby-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_7b1e225461a7c9 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-06-siamese-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_c165b60209d099 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-06-siamese-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_b12c9bf8f25a1e 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-06-siamese-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_4ca49c62827163 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-06-siamese-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_50f1c4374199bd 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-07-golden-shorthair-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_90ce8433971e8c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-07-golden-shorthair-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_91202f663cd830 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-07-golden-shorthair-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_ea06f32b6b12d3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-07-golden-shorthair-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_0f2be4bef03261 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-08-silver-tabby-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_c1d77e852cf914 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-08-silver-tabby-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_0c92aaea76e1f8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-08-silver-tabby-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_03d4563155cd38 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-08-silver-tabby-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_ebd44c66fd0fc3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-09-orange-tabby-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_00598661c1bfb9 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-09-orange-tabby-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_ed1ca2e9a4636f 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-09-orange-tabby-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_f4e8686d24bdf7 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-09-orange-tabby-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_0bdf0814bda656 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-10-fat-orange-fall-c3-v1.png.meta
+  s_396100c030f1e8::t_e206d605eba5b3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-10-fat-orange-idle-1-c3-v1.png.meta
+  s_396100c030f1e8::t_b07e49fa997550 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-10-fat-orange-idle-2-c3-v1.png.meta
+  s_396100c030f1e8::t_9718e97a9c95ed 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c3/cat-10-fat-orange-idle-3-c3-v1.png.meta
+  s_396100c030f1e8::t_8310742feaeefc 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4.meta
+  s_396100c030f1e8::t_0c3430569e36d7 1-9
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-00-cream-kitten-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_5ffac73ab7097c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-00-cream-kitten-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_43e549a52267a0 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-00-cream-kitten-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_cfe64e686fb9d8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-00-cream-kitten-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_22cb7258c0772e 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-01-gray-tabby-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_3691444d66e1ba 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-01-gray-tabby-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_fcc898a75baa38 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-01-gray-tabby-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_0fffdccfa691e2 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-01-gray-tabby-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_ce3844f9cd9c29 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-02-calico-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_86ff9c8e1bd338 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-02-calico-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_9b640f194327a0 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-02-calico-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_9a8cc6e6bb2343 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-02-calico-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_03182d72c25b44 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-03-tuxedo-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_ba24b3001cd6f4 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-03-tuxedo-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_d3632ef30c7685 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-03-tuxedo-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_5f42ef802c5b21 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-03-tuxedo-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_b3c31fcfe7b665 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-04-white-fluffy-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_dd2fda2fe87f28 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-04-white-fluffy-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_c8f84e507c13f9 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-04-white-fluffy-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_f9b6b636346eac 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-04-white-fluffy-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_44b707bda5e2b5 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-05-brown-tabby-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_3d80a5b6f53bb8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-05-brown-tabby-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_a3d48f058fb46c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-05-brown-tabby-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_c62ad5c105b964 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-05-brown-tabby-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_60e4f616b5c313 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-06-siamese-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_b039cfda1da6f7 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-06-siamese-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_96c2abed4ed8a2 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-06-siamese-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_fe9d256a48d6cb 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-06-siamese-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_a8eed2879a0adb 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-07-golden-shorthair-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_4d3e025a0db705 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-07-golden-shorthair-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_5171b6cf6848d1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-07-golden-shorthair-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_af40d6901ecd00 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-07-golden-shorthair-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_ef520d5831a263 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-08-silver-tabby-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_aff729c5065c5f 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-08-silver-tabby-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_11f5dada393b18 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-08-silver-tabby-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_9f759978cc403f 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-08-silver-tabby-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_504ab3deb281c0 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-09-orange-tabby-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_55a7bfd6230c5f 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-09-orange-tabby-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_4df9f43c2c25fc 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-09-orange-tabby-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_df773a0df3ff64 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-09-orange-tabby-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_19645c3a2af1c7 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-10-fat-orange-fall-c4-v1.png.meta
+  s_396100c030f1e8::t_6985c13ae8ef9b 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-10-fat-orange-idle-1-c4-v1.png.meta
+  s_396100c030f1e8::t_b670735ff587b5 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-10-fat-orange-idle-2-c4-v1.png.meta
+  s_396100c030f1e8::t_f6791b8c751da1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c4/cat-10-fat-orange-idle-3-c4-v1.png.meta
+  s_396100c030f1e8::t_ff7dbfeabc2692 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5.meta
+  s_396100c030f1e8::t_fb0911ae6f60d9 1-9
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-00-cream-kitten-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_3d4a35a009f95c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-01-gray-tabby-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_65846bbad7f146 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-02-calico-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_93acfe35e58c46 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-03-tuxedo-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_ac7a7bdf251d5a 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-04-white-fluffy-idle-1-c6-v1.png.meta
+  s_396100c030f1e8::t_ce9680c1f68368 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-05-brown-tabby-idle-1-c6-v1.png.meta
+  s_396100c030f1e8::t_0b829354ec0d36 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-06-siamese-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_aac728781ab150 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-07-golden-shorthair-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_e622ed4805b531 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-08-silver-tabby-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_7b90c8eab59bcf 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-09-orange-tabby-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_bd806707e746f3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c6/cat-10-fat-orange-idle-3-c6-v1.png.meta
+  s_396100c030f1e8::t_561915ab4ec6b6 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames.meta
+  s_396100c030f1e8::t_851f91fa11d86e 1-9
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-00-cream-kitten-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_81f0ef230d35d9 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-00-cream-kitten-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_151871a64f5be5 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-00-cream-kitten-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_3563f6fdc10169 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-00-cream-kitten-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_13adbdc3571de5 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-01-gray-tabby-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_e482a74a540631 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-01-gray-tabby-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_27fd0bc6a63970 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-01-gray-tabby-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_368792c0221278 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-01-gray-tabby-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_a0059eb19c563a 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-02-calico-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_0f6379f3108512 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-02-calico-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_0585692271ec9a 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-02-calico-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_c76de8334e8f29 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-02-calico-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_d339667f30c378 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-03-tuxedo-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_b8a32f4f3f11ad 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-03-tuxedo-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_d2a612e30890fd 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-03-tuxedo-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_4e69cf7650c6ed 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-03-tuxedo-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_00cdde065ca705 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-04-white-fluffy-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_2c9162670133f6 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-04-white-fluffy-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_4b9d2c7dc39496 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-04-white-fluffy-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_a67d8e81dc6a35 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-04-white-fluffy-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_ee38d3ba4027c4 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-05-brown-tabby-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_2566a3285f80f6 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-05-brown-tabby-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_932fd16fd7bc0b 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-05-brown-tabby-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_1a87dd3da9df3b 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-05-brown-tabby-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_f1d1a673767bd3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-06-siamese-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_0559ad4f0d284d 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-06-siamese-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_fa638d37500864 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-06-siamese-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_7a1ddd45289e42 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-06-siamese-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_dded529b77296d 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-07-golden-shorthair-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_610f7a34a3759b 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-07-golden-shorthair-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_f6a5e69b9eee78 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-07-golden-shorthair-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_84d9dd057c1548 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-07-golden-shorthair-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_816f258665652d 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-08-silver-tabby-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_609dc1509fcd5e 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-08-silver-tabby-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_8d20289a8e1d1c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-08-silver-tabby-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_24ada7b09c7f8c 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-08-silver-tabby-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_a5ba8b9971e375 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-09-orange-tabby-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_7cf5fe1a7fbcd4 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-09-orange-tabby-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_8980042536a893 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-09-orange-tabby-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_2bb2b9397c09fc 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-09-orange-tabby-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_331ea16100c339 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-10-fat-orange-fall-c2-v1.png.meta
+  s_396100c030f1e8::t_7f3726acdb767e 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-10-fat-orange-idle-1-c2-v1.png.meta
+  s_396100c030f1e8::t_04c65c95889a2a 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-10-fat-orange-idle-2-c2-v1.png.meta
+  s_396100c030f1e8::t_8171956e0735c7 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames/cat-10-fat-orange-idle-3-c2-v1.png.meta
+  s_396100c030f1e8::t_63851058ba4495 1-42
+art_sources/archive/unused-runtime-assets/assets/lobby/visual/backgrounds/lobby-arcade-rays-v2.png.meta
+  s_396100c030f1e8::t_e109ce9829bc96 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-00-cream-kitten-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_75598b8d9d0ef1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-00-cream-kitten-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_a9db89d9cd7183 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-00-cream-kitten-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_b62bfd24db42cc 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-00-cream-kitten-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_185d939f55904b 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-01-gray-tabby-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_90988663702593 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-01-gray-tabby-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_05048c05d6c8e1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-01-gray-tabby-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_22b5c46a6ed163 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-01-gray-tabby-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_f5596d9a339201 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-02-calico-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_44317b69e4e693 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-02-calico-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_1f5c4e1fb187b8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-02-calico-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_635f2a69be6ae4 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-02-calico-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_80f56ac4917aee 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-03-tuxedo-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_88463356d466a1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-03-tuxedo-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_b5a08a3621b4dd 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-03-tuxedo-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_a9b8caf4620341 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-03-tuxedo-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_de4eefebde2d62 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-04-white-fluffy-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_9662d40b2212a1 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-04-white-fluffy-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_34dfdfd9bc48c5 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-04-white-fluffy-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_e98d46298bce45 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-04-white-fluffy-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_59f798f8ec46f2 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-05-brown-tabby-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_96da53ebe18e81 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-05-brown-tabby-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_2c683d69e33230 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-05-brown-tabby-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_2abc5924f16690 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-05-brown-tabby-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_12531cdd164955 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-06-siamese-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_e013618573e2d0 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-06-siamese-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_7ce7486dfecdeb 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-06-siamese-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_2e1b28a8ea2409 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-06-siamese-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_b2a6865d59acb9 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-07-golden-shorthair-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_f2850236c393c4 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-07-golden-shorthair-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_46cdfa9b607a31 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-07-golden-shorthair-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_b9d527eebebafd 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-07-golden-shorthair-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_21d076fe47de93 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-08-silver-tabby-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_98d4521d8dd6f8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-08-silver-tabby-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_939d7fd3bbc0cd 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-08-silver-tabby-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_1d8c353724a1d8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-08-silver-tabby-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_be12b2a9b420e2 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-09-orange-tabby-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_1f4fe51fe1b854 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-09-orange-tabby-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_71902b61ea9a62 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-09-orange-tabby-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_23dca64e28cb65 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-09-orange-tabby-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_0caa7214a073d3 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-10-fat-orange-fall-c5-v1.png.meta
+  s_396100c030f1e8::t_96f65a05c40f8f 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-10-fat-orange-idle-1-c5-v1.png.meta
+  s_396100c030f1e8::t_56efb3dbdb80e8 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-10-fat-orange-idle-2-c5-v1.png.meta
+  s_396100c030f1e8::t_04a45222f42d42 1-42
+art_sources/archive/unused-runtime-assets/assets/games/watermelon/visual/cats/frames-c5/cat-10-fat-orange-idle-3-c5-v1.png.meta
+  s_396100c030f1e8::t_8f1a70d9ffca3c 1-42
+assets/games/watermelon/visual/cats/frames-c6.meta
+  s_0ba1dbbbf580ed::t_b713f9a8c7aa31 1-9
+assets/games/watermelon/visual/cats/frames-c6/cat-00-cream-kitten-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_a029b616934c5e 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-00-cream-kitten-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_f6810b5ea1961c 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-00-cream-kitten-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_b456537bbfd367 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-01-gray-tabby-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_bc94b41333fbab 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-01-gray-tabby-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_c2058f3ffd8a7a 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-01-gray-tabby-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_011c88611b1b06 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-02-calico-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_b232c18f152098 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-02-calico-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_882852a132318f 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-02-calico-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_00f606ae2658ec 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-03-tuxedo-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_0f061c8de086d6 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-03-tuxedo-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_8443f45da0ac8d 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-03-tuxedo-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_c14c4e0c9eedcc 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-04-white-fluffy-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_b29e1ce885f180 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-04-white-fluffy-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_d874fac3096f3e 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-04-white-fluffy-idle-3-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_00a1c61a4e298a 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-05-brown-tabby-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_1ac26c668d6d95 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-05-brown-tabby-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_1e3f589f2aaf40 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-05-brown-tabby-idle-3-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_cd6d0987ad0e0a 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-06-siamese-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_e30562223a4772 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-06-siamese-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_37eadadf9e7c03 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-06-siamese-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_208fd4ff542a3d 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-07-golden-shorthair-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_ac9f2728cedfb6 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-07-golden-shorthair-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_df483254242070 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-07-golden-shorthair-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_33a04950bc9df7 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-08-silver-tabby-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_b8ae22e99d181d 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-08-silver-tabby-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_ff9234b2433b62 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-08-silver-tabby-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_bc5e742c9d4761 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-09-orange-tabby-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_106e4d79db9c8d 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-09-orange-tabby-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_55bbcde4627106 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-09-orange-tabby-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_ece040f6a26d35 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-10-fat-orange-fall-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_1fdc70020d4eb1 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-10-fat-orange-idle-1-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_bdcf442fca4685 1-42
+assets/games/watermelon/visual/cats/frames-c6/cat-10-fat-orange-idle-2-c6-v1.png.meta
+  s_0ba1dbbbf580ed::t_c484690655b3e4 1-42
+assets/lobby/visual/backgrounds/lobby-arcade-warm-rays-v3.png.meta
+  s_396100c030f1e8::t_fc064056b17d4f 1-42
+assets/lobby/visual/branding.meta
+  s_0ba1dbbbf580ed::t_1010c2d1874064 1-9
+assets/lobby/visual/branding/lobby-cn-title-logo-v3.png.meta
+  s_0ba1dbbbf580ed::t_4c10762f6fb7ae 1-42
+build-step22/web-desktop/application.js
+  s_396100c030f1e8::t_56ec946bbf7e50 1-61
+build-step22/web-desktop/index.html
+  s_396100c030f1e8::t_c4b63955931502 1-49
+build-step22/web-desktop/index.js
+  s_396100c030f1e8::t_add1e6bf54549e 1-23
+build-step22/web-desktop/src/polyfills.bundle.js
+  s_396100c030f1e8::t_3c8b632166b673 1
+build-step22/web-desktop/src/settings.json
+  s_396100c030f1e8::t_8da842d14e015f 1
+build-step22/web-desktop/src/system.bundle.js
+  s_396100c030f1e8::t_4f718570a52467 1
+build-step22/web-desktop/style.css
+  s_396100c030f1e8::t_d1c6db09deb973 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e411004c1ada2627dcc21d7e5632f8b4b4a3431b",
+  "prompts": {},
+  "logical_commit_id": "e411004c1ada2627dcc21d7e5632f8b4b4a3431b",
+  "sessions": {
+    "s_0ba1dbbbf580ed": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fef80-93c1-7e71-a8a6-46c31eadc90f",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_396100c030f1e8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fef13-db55-7542-b7e7-6d4c187bd0fd",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 10734,
+      "total_deletions": 1861
+    },
+    "s_41d82d90e5bf3d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "f79be9d5-bc62-4aee-aed9-28537d9bd056",
+        "model": "auto-smart"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_e59b6685e302d6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe06b-8231-7ee1-87b3-7471bd23e169",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 40
+    },
+    "s_f3504033f836fc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff556-7d0a-7ee3-8037-c7827561cda7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 189,
+      "total_deletions": 149
+    }
+  }
+}
