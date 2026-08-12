@@ -82,6 +82,16 @@ Levels 08–10, 4×3 grid: silver tabby shows one hind paw with tail tucked side
 - ImageGen 提示词（`precise-object-edit`）：“Turn this orange tabby into a distinctive black smoke cat. Replace all orange coat fur with deep charcoal-black fur, preserve readable graphite tabby stripes, keep a small warm-ivory muzzle and chest patch, retain the green-gold eyes and pink nose, and change the token base to muted cool charcoal-purple; it must read as non-orange immediately at 64px.”
 - 落地：生成结果用作黑烟/石墨/奶油配色母版；第 9 级正式三帧使用同一套确定性 HSV 色彩映射，第 10 级恢复原始素材，以保留逐帧五官、姿态、尺寸和逐像素 Alpha。
 
+### C8 第九只猫全新形象与物理尺寸纠偏
+
+- 用户纠偏：第九只猫不是恢复旧银渐层，而是替换为与旧形象及其余 10 只都不同的新角色；“猫咪放大”指物理尺寸和碰撞体同步变大，不是 Sprite 单独越过碰撞圆。
+- 新角色：第 9 级改为“蓝灰折耳”，采用浓密纯蓝灰短绒、明显折耳、铜金色眼睛和炭黑鼻头；不含银渐层条纹、竖耳或无毛特征，也不复用灰虎斑、金渐层、暹罗、黑烟虎斑和橘猫的配色/耳型组合。
+- ImageGen 模式：内置 `image_gen`，`precise-object-edit`。以原第 9 级三帧分别作为姿态/构图参考，以新睁眼帧作为角色身份参考，生成睁眼待机、闭眼待机和惊讶下落三帧。
+- 核心提示词：`Replace the silver tabby completely with a brand-new blue Scottish Fold cat character; dense plush solid slate-blue fur, clearly folded small ears, round cheeks, copper-amber eyes and charcoal nose; remove every silver-tabby stripe; furry and plush, never hairless; preserve the centered circular body silhouette, frame-specific pose, padding and polished 2.5D finish.`
+- 生成源：`docs/asset-generation/sources/cat-08-blue-scottish-fold-c8/`；确定性处理脚本：`tools/watermelon/process-cat-08-blue-scottish-fold.js`；运行文件仍位于 `frames-c6/`，以 `cat-08-blue-scottish-fold-*-c8-v1.png` 命名。
+- 后处理：将 1254² 生成源用 Lanczos 缩放到 256²，应用完全一致的 252px 抗锯齿圆形 Alpha 与 2px 滤波安全区；三帧 Alpha 逐字节一致，旧银渐层文件移入 `art_sources/archive/unused-runtime-assets/cat-08-silver-tabby-c6/`。
+- 物理纠偏：删除 `CAT_VISUAL_SCALE`；11 级半径统一乘以 1.12，并由同一个 `config.radius` 同时驱动节点直径、`CircleCollider2D.radius`、预览、投放夹取、出生高度和危险线计算。质量保持原配置，密度按增大后的圆面积重新计算。
+
 ## 运行时节奏
 
 - 待机：逐级像素差异比对后，选择变化最小的 2 帧循环，每帧约 0.9–1.1 秒，不同等级使用轻微错峰。

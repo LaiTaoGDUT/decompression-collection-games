@@ -17,8 +17,9 @@ const SEED = 0x51A7E202;
 const sourceRoot = path.resolve('audio_sources/generated/v1');
 const lobbyRuntime = path.resolve('assets/lobby/visual/audio');
 const gameRuntime = path.resolve('assets/games/watermelon/visual/audio');
+const game2048Runtime = path.resolve('assets/games/twenty48/visual/audio');
 const reportPath = path.resolve('docs/asset-generation/audio-v1-report.json');
-for (const folder of [sourceRoot, lobbyRuntime, gameRuntime]) fs.mkdirSync(folder, { recursive: true });
+for (const folder of [sourceRoot, lobbyRuntime, gameRuntime, game2048Runtime]) fs.mkdirSync(folder, { recursive: true });
 
 function mulberry32(seed) {
     return () => {
@@ -197,6 +198,97 @@ function createGameMusic() {
     return track;
 }
 
+function create2048Music() {
+    const track = createTrack(24);
+    const roots = [73.42, 82.41, 98, 110, 73.42, 87.31];
+    roots.forEach((root, bar) => {
+        const start = bar * 4;
+        [1, 1.5, 2, 3].forEach((ratio, index) => addTone(track, start, 3.95, root * ratio, 0.025, {
+            attack: 0.38,
+            release: 0.58,
+            pan: (index - 1.5) * 0.2,
+            harmonic: 0.16,
+        }));
+        addSweep(track, start, 3.8, root * 2, root * 3, 0.018, {
+            attack: 0.45,
+            release: 0.72,
+            pan: bar % 2 ? 0.32 : -0.32,
+        });
+    });
+    const sequence = [293.66, 369.99, 440, 554.37, 440, 369.99, 329.63, 493.88];
+    for (let step = 0; step < 96; step += 1) {
+        if (step % 4 !== 3) {
+            addTone(track, step * 0.25, 0.17, sequence[step % sequence.length], 0.026, {
+                kind: 'pluck',
+                attack: 0.003,
+                release: 0.13,
+                pan: step % 2 ? 0.28 : -0.28,
+            });
+        }
+        if (step % 8 === 0) addNoise(track, step * 0.25, 0.06, 0.014, SEED + 2048 + step, { smoothing: 0.82 });
+    }
+    return track;
+}
+
+function create2048Cue(name) {
+    const durations = {
+        button: 0.12,
+        move: 0.14,
+        invalid: 0.16,
+        spawn: 0.18,
+        merge2048: 0.32,
+        combo: 0.52,
+        target: 1.2,
+        gameover: 0.9,
+        record2048: 1.05,
+    };
+    const track = createTrack(durations[name]);
+    const seed = SEED + 2048 + [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    if (name === 'button') {
+        addTone(track, 0, 0.1, 780, 0.12, { kind: 'triangle', release: 0.08 });
+        addTone(track, 0.025, 0.09, 1170, 0.05, { release: 0.07 });
+    }
+    if (name === 'move') {
+        addSweep(track, 0, 0.13, 360, 620, 0.1, { attack: 0.004, release: 0.09, pan: -0.12 });
+        addNoise(track, 0, 0.08, 0.08, seed, { smoothing: 0.9, pan: 0.16 });
+    }
+    if (name === 'invalid') {
+        addTone(track, 0, 0.14, 155, 0.11, { kind: 'triangle', release: 0.11 });
+        addTone(track, 0.035, 0.11, 146, 0.07, { release: 0.08 });
+    }
+    if (name === 'spawn') {
+        addSweep(track, 0.01, 0.15, 620, 980, 0.1, { release: 0.12, pan: 0.2 });
+        addTone(track, 0.04, 0.12, 1240, 0.055, { release: 0.09, pan: -0.2 });
+    }
+    if (name === 'merge2048') {
+        [392, 587.33].forEach((frequency, index) => addTone(track, index * 0.055, 0.26, frequency, 0.12, {
+            kind: 'pluck', release: 0.2, pan: index ? 0.18 : -0.18,
+        }));
+        addSweep(track, 0.04, 0.24, 210, 330, 0.055, { release: 0.18 });
+    }
+    if (name === 'combo') {
+        [392, 523.25, 659.25, 783.99].forEach((frequency, index) => addTone(track, index * 0.075, 0.34, frequency, 0.105, {
+            kind: 'pluck', release: 0.27, pan: index % 2 ? 0.24 : -0.24,
+        }));
+    }
+    if (name === 'target') {
+        [261.63, 329.63, 392, 523.25, 659.25].forEach((frequency, index) => addChime(track, index * 0.12, frequency, 0.12, index % 2 ? 0.25 : -0.25));
+        addSweep(track, 0.1, 0.94, 110, 440, 0.06, { attack: 0.16, release: 0.38 });
+    }
+    if (name === 'gameover') {
+        [[392, 293.66], [293.66, 220], [220, 146.83]].forEach(([from, to], index) => addSweep(
+            track, index * 0.15, 0.5, from, to, 0.09 - index * 0.014,
+            { kind: 'triangle', attack: 0.02, release: 0.34, pan: index % 2 ? 0.2 : -0.2 },
+        ));
+        addNoise(track, 0.45, 0.38, 0.08, seed, { smoothing: 0.97, release: 0.3 });
+    }
+    if (name === 'record2048') {
+        [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => addChime(track, index * 0.12, frequency, 0.115, index % 2 ? 0.3 : -0.3));
+        addSweep(track, 0.12, 0.8, 220, 880, 0.045, { attack: 0.1, release: 0.32 });
+    }
+    return track;
+}
+
 function createCue(name) {
     const durations = {
         lobby_button: 0.16, lobby_popup: 0.34, lobby_toggle: 0.2,
@@ -364,6 +456,7 @@ function writeMp3(track, filename, kbps) {
 const assets = [
     { owner: 'lobby', name: 'l1-gallery-loop-v1', track: createLobbyMusic(), music: true },
     { owner: 'watermelon', name: 'w1-paper-loop-v1', track: createGameMusic(), music: true, targetLufs: -23, maxPeakDb: -7 },
+    { owner: 'game2048', name: 't48-neon-loop-v1', track: create2048Music(), music: true, targetLufs: -22, maxPeakDb: -6 },
     ...['lobby_button', 'lobby_popup', 'lobby_toggle'].map((name) => ({ owner: 'lobby', name: `${name.replace('_', '-')}-v1`, track: createCue(name), music: false })),
     ...['game_button', 'drop', 'collision_1', 'collision_2', 'collision_3', 'fold', 'merge', 'chain', 'danger', 'failure', 'continue', 'record'].map((name) => ({
         owner: 'watermelon',
@@ -372,6 +465,14 @@ const assets = [
         music: false,
         ...(name === 'drop' ? { targetLufs: -22, maxPeakDb: -8 } : {}),
         ...(name.startsWith('collision_') ? { targetLufs: -24, maxPeakDb: -8 } : {}),
+    })),
+    ...['button', 'move', 'invalid', 'spawn', 'merge2048', 'combo', 'target', 'gameover', 'record2048'].map((name) => ({
+        owner: 'game2048',
+        name: `t48-${name === 'merge2048' ? 'merge' : name === 'record2048' ? 'record' : name}-v1`,
+        track: create2048Cue(name),
+        music: false,
+        targetLufs: name === 'invalid' ? -19 : -17,
+        maxPeakDb: -4,
     })),
 ];
 
@@ -386,8 +487,8 @@ const report = fs.existsSync(reportPath)
     loudnessMethod: 'Approximate unweighted full-file RMS mapped to LUFS; not a substitute for BS.1770 meter.',
     assets: [],
 };
-report.revision = 4;
-report.generatedAt = '2026-08-09';
+report.revision = 5;
+report.generatedAt = '2026-08-12';
 const requestedNames = new Set(
     (process.env.AUDIO_ASSET_FILTER ?? '')
         .split(',')
@@ -404,7 +505,9 @@ for (const asset of selectedAssets) {
     const maxPeakDb = asset.maxPeakDb ?? (asset.music ? -5 : -2);
     const analysis = analyzeAndNormalize(asset.track, targetLufs, maxPeakDb);
     const master = path.join(sourceRoot, asset.owner, 'master', `${asset.name}.wav`);
-    const runtimeRoot = asset.owner === 'lobby' ? lobbyRuntime : gameRuntime;
+    const runtimeRoot = asset.owner === 'lobby'
+        ? lobbyRuntime
+        : asset.owner === 'game2048' ? game2048Runtime : gameRuntime;
     const runtime = path.join(runtimeRoot, `${asset.name}.mp3`);
     writeWav(asset.track, master);
     writeMp3(asset.track, runtime, asset.music ? 96 : 64);

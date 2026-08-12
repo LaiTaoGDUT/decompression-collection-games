@@ -20,12 +20,13 @@ import {
     calculateWatermelonOverlayMetrics,
     readWatermelonViewport,
 } from './WatermelonResponsiveRules';
+import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 
 interface ActionSpec {
     readonly name: string;
     readonly label: string;
     readonly action: () => Promise<void>;
-    readonly tone: 'leaf' | 'coral' | 'danger' | 'paper';
+    readonly tone: 'mint' | 'peach' | 'danger' | 'soft';
 }
 
 interface OverlayState {
@@ -34,18 +35,7 @@ interface OverlayState {
     busy: boolean;
 }
 
-const COLORS = {
-    ink: new Color(75, 43, 32, 255),
-    cream: new Color(255, 242, 214, 255),
-    paper: new Color(255, 226, 168, 255),
-    leaf: new Color(40, 122, 78, 255),
-    coral: new Color(242, 139, 102, 255),
-    danger: new Color(184, 46, 62, 255),
-    overlay: new Color(61, 33, 24, 165),
-    disabled: new Color(199, 184, 165, 255),
-};
-
-/** W1 自有暂停与结果层；行为模型仍由公共运行层提供。 */
+/** 萌系猫咪主题暂停与结果层；行为模型仍由公共运行层提供。 */
 export class WatermelonOverlayView {
     private pause?: OverlayState;
     private result?: OverlayState;
@@ -62,9 +52,9 @@ export class WatermelonOverlayView {
             '暂停一下',
             `当前分数  ${score}\n猫咪们会在原位等你回来`,
             [
-                { name: 'ResumeButton', label: '继续游戏', action: model.resume, tone: 'leaf' },
-                { name: 'RestartButton', label: '重新开始', action: model.restart, tone: 'coral' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.exit, tone: 'paper' },
+                { name: 'ResumeButton', label: '继续游戏', action: model.resume, tone: 'mint' },
+                { name: 'RestartButton', label: '重新开始', action: model.restart, tone: 'peach' },
+                { name: 'LobbyButton', label: '回到大厅', action: model.exit, tone: 'soft' },
             ],
         );
     }
@@ -86,8 +76,8 @@ export class WatermelonOverlayView {
             newRecord ? '新纪录！' : '本局完成',
             `最终分数  ${model.result.score}\n本局最大猫咪等级  ${maxFruitLevel}`,
             [
-                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'coral' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'paper' },
+                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'peach' },
+                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'soft' },
             ],
             newRecord,
         );
@@ -129,7 +119,7 @@ export class WatermelonOverlayView {
         widget.top = widget.bottom = widget.left = widget.right = 0;
         widget.updateAlignment();
         const shade = root.addComponent(Graphics);
-        shade.fillColor = COLORS.overlay;
+        shade.fillColor = catUiColor('ink', 172);
         shade.rect(
             -metrics.width / 2,
             -metrics.height / 2,
@@ -138,45 +128,51 @@ export class WatermelonOverlayView {
         );
         shade.fill();
 
-        const panel = new Node('PaperPanel');
+        const panel = new Node('CozyPanel');
         panel.layer = root.layer;
         panel.setParent(root);
         panel.setPosition(0, metrics.panelY);
         panel.addComponent(UITransform).setContentSize(metrics.panelWidth, metrics.panelHeight);
-        const paper = panel.addComponent(Graphics);
-        paper.fillColor = new Color(75, 43, 32, 45);
-        paper.roundRect(
+        const panelGraphics = panel.addComponent(Graphics);
+        panelGraphics.fillColor = catUiColor('ink', 38);
+        panelGraphics.roundRect(
             -metrics.panelWidth / 2 + 14,
             -metrics.panelHeight / 2 - 12,
             metrics.panelWidth - 10,
             metrics.panelHeight - 10,
-            28,
+            CAT_UI_SHAPE.panelRadius,
         );
-        paper.fill();
-        paper.fillColor = COLORS.cream;
-        paper.strokeColor = COLORS.ink;
-        paper.lineWidth = 8;
-        paper.roundRect(
+        panelGraphics.fill();
+        panelGraphics.fillColor = catUiColor('surface');
+        panelGraphics.strokeColor = highlight
+            ? catUiColor('butter')
+            : catUiColor('lavender');
+        panelGraphics.lineWidth = 7;
+        panelGraphics.roundRect(
             -metrics.panelWidth / 2,
             -metrics.panelHeight / 2,
             metrics.panelWidth,
             metrics.panelHeight,
-            28,
+            CAT_UI_SHAPE.panelRadius,
         );
-        paper.fill();
-        paper.stroke();
-        paper.fillColor = highlight ? new Color(249, 199, 79, 255) : COLORS.paper;
-        const foldRight = metrics.panelWidth / 2;
-        const foldTop = metrics.panelHeight / 2;
-        paper.moveTo(foldRight - 120, foldTop);
-        paper.lineTo(foldRight, foldTop - 120);
-        paper.lineTo(foldRight - 120, foldTop - 120);
-        paper.close();
-        paper.fill();
+        panelGraphics.fill();
+        panelGraphics.stroke();
+        panelGraphics.fillColor = highlight
+            ? catUiColor('butter')
+            : catUiColor('blush');
+        panelGraphics.roundRect(-104, metrics.panelHeight / 2 - 70, 208, 38, 19);
+        panelGraphics.fill();
+        // A compact paw mark establishes theme without crowding the content.
+        panelGraphics.fillColor = catUiColor('peach', 190);
+        panelGraphics.circle(0, metrics.panelHeight / 2 - 51, 9);
+        panelGraphics.circle(-14, metrics.panelHeight / 2 - 37, 5);
+        panelGraphics.circle(0, metrics.panelHeight / 2 - 33, 5);
+        panelGraphics.circle(14, metrics.panelHeight / 2 - 37, 5);
+        panelGraphics.fill();
 
         const contentWidth = metrics.panelWidth - 90;
-        this.createLabel(panel, 'Title', title, 0, 214, 42, highlight ? COLORS.danger : COLORS.ink, contentWidth, 62);
-        this.createLabel(panel, 'Body', body, 0, 112, 26, COLORS.ink, contentWidth, 100);
+        this.createLabel(panel, 'Title', title, 0, 214, 42, highlight ? catUiColor('danger') : catUiColor('ink'), contentWidth, 62);
+        this.createLabel(panel, 'Body', body, 0, 112, 26, catUiColor('ink'), contentWidth, 100);
 
         const buttons: Button[] = [];
         const state: OverlayState = { root, buttons, busy: false };
@@ -211,19 +207,24 @@ export class WatermelonOverlayView {
         node.addComponent(UITransform).setContentSize(buttonWidth, buttonHeight);
         node.addComponent(UIOpacity);
         const graphics = node.addComponent(Graphics);
-        graphics.fillColor = spec.tone === 'leaf'
-            ? COLORS.leaf
-            : spec.tone === 'coral'
-                ? COLORS.coral
-                : spec.tone === 'danger' ? COLORS.danger : COLORS.paper;
+        graphics.fillColor = spec.tone === 'mint'
+            ? catUiColor('mintDark')
+            : spec.tone === 'peach'
+                ? catUiColor('peach')
+                : spec.tone === 'danger' ? catUiColor('danger') : catUiColor('cream');
+        graphics.strokeColor = spec.tone === 'soft'
+            ? catUiColor('blush')
+            : catUiColor('surface', 190);
+        graphics.lineWidth = 3;
         graphics.roundRect(
             -buttonWidth / 2,
             -buttonHeight / 2,
             buttonWidth,
             buttonHeight,
-            16,
+            CAT_UI_SHAPE.buttonRadius,
         );
         graphics.fill();
+        graphics.stroke();
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.95;
@@ -236,9 +237,9 @@ export class WatermelonOverlayView {
             0,
             0,
             25,
-            spec.tone === 'leaf' || spec.tone === 'danger'
-                ? Color.WHITE
-                : COLORS.ink,
+            spec.tone === 'mint' || spec.tone === 'danger'
+                ? catUiColor('surface')
+                : catUiColor('ink'),
             buttonWidth - 30,
             48,
         );
@@ -282,7 +283,7 @@ export class WatermelonOverlayView {
             const opacity = button.node.getComponent(UIOpacity);
             if (opacity) opacity.opacity = button.node.name === spec.name ? 230 : 145;
         });
-        const selected = state.root.getChildByName('PaperPanel')
+        const selected = state.root.getChildByName('CozyPanel')
             ?.getChildByName(spec.name)
             ?.getChildByName('Label')
             ?.getComponent(Label);

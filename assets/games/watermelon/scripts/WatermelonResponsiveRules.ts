@@ -41,8 +41,8 @@ export function calculateWatermelonOverlayMetrics(
         panelWidth,
         panelHeight,
         panelY: (clampedBottom - clampedTop) / 2,
-        buttonWidth: Math.min(450, panelWidth - 80),
-        buttonHeight: 88,
+        buttonWidth: Math.min(400, panelWidth - 130),
+        buttonHeight: 66,
     });
 }
 

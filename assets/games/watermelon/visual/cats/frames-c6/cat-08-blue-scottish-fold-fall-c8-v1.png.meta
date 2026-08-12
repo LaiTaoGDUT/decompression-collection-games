@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "0b8aec65-e5a0-400e-8088-91b95e7dbd7a",
+  "uuid": "b7ca748a-7e2d-43e9-89db-fd6e978d81c9",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "0b8aec65-e5a0-400e-8088-91b95e7dbd7a@6c48a",
-      "displayName": "cat-08-silver-tabby-idle-2-c6-v1",
+      "uuid": "b7ca748a-7e2d-43e9-89db-fd6e978d81c9@6c48a",
+      "displayName": "cat-08-blue-scottish-fold-fall-c8-v1",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "0b8aec65-e5a0-400e-8088-91b95e7dbd7a",
+        "imageUuidOrDatabaseUri": "b7ca748a-7e2d-43e9-89db-fd6e978d81c9",
         "visible": false
       },
       "ver": "1.0.22",
@@ -37,6 +37,6 @@
     "type": "texture",
     "fixAlphaTransparencyArtifacts": false,
     "hasAlpha": true,
-    "redirect": "0b8aec65-e5a0-400e-8088-91b95e7dbd7a@6c48a"
+    "redirect": "b7ca748a-7e2d-43e9-89db-fd6e978d81c9@6c48a"
   }
 }

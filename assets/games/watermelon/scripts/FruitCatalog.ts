@@ -40,9 +40,14 @@ const DEFINITIONS = [
     ['brown-tabby', '虎斑猫', [153, 104, 62], 'apple'],
     ['siamese', '暹罗猫', [210, 185, 151], 'pear'],
     ['golden-shorthair', '金渐层', [230, 169, 73], 'peach'],
-    ['silver-tabby', '银渐层', [151, 156, 165], 'pineapple'],
+    ['blue-scottish-fold', '蓝灰折耳', [103, 111, 134], 'pineapple'],
     ['orange-tabby', '黑烟虎斑', [67, 65, 76], 'melon'],
     ['fat-orange', '大胖橘', [235, 128, 28], 'watermelon'],
+] as const;
+
+const FRAME_VERSIONS = [
+    'c6-v1', 'c6-v1', 'c6-v1', 'c6-v1', 'c6-v1', 'c6-v1',
+    'c6-v1', 'c6-v1', 'c8-v1', 'c6-v1', 'c6-v1',
 ] as const;
 
 /** Per-level pair with the smallest measured pixel delta among the old three idle frames. */
@@ -59,11 +64,12 @@ function createFruitCatalog(
         const [id, displayName, rgb, legacyPrefabId] = definition;
         const physics = gameplay.fruits[level];
         const assetPrefix = `visual/cats/frames-c6/cat-${level < 10 ? '0' : ''}${level}-${id}`;
+        const frameVersion = FRAME_VERSIONS[level];
         const [firstIdle, secondIdle] = IDLE_FRAME_PAIRS[level];
         const animationSprites = Object.freeze([
-            `${assetPrefix}-idle-${firstIdle}-c6-v1/texture`,
-            `${assetPrefix}-idle-${secondIdle}-c6-v1/texture`,
-            `${assetPrefix}-fall-c6-v1/texture`,
+            `${assetPrefix}-idle-${firstIdle}-${frameVersion}/texture`,
+            `${assetPrefix}-idle-${secondIdle}-${frameVersion}/texture`,
+            `${assetPrefix}-fall-${frameVersion}/texture`,
         ]) as readonly [string, string, string];
         return Object.freeze({
             level,

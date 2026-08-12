@@ -1,8 +1,8 @@
 # 素材来源台账
 
-> 台账版本：1.5
+> 台账版本：1.6
 >
-> 状态：L1 + W1 方向已确认，首发大厅与 W1 核心美术可导入
+> 状态：L1 + W1 + T48 方向已确认，两款首发游戏核心素材可导入
 >
 > 视觉框架：[VISUAL_STYLE_GUIDE.md](./VISUAL_STYLE_GUIDE.md)
 
@@ -24,6 +24,7 @@
 | --- | --- | --- | --- | --- |
 | 大厅 | L1 柔光收藏馆 | [LOBBY_VISUAL_SPEC.md](./LOBBY_VISUAL_SPEC.md) | `assets/lobby/visual/` | `lobby` |
 | 合成大胖橘 | C1 圆滚滚猫咪屋 | [CAT_MERGE_C1.md](./asset-generation/CAT_MERGE_C1.md) | `assets/games/watermelon/visual/` | `game-watermelon` |
+| 霓光 2048 | T48 深靛霓光电路 | [GAME2048_VISUAL_SPEC.md](./GAME2048_VISUAL_SPEC.md) | `assets/games/twenty48/visual/` | `game-2048` |
 | 公共技术层 | 无正式视觉主题 | 只保留安全区、触摸、状态和无障碍约束 | `assets/shared/` | 主包 |
 
 ## 3. 首版素材路由
@@ -35,13 +36,16 @@
 | LOB-003 | 大厅 | 标准卡片与整卡入口 | 可导入 | Cocos Graphics/Label/Tween 项目自绘 | 项目原创；L1 令牌由 `GameCardView` 统一绘制 | `assets/lobby/scripts/GameCardView.ts` | `lobby` | 暖奶油/鼠尾草展品档案卡、装帧阴影、类型展签与封面呼吸；无独立进入按钮，整卡点击；全部真实游戏同权重 |
 | LOB-004 | 大厅 | 敬请期待卡 | 可导入 | Cocos Graphics/Label 项目自绘 | 项目原创；使用 V2 大厅统一蓝白材质 | `assets/lobby/scripts/GameCardView.ts` | `lobby` | 半透明浅蓝卡、中央手柄指示图和单行“敬请期待”；无按钮、无点击、无 Manifest |
 | LOB-005 | 大厅展示副本 | 合成大胖橘封面 | 可导入 | Codex 内置 ImageGen，使用项目自有猫咪母版作为风格参考 | [C1 生成与接线记录](./asset-generation/CAT_MERGE_C1.md) | `assets/lobby/visual/covers/watermelon/c1-fat-orange-cover-v1.jpg` | `lobby` | 920×690；胖橘居中、三只低等级猫环绕；不反向加载游戏 Bundle |
+| LOB-007 | 大厅展示副本 | 霓光 2048 封面 | 可导入 | 项目内原创 SVG + Sharp 离线渲染 | [T48 视觉规格](./GAME2048_VISUAL_SPEC.md)；无外部素材 | `assets/lobby/visual/covers/game2048/t48-neon-cover-v1.png` | `lobby` | 920×690；深靛电路、青绿/琥珀数字块；源 SVG 位于 `art_sources/game2048/`，不反向加载游戏 Bundle |
 | LOB-006 | 大厅 | 设置入口与设置面板 | 可导入 | Cocos Graphics/Label 项目自绘 | 项目原创；只调用 Audio/Feedback/Storage/Platform 公共边界 | `assets/lobby/scripts/LobbySettingsPanel.ts` | `lobby` | 小尺寸展签入口、分层纸张弹窗、单一珊瑚侧脊、三张设置票卡与实体开关旋钮；音乐、音效、振动及失败回滚；第 9 步完成 |
-| WM-001 | 合成大胖橘 | 11 级圆猫逐帧套图 | 可导入 | Codex 内置 ImageGen + 绿色键控抠图 + 同级统一变换 + 严格圆形 Alpha | [C2–C6 生成与接线记录](./asset-generation/CAT_MERGE_C2.md)；仅使用项目自有 C1 猫咪母版 | `assets/games/watermelon/visual/cats/frames-c6/` | `game-watermelon` | 11 级 ×（2 待机帧 + 1 下落帧）= 33 张 256² PNG；有效圆与碰撞圆一致；旧代际和候选帧已移至 `art_sources/archive/unused-runtime-assets/` |
+| WM-001 | 合成大胖橘 | 11 级圆猫逐帧套图 | 可导入 | Codex 内置 ImageGen + 绿色键控抠图 + 同级统一变换 + 严格圆形 Alpha | [C2–C8 生成与接线记录](./asset-generation/CAT_MERGE_C2.md)；仅使用项目自有角色母版和运行帧作参考 | `assets/games/watermelon/visual/cats/frames-c6/` | `game-watermelon` | 11 级 ×（2 待机帧 + 1 下落帧）= 33 张 256² PNG；C8 将第 9 级替换为全新蓝灰折耳；有效圆与放大后的碰撞圆一致；旧银渐层已归档 |
 | WM-002 | 合成大胖橘 | 猫咪屋背景、容器、危险线 | 可导入 | Codex 内置 ImageGen + Cocos Graphics | [C1 生成与接线记录](./asset-generation/CAT_MERGE_C1.md) | `assets/games/watermelon/visual/backgrounds/c1-cat-room-bg-v1.jpg`、`WatermelonLayout.ts` | `game-watermelon` | 750×1334；中央留白，猫爬架与毛线球仅位于边缘；圆形碰撞与容器规则不变 |
 | WM-003 | 合成大西瓜 | HUD、按钮、弹窗和图标 | 可导入 | W1 游戏主题 Graphics/Label 独立自绘 | 项目原创；无外部资源 | `assets/games/watermelon/scripts/WatermelonLayout.ts` | `game-watermelon` | HUD 与续玩层已接入，暂停/结果在第 24 步完成 |
 | WM-004 | 合成大胖橘 | 猫咪待机与下落逐帧动画 | 可导入 | ImageGen 逐帧资产 + Cocos SpriteFrame 调度 | [C2 动画记录](./asset-generation/CAT_MERGE_C2.md) | `assets/games/watermelon/scripts/WatermelonGame.ts`、`FruitBody.ts` | `game-watermelon` | 三帧待机 + 单帧下落；不使用形变 Tween；碰撞体始终保持正圆 |
+| T48-001 | 霓光 2048 | 棋盘、数字块、HUD 与主题弹层 | 可导入 | Cocos Graphics/Label/Tween 项目自绘 | [玩法规格](./GAME2048_GAMEPLAY_SPEC.md)、[视觉规格](./GAME2048_VISUAL_SPEC.md)；无外部素材 | `assets/games/twenty48/scripts/Game2048Game.ts` | `game-2048` | 4×4 深色棋盘、青绿/琥珀数字块、目标/暂停/结果层、滑动/出现/合并反馈；与 W1 纸片猫屋完全分离 |
 | LOB-A01 | 大厅 | 大厅循环音乐与 UI 音效 | 可导入 | Codex 项目内程序化合成/编曲，种子 `0x51A7E202` | [脚本、母带、压缩、指标与试听记录](./asset-generation/AUDIO_V1.md)；无外部音频 | `assets/lobby/visual/audio/` | `lobby` | V2 保留 L1 基底并丰富低频、回应旋律和空间闪光；等待用户复听确认 |
 | WM-A01 | 合成大西瓜 | 游戏循环音乐与反馈音效 | 可导入 | Codex 项目内程序化合成/编曲，同一可复现脚本的 W1 独立参数 | [完整记录](./asset-generation/AUDIO_V1.md)；无外部音频 | `assets/games/watermelon/visual/audio/` | `game-watermelon` | W1 音乐 + 12 Cue；V2 重制危险/失败，V3 丰富音乐并柔化碰撞，V4 重制投放松手 Cue；等待用户复听确认 |
+| T48-A01 | 霓光 2048 | 电子循环音乐与反馈音效 | 可导入 | Codex 项目内程序化合成/编曲，T48 独立参数 | [完整记录](./asset-generation/GAME2048_AUDIO_V1.md)；无外部音频 | `assets/games/twenty48/visual/audio/` | `game-2048` | 24 秒无缝循环 + 9 Cue；10 个文件共 329,280 bytes，独立于 L1/W1 文件与音色 |
 
 ## 4. 实际素材必填字段
 

@@ -74,6 +74,7 @@ import {
     calculateWatermelonOverlayMetrics,
     readWatermelonViewport,
 } from './WatermelonResponsiveRules';
+import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 
 const { ccclass } = _decorator;
 type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
@@ -1004,7 +1005,7 @@ export class WatermelonGame extends Component implements MiniGame {
         overlay.addComponent(UITransform).setContentSize(metrics.width, metrics.height);
 
         const backdrop = overlay.addComponent(Graphics);
-        backdrop.fillColor = new Color(35, 24, 29, 205);
+        backdrop.fillColor = catUiColor('ink', 188);
         backdrop.rect(
             -metrics.width / 2,
             -metrics.height / 2,
@@ -1019,18 +1020,36 @@ export class WatermelonGame extends Component implements MiniGame {
         panel.setPosition(0, metrics.panelY);
         panel.addComponent(UITransform).setContentSize(metrics.panelWidth, metrics.panelHeight);
         const panelGraphics = panel.addComponent(Graphics);
-        panelGraphics.fillColor = new Color(255, 246, 218, 255);
-        panelGraphics.strokeColor = new Color(103, 66, 49, 255);
-        panelGraphics.lineWidth = 8;
+        panelGraphics.fillColor = catUiColor('ink', 38);
+        panelGraphics.roundRect(
+            -metrics.panelWidth / 2 + 14,
+            -metrics.panelHeight / 2 - 12,
+            metrics.panelWidth - 10,
+            metrics.panelHeight - 10,
+            CAT_UI_SHAPE.panelRadius,
+        );
+        panelGraphics.fill();
+        panelGraphics.fillColor = catUiColor('surface');
+        panelGraphics.strokeColor = catUiColor('lavender');
+        panelGraphics.lineWidth = 7;
         panelGraphics.roundRect(
             -metrics.panelWidth / 2,
             -metrics.panelHeight / 2,
             metrics.panelWidth,
             metrics.panelHeight,
-            28,
+            CAT_UI_SHAPE.panelRadius,
         );
         panelGraphics.fill();
         panelGraphics.stroke();
+        panelGraphics.fillColor = catUiColor('blush');
+        panelGraphics.roundRect(-112, metrics.panelHeight / 2 - 72, 224, 40, 20);
+        panelGraphics.fill();
+        panelGraphics.fillColor = catUiColor('peach', 190);
+        panelGraphics.circle(0, metrics.panelHeight / 2 - 52, 9);
+        panelGraphics.circle(-14, metrics.panelHeight / 2 - 38, 5);
+        panelGraphics.circle(0, metrics.panelHeight / 2 - 34, 5);
+        panelGraphics.circle(14, metrics.panelHeight / 2 - 38, 5);
+        panelGraphics.fill();
 
         this.createOverlayLabel(panel, 'Title', '再坚持一下？', 0, 242, 38);
         this.createOverlayLabel(panel, 'Message', '看完视频，清除越线猫咪并继续本局', 0, 184, 24);
@@ -1067,7 +1086,7 @@ export class WatermelonGame extends Component implements MiniGame {
         label.string = text;
         label.fontSize = fontSize;
         label.lineHeight = fontSize + 10;
-        label.color = new Color(75, 48, 38, 255);
+        label.color = catUiColor('ink');
         label.horizontalAlign = 1;
         label.verticalAlign = 1;
         label.overflow = Label.Overflow.SHRINK;
@@ -1088,15 +1107,27 @@ export class WatermelonGame extends Component implements MiniGame {
         node.setParent(parent);
         node.setPosition(x, y);
         const panelWidth = parent.getComponent(UITransform)?.contentSize.width ?? 590;
-        const buttonWidth = Math.min(430, panelWidth - 80);
-        node.addComponent(UITransform).setContentSize(buttonWidth, 88);
+        const buttonWidth = Math.min(400, panelWidth - 130);
+        const buttonHeight = 66;
+        node.addComponent(UITransform).setContentSize(buttonWidth, buttonHeight);
         node.addComponent(UIOpacity);
         const graphics = node.addComponent(Graphics);
         graphics.fillColor = primary
-            ? new Color(225, 86, 67, 255)
-            : new Color(239, 224, 188, 255);
-        graphics.roundRect(-buttonWidth / 2, -44, buttonWidth, 88, 18);
+            ? catUiColor('peach')
+            : catUiColor('cream');
+        graphics.strokeColor = primary
+            ? catUiColor('surface', 190)
+            : catUiColor('blush');
+        graphics.lineWidth = 3;
+        graphics.roundRect(
+            -buttonWidth / 2,
+            -buttonHeight / 2,
+            buttonWidth,
+            buttonHeight,
+            CAT_UI_SHAPE.buttonRadius,
+        );
         graphics.fill();
+        graphics.stroke();
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.95;
@@ -1105,8 +1136,8 @@ export class WatermelonGame extends Component implements MiniGame {
 
         const label = this.createOverlayLabel(node, 'Text', text, 0, 0, 26);
         label.color = primary
-            ? new Color(255, 252, 238, 255)
-            : new Color(91, 61, 45, 255);
+            ? catUiColor('surface')
+            : catUiColor('ink');
     }
 
     private setContinueOverlayBusy(busy: boolean, status: string): void {
@@ -1141,13 +1172,13 @@ export class WatermelonGame extends Component implements MiniGame {
 
         if (failed) {
             label.string = '⚠ 已越过警戒线';
-            label.color = new Color(196, 62, 53, 255);
+            label.color = catUiColor('danger');
         } else if (this.overflowGuard.isTiming) {
             label.string = `⚠ 危险 ${this.overflowGuard.remainingSeconds.toFixed(1)}s`;
-            label.color = new Color(211, 91, 69, 255);
+            label.color = catUiColor('peachDark');
         } else {
-            label.string = '⚠ ┄ ┄ ┄ 失败警戒线 ┄ ┄ ┄';
-            label.color = new Color(156, 103, 78, 220);
+            label.string = '· · ·  猫咪警戒线  · · ·';
+            label.color = catUiColor('peachDark', 205);
         }
     }
 
@@ -1177,10 +1208,10 @@ export class WatermelonGame extends Component implements MiniGame {
         label.lineHeight = event.isChain ? 50 : 38;
         label.isBold = event.isChain;
         label.color = event.isChain
-            ? new Color(204, 76, 39, 255)
+            ? catUiColor('peachDark')
             : event.isMilestone
-            ? new Color(184, 46, 62, 255)
-            : new Color(75, 43, 32, 255);
+            ? catUiColor('danger')
+            : catUiColor('ink');
         label.horizontalAlign = 1;
         label.verticalAlign = 1;
         this.effectNodes.add(scoreNode);
@@ -1204,23 +1235,24 @@ export class WatermelonGame extends Component implements MiniGame {
         const tier = this.context?.services.deviceTier ?? 'medium';
         const particleCount = tier === 'low' ? 0 : tier === 'high' ? 8 : 4;
         const colors = [
-            new Color(242, 139, 102, 255),
-            new Color(249, 199, 79, 255),
-            new Color(99, 184, 121, 255),
+            catUiColor('peach'),
+            catUiColor('butter'),
+            catUiColor('mintDark'),
+            catUiColor('lavender'),
         ];
         for (let index = 0; index < particleCount; index += 1) {
-            const particle = new Node('PaperFoldFx');
+            const particle = new Node('PawSparkFx');
             particle.layer = container.layer;
             particle.setParent(container);
             particle.setPosition(x, y);
-            particle.addComponent(UITransform).setContentSize(16, 16);
+            particle.addComponent(UITransform).setContentSize(22, 22);
             const particleOpacity = particle.addComponent(UIOpacity);
             const graphics = particle.addComponent(Graphics);
             graphics.fillColor = colors[index % colors.length];
-            graphics.moveTo(-7, -6);
-            graphics.lineTo(8, -3);
-            graphics.lineTo(1, 8);
-            graphics.close();
+            graphics.circle(0, -3, 6);
+            graphics.circle(-7, 6, 3.5);
+            graphics.circle(0, 9, 3.5);
+            graphics.circle(7, 6, 3.5);
             graphics.fill();
             this.effectNodes.add(particle);
             const angle = (Math.PI * 2 * index) / Math.max(1, particleCount);
@@ -1233,7 +1265,7 @@ export class WatermelonGame extends Component implements MiniGame {
                         y + 24 + Math.sin(angle) * distance,
                         0,
                     ),
-                    angle: (index % 2 === 0 ? 1 : -1) * 110,
+                    angle: (index % 2 === 0 ? 1 : -1) * 42,
                 }, { easing: 'quadOut' })
                 .call(() => this.releaseEffectNode(particle))
                 .start();
@@ -1365,15 +1397,15 @@ export class WatermelonGame extends Component implements MiniGame {
         label.lineHeight = event.isChain ? 38 : 33;
         label.isBold = event.isChain;
         label.color = event.isChain
-            ? new Color(184, 85, 35, 255)
-            : new Color(75, 43, 32, 230);
+            ? catUiColor('peachDark')
+            : catUiColor('ink', 230);
         this.scheduleOnce(() => {
             if (label.node.isValid && this.state === 'playing') {
                 label.string = '左右移动，松手投放';
                 label.fontSize = 23;
                 label.lineHeight = 33;
                 label.isBold = false;
-                label.color = new Color(75, 43, 32, 230);
+                label.color = catUiColor('ink', 230);
             }
         }, event.isChain ? 1.15 : 0.8);
     }
@@ -1425,15 +1457,18 @@ export class WatermelonGame extends Component implements MiniGame {
         const startY = preview.position.y - getFruitConfig(this.currentLevel).radius - 8;
         const endY = -boardHeight / 2 + 28;
         graphics.clear();
-        graphics.strokeColor = new Color(75, 43, 32, 85);
+        graphics.strokeColor = catUiColor('sky', 190);
         graphics.lineWidth = 4;
         for (let y = startY; y > endY; y -= 24) {
             graphics.moveTo(0, y);
             graphics.lineTo(0, Math.max(endY, y - 11));
         }
         graphics.stroke();
-        graphics.fillColor = new Color(242, 139, 102, 150);
-        graphics.circle(0, endY, 7);
+        graphics.fillColor = catUiColor('peach', 190);
+        graphics.circle(0, endY - 1, 6);
+        graphics.circle(-7, endY + 8, 3);
+        graphics.circle(0, endY + 11, 3);
+        graphics.circle(7, endY + 8, 3);
         graphics.fill();
     }
 

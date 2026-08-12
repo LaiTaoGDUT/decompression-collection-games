@@ -364,6 +364,8 @@ interface UserData {
 
 合成大西瓜当前使用游戏内 `dataVersion: 2`，其 `custom` 已知字段为 `maxFruitLevel`、`continueOfferCount` 和 `continueCompletedCount`。读取 `dataVersion: 1` 或字段不完整的数据时，在游戏命名空间内补齐非负默认值并保留未知自定义字段；根存档版本不因此升级。`playCount/lastPlayedAt` 只在新一局开始写入，最高分、历史最大水果和续玩统计只在最终结算写入，中途退出和暂停重开不刷新纪录。回滚到不识别 v2 的旧游戏代码时，公共存储仍会保留该命名空间；安全回滚策略是旧代码忽略新增 `custom` 字段，禁止删除或重置用户根存档。
 
+霓光 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 1`，其 `custom` 已知字段为 `highestTile`；`highScore` 保存历史最高分。新局开始写入 `playCount/lastPlayedAt`，有效移动可即时刷新最高分与最高数字。该增量不修改根存档 schema；回滚时旧代码忽略整个 `game2048` 命名空间，禁止因隐藏游戏入口而删除用户记录。
+
 ## 12. 公共 UI 层级
 
 所有场景遵循统一层级：
@@ -396,6 +398,7 @@ Canvas
 | `shared` | 高频公共 UI 和公共资源 | 主包或公共分包 |
 | `game-placeholder` | 首条加载与退出流程的临时验证游戏 | 主包；正式游戏接入后可移除 |
 | `game-watermelon` | 合成大西瓜游戏全部内容 | 独立游戏分包 |
+| `game-2048` | 霓光 2048 的场景、规则、主题 UI 与音频 | 独立游戏分包 |
 | `game-blocks-3d` | 3D 推倒积木验证游戏全部内容 | 独立游戏分包 |
 | `game-switch` | 开关游戏全部内容 | 独立游戏分包 |
 | `game-catch` | 接球游戏全部内容 | 独立游戏分包 |

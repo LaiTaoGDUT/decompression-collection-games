@@ -4,6 +4,8 @@
 > 状态：V4 工程可导入；等待用户复听确认后升级为候选可用  
 > 完整指标：[audio-v1-report.json](./audio-v1-report.json)
 
+> 注：指标报告自 revision 5 起同时包含 T48 霓光 2048 的 10 个独立资产；本文件下方的 17 个资产与包体数字只统计 L1/W1，T48 记录见 [GAME2048_AUDIO_V1.md](./GAME2048_AUDIO_V1.md)。
+
 ## 1. 原创方法
 
 全部波形由 `tools/audio/generate-original-audio.js` 直接合成，没有下载、采样、拼接或模仿外部音乐/音效。固定随机种子为 `0x51A7E202`，采样率 48 kHz，母带为双声道 16-bit PCM WAV。脚本使用正弦/三角/拨弦谐波、确定性过滤噪声、独立包络、声像和纸片节奏构造声音。

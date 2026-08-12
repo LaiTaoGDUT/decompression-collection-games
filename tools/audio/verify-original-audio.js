@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const report = JSON.parse(fs.readFileSync('docs/asset-generation/audio-v1-report.json', 'utf8'));
-if (report.sampleRate !== 48000 || report.assets.length !== 17) {
+if (report.sampleRate !== 48000 || report.assets.length !== 27) {
     throw new Error('Unexpected audio sample rate or asset count.');
 }
 
@@ -19,6 +19,7 @@ for (const asset of report.assets) {
     if (asset.music && asset.seamDelta !== 0) throw new Error(`Loop seam is not zero: ${asset.name}.`);
     if (asset.owner === 'lobby' && !asset.runtimePath.startsWith('assets/lobby/')) throw new Error('Lobby route leak.');
     if (asset.owner === 'watermelon' && !asset.runtimePath.startsWith('assets/games/watermelon/')) throw new Error('Game route leak.');
+    if (asset.owner === 'game2048' && !asset.runtimePath.startsWith('assets/games/twenty48/')) throw new Error('2048 route leak.');
     if (runtimeNames.has(path.basename(runtime))) throw new Error('Audio filename reused across owners.');
     runtimeNames.add(path.basename(runtime));
     runtimeBytes += fs.statSync(runtime).size;

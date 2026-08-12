@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "bd5ac77a-0134-4add-8de9-0a2ed54b8766",
+  "uuid": "fb7c8e05-7fdc-4904-bb4e-ebb01ba92385",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "bd5ac77a-0134-4add-8de9-0a2ed54b8766@6c48a",
-      "displayName": "cat-08-silver-tabby-idle-1-c6-v1",
+      "uuid": "fb7c8e05-7fdc-4904-bb4e-ebb01ba92385@6c48a",
+      "displayName": "cat-08-blue-scottish-fold-idle-1-c8-v1",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "bd5ac77a-0134-4add-8de9-0a2ed54b8766",
+        "imageUuidOrDatabaseUri": "fb7c8e05-7fdc-4904-bb4e-ebb01ba92385",
         "visible": false
       },
       "ver": "1.0.22",
@@ -37,6 +37,6 @@
     "type": "texture",
     "fixAlphaTransparencyArtifacts": false,
     "hasAlpha": true,
-    "redirect": "bd5ac77a-0134-4add-8de9-0a2ed54b8766@6c48a"
+    "redirect": "fb7c8e05-7fdc-4904-bb4e-ebb01ba92385@6c48a"
   }
 }

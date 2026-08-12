@@ -152,7 +152,7 @@ export class FruitBody extends Component {
             visual.addComponent(UITransform);
             visual.addComponent(Sprite);
         }
-        // The visible alpha circle now exactly matches the physical collider.
+        // The visible token and CircleCollider2D use the same physical diameter.
         const visualSize = config.radius * 2 / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
         const sprite = visual.getComponent(Sprite)!;
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;

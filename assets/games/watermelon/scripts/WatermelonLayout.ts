@@ -14,6 +14,7 @@ import {
     UITransform,
     view,
 } from 'cc';
+import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 
 const { ccclass } = _decorator;
 
@@ -64,18 +65,20 @@ export function calculateWatermelonLayout(
     });
 }
 
-/** C1 猫咪屋 HUD 与常见竖屏比例适配，不包含玩法状态。 */
+/** 萌系猫咪屋 HUD 与常见竖屏比例适配，不包含玩法状态。 */
 @ccclass('WatermelonLayout')
 export class WatermelonLayout extends Component {
     private ownedBackgroundFrame?: SpriteFrame;
 
     protected onLoad(): void {
         this.applyLayout();
+        view.on('canvas-resize', this.handleCanvasResize, this);
         void this.loadBackground();
     }
 
     protected onDestroy(): void {
-        const sprite = this.node.getChildByName('W1Background')?.getComponent(Sprite);
+        view.off('canvas-resize', this.handleCanvasResize, this);
+        const sprite = this.node.getChildByName('CatRoomBackground')?.getComponent(Sprite);
         if (sprite) {
             sprite.spriteFrame = null;
         }
@@ -87,14 +90,19 @@ export class WatermelonLayout extends Component {
         const canvasTransform = this.node.parent?.getComponent(UITransform);
         const canvasSize = canvasTransform?.contentSize ?? { width: 750, height: 1334 };
         const visible = view.getVisibleSize();
+        // A scene Canvas can briefly keep the fixed design size while a wider
+        // device/preview viewport is already visible. Follow the visible area
+        // so the background and root UI never expose camera-clear bars.
+        const viewportWidth = Math.max(canvasSize.width, visible.width);
+        const viewportHeight = Math.max(canvasSize.height, visible.height);
         const safeRect = sys.getSafeAreaRect();
-        const designScale = visible.width > 0 ? canvasSize.width / visible.width : 1;
+        const designScale = visible.width > 0 ? viewportWidth / visible.width : 1;
         const safeTop = Math.max(0, visible.height - safeRect.y - safeRect.height)
             * designScale;
         const safeBottom = Math.max(0, safeRect.y) * designScale;
         const metrics = calculateWatermelonLayout(
-            canvasSize.width,
-            canvasSize.height,
+            viewportWidth,
+            viewportHeight,
             safeTop,
             safeBottom,
         );
@@ -102,13 +110,8 @@ export class WatermelonLayout extends Component {
         this.ensureHudNodes();
         this.resizeBackground(metrics.width, metrics.height);
 
-        // Keep score/board geometry stable while lowering only the title plaque
-        // away from browser preview crops that report no notch inset.
-        this.setPosition('Title', 0, metrics.topY - 7);
-        this.setPosition('PaperEditionTag', 0, metrics.topY - 39);
-        this.node.getChildByName('PaperEditionTag')
-            ?.getComponent(UITransform)?.setContentSize(240, 18);
-        this.setPosition('PauseButton', metrics.width / 2 - 68, metrics.topY);
+        this.setPosition('Title', 0, metrics.topY);
+        this.setPosition('PauseButton', metrics.width / 2 - 58, metrics.topY);
         this.setPosition('ScoreLabel', -metrics.width / 2 + 125, metrics.scoreY);
         this.setPosition('HighScoreLabel', 0, metrics.scoreY);
         this.setPosition('NextLabel', metrics.width / 2 - 182, metrics.scoreY + 14);
@@ -124,54 +127,48 @@ export class WatermelonLayout extends Component {
         container.setPosition(0, metrics.boardCenterY);
         container.getComponent(UITransform)?.setContentSize(metrics.boardWidth, metrics.boardHeight);
         container.getChildByName('DangerLine')?.setPosition(0, metrics.dangerY);
-        this.drawHudPaper(metrics);
+        this.drawHudDecor(metrics);
         this.applyLabelStyles();
 
         const graphics = container.getComponent(Graphics);
         if (graphics) {
             graphics.clear();
-            graphics.fillColor = new Color(75, 43, 32, 38);
+            graphics.fillColor = catUiColor('ink', 30);
             graphics.roundRect(
                 -metrics.boardWidth / 2 + 9,
                 -metrics.boardHeight / 2 - 12,
                 metrics.boardWidth,
                 metrics.boardHeight,
-                26,
+                CAT_UI_SHAPE.panelRadius,
             );
             graphics.fill();
-            graphics.fillColor = new Color(255, 242, 214, 245);
-            graphics.strokeColor = new Color(238, 139, 102, 255);
-            graphics.lineWidth = 10;
+            graphics.fillColor = catUiColor('surface', 232);
+            graphics.strokeColor = catUiColor('blush');
+            graphics.lineWidth = 9;
             graphics.roundRect(
                 -metrics.boardWidth / 2,
                 -metrics.boardHeight / 2,
                 metrics.boardWidth,
                 metrics.boardHeight,
-                26,
+                CAT_UI_SHAPE.panelRadius,
             );
             graphics.fill();
             graphics.stroke();
-            graphics.strokeColor = new Color(216, 154, 88, 110);
+            graphics.strokeColor = catUiColor('sky', 130);
             graphics.lineWidth = 3;
             graphics.roundRect(
                 -metrics.boardWidth / 2 + 13,
                 -metrics.boardHeight / 2 + 13,
                 metrics.boardWidth - 26,
                 metrics.boardHeight - 26,
-                18,
+                26,
             );
             graphics.stroke();
-            graphics.fillColor = new Color(249, 199, 79, 90);
-            graphics.moveTo(metrics.boardWidth / 2 - 92, metrics.boardHeight / 2 - 5);
-            graphics.lineTo(metrics.boardWidth / 2 - 5, metrics.boardHeight / 2 - 5);
-            graphics.lineTo(metrics.boardWidth / 2 - 5, metrics.boardHeight / 2 - 92);
-            graphics.close();
+            // Small edge decorations keep the center and lower playfield clear.
+            graphics.fillColor = catUiColor('lavender', 105);
+            graphics.circle(-metrics.boardWidth / 2 + 30, metrics.boardHeight / 2 - 30, 11);
+            graphics.circle(metrics.boardWidth / 2 - 30, -metrics.boardHeight / 2 + 30, 11);
             graphics.fill();
-            graphics.strokeColor = new Color(75, 43, 32, 55);
-            graphics.lineWidth = 3;
-            graphics.moveTo(metrics.boardWidth / 2 - 92, metrics.boardHeight / 2 - 5);
-            graphics.lineTo(metrics.boardWidth / 2 - 5, metrics.boardHeight / 2 - 92);
-            graphics.stroke();
         }
     }
 
@@ -187,35 +184,29 @@ export class WatermelonLayout extends Component {
             label.verticalAlign = 1;
         }
 
-        if (!this.node.getChildByName('HudPaperLayer')) {
-            const paper = new Node('HudPaperLayer');
-            paper.layer = this.node.layer;
-            paper.setParent(this.node);
-            paper.addComponent(UITransform).setContentSize(750, 1334);
-            paper.addComponent(Graphics);
-            paper.setSiblingIndex(0);
+        if (!this.node.getChildByName('HudDecorLayer')) {
+            const decor = new Node('HudDecorLayer');
+            decor.layer = this.node.layer;
+            decor.setParent(this.node);
+            decor.addComponent(UITransform).setContentSize(750, 1334);
+            decor.addComponent(Graphics);
+            decor.setSiblingIndex(0);
         }
 
-        if (!this.node.getChildByName('PaperEditionTag')) {
-            const tag = new Node('PaperEditionTag');
-            tag.layer = this.node.layer;
-            tag.setParent(this.node);
-            tag.addComponent(UITransform).setContentSize(260, 28);
-            const label = tag.addComponent(Label);
-            label.string = 'W1 · PAPER MERGE';
-            label.fontSize = 15;
-            label.lineHeight = 22;
-            label.color = new Color(128, 83, 59, 255);
-            label.horizontalAlign = 1;
-            label.verticalAlign = 1;
+        const obsoleteSubtitle = this.node.getChildByName('CozyEditionTag');
+        if (obsoleteSubtitle) {
+            obsoleteSubtitle.destroy();
         }
+
+        this.node.getChildByName('Title')
+            ?.getComponent(UITransform)?.setContentSize(320, 64);
 
         const pause = this.node.getChildByName('PauseButton');
         if (!pause) {
             return;
         }
 
-        pause.getComponent(UITransform)?.setContentSize(96, 96);
+        pause.getComponent(UITransform)?.setContentSize(88, 88);
         const button = pause.getComponent(Button);
         if (button) {
             button.transition = Button.Transition.SCALE;
@@ -226,22 +217,28 @@ export class WatermelonLayout extends Component {
             oldLabel.string = '';
         }
 
-        let icon = pause.getChildByName('PaperPauseIcon');
+        let icon = pause.getChildByName('CozyPauseIcon');
         if (!icon) {
-            icon = new Node('PaperPauseIcon');
+            icon = new Node('CozyPauseIcon');
             icon.layer = pause.layer;
             icon.setParent(pause);
-            icon.addComponent(UITransform).setContentSize(96, 96);
+            icon.addComponent(UITransform).setContentSize(88, 88);
             icon.addComponent(Graphics);
         }
         const graphics = icon.getComponent(Graphics)!;
         graphics.clear();
-        graphics.fillColor = new Color(242, 139, 102, 255);
-        graphics.roundRect(-44, -44, 88, 88, 18);
+        graphics.fillColor = catUiColor('ink', 28);
+        graphics.roundRect(-31, -38, 68, 68, 22);
         graphics.fill();
-        graphics.fillColor = new Color(75, 43, 32, 255);
-        graphics.rect(-17, -22, 10, 44);
-        graphics.rect(7, -22, 10, 44);
+        graphics.fillColor = catUiColor('surface', 250);
+        graphics.strokeColor = catUiColor('peach');
+        graphics.lineWidth = 4;
+        graphics.roundRect(-34, -34, 68, 68, 22);
+        graphics.fill();
+        graphics.stroke();
+        graphics.fillColor = catUiColor('ink');
+        graphics.roundRect(-13, -15, 8, 30, 4);
+        graphics.roundRect(5, -15, 8, 30, 4);
         graphics.fill();
     }
 
@@ -257,9 +254,9 @@ export class WatermelonLayout extends Component {
                 Texture2D,
                 (error, texture) => {
                     if (!error && texture && this.node.isValid) {
-                        let background = this.node.getChildByName('W1Background');
+                        let background = this.node.getChildByName('CatRoomBackground');
                         if (!background) {
-                            background = new Node('W1Background');
+                            background = new Node('CatRoomBackground');
                             background.layer = this.node.layer;
                             background.setParent(this.node);
                             background.addComponent(UITransform);
@@ -285,7 +282,7 @@ export class WatermelonLayout extends Component {
     }
 
     private resizeBackground(width: number, height: number): void {
-        const background = this.node.getChildByName('W1Background');
+        const background = this.node.getChildByName('CatRoomBackground');
         if (!background) {
             return;
         }
@@ -296,44 +293,50 @@ export class WatermelonLayout extends Component {
         background.getComponent(UITransform)?.setContentSize(drawWidth, drawHeight);
     }
 
-    private drawHudPaper(metrics: WatermelonLayoutMetrics): void {
-        const graphics = this.node.getChildByName('HudPaperLayer')?.getComponent(Graphics);
+    private drawHudDecor(metrics: WatermelonLayoutMetrics): void {
+        const layer = this.node.getChildByName('HudDecorLayer');
+        layer?.getComponent(UITransform)?.setContentSize(metrics.width, metrics.height);
+        const graphics = layer?.getComponent(Graphics);
         if (!graphics) {
             return;
         }
 
         graphics.clear();
-        graphics.fillColor = new Color(75, 43, 32, 28);
-        graphics.roundRect(-184, metrics.topY - 58, 368, 72, 22);
+        // Compact single-line title: calm, centered, and aligned with pause.
+        graphics.fillColor = catUiColor('ink', 24);
+        graphics.roundRect(-157, metrics.topY - 37, 320, 66, 30);
         graphics.fill();
-        graphics.fillColor = new Color(255, 247, 226, 245);
-        graphics.roundRect(-190, metrics.topY - 52, 368, 72, 22);
+        graphics.fillColor = catUiColor('surface', 248);
+        graphics.strokeColor = catUiColor('blush');
+        graphics.lineWidth = 3;
+        graphics.roundRect(-160, metrics.topY - 33, 320, 64, 30);
         graphics.fill();
-        graphics.fillColor = new Color(242, 139, 102, 255);
-        graphics.roundRect(-190, metrics.topY - 52, 9, 72, 5);
+        graphics.stroke();
+        graphics.fillColor = catUiColor('peach', 175);
+        graphics.circle(-133, metrics.topY - 1, 5);
         graphics.fill();
-        this.drawPaperTag(graphics, -metrics.width / 2 + 125, metrics.scoreY, 214, 82, new Color(255, 226, 168, 255));
-        this.drawPaperTag(graphics, 0, metrics.scoreY, 190, 82, new Color(249, 199, 79, 255));
-        this.drawPaperTag(graphics, metrics.width / 2 - 128, metrics.scoreY, 238, 82, new Color(201, 232, 213, 255));
-        graphics.fillColor = new Color(255, 247, 226, 226);
-        graphics.roundRect(-230, metrics.instructionY - 27, 460, 54, 16);
+        this.drawSoftChip(graphics, -metrics.width / 2 + 125, metrics.scoreY, 214, 82, catUiColor('blush'));
+        this.drawSoftChip(graphics, 0, metrics.scoreY, 190, 82, catUiColor('butter'));
+        this.drawSoftChip(graphics, metrics.width / 2 - 128, metrics.scoreY, 238, 82, catUiColor('mint'));
+        graphics.fillColor = catUiColor('surface', 232);
+        graphics.strokeColor = catUiColor('sky', 170);
+        graphics.lineWidth = 3;
+        graphics.roundRect(-230, metrics.instructionY - 27, 460, 54, 27);
         graphics.fill();
-        graphics.fillColor = new Color(249, 199, 79, 150);
-        graphics.moveTo(-230, metrics.instructionY + 27);
-        graphics.lineTo(-196, metrics.instructionY + 27);
-        graphics.lineTo(-230, metrics.instructionY - 7);
-        graphics.close();
+        graphics.stroke();
+        graphics.fillColor = catUiColor('peach', 160);
+        graphics.circle(-203, metrics.instructionY, 7);
         graphics.fill();
 
-        graphics.fillColor = new Color(242, 139, 102, 165);
+        graphics.fillColor = catUiColor('peach', 165);
         graphics.circle(-metrics.width / 2 + 32, metrics.dropY + 24, 6);
         graphics.fill();
-        graphics.fillColor = new Color(85, 151, 108, 165);
+        graphics.fillColor = catUiColor('mintDark', 165);
         graphics.circle(metrics.width / 2 - 34, metrics.dropY - 20, 6);
         graphics.fill();
     }
 
-    private drawPaperTag(
+    private drawSoftChip(
         graphics: Graphics,
         x: number,
         y: number,
@@ -341,27 +344,34 @@ export class WatermelonLayout extends Component {
         height: number,
         color: Color,
     ): void {
-        graphics.fillColor = new Color(75, 43, 32, 38);
-        graphics.roundRect(x - width / 2 + 6, y - height / 2 - 7, width, height, 16);
+        graphics.fillColor = catUiColor('ink', 28);
+        graphics.roundRect(x - width / 2 + 5, y - height / 2 - 6, width, height, CAT_UI_SHAPE.chipRadius);
         graphics.fill();
         graphics.fillColor = color;
-        graphics.roundRect(x - width / 2, y - height / 2, width, height, 16);
+        graphics.strokeColor = catUiColor('surface', 210);
+        graphics.lineWidth = 3;
+        graphics.roundRect(x - width / 2, y - height / 2, width, height, CAT_UI_SHAPE.chipRadius);
         graphics.fill();
-        graphics.fillColor = new Color(75, 43, 32, 24);
-        graphics.moveTo(x + width / 2 - 30, y + height / 2);
-        graphics.lineTo(x + width / 2, y + height / 2 - 30);
-        graphics.lineTo(x + width / 2 - 30, y + height / 2 - 30);
-        graphics.close();
+        graphics.stroke();
+        graphics.fillColor = catUiColor('surface', 180);
+        graphics.circle(x - width / 2 + 22, y + height / 2 - 21, 5);
         graphics.fill();
     }
 
     private applyLabelStyles(): void {
-        this.styleLabel('Title', 36, new Color(61, 33, 24, 255), '合成大胖橘');
-        this.styleLabel('ScoreLabel', 30, new Color(75, 43, 32, 255));
-        this.styleLabel('HighScoreLabel', 27, new Color(75, 43, 32, 255));
-        this.styleLabel('NextLabel', 23, new Color(75, 43, 32, 255), '下一个');
-        this.styleLabel('DropZone', 21, new Color(75, 43, 32, 210), '拖动猫咪，松手投放');
-        this.styleLabel('Instruction', 23, new Color(75, 43, 32, 230), '左右移动，松手投放');
+        this.styleLabel('Title', 34, catUiColor('ink'), '合成大胖橘');
+        this.styleLabel('ScoreLabel', 30, catUiColor('ink'));
+        this.styleLabel('HighScoreLabel', 27, catUiColor('ink'));
+        this.styleLabel('NextLabel', 23, catUiColor('ink'), '下一只');
+        this.styleLabel('DropZone', 21, catUiColor('mutedInk', 220), '拖动猫咪，松手投放');
+        this.styleLabel('Instruction', 23, catUiColor('ink', 230), '左右移动，松手投放');
+        const danger = this.node.getChildByName('FruitContainer')
+            ?.getChildByName('DangerLine')?.getComponent(Label);
+        if (danger) {
+            danger.color = catUiColor('peachDark', 205);
+            danger.fontSize = 20;
+            danger.lineHeight = 28;
+        }
     }
 
     private styleLabel(
@@ -388,4 +398,10 @@ export class WatermelonLayout extends Component {
     private setPosition(name: string, x: number, y: number): void {
         this.node.getChildByName(name)?.setPosition(x, y);
     }
+
+    private readonly handleCanvasResize = (): void => {
+        if (this.node.isValid) {
+            this.applyLayout();
+        }
+    };
 }
