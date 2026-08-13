@@ -1,0 +1,338 @@
+assets/games/twenty48/visual/backgrounds/t48-neon-v2.jpg.meta
+  s_971a1a8a2e6a68::t_65aff6f3f7abd5 1-42
+assets/games/blade-defense/visual/audio.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+tools/audio/verify-original-audio.js
+  s_971a1a8a2e6a68::t_86c49027bce9e6 5
+assets/lobby/visual/icons/watermelon/cat-merge-icon-v1.png.meta
+  s_97dd13036e4f3c::t_a2314beabce597 1-6,9-42
+  s_d7ee0b6c090ae7::t_5836c1eed1c172 7-8
+tools/blade-defense/sync-bd2-asset-metas.js
+  s_d7ee0b6c090ae7::t_a141718f884790 1-95
+docs/GAME2048_GAMEPLAY_SPEC.md
+  s_971a1a8a2e6a68::t_0043975a346deb 20,34-35
+  s_971a1a8a2e6a68::t_7c69e58440046d 23
+assets/games/blade-defense/scripts/BladeDefenseGame.ts
+  s_d7ee0b6c090ae7::t_896f270d36a05c 1497
+  s_d7ee0b6c090ae7::t_eec5929c10e03b 875-876,931
+  s_d7ee0b6c090ae7::t_0171c6a7f395a8 850-852,857-863,868-874,877-878,889-898,904-905,907-911,916-919,924-928,933-941,978-985,987-988,990-991,994-1003,1005-1006,1008-1009,1012-1014,1030,1032,1035,1037-1041,1043,1049-1054,1057,1060,1062-1066,1068,1071,1073-1074,1080-1082
+  s_d7ee0b6c090ae7::t_f9b493ed2af118 864-867,879-888,899-903,906,912-915,920-923
+  s_d7ee0b6c090ae7::t_cbc0d2c3f9c06a 540-554,556-557,560-563,566-597
+  s_d7ee0b6c090ae7::t_474defa0ae7d99 193-197,308-309,599-602,609-612
+  s_d7ee0b6c090ae7::t_a353a90f836d31 828,832
+  s_d7ee0b6c090ae7::t_ad36cc801fd1e8 945
+  s_d7ee0b6c090ae7::t_25eb1fa4a4d648 173,383,456-457,483,490-500,503,507-517,526
+  s_d7ee0b6c090ae7::t_9a53d3e487a94d 3,16,18-20,93-108,110-112,115-122,150,154-157
+  s_d7ee0b6c090ae7::t_8d02533e386a7a 986,989,1004,1007,1015-1027
+  s_d7ee0b6c090ae7::t_7931dc323760e4 1067,1069-1070,1072,1075-1079
+  s_d7ee0b6c090ae7::t_485d5930c94374 1192-1250
+  s_d7ee0b6c090ae7::t_dc09af634937cc 1-2,4-8,10-15,17,21-92,109,113-114,123-149,151-153,158-172,174-192,198-230,235,237-245,247-258,260-265,267-307,310-382,384-455,458-460,462-482,484-489,501-502,504-506,518-520,522-523,527-538
+  s_d7ee0b6c090ae7::t_802093bf3514f5 231-234,236,246,259,266
+  s_d7ee0b6c090ae7::t_3cc72f00550dae 461,521,524-525
+  s_d7ee0b6c090ae7::t_c82228b9920928 1031,1033-1034,1036,1042,1044-1048,1055-1056,1058-1059,1061
+  s_d7ee0b6c090ae7::t_86e5f1496c2291 555,558-559,564-565,992-993,1010-1011,1028-1029
+  s_d7ee0b6c090ae7::t_eda360b3ce5862 929-930,932,942-944,946-977
+  s_d7ee0b6c090ae7::t_c25970e9d011c8 1090-1108,1143-1145,1149-1151,1155,1159,1168,1173,1175-1179,1184-1186,1188-1189
+  s_d7ee0b6c090ae7::t_516e800e38846d 1398-1432,1436-1439
+  s_d7ee0b6c090ae7::t_923ba49ac2b07b 539,598,606-608,616-618,628-633,635-640,642-645,657-667,683-803,805-827,829-831,833-849,853-856
+  s_d7ee0b6c090ae7::t_51a5e7ddedc8b6 1581,1585,1596,1608,1678,1709
+  s_d7ee0b6c090ae7::t_483c3bd184f722 1083-1089,1109-1142,1146-1148,1152-1154,1156-1158,1160-1167,1169-1172,1174,1180-1183,1187,1190-1191,1251-1397,1433-1435,1440-1496,1498-1538
+  s_d7ee0b6c090ae7::t_0a72eaa0309051 9,603-605,613-615,619-627,634,641,646-656,668-682,804
+  s_d7ee0b6c090ae7::t_51b3c6ec229c50 1539-1580,1582-1584,1586-1595,1597-1607,1609-1677,1679-1708,1710-1759
+assets/lobby/visual/icons/watermelon.meta
+  s_97dd13036e4f3c::t_a2314beabce597 1-9
+assets/games/blade-defense/scenes.meta
+  s_d7ee0b6c090ae7::t_3a54cfad346c96 1-9
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_971a1a8a2e6a68::t_8ff4e6e892864f 155,307-309,314-315,340
+  s_971a1a8a2e6a68::t_705f064e8d8fe5 672-676,681-685,687-693
+docs/SECOND_PHASE_SCOPE.md
+  s_d7ee0b6c090ae7::t_aed7e19eb169bd 99
+  s_971a1a8a2e6a68::t_3277a3c23a29b1 67
+  s_d7ee0b6c090ae7::t_8fc3514dad4b36 31,68,91,98,106
+  s_d7ee0b6c090ae7::t_1f0caca97acdd0 3,11,13,21,26-29,32,45,52-53,55,64,81,88,100,110
+  s_d7ee0b6c090ae7::t_1f5fb367dfed3a 97
+tools/blade-defense/verify-project.js
+  s_d7ee0b6c090ae7::t_8ea9fed915fe7f 19,78
+  s_d7ee0b6c090ae7::t_3852ccd843b583 124
+  s_d7ee0b6c090ae7::t_9688ed022c0142 87-110,123,125-126
+  s_d7ee0b6c090ae7::t_d701d713079548 1-18,20-77,79-86,111-122,127-140,142-174
+  s_d7ee0b6c090ae7::t_aed7e19eb169bd 141
+assets/games/blade-defense/scripts/BladeDefenseCatalog.ts
+  s_d7ee0b6c090ae7::t_a3e93e0dd407d1 1-37,39-44,46-195,197-281
+  s_d7ee0b6c090ae7::t_b6f5efb6a5cdcd 45
+  s_d7ee0b6c090ae7::t_ae7b0cb20bf1da 38,196
+assets/games/blade-defense/visual.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/games/blade-defense/scripts/BladeDefenseModel.ts
+  s_d7ee0b6c090ae7::t_2bbc2a4fcd5999 1-87,89-170,188-232,258-289,291-365,367-373,375-437,439-469,471-626,706-707,709-722,726-727,729-730,732-734,736-757,760-778,784-789,792-824,827-830,834-919,921-1007,1014-1093,1096-1099,1106-1109,1112-1113,1115-1224,1226,1228-1230,1232-1234,1236-1239,1241,1243-1245,1247,1249-1283
+  s_d7ee0b6c090ae7::t_a2a4bfe25e1877 1225,1227,1231,1235,1240,1242,1246,1248
+  s_d7ee0b6c090ae7::t_1504814da5e07f 178-187,243,247-252,256,470,629-633,651-671,673-678,681,684,686,688,690,692-697,700,704,708,723-725,728,731,735,758-759,779-783,790-791,825-826,831-833,1094-1095,1100-1105,1110-1111,1114
+  s_d7ee0b6c090ae7::t_b6f5efb6a5cdcd 374,438,1008-1013
+  s_d7ee0b6c090ae7::t_8c0df2535b618a 920
+  s_d7ee0b6c090ae7::t_ae7b0cb20bf1da 88,171-177,233-242,244-246,253-255,257,290,627-628,634-650,672,679-680,682-683,685,687,689,691,698-699,701-703,705
+  s_d7ee0b6c090ae7::t_71902588686ed7 366
+tools/game2048/verify-model.js
+  s_971a1a8a2e6a68::t_0043975a346deb 86
+  s_971a1a8a2e6a68::t_65aff6f3f7abd5 24-29,64
+art_sources/blade-defense/bd2-spring-guardians/PROMPTS.md
+  s_d7ee0b6c090ae7::t_c4a22016a51776 1-16
+assets/games/blade-defense/visual/audio/bd1-hit-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+docs/BLADE_DEFENSE_GAMEPLAY_SPEC.md
+  s_d7ee0b6c090ae7::t_40761fe442a053 1-4,6-94
+  s_d7ee0b6c090ae7::t_52c9fd07890cb0 5
+assets/lobby/visual/covers/blade-defense/bd1-moon-guard-cover-v1.png.meta
+  s_d7ee0b6c090ae7::t_3a54cfad346c96 1-38,40-42
+  s_d7ee0b6c090ae7::t_96bb4d419e8a92 39
+assets/games/blade-defense/visual/audio/bd1-life-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+docs/asset-generation/GAME2048_AUDIO_V1.md
+  s_971a1a8a2e6a68::t_209f504ad3fb22 14,22
+  s_971a1a8a2e6a68::t_86c49027bce9e6 23
+assets/lobby/visual/icons.meta
+  s_97dd13036e4f3c::t_a2314beabce597 1-9
+assets/resources/configs/games.json
+  s_d7ee0b6c090ae7::t_8ea9fed915fe7f 58-59
+  s_97dd13036e4f3c::t_241f0a4cf7d560 12
+  s_d7ee0b6c090ae7::t_3a54cfad346c96 51-57,60-70
+  s_d7ee0b6c090ae7::t_a3069e4926b8a7 48-50
+  s_d7ee0b6c090ae7::t_08e0867140c8da 47
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_971a1a8a2e6a68::t_a312caaf2acc28 46-47,72-74,81-82,87-97,533,544-550,642,688,767,777,885-886,903,906,910,919
+  s_971a1a8a2e6a68::t_6f6a21b77d6f75 712-723,727
+  s_971a1a8a2e6a68::t_56c59a97159f63 351,371-390,394-395,399,401-406
+  s_971a1a8a2e6a68::t_b974df1ede4cb8 782-785,787
+  s_971a1a8a2e6a68::t_8ff4e6e892864f 112,224-227,241-246,254-255,265-266,320-322,407,704,1083-1093
+  s_971a1a8a2e6a68::t_209f504ad3fb22 4,115-118,137,190,193-194,270,352,453,706-711,724-726,780,825-826,831,840,856,868,884,888-899,923,934-1073,1075-1077
+  s_971a1a8a2e6a68::t_ac3e6b6ffa6334 391-393,396-398
+  s_971a1a8a2e6a68::t_35aac69e81a62b 670,1074
+  s_971a1a8a2e6a68::t_c116bbbf23ce81 769-774,776,779,812-824,827-830,832-839,841-855,857-867,869-878
+  s_971a1a8a2e6a68::t_baaf75903128ac 3,17-19,48,119,195-196,344,347-350,353-354,358,364,515-523,594-598,603,636-637,671-687,689-703,751,788-810
+  s_971a1a8a2e6a68::t_c12a478e1c8af8 319
+  s_971a1a8a2e6a68::t_6b285eaaad319b 408
+  s_971a1a8a2e6a68::t_47bef424dc0c18 669
+  s_971a1a8a2e6a68::t_6c3fd826ea0a2b 705
+  s_971a1a8a2e6a68::t_e932589e1be60c 781
+docs/WATERMELON_GAMEPLAY_SPEC.md
+  s_971a1a8a2e6a68::t_7c69e58440046d 118
+docs/CONTENT_PRODUCTION_PLAN.md
+  s_d7ee0b6c090ae7::t_5f34e838103711 255,259,263,267,271,275,279,281-282,285-287,289,293-294,297-298,301,305,320
+  s_d7ee0b6c090ae7::t_aed7e19eb169bd 229,233,237,241,243,245,249-250
+  s_d7ee0b6c090ae7::t_5d66646b1ee5b7 221-223,225-226,228,230-232,234-236,240,244,248,251,253
+  s_d7ee0b6c090ae7::t_b064631eb0a049 3,16,19,29,43,55-56,63,67
+  s_d7ee0b6c090ae7::t_936b29982956bc 307-308
+  s_d7ee0b6c090ae7::t_1f5fb367dfed3a 11,15,246,322
+  s_d7ee0b6c090ae7::t_b1acb837999da0 24,36,224,227,238-239,242,247,311
+  s_971a1a8a2e6a68::t_3277a3c23a29b1 23,195,202-203,206,218,310
+  s_d7ee0b6c090ae7::t_7f48067386014e 219
+  s_d7ee0b6c090ae7::t_34e3eab4218c31 78,80,83,100,114,126-127
+  s_d7ee0b6c090ae7::t_5f155130e64edf 220
+assets/games/blade-defense/visual/audio/bd1-failure-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/lobby/visual/covers/blade-defense.meta
+  s_d7ee0b6c090ae7::t_3a54cfad346c96 1-9
+tools/blade-defense/tsconfig.project.json
+  s_d7ee0b6c090ae7::t_2217a5e41aa000 4
+  s_d7ee0b6c090ae7::t_b738c7c5523882 15-16
+  s_d7ee0b6c090ae7::t_e2566ae1ad5bc2 1-3,5-14,17-23
+assets/games/blade-defense/scenes/BladeDefense.scene
+  s_d7ee0b6c090ae7::t_4d16d3ebd49af8 1-1024
+assets/games/twenty48/scripts/Game2048Model.ts
+  s_971a1a8a2e6a68::t_65aff6f3f7abd5 11-17,22,32-37,54-56,59-64,68-70,74-80,85,90,160,172-179,188,205
+tools/game2048/verify-project.js
+  s_971a1a8a2e6a68::t_209f504ad3fb22 30,55-57
+  s_971a1a8a2e6a68::t_a312caaf2acc28 48-50
+  s_971a1a8a2e6a68::t_0043975a346deb 39,51-54,60-63
+  s_971a1a8a2e6a68::t_1ad74c8476dc0f 35-36,43-44,46-47,72
+  s_971a1a8a2e6a68::t_35aac69e81a62b 45
+  s_971a1a8a2e6a68::t_705f064e8d8fe5 58-59
+  s_971a1a8a2e6a68::t_4d9ed945e629cc 64
+assets/games/twenty48/visual/audio/t48-danger-loop-v1.mp3.meta
+  s_971a1a8a2e6a68::t_1858f41d2ef55e 1-5
+docs/ASSET_LEDGER.md
+  s_d7ee0b6c090ae7::t_1f5fb367dfed3a 5,28,47-48
+  s_d7ee0b6c090ae7::t_da67bbfa1adb65 3,52
+tools/blade-defense/generate-audio.js
+  s_d7ee0b6c090ae7::t_84851ad0b53918 1-2,4-184,190-199,203-204
+  s_d7ee0b6c090ae7::t_ec2b449acb9527 3,185-189,200-202
+assets/games/blade-defense/scripts.meta
+  s_d7ee0b6c090ae7::t_3a54cfad346c96 1-9
+assets/games/twenty48/visual/backgrounds.meta
+  s_971a1a8a2e6a68::t_65aff6f3f7abd5 1-9
+tools/blade-defense/verify-model.js
+  s_d7ee0b6c090ae7::t_940f079fe6821c 309-313,338-349
+  s_d7ee0b6c090ae7::t_b6f5efb6a5cdcd 144-145,147-157,354
+  s_d7ee0b6c090ae7::t_1122f1f18bbbc0 262-275,325-337,355
+  s_d7ee0b6c090ae7::t_f1d1f08d695308 1-143,146,158-261,276-308,314-320,350-353,356-357
+  s_d7ee0b6c090ae7::t_2ef812da4dcea3 321-324
+docs/GAME2048_VISUAL_SPEC.md
+  s_971a1a8a2e6a68::t_6f6a21b77d6f75 25-26
+  s_971a1a8a2e6a68::t_a312caaf2acc28 10,19
+  s_971a1a8a2e6a68::t_baaf75903128ac 18
+  s_971a1a8a2e6a68::t_0043975a346deb 11-12,24
+docs/BLADE_DEFENSE_VISUAL_SPEC.md
+  s_d7ee0b6c090ae7::t_c4a22016a51776 1,3-4,8-10,14-50,54-74
+  s_d7ee0b6c090ae7::t_40761fe442a053 2,5-7,11-13,51-53
+tools/watermelon/verify-cat-cute-refresh-assets.py
+  s_97dd13036e4f3c::t_c68de6b06f6019 21,87
+  s_97dd13036e4f3c::t_dd1433f12f9b05 62-63
+  s_97dd13036e4f3c::t_962e1c68ea76e7 7,13-20,22-26
+  s_97dd13036e4f3c::t_a84ca7d002524a 1-6,8-12,27-61,64-86,88-106
+tools/audio/generate-original-audio.js
+  s_971a1a8a2e6a68::t_d498b2cb5c3352 4,7-19,235,237,477-481,483-489,492-497
+  s_971a1a8a2e6a68::t_314e23e168c1df 482
+  s_971a1a8a2e6a68::t_86c49027bce9e6 490-491
+  s_971a1a8a2e6a68::t_209f504ad3fb22 239-269,273,522
+  s_971a1a8a2e6a68::t_366a3df3ff7bb2 236
+  s_971a1a8a2e6a68::t_c94b57194ee4d9 238
+docs/ARCHITECTURE.md
+  s_d7ee0b6c090ae7::t_da67bbfa1adb65 369-370,404
+assets/games/blade-defense/scenes/BladeDefense.scene.meta
+  s_d7ee0b6c090ae7::t_2f23a8aaa440af 1-11
+assets/games/blade-defense/visual/audio/bd1-merge-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/games/blade-defense/visual/audio/bd1-button-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/games/blade-defense/scripts/BladeDefenseGame.ts.meta
+  s_d7ee0b6c090ae7::t_2f23a8aaa440af 1-9
+assets/games/watermelon/scripts/WatermelonOverlayView.ts
+  s_971a1a8a2e6a68::t_705f064e8d8fe5 28,67,81
+assets/app/App.ts
+  s_d7ee0b6c090ae7::t_0c93fb11cdac05 342-350,355,387-389
+  s_d7ee0b6c090ae7::t_26135ad3822f47 95,332,359-378,380,383
+  s_d7ee0b6c090ae7::t_4b5cca4c7138eb 334,338,351-354
+assets/games/blade-defense/scripts/BladeDefenseModel.ts.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/games/blade-defense/scripts/BladeDefenseCatalog.ts.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/games/blade-defense.meta
+  s_d7ee0b6c090ae7::t_3a54cfad346c96 1-17
+assets/games/blade-defense/visual/audio/bd1-bonus-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+docs/SECOND_PHASE_PAGE_STATE_MATRIX.md
+  s_d7ee0b6c090ae7::t_aed7e19eb169bd 61-62,66
+  s_d7ee0b6c090ae7::t_d85148f1c4edb9 94,107,118
+  s_d7ee0b6c090ae7::t_eef762ac03f991 3,30-31,35,54,63,77-81,93,95-96,108-109,113
+assets/games/blade-defense/visual/audio/bd1-record-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+settings/v2/packages/information.json
+  s_971a1a8a2e6a68::t_876218d49141c0 10,19
+docs/REVIEW_LOG.md
+  s_d7ee0b6c090ae7::t_cda5f39927712f 1405
+  s_d7ee0b6c090ae7::t_da67bbfa1adb65 1391-1404,1406-1407
+tools/blade-defense/tsconfig.verify.json
+  s_d7ee0b6c090ae7::t_c41f48c8747fec 1-25
+assets/games/blade-defense/visual/audio/bd1-chest-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+assets/games/blade-defense/visual/audio/bd1-moon-guard-loop-v1.mp3.meta
+  s_d7ee0b6c090ae7::t_786fe913013998 1-9
+tools/watermelon/process-cat-cute-refresh-assets.py
+  s_97dd13036e4f3c::t_0c9669417aa9af 10,121,130,132,138-149,162-165,167-172,184
+  s_97dd13036e4f3c::t_74e5bb385c1689 8,196-197
+  s_97dd13036e4f3c::t_3128dadaa7475e 1-7,9,11-120,122-129,131,133-137,150-161,166,173-183,185-195,198-287
+assets/services/audio/AudioService.ts
+  s_d7ee0b6c090ae7::t_802093bf3514f5 66-67,126,128,135-136
+docs/asset-generation/audio-v1-report.json
+  s_971a1a8a2e6a68::t_9f1b8952afcf20 62-71,73-79
+  s_971a1a8a2e6a68::t_58cc535d9a996f 72
+assets/games/blade-defense/visual/backgrounds.meta
+  s_d7ee0b6c090ae7::t_ad1e9588e0bbe3 1-9
+assets/games/blade-defense/visual/backgrounds/bd2-spring-camp-bg-v1.png.meta
+  s_d7ee0b6c090ae7::t_c4308f7d558cc0 1-42
+assets/games/blade-defense/visual/boards.meta
+  s_d7ee0b6c090ae7::t_fd412da0ba222a 1-9
+assets/games/blade-defense/visual/boards/bd2-spring-ring-board-v1.png.meta
+  s_d7ee0b6c090ae7::t_07d5e1bc024d9f 1-42
+assets/games/blade-defense/visual/enemies.meta
+  s_d7ee0b6c090ae7::t_b473347f131e19 1-9
+assets/games/blade-defense/visual/enemies/acorn-boar.meta
+  s_d7ee0b6c090ae7::t_8910cdbdfd5f61 1-9
+assets/games/blade-defense/visual/enemies/acorn-boar/01.png.meta
+  s_d7ee0b6c090ae7::t_c44f078ac14a3b 1-42
+assets/games/blade-defense/visual/enemies/acorn-boar/02.png.meta
+  s_d7ee0b6c090ae7::t_19cc7bf3082e3d 1-42
+assets/games/blade-defense/visual/enemies/acorn-boar/03.png.meta
+  s_d7ee0b6c090ae7::t_bb956e2e23bbb4 1-42
+assets/games/blade-defense/visual/enemies/acorn-boar/04.png.meta
+  s_d7ee0b6c090ae7::t_7b6d2dfd6daf46 1-42
+assets/games/blade-defense/visual/enemies/turnip-imp.meta
+  s_d7ee0b6c090ae7::t_5a8237cd2b2179 1-9
+assets/games/blade-defense/visual/enemies/turnip-imp/01.png.meta
+  s_d7ee0b6c090ae7::t_8fbe7b43422fbe 1-42
+assets/games/blade-defense/visual/enemies/turnip-imp/02.png.meta
+  s_d7ee0b6c090ae7::t_b3ee360afaaeef 1-42
+assets/games/blade-defense/visual/enemies/turnip-imp/03.png.meta
+  s_d7ee0b6c090ae7::t_610162f060ed7d 1-42
+assets/games/blade-defense/visual/enemies/turnip-imp/04.png.meta
+  s_d7ee0b6c090ae7::t_262b3b55d4f60c 1-42
+assets/games/blade-defense/visual/pets.meta
+  s_d7ee0b6c090ae7::t_d39c04374d26b1 1-9
+assets/games/blade-defense/visual/pets/kitten-l2.meta
+  s_d7ee0b6c090ae7::t_5e4d6e7ab80694 1-9
+assets/games/blade-defense/visual/pets/kitten-l2/01.png.meta
+  s_d7ee0b6c090ae7::t_cb9d5b4c7e9c3a 1-42
+assets/games/blade-defense/visual/pets/kitten-l2/02.png.meta
+  s_d7ee0b6c090ae7::t_036bebedbd3723 1-42
+assets/games/blade-defense/visual/pets/kitten-l2/03.png.meta
+  s_d7ee0b6c090ae7::t_dfa830e4fd0aaf 1-42
+assets/games/blade-defense/visual/pets/kitten-l2/04.png.meta
+  s_d7ee0b6c090ae7::t_6db7f1ecaabf4e 1-42
+assets/games/blade-defense/visual/pets/puppy-l1.meta
+  s_d7ee0b6c090ae7::t_e976ee89836a9d 1-9
+assets/games/blade-defense/visual/pets/puppy-l1/01.png.meta
+  s_d7ee0b6c090ae7::t_eeaac8bbcbb9dd 1-42
+assets/games/blade-defense/visual/pets/puppy-l1/02.png.meta
+  s_d7ee0b6c090ae7::t_00c4cd19a15ecb 1-42
+assets/games/blade-defense/visual/pets/puppy-l1/03.png.meta
+  s_d7ee0b6c090ae7::t_808af51ffa7b19 1-42
+assets/games/blade-defense/visual/pets/puppy-l1/04.png.meta
+  s_d7ee0b6c090ae7::t_194bd60adc601c 1-42
+assets/games/blade-defense/visual/weapons.meta
+  s_d7ee0b6c090ae7::t_70a9cbe0056703 1-9
+assets/games/blade-defense/visual/weapons/carrot-blade-v1.png.meta
+  s_d7ee0b6c090ae7::t_5db47e336e7315 1-42
+assets/games/blade-defense/visual/weapons/fish-boomerang-v1.png.meta
+  s_d7ee0b6c090ae7::t_fb0158ebfcf19b 1-42
+assets/lobby/visual/covers/blade-defense/bd2-spring-guard-cover-v1.png.meta
+  s_d7ee0b6c090ae7::t_a4f3188d477571 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7c1e4cbba95e3b926412c9db33ec654692a551ce",
+  "prompts": {},
+  "logical_commit_id": "7c1e4cbba95e3b926412c9db33ec654692a551ce",
+  "sessions": {
+    "s_971a1a8a2e6a68": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffa0f-7675-79d0-8460-b3fa88c0851a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 784,
+      "total_deletions": 186
+    },
+    "s_97dd13036e4f3c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff8f7-44ce-7a31-be34-de0f72d13b39",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 479,
+      "total_deletions": 26
+    },
+    "s_d7ee0b6c090ae7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff8fd-2e48-7b50-9a0f-17f8a1114ea3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6777,
+      "total_deletions": 1008
+    }
+  }
+}
