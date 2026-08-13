@@ -1,0 +1,22 @@
+assets/app/App.ts
+  s_de3395f769ba0a::t_79dc8c537c34d3 140-142,248-251,295-332,334-335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e37fd83d6f54d96b19adeae4f6baae3c700b6ef4",
+  "prompts": {},
+  "logical_commit_id": "e37fd83d6f54d96b19adeae4f6baae3c700b6ef4",
+  "sessions": {
+    "s_de3395f769ba0a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffafc-7c7e-7323-bcc4-9e90c19ee553",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 47,
+      "total_deletions": 29
+    }
+  }
+}
