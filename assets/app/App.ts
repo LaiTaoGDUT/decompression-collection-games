@@ -137,6 +137,9 @@ export class App extends Component {
         }
 
         const container = new ServiceContainer();
+        // Publish the container before startup begins so asynchronous startup
+        // failures can always be reported through the application services.
+        this.container = container;
         const stateMachine = new AppStateMachine('booting');
         const platform = this.createPlatform();
         const configService = new ConfigService();
@@ -173,33 +176,6 @@ export class App extends Component {
             new MockRewardedAdProvider(),
         );
         const gameLoader = new GameLoader();
-        const loadingView = find('Canvas/LoadingLayer', this.node)
-            ?.getComponent(LoadingView);
-        const errorView = find('Canvas/ErrorLayer', this.node)
-            ?.getComponent(ErrorView);
-        const pauseView = find('Canvas/PauseLayer', this.node)
-            ?.getComponent(PauseView);
-        const resultView = find('Canvas/ResultLayer', this.node)
-            ?.getComponent(ResultView);
-        const gameRuntime = new GameRuntime(
-            stateMachine,
-            assetService,
-            gameLoader,
-            Object.freeze({
-                audio: audioService,
-                feedback: feedbackService,
-                storage: storageService,
-                analytics: analyticsService,
-                ads: adService,
-                deviceTier: platform.getDeviceProfile().tier,
-            }),
-            director,
-            loadingView ?? undefined,
-            errorView ?? undefined,
-            pauseView ?? undefined,
-            resultView ?? undefined,
-            analyticsService,
-        );
 
         container.register(APP_STATE_MACHINE_SERVICE, stateMachine);
         container.register(PLATFORM_SERVICE, platform);
@@ -207,13 +183,11 @@ export class App extends Component {
         container.register(GAME_REGISTRY_SERVICE, new GameRegistry());
         container.register(ASSET_SERVICE, assetService);
         container.register(GAME_LOADER_SERVICE, gameLoader);
-        container.register(GAME_RUNTIME_SERVICE, gameRuntime);
         container.register(STORAGE_SERVICE, storageService);
         container.register(AUDIO_SERVICE, audioService);
         container.register(ANALYTICS_SERVICE, analyticsService);
         container.register(AD_SERVICE, adService);
         container.register(FEEDBACK_SERVICE, feedbackService);
-        this.container = container;
     }
 
     protected start(): void {
@@ -271,6 +245,10 @@ export class App extends Component {
             () => platform.initialize(),
         );
 
+        // WeChat device information is unavailable until its platform adapter
+        // has initialized. Construct the runtime only after that boundary.
+        this.registerGameRuntime();
+
         await this.runStartupStage('storage', async () => {
             this.services.get(STORAGE_SERVICE).load();
         });
@@ -315,6 +293,46 @@ export class App extends Component {
             // for later game entry, restart and return-to-lobby transitions.
             () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(false),
         );
+    }
+
+    private registerGameRuntime(): void {
+        const services = this.services;
+
+        if (services.has(GAME_RUNTIME_SERVICE)) {
+            return;
+        }
+
+        const platform = services.get(PLATFORM_SERVICE);
+        const loadingView = find('Canvas/LoadingLayer', this.node)
+            ?.getComponent(LoadingView);
+        const errorView = find('Canvas/ErrorLayer', this.node)
+            ?.getComponent(ErrorView);
+        const pauseView = find('Canvas/PauseLayer', this.node)
+            ?.getComponent(PauseView);
+        const resultView = find('Canvas/ResultLayer', this.node)
+            ?.getComponent(ResultView);
+        const analytics = services.get(ANALYTICS_SERVICE);
+        const runtime = new GameRuntime(
+            services.get(APP_STATE_MACHINE_SERVICE),
+            services.get(ASSET_SERVICE),
+            services.get(GAME_LOADER_SERVICE),
+            Object.freeze({
+                audio: services.get(AUDIO_SERVICE),
+                feedback: services.get(FEEDBACK_SERVICE),
+                storage: services.get(STORAGE_SERVICE),
+                analytics,
+                ads: services.get(AD_SERVICE),
+                deviceTier: platform.getDeviceProfile().tier,
+            }),
+            director,
+            loadingView ?? undefined,
+            errorView ?? undefined,
+            pauseView ?? undefined,
+            resultView ?? undefined,
+            analytics,
+        );
+
+        services.register(GAME_RUNTIME_SERVICE, runtime);
     }
 
     private async runStartupStage<TValue>(
