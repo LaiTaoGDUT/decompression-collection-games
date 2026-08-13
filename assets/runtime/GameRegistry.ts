@@ -46,12 +46,17 @@ export class GameRegistry {
         includeDevelopment = false,
     ): readonly GameManifest[] {
         const deviceRank = DEVICE_TIER_RANK[deviceTier];
-        const playable = [...this.manifests.values()].filter((manifest) => (
-            manifest.enabled
-            && (manifest.visibility === 'public' || includeDevelopment)
-            && DEVICE_TIER_RANK[manifest.minimumDeviceTier] <= deviceRank
-            && compareSemanticVersions(appVersion, manifest.minAppVersion) >= 0
-        ));
+        // Cocos' WeChat production transform can compile a spread over a Map
+        // iterator into `[].concat(iterator)`, leaving the lobby with no valid
+        // manifests. Materialize the iterator explicitly for stable output.
+        const playable = Array.from(this.manifests.values()).filter(
+            (manifest) => (
+                manifest.enabled
+                && (manifest.visibility === 'public' || includeDevelopment)
+                && DEVICE_TIER_RANK[manifest.minimumDeviceTier] <= deviceRank
+                && compareSemanticVersions(appVersion, manifest.minAppVersion) >= 0
+            ),
+        );
 
         return Object.freeze(playable);
     }

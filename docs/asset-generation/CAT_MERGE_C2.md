@@ -73,7 +73,7 @@ Levels 08–10, 4×3 grid: silver tabby shows one hind paw with tail tucked side
 - 采用预乘 Alpha 重采样，最外层半透明像素使用相邻毛色回填，避免透明黑像素在双线性缩放时形成黑圈。
 - 同一级四帧继续共用逐像素一致的圆形 Alpha；44 张均验证为 256×256 RGBA。
 - 模式：`precise-object-edit` 的项目内确定性批处理；本轮没有新增生成式提示词，沿用上文 ImageGen 角色与帧动画提示词组。
-- 运行素材整理后只保留每级实际加载的两张待机帧和一张下落帧，共 33 张；未选候选帧及 C1–C5 旧代际已移至 `art_sources/archive/unused-runtime-assets/`，并保留 `.meta` 以便恢复。
+- 运行素材整理后只保留每级实际加载的两张待机帧和一张下落帧，共 33 张；未选候选帧及 C1–C5 旧代际已清理，不再保留归档副本。
 
 ### C7 最高两级辨识度修正
 
@@ -89,7 +89,7 @@ Levels 08–10, 4×3 grid: silver tabby shows one hind paw with tail tucked side
 - ImageGen 模式：内置 `image_gen`，`precise-object-edit`。以原第 9 级三帧分别作为姿态/构图参考，以新睁眼帧作为角色身份参考，生成睁眼待机、闭眼待机和惊讶下落三帧。
 - 核心提示词：`Replace the silver tabby completely with a brand-new blue Scottish Fold cat character; dense plush solid slate-blue fur, clearly folded small ears, round cheeks, copper-amber eyes and charcoal nose; remove every silver-tabby stripe; furry and plush, never hairless; preserve the centered circular body silhouette, frame-specific pose, padding and polished 2.5D finish.`
 - 生成源：`docs/asset-generation/sources/cat-08-blue-scottish-fold-c8/`；确定性处理脚本：`tools/watermelon/process-cat-08-blue-scottish-fold.js`；运行文件仍位于 `frames-c6/`，以 `cat-08-blue-scottish-fold-*-c8-v1.png` 命名。
-- 后处理：将 1254² 生成源用 Lanczos 缩放到 256²，应用完全一致的 252px 抗锯齿圆形 Alpha 与 2px 滤波安全区；三帧 Alpha 逐字节一致，旧银渐层文件移入 `art_sources/archive/unused-runtime-assets/cat-08-silver-tabby-c6/`。
+- 后处理：将 1254² 生成源用 Lanczos 缩放到 256²，应用完全一致的 252px 抗锯齿圆形 Alpha 与 2px 滤波安全区；三帧 Alpha 逐字节一致，旧银渐层文件已清理，不再保留归档副本。
 - 物理纠偏：删除 `CAT_VISUAL_SCALE`；11 级半径统一乘以 1.12，并由同一个 `config.radius` 同时驱动节点直径、`CircleCollider2D.radius`、预览、投放夹取、出生高度和危险线计算。质量保持原配置，密度按增大后的圆面积重新计算。
 
 ## 运行时节奏

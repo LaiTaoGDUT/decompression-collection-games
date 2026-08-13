@@ -4,6 +4,9 @@
   "creator": {
     "version": "3.8.8"
   },
+  "scripts": {
+    "verify:game-bundles": "node tools/verify-game-bundles.js"
+  },
   "devDependencies": {
     "lamejs": "^1.2.1"
   }

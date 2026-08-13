@@ -366,8 +366,6 @@ interface UserData {
 
 霓光 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 1`，其 `custom` 已知字段为 `highestTile`；`highScore` 保存历史最高分。新局开始写入 `playCount/lastPlayedAt`，有效移动可即时刷新最高分与最高数字。该增量不修改根存档 schema；回滚时旧代码忽略整个 `game2048` 命名空间，禁止因隐藏游戏入口而删除用户记录。
 
-转刀塔防使用独立游戏命名空间 `blade-defense` 和游戏内 `dataVersion: 1`，其 `custom` 已知字段为 `highestPetLevel`、`maxWave` 和 `chestsOpenedTotal`；`highScore` 保存历史最高分。新局开始只写 `playCount/lastPlayedAt`，最高分、最高宠物、最大波次和宝箱累计只在胜负最终结算时提交，暂停重开或回大厅放弃本局不刷新纪录。该增量不修改根存档 schema；回滚时从公开 Manifest 隐藏游戏并保留命名空间，不删除用户记录。
-
 ## 12. 公共 UI 层级
 
 所有场景遵循统一层级：
@@ -398,10 +396,8 @@ Canvas
 | `core` | 框架与公共服务 | 主包 |
 | `lobby` | 大厅场景与资源 | 主包 |
 | `shared` | 高频公共 UI 和公共资源 | 主包或公共分包 |
-| `game-placeholder` | 首条加载与退出流程的临时验证游戏 | 主包；正式游戏接入后可移除 |
 | `game-watermelon` | 合成大西瓜游戏全部内容 | 独立游戏分包 |
 | `game-2048` | 霓光 2048 的场景、规则、主题 UI 与音频 | 独立游戏分包 |
-| `game-blade-defense` | 转刀塔防的场景、确定性模型、主题 UI 与独立音频 | 独立游戏分包 |
 | `game-blocks-3d` | 3D 推倒积木验证游戏全部内容 | 独立游戏分包 |
 | `game-switch` | 开关游戏全部内容 | 独立游戏分包 |
 | `game-catch` | 接球游戏全部内容 | 独立游戏分包 |

@@ -48,30 +48,6 @@
       ]
     },
     {
-      "id": "blade-defense",
-      "version": "1.0.0",
-      "name": "萌宠转刀塔防",
-      "description": "布置转刀萌宠，开宝箱、合成升级，守住环岛终点。",
-      "bundle": "game-blade-defense",
-      "scene": "scenes/BladeDefense",
-      "entryComponent": "BladeDefenseGame",
-      "icon": "visual/covers/blade-defense/bd2-spring-guard-cover-v1/texture",
-      "cover": "visual/covers/blade-defense/bd2-spring-guard-cover-v1/texture",
-      "orientation": "portrait",
-      "renderMode": "2d",
-      "minimumDeviceTier": "low",
-      "minAppVersion": "0.1.0",
-      "enabled": true,
-      "visibility": "public",
-      "preload": [],
-      "tags": [
-        "tower-defense",
-        "merge",
-        "pets",
-        "relaxing"
-      ]
-    },
-    {
       "id": "blocks3d",
       "version": "0.1.0",
       "name": "3D 推倒积木",
