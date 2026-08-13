@@ -1,8 +1,8 @@
 # 素材来源台账
 
-> 台账版本：1.6
+> 台账版本：1.7
 >
-> 状态：L1 + W1 + T48 方向已确认，两款首发游戏核心素材可导入
+> 状态：L1 + W1 + T48 + BD2 方向已确认，三款正式游戏核心素材可导入
 >
 > 视觉框架：[VISUAL_STYLE_GUIDE.md](./VISUAL_STYLE_GUIDE.md)
 
@@ -25,6 +25,7 @@
 | 大厅 | L1 柔光收藏馆 | [LOBBY_VISUAL_SPEC.md](./LOBBY_VISUAL_SPEC.md) | `assets/lobby/visual/` | `lobby` |
 | 合成大胖橘 | C1 圆滚滚猫咪屋 | [CAT_MERGE_C1.md](./asset-generation/CAT_MERGE_C1.md) | `assets/games/watermelon/visual/` | `game-watermelon` |
 | 霓光 2048 | T48 深靛霓光电路 | [GAME2048_VISUAL_SPEC.md](./GAME2048_VISUAL_SPEC.md) | `assets/games/twenty48/visual/` | `game-2048` |
+| 转刀塔防 | BD2 春日萌宠守卫 | [BLADE_DEFENSE_VISUAL_SPEC.md](./BLADE_DEFENSE_VISUAL_SPEC.md) | `assets/games/blade-defense/visual/` | `game-blade-defense` |
 | 公共技术层 | 无正式视觉主题 | 只保留安全区、触摸、状态和无障碍约束 | `assets/shared/` | 主包 |
 
 ## 3. 首版素材路由
@@ -43,9 +44,12 @@
 | WM-003 | 合成大西瓜 | HUD、按钮、弹窗和图标 | 可导入 | W1 游戏主题 Graphics/Label 独立自绘 | 项目原创；无外部资源 | `assets/games/watermelon/scripts/WatermelonLayout.ts` | `game-watermelon` | HUD 与续玩层已接入，暂停/结果在第 24 步完成 |
 | WM-004 | 合成大胖橘 | 猫咪待机与下落逐帧动画 | 可导入 | ImageGen 逐帧资产 + Cocos SpriteFrame 调度 | [C2 动画记录](./asset-generation/CAT_MERGE_C2.md) | `assets/games/watermelon/scripts/WatermelonGame.ts`、`FruitBody.ts` | `game-watermelon` | 三帧待机 + 单帧下落；不使用形变 Tween；碰撞体始终保持正圆 |
 | T48-001 | 霓光 2048 | 棋盘、数字块、HUD 与主题弹层 | 可导入 | Cocos Graphics/Label/Tween 项目自绘 | [玩法规格](./GAME2048_GAMEPLAY_SPEC.md)、[视觉规格](./GAME2048_VISUAL_SPEC.md)；无外部素材 | `assets/games/twenty48/scripts/Game2048Game.ts` | `game-2048` | 4×4 深色棋盘、青绿/琥珀数字块、目标/暂停/结果层、滑动/出现/合并反馈；与 W1 纸片猫屋完全分离 |
+| BD2-001 | 转刀塔防 | 春日环形战场、背景、首批 2 宠物×4 帧、2 怪物×4 帧、2 件专属武器、Q 萌 HUD 与主题弹层 | 可导入 | Codex 内置 ImageGen + Cocos Graphics/Label | [玩法规格](./BLADE_DEFENSE_GAMEPLAY_SPEC.md)、[视觉规格](./BLADE_DEFENSE_VISUAL_SPEC.md)；原创提示词、风格板和原始输出保存在 `art_sources/blade-defense/bd2-spring-guardians/` | `assets/games/blade-defense/visual/` | `game-blade-defense` | 256×256 透明动画帧；宠物攻击力、怪物血量、终点生命只显示头顶数字；Lv.3～8 角色图待下一批生成 |
+| LOB-008 | 大厅展示副本 | 转刀塔防封面 | 可导入 | Codex 内置 ImageGen | 2026-08-13 生成；项目原创提示词和原始输出保存在 `art_sources/blade-defense/` | `assets/lobby/visual/covers/blade-defense/bd2-spring-guard-cover-v1.png` | `lobby` | 920×690；只供大厅加载，不让大厅反向依赖游戏 Bundle |
 | LOB-A01 | 大厅 | 大厅循环音乐与 UI 音效 | 可导入 | Codex 项目内程序化合成/编曲，种子 `0x51A7E202` | [脚本、母带、压缩、指标与试听记录](./asset-generation/AUDIO_V1.md)；无外部音频 | `assets/lobby/visual/audio/` | `lobby` | V2 保留 L1 基底并丰富低频、回应旋律和空间闪光；等待用户复听确认 |
 | WM-A01 | 合成大西瓜 | 游戏循环音乐与反馈音效 | 可导入 | Codex 项目内程序化合成/编曲，同一可复现脚本的 W1 独立参数 | [完整记录](./asset-generation/AUDIO_V1.md)；无外部音频 | `assets/games/watermelon/visual/audio/` | `game-watermelon` | W1 音乐 + 12 Cue；V2 重制危险/失败，V3 丰富音乐并柔化碰撞，V4 重制投放松手 Cue；等待用户复听确认 |
 | T48-A01 | 霓光 2048 | 电子循环音乐与反馈音效 | 可导入 | Codex 项目内程序化合成/编曲，T48 独立参数 | [完整记录](./asset-generation/GAME2048_AUDIO_V1.md)；无外部音频 | `assets/games/twenty48/visual/audio/` | `game-2048` | 24 秒无缝循环 + 9 Cue；10 个文件共 329,280 bytes，独立于 L1/W1 文件与音色 |
+| BD1-A01 | 转刀塔防 | 月园循环音乐与反馈音效 | 可导入 | 项目内程序化合成/编曲，脚本可复现 | `tools/blade-defense/generate-audio.js`、WAV 母带与运行 MP3 均已入库；无外部采样 | `assets/games/blade-defense/visual/audio/` | `game-blade-defense` | 1 个循环音乐 + 8 个反馈 Cue，共 9 个 MP3；命中声由运行层 90ms 节流 |
 
 ## 4. 实际素材必填字段
 

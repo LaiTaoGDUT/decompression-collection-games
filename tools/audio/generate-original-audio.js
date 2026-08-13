@@ -1,16 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { execFileSync } = require('child_process');
 
 const lameContext = {};
-vm.runInNewContext(
-    fs.readFileSync(
-        path.join(path.dirname(require.resolve('lamejs/package.json')), 'lame.min.js'),
-        'utf8',
-    ),
-    lameContext,
-);
-const lamejs = lameContext.lamejs;
+let lamejs;
+try {
+    vm.runInNewContext(
+        fs.readFileSync(
+            path.join(path.dirname(require.resolve('lamejs/package.json')), 'lame.min.js'),
+            'utf8',
+        ),
+        lameContext,
+    );
+    lamejs = lameContext.lamejs;
+} catch (error) {
+    if (error?.code !== 'MODULE_NOT_FOUND') throw error;
+}
 
 const SAMPLE_RATE = 48000;
 const SEED = 0x51A7E202;
@@ -230,6 +236,41 @@ function create2048Music() {
     return track;
 }
 
+function create2048DangerMusic() {
+    const track = createTrack(12);
+    const roots = [73.42, 77.78, 87.31, 92.5];
+    for (let bar = 0; bar < 6; bar += 1) {
+        const start = bar * 2;
+        const root = roots[bar % roots.length];
+        [1, 1.5, 2].forEach((ratio, voice) => addTone(track, start, 1.96, root * ratio, 0.031, {
+            attack: 0.12,
+            release: 0.22,
+            pan: (voice - 1) * 0.25,
+            harmonic: 0.2,
+        }));
+        addSweep(track, start, 1.86, root * 2.2, root * 4.2, 0.025, {
+            attack: 0.08,
+            release: 0.3,
+            pan: bar % 2 ? 0.3 : -0.3,
+        });
+    }
+    const alarm = [440, 554.37, 659.25, 554.37, 493.88, 622.25, 739.99, 622.25];
+    for (let step = 0; step < 48; step += 1) {
+        const start = step * 0.25;
+        addTone(track, start, 0.13, alarm[step % alarm.length], 0.033, {
+            kind: 'pluck',
+            attack: 0.002,
+            release: 0.1,
+            pan: step % 2 ? 0.34 : -0.34,
+        });
+        if (step % 2 === 0) {
+            addTone(track, start, 0.18, 65.41, 0.055, { kind: 'triangle', attack: 0.004, release: 0.14 });
+            addNoise(track, start + 0.02, 0.07, 0.022, SEED + 4096 + step, { smoothing: 0.88 });
+        }
+    }
+    return track;
+}
+
 function create2048Cue(name) {
     const durations = {
         button: 0.12,
@@ -433,6 +474,27 @@ function writeWav(track, filename) {
 }
 
 function writeMp3(track, filename, kbps) {
+    if (!lamejs) {
+        const ffmpeg = [
+            process.env.FFMPEG_PATH,
+            '/opt/homebrew/opt/ffmpeg/bin/ffmpeg',
+            '/usr/local/bin/ffmpeg',
+            'ffmpeg',
+        ].filter(Boolean).find((candidate) => candidate === 'ffmpeg' || fs.existsSync(candidate));
+        if (!ffmpeg) throw new Error('MP3 encoding requires lamejs or ffmpeg.');
+        const temporaryWav = `${filename}.source.wav`;
+        writeWav(track, temporaryWav);
+        try {
+            execFileSync(ffmpeg, [
+                '-hide_banner', '-loglevel', 'error', '-y', '-i', temporaryWav,
+                '-codec:a', 'libmp3lame', '-b:a', `${kbps}k`,
+                '-id3v2_version', '0', '-write_id3v1', '0', filename,
+            ]);
+        } finally {
+            if (fs.existsSync(temporaryWav)) fs.unlinkSync(temporaryWav);
+        }
+        return;
+    }
     const encoder = new lamejs.Mp3Encoder(2, SAMPLE_RATE, kbps);
     const chunks = [];
     const blockSize = 1152;
@@ -457,6 +519,7 @@ const assets = [
     { owner: 'lobby', name: 'l1-gallery-loop-v1', track: createLobbyMusic(), music: true },
     { owner: 'watermelon', name: 'w1-paper-loop-v1', track: createGameMusic(), music: true, targetLufs: -23, maxPeakDb: -7 },
     { owner: 'game2048', name: 't48-neon-loop-v1', track: create2048Music(), music: true, targetLufs: -22, maxPeakDb: -6 },
+    { owner: 'game2048', name: 't48-danger-loop-v1', track: create2048DangerMusic(), music: true, targetLufs: -20, maxPeakDb: -5 },
     ...['lobby_button', 'lobby_popup', 'lobby_toggle'].map((name) => ({ owner: 'lobby', name: `${name.replace('_', '-')}-v1`, track: createCue(name), music: false })),
     ...['game_button', 'drop', 'collision_1', 'collision_2', 'collision_3', 'fold', 'merge', 'chain', 'danger', 'failure', 'continue', 'record'].map((name) => ({
         owner: 'watermelon',

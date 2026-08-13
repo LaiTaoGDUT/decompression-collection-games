@@ -21,12 +21,14 @@ function zeroRandom() {
     assert.strictEqual(result.changed, true);
     assert.strictEqual(result.scoreGained, 8);
     assert.deepStrictEqual(result.mergedIndices, [0, 1]);
+    assert.deepStrictEqual(result.tileMotions.slice(0, 4), [
+        { fromIndex: 0, toIndex: 0, value: 2, merges: true },
+        { fromIndex: 1, toIndex: 0, value: 2, merges: true },
+        { fromIndex: 2, toIndex: 1, value: 2, merges: true },
+        { fromIndex: 3, toIndex: 1, value: 2, merges: true },
+    ]);
     assert.deepStrictEqual(model.board.slice(0, 4), [4, 4, 2, 0]);
     assert.strictEqual(model.score, 8);
-    assert.strictEqual(model.canUndo, true);
-    assert.strictEqual(model.undo(), true);
-    assert.deepStrictEqual(model.board.slice(0, 4), [2, 2, 2, 2]);
-    assert.strictEqual(model.undo(), false);
 }
 
 {
@@ -59,6 +61,7 @@ function zeroRandom() {
     const before = model.board.slice();
     const result = model.move('left');
     assert.strictEqual(result.changed, false);
+    assert.deepStrictEqual(result.tileMotions, []);
     assert.strictEqual(result.gameOver, false);
     assert.deepStrictEqual(model.board, before);
 }
@@ -69,7 +72,6 @@ function zeroRandom() {
     const result = model.move('left');
     assert.strictEqual(result.changed, false);
     assert.strictEqual(result.gameOver, true);
-    assert.strictEqual(model.canUndo, false);
 }
 
 {
@@ -81,4 +83,4 @@ function zeroRandom() {
     assert.strictEqual(model.score, 2048);
 }
 
-console.log('game2048_model=passed, cases=8, directions=left+right+up+down, invalid_move=passed, undo=passed, target=passed, gameover=passed');
+console.log('game2048_model=passed, cases=8, directions=left+right+up+down, invalid_move=passed, target=passed, gameover=passed');

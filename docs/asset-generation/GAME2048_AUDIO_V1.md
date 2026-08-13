@@ -11,6 +11,7 @@
 ## 2. 资产清单
 
 - 24 秒无缝循环：`t48-neon-loop-v1`，电子和弦、低频脉冲、克制高频闪光，目标近似 -22 LUFS。
+- 12 秒危急循环：`t48-danger-loop-v1`，在棋盘空格不多于 2 格时切入更密集的低频脉冲、上升扫描与警报音型，脱离危急状态后恢复常规循环。
 - 9 个反馈 Cue：按钮、移动、无效移动、生成、合并、连锁、目标、失败、新纪录。
 - WAV 母带：`audio_sources/generated/v1/game2048/master/`。
 - MP3 运行文件：`assets/games/twenty48/visual/audio/`。
@@ -18,5 +19,5 @@
 ## 3. 接入与验证
 
 - `BundleAudioBank` 在 `game-2048` Bundle 内加载并注册 Cue；暂停、切后台、完成本局、返回大厅和销毁时停止或解除引用。
-- 10 个运行文件总计 329,280 bytes；循环边界采样差为 0；最高峰值不超过 -4 dBFS。
-- 全量音频验证结果：`assets=27, wav=RIFF/48kHz, mp3=valid, music_seams=0, peaks<=-2dBFS, bundle_routes=isolated, runtime_bytes=1159680`。
+- 11 个运行文件；循环边界采样差为 0；最高峰值不超过 -4 dBFS。
+- 全量音频验证结果：`assets=28, wav=RIFF/48kHz, mp3=valid, music_seams=0, peaks<=-2dBFS, bundle_routes=isolated`。

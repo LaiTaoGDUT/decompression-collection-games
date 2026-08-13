@@ -59,6 +59,24 @@
       "seamDelta": 0
     },
     {
+      "owner": "game2048",
+      "name": "t48-danger-loop-v1",
+      "kind": "music-loop",
+      "durationSeconds": 12,
+      "loopStartSample": 0,
+      "loopEndSample": 576000,
+      "bitrateKbps": 96,
+      "masterPath": "audio_sources/generated/v1/game2048/master/t48-danger-loop-v1.wav",
+      "runtimePath": "assets/games/twenty48/visual/audio/t48-danger-loop-v1.mp3",
+      "masterBytes": 2304044,
+      "runtimeBytes": 144576,
+      "targetLufs": -20,
+      "maxPeakDb": -5,
+      "approximateLufs": -20,
+      "peakDbfs": -6.22,
+      "seamDelta": 0
+    },
+    {
       "owner": "lobby",
       "name": "lobby-button-v1",
       "kind": "sound-effect",

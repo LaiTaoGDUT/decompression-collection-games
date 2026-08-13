@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const report = JSON.parse(fs.readFileSync('docs/asset-generation/audio-v1-report.json', 'utf8'));
-if (report.sampleRate !== 48000 || report.assets.length !== 27) {
+if (report.sampleRate !== 48000 || report.assets.length !== 28) {
     throw new Error('Unexpected audio sample rate or asset count.');
 }
 

@@ -152,6 +152,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private readonly effectNodes = new Set<Node>();
     private audioBank?: BundleAudioBank;
     private overlayView?: WatermelonOverlayView;
+    private completedResultModel?: MiniGameResultModel;
     private randomSource: () => number = Math.random;
 
     /** 固定种子回归入口；生产默认始终使用平台随机源。 */
@@ -303,11 +304,15 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     showResultView(model: MiniGameResultModel): void {
-        this.overlayView?.showResult(model);
+        this.completedResultModel = model;
+        this.setPauseButtonLabel('结算');
+        this.overlayView?.showResult(model, this.dismissResultOverlay);
     }
 
     hideResultView(): void {
         this.overlayView?.hideResult();
+        this.completedResultModel = undefined;
+        this.setPauseButtonLabel('暂停');
     }
 
     async dispose(): Promise<void> {
@@ -332,6 +337,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.destroyContinueOverlay();
         this.overlayView?.dispose();
         this.overlayView = undefined;
+        this.completedResultModel = undefined;
         this.audioBank?.dispose();
         this.audioBank = undefined;
         this.dropGate.disable();
@@ -663,11 +669,28 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     private readonly handlePause = (): void => {
+        if (this.state === 'paused' && this.completedResultModel) {
+            this.context?.services.feedback.play('uiButton');
+            this.overlayView?.showResult(this.completedResultModel, this.dismissResultOverlay);
+            return;
+        }
         if (this.state === 'playing') {
             this.context?.services.feedback.play('uiButton');
             this.context?.requestPause();
         }
     };
+
+    private readonly dismissResultOverlay = (): void => {
+        this.overlayView?.hideResult();
+        this.setPauseButtonLabel('结算');
+    };
+
+    private setPauseButtonLabel(text: string): void {
+        const label = this.node.getChildByName('PauseButton')
+            ?.getChildByName('Label')
+            ?.getComponent(Label);
+        if (label) label.string = text;
+    }
 
     private readonly handleFruitCollision = (
         first: FruitBody,

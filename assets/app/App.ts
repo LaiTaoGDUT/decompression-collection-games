@@ -92,6 +92,7 @@ export class App extends Component {
     private container?: ServiceContainer;
     private readonly lifecycleUnsubscribes: Unsubscribe[] = [];
     private startupInitialization?: Promise<void>;
+    private platformHidden = false;
     private pausedByPlatform = false;
     private startupFailure?: AppStartupFailure;
 
@@ -328,32 +329,64 @@ export class App extends Component {
     }
 
     private readonly handlePlatformHide = (): void => {
-        this.services.get(AUDIO_SERVICE).onHide();
+        this.platformHidden = true;
         this.services.get(AD_SERVICE).onHide();
+        const audio = this.services.get(AUDIO_SERVICE);
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
 
         if (stateMachine.currentState !== 'playing') {
+            audio.onHide();
             return;
         }
 
-        this.pausedByPlatform = stateMachine.transition('paused');
+        try {
+            // Platform suspension must freeze the active MiniGame itself, not
+            // only the global state.  Reusing the runtime pause path also
+            // preserves a visible, recoverable pause surface on foreground.
+            this.services.get(GAME_RUNTIME_SERVICE).openPauseMenu();
+            this.pausedByPlatform = true;
+        } catch (error: unknown) {
+            this.pausedByPlatform = false;
+            console.error('[App] Platform safety pause failed.', error);
+        } finally {
+            // Pause the MiniGame first so AudioService records the game-owned
+            // pause.  Otherwise onShow could restart music under the pause UI.
+            audio.onHide();
+        }
     };
 
     private readonly handlePlatformShow = (): void => {
-        this.services.get(AUDIO_SERVICE).onShow();
+        const wasHidden = this.platformHidden;
+        this.platformHidden = false;
+        const audio = this.services.get(AUDIO_SERVICE);
+        const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
+
+        // A game can finish loading after the hide event. In that case there
+        // was no entry to pause at hide time, so enforce the same recoverable
+        // pause before foreground audio is allowed to resume.
+        if (wasHidden
+            && !this.pausedByPlatform
+            && stateMachine.currentState === 'playing') {
+            try {
+                this.services.get(GAME_RUNTIME_SERVICE).openPauseMenu();
+                this.pausedByPlatform = true;
+            } catch (error: unknown) {
+                console.error('[App] Deferred platform safety pause failed.', error);
+            }
+        }
+
+        audio.onShow();
         this.services.get(AD_SERVICE).onShow();
-        const shouldResume = this.pausedByPlatform;
+        const shouldRemainPaused = this.pausedByPlatform;
         this.pausedByPlatform = false;
 
-        if (!shouldResume) {
+        if (!shouldRemainPaused) {
             return;
         }
 
-        const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
-
-        if (stateMachine.currentState === 'paused') {
-            stateMachine.transition('playing');
-        }
+        // Returning to the app intentionally remains on the pause surface.
+        // The player explicitly resumes, preventing enemies, timers or merge
+        // decisions from advancing before the screen is ready.
     };
 
     private clearLifecycleListeners(): void {

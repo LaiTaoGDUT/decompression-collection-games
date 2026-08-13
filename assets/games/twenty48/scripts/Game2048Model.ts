@@ -8,25 +8,33 @@ export interface Game2048Spawn {
     readonly value: 2 | 4;
 }
 
+export interface Game2048TileMotion {
+    readonly fromIndex: number;
+    readonly toIndex: number;
+    readonly value: number;
+    readonly merges: boolean;
+}
+
 export interface Game2048MoveResult {
     readonly changed: boolean;
     readonly scoreGained: number;
     readonly mergedIndices: readonly number[];
+    readonly tileMotions: readonly Game2048TileMotion[];
     readonly spawned?: Game2048Spawn;
     readonly reachedTarget: boolean;
     readonly gameOver: boolean;
-}
-
-interface Game2048Snapshot {
-    readonly board: readonly number[];
-    readonly score: number;
-    readonly targetAcknowledged: boolean;
 }
 
 interface LineResult {
     readonly values: readonly number[];
     readonly score: number;
     readonly mergedOffsets: readonly number[];
+    readonly motions: readonly {
+        readonly fromOffset: number;
+        readonly toOffset: number;
+        readonly value: number;
+        readonly merges: boolean;
+    }[];
 }
 
 function requireBoard(board: readonly number[]): number[] {
@@ -43,26 +51,43 @@ function requireBoard(board: readonly number[]): number[] {
 }
 
 function slideLine(line: readonly number[]): LineResult {
-    const compact = line.filter((value) => value !== 0);
+    const compact = line
+        .map((value, offset) => ({ value, offset }))
+        .filter(({ value }) => value !== 0);
     const values: number[] = [];
     const mergedOffsets: number[] = [];
+    const motions: {
+        fromOffset: number;
+        toOffset: number;
+        value: number;
+        merges: boolean;
+    }[] = [];
     let score = 0;
 
     for (let index = 0; index < compact.length; index += 1) {
-        const value = compact[index];
-        if (index + 1 < compact.length && compact[index + 1] === value) {
+        const { value, offset } = compact[index];
+        const toOffset = values.length;
+        if (index + 1 < compact.length && compact[index + 1].value === value) {
             const merged = value * 2;
             values.push(merged);
             mergedOffsets.push(values.length - 1);
+            motions.push({ fromOffset: offset, toOffset, value, merges: true });
+            motions.push({
+                fromOffset: compact[index + 1].offset,
+                toOffset,
+                value,
+                merges: true,
+            });
             score += merged;
             index += 1;
         } else {
             values.push(value);
+            motions.push({ fromOffset: offset, toOffset, value, merges: false });
         }
     }
 
     while (values.length < BOARD_SIZE) values.push(0);
-    return { values, score, mergedOffsets };
+    return { values, score, mergedOffsets, motions };
 }
 
 function lineIndices(direction: Game2048Direction, outer: number): number[] {
@@ -80,7 +105,6 @@ export class Game2048Model {
     private cells: number[] = Array(BOARD_SIZE * BOARD_SIZE).fill(0);
     private currentScore = 0;
     private targetAcknowledged = false;
-    private undoSnapshot?: Game2048Snapshot;
 
     constructor(private random: () => number = Math.random) {}
 
@@ -90,10 +114,6 @@ export class Game2048Model {
 
     get score(): number {
         return this.currentScore;
-    }
-
-    get canUndo(): boolean {
-        return this.undoSnapshot !== undefined;
     }
 
     get highestTile(): number {
@@ -120,7 +140,6 @@ export class Game2048Model {
         this.cells = Array(BOARD_SIZE * BOARD_SIZE).fill(0);
         this.currentScore = 0;
         this.targetAcknowledged = false;
-        this.undoSnapshot = undefined;
         return Object.freeze([this.spawn(), this.spawn()].filter((spawn): spawn is Game2048Spawn => !!spawn));
     }
 
@@ -133,17 +152,12 @@ export class Game2048Model {
         this.cells = requireBoard(board);
         this.currentScore = Math.floor(score);
         this.targetAcknowledged = targetAcknowledged;
-        this.undoSnapshot = undefined;
     }
 
     move(direction: Game2048Direction): Game2048MoveResult {
-        const before: Game2048Snapshot = {
-            board: [...this.cells],
-            score: this.currentScore,
-            targetAcknowledged: this.targetAcknowledged,
-        };
         const next = [...this.cells];
         const mergedIndices: number[] = [];
+        const tileMotions: Game2048TileMotion[] = [];
         let scoreGained = 0;
 
         for (let outer = 0; outer < BOARD_SIZE; outer += 1) {
@@ -155,6 +169,14 @@ export class Game2048Model {
                 next[indices[offset]] = value;
             });
             result.mergedOffsets.forEach((offset) => mergedIndices.push(indices[offset]));
+            result.motions.forEach((motion) => {
+                tileMotions.push({
+                    fromIndex: indices[motion.fromOffset],
+                    toIndex: indices[motion.toOffset],
+                    value: motion.value,
+                    merges: motion.merges,
+                });
+            });
         }
 
         const changed = next.some((value, index) => value !== this.cells[index]);
@@ -163,12 +185,12 @@ export class Game2048Model {
                 changed: false,
                 scoreGained: 0,
                 mergedIndices: Object.freeze([]),
+                tileMotions: Object.freeze([]),
                 reachedTarget: false,
                 gameOver: !this.hasAvailableMove,
             });
         }
 
-        this.undoSnapshot = before;
         this.cells = next;
         this.currentScore += scoreGained;
         const spawned = this.spawn();
@@ -180,20 +202,11 @@ export class Game2048Model {
             changed: true,
             scoreGained,
             mergedIndices: Object.freeze([...mergedIndices]),
+            tileMotions: Object.freeze(tileMotions.map((motion) => Object.freeze({ ...motion }))),
             ...(spawned ? { spawned } : {}),
             reachedTarget,
             gameOver: !this.hasAvailableMove,
         });
-    }
-
-    undo(): boolean {
-        const snapshot = this.undoSnapshot;
-        if (!snapshot) return false;
-        this.cells = [...snapshot.board];
-        this.currentScore = snapshot.score;
-        this.targetAcknowledged = snapshot.targetAcknowledged;
-        this.undoSnapshot = undefined;
-        return true;
     }
 
     private spawn(): Game2048Spawn | undefined {

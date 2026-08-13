@@ -63,7 +63,8 @@ export class AudioService {
         this.musicChannel.stop();
         this.musicChannel.clip = null;
         this.currentMusic = undefined;
-        this.pausedByBackground = false;
+        // Background state belongs to the application, not to one clip. Keep
+        // it latched so a scene change while hidden cannot start new music.
         this.pausedByGame = false;
     }
 
@@ -122,17 +123,17 @@ export class AudioService {
             return;
         }
 
-        this.pausedByBackground = this.musicChannel.playing;
+        this.pausedByBackground = true;
 
-        if (this.pausedByBackground) {
+        if (this.musicChannel.playing) {
             this.musicChannel.pause();
         }
     }
 
     pauseMusic(): void {
         if (this.pausedByGame) return;
-        this.pausedByGame = this.musicChannel.playing;
-        if (this.pausedByGame) this.musicChannel.pause();
+        this.pausedByGame = true;
+        if (this.musicChannel.playing) this.musicChannel.pause();
     }
 
     resumeMusic(): void {

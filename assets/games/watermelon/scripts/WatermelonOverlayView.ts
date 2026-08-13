@@ -25,7 +25,7 @@ import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 interface ActionSpec {
     readonly name: string;
     readonly label: string;
-    readonly action: () => Promise<void>;
+    readonly action: () => void | Promise<void>;
     readonly tone: 'mint' | 'peach' | 'danger' | 'soft';
 }
 
@@ -64,7 +64,7 @@ export class WatermelonOverlayView {
         this.pause = undefined;
     }
 
-    showResult(model: MiniGameResultModel): void {
+    showResult(model: MiniGameResultModel, dismiss: () => void): void {
         this.hideResult();
         const extra = model.result.extra ?? {};
         const newRecord = extra.newRecord === true;
@@ -78,6 +78,7 @@ export class WatermelonOverlayView {
             [
                 { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'peach' },
                 { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'soft' },
+                { name: 'InspectCatsButton', label: '关闭并查看猫咪', action: dismiss, tone: 'mint' },
             ],
             newRecord,
         );
