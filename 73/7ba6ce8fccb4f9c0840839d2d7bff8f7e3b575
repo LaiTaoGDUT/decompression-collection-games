@@ -1,0 +1,217 @@
+assets/lobby/scripts/LobbySettingsPanel.ts
+  s_3b0aab21caf13f::t_a42fd55f7fdcda 362
+  s_6d24da529b0a1e::t_b191695f018dc6 76,81-82,84-89
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_3b0aab21caf13f::t_cfa75324b75e24 44,51,132,168,191,202-203,274,276-283,290,407-409,484,511-537,540,544,550-553
+  s_3b0aab21caf13f::t_a42fd55f7fdcda 656-658,661-668,670-679,682-686,688-691,693-696,710-711,714
+  s_3b0aab21caf13f::t_97e7d8d0fb8f8e 133,193-195,197,200-201,275
+  s_9db536da86664d::t_391f62bdc978f5 648,707-708
+  s_3b0aab21caf13f::t_656af845f6ec97 659
+  s_3b0aab21caf13f::t_bef83e20823ece 649-651
+  s_723c267b593e51::t_33946664b09ecc 980-981,986,990,998-1000
+  s_9db536da86664d::t_571923db57330c 36-37,59,642-647,652-655,697,699-705
+  s_723c267b593e51::t_ac9c0ac48ad81b 1206-1207,1237,1239-1248
+  s_3b0aab21caf13f::t_f24e4c7ae89d12 192
+assets/shared/ui/PlatformSafeLayout.ts.meta
+  s_9db536da86664d::t_7d13702e7f9784 1-9
+assets/games/watermelon/scripts/WatermelonScoring.ts
+  s_3b0aab21caf13f::t_530375ce871289 59-70
+assets/runtime/MiniGame.ts
+  s_3b0aab21caf13f::t_97e7d8d0fb8f8e 49-50
+assets/core/types/CommonTypes.ts
+  s_9db536da86664d::t_7d13702e7f9784 17-35
+assets/games/watermelon/scripts/FruitBody.ts
+  s_3b0aab21caf13f::t_a42fd55f7fdcda 162,166-173,175-177,181-183,186,189,192-193
+  s_3b0aab21caf13f::t_656af845f6ec97 184-185,187-188,190-191
+  s_3b0aab21caf13f::t_591921d173ce63 5
+  s_fc8c011f7e9c08::t_3be09170046b04 178-180
+docs/VISUAL_STYLE_GUIDE.md
+  s_9db536da86664d::t_beaf1b3c3cbc65 21,30-36
+assets/shared/components/LoadingView.ts
+  s_6303b97c1ea198::t_edc7148c3b0aa1 76,123,126-131
+  s_81639ade95576f::t_72277d990d3891 41-43
+  s_6f2a430350a8b4::t_e034a96b5e1487 352-354
+  s_6f2a430350a8b4::t_2dc9e554403ed3 39-40,561
+  s_6303b97c1ea198::t_f1b45c8cf1f74f 471,509-515,625,647
+  s_6f2a430350a8b4::t_b30a6ee7274756 400
+  s_6303b97c1ea198::t_ff67a23045b608 230-307,309,322-325,341,402,413,423,431
+  s_6303b97c1ea198::t_acea46784f5674 12,57-58,136,147,158-159,163,171,173-179,206,215
+  s_6f2a430350a8b4::t_08f3aa764680c5 46,55-56,59-60,85,96-100,118,156-157,160-162,164-168,172,213,228,320-321,326-340,346-347,351,355,360,375,407-412,414-422,424-426,428,434-436,504-508,522-524,528-530,556-560,562-578,580,598-604
+  s_6303b97c1ea198::t_7d4cef44b1dfe8 44-45,342-345
+  s_6303b97c1ea198::t_10b78380aa84dd 229
+assets/platform/WeChatPlatform.ts
+  s_9db536da86664d::t_7d13702e7f9784 6-7,31-39,53,91,114,131,143-150,152,236-264
+docs/PLAYTEST_ACCEPTANCE_TEMPLATE.md
+  s_9db536da86664d::t_beaf1b3c3cbc65 103
+assets/runtime/GameRuntime.ts
+  s_6f2a430350a8b4::t_08f3aa764680c5 34,154-176
+  s_3b0aab21caf13f::t_97e7d8d0fb8f8e 587-594
+  s_3b0aab21caf13f::t_ec6e4128b6cada 586
+assets/platform/Platform.ts
+  s_9db536da86664d::t_7d13702e7f9784 4,21
+assets/shared/ui/PlatformSafeLayout.ts
+  s_9db536da86664d::t_7d13702e7f9784 1-35,37-38,40-43
+  s_9db536da86664d::t_e6a2e0a982547b 36,39
+assets/app/App.ts
+  s_9db536da86664d::t_7d13702e7f9784 325
+  s_6f2a430350a8b4::t_08f3aa764680c5 292-294
+assets/games/watermelon/scripts/WatermelonLayout.ts
+  s_9db536da86664d::t_571923db57330c 17-18,27-28,44,50-54,59-62,78-79,95,117-122,136,138-143,149,156,270,327
+  s_9db536da86664d::t_e6a2e0a982547b 65
+  s_3b0aab21caf13f::t_a42fd55f7fdcda 63-64,66,430
+  s_9db536da86664d::t_4aece8e77b57e5 55,58,253
+  s_3b0aab21caf13f::t_656af845f6ec97 56-57,94,101,112-116,160,243-246,329-357,360,426
+  s_9db536da86664d::t_00e10c23b363f2 326
+  s_3b0aab21caf13f::t_46b2e7d20b7968 328
+assets/services/feedback/FeedbackService.ts
+  s_3b0aab21caf13f::t_cfa75324b75e24 79-87
+assets/games/watermelon/visual/title/c1-cat-merge-title-v1.png.meta
+  s_3b0aab21caf13f::t_f1752d373c6653 1-42
+assets/platform/WebPlatform.ts
+  s_9db536da86664d::t_7d13702e7f9784 5-6,19-20,49,59-64,100-103
+assets/lobby/scripts/LobbyEntry.ts
+  s_6d24da529b0a1e::t_b191695f018dc6 165-168,192-199,217-219,276,280,282-283,295
+  s_6d24da529b0a1e::t_b550a25ed39a66 277,279
+  s_6d24da529b0a1e::t_eb7c27261b2566 143-151,157,190,273-275,284-285,289-293,300
+  s_6d24da529b0a1e::t_e2edb2bd23ac9a 152-153,180-184
+  s_6d24da529b0a1e::t_116bc1f0b77f9a 185-189
+  s_81639ade95576f::t_72277d990d3891 35-37
+  s_6d24da529b0a1e::t_a7f3d2d8d6f0cd 191
+assets/games/twenty48/scripts/Game2048Model.ts
+  s_3b0aab21caf13f::t_cfa75324b75e24 28-33,139-146,148,169-175
+assets/games/blocks3d/scripts/Blocks3DGame.ts
+  s_3b0aab21caf13f::t_022f02e0b06e05 24,66,68-84,99-101,132-139,142,159-160,162-167,197-198,212-214,258-260,262-265,267-268,303,305-308,335,337,356,367-506
+  s_3b0aab21caf13f::t_7805307a9e0cf5 102,211,261,304,355
+  s_3b0aab21caf13f::t_d1346aeb9f78b0 143
+  s_3b0aab21caf13f::t_97e7d8d0fb8f8e 177,199-203
+assets/games/watermelon/scripts/WatermelonSave.ts
+  s_3b0aab21caf13f::t_530375ce871289 4
+assets/games/watermelon/visual/title.meta
+  s_3b0aab21caf13f::t_f1752d373c6653 1-9
+settings/v2/packages/engine.json
+  s_6f2a430350a8b4::t_75b9475e8cfa06 2-7,59-62,81-83,126,179,181,191-193,197,199-202,206-207,210-219
+  s_6f2a430350a8b4::t_90f92cf357cfa3 8-58,63-80,84-125,127-178,180,182-190,194-196,198,203-205,208-209
+tools/verify-game-bundles.js
+  s_6f2a430350a8b4::t_90817d6e643131 10-38,59
+assets/lobby/scripts/LobbyPresentation.ts
+  s_81639ade95576f::t_72277d990d3891 19-21,151
+package.json
+  s_6f2a430350a8b4::t_a299e997f1c254 8-9
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_3b0aab21caf13f::t_656af845f6ec97 1758-1759,1761-1762,1764-1765
+  s_3b0aab21caf13f::t_73c1785271870c 1750,1754-1757,1760,1763,1766-1767
+  s_fc8c011f7e9c08::t_3be09170046b04 1751-1753
+  s_3b0aab21caf13f::t_530375ce871289 28,58,87-110,186,281-287,299-301,303-306,338,343,377-378,545,704,815,871,1036,1404-1507,1509-1533
+  s_3b0aab21caf13f::t_97e7d8d0fb8f8e 187,315,345-347,349,376,546
+  s_3b0aab21caf13f::t_7805307a9e0cf5 302
+  s_3b0aab21caf13f::t_d1346aeb9f78b0 1508
+  s_9db536da86664d::t_571923db57330c 38,76,117,213-214
+  s_3b0aab21caf13f::t_14608dfc7dd7a5 344
+tools/verify-wechat-package-size.js
+  s_6f2a430350a8b4::t_a299e997f1c254 1-39
+assets/lobby.meta
+  s_6f2a430350a8b4::t_b86ff9dd64bebf 9,15
+assets/resources/loading.meta
+  s_164aff32c1b750::t_594c2c638d8818 1-9
+assets/resources/loading/loading-lobby-background-v1.png.meta
+  s_164aff32c1b750::t_2de8fc40a81f53 1-42
+assets/resources/loading/loading-lobby-title-v1.png.meta
+  s_164aff32c1b750::t_7f1943a0bb8aa6 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "737ba6ce8fccb4f9c0840839d2d7bff8f7e3b575",
+  "prompts": {},
+  "logical_commit_id": "737ba6ce8fccb4f9c0840839d2d7bff8f7e3b575",
+  "sessions": {
+    "s_164aff32c1b750": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffe79-590c-77a1-9f60-f6fc9b5ccd49",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_3b0aab21caf13f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fff29-976b-7591-8cb8-c56d0d168115",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 825,
+      "total_deletions": 232
+    },
+    "s_6303b97c1ea198": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fff27-22e5-7902-8104-a33c55f3690a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 162,
+      "total_deletions": 46
+    },
+    "s_6d24da529b0a1e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fff02-2940-7ec1-9445-2505a782c5a7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 79,
+      "total_deletions": 32
+    },
+    "s_6f2a430350a8b4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffe77-3112-7ea2-9b3f-18f3ccd45518",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 496,
+      "total_deletions": 89
+    },
+    "s_723c267b593e51": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fff53-d0fb-78e3-880f-e7cb3db4ec4b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 201,
+      "total_deletions": 191
+    },
+    "s_81639ade95576f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fff55-6a54-73f0-95f1-d341e8ffe202",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 10,
+      "total_deletions": 6
+    },
+    "s_9db536da86664d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffeee-f2b5-7b60-b711-f70f02150d24",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 229,
+      "total_deletions": 17
+    },
+    "s_fc8c011f7e9c08": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fffc8-c122-7f21-b79e-38a6f29fac5e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6,
+      "total_deletions": 2
+    }
+  }
+}
