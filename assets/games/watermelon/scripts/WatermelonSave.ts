@@ -1,7 +1,7 @@
 import type { GameSaveData } from '../../../services/storage/StorageService';
 import type { WatermelonProgressSnapshot } from './WatermelonScoring';
 
-export const WATERMELON_DATA_VERSION = 2;
+export const WATERMELON_DATA_VERSION = 3;
 
 export interface WatermelonRoundSaveStats {
     readonly continueOffered: boolean;

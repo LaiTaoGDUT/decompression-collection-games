@@ -46,6 +46,8 @@ export interface MiniGame<TServices extends object = object> {
     pause(): void;
     resume(): void;
     restart(): Promise<void>;
+    /** 运行层准备执行“重新开局”时，清除当前局的可恢复标记。 */
+    discardSavedProgress?(): void;
     dispose(): Promise<void>;
     showPauseMenu?(model: MiniGamePauseModel): void;
     hidePauseMenu?(): void;

@@ -76,6 +76,15 @@ export class FeedbackService {
         }
     }
 
+    /** 玩法可在没有额外音效的节点触发独立震感，仍统一遵守用户开关。 */
+    vibrate(type: 'light' | 'medium' | 'heavy'): void {
+        if (!this.storage.snapshot.settings.vibrationEnabled) {
+            return;
+        }
+
+        this.platform.vibrate(type);
+    }
+
     setVibrationEnabled(enabled: boolean): void {
         const current = this.storage.snapshot.settings;
         const settings: UserSettings = {

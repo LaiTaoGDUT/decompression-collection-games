@@ -73,16 +73,20 @@ export class LobbySettingsPanel {
     }
 
     private createSettingsEntry(contentRoot: Node): void {
-        const brand = contentRoot.getChildByName('BrandArea');
-        if (!brand || brand.getChildByName('SettingsEntry')) {
+        if (contentRoot.getChildByName('SettingsEntry')) {
             return;
         }
 
         const entry = new Node('SettingsEntry');
-        entry.layer = brand.layer;
-        brand.addChild(entry);
-        entry.setPosition(292, -64);
+        entry.layer = contentRoot.layer;
+        contentRoot.addChild(entry);
         entry.addComponent(UITransform).setContentSize(92, 92);
+        const widget = entry.addComponent(Widget);
+        widget.isAlignTop = true;
+        widget.isAlignRight = true;
+        widget.top = 36;
+        widget.right = 37;
+        widget.updateAlignment();
         const graphics = entry.addComponent(Graphics);
         graphics.fillColor = new Color(12, 37, 149, 145);
         graphics.circle(3, -6, 39);
@@ -355,6 +359,7 @@ export class LobbySettingsPanel {
             return;
         }
         this.refresh();
+        this.services?.feedback.vibrate('light');
         this.services?.feedback.play('popup');
         this.root.active = true;
     };

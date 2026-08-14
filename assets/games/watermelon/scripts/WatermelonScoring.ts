@@ -56,4 +56,16 @@ export class WatermelonRoundProgress {
         this.currentMaxLevel = 0;
         return this.snapshot;
     }
+
+    restore(snapshot: WatermelonProgressSnapshot): WatermelonProgressSnapshot {
+        if (!Number.isInteger(snapshot.score) || snapshot.score < 0
+            || !Number.isInteger(snapshot.maxFruitLevel)
+            || snapshot.maxFruitLevel < 0
+            || snapshot.maxFruitLevel > 10) {
+            throw new Error('Invalid watermelon progress snapshot.');
+        }
+        this.currentScore = snapshot.score;
+        this.currentMaxLevel = snapshot.maxFruitLevel;
+        return this.snapshot;
+    }
 }

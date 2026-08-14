@@ -289,9 +289,9 @@ export class App extends Component {
 
         await this.runStartupStage(
             'lobby',
-            // First paint goes directly to the lobby. Loading remains enabled
-            // for later game entry, restart and return-to-lobby transitions.
-            () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(false),
+            // The persistent main-package loading surface stays visible while
+            // WeChat downloads and launches the lobby subpackage.
+            () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(true),
         );
     }
 
@@ -322,6 +322,7 @@ export class App extends Component {
                 storage: services.get(STORAGE_SERVICE),
                 analytics,
                 ads: services.get(AD_SERVICE),
+                platform,
                 deviceTier: platform.getDeviceProfile().tier,
             }),
             director,

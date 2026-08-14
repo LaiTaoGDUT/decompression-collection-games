@@ -2,6 +2,7 @@ import {
     _decorator,
     CircleCollider2D,
     Collider2D,
+    Color,
     Component,
     Contact2DType,
     ERigidBody2DType,
@@ -158,16 +159,38 @@ export class FruitBody extends Component {
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         sprite.spriteFrame = spriteFrames[0];
         visual.getComponent(UITransform)?.setContentSize(visualSize, visualSize);
-        this.clearFruitOutline();
+        this.drawFruitContrastBacking(visual, visualSize);
         this.startIdleFrameAnimation();
     }
 
-    private clearFruitOutline(): void {
-        const ring = this.node.getChildByName('FruitOutline');
-        ring?.getComponent(Graphics)?.clear();
-        if (ring) {
-            ring.active = false;
+    private drawFruitContrastBacking(visual: Node, visualSize: number): void {
+        let ring = this.node.getChildByName('FruitOutline');
+        if (!ring) {
+            ring = new Node('FruitOutline');
+            ring.layer = this.node.layer;
+            ring.setParent(this.node);
+            ring.addComponent(UITransform);
+            ring.addComponent(Graphics);
         }
+        ring.active = true;
+        ring.setPosition(0, 0);
+        ring.getComponent(UITransform)?.setContentSize(visualSize + 14, visualSize + 14);
+        // Keep the translucent contrast ring behind the sprite across repeated
+        // visual setup; matching its index would alternate their draw order.
+        ring.setSiblingIndex(Math.max(0, visual.getSiblingIndex() - 1));
+        const radius = visualSize / 2 - 3;
+        const graphics = ring.getComponent(Graphics)!;
+        graphics.clear();
+        graphics.fillColor = new Color(86, 62, 82, 30);
+        graphics.circle(1.5, -2, radius + 1.5);
+        graphics.fill();
+        graphics.fillColor = new Color(255, 248, 236, 54);
+        graphics.circle(0, 0, radius);
+        graphics.fill();
+        graphics.strokeColor = new Color(105, 75, 95, 142);
+        graphics.lineWidth = Math.max(2, visualSize * 0.018);
+        graphics.circle(0, 0, radius);
+        graphics.stroke();
     }
 
     playDropAnimation(): void {

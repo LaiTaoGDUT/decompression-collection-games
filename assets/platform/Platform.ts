@@ -1,6 +1,7 @@
 import type {
     DeviceProfile,
     LaunchOptions,
+    PlatformLayoutInfo,
     SafeArea,
     Unsubscribe,
 } from '../core/types/CommonTypes';
@@ -17,6 +18,7 @@ export interface Platform {
     dispose(): void;
     getDeviceProfile(): DeviceProfile;
     getSafeArea(): SafeArea;
+    getLayoutInfo(): PlatformLayoutInfo;
     getLaunchOptions(): LaunchOptions;
     supportsVibration(): boolean;
     vibrate(type: 'light' | 'medium' | 'heavy'): void;

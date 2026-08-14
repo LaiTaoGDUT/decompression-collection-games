@@ -14,6 +14,8 @@ import {
     UITransform,
     view,
 } from 'cc';
+import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
+import { calculateTopRightControlPosition } from '../../../shared/ui/PlatformSafeLayout';
 import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 
 const { ccclass } = _decorator;
@@ -22,6 +24,8 @@ export interface WatermelonLayoutMetrics {
     readonly width: number;
     readonly height: number;
     readonly topY: number;
+    readonly pauseX: number;
+    readonly pauseY: number;
     readonly scoreY: number;
     readonly dropY: number;
     readonly boardCenterY: number;
@@ -37,13 +41,29 @@ export function calculateWatermelonLayout(
     canvasHeight: number,
     safeTop = 0,
     safeBottom = 0,
+    platformLayout?: PlatformLayoutInfo,
 ): WatermelonLayoutMetrics {
     const width = Math.max(600, canvasWidth);
     const height = Math.max(1100, canvasHeight);
     const clampedTop = Math.max(0, Math.min(160, safeTop));
     const clampedBottom = Math.max(0, Math.min(120, safeBottom));
-    const topY = height / 2 - clampedTop - 68;
-    const scoreY = topY - 116;
+    const pausePosition = calculateTopRightControlPosition(
+        width,
+        height,
+        platformLayout,
+        {
+            controlWidth: 88,
+            // 标题图片高于暂停按钮，两者共用中心线时按标题高度避让胶囊。
+            controlHeight: 140,
+            rightInset: 58,
+            defaultTopInset: clampedTop + 68,
+            reservedGap: 10,
+        },
+    );
+    // 标题与暂停按钮共用同一视觉基线，并一起落在平台胶囊下方。
+    const topY = pausePosition.y;
+    // 胶囊较低的机型会同步下移 HUD 第二行，避免“修好胶囊、又压住下一只猫”式局部补丁。
+    const scoreY = topY - 134;
     const dropY = scoreY - 88;
     const instructionY = -height / 2 + clampedBottom + 54;
     const boardTop = dropY - 42;
@@ -55,6 +75,8 @@ export function calculateWatermelonLayout(
         width,
         height,
         topY,
+        pauseX: pausePosition.x,
+        pauseY: pausePosition.y,
         scoreY,
         dropY,
         boardCenterY: (boardTop + boardBottom) / 2,
@@ -69,11 +91,14 @@ export function calculateWatermelonLayout(
 @ccclass('WatermelonLayout')
 export class WatermelonLayout extends Component {
     private ownedBackgroundFrame?: SpriteFrame;
+    private ownedTitleFrame?: SpriteFrame;
+    private platformLayout?: PlatformLayoutInfo;
 
     protected onLoad(): void {
         this.applyLayout();
         view.on('canvas-resize', this.handleCanvasResize, this);
         void this.loadBackground();
+        void this.loadTitleArtwork();
     }
 
     protected onDestroy(): void {
@@ -84,6 +109,17 @@ export class WatermelonLayout extends Component {
         }
         this.ownedBackgroundFrame?.destroy();
         this.ownedBackgroundFrame = undefined;
+        const titleSprite = this.node.getChildByName('Title')
+            ?.getChildByName('TitleArtwork')?.getComponent(Sprite);
+        if (titleSprite) titleSprite.spriteFrame = null;
+        this.ownedTitleFrame?.destroy();
+        this.ownedTitleFrame = undefined;
+    }
+
+    /** 由 MiniGameContext 注入平台原生 UI 约束，供初始化和后续 resize 共同使用。 */
+    setPlatformLayout(layout: PlatformLayoutInfo): void {
+        this.platformLayout = layout;
+        this.applyLayout();
     }
 
     applyLayout(): void {
@@ -97,25 +133,31 @@ export class WatermelonLayout extends Component {
         const viewportHeight = Math.max(canvasSize.height, visible.height);
         const safeRect = sys.getSafeAreaRect();
         const designScale = visible.width > 0 ? viewportWidth / visible.width : 1;
-        const safeTop = Math.max(0, visible.height - safeRect.y - safeRect.height)
+        const systemSafeTop = Math.max(0, visible.height - safeRect.y - safeRect.height)
             * designScale;
-        const safeBottom = Math.max(0, safeRect.y) * designScale;
+        const systemSafeBottom = Math.max(0, safeRect.y) * designScale;
+        const safeTop = Math.max(systemSafeTop, this.platformLayout?.safeArea.top ?? 0);
+        const platformSafeBottom = this.platformLayout
+            ? Math.max(0, viewportHeight - this.platformLayout.safeArea.bottom)
+            : 0;
+        const safeBottom = Math.max(systemSafeBottom, platformSafeBottom);
         const metrics = calculateWatermelonLayout(
             viewportWidth,
             viewportHeight,
             safeTop,
             safeBottom,
+            this.platformLayout,
         );
         this.node.getComponent(UITransform)?.setContentSize(metrics.width, metrics.height);
         this.ensureHudNodes();
         this.resizeBackground(metrics.width, metrics.height);
 
         this.setPosition('Title', 0, metrics.topY);
-        this.setPosition('PauseButton', metrics.width / 2 - 58, metrics.topY);
+        this.setPosition('PauseButton', metrics.pauseX, metrics.pauseY);
         this.setPosition('ScoreLabel', -metrics.width / 2 + 125, metrics.scoreY);
         this.setPosition('HighScoreLabel', 0, metrics.scoreY);
         this.setPosition('NextLabel', metrics.width / 2 - 182, metrics.scoreY + 14);
-        this.setPosition('NextFruitPreview', metrics.width / 2 - 78, metrics.scoreY - 6);
+        this.setPosition('NextFruitPreview', metrics.width / 2 - 78, metrics.scoreY);
         this.setPosition('DropZone', 0, metrics.dropY);
         this.setPosition('Instruction', 0, metrics.instructionY);
 
@@ -198,14 +240,17 @@ export class WatermelonLayout extends Component {
             obsoleteSubtitle.destroy();
         }
 
-        this.node.getChildByName('Title')
-            ?.getComponent(UITransform)?.setContentSize(320, 64);
+        const title = this.node.getChildByName('Title');
+        title?.getComponent(UITransform)?.setContentSize(350, 140);
+        const titleLabel = title?.getComponent(Label);
+        if (titleLabel) titleLabel.string = '';
 
         const pause = this.node.getChildByName('PauseButton');
         if (!pause) {
             return;
         }
 
+        // 触摸热区保持 88×88，内部纸片图标收在 68×68，兼顾易点与轻巧观感。
         pause.getComponent(UITransform)?.setContentSize(88, 88);
         const button = pause.getComponent(Button);
         if (button) {
@@ -222,7 +267,7 @@ export class WatermelonLayout extends Component {
             icon = new Node('CozyPauseIcon');
             icon.layer = pause.layer;
             icon.setParent(pause);
-            icon.addComponent(UITransform).setContentSize(88, 88);
+            icon.addComponent(UITransform).setContentSize(68, 68);
             icon.addComponent(Graphics);
         }
         const graphics = icon.getComponent(Graphics)!;
@@ -281,6 +326,38 @@ export class WatermelonLayout extends Component {
         });
     }
 
+    private loadTitleArtwork(): Promise<void> {
+        const bundle = assetManager.getBundle('game-watermelon');
+        const title = this.node.getChildByName('Title');
+        if (!bundle || !title) return Promise.resolve();
+
+        return new Promise((resolve) => {
+            bundle.load('visual/title/c1-cat-merge-title-v1/texture', Texture2D, (error, texture) => {
+                if (!error && texture && this.node.isValid && title.isValid) {
+                    let artwork = title.getChildByName('TitleArtwork');
+                    if (!artwork) {
+                        artwork = new Node('TitleArtwork');
+                        artwork.layer = title.layer;
+                        artwork.setParent(title);
+                        artwork.addComponent(UITransform);
+                        artwork.addComponent(Sprite);
+                    }
+                    const sprite = artwork.getComponent(Sprite)!;
+                    const frame = new SpriteFrame();
+                    frame.texture = texture;
+                    this.ownedTitleFrame?.destroy();
+                    this.ownedTitleFrame = frame;
+                    sprite.spriteFrame = frame;
+                    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+                    artwork.getComponent(UITransform)?.setContentSize(350, 140);
+                } else if (error) {
+                    console.warn('[WatermelonLayout] Title artwork failed to load.', error);
+                }
+                resolve();
+            });
+        });
+    }
+
     private resizeBackground(width: number, height: number): void {
         const background = this.node.getChildByName('CatRoomBackground');
         if (!background) {
@@ -302,19 +379,6 @@ export class WatermelonLayout extends Component {
         }
 
         graphics.clear();
-        // Compact single-line title: calm, centered, and aligned with pause.
-        graphics.fillColor = catUiColor('ink', 24);
-        graphics.roundRect(-157, metrics.topY - 37, 320, 66, 30);
-        graphics.fill();
-        graphics.fillColor = catUiColor('surface', 248);
-        graphics.strokeColor = catUiColor('blush');
-        graphics.lineWidth = 3;
-        graphics.roundRect(-160, metrics.topY - 33, 320, 64, 30);
-        graphics.fill();
-        graphics.stroke();
-        graphics.fillColor = catUiColor('peach', 175);
-        graphics.circle(-133, metrics.topY - 1, 5);
-        graphics.fill();
         this.drawSoftChip(graphics, -metrics.width / 2 + 125, metrics.scoreY, 214, 82, catUiColor('blush'));
         this.drawSoftChip(graphics, 0, metrics.scoreY, 190, 82, catUiColor('butter'));
         this.drawSoftChip(graphics, metrics.width / 2 - 128, metrics.scoreY, 238, 82, catUiColor('mint'));
@@ -359,11 +423,11 @@ export class WatermelonLayout extends Component {
     }
 
     private applyLabelStyles(): void {
-        this.styleLabel('Title', 34, catUiColor('ink'), '合成大胖橘');
+        this.styleLabel('Title', 36, catUiColor('ink'), '');
         this.styleLabel('ScoreLabel', 30, catUiColor('ink'));
         this.styleLabel('HighScoreLabel', 27, catUiColor('ink'));
         this.styleLabel('NextLabel', 23, catUiColor('ink'), '下一只');
-        this.styleLabel('DropZone', 21, catUiColor('mutedInk', 220), '拖动猫咪，松手投放');
+        this.styleLabel('DropZone', 21, catUiColor('mutedInk', 220), '');
         this.styleLabel('Instruction', 23, catUiColor('ink', 230), '左右移动，松手投放');
         const danger = this.node.getChildByName('FruitContainer')
             ?.getChildByName('DangerLine')?.getComponent(Label);

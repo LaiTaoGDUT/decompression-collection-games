@@ -16,6 +16,9 @@ import { calculateLobbyBackgroundCover } from './LobbyVisualLayout';
 const BACKGROUND_ASSET_PATH = 'visual/backgrounds/lobby-arcade-warm-rays-v3/texture';
 const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
 const BACKGROUND_FALLBACK = new Color(246, 173, 106, 255);
+// SettingsEntry is 92 px high with a 36 px top offset, so its center is 82 px
+// below the safe-area top. BrandArea itself starts 18 px below that edge.
+const BRAND_EMBLEM_CENTER_Y = -(36 + 92 / 2 - 18);
 
 /** Builds a light, playful mini-game lobby while keeping the L1 palette. */
 export class LobbyPresentation {
@@ -145,7 +148,7 @@ export class LobbyPresentation {
         const emblem = new Node('BrandEmblem');
         emblem.layer = brand.layer;
         brand.addChild(emblem);
-        emblem.setPosition(0, -150);
+        emblem.setPosition(0, BRAND_EMBLEM_CENTER_Y);
         emblem.addComponent(UITransform).setContentSize(450, 300);
         const emblemSprite = emblem.addComponent(Sprite);
         emblemSprite.sizeMode = Sprite.SizeMode.CUSTOM;

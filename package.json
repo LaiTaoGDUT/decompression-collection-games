@@ -5,7 +5,8 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "verify:game-bundles": "node tools/verify-game-bundles.js"
+    "verify:game-bundles": "node tools/verify-game-bundles.js",
+    "verify:wechat-package-size": "node tools/verify-wechat-package-size.js"
   },
   "devDependencies": {
     "lamejs": "^1.2.1"

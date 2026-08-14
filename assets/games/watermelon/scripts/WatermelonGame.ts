@@ -25,6 +25,7 @@ import {
     Tween,
     UIOpacity,
     UITransform,
+    Vec2,
     Vec3,
 } from 'cc';
 import type {
@@ -34,6 +35,7 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import type { DevicePerformanceTier, GameResult } from '../../../core/types/CommonTypes';
+import type { Platform } from '../../../platform/Platform';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { AdService } from '../../../services/ads/AdService';
 import type { AudioService } from '../../../services/audio/AudioService';
@@ -53,6 +55,7 @@ import { OverflowGuard } from './WatermelonDanger';
 import { SingleContinueRule } from './WatermelonContinueRule';
 import {
     createStartedWatermelonSave,
+    normalizeWatermelonSave,
     refreshCompletedWatermelonSave,
     refreshWatermelonHighScore,
 } from './WatermelonSave';
@@ -70,6 +73,7 @@ import {
     type WatermelonGameplayConfig,
 } from './WatermelonGameplayConfig';
 import { WatermelonOverlayView } from './WatermelonOverlayView';
+import { WatermelonLayout } from './WatermelonLayout';
 import {
     calculateWatermelonOverlayMetrics,
     readWatermelonViewport,
@@ -80,12 +84,37 @@ const { ccclass } = _decorator;
 type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
 
 const NEXT_CAT_PREVIEW_SIZE = 64;
+const ROUND_SAVE_INTERVAL_SECONDS = 0.25;
+
+interface SavedFruit {
+    readonly level: number;
+    readonly x: number;
+    readonly y: number;
+    readonly angle: number;
+    readonly velocityX: number;
+    readonly velocityY: number;
+    readonly angularVelocity: number;
+    readonly dropSequenceId: number;
+    readonly dropMergeCount: number;
+}
+
+interface WatermelonActiveRound {
+    readonly inProgress: true;
+    readonly score: number;
+    readonly maxFruitLevel: number;
+    readonly currentLevel: number;
+    readonly nextLevel: number;
+    readonly aimX: number;
+    readonly activeDropSequenceId: number;
+    readonly fruits: readonly SavedFruit[];
+}
 
 export interface WatermelonGameServices {
     readonly feedback: FeedbackService;
     readonly storage: StorageService;
     readonly ads?: AdService;
     readonly audio: AudioService;
+    readonly platform: Platform;
     readonly deviceTier?: DevicePerformanceTier;
 }
 
@@ -154,6 +183,8 @@ export class WatermelonGame extends Component implements MiniGame {
     private overlayView?: WatermelonOverlayView;
     private completedResultModel?: MiniGameResultModel;
     private randomSource: () => number = Math.random;
+    private roundSaveElapsed = 0;
+    private savedProgressDiscarded = false;
 
     /** 固定种子回归入口；生产默认始终使用平台随机源。 */
     setRandomSourceForTesting(source: () => number): void {
@@ -179,6 +210,8 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.context = context;
+        this.node.getComponent(WatermelonLayout)
+            ?.setPlatformLayout(context.services.platform.getLayoutInfo());
         this.fruitContainer = container;
         this.dropPreview = preview;
         this.overlayView = new WatermelonOverlayView(this.node, context.services.feedback);
@@ -246,6 +279,12 @@ export class WatermelonGame extends Component implements MiniGame {
 
         this.updateDangerFeedback();
 
+        this.roundSaveElapsed += Math.max(0, deltaTime);
+        if (this.roundSaveElapsed >= ROUND_SAVE_INTERVAL_SECONDS) {
+            this.roundSaveElapsed = 0;
+            this.persistRoundProgress(true);
+        }
+
         if (finished) {
             this.finishForOverflow();
         }
@@ -257,8 +296,14 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.state = 'playing';
-        this.resetRound();
-        this.recordPlayStart();
+        this.saveData = normalizeWatermelonSave(
+            this.context?.services.storage.getGameData('watermelon'),
+        );
+        this.roundStartingHighScore = this.saveData.highScore ?? 0;
+        if (!this.restoreSavedRound()) {
+            this.resetRound();
+            this.recordPlayStart();
+        }
     }
 
     pause(): void {
@@ -267,6 +312,7 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.state = 'paused';
+        if (!this.gameEnding) this.persistRoundProgress(true);
         this.pointer.reset();
         this.cleanupTransientEffects();
         this.stopFruitVisualAnimations();
@@ -289,10 +335,16 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.persistHighScore(this.progress.snapshot.score, 'restart');
+        this.persistRoundProgress(false);
         this.state = 'playing';
         this.context?.services.audio.resumeMusic();
         this.resetRound();
         this.recordPlayStart();
+    }
+
+    discardSavedProgress(): void {
+        this.savedProgressDiscarded = true;
+        this.persistRoundProgress(false);
     }
 
     showPauseMenu(model: MiniGamePauseModel): void {
@@ -321,6 +373,9 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.persistHighScore(this.progress.snapshot.score, 'exit');
+        if (!this.gameEnding && !this.savedProgressDiscarded) {
+            this.persistRoundProgress(true);
+        }
         this.unscheduleAllCallbacks();
         this.fruitContainer?.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_MOVE, this.handleTouchMove, this);
@@ -487,6 +542,8 @@ export class WatermelonGame extends Component implements MiniGame {
         this.continueOffered = false;
         this.continueCompleted = false;
         this.terminalActionPending = false;
+        this.roundSaveElapsed = 0;
+        this.savedProgressDiscarded = false;
         this.destroyContinueOverlay();
         this.updateProgress();
         this.updatePreviews();
@@ -644,6 +701,7 @@ export class WatermelonGame extends Component implements MiniGame {
         dropped.playDropAnimation();
         this.progress.recordSpawn(droppedLevel);
         this.updateProgress();
+        this.persistRoundProgress(true);
         this.context?.services.feedback.play('drop');
         if (this.dropPreview) {
             this.dropPreview.active = false;
@@ -754,6 +812,7 @@ export class WatermelonGame extends Component implements MiniGame {
             resultBody.playMergeReveal();
             this.spawnMergeFeedback(scoreEvent, x, y);
             this.updateProgress();
+            this.persistRoundProgress(true);
             this.showMergeFeedback(scoreEvent);
             this.context?.services.feedback.play('merge');
             if (scoreEvent.isChain) {
@@ -809,6 +868,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.updateDangerFeedback(true);
         const snapshot = this.progress.snapshot;
         this.frozenResult = snapshot;
+        this.persistRoundProgress(false);
         this.context.services.feedback.play('failure');
         this.context.services.audio.pauseMusic();
 
@@ -973,6 +1033,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.updateDangerFeedback();
         this.context?.services.feedback.play('continue');
         this.context?.services.audio.resumeMusic();
+        this.persistRoundProgress(true);
         this.scheduleOnce(() => {
             if (this.state === 'playing' && !this.gameEnding) {
                 this.dropGate.enable();
@@ -1340,6 +1401,136 @@ export class WatermelonGame extends Component implements MiniGame {
             console.error('[WatermelonGame] Start save failed.', error);
         }
         this.updateProgress();
+        this.persistRoundProgress(true);
+    }
+
+    private restoreSavedRound(): boolean {
+        const raw = this.saveData?.custom?.activeRound;
+        const round = this.parseActiveRound(raw);
+        if (!round) return false;
+
+        try {
+            this.resetRound();
+            this.currentLevel = round.currentLevel;
+            this.nextLevel = round.nextLevel;
+            this.aimX = round.aimX;
+            this.activeDropSequenceId = round.activeDropSequenceId;
+            this.progress.restore({
+                score: round.score,
+                maxFruitLevel: round.maxFruitLevel,
+            });
+            for (const saved of round.fruits) {
+                const fruit = this.spawnFruit(
+                    saved.level,
+                    saved.x,
+                    saved.y,
+                    saved.dropSequenceId,
+                    saved.dropMergeCount,
+                );
+                fruit.node.angle = saved.angle;
+                const body = fruit.node.getComponent(RigidBody2D);
+                if (body) {
+                    body.linearVelocity = new Vec2(saved.velocityX, saved.velocityY);
+                    body.angularVelocity = saved.angularVelocity;
+                }
+            }
+            this.updateProgress();
+            this.updatePreviews();
+            this.persistRoundProgress(true);
+            return true;
+        } catch (error: unknown) {
+            console.warn('[WatermelonGame] Ignoring invalid round save.', error);
+            this.clearFruits();
+            return false;
+        }
+    }
+
+    private parseActiveRound(value: unknown): WatermelonActiveRound | undefined {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+        const round = value as Record<string, unknown>;
+        const isLevel = (item: unknown): item is number => Number.isInteger(item)
+            && (item as number) >= 0 && (item as number) < FRUIT_LEVELS.length;
+        const isFinite = (item: unknown): item is number => typeof item === 'number'
+            && Number.isFinite(item);
+        if (round.inProgress !== true
+            || !Number.isInteger(round.score) || (round.score as number) < 0
+            || !isLevel(round.maxFruitLevel)
+            || !isLevel(round.currentLevel)
+            || !isLevel(round.nextLevel)
+            || !isFinite(round.aimX)
+            || !Number.isInteger(round.activeDropSequenceId)
+            || (round.activeDropSequenceId as number) < 0
+            || !Array.isArray(round.fruits)) {
+            return undefined;
+        }
+
+        const fruits: SavedFruit[] = [];
+        for (const item of round.fruits) {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) return undefined;
+            const fruit = item as Record<string, unknown>;
+            if (!isLevel(fruit.level)
+                || !isFinite(fruit.x) || !isFinite(fruit.y) || !isFinite(fruit.angle)
+                || !isFinite(fruit.velocityX) || !isFinite(fruit.velocityY)
+                || !isFinite(fruit.angularVelocity)
+                || !Number.isInteger(fruit.dropSequenceId) || (fruit.dropSequenceId as number) < 0
+                || !Number.isInteger(fruit.dropMergeCount) || (fruit.dropMergeCount as number) < 0) {
+                return undefined;
+            }
+            fruits.push(fruit as unknown as SavedFruit);
+        }
+        return { ...(round as unknown as WatermelonActiveRound), fruits };
+    }
+
+    private persistRoundProgress(inProgress: boolean): void {
+        if (!this.context || !this.saveData) return;
+        const activeRound = inProgress ? this.captureActiveRound() : Object.freeze({ inProgress: false });
+        const next: GameSaveData = {
+            ...this.saveData,
+            dataVersion: 3,
+            lastPlayedAt: Date.now(),
+            custom: Object.freeze({
+                ...(this.saveData.custom ?? {}),
+                activeRound,
+            }),
+        };
+        try {
+            this.context.services.storage.writeGameData('watermelon', next);
+            this.saveData = next;
+        } catch (error: unknown) {
+            console.error('[WatermelonGame] Round save failed.', error);
+        }
+    }
+
+    private captureActiveRound(): WatermelonActiveRound {
+        const fruits: SavedFruit[] = [];
+        for (const child of this.fruitContainer?.children ?? []) {
+            const fruit = child.getComponent(FruitBody);
+            if (!fruit) continue;
+            const body = child.getComponent(RigidBody2D);
+            const velocity = body?.linearVelocity ?? Vec2.ZERO;
+            fruits.push(Object.freeze({
+                level: fruit.level,
+                x: child.position.x,
+                y: child.position.y,
+                angle: child.angle,
+                velocityX: velocity.x,
+                velocityY: velocity.y,
+                angularVelocity: body?.angularVelocity ?? 0,
+                dropSequenceId: fruit.sourceDropSequenceId,
+                dropMergeCount: fruit.sourceDropMergeCount,
+            }));
+        }
+        const snapshot = this.progress.snapshot;
+        return Object.freeze({
+            inProgress: true,
+            score: snapshot.score,
+            maxFruitLevel: snapshot.maxFruitLevel,
+            currentLevel: this.currentLevel,
+            nextLevel: this.nextLevel,
+            aimX: this.aimX,
+            activeDropSequenceId: this.activeDropSequenceId,
+            fruits: Object.freeze(fruits),
+        });
     }
 
     private spawnFruit(
@@ -1556,9 +1747,23 @@ export class WatermelonGame extends Component implements MiniGame {
             ringNode.addComponent(UITransform);
             ringNode.addComponent(Graphics);
         }
-        ringNode.active = false;
-        ringNode.setSiblingIndex(preview.children.length - 1);
-        ringNode.getComponent(UITransform)?.setContentSize(previewSize, previewSize);
-        ringNode.getComponent(Graphics)?.clear();
+        ringNode.active = true;
+        // Keep the translucent contrast ring behind the cat. Using the cat's
+        // exact sibling index makes the two nodes swap order on every redraw.
+        ringNode.setSiblingIndex(Math.max(0, spriteNode.getSiblingIndex() - 1));
+        ringNode.getComponent(UITransform)?.setContentSize(previewSize + 12, previewSize + 12);
+        const ring = ringNode.getComponent(Graphics)!;
+        const radius = previewSize / 2 - 3;
+        ring.clear();
+        ring.fillColor = catUiColor('ink', 28);
+        ring.circle(1.5, -2, radius + 1.5);
+        ring.fill();
+        ring.fillColor = catUiColor('cream', 54);
+        ring.circle(0, 0, radius);
+        ring.fill();
+        ring.strokeColor = new Color(105, 75, 95, 138);
+        ring.lineWidth = Math.max(2, previewSize * 0.018);
+        ring.circle(0, 0, radius);
+        ring.stroke();
     }
 }

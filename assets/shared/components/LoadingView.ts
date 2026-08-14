@@ -9,6 +9,7 @@ import {
     Label,
     Mask,
     Node,
+    SafeArea,
     Sprite,
     SpriteFrame,
     Texture2D,
@@ -35,6 +36,14 @@ const COLORS = {
     panel: new Color(250, 252, 255, 248),
 };
 
+const STARTUP_BACKGROUND_PATH = 'loading/loading-lobby-background-v1/texture';
+const STARTUP_TITLE_PATH = 'loading/loading-lobby-title-v1/texture';
+// Match the lobby logo to SettingsEntry's vertical center: 36 px top spacing
+// plus half of its 92 px touch target. The safe-area inset is added below.
+const STARTUP_TITLE_BASE_CENTER_FROM_TOP = 36 + 92 / 2;
+const STARTUP_TITLE_WIDTH = 450;
+const STARTUP_TITLE_HEIGHT = 300;
+
 /** 持久化游戏加载页：展示当前游戏封面与真实分阶段进度。 */
 @ccclass('LoadingView')
 export class LoadingView extends Component implements LoadingPresenter {
@@ -43,6 +52,12 @@ export class LoadingView extends Component implements LoadingPresenter {
     private nameLabel?: Label;
     private coverSprite?: Sprite;
     private ownedCoverFrame?: SpriteFrame;
+    private startupBackgroundSprite?: Sprite;
+    private startupTitleSprite?: Sprite;
+    private startupSafeAreaNode?: Node;
+    private startupContentNode?: Node;
+    private ownedStartupFrames: SpriteFrame[] = [];
+    private variant: 'game' | 'lobby' = 'game';
     private progress = 0;
     private progressTweenState?: { value: number };
     private progressLoadToken = 0;
@@ -58,6 +73,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         widget.left = widget.right = widget.top = widget.bottom = 0;
         widget.updateAlignment();
         this.ensureStructure();
+        view.on('canvas-resize', this.handleCanvasResize, this);
         this.hide();
     }
 
@@ -66,6 +82,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
         this.node.getComponent(Widget)?.updateAlignment();
         this.ensureStructure();
+        this.variant = model.variant ?? 'game';
         this.layoutAndDraw();
         if (this.nameLabel) {
             this.nameLabel.string = model.gameName ?? '休闲解压小游戏大全';
@@ -76,7 +93,11 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.setProgress(Math.min(0.08, Math.max(0.03, model.progress)), false);
         this.unschedule(this.advanceFakeProgress);
         this.schedule(this.advanceFakeProgress, 0.06);
-        this.loadCover(model.cover);
+        if (this.variant === 'lobby') {
+            this.loadStartupArtwork();
+        } else {
+            this.loadCover(model.cover);
+        }
     }
 
     updateProgress(message: string, progress: number): void {
@@ -94,17 +115,25 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.unschedule(this.advanceFakeProgress);
         this.stopProgressTween();
         this.releaseCoverFrame();
+        this.releaseStartupFrames();
         this.node.active = false;
     }
 
     protected onDestroy(): void {
+        view.off('canvas-resize', this.handleCanvasResize, this);
         this.hide();
     }
+
+    private readonly handleCanvasResize = (): void => {
+        if (this.node.active) {
+            this.layoutAndDraw();
+        }
+    };
 
     private ensureStructure(): void {
         const layer = this.node.layer;
         const ensureGraphics = (name: string, parent = this.node): Node => {
-            let child = parent.getChildByName(name);
+            let child = parent.getChildByName(name) ?? this.findManagedNode(name);
             if (!child) {
                 child = new Node(name);
                 child.layer = layer;
@@ -115,7 +144,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             return child;
         };
         const ensureLabel = (name: string): Label => {
-            let child = this.node.getChildByName(name);
+            let child = this.findManagedNode(name);
             if (!child) {
                 child = new Node(name);
                 child.layer = layer;
@@ -126,6 +155,28 @@ export class LoadingView extends Component implements LoadingPresenter {
             return child.getComponent(Label)!;
         };
 
+        const ensureSprite = (name: string, parent = this.node): Sprite => {
+            let child = parent.getChildByName(name) ?? this.findManagedNode(name);
+            if (!child) {
+                child = new Node(name);
+                child.layer = layer;
+                child.setParent(parent);
+                child.addComponent(UITransform);
+                const sprite = child.addComponent(Sprite);
+                sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            }
+            return child.getComponent(Sprite)!;
+        };
+
+        this.ensureStartupContainer();
+        this.startupBackgroundSprite = ensureSprite('StartupBackground');
+        this.startupTitleSprite = ensureSprite(
+            'StartupTitle',
+            this.startupContentNode ?? this.node,
+        );
+        if (this.startupTitleSprite.node.parent !== this.startupContentNode) {
+            this.startupTitleSprite.node.setParent(this.startupContentNode ?? this.node);
+        }
         ensureGraphics('LoadingBackdrop');
         ensureGraphics('LoadingPanel');
         const coverFrame = ensureGraphics('LoadingCoverFrame');
@@ -152,14 +203,16 @@ export class LoadingView extends Component implements LoadingPresenter {
         ensureGraphics('ProgressTrack');
         ensureGraphics('ProgressFill');
         this.nameLabel = ensureLabel('LoadingGameName');
-        this.messageLabel = this.node.getChildByName('LoadingMessage')
+        this.messageLabel = this.findManagedNode('LoadingMessage')
             ?.getComponent(Label) ?? ensureLabel('LoadingMessage');
         this.percentLabel = ensureLabel('LoadingPercent');
         const tip = ensureLabel('LoadingTip');
         tip.string = '正在为你准备轻松时刻';
 
         const order = [
+            'StartupBackground',
             'LoadingBackdrop',
+            'StartupSafeArea',
             'LoadingPanel',
             'LoadingCoverFrame',
             'LoadingGameName',
@@ -174,6 +227,86 @@ export class LoadingView extends Component implements LoadingPresenter {
         if (legacyError) legacyError.active = false;
     }
 
+    private ensureStartupContainer(): void {
+        const layer = this.node.layer;
+        let safeAreaNode = this.node.getChildByName('StartupSafeArea');
+        if (!safeAreaNode) {
+            safeAreaNode = new Node('StartupSafeArea');
+            safeAreaNode.layer = layer;
+            safeAreaNode.setParent(this.node);
+            safeAreaNode.addComponent(UITransform).setContentSize(750, 1334);
+            const widget = safeAreaNode.addComponent(Widget);
+            widget.isAlignTop = true;
+            widget.isAlignBottom = true;
+            widget.isAlignLeft = true;
+            widget.isAlignRight = true;
+            widget.top = 0;
+            widget.bottom = 0;
+            widget.left = 0;
+            widget.right = 0;
+            const safeArea = safeAreaNode.addComponent(SafeArea);
+            safeArea.symmetric = true;
+        }
+
+        let content = safeAreaNode.getChildByName('StartupContent');
+        if (!content) {
+            content = new Node('StartupContent');
+            content.layer = layer;
+            content.setParent(safeAreaNode);
+            content.addComponent(UITransform).setContentSize(750, 1334);
+            const widget = content.addComponent(Widget);
+            widget.isAlignTop = true;
+            widget.isAlignBottom = true;
+            widget.isAlignLeft = true;
+            widget.isAlignRight = true;
+            widget.top = 0;
+            widget.bottom = 0;
+            widget.left = 0;
+            widget.right = 0;
+        }
+
+        this.startupSafeAreaNode = safeAreaNode;
+        this.startupContentNode = content;
+    }
+
+    private layoutStartupContainer(startup: boolean): void {
+        const safeAreaNode = this.startupSafeAreaNode;
+        const content = this.startupContentNode;
+        if (!safeAreaNode || !content) return;
+
+        safeAreaNode.active = startup;
+        if (startup) {
+            safeAreaNode.getComponent(Widget)?.updateAlignment();
+            safeAreaNode.getComponent(SafeArea)?.updateArea();
+            content.getComponent(Widget)?.updateAlignment();
+        }
+
+        const targetParent = startup ? content : this.node;
+        for (const name of [
+            'LoadingMessage',
+            'LoadingPercent',
+            'ProgressTrack',
+            'ProgressFill',
+            'LoadingTip',
+        ]) {
+            const node = this.findManagedNode(name);
+            if (node && node.parent !== targetParent) {
+                node.setParent(targetParent);
+            }
+        }
+    }
+
+    private findManagedNode(name: string): Node | null {
+        return this.node.getChildByName(name)
+            ?? this.startupContentNode?.getChildByName(name)
+            ?? null;
+    }
+
+    private getStartupContentHeight(fallback: number): number {
+        return this.startupContentNode?.getComponent(UITransform)?.contentSize.height
+            ?? fallback;
+    }
+
     private layoutAndDraw(): void {
         const size = this.node.getComponent(UITransform)?.contentSize;
         const visibleSize = view.getVisibleSize();
@@ -185,15 +318,46 @@ export class LoadingView extends Component implements LoadingPresenter {
         const coverWidth = panelWidth - 64;
         const coverHeight = coverWidth * 0.75;
 
+        const startup = this.variant === 'lobby';
+        this.layoutStartupContainer(startup);
+        const contentHeight = startup
+            ? this.getStartupContentHeight(height)
+            : height;
+        const startupBackground = this.startupBackgroundSprite?.node;
+        if (startupBackground) {
+            startupBackground.active = startup;
+            startupBackground.setPosition(0, 0);
+            const sourceWidth = this.startupBackgroundSprite?.spriteFrame?.texture.width ?? 750;
+            const sourceHeight = this.startupBackgroundSprite?.spriteFrame?.texture.height ?? 1334;
+            const scale = Math.max(width / sourceWidth, height / sourceHeight);
+            startupBackground.getComponent(UITransform)?.setContentSize(
+                sourceWidth * scale,
+                sourceHeight * scale,
+            );
+        }
+        const startupTitle = this.startupTitleSprite?.node;
+        if (startupTitle) {
+            startupTitle.active = startup;
+            startupTitle.setPosition(0, contentHeight / 2 - STARTUP_TITLE_BASE_CENTER_FROM_TOP);
+            startupTitle.getComponent(UITransform)?.setContentSize(
+                STARTUP_TITLE_WIDTH,
+                STARTUP_TITLE_HEIGHT,
+            );
+        }
+
         const backdrop = this.graphics('LoadingBackdrop');
         backdrop.node.getComponent(UITransform)?.setContentSize(width, height);
         backdrop.clear();
-        // 使用中性半透明遮罩保留大厅背景，不再绘制整屏蓝色渐变。
-        backdrop.fillColor = new Color(18, 22, 32, 92);
+        backdrop.fillColor = startup
+            ? this.startupBackgroundSprite?.spriteFrame
+                ? new Color(255, 244, 218, 24)
+                : new Color(246, 173, 106, 255)
+            : new Color(18, 22, 32, 92);
         backdrop.rect(-width / 2, -height / 2, width, height);
         backdrop.fill();
 
         const panel = this.graphics('LoadingPanel');
+        panel.node.active = !startup;
         panel.node.setPosition(0, 0);
         panel.node.getComponent(UITransform)?.setContentSize(panelWidth, panelHeight);
         panel.clear();
@@ -208,6 +372,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         panel.stroke();
 
         const frame = this.graphics('LoadingCoverFrame');
+        frame.node.active = !startup;
         // Keep a visible breathing space between the panel top and cover.
         frame.node.setPosition(0, 155);
         frame.node.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
@@ -232,22 +397,43 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.styleLabel(
             'LoadingMessage',
             23,
-            COLORS.secondary,
+            startup ? new Color(123, 75, 74, 235) : COLORS.secondary,
             trackLeft,
-            -194,
+            startup ? -contentHeight / 2 + 176 : -194,
             trackWidth - 90,
             42,
             false,
             HorizontalTextAlignment.LEFT,
         );
-        this.styleLabel('LoadingPercent', 23, COLORS.blue, panelWidth / 2 - 72, -194, 72, 42, true);
-        this.styleLabel('LoadingTip', 19, new Color(121, 133, 165, 210), 0, -308, panelWidth - 90, 32, false);
+        this.styleLabel(
+            'LoadingPercent',
+            23,
+            startup ? new Color(155, 77, 73, 255) : COLORS.blue,
+            panelWidth / 2 - 72,
+            startup ? -contentHeight / 2 + 176 : -194,
+            72,
+            42,
+            true,
+        );
+        this.styleLabel(
+            'LoadingTip',
+            19,
+            startup ? new Color(123, 75, 74, 220) : new Color(121, 133, 165, 210),
+            0,
+            startup ? -contentHeight / 2 + 80 : -308,
+            panelWidth - 90,
+            32,
+            false,
+        );
+        this.node.getChildByName('LoadingGameName')!.active = !startup;
 
         const track = this.graphics('ProgressTrack');
-        track.node.setPosition(0, -254);
+        track.node.setPosition(0, startup ? -contentHeight / 2 + 130 : -254);
         track.node.getComponent(UITransform)?.setContentSize(trackWidth, 32);
         track.clear();
-        track.fillColor = new Color(198, 211, 231, 255);
+        track.fillColor = startup
+            ? new Color(255, 248, 228, 220)
+            : new Color(198, 211, 231, 255);
         track.roundRect(-trackWidth / 2, -12, trackWidth, 24, 12);
         track.fill();
         this.drawProgressFill();
@@ -282,7 +468,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             this.drawProgressFill();
             return;
         }
-        const fillNode = this.node.getChildByName('ProgressFill');
+        const fillNode = this.findManagedNode('ProgressFill');
         if (!fillNode) return;
         Tween.stopAllByTarget(fillNode);
         const start = this.progress;
@@ -315,18 +501,33 @@ export class LoadingView extends Component implements LoadingPresenter {
         const panelWidth = Math.min(640, width - 64);
         const trackWidth = panelWidth - 96;
         const fill = this.graphics('ProgressFill');
-        fill.node.setPosition(0, -254);
+        const height = Math.max(
+            1334,
+            view.getVisibleSize().height,
+            this.node.getComponent(UITransform)?.contentSize.height ?? 1334,
+        );
+        const contentHeight = this.variant === 'lobby'
+            ? this.getStartupContentHeight(height)
+            : height;
+        fill.node.setPosition(
+            0,
+            this.variant === 'lobby' ? -contentHeight / 2 + 130 : -254,
+        );
         fill.node.getComponent(UITransform)?.setContentSize(trackWidth, 32);
         fill.clear();
         const inset = 3;
         const available = trackWidth - inset * 2;
         const filled = available * this.progress;
         if (filled > 0.5) {
-            fill.fillColor = COLORS.blue;
+            fill.fillColor = this.variant === 'lobby'
+                ? new Color(239, 116, 105, 255)
+                : COLORS.blue;
             fill.roundRect(-trackWidth / 2 + inset, -9, filled, 18, 9);
             fill.fill();
             if (filled > 28) {
-                fill.fillColor = new Color(100, 220, 247, 175);
+                fill.fillColor = this.variant === 'lobby'
+                    ? new Color(255, 225, 145, 210)
+                    : new Color(100, 220, 247, 175);
                 fill.roundRect(-trackWidth / 2 + inset + 5, 1, Math.max(0, filled - 10), 3, 1.5);
                 fill.fill();
             }
@@ -354,6 +555,29 @@ export class LoadingView extends Component implements LoadingPresenter {
         });
     }
 
+    private loadStartupArtwork(): void {
+        const token = ++this.progressLoadToken;
+        this.releaseStartupFrames();
+        const bundle = assetManager.getBundle('resources');
+        if (!bundle) return;
+
+        const load = (path: string, sprite?: Sprite): void => {
+            if (!sprite) return;
+            bundle.load(path, Texture2D, (error, texture) => {
+                if (token !== this.progressLoadToken || !this.node.isValid || error || !texture) return;
+                const frame = new SpriteFrame();
+                frame.texture = texture;
+                this.ownedStartupFrames.push(frame);
+                sprite.spriteFrame = frame;
+                sprite.node.active = this.variant === 'lobby';
+                this.layoutAndDraw();
+            });
+        };
+
+        load(STARTUP_BACKGROUND_PATH, this.startupBackgroundSprite);
+        load(STARTUP_TITLE_PATH, this.startupTitleSprite);
+    }
+
     private layoutCover(viewportWidth: number, viewportHeight: number): void {
         const node = this.coverSprite?.node;
         if (!node) return;
@@ -371,6 +595,13 @@ export class LoadingView extends Component implements LoadingPresenter {
         }
         this.ownedCoverFrame?.destroy();
         this.ownedCoverFrame = undefined;
+    }
+
+    private releaseStartupFrames(): void {
+        if (this.startupBackgroundSprite) this.startupBackgroundSprite.spriteFrame = null;
+        if (this.startupTitleSprite) this.startupTitleSprite.spriteFrame = null;
+        this.ownedStartupFrames.forEach((frame) => frame.destroy());
+        this.ownedStartupFrames = [];
     }
 
     private stopProgressTween(): void {
@@ -391,7 +622,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         bold: boolean,
         align = HorizontalTextAlignment.CENTER,
     ): void {
-        const label = this.node.getChildByName(name)?.getComponent(Label);
+        const label = this.findManagedNode(name)?.getComponent(Label);
         if (!label) return;
         label.node.setPosition(x, y);
         const transform = label.node.getComponent(UITransform);
@@ -413,7 +644,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     private graphics(name: string): Graphics {
-        const graphics = this.node.getChildByName(name)?.getComponent(Graphics);
+        const graphics = this.findManagedNode(name)?.getComponent(Graphics);
         if (!graphics) throw new Error(`LoadingView is missing ${name}.`);
         return graphics;
     }

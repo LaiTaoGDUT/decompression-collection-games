@@ -31,6 +31,7 @@ export interface SceneDirector {
 }
 
 export interface LoadingModel {
+    readonly variant?: 'game' | 'lobby';
     readonly gameName?: string;
     readonly cover?: string;
     readonly message: string;
@@ -150,7 +151,29 @@ export class GameRuntime {
             await this.enterLobbyScene();
             return;
         }
-        await this.enterLobbyScene();
+
+        this.loading?.show({
+            variant: 'lobby',
+            gameName: '休闲解压小游戏大全',
+            message: '正在加载游戏大厅',
+            progress: 0.04,
+        });
+
+        try {
+            const bundle = await this.assets.loadBundle('lobby');
+            this.loading?.updateProgress('大厅资源准备完成', 0.68);
+            await this.loadAndLaunchBundleScene(bundle, 'scenes/Lobby');
+            this.loading?.updateProgress('欢迎回来，马上开始放松', 1);
+            await new Promise<void>((resolve) => setTimeout(resolve, 160));
+
+            if (!this.stateMachine.transition('lobby')) {
+                throw new Error(
+                    `Cannot enter lobby from state "${this.stateMachine.currentState}".`,
+                );
+            }
+        } finally {
+            this.loading?.hide();
+        }
     }
 
     private async enterLobbyScene(): Promise<void> {
@@ -560,6 +583,14 @@ export class GameRuntime {
             }
 
             this.trackSessionEnd(session, manifest, intent);
+
+            if (intent === 'restart') {
+                try {
+                    entry.discardSavedProgress?.();
+                } catch (cause: unknown) {
+                    throw new GameRuntimeError('restart', manifest.id, cause);
+                }
+            }
 
             try {
                 await entry.dispose();

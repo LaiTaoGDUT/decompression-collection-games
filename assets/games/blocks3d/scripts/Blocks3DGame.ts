@@ -21,6 +21,7 @@ import {
 } from 'cc';
 import type { DevicePerformanceTier } from '../../../core/types/CommonTypes';
 import type { MiniGame, MiniGameContext } from '../../../runtime/MiniGame';
+import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
 
 const { ccclass } = _decorator;
 
@@ -62,6 +63,23 @@ export function getBlocks3DQuality(
 
 interface Blocks3DServices {
     readonly deviceProfile?: Readonly<{ tier: DevicePerformanceTier }>;
+    readonly storage: StorageService;
+}
+
+interface SavedBody3D {
+    readonly name: string;
+    readonly position: readonly [number, number, number];
+    readonly rotation: readonly [number, number, number];
+    readonly velocity: readonly [number, number, number];
+    readonly angularVelocity: readonly [number, number, number];
+}
+
+interface Blocks3DActiveRound {
+    readonly inProgress: true;
+    readonly shots: number;
+    readonly toppled: readonly string[];
+    readonly blocks: readonly SavedBody3D[];
+    readonly balls: readonly SavedBody3D[];
 }
 
 type BlocksState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
@@ -78,6 +96,10 @@ export class Blocks3DGame extends Component implements MiniGame {
     private blocks: Node[] = [];
     private toppled = new Set<Node>();
     private shots = 0;
+    private playCount = 0;
+    private highScore = 0;
+    private saveElapsed = 0;
+    private roundFinished = false;
 
     async initialize(context: MiniGameContext<Blocks3DServices>): Promise<void> {
         if (this.state !== 'idle') {
@@ -107,12 +129,18 @@ export class Blocks3DGame extends Component implements MiniGame {
         }
 
         this.state = 'playing';
-        this.buildWorld();
-        this.context?.reportScore(0);
+        const saved = this.readSave();
+        if (saved) {
+            this.buildWorld(saved);
+            this.context?.reportScore(this.toppled.size * 10);
+            if (this.shots >= 3) this.scheduleOnce(this.finishRound, 4);
+        } else {
+            this.startNewRound();
+        }
     }
 
-    protected update(): void {
-        if (this.state !== 'playing') {
+    protected update(deltaTime: number): void {
+        if (this.state !== 'playing' || this.roundFinished) {
             return;
         }
 
@@ -128,7 +156,15 @@ export class Blocks3DGame extends Component implements MiniGame {
                 || block.position.y < 0.25) {
                 this.toppled.add(block);
                 this.context?.reportScore(this.toppled.size * 10);
+                this.highScore = Math.max(this.highScore, this.toppled.size * 10);
+                this.persistRound(true);
             }
+        }
+
+        this.saveElapsed += Math.max(0, deltaTime);
+        if (this.saveElapsed >= 0.25) {
+            this.saveElapsed = 0;
+            this.persistRound(true);
         }
     }
 
@@ -138,6 +174,7 @@ export class Blocks3DGame extends Component implements MiniGame {
         }
 
         this.state = 'paused';
+        if (!this.roundFinished) this.persistRound(true);
         this.setBodiesEnabled(false);
     }
 
@@ -157,13 +194,22 @@ export class Blocks3DGame extends Component implements MiniGame {
 
         this.unscheduleAllCallbacks();
         this.state = 'playing';
-        this.buildWorld();
-        this.context?.reportScore(0);
+        this.persistRound(false);
+        this.startNewRound();
+    }
+
+    discardSavedProgress(): void {
+        this.roundFinished = true;
+        this.persistRound(false);
     }
 
     async dispose(): Promise<void> {
         if (this.state === 'disposed') {
             return;
+        }
+
+        if (!this.roundFinished && (this.state === 'playing' || this.state === 'paused')) {
+            this.persistRound(true);
         }
 
         this.unscheduleAllCallbacks();
@@ -211,7 +257,15 @@ export class Blocks3DGame extends Component implements MiniGame {
         return material;
     }
 
-    private buildWorld(): void {
+    private startNewRound(): void {
+        this.roundFinished = false;
+        this.playCount += 1;
+        this.buildWorld();
+        this.context?.reportScore(0);
+        this.persistRound(true);
+    }
+
+    private buildWorld(saved?: Blocks3DActiveRound): void {
         this.clearWorld();
         const world = this.node.getChildByName('World');
 
@@ -246,6 +300,12 @@ export class Blocks3DGame extends Component implements MiniGame {
 
         this.shots = 0;
         this.toppled.clear();
+        this.saveElapsed = 0;
+        this.roundFinished = false;
+
+        if (saved) {
+            this.restoreWorld(saved);
+        }
     }
 
     private applyMesh(node: Node, mesh: Mesh, material: Material): void {
@@ -272,17 +332,9 @@ export class Blocks3DGame extends Component implements MiniGame {
             return;
         }
 
-        const ball = new Node(`Ball-${this.shots}`);
-        ball.parent = world;
-        ball.setPosition(0, 1.4, 8);
-        this.applyMesh(ball, this.meshes[1], this.materials[2]);
-        ball.addComponent(SphereCollider).radius = 0.5;
-        const body = ball.addComponent(RigidBody);
-        body.type = ERigidBodyType.DYNAMIC;
-        body.mass = 3;
-        body.setLinearVelocity(new Vec3(0, 1.2, -18));
-        this.dynamicBodies.push(body);
+        this.createBall(`Ball-${this.shots}`, new Vec3(0, 1.4, 8), new Vec3(0, 1.2, -18));
         this.shots += 1;
+        this.persistRound(true);
 
         if (this.shots === 3) {
             this.scheduleOnce(this.finishRound, 4);
@@ -300,6 +352,8 @@ export class Blocks3DGame extends Component implements MiniGame {
             return;
         }
 
+        this.roundFinished = true;
+        this.persistRound(false);
         this.context?.requestExit({
             score: this.toppled.size * 10,
             duration: 0,
@@ -310,6 +364,146 @@ export class Blocks3DGame extends Component implements MiniGame {
             }),
         });
     };
+
+    private createBall(name: string, position: Vec3, velocity: Vec3): RigidBody | undefined {
+        const world = this.node.getChildByName('World');
+        if (!world) return undefined;
+        const ball = new Node(name);
+        ball.parent = world;
+        ball.setPosition(position);
+        this.applyMesh(ball, this.meshes[1], this.materials[2]);
+        ball.addComponent(SphereCollider).radius = 0.5;
+        const body = ball.addComponent(RigidBody);
+        body.type = ERigidBodyType.DYNAMIC;
+        body.mass = 3;
+        body.setLinearVelocity(velocity);
+        this.dynamicBodies.push(body);
+        return body;
+    }
+
+    private readSave(): Blocks3DActiveRound | undefined {
+        const data = this.context?.services.storage.getGameData('blocks3d');
+        this.playCount = data?.playCount ?? 0;
+        this.highScore = Math.max(0, Math.floor(data?.highScore ?? 0));
+        return this.parseRound(data?.custom?.activeRound);
+    }
+
+    private parseRound(value: unknown): Blocks3DActiveRound | undefined {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+        const round = value as Record<string, unknown>;
+        if (round.inProgress !== true
+            || !Number.isInteger(round.shots) || (round.shots as number) < 0 || (round.shots as number) > 3
+            || !Array.isArray(round.toppled)
+            || !round.toppled.every((name) => typeof name === 'string')
+            || !Array.isArray(round.blocks) || !Array.isArray(round.balls)) {
+            return undefined;
+        }
+        const parseBodies = (items: unknown[]): SavedBody3D[] | undefined => {
+            const bodies: SavedBody3D[] = [];
+            for (const item of items) {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) return undefined;
+                const body = item as Record<string, unknown>;
+                const isVector = (vector: unknown): vector is [number, number, number] => Array.isArray(vector)
+                    && vector.length === 3
+                    && vector.every((component) => typeof component === 'number' && Number.isFinite(component));
+                if (typeof body.name !== 'string'
+                    || !isVector(body.position) || !isVector(body.rotation)
+                    || !isVector(body.velocity) || !isVector(body.angularVelocity)) return undefined;
+                bodies.push(body as unknown as SavedBody3D);
+            }
+            return bodies;
+        };
+        const blocks = parseBodies(round.blocks);
+        const balls = parseBodies(round.balls);
+        if (!blocks || !balls) return undefined;
+        return {
+            inProgress: true,
+            shots: round.shots as number,
+            toppled: round.toppled as string[],
+            blocks,
+            balls,
+        };
+    }
+
+    private restoreWorld(saved: Blocks3DActiveRound): void {
+        const blockStates = new Map(saved.blocks.map((body) => [body.name, body]));
+        for (const block of this.blocks) {
+            const state = blockStates.get(block.name);
+            const body = block.getComponent(RigidBody);
+            if (!state || !body) continue;
+            this.applyBodyState(block, body, state);
+            if (saved.toppled.includes(block.name)) this.toppled.add(block);
+        }
+        for (const state of saved.balls) {
+            const body = this.createBall(
+                state.name,
+                new Vec3(...state.position),
+                new Vec3(...state.velocity),
+            );
+            if (body) this.applyBodyState(body.node, body, state);
+        }
+        this.shots = saved.shots;
+    }
+
+    private applyBodyState(node: Node, body: RigidBody, saved: SavedBody3D): void {
+        node.setPosition(...saved.position);
+        node.setRotationFromEuler(...saved.rotation);
+        body.setLinearVelocity(new Vec3(...saved.velocity));
+        body.setAngularVelocity(new Vec3(...saved.angularVelocity));
+    }
+
+    private captureBody(body: RigidBody): SavedBody3D {
+        const velocity = new Vec3();
+        const angularVelocity = new Vec3();
+        body.getLinearVelocity(velocity);
+        body.getAngularVelocity(angularVelocity);
+        const position = body.node.position;
+        const rotation = body.node.eulerAngles;
+        return Object.freeze({
+            name: body.node.name,
+            position: Object.freeze([position.x, position.y, position.z]) as readonly [number, number, number],
+            rotation: Object.freeze([rotation.x, rotation.y, rotation.z]) as readonly [number, number, number],
+            velocity: Object.freeze([velocity.x, velocity.y, velocity.z]) as readonly [number, number, number],
+            angularVelocity: Object.freeze([angularVelocity.x, angularVelocity.y, angularVelocity.z]) as readonly [number, number, number],
+        });
+    }
+
+    private persistRound(inProgress: boolean): void {
+        const storage = this.context?.services.storage;
+        if (!storage) return;
+        const previous = storage.getGameData('blocks3d');
+        const score = this.toppled.size * 10;
+        this.highScore = Math.max(this.highScore, score);
+        const blocks = this.blocks
+            .map((node) => node.getComponent(RigidBody))
+            .filter((body): body is RigidBody => !!body && body.node.isValid)
+            .map((body) => this.captureBody(body));
+        const balls = this.dynamicBodies
+            .filter((body) => body.node.isValid && body.node.name.startsWith('Ball-'))
+            .map((body) => this.captureBody(body));
+        const activeRound = inProgress ? Object.freeze({
+            inProgress: true,
+            shots: this.shots,
+            toppled: Object.freeze([...this.toppled].map((node) => node.name)),
+            blocks: Object.freeze(blocks),
+            balls: Object.freeze(balls),
+        }) : Object.freeze({ inProgress: false });
+        const data: GameSaveData = {
+            dataVersion: 1,
+            playCount: this.playCount,
+            highScore: this.highScore,
+            lastPlayedAt: Date.now(),
+            custom: Object.freeze({
+                ...(previous?.custom ?? {}),
+                activeRound,
+            }),
+        };
+        try {
+            storage.writeGameData('blocks3d', data);
+        } catch (error: unknown) {
+            console.error('[Blocks3DGame] Save failed.', error);
+        }
+    }
 
     private setBodiesEnabled(enabled: boolean): void {
         for (const body of this.dynamicBodies) {

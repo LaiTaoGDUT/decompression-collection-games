@@ -3,6 +3,8 @@ import type {
     DevicePerformanceTier,
     DeviceProfile,
     LaunchOptions,
+    PlatformLayoutInfo,
+    PlatformUiRect,
     SafeArea,
     Unsubscribe,
 } from '../core/types/CommonTypes';
@@ -26,6 +28,15 @@ interface WeChatSystemInfo {
     readonly benchmarkLevel?: number;
 }
 
+interface WeChatMenuButtonRect {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+    readonly width: number;
+    readonly height: number;
+}
+
 interface WeChatLaunchOptions {
     readonly scene?: number;
     readonly path?: string;
@@ -39,6 +50,7 @@ interface WeChatLaunchOptions {
 
 interface WeChatApi {
     getSystemInfoSync(): WeChatSystemInfo;
+    getMenuButtonBoundingClientRect?(): WeChatMenuButtonRect;
     getLaunchOptionsSync?(): WeChatLaunchOptions;
     vibrateShort?(options: {
         type: 'light' | 'medium' | 'heavy';
@@ -76,6 +88,7 @@ export class WeChatPlatform implements Platform {
     private readonly designWidth: number;
     private api?: WeChatApi;
     private safeArea?: SafeArea;
+    private layoutInfo?: PlatformLayoutInfo;
     private launchOptions?: LaunchOptions;
     private deviceProfile?: DeviceProfile;
     private initialized = false;
@@ -98,6 +111,7 @@ export class WeChatPlatform implements Platform {
         const systemInfo = api.getSystemInfoSync();
 
         this.safeArea = this.normalizeSafeArea(systemInfo);
+        this.layoutInfo = this.normalizeLayoutInfo(systemInfo, api);
         this.deviceProfile = this.normalizeDeviceProfile(systemInfo);
         this.launchOptions = this.normalizeLaunchOptions(
             api.getLaunchOptionsSync?.() ?? {},
@@ -114,6 +128,7 @@ export class WeChatPlatform implements Platform {
         this.events.clear();
         this.api = undefined;
         this.safeArea = undefined;
+        this.layoutInfo = undefined;
         this.launchOptions = undefined;
         this.deviceProfile = undefined;
         this.initialized = false;
@@ -125,6 +140,14 @@ export class WeChatPlatform implements Platform {
         }
 
         return this.safeArea;
+    }
+
+    getLayoutInfo(): PlatformLayoutInfo {
+        if (!this.layoutInfo) {
+            throw new Error('WeChat platform is not initialized.');
+        }
+
+        return this.layoutInfo;
     }
 
     getDeviceProfile(): DeviceProfile {
@@ -210,6 +233,35 @@ export class WeChatPlatform implements Platform {
             bottom,
             width: right - left,
             height: bottom - top,
+        });
+    }
+
+    private normalizeLayoutInfo(
+        systemInfo: WeChatSystemInfo,
+        api: WeChatApi,
+    ): PlatformLayoutInfo {
+        let topRightReservedArea: PlatformUiRect | undefined;
+
+        try {
+            const menuButton = api.getMenuButtonBoundingClientRect?.();
+            if (menuButton && menuButton.width > 0 && menuButton.height > 0) {
+                const scale = this.designWidth / systemInfo.screenWidth;
+                topRightReservedArea = Object.freeze({
+                    left: menuButton.left * scale,
+                    top: menuButton.top * scale,
+                    right: menuButton.right * scale,
+                    bottom: menuButton.bottom * scale,
+                    width: menuButton.width * scale,
+                    height: menuButton.height * scale,
+                });
+            }
+        } catch (error: unknown) {
+            console.warn('[WeChatPlatform] Failed to read menu button bounds.', error);
+        }
+
+        return Object.freeze({
+            safeArea: this.safeArea!,
+            topRightReservedArea,
         });
     }
 

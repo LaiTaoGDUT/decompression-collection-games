@@ -25,6 +25,12 @@ export interface Game2048MoveResult {
     readonly gameOver: boolean;
 }
 
+export interface Game2048Snapshot {
+    readonly board: readonly number[];
+    readonly score: number;
+    readonly targetAcknowledged: boolean;
+}
+
 interface LineResult {
     readonly values: readonly number[];
     readonly score: number;
@@ -132,6 +138,14 @@ export class Game2048Model {
         return false;
     }
 
+    get snapshot(): Game2048Snapshot {
+        return Object.freeze({
+            board: Object.freeze([...this.cells]),
+            score: this.currentScore,
+            targetAcknowledged: this.targetAcknowledged,
+        });
+    }
+
     setRandomSource(random: () => number): void {
         this.random = random;
     }
@@ -152,6 +166,13 @@ export class Game2048Model {
         this.cells = requireBoard(board);
         this.currentScore = Math.floor(score);
         this.targetAcknowledged = targetAcknowledged;
+    }
+
+    restore(snapshot: Game2048Snapshot): void {
+        if (typeof snapshot.targetAcknowledged !== 'boolean') {
+            throw new Error('2048 target acknowledgement must be boolean.');
+        }
+        this.loadForTesting(snapshot.board, snapshot.score, snapshot.targetAcknowledged);
     }
 
     move(direction: Game2048Direction): Game2048MoveResult {

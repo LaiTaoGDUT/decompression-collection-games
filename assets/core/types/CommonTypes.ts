@@ -14,6 +14,25 @@ export interface SafeArea {
     readonly height: number;
 }
 
+/** 平台原生 UI 在设计坐标系中占据的矩形，原点位于屏幕左上角。 */
+export interface PlatformUiRect {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+    readonly width: number;
+    readonly height: number;
+}
+
+/**
+ * 游戏界面必须遵守的平台布局边界。
+ * `topRightReservedArea` 在微信环境中对应右上角胶囊，后续平台也可复用该约束。
+ */
+export interface PlatformLayoutInfo {
+    readonly safeArea: SafeArea;
+    readonly topRightReservedArea?: PlatformUiRect;
+}
+
 /** 平台启动时传入应用的标准化参数。 */
 export interface LaunchOptions {
     readonly scene?: number;

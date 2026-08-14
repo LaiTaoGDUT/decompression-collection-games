@@ -2,6 +2,8 @@ import { EventBus } from '../core/events/EventBus';
 import type {
     DeviceProfile,
     LaunchOptions,
+    PlatformLayoutInfo,
+    PlatformUiRect,
     SafeArea,
     Unsubscribe,
 } from '../core/types/CommonTypes';
@@ -14,6 +16,8 @@ interface WebPlatformEvents {
 
 export interface WebPlatformOptions {
     readonly safeArea?: SafeArea;
+    /** 浏览器预览胶囊避让效果时可注入模拟区域。 */
+    readonly topRightReservedArea?: PlatformUiRect;
     readonly launchOptions?: LaunchOptions;
     readonly deviceProfile?: DeviceProfile;
 }
@@ -42,6 +46,7 @@ export class WebPlatform implements Platform {
 
     private readonly events = new EventBus<WebPlatformEvents>();
     private readonly safeArea: SafeArea;
+    private readonly layoutInfo: PlatformLayoutInfo;
     private readonly launchOptions: LaunchOptions;
     private readonly deviceProfile: DeviceProfile;
     private initialized = false;
@@ -50,6 +55,12 @@ export class WebPlatform implements Platform {
     constructor(options: WebPlatformOptions = {}) {
         this.safeArea = Object.freeze({
             ...(options.safeArea ?? DEFAULT_SAFE_AREA),
+        });
+        this.layoutInfo = Object.freeze({
+            safeArea: this.safeArea,
+            topRightReservedArea: options.topRightReservedArea
+                ? Object.freeze({ ...options.topRightReservedArea })
+                : undefined,
         });
         this.launchOptions = this.freezeLaunchOptions(
             options.launchOptions ?? DEFAULT_LAUNCH_OPTIONS,
@@ -86,6 +97,10 @@ export class WebPlatform implements Platform {
 
     getSafeArea(): SafeArea {
         return this.safeArea;
+    }
+
+    getLayoutInfo(): PlatformLayoutInfo {
+        return this.layoutInfo;
     }
 
     getDeviceProfile(): DeviceProfile {

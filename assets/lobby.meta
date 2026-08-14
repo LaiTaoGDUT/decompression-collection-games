@@ -6,12 +6,12 @@
   "files": [],
   "subMetas": {},
   "userData": {
-    "isSubpackage": false,
+    "isSubpackage": true,
     "isBundle": true,
     "bundleName": "lobby",
     "priority": 1,
     "compressionType": {},
     "isRemoteBundle": {},
-    "bundleConfigID": "default"
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L"
   }
 }

@@ -7,6 +7,35 @@ const gamesRoot = path.join(root, 'assets', 'games');
 const expectedSubpackageConfigId = '00mTKQ64hMUZEoY95Dbj9L';
 const verifiedBundles = [];
 
+function assertSubpackage(metaPath, expectedBundleName) {
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    const config = meta.userData ?? {};
+    assert.strictEqual(
+        config.isBundle,
+        true,
+        `${expectedBundleName} must be an Asset Bundle.`,
+    );
+    assert.strictEqual(
+        config.isSubpackage,
+        true,
+        `${expectedBundleName} must be a WeChat subpackage.`,
+    );
+    assert.strictEqual(
+        config.bundleConfigID,
+        expectedSubpackageConfigId,
+        `${expectedBundleName} must use the project subpackage bundle configuration.`,
+    );
+    assert.strictEqual(
+        config.bundleName,
+        expectedBundleName,
+        `${expectedBundleName} must keep its expected bundle name.`,
+    );
+
+    verifiedBundles.push(config.bundleName);
+}
+
+assertSubpackage(path.join(root, 'assets', 'lobby.meta'), 'lobby');
+
 for (const entry of fs.readdirSync(gamesRoot, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
 
@@ -22,29 +51,12 @@ for (const entry of fs.readdirSync(gamesRoot, { withFileTypes: true })) {
 
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
     const config = meta.userData ?? {};
-    assert.strictEqual(
-        config.isBundle,
-        true,
-        `${entry.name} must be an Asset Bundle.`,
-    );
-
-    assert.strictEqual(
-        config.isSubpackage,
-        true,
-        `${entry.name} must be a WeChat subpackage.`,
-    );
-    assert.strictEqual(
-        config.bundleConfigID,
-        expectedSubpackageConfigId,
-        `${entry.name} must use the project subpackage bundle configuration.`,
-    );
     assert.match(
         config.bundleName ?? '',
         /^game-/,
         `${entry.name} must use a game-* bundle name.`,
     );
-
-    verifiedBundles.push(config.bundleName);
+    assertSubpackage(metaPath, config.bundleName);
 }
 
 assert(verifiedBundles.length > 0, 'No game bundles were found.');

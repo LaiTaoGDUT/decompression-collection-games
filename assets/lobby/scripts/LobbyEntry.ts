@@ -32,9 +32,9 @@ import type { FeedbackService } from '../../services/feedback/FeedbackService';
 const { ccclass, property } = _decorator;
 const EMPTY_GAMES: readonly GameManifest[] = Object.freeze([]);
 const GRID_SIDE_PADDING = 40;
-// Leave a generous hero area above the cards, matching a casual-game lobby
-// rather than the previous compact gallery header.
-const GRID_TOP = 344;
+// Keep the cards at the same distance below the title after moving the whole
+// lobby hero row up to the settings-button center line.
+const GRID_TOP = 258;
 const GRID_BOTTOM = 40;
 export type EnterGameRequest = (manifest: GameManifest) => Promise<void>;
 
@@ -140,11 +140,21 @@ export class LobbyEntry extends Component {
             return;
         }
 
-        let viewport = this.node.getChildByName('GameGridViewport');
+        // ContentRoot lives below Cocos' SafeArea node. The scrolling surface
+        // must instead be mounted on SceneLayer so its mask and gesture area
+        // cover the entire canvas, including the regions around a notch and
+        // the home indicator.
+        const safeArea = this.node.parent;
+        const fullscreenRoot = safeArea?.name === 'SafeArea'
+            ? safeArea.parent
+            : null;
+        const viewportParent = fullscreenRoot ?? this.node;
+        let viewport = viewportParent.getChildByName('GameGridViewport')
+            ?? this.node.getChildByName('GameGridViewport');
         if (!viewport) {
             viewport = new Node('GameGridViewport');
             viewport.layer = this.node.layer;
-            this.node.addChild(viewport);
+            viewportParent.addChild(viewport);
             viewport.addComponent(UITransform);
             viewport.addComponent(Mask);
             const widget = viewport.addComponent(Widget);
@@ -152,10 +162,10 @@ export class LobbyEntry extends Component {
             widget.isAlignBottom = true;
             widget.isAlignLeft = true;
             widget.isAlignRight = true;
-            widget.top = GRID_TOP;
-            widget.bottom = GRID_BOTTOM;
-            widget.left = GRID_SIDE_PADDING;
-            widget.right = GRID_SIDE_PADDING;
+            widget.top = 0;
+            widget.bottom = 0;
+            widget.left = 0;
+            widget.right = 0;
             widget.updateAlignment();
 
             const scrollView = viewport.addComponent(ScrollView);
@@ -166,6 +176,26 @@ export class LobbyEntry extends Component {
             scrollView.cancelInnerEvents = true;
             gameList.setParent(viewport);
             scrollView.content = gameList;
+        }
+        if (viewport.parent !== viewportParent) {
+            viewport.setParent(viewportParent);
+        }
+        if (fullscreenRoot && safeArea?.parent === fullscreenRoot) {
+            // Background < scrolling content < fixed safe-area controls.
+            const safeAreaIndex = safeArea.getSiblingIndex();
+            const targetIndex = viewport.getSiblingIndex() < safeAreaIndex
+                ? safeAreaIndex - 1
+                : safeAreaIndex;
+            viewport.setSiblingIndex(Math.max(0, targetIndex));
+        }
+
+        // The brand/title is part of the page content so it naturally leaves
+        // the screen together with the cards. Persistent controls (settings)
+        // remain direct children of ContentRoot and therefore stay fixed.
+        const brandArea = this.node.getChildByName('BrandArea');
+        if (brandArea && brandArea.parent !== gameList) {
+            brandArea.setParent(gameList);
+            brandArea.setSiblingIndex(0);
         }
 
         this.gridViewport = viewport;
@@ -184,8 +214,9 @@ export class LobbyEntry extends Component {
 
         // Keep the list idempotent even when a lobby scene is restored or its
         // entry component is started again by the runtime.
-        const previousCards = [...gameList.children];
-        gameList.removeAllChildren();
+        const previousCards = gameList.children.filter((child) => (
+            Boolean(child.getComponent(GameCardView))
+        ));
         this.cardViews.clear();
         for (const child of previousCards) {
             // `destroy()` is deferred until the end of the frame. Detaching first
@@ -239,21 +270,34 @@ export class LobbyEntry extends Component {
 
         viewport.getComponent(Widget)?.updateAlignment();
         const viewportSize = viewportTransform.contentSize;
+        const safeContentHeight = this.node.getComponent(UITransform)?.contentSize.height
+            ?? viewportSize.height;
+        const safeEdgeInset = Math.max(0, (viewportSize.height - safeContentHeight) / 2);
+        const gridWidth = Math.max(0, viewportSize.width - GRID_SIDE_PADDING * 2);
+        const cards = gameList.children.filter((child) => Boolean(child.getComponent(GameCardView)));
         const layout = calculateLobbyGridLayout(
-            gameList.children.length,
-            viewportSize.width,
+            cards.length,
+            gridWidth,
         );
-        const contentHeight = Math.max(viewportSize.height, layout.contentHeight);
+        const contentHeight = Math.max(
+            viewportSize.height,
+            safeEdgeInset + GRID_TOP + layout.contentHeight + GRID_BOTTOM + safeEdgeInset,
+        );
         listTransform.setContentSize(viewportSize.width, contentHeight);
         listTransform.setAnchorPoint(0.5, 1);
         gameList.setPosition(0, viewportSize.height / 2);
+        const brandWidget = gameList.getChildByName('BrandArea')?.getComponent(Widget);
+        if (brandWidget) {
+            brandWidget.top = safeEdgeInset + 18;
+            brandWidget.updateAlignment();
+        }
 
-        gameList.children.forEach((card, index) => {
+        cards.forEach((card, index) => {
             const item = layout.items[index];
             if (!item) {
                 return;
             }
-            card.setPosition(item.x, item.y);
+            card.setPosition(item.x, item.y - safeEdgeInset - GRID_TOP);
             card.getComponent(GameCardView)?.setCardSize(item.width, item.height);
         });
     }
