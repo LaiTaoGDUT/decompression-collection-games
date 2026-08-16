@@ -218,6 +218,9 @@ for (const [type, piecePosition, blockers] of immediateCases) {
     const ordered = [...result.spawned].sort((left, right) => left.position.column - right.position.column);
     assert.strictEqual(ordered[1].type, 'general', 'The general must occupy the middle of the horizontal formation.');
     assert.strictEqual(ordered[0].position.row, ordered[2].position.row);
+    assert(!model.getPlayerLegalMoves().some((move) => (
+        move.column === ordered[1].position.column && move.row === ordered[1].position.row
+    )), 'A newly deployed general must not be immediately capturable by the player rook.');
     assert.strictEqual(model.snapshot.generalActive, true);
 }
 
@@ -281,6 +284,62 @@ for (const [type, piecePosition, blockers] of immediateCases) {
 }
 
 {
+    const model = new ChessEndlessModel(71);
+    model.loadForTesting({
+        playerPosition: at(4, 4),
+        enemies: [enemy(1, 'pawn', 4, 0)],
+        phase: 'player',
+        score: 0,
+        combo: 0,
+        maxCombo: 0,
+        reinforcementTimer: 5,
+        nextPieceId: 2,
+    });
+    const first = model.movePlayer(at(4, 0));
+    assert.strictEqual(first.scoreDelta, 10);
+    assert.strictEqual(first.combo, 1);
+    assert.strictEqual(model.snapshot.maxCombo, 1);
+
+    model.loadForTesting({
+        playerPosition: at(4, 0),
+        enemies: [enemy(2, 'pawn', 0, 0)],
+        phase: 'player',
+        nextPieceId: 3,
+    });
+    const second = model.movePlayer(at(0, 0));
+    assert.strictEqual(second.scoreDelta, 12, 'The second consecutive capture should use the 1.2 combo multiplier.');
+    assert.strictEqual(second.combo, 2);
+    assert.strictEqual(model.snapshot.maxCombo, 2);
+
+    model.loadForTesting({
+        playerPosition: at(0, 0),
+        enemies: [enemy(3, 'pawn', 5, 0)],
+        phase: 'player',
+        inventory: inventory({ crossSlash: 1 }),
+        nextPieceId: 4,
+    });
+    model.useItem('crossSlash');
+    const cross = model.movePlayer(at(5, 0));
+    assert.strictEqual(cross.captured.piece.id, 3);
+    assert.strictEqual(cross.combo, 3, 'A normal capture should advance combo even when Cross Slash is armed.');
+
+    model.loadForTesting({
+        playerPosition: at(4, 4),
+        enemies: [enemy(4, 'pawn', 5, 0)],
+        phase: 'player',
+        combo: 3,
+        inventory: inventory({ crossSlash: 1 }),
+        usedItemThisTurn: false,
+        nextPieceId: 5,
+    });
+    model.useItem('crossSlash');
+    const crossOnly = model.movePlayer(at(5, 4));
+    assert.strictEqual(crossOnly.crossSlashKills.length, 1);
+    assert.strictEqual(crossOnly.combo, 0, 'A Cross Slash kill after an empty normal move must not maintain combo.');
+    assert.strictEqual(model.snapshot.maxCombo, 3, 'Resetting combo must preserve the historical maximum.');
+}
+
+{
     const model = new ChessEndlessModel(81);
     model.loadForTesting({
         playerPosition: at(4, 4),
@@ -328,8 +387,37 @@ for (const [type, piecePosition, blockers] of immediateCases) {
         if (result.moved.to.column === 4) exposedMoves += 1;
         else escapingMoves += 1;
     }
-    assert(exposedMoves >= 20, 'A threatened general must retain a meaningful rook-line kill window.');
-    assert(escapingMoves > exposedMoves, 'The general should prefer an ordinary escaping move without making it mandatory.');
+    assert.strictEqual(exposedMoves, 0, 'A threatened general must take a safe escape when one is available.');
+    assert.strictEqual(escapingMoves, 200);
+}
+
+{
+    const model = new ChessEndlessModel(83);
+    model.loadForTesting({
+        playerPosition: at(4, 4),
+        enemies: [enemy(1, 'general', 4, 0, 1), enemy(2, 'advisor', 3, 1)],
+        phase: 'enemy',
+        reinforcementTimer: 99,
+        generalActive: true,
+        nextPieceId: 3,
+    });
+    const result = model.resolveEnemyTurn();
+    assert.strictEqual(result.moved.pieceId, 2, 'An ally should protect a threatened general when the general cannot move.');
+    assert.deepStrictEqual(result.moved.to, at(4, 2), 'The advisor should block the open rook line to the general.');
+}
+
+{
+    const model = new ChessEndlessModel(85);
+    model.loadForTesting({
+        playerPosition: at(4, 4),
+        enemies: [enemy(1, 'general', 4, 0, 1), enemy(2, 'advisor', 4, 2), enemy(3, 'pawn', 0, 0)],
+        phase: 'enemy',
+        reinforcementTimer: 99,
+        generalActive: true,
+        nextPieceId: 4,
+    });
+    const result = model.resolveEnemyTurn();
+    assert.strictEqual(result.moved.pieceId, 3, 'AI should preserve an existing guard instead of exposing the general.');
 }
 
 {
@@ -389,4 +477,4 @@ for (const [type, piecePosition, blockers] of immediateCases) {
     }
 }
 
-console.log('chess_endless_model=passed, cases=21, board=9x10, pieces=7, items=5, danger_map=passed, general_kill_window=passed, reward_weighting=passed, immediate_wave=passed, all_items=passed, reinforcements=passed, general_formation=passed, revive_snapshot=passed, cross_slash=passed');
+console.log('chess_endless_model=passed, cases=24, board=9x10, pieces=7, items=5, combo_scoring=passed, danger_map=passed, general_survival=passed, general_guarding=passed, reward_weighting=passed, immediate_wave=passed, all_items=passed, reinforcements=passed, general_formation=passed, revive_snapshot=passed, cross_slash=passed');

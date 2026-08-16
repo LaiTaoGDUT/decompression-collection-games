@@ -80,6 +80,7 @@ const requiredImages = [
     'visual/ui/ui_modal_panel.png',
     'visual/ui/ui_reward_card.png',
     'visual/vfx/vfx_capture_burst.png',
+    'visual/vfx/vfx_combo_burst.png',
     'visual/vfx/vfx_general_arrival.png',
     'visual/vfx/vfx_general_kill.png',
     'visual/vfx/vfx_general_guard.png',
@@ -121,7 +122,7 @@ assert.strictEqual(new Set(routedAudio).size, audioFiles.length, 'Every runtime 
 audioFiles.forEach((name) => assert(routedAudio.includes(name), `Unrouted runtime audio ${name}.`));
 [
     'requestPause()', 'requestExit(', 'showPauseMenu', 'showResultView',
-    'showCrossSlash(', 'showGeneralArrival(', 'handleRevive(', 'showRewardOverlay(',
+    'showCrossSlash(', 'showComboVfx(', 'showGeneralArrival(', 'handleRevive(', 'showRewardOverlay(',
     'showRewardChestSequence(', 'showCenterVfx(', 'showRulesPage(', 'showItemHelp(',
     'renderDangerPositions(', 'showPieceInfo(',
     'updatePressureMusic(', 'ChessEndlessLayout', 'readChessEndlessViewport(',
@@ -160,14 +161,24 @@ assert(!sourceCode.includes('new Color(12, 38, 30, 178)'), 'The full HUD must no
 assert(!sourceCode.includes('new Color(10, 34, 27, 168)'), 'The full item dock must not have a green fill.');
 assert(sourceCode.includes('overlay: new Color(0, 0, 0, 77)'), 'Modal overlays must use a 30% translucent black full-screen mask.');
 assert(sourceCode.includes('width: metrics.width') && sourceCode.includes('height: metrics.height'), 'Modal overlays must use the complete calculated viewport.');
-assert(sourceCode.includes('headerBrandBackground.fillColor = new Color(22, 66, 52, 77)'), 'The title and best-score block must use the 0.3-alpha ink-green background.');
+assert(sourceCode.includes('headerBrandBackground.fillColor = new Color(56, 56, 56, 77)'), 'The title and best-score block must use the 0.3-alpha gray background.');
 assert(sourceCode.includes('headerBrandBackground.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 220)'), 'The title and best-score block must use a clearly visible gold outline.');
 assert(sourceCode.includes('headerBrandBackground.lineWidth = Math.max(1.5, 2 * headerBrandScale)'), 'The title and best-score block gold outline must remain visible after responsive scaling.');
 assert(!sourceCode.includes("'Backplate', 0, 0, headerBrandWidth"), 'The HUD must not render the green ribbon backplate.');
 assert(!sourceCode.includes("'SlotArtwork'"), 'Item cards must not render an extra opaque green slot background.');
 assert(sourceCode.includes('resolveSafeContentRect()'), 'Modal content must be constrained to the safe area.');
 assert(sourceCode.includes("this.createNode(this.effectLayer ?? this.node, 'CaptureBurst'") && sourceCode.includes("this.createNode(this.effectLayer ?? this.node, 'CaptureChip'"), 'Capture artwork must render above chess pieces.');
-assert(sourceCode.includes('const CHESS_MUSIC_VOLUME = 0.8') && sourceCode.includes('playMusic(clip, CHESS_MUSIC_VOLUME)'), 'Chess background music must play at 80% volume.');
+assert(sourceCode.includes("this.playSound(result.captured ? 'playerCapture' : 'playerMove');"), 'Normal captures must reuse one stable capture sound without combo pitch progression.');
+assert(sourceCode.includes('const VFX_TEXT_OUTLINE = new Color(64, 64, 64, 230)'), 'Gold VFX titles must use the shared neutral-gray outline.');
+assert((sourceCode.match(/outline\.color = VFX_TEXT_OUTLINE/g) ?? []).length === 2, 'Center and combo VFX titles must both use the gray outline.');
+assert(sourceCode.includes("showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320, -26)"), 'The general-arrival title must sit lower at the artwork visual center.');
+assert(sourceCode.includes('const helpSize = 31 * visualScale'), 'Item-list help icons must use the enlarged responsive size.');
+assert(sourceCode.includes("cardWidth * 0.31, cardHeight * 0.34, 32, 32"), 'Reward-item help icons must match the enlarged rule-icon treatment.');
+assert(sourceCode.includes('(general ? 1.18 : 1.13)'), 'Board pieces must use the slightly enlarged responsive diameter.');
+const chessMusicVolumeMatch = sourceCode.match(/const CHESS_MUSIC_VOLUME = ([0-9.]+);/);
+assert(chessMusicVolumeMatch, 'Chess must define a dedicated background-music volume.');
+const chessMusicVolume = Number(chessMusicVolumeMatch[1]);
+assert(chessMusicVolume > 0 && chessMusicVolume < 1 && sourceCode.includes('playMusic(clip, CHESS_MUSIC_VOLUME)'), 'Chess background music must use its dedicated attenuated volume without changing effects.');
 assert(!sourceCode.includes("this.setHint('复活成功，轮到你走棋')"), 'Reviving must not show the obsolete success hint.');
 assert(sourceCode.includes("'查看最后残局'"), 'The final result must allow board inspection.');
 assert(!sourceCode.includes("'点击己方車查看可走位置'"), 'The obsolete bottom-board text hint must be removed.');
@@ -180,6 +191,7 @@ const modelCode = fs.readFileSync(path.join(gameRoot, 'scripts/ChessEndlessModel
     'findNormalPlacements(', 'findGeneralPlacements(', 'safePlayerMoves(',
     'pendingCrossSlash', 'reviveSnapshot', 'generalTargetN', 'getDangerPositions()',
     'immediateSpawned', 'createRewardChoices()', 'weights = pool.map(',
+    'comboMultiplier(', 'maxCombo', 'this.state.combo += 1',
 ].forEach((needle) => assert(modelCode.includes(needle), `Missing model feature: ${needle}`));
 assert(modelCode.includes("rook: '車'"), 'Rook display must use 車 rather than 车.');
 assert(modelCode.includes('index + 2'), 'Every normal reinforcement wave must contain at least two pieces.');

@@ -63,7 +63,7 @@ const GAME_ID = 'chess-endless';
 const BUNDLE = 'game-chess-endless';
 const MOVE_DURATION = 0.15;
 const CAPTURE_DURATION = 0.24;
-const CHESS_MUSIC_VOLUME = 0.8;
+const CHESS_MUSIC_VOLUME = 0.65;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
 
@@ -105,6 +105,7 @@ const COLORS = Object.freeze({
     muted: new Color(116, 96, 66, 255),
     overlay: new Color(0, 0, 0, 77),
 });
+const VFX_TEXT_OUTLINE = new Color(64, 64, 64, 230);
 
 const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     background: 'visual/backgrounds/img_home_background/texture',
@@ -141,6 +142,7 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     talisman: 'visual/vfx/vfx_talisman/texture',
     woodChip: 'visual/vfx/vfx_wood_chip/texture',
     captureBurst: 'visual/vfx/vfx_capture_burst/texture',
+    comboBurst: 'visual/vfx/vfx_combo_burst/texture',
     generalArrivalVfx: 'visual/vfx/vfx_general_arrival/texture',
     generalKillVfx: 'visual/vfx/vfx_general_kill/texture',
     generalGuardVfx: 'visual/vfx/vfx_general_guard/texture',
@@ -225,6 +227,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             '· 敌方回合只移动 1 枚棋。若有敌棋能够直接吃掉玩家，敌方一定优先执行击杀。',
             '· 所有可能被敌棋吃掉的格子会显示淡红危险标记，可在暂停面板关闭。',
             '· 增援的棋种和倒计时会提前公开。每批普通增援至少 2 枚；清空棋盘时下一批立即落场。',
+            '· 连续用正常走車吃子会提高连斩倍率；走到空格会重置连斩，道具击杀不计入连斩。',
             '· 斩杀将军可得高分；背包未满时会获得一次道具奖励选择。',
             '· 每局只有一次广告复活机会。复活会回到致死行动前并自动释放十字斩。',
         ].join('\n'),
@@ -427,12 +430,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const extra = model.result.extra ?? {};
         const turns = typeof extra.turns === 'number' ? Math.floor(extra.turns) : 0;
         const generals = typeof extra.generalKills === 'number' ? Math.floor(extra.generalKills) : 0;
+        const combo = typeof extra.maxCombo === 'number' ? Math.floor(extra.maxCombo) : 0;
         const newRecord = extra.newRecord === true;
         this.resultOverlay = this.buildModal(
             'ResultOverlay',
             '本局落幕',
             newRecord ? '新纪录' : '棋局结束',
-            `${model.result.score.toLocaleString()} 分\n生存 ${turns} 回合 · 斩将 ${generals}`,
+            `${model.result.score.toLocaleString()} 分\n生存 ${turns} 回合 · 斩将 ${generals} · 最大连斩 ×${combo}`,
             [
                 {
                     label: '查看最后残局', tone: 'jade', action: () => {
@@ -502,7 +506,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const headerBrandX = -hudWidth / 2 + headerBrandWidth / 2 + 20 * hudScale;
         const headerBrand = this.createNode(hud, 'HeaderBrand', headerBrandX, 0, headerBrandWidth, headerBrandHeight);
         const headerBrandBackground = headerBrand.addComponent(Graphics);
-        headerBrandBackground.fillColor = new Color(22, 66, 52, 77);
+        headerBrandBackground.fillColor = new Color(224, 229, 232, 77);
         headerBrandBackground.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 220);
         headerBrandBackground.lineWidth = Math.max(1.5, 2 * headerBrandScale);
         headerBrandBackground.roundRect(
@@ -815,8 +819,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const size = this.boardMetrics();
         // The generated discs keep a transparent safety margin for particles and
         // shadows. Size the sprite node above one grid interval so the visible
-        // wooden disc still reads at roughly 80% of a cell without overlapping.
-        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.14 : 1.09);
+        // wooden disc still reads clearly within one cell without overlapping.
+        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.18 : 1.13);
         const point = this.boardPoint(at);
         const node = this.createNode(this.pieceLayer ?? this.node, name, point.x, point.y, diameter, diameter);
         this.applySprite(node, player ? 'piecePlayer' : PIECE_TEXTURE_KEY[type]);
@@ -902,7 +906,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const cornerRadius = Math.max(5, 14 * visualScale);
             const iconSize = 76 * visualScale;
         const badgeSize = 32 * visualScale;
-        const helpSize = 27 * visualScale;
+        const helpSize = 31 * visualScale;
         const nameFontSize = Math.max(11, Math.round(19 * visualScale));
         const countFontSize = Math.max(10, Math.round(18 * visualScale));
 
@@ -1104,6 +1108,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const targetEnemy = before.enemies.find((piece) => same(piece.position, target));
         const capturedNode = targetEnemy ? this.pieceLayer?.getChildByName(`Enemy-${targetEnemy.id}`) : undefined;
         const result = this.model.movePlayer(target);
+        // Combo progression is visual and score-only; every normal capture reuses the same SFX.
         this.playSound(result.captured ? 'playerCapture' : 'playerMove');
         this.context?.services.feedback.vibrate(result.captured ? 'medium' : 'light');
 
@@ -1121,6 +1126,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             );
         }
         this.renderAll();
+        if (result.combo >= 2) this.showComboVfx(result.combo);
         if (result.generalKilled) await this.showGeneralKillMoment();
         if (result.immediateSpawned.length > 0) {
             this.playSound('reinforcementDrop');
@@ -1176,7 +1182,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async animateCapture(node: Node, record?: KillRecord): Promise<void> {
         if (!record) return;
         const origin = node.position.clone();
-        const burst = this.createNode(this.effectLayer ?? this.node, 'CaptureBurst', origin.x, origin.y, 128, 128);
+        const burst = this.createNode(this.effectLayer ?? this.node, 'CaptureBurst', origin.x, origin.y, 136, 136);
         this.applySprite(burst, 'captureBurst');
         burst.setScale(0.2, 0.2, 1);
         const burstOpacity = burst.addComponent(UIOpacity);
@@ -1272,7 +1278,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async showGeneralArrival(): Promise<void> {
         this.duckMusic('generalArrive', 1.45);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320);
+        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320, -26);
         const general = this.model.snapshot.enemies.find((piece) => piece.type === 'general');
         if (general) {
             const point = this.boardPoint(general.position);
@@ -1429,7 +1435,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, -cardHeight * 0.08, 22, COLORS.ink, cardWidth - 18, 36);
             const count = this.model.snapshot.inventory[item];
             this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -cardHeight * 0.28, 18, COLORS.jade, cardWidth - 18, 28);
-            const help = this.createNode(card, 'Help', cardWidth * 0.31, cardHeight * 0.34, 28, 28);
+            const help = this.createNode(card, 'Help', cardWidth * 0.31, cardHeight * 0.34, 32, 32);
             this.applySprite(help, 'helpIcon');
             help.addComponent(Button);
             help.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
@@ -1487,6 +1493,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             extra: Object.freeze({
                 turns: snapshot.turnNumber,
                 generalKills: snapshot.generalKills,
+                maxCombo: snapshot.maxCombo,
                 totalKills: snapshot.totalKills,
                 newRecord,
                 seed: snapshot.seed,
@@ -2018,18 +2025,58 @@ export class ChessEndlessGame extends Component implements MiniGame {
         graphics.stroke();
     }
 
-    private async showCenterVfx(key: string, text: string, color: Color, duration: number, width: number, height: number): Promise<void> {
+    private async showCenterVfx(
+        key: string,
+        text: string,
+        color: Color,
+        duration: number,
+        width: number,
+        height: number,
+        textYOffset = 0,
+    ): Promise<void> {
         const node = this.createNode(this.node, `CenterVfx-${key}`, 0, 24, width, height);
         this.applySprite(node, key);
         node.setScale(0.35, 0.35, 1);
         const opacity = node.addComponent(UIOpacity);
         opacity.opacity = 0;
-        const label = this.createLabel(node, 'Label', text, 0, 0, 48, color, width - 110, 90);
+        const label = this.createLabel(node, 'Label', text, 0, textYOffset, 48, color, width - 110, 90);
         label.isBold = true;
+        const outline = label.node.addComponent(LabelOutline);
+        outline.color = VFX_TEXT_OUTLINE;
+        outline.width = 2;
         tween(opacity).to(0.14, { opacity: 255 }).delay(Math.max(0.08, duration - 0.32)).to(0.18, { opacity: 0 }).start();
         await this.tweenNode(node, 0.22, { scale: new Vec3(1, 1, 1) }, 'backOut');
         await this.waitSeconds(Math.max(0.12, duration - 0.22));
         if (node.isValid) node.destroy();
+    }
+
+    private showComboVfx(combo: number): void {
+        const safeRect = this.resolveSafeContentRect();
+        const width = Math.max(1, Math.min(560, safeRect.width - 32));
+        const tier = Math.min(combo, 5);
+        const finalScale = tier === 2 ? 0.86 : tier === 3 ? 0.94 : 1;
+        const fontSize = tier === 2 ? 38 : tier === 3 ? 42 : 46;
+        const node = this.createNode(this.node, `ComboVfx-${combo}`, safeRect.x, safeRect.y + 78, width, 220);
+        this.applySprite(node, 'comboBurst');
+        node.setScale(finalScale * 0.34, finalScale * 0.34, 1);
+        const opacity = node.addComponent(UIOpacity);
+        opacity.opacity = 0;
+        const label = this.createLabel(node, 'Label', `连斩 ×${combo}`, 0, 0, fontSize, COLORS.goldLight, width - 100, 74);
+        label.isBold = true;
+        const outline = label.node.addComponent(LabelOutline);
+        outline.color = VFX_TEXT_OUTLINE;
+        outline.width = 2;
+        tween(node)
+            .to(0.2, { scale: new Vec3(finalScale, finalScale, 1), angle: combo % 2 ? 1.5 : -1.5 }, { easing: 'backOut' })
+            .delay(0.56)
+            .to(0.18, { scale: new Vec3(finalScale * 0.78, finalScale * 0.78, 1) })
+            .start();
+        tween(opacity)
+            .to(0.1, { opacity: 255 })
+            .delay(0.7)
+            .to(0.16, { opacity: 0 })
+            .call(() => node.destroy())
+            .start();
     }
 
     private showTransientBanner(text: string, y: number, fontSize: number, color: Color, duration: number): void {
@@ -2267,6 +2314,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             custom: Object.freeze({
                 totalKills: snapshot.totalKills,
                 generalKills: snapshot.generalKills,
+                maxCombo: snapshot.maxCombo,
                 dangerHintsEnabled: this.dangerHintsEnabled,
                 completedRounds: Math.max(0, Number(previous?.custom?.completedRounds ?? 0)) + (finished ? 1 : 0),
             }),

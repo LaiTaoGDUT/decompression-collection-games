@@ -209,9 +209,9 @@ export function calculateChessEndlessLayout(
     const boardBottom = dockY + dockHeight / 2 + boardGap;
     // 高度充足时棋盘外框直接铺满安全内容宽度；矮屏仍由
     // fitBoardMetrics 的高度约束等比缩小。
-    // backplate 素材左右各有约 2% 透明留白，小幅放大节点来缩小
-    // 实际可见棋盘与屏幕的边距，透明像素仍不会溢出可见区。
-    const maxNodeWidth = Math.max(0, contentWidth + 40 * uiScale);
+    // backplate 素材两侧约有 4.1% 的透明阴影边缘。放大节点后，实体
+    // 棋盘边框恰好贴近左右安全边界，普通无横向安全区手机即为 0 边距。
+    const maxNodeWidth = Math.max(0, contentWidth + 68 * uiScale);
     // 棋盘节点始终对齐安全内容区中心；素材透明边缘只通过宽度补偿处理，
     // 避免横向偏移在真机上造成明显的左右不对称。
     const boardX = contentX;

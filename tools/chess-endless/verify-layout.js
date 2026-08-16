@@ -51,7 +51,7 @@ function calculate(device) {
     const boardTop = reinforcementY - reinforcementHeight / 2 - boardGap;
     const boardBottomLimit = dockY + dockHeight / 2 + boardGap;
     const slotHeight = Math.max(0, boardTop - boardBottomLimit);
-    const maxNodeWidth = Math.max(0, availableWidth + 40 * uiScale);
+    const maxNodeWidth = Math.max(0, availableWidth + 68 * uiScale);
     const boardScale = Math.max(0, Math.min(
         maxNodeWidth / BOARD_NODE_DESIGN_WIDTH,
         slotHeight / BOARD_NODE_DESIGN_HEIGHT,
@@ -121,8 +121,8 @@ for (const device of devices) {
     assert(reinforcementTop <= hudBottom - 10 * m.uiScale + 0.01, `${device.name}: reinforcement overlaps HUD.`);
     assert(m.reinforcementWidth <= m.availableWidth + 0.01, `${device.name}: reinforcement crosses a side boundary.`);
     assert(Math.abs(m.boardY + m.boardNodeHeight / 2 - m.boardTop) < 0.01, `${device.name}: board is not top-aligned below reinforcement.`);
-    assert(boardLeft >= safeLeftX - 20.5 * m.uiScale - 0.01, `${device.name}: board transparent bleed is too wide on the left.`);
-    assert(boardRight <= safeRightX + 20.5 * m.uiScale + 0.01, `${device.name}: board transparent bleed is too wide on the right.`);
+    assert(boardLeft >= safeLeftX - 34.5 * m.uiScale - 0.01, `${device.name}: board transparent bleed is too wide on the left.`);
+    assert(boardRight <= safeRightX + 34.5 * m.uiScale + 0.01, `${device.name}: board transparent bleed is too wide on the right.`);
     assert(m.boardTop <= reinforcementBottom - m.boardGap + 0.01, `${device.name}: board overlaps reinforcement.`);
     assert(boardBottom >= dockTop + m.boardGap - 0.01, `${device.name}: board overlaps item dock.`);
     assert(Math.abs(m.boardX - m.contentX) < 0.01, `${device.name}: board must be centered in the safe content area.`);
@@ -133,7 +133,7 @@ for (const device of devices) {
 const short = results.get('Extreme short portrait');
 const tall = results.get('Ultra tall portrait');
 assert(short.boardScale < tall.boardScale, 'Short screens must shrink the board more than tall screens.');
-assert(Math.abs(tall.boardNodeWidth - (tall.availableWidth + 40 * tall.uiScale)) < 0.01, 'Tall screens must compensate for the backplate transparent edge padding.');
+assert(Math.abs(tall.boardNodeWidth - (tall.availableWidth + 68 * tall.uiScale)) < 0.01, 'Tall screens must compensate for the backplate transparent edge padding.');
 assert(tall.boardY - tall.boardNodeHeight / 2 > tall.dockY + tall.dockHeight / 2 + 100, 'Tall screens must leave blank space below the board.');
 
 console.log(`chess_endless_layout=passed, devices=${devices.length}, safe_edges=passed, capsule=passed, top_anchor=passed, short_shrink=passed, tall_gap=passed`);
