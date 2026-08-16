@@ -63,7 +63,7 @@ const GAME_ID = 'chess-endless';
 const BUNDLE = 'game-chess-endless';
 const MOVE_DURATION = 0.15;
 const CAPTURE_DURATION = 0.24;
-const CHESS_MUSIC_VOLUME = 0.65;
+const CHESS_MUSIC_VOLUME = 0.5;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
 
@@ -820,7 +820,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         // The generated discs keep a transparent safety margin for particles and
         // shadows. Size the sprite node above one grid interval so the visible
         // wooden disc still reads clearly within one cell without overlapping.
-        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.18 : 1.13);
+        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.25 : 1.20);
         const point = this.boardPoint(at);
         const node = this.createNode(this.pieceLayer ?? this.node, name, point.x, point.y, diameter, diameter);
         this.applySprite(node, player ? 'piecePlayer' : PIECE_TEXTURE_KEY[type]);

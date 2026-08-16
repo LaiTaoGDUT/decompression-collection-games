@@ -174,7 +174,7 @@ assert((sourceCode.match(/outline\.color = VFX_TEXT_OUTLINE/g) ?? []).length ===
 assert(sourceCode.includes("showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320, -26)"), 'The general-arrival title must sit lower at the artwork visual center.');
 assert(sourceCode.includes('const helpSize = 31 * visualScale'), 'Item-list help icons must use the enlarged responsive size.');
 assert(sourceCode.includes("cardWidth * 0.31, cardHeight * 0.34, 32, 32"), 'Reward-item help icons must match the enlarged rule-icon treatment.');
-assert(sourceCode.includes('(general ? 1.18 : 1.13)'), 'Board pieces must use the slightly enlarged responsive diameter.');
+assert(sourceCode.includes('(general ? 1.25 : 1.20)'), 'Board pieces must use the slightly enlarged responsive diameter.');
 const chessMusicVolumeMatch = sourceCode.match(/const CHESS_MUSIC_VOLUME = ([0-9.]+);/);
 assert(chessMusicVolumeMatch, 'Chess must define a dedicated background-music volume.');
 const chessMusicVolume = Number(chessMusicVolumeMatch[1]);
