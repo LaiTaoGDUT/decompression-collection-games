@@ -9,8 +9,10 @@ import {
     EventTouch,
     Graphics,
     Label,
+    LabelOutline,
     Mask,
     Node,
+    ScrollView,
     Sprite,
     SpriteFrame,
     Texture2D,
@@ -33,7 +35,12 @@ import type { AdService } from '../../../services/ads/AdService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
-import { calculateTopRightControlPosition } from '../../../shared/ui/PlatformSafeLayout';
+import { ChessEndlessLayout } from './ChessEndlessLayout';
+import {
+    chessEndlessModalContentRect,
+    readChessEndlessViewport,
+    resolveChessEndlessModalPanelSize,
+} from './ChessEndlessResponsiveRules';
 import {
     BOARD_COLUMNS,
     BOARD_ROWS,
@@ -112,9 +119,7 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     pieceRook: 'visual/pieces/piece_enemy_rook/texture',
     pieceGeneral: 'visual/pieces/piece_enemy_general/texture',
     logo: 'visual/ui/img_logo/texture',
-    reinforcement: 'visual/ui/ui_reinforcement_panel/texture',
-    reinforcementV2: 'visual/ui/ui_reinforcement_panel_v2/texture',
-    reinforcementGeneral: 'visual/ui/ui_reinforcement_general/texture',
+    reinforcementV1: 'visual/ui/ui_reinforcement_panel_v1/texture',
     hudRibbon: 'visual/ui/ui_hud_ribbon/texture',
     modalPanel: 'visual/ui/ui_modal_panel/texture',
     rewardCard: 'visual/ui/ui_reward_card/texture',
@@ -135,12 +140,10 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     talisman: 'visual/vfx/vfx_talisman/texture',
     woodChip: 'visual/vfx/vfx_wood_chip/texture',
     captureBurst: 'visual/vfx/vfx_capture_burst/texture',
-    comboBurst: 'visual/vfx/vfx_combo_burst/texture',
     generalArrivalVfx: 'visual/vfx/vfx_general_arrival/texture',
     generalKillVfx: 'visual/vfx/vfx_general_kill/texture',
     generalGuardVfx: 'visual/vfx/vfx_general_guard/texture',
     crossSlashVfx: 'visual/vfx/vfx_cross_slash/texture',
-    rewardBeam: 'visual/vfx/vfx_reward_beam/texture',
     spawnShadow: 'visual/vfx/vfx_spawn_shadow/texture',
     dangerMarker: 'visual/vfx/vfx_danger_marker/texture',
     itemCrossVfx: 'visual/vfx/vfx_item_cross/texture',
@@ -159,7 +162,6 @@ const AUDIO_PATHS: Readonly<Record<string, string>> = Object.freeze({
     playerCapture: 'visual/audio/chess-player-capture-v1',
     enemyMove: 'visual/audio/chess-enemy-move-v1',
     playerKilled: 'visual/audio/chess-player-killed-v1',
-    reinforcementReady: 'visual/audio/chess-reinforcement-ready-v1',
     reinforcementDrop: 'visual/audio/chess-reinforcement-drop-v1',
     reinforcementWait: 'visual/audio/chess-reinforcement-wait-v1',
     generalWait: 'visual/audio/chess-general-wait-v1',
@@ -175,7 +177,6 @@ const AUDIO_PATHS: Readonly<Record<string, string>> = Object.freeze({
     itemBanish: 'visual/audio/chess-item-banish-v1',
     itemTeleport: 'visual/audio/chess-item-teleport-v1',
     itemHelp: 'visual/audio/chess-item-help-v1',
-    dangerWarning: 'visual/audio/chess-danger-warning-v1',
     generalGuard: 'visual/audio/chess-general-guard-v1',
     rewardClose: 'visual/audio/chess-reward-close-v1',
     revive: 'visual/audio/chess-revive-v1',
@@ -223,8 +224,6 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             '· 敌方回合只移动 1 枚棋。若有敌棋能够直接吃掉玩家，敌方一定优先执行击杀。',
             '· 所有可能被敌棋吃掉的格子会显示淡红危险标记，可在暂停面板关闭。',
             '· 增援的棋种和倒计时会提前公开。每批普通增援至少 2 枚；清空棋盘时下一批立即落场。',
-            '· 连续击杀会提高连斩倍率；走到空格会重置连斩。',
-            '· 同时威胁至少 3 枚敌棋时，会出现「好棋！威胁 N 个棋子」提示。',
             '· 斩杀将军可得高分；背包未满时会获得一次道具奖励选择。',
             '· 每局只有一次广告复活机会。复活会回到致死行动前并自动释放十字斩。',
         ].join('\n'),
@@ -234,7 +233,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
         body: [
             '卒：上下左右移动 1 格，贴近玩家时可直接击杀。',
             '',
-            '士：斜向移动 1 格，不受传统九宫限制；将军受威胁时会优先护将或堵线。',
+            '士：斜向移动 1 格，不受传统九宫限制。',
             '',
             '象：斜向移动 2 格；中心的「象眼」有棋子时不能通过。',
             '',
@@ -244,7 +243,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             '',
             '敌車：沿横向或纵向移动任意格，路径不能有棋子。',
             '',
-            '将：上下左右移动 1 格。受到威胁时，守军会优先尝试挡在将军身边，再考虑将军移动。',
+            '将：上下左右移动 1 格。',
             '',
             '点击棋盘上的任意敌棋，可随时打开对应走法说明。',
         ].join('\n'),
@@ -289,7 +288,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private reinforcementArtwork?: Node;
     private scoreLabel?: Label;
     private bestLabel?: Label;
-    private comboLabel?: Label;
     private hintLabel?: Label;
     private selectedPlayer = false;
     private selectedItem?: ItemType;
@@ -308,6 +306,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private infoOverlay?: OverlayState;
     private completedResultModel?: MiniGameResultModel;
     private resizeQueued = false;
+    private layout?: ChessEndlessLayout;
     private dangerHintsEnabled = true;
     private rulesPageIndex = 0;
     private readonly rewardCardNodes = new Map<ItemType, Node>();
@@ -317,9 +316,17 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.context = context;
         this.readSave();
         this.clearChildren(this.node);
+        this.layout = this.node.getComponent(ChessEndlessLayout) ?? this.node.addComponent(ChessEndlessLayout);
+        this.layout.setPlatformLayout(context.services.platform.getLayoutInfo());
+        this.layout.setLayoutChangeHandler(this.handleLayoutChange);
         await Promise.all([this.loadTextures(), this.loadAudio()]);
         this.buildInterface();
-        view.on('canvas-resize', this.handleCanvasResize, this);
+        this.scheduleOnce(() => {
+            if (this.lifecycle === 'disposed') return;
+            this.layout?.applyLayout();
+            this.buildInterface();
+            this.renderAll();
+        }, 0);
         this.lifecycle = 'ready';
         this.installQaBridge();
     }
@@ -388,7 +395,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     async dispose(): Promise<void> {
         if (this.lifecycle === 'disposed') return;
         this.lifecycle = 'disposed';
-        view.off('canvas-resize', this.handleCanvasResize, this);
         Tween.stopAll();
         this.destroyAllOverlays();
         this.context?.services.audio.stopMusic();
@@ -403,26 +409,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
     showPauseMenu(model: MiniGamePauseModel): void {
         this.hidePauseMenu();
         const snapshot = this.model.snapshot;
-        this.pauseOverlay = this.buildModal(
-            'PauseOverlay',
-            '棋局暂歇',
-            '暂停',
-            `当前得分 ${snapshot.score}\n增援与棋局都已冻结`,
-            [
-                { label: '继续棋局', tone: 'jade', action: model.resume },
-                {
-                    label: `危险点提示：${this.dangerHintsEnabled ? '开启' : '关闭'}`,
-                    tone: 'paper',
-                    action: () => {
-                        this.dangerHintsEnabled = !this.dangerHintsEnabled;
-                        this.persistProgress(false);
-                        this.renderAll();
-                        this.showPauseMenu(model);
-                    },
-                },
-                { label: '重新开始', tone: 'cinnabar', action: model.restart },
-                { label: '返回游戏大厅', tone: 'paper', action: model.exit },
-            ],
+        this.pauseOverlay = this.buildPauseModal(
+            snapshot.score,
+            model,
         );
     }
 
@@ -437,13 +426,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const extra = model.result.extra ?? {};
         const turns = typeof extra.turns === 'number' ? Math.floor(extra.turns) : 0;
         const generals = typeof extra.generalKills === 'number' ? Math.floor(extra.generalKills) : 0;
-        const combo = typeof extra.maxCombo === 'number' ? Math.floor(extra.maxCombo) : 0;
         const newRecord = extra.newRecord === true;
         this.resultOverlay = this.buildModal(
             'ResultOverlay',
             '本局落幕',
             newRecord ? '新纪录' : '棋局结束',
-            `${model.result.score.toLocaleString()} 分\n生存 ${turns} 回合 · 斩将 ${generals} · 最大连斩 ×${combo}`,
+            `${model.result.score.toLocaleString()} 分\n生存 ${turns} 回合 · 斩将 ${generals}`,
             [
                 {
                     label: '查看最后残局', tone: 'jade', action: () => {
@@ -465,107 +453,209 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private buildInterface(): void {
         this.clearChildren(this.node);
-        const visible = view.getVisibleSize();
-        const canvasSize = this.node.parent?.getComponent(UITransform)?.contentSize;
-        const width = Math.max(600, canvasSize?.width ?? 0, visible.width);
-        const height = Math.max(1050, canvasSize?.height ?? 0, visible.height);
-        this.node.getComponent(UITransform)?.setContentSize(width, height);
-        const layout = this.context?.services.platform.getLayoutInfo();
-        const safeTop = Math.max(0, layout?.safeArea.top ?? 0);
-        const safeBottom = Math.max(0, height - (layout?.safeArea.bottom ?? height));
-        const safeLeft = Math.max(0, layout?.safeArea.left ?? 0);
-        const safeRight = Math.max(0, width - (layout?.safeArea.right ?? width));
-        const reservedBottom = layout?.topRightReservedArea?.bottom ?? 0;
-        const topInset = Math.max(safeTop + 12, reservedBottom > 0 ? reservedBottom + 18 : 0);
-        const contentTop = height / 2 - topInset;
-        const contentBottom = -height / 2 + safeBottom;
+        const metrics = this.layout?.getMetrics();
+        if (!metrics) {
+            return;
+        }
 
-        // The browser preview and some WeChat devices can expose a wider camera
-        // viewport than the FIXED_WIDTH design resolution.  Bleed the decorative
-        // background well past the UI root so no clear-colour gutters are visible.
-        const background = this.createNode(this.node, 'Background', 0, 0, width + 320, height + 160);
+        const {
+            pauseX,
+            pauseY,
+            topHudY,
+            contentWidth,
+            reinforcementWidth,
+            reinforcementScale,
+            reinforcementHeight,
+            reinforcementY,
+            dockHeight,
+            dockY,
+            boardY,
+            boardNodeWidth,
+            boardNodeHeight,
+            surfaceWidth,
+            surfaceHeight,
+            backgroundWidth,
+            backgroundHeight,
+        } = metrics;
+
+        const background = this.createNode(this.node, 'Background', 0, 0, backgroundWidth, backgroundHeight);
+        background.setSiblingIndex(0);
         this.applySprite(background, 'background');
 
-        const hudWidth = Math.min(700, width - safeLeft - safeRight - 26);
-        const topHudY = contentTop - 53;
-        const topHud = this.createNode(this.node, 'TopHud', 0, topHudY, hudWidth, 106);
-        this.applySprite(topHud, 'hudRibbon');
-
-        const headerLogo = this.createNode(this.node, 'HeaderLogo', -hudWidth / 2 + 130, topHudY + 1, 220, 70);
-        this.applySprite(headerLogo, 'logo');
-
-        const pausePosition = calculateTopRightControlPosition(
-            width,
-            height,
-            this.context?.services.platform.getLayoutInfo(),
-            { controlWidth: 58, controlHeight: 58, rightInset: safeRight + 40, defaultTopInset: topInset + 48, reservedGap: 14 },
+        const headerBrandWidth = Math.max(1, Math.min(214, contentWidth - 16));
+        const headerBrandHeight = 96 * (headerBrandWidth / 214);
+        const headerBrandPaddingX = 18;
+        const headerBrandPaddingY = 14;
+        const headerLogoWidth = 166 * (headerBrandWidth / 214);
+        const headerLogoHeight = 50 * (headerBrandWidth / 214);
+        const innerTop = headerBrandHeight / 2 - headerBrandPaddingY;
+        const innerBottom = -headerBrandHeight / 2 + headerBrandPaddingY;
+        const headerBrandX = -contentWidth / 2 + headerBrandWidth / 2 + 8;
+        const headerBrandY = topHudY - 6;
+        const headerBrand = this.createNode(this.node, 'HeaderBrand', headerBrandX, headerBrandY, headerBrandWidth, headerBrandHeight);
+        const headerBackplate = this.createNode(headerBrand, 'Backplate', 0, 0, headerBrandWidth, headerBrandHeight);
+        this.applySprite(headerBackplate, 'hudRibbon');
+        const headerLogo = this.createNode(
+            headerBrand,
+            'HeaderLogo',
+            0,
+            innerTop - headerLogoHeight / 2,
+            headerLogoWidth,
+            headerLogoHeight,
         );
-        this.createImageButton('PauseButton', 'pauseIcon', pausePosition.x, pausePosition.y, 58, () => {
+        this.applySprite(headerLogo, 'logo');
+        const bestLabelHeight = 24;
+        this.bestLabel = this.createLabel(
+            headerBrand,
+            'BestScore',
+            `纪录 ${this.bestScore.toLocaleString()}`,
+            0,
+            innerBottom + bestLabelHeight / 2,
+            16,
+            COLORS.goldLight,
+            headerBrandWidth - headerBrandPaddingX * 2,
+            bestLabelHeight,
+        );
+        this.bestLabel.horizontalAlign = 1;
+        const bestOutline = this.bestLabel.node.addComponent(LabelOutline);
+        bestOutline.color = new Color(18, 36, 32, 235);
+        bestOutline.width = 2;
+
+        this.createImageButtonOn(this.node, 'PauseButton', 'pauseIcon', pauseX, pauseY, 58, () => {
             if (!this.inputLocked) {
                 this.playSound('uiClick', 0.6);
                 this.context?.requestPause();
             }
         });
-        this.createImageButton('RulesButton', 'rulesIcon', pausePosition.x - 68, pausePosition.y, 58, () => this.showRules());
+        this.createImageButtonOn(
+            this.node,
+            'RulesButton',
+            'rulesIcon',
+            Math.max(-contentWidth / 2 + 29, pauseX - 68),
+            pauseY,
+            58,
+            () => this.showRules(),
+        );
 
-        this.scoreLabel = this.createLabel(this.node, 'Score', '0', 28, topHudY + 8, 39, COLORS.goldLight, 190, 48);
-        this.createLabel(this.node, 'ScoreTitle', '本局得分', 28, topHudY - 28, 18, new Color(231, 209, 157, 230), 150, 26);
-        this.bestLabel = this.createLabel(this.node, 'BestScore', `纪录 ${this.bestScore}`, -hudWidth / 2 + 126, topHudY - 35, 17, new Color(231, 209, 157, 220), 210, 25);
+        const scoreBlockWidth = Math.min(320, contentWidth);
+        this.scoreLabel = this.createLabel(this.node, 'Score', '0', 0, topHudY + 12, 48, COLORS.goldLight, scoreBlockWidth, 58);
+        const scoreOutline = this.scoreLabel.node.addComponent(LabelOutline);
+        scoreOutline.color = new Color(45, 25, 12, 210);
+        scoreOutline.width = 2;
+        const scoreTitle = this.createLabel(this.node, 'ScoreTitle', '本局得分', 0, topHudY - 30, 20, COLORS.white, scoreBlockWidth, 28);
+        const scoreTitleOutline = scoreTitle.node.addComponent(LabelOutline);
+        scoreTitleOutline.color = new Color(45, 25, 12, 210);
+        scoreTitleOutline.width = 2;
 
-        const reinforcementWidth = Math.min(696, width - safeLeft - safeRight - 38);
-        const reinforcementY = topHudY - 112;
-        this.reinforcementNode = this.createNode(this.node, 'ReinforcementPanel', 0, reinforcementY, reinforcementWidth, 116);
-        this.reinforcementArtwork = this.createNode(this.reinforcementNode, 'Artwork', 0, 0, reinforcementWidth, 116);
-        this.applySprite(this.reinforcementArtwork, 'reinforcementV2');
-        const separator = this.createNode(this.reinforcementNode, 'Separator', -92, 0, 2, 70);
-        const separatorGraphics = separator.addComponent(Graphics);
-        separatorGraphics.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 125);
-        separatorGraphics.lineWidth = 2;
-        separatorGraphics.moveTo(0, -36);
-        separatorGraphics.lineTo(0, 36);
-        separatorGraphics.stroke();
-        this.reinforcementTitle = this.createLabel(this.reinforcementNode, 'Title', '下一批增援', -222, 18, 20, COLORS.muted, 224, 30);
-        this.reinforcementStatus = this.createLabel(this.reinforcementNode, 'Status', '', -222, -20, 25, COLORS.ink, 230, 36);
-        this.reinforcementPreview = this.createNode(this.reinforcementNode, 'PreviewPieces', 112, 0, 360, 78);
+        this.reinforcementNode = this.createNode(
+            this.node,
+            'ReinforcementPanel',
+            0,
+            reinforcementY,
+            reinforcementWidth,
+            reinforcementHeight,
+        );
+        const reinforcementArtworkWidth = 232 * reinforcementScale;
+        this.reinforcementArtwork = this.createNode(
+            this.reinforcementNode,
+            'Artwork',
+            0,
+            0,
+            reinforcementArtworkWidth,
+            reinforcementHeight,
+        );
+        this.applySprite(this.reinforcementArtwork, 'reinforcementV1');
+        const reinforcementLabelWidth = 112 * reinforcementScale;
+        const reinforcementLabelGap = 4;
+        const reinforcementTitleLine = Math.round(16 * 1.38 * reinforcementScale);
+        const reinforcementStatusLine = Math.round(20 * 1.38 * reinforcementScale);
+        const reinforcementLabelBlockHeight = reinforcementTitleLine + reinforcementLabelGap + reinforcementStatusLine;
+        const reinforcementLabelTitleY = (reinforcementStatusLine + reinforcementLabelGap) / 2;
+        const reinforcementLabelStatusY = -(reinforcementTitleLine + reinforcementLabelGap) / 2;
+        const reinforcementContentCenterY = 14 * reinforcementScale;
+        const reinforcementLabels = this.createNode(
+            this.reinforcementArtwork,
+            'Labels',
+            -(reinforcementArtworkWidth / 2 + reinforcementLabelWidth / 2 + 8),
+            reinforcementContentCenterY,
+            reinforcementLabelWidth,
+            reinforcementLabelBlockHeight,
+        );
+        this.reinforcementTitle = this.createLabel(
+            reinforcementLabels,
+            'Title',
+            '下一批增援',
+            0,
+            reinforcementLabelTitleY,
+            16,
+            COLORS.goldLight,
+            reinforcementLabelWidth,
+            reinforcementTitleLine,
+        );
+        this.reinforcementTitle.horizontalAlign = 2;
+        const titleOutline = this.reinforcementTitle.node.addComponent(LabelOutline);
+        titleOutline.color = new Color(45, 25, 12, 235);
+        titleOutline.width = 2;
+        this.reinforcementStatus = this.createLabel(
+            reinforcementLabels,
+            'Status',
+            '',
+            0,
+            reinforcementLabelStatusY,
+            20,
+            COLORS.white,
+            reinforcementLabelWidth,
+            reinforcementStatusLine,
+        );
+        this.reinforcementStatus.horizontalAlign = 2;
+        const statusOutline = this.reinforcementStatus.node.addComponent(LabelOutline);
+        statusOutline.color = new Color(45, 25, 12, 235);
+        statusOutline.width = 2;
+        this.reinforcementPreview = this.createNode(
+            this.reinforcementArtwork,
+            'PreviewPieces',
+            0,
+            reinforcementContentCenterY,
+            196 * reinforcementScale,
+            72 * reinforcementScale,
+        );
 
-        const dockHeight = 184;
-        const dockY = contentBottom + dockHeight / 2;
-        const boardTop = reinforcementY - 78;
-        const boardBottom = dockY + dockHeight / 2 + 24;
-        const availableBoardHeight = Math.max(450, boardTop - boardBottom);
-        const maxGridWidth = Math.max(390, width - safeLeft - safeRight - 150);
-        const boardWidth = Math.min(610, maxGridWidth, (availableBoardHeight - 98) * 8 / 9);
-        const boardHeight = boardWidth * 9 / 8;
-        const topEdge = boardTop;
-        const bottomEdge = boardBottom;
-        const boardY = (topEdge + bottomEdge) / 2;
-        this.boardNode = this.createNode(this.node, 'Board', 0, boardY, boardWidth + 104, boardHeight + 104);
+        this.boardNode = this.createNode(this.node, 'Board', 0, boardY, boardNodeWidth, boardNodeHeight);
         this.applySprite(this.boardNode, 'boardBackplate');
-        const boardSurface = this.createNode(this.boardNode, 'BoardSurface', 0, 0, boardWidth, boardHeight);
+        const boardSurface = this.createNode(this.boardNode, 'BoardSurface', 0, 0, surfaceWidth, surfaceHeight);
         this.applySprite(boardSurface, 'board');
-        this.gridNode = this.createNode(boardSurface, 'Grid', 0, 0, boardWidth, boardHeight);
-        this.drawBoardGrid(this.gridNode, boardWidth, boardHeight);
-        this.dangerLayer = this.createNode(boardSurface, 'DangerLayer', 0, 0, boardWidth, boardHeight);
-        this.underPieceEffectLayer = this.createNode(boardSurface, 'UnderPieceEffectLayer', 0, 0, boardWidth, boardHeight);
-        this.moveLayer = this.createNode(boardSurface, 'MoveLayer', 0, 0, boardWidth, boardHeight);
-        this.pieceLayer = this.createNode(boardSurface, 'PieceLayer', 0, 0, boardWidth, boardHeight);
-        this.effectLayer = this.createNode(boardSurface, 'EffectLayer', 0, 0, boardWidth, boardHeight);
-        this.createBoardHitTargets(boardSurface, boardWidth, boardHeight);
+        this.gridNode = this.createNode(boardSurface, 'Grid', 0, 0, surfaceWidth, surfaceHeight);
+        this.drawBoardGrid(this.gridNode, surfaceWidth, surfaceHeight);
+        this.dangerLayer = this.createNode(boardSurface, 'DangerLayer', 0, 0, surfaceWidth, surfaceHeight);
+        this.underPieceEffectLayer = this.createNode(boardSurface, 'UnderPieceEffectLayer', 0, 0, surfaceWidth, surfaceHeight);
+        this.moveLayer = this.createNode(boardSurface, 'MoveLayer', 0, 0, surfaceWidth, surfaceHeight);
+        this.pieceLayer = this.createNode(boardSurface, 'PieceLayer', 0, 0, surfaceWidth, surfaceHeight);
+        this.effectLayer = this.createNode(boardSurface, 'EffectLayer', 0, 0, surfaceWidth, surfaceHeight);
+        this.createBoardHitTargets(boardSurface, surfaceWidth, surfaceHeight);
 
-        this.comboLabel = undefined;
         this.hintLabel = undefined;
 
-        this.itemDock = this.createNode(this.node, 'ItemDock', 0, dockY, width - safeLeft - safeRight, dockHeight);
+        this.itemDock = this.createNode(this.node, 'ItemDock', 0, dockY, contentWidth, dockHeight);
         const dockGraphics = this.itemDock.addComponent(Graphics);
-        dockGraphics.fillColor = new Color(14, 43, 37, 232);
-        dockGraphics.roundRect(-(width - safeLeft - safeRight - 28) / 2, -dockHeight / 2 + 5, width - safeLeft - safeRight - 28, dockHeight - 10, 28);
-        dockGraphics.fill();
-        dockGraphics.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 125);
-        dockGraphics.lineWidth = 2;
-        dockGraphics.moveTo(-(width - safeLeft - safeRight - 50) / 2, dockHeight / 2 - 14);
-        dockGraphics.lineTo((width - safeLeft - safeRight - 50) / 2, dockHeight / 2 - 14);
+        dockGraphics.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 115);
+        dockGraphics.lineWidth = 1.5;
+        const dockRuleWidth = Math.max(0, contentWidth - 24);
+        dockGraphics.moveTo(-dockRuleWidth / 2, dockHeight / 2 - 14);
+        dockGraphics.lineTo(dockRuleWidth / 2, dockHeight / 2 - 14);
         dockGraphics.stroke();
-        this.createLabel(this.itemDock, 'DockTitle', '每回合最多使用 1 件道具', 0, 65, 18, COLORS.goldLight, width - safeLeft - safeRight - 70, 28);
+        const dockTitleY = dockHeight / 2 - Math.min(32, dockHeight * 0.24);
+        const dockTitleFontSize = Math.max(12, Math.min(18, Math.round(dockHeight * 0.105)));
+        this.createLabel(
+            this.itemDock,
+            'DockTitle',
+            '每回合最多使用 1 件道具',
+            0,
+            dockTitleY,
+            dockTitleFontSize,
+            COLORS.goldLight,
+            Math.max(1, contentWidth - 32),
+            Math.max(20, dockTitleFontSize * 1.6),
+        );
     }
 
     private drawBoardGrid(node: Node, width: number, height: number): void {
@@ -632,10 +722,22 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (preview) {
             this.clearChildren(preview);
             const types = snapshot.queuedReinforcement.types;
-            const gap = Math.min(66, 270 / Math.max(1, types.length));
+            const count = types.length;
+            let pieceSize = 60;
+            let gap = 10;
+            if (count >= 5) {
+                pieceSize = 34;
+                gap = 4;
+            } else if (count >= 4) {
+                pieceSize = 44;
+                gap = 6;
+            } else if (count === 3) {
+                pieceSize = 50;
+                gap = 8;
+            }
             types.forEach((type, index) => {
-                const x = (index - (types.length - 1) / 2) * gap;
-                const piece = this.createNode(preview, `Preview-${type}-${index}`, x, 0, 64, 64);
+                const x = (index - (count - 1) / 2) * (pieceSize + gap);
+                const piece = this.createNode(preview, `Preview-${type}-${index}`, x, 6, pieceSize, pieceSize);
                 this.applySprite(piece, PIECE_TEXTURE_KEY[type]);
             });
         }
@@ -644,16 +746,16 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const general = snapshot.queuedReinforcement.kind === 'general';
         if (this.reinforcementTitle) {
             this.reinforcementTitle.string = general ? '将军来袭' : '下一批增援';
-            this.reinforcementTitle.color = general ? COLORS.cinnabar : COLORS.muted;
+            this.reinforcementTitle.color = general ? COLORS.cinnabar : COLORS.goldLight;
         }
         if (this.reinforcementArtwork) {
-            this.applySprite(this.reinforcementArtwork, general ? 'reinforcementGeneral' : 'reinforcementV2');
+            this.applySprite(this.reinforcementArtwork, 'reinforcementV1');
         }
         if (this.reinforcementStatus) {
             this.reinforcementStatus.string = waiting
                 ? (general ? '将军待降' : '等待入场')
                 : `${snapshot.reinforcementTimer} 回合后`;
-            this.reinforcementStatus.color = general || waiting ? COLORS.cinnabar : COLORS.ink;
+            this.reinforcementStatus.color = general || waiting ? COLORS.cinnabar : COLORS.white;
         }
     }
 
@@ -694,7 +796,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         // The generated discs keep a transparent safety margin for particles and
         // shadows. Size the sprite node above one grid interval so the visible
         // wooden disc still reads at roughly 80% of a cell without overlapping.
-        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.1 : 1.04);
+        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.14 : 1.09);
         const point = this.boardPoint(at);
         const node = this.createNode(this.pieceLayer ?? this.node, name, point.x, point.y, diameter, diameter);
         this.applySprite(node, player ? 'piecePlayer' : PIECE_TEXTURE_KEY[type]);
@@ -736,10 +838,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const node = this.createNode(layer, `Move-${target.column}-${target.row}`, point.x, point.y, 22, 22);
             const graphics = node.addComponent(Graphics);
             const capture = enemies.some((piece) => same(piece.position, target));
-            graphics.fillColor = capture ? new Color(164, 55, 43, 142) : new Color(80, 137, 111, 118);
+            graphics.fillColor = capture ? new Color(164, 55, 43, 142) : new Color(80, 137, 111, 150);
             graphics.circle(0, 0, capture ? 7 : 4.5);
             graphics.fill();
-            graphics.strokeColor = capture ? new Color(255, 221, 163, 135) : new Color(226, 208, 160, 92);
+            graphics.strokeColor = capture ? new Color(255, 221, 163, 135) : new Color(226, 208, 160, 118);
             graphics.lineWidth = 1.2;
             graphics.circle(0, 0, capture ? 11 : 8);
             graphics.stroke();
@@ -753,46 +855,102 @@ export class ChessEndlessGame extends Component implements MiniGame {
             child.removeFromParent();
             child.destroy();
         });
+
         const types: readonly ItemType[] = ['crossSlash', 'freeze', 'delay', 'banish', 'teleport'];
-        const width = this.node.getComponent(UITransform)?.contentSize.width ?? 750;
-        const totalWidth = Math.min(610, width - 82);
-        const buttonWidth = totalWidth / 5;
+        const width = this.layout?.getMetrics().contentWidth
+            ?? this.node.getComponent(UITransform)?.contentSize.width
+            ?? 750;
+        const dockHeight = dock.getComponent(UITransform)?.contentSize.height ?? 176;
+        const totalWidth = Math.max(1, Math.min(610, width - 24));
+        const cellWidth = totalWidth / types.length;
+        const visualScale = Math.max(0.1, Math.min(
+            1,
+            (cellWidth - 6) / 112,
+            Math.max(1, dockHeight - 38) / 128,
+        ));
+        const buttonGap = Math.max(3, 9 * visualScale);
+        const buttonWidth = Math.max(1, cellWidth - buttonGap);
+        const buttonHeight = Math.max(1, 128 * visualScale);
+        const buttonY = -Math.min(11, dockHeight * 0.07);
+        const cornerRadius = Math.max(5, 14 * visualScale);
+        const slotSize = 88 * visualScale;
+        const iconSize = 76 * visualScale;
+        const badgeSize = 32 * visualScale;
+        const helpSize = 27 * visualScale;
+        const nameFontSize = Math.max(11, Math.round(19 * visualScale));
+        const countFontSize = Math.max(10, Math.round(18 * visualScale));
+
         types.forEach((type, index) => {
-            const x = -totalWidth / 2 + buttonWidth / 2 + index * buttonWidth;
-            const button = this.createNode(dock, `Item-${type}`, x, -11, buttonWidth - 9, 128);
+            const x = -totalWidth / 2 + cellWidth / 2 + index * cellWidth;
+            const button = this.createNode(dock, `Item-${type}`, x, buttonY, buttonWidth, buttonHeight);
             const graphics = button.addComponent(Graphics);
             const active = this.selectedItem === type;
             const available = snapshot.inventory[type] > 0 && !snapshot.usedItemThisTurn;
             graphics.fillColor = active
-                ? new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 96)
-                : new Color(255, 255, 255, available ? 22 : 11);
-            graphics.strokeColor = active ? COLORS.goldLight : new Color(222, 199, 148, available ? 98 : 48);
-            graphics.lineWidth = active ? 2.5 : 1;
-            graphics.roundRect(-(buttonWidth - 9) / 2, -64, buttonWidth - 9, 128, 12);
+                ? new Color(COLORS.cinnabar.r, COLORS.cinnabar.g, COLORS.cinnabar.b, 220)
+                : available
+                ? new Color(COLORS.cinnabar.r, COLORS.cinnabar.g, COLORS.cinnabar.b, 168)
+                : new Color(COLORS.cinnabar.r, COLORS.cinnabar.g, COLORS.cinnabar.b, 92);
+            graphics.strokeColor = active
+                ? COLORS.goldLight
+                : new Color(COLORS.goldLight.r, COLORS.goldLight.g, COLORS.goldLight.b, available ? 168 : 72);
+            graphics.lineWidth = active ? 2.5 : 1.2;
+            graphics.roundRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, cornerRadius);
             graphics.fill();
             graphics.stroke();
-            const slotArt = this.createNode(button, 'SlotArtwork', 0, 18, 88, 88);
+
+            const slotY = 18 * visualScale;
+            const slotArt = this.createNode(button, 'SlotArtwork', 0, slotY, slotSize, slotSize);
             this.applySprite(slotArt, 'itemSlot');
             slotArt.getComponent(Sprite)!.color = available
                 ? new Color(255, 255, 255, 176)
                 : new Color(166, 151, 120, 110);
-            const icon = this.createNode(button, 'Icon', 0, 19, 76, 76);
+
+            const icon = this.createNode(button, 'Icon', 0, 19 * visualScale, iconSize, iconSize);
             this.applySprite(icon, ITEM_ICON_KEY[type]);
             icon.getComponent(Sprite)!.color = available ? Color.WHITE : new Color(188, 181, 163, 192);
-            this.createLabel(button, 'Name', ITEM_DISPLAY[type].replace('符', ''), 0, -39, 19, available ? COLORS.white : new Color(205, 197, 174, 190), buttonWidth - 14, 30);
-            const badge = this.createNode(button, 'CountBadge', -buttonWidth / 2 + 20, 49, 32, 32);
+
+            this.createLabel(
+                button,
+                'Name',
+                ITEM_DISPLAY[type].replace('符', ''),
+                0,
+                -39 * visualScale,
+                nameFontSize,
+                available ? COLORS.white : new Color(205, 197, 174, 190),
+                Math.max(1, buttonWidth - 10 * visualScale),
+                Math.max(18, 30 * visualScale),
+            );
+
+            const badgeX = -buttonWidth / 2 + badgeSize / 2 + 4 * visualScale;
+            const badgeY = buttonHeight / 2 - badgeSize / 2 - 4 * visualScale;
+            const badge = this.createNode(button, 'CountBadge', badgeX, badgeY, badgeSize, badgeSize);
             const badgeGraphics = badge.addComponent(Graphics);
             badgeGraphics.fillColor = available ? COLORS.cinnabar : new Color(82, 80, 73, 210);
-            badgeGraphics.circle(0, 0, 16);
+            badgeGraphics.circle(0, 0, badgeSize / 2);
             badgeGraphics.fill();
-            this.createLabel(badge, 'Count', String(snapshot.inventory[type]), 0, 0, 18, COLORS.white, 30, 28);
-            const help = this.createNode(button, 'Help', buttonWidth / 2 - 19, 43, 27, 27);
+            this.createLabel(
+                badge,
+                'Count',
+                String(snapshot.inventory[type]),
+                0,
+                0,
+                countFontSize,
+                COLORS.white,
+                Math.max(1, badgeSize - 2),
+                Math.max(1, badgeSize - 4),
+            );
+
+            const helpX = buttonWidth / 2 - helpSize / 2 - 4 * visualScale;
+            const helpY = buttonHeight / 2 - helpSize / 2 - 5 * visualScale;
+            const help = this.createNode(button, 'Help', helpX, helpY, helpSize, helpSize);
             this.applySprite(help, 'helpIcon');
             help.addComponent(Button);
             help.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
                 event.propagationStopped = true;
                 this.showItemHelp(type);
             }, this);
+
             button.addComponent(Button).interactable = available;
             button.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
                 event.propagationStopped = true;
@@ -876,8 +1034,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         if (enemy) {
             this.showPieceInfo(enemy.type);
-        } else {
-            this.setHint('请选择淡色合法落点');
         }
     }
 
@@ -946,7 +1102,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             );
         }
         this.renderAll();
-        this.showMoveFeedback(result);
         if (result.generalKilled) await this.showGeneralKillMoment();
         if (result.immediateSpawned.length > 0) {
             this.playSound('reinforcementDrop');
@@ -964,7 +1119,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (this.model.snapshot.phase !== 'enemy') return;
         await this.waitSeconds(0.1);
         const before = this.model.snapshot;
-        const generalWasThreatened = this.model.getThreatenedEnemies().some((piece) => piece.type === 'general');
         const result = this.model.resolveEnemyTurn();
         if (result.moved) {
             const moving = this.pieceLayer?.getChildByName(`Enemy-${result.moved.pieceId}`);
@@ -983,14 +1137,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             return;
         }
 
-        const generalIsThreatened = this.model.getThreatenedEnemies().some((piece) => piece.type === 'general');
-        if (generalWasThreatened && !generalIsThreatened && result.moved && result.moved.type !== 'general') {
-            this.playSound('generalGuard', 0.76);
-            const point = this.boardPoint(result.moved.to);
-            void this.showBoardVfx('generalGuardVfx', point.x, point.y, 156, 0.44);
-            this.showTransientBanner('护将！守军优先堵线', -112, 23, COLORS.goldLight, 0.82);
-        }
-
         this.renderAll();
         if (result.spawned.length > 0) {
             this.playSound('reinforcementDrop');
@@ -1001,8 +1147,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         } else if (result.enteredWaiting) {
             this.playSound(before.queuedReinforcement.kind === 'general' ? 'generalWait' : 'reinforcementWait', 0.75);
             this.setHint(before.queuedReinforcement.kind === 'general' ? '棋盘拥挤：将军待降' : '棋盘拥挤：本批增援等待入场');
-        } else if (this.model.snapshot.reinforcementTimer === 1) {
-            this.playSound('reinforcementReady', 0.58);
         }
         this.renderAll();
         this.inputLocked = false;
@@ -1109,7 +1253,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async showGeneralArrival(): Promise<void> {
         this.duckMusic('generalArrive', 1.45);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320);
+        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.cinnabar, 0.95, 620, 320);
         const general = this.model.snapshot.enemies.find((piece) => piece.type === 'general');
         if (general) {
             const point = this.boardPoint(general.position);
@@ -1120,15 +1264,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async showGeneralKillMoment(): Promise<void> {
         this.duckMusic('generalKill', 1.0);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.goldLight, 0.9, 650, 350);
-    }
-
-    private showMoveFeedback(result: PlayerMoveResult): void {
-        if (result.combo >= 2) this.showComboVfx(result.combo);
-        if (result.threatCount >= 3) {
-            this.playSound('dangerWarning', 0.48);
-            this.showTransientBanner(`好棋！威胁 ${result.threatCount} 个棋子`, -94, 24, COLORS.goldLight, 0.85);
-        }
+        await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.cinnabar, 0.9, 650, 350);
     }
 
     private async animatePlayerDeath(): Promise<void> {
@@ -1195,7 +1331,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.inputLocked = false;
             this.selectedPlayer = true;
             this.renderAll();
-            this.setHint('复活成功：十字斩已释放，轮到你走棋');
+            this.setHint('复活成功，轮到你走棋');
         }
     }
 
@@ -1232,29 +1368,49 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private buildRewardPanel(overlay: Node, animateFromChest: boolean): void {
         const choices = this.model.snapshot.pendingRewardChoices;
-        const panel = this.createNode(overlay, 'Panel', 0, 20, 620, 590);
+        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const cardWidth = choices.length >= 3 ? 156 : 168;
+        const cardHeight = Math.round(cardWidth * (430 / 300));
+        const cardEdgeGap = choices.length >= 3 ? 10 : 16;
+        const cardGap = choices.length <= 1 ? 0 : cardWidth + cardEdgeGap;
+        const cardRowWidth = choices.length <= 1 ? cardWidth : (choices.length - 1) * cardGap + cardWidth;
+        const cardRowHeight = cardHeight + 24;
+        const headerHeight = 132;
+        const cardsTopGap = 18;
+        const bottomPadding = 22;
+        const panelSize = resolveChessEndlessModalPanelSize(
+            cardRowWidth,
+            headerHeight + cardsTopGap + cardRowHeight + bottomPadding,
+            rootSize,
+        );
+        const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', 0, 20, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
         if (animateFromChest) {
             panel.setPosition(0, -44);
             panel.setScale(0.12, 0.12, 1);
             tween(panel).to(0.34, { position: new Vec3(0, 20, 0), scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
         }
-        this.createLabel(panel, 'Kicker', '斩将奖励', 0, 243, 20, COLORS.cinnabar, 400, 32);
-        this.createLabel(panel, 'Title', '择一道具', 0, 198, 42, COLORS.ink, 520, 56);
-        this.createLabel(panel, 'Description', '每种最多持有 2 件 · 点 ? 查看说明', 0, 158, 21, COLORS.muted, 520, 34);
+        let cursorY = content.top - 18;
+        this.createLabel(panel, 'Kicker', '斩将奖励', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 30);
+        cursorY -= 38;
+        this.createLabel(panel, 'Title', '择一道具', 0, cursorY, 38, COLORS.ink, content.width - 24, 52);
+        cursorY -= 46;
+        this.createLabel(panel, 'Description', '每种最多持有 2 件 · 点 ? 查看说明', 0, cursorY, 20, COLORS.muted, content.width - 24, 32);
+        const cardCenterY = cursorY - 16 - cardsTopGap - cardHeight / 2;
         this.rewardCardNodes.clear();
-        const gap = choices.length === 1 ? 0 : choices.length === 2 ? 205 : 188;
         choices.forEach((item, index) => {
-            const x = (index - (choices.length - 1) / 2) * gap;
-            const card = this.createNode(panel, `Reward-${item}`, x, -34, 172, 310);
+            const x = (index - (choices.length - 1) / 2) * cardGap;
+            const card = this.createNode(panel, `Reward-${item}`, x, cardCenterY, cardWidth, cardHeight);
             this.applySprite(card, 'rewardCard');
             this.rewardCardNodes.set(item, card);
-            const icon = this.createNode(card, 'Icon', 0, 58, 100, 100);
+            const iconSize = Math.round(cardWidth * 0.58);
+            const icon = this.createNode(card, 'Icon', 0, cardHeight * 0.17, iconSize, iconSize);
             this.applySprite(icon, ITEM_ICON_KEY[item]);
-            this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, -8, 25, COLORS.ink, 148, 40);
+            this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, -cardHeight * 0.08, 22, COLORS.ink, cardWidth - 18, 36);
             const count = this.model.snapshot.inventory[item];
-            this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -91, 19, COLORS.jade, 142, 30);
-            const help = this.createNode(card, 'Help', 58, 116, 32, 32);
+            this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -cardHeight * 0.28, 18, COLORS.jade, cardWidth - 18, 28);
+            const help = this.createNode(card, 'Help', cardWidth * 0.31, cardHeight * 0.34, 28, 28);
             this.applySprite(help, 'helpIcon');
             help.addComponent(Button);
             help.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
@@ -1271,14 +1427,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async chooseReward(item: ItemType): Promise<void> {
-        const card = this.rewardCardNodes.get(item);
         const overlay = this.rewardOverlay?.root;
-        const start = card ? this.node.getComponent(UITransform)?.convertToNodeSpaceAR(
-            card.getComponent(UITransform)!.convertToWorldSpaceAR(new Vec3()),
-        ) : undefined;
         this.model.chooseReward(item);
         this.playSound('itemSelect');
-        if (overlay && start) await this.flyRewardToDock(overlay, item, start);
         const panel = overlay?.getChildByName('Panel');
         if (panel) {
             const opacity = panel.addComponent(UIOpacity);
@@ -1317,7 +1468,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             extra: Object.freeze({
                 turns: snapshot.turnNumber,
                 generalKills: snapshot.generalKills,
-                maxCombo: snapshot.maxCombo,
                 totalKills: snapshot.totalKills,
                 newRecord,
                 seed: snapshot.seed,
@@ -1337,73 +1487,97 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.destroyOverlay(this.rulesOverlay);
         const page = RULE_PAGES[this.rulesPageIndex]!;
         const overlay = this.createOverlayRoot('RulesOverlay');
-        const rootHeight = this.node.getComponent(UITransform)?.contentSize.height ?? 1334;
-        const panelHeight = Math.min(860, rootHeight - 150);
-        const panel = this.createNode(overlay, 'Panel', 0, 0, 610, panelHeight);
+        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const footerHeight = 136;
+        const headerHeight = 132;
+        const panelSize = resolveChessEndlessModalPanelSize(480, headerHeight + footerHeight + 320, rootSize);
+        const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', 0, 0, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
-        this.createLabel(panel, 'Kicker', '入局须知', 0, panelHeight / 2 - 58, 20, COLORS.cinnabar, 420, 30);
-        this.createLabel(panel, 'Title', page.title, 0, panelHeight / 2 - 105, 38, COLORS.ink, 480, 54);
-        this.createLabel(panel, 'Pager', `${this.rulesPageIndex + 1} / ${RULE_PAGES.length}`, 0, panelHeight / 2 - 142, 19, COLORS.muted, 160, 28);
+        let cursorY = content.top - 18;
+        this.createLabel(panel, 'Kicker', '入局须知', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 30);
+        cursorY -= 38;
+        this.createLabel(panel, 'Title', page.title, 0, cursorY, 34, COLORS.ink, content.width - 24, 50);
+        cursorY -= 42;
+        this.createLabel(panel, 'Pager', `${this.rulesPageIndex + 1} / ${RULE_PAGES.length}`, 0, cursorY, 18, COLORS.muted, 160, 26);
 
-        const viewportHeight = panelHeight - 300;
-        const viewport = this.createNode(panel, 'ScrollViewport', 0, 12, 520, viewportHeight);
+        const buttonWidth = Math.min(196, (content.width - 36) / 2);
+        const buttonY = content.bottom + 58;
+        const viewportWidth = content.width - 8;
+        const viewportTop = cursorY - 14;
+        const viewportBottom = buttonY + 40;
+        const viewportHeight = Math.max(180, viewportTop - viewportBottom);
+        const viewportCenterY = (viewportTop + viewportBottom) / 2;
+        const viewport = this.createNode(panel, 'ScrollViewport', 0, viewportCenterY, viewportWidth, viewportHeight);
+        const maskGraphics = viewport.addComponent(Graphics);
+        maskGraphics.fillColor = Color.WHITE;
+        maskGraphics.roundRect(-viewportWidth / 2, -viewportHeight / 2, viewportWidth, viewportHeight, 14);
+        maskGraphics.fill();
         const mask = viewport.addComponent(Mask);
         mask.type = Mask.Type.GRAPHICS_STENCIL;
-        const maskGraphics = viewport.getComponent(Graphics);
-        if (maskGraphics) {
-            maskGraphics.fillColor = Color.WHITE;
-            maskGraphics.roundRect(-260, -viewportHeight / 2, 520, viewportHeight, 14);
-            maskGraphics.fill();
-        }
-        const bodyHeight = Math.max(viewportHeight, page.body.split('\n').length * 34 + 48);
-        const body = this.createNode(viewport, 'ScrollBody', 0, viewportHeight / 2 - bodyHeight / 2, 500, bodyHeight);
-        const label = this.createLabel(body, 'Body', page.body, 0, 0, 23, COLORS.inkSoft, 486, bodyHeight - 20);
+
+        const bodyLineHeight = 31;
+        const bodyTextWidth = viewportWidth - 36;
+        const bodyHeight = this.estimateScrollTextHeight(page.body, 22, bodyTextWidth, bodyLineHeight, viewportHeight + 12);
+        const body = this.createNode(viewport, 'ScrollBody', 0, viewportHeight / 2, viewportWidth - 20, bodyHeight);
+        body.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
+        const label = this.createLabel(body, 'Body', page.body, 0, -14, 22, COLORS.inkSoft, bodyTextWidth, bodyHeight - 28);
         label.verticalAlign = 0;
         label.horizontalAlign = 0;
         label.overflow = Label.Overflow.CLAMP;
-        label.lineHeight = 33;
-        let scrollOffset = 0;
-        let startX = 0;
-        let startY = 0;
-        let lastY = 0;
-        const maxOffset = Math.max(0, bodyHeight - viewportHeight);
-        viewport.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
+        label.lineHeight = bodyLineHeight;
+        label.node.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
+        label.node.setPosition(0, -14);
+
+        const scrollView = viewport.addComponent(ScrollView);
+        scrollView.content = body;
+        scrollView.horizontal = false;
+        scrollView.vertical = true;
+        scrollView.inertia = true;
+        scrollView.brake = 0.75;
+        scrollView.elastic = true;
+        scrollView.cancelInnerEvents = true;
+
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        panel.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
             const point = event.getUILocation();
-            startX = point.x;
-            startY = point.y;
-            lastY = point.y;
-        }, this);
-        viewport.on(Node.EventType.TOUCH_MOVE, (event: EventTouch) => {
+            swipeStartX = point.x;
+            swipeStartY = point.y;
+        }, this, true);
+        panel.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
             const point = event.getUILocation();
-            scrollOffset = Math.max(0, Math.min(maxOffset, scrollOffset + point.y - lastY));
-            lastY = point.y;
-            body.setPosition(0, viewportHeight / 2 - bodyHeight / 2 + scrollOffset);
-        }, this);
-        viewport.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
-            const point = event.getUILocation();
-            const dx = point.x - startX;
-            const dy = point.y - startY;
+            const dx = point.x - swipeStartX;
+            const dy = point.y - swipeStartY;
             if (Math.abs(dx) > 78 && Math.abs(dx) > Math.abs(dy) * 1.25) {
                 this.rulesPageIndex = (this.rulesPageIndex + (dx < 0 ? 1 : RULE_PAGES.length - 1)) % RULE_PAGES.length;
                 this.showRulesPage();
             }
-        }, this);
+        }, this, true);
 
-        const previous = this.createActionButton(panel, 'Previous', '‹ 上一页', -142, -panelHeight / 2 + 58, 210, 56, 'paper', () => {
+        const previous = this.createActionButton(panel, 'Previous', '‹ 上一页', -buttonWidth / 2 - 10, buttonY, buttonWidth, 54, 'paper', () => {
             this.rulesPageIndex = (this.rulesPageIndex + RULE_PAGES.length - 1) % RULE_PAGES.length;
             this.showRulesPage();
         });
-        const next = this.createActionButton(panel, 'Next', '下一页 ›', 142, -panelHeight / 2 + 58, 210, 56, 'paper', () => {
+        const next = this.createActionButton(panel, 'Next', '下一页 ›', buttonWidth / 2 + 10, buttonY, buttonWidth, 54, 'paper', () => {
             this.rulesPageIndex = (this.rulesPageIndex + 1) % RULE_PAGES.length;
             this.showRulesPage();
         });
-        const close = this.createImageButtonOn(panel, 'Close', 'closeIcon', 250, panelHeight / 2 - 66, 46, () => {
-            this.destroyOverlay(this.rulesOverlay);
-            this.rulesOverlay = undefined;
-            this.inputLocked = false;
-            this.selectedPlayer = true;
-            this.renderAll();
-        });
+        const close = this.createImageButtonOn(
+            panel,
+            'Close',
+            'closeIcon',
+            content.width / 2 - 28,
+            content.top - 36,
+            42,
+            () => {
+                this.destroyOverlay(this.rulesOverlay);
+                this.rulesOverlay = undefined;
+                this.inputLocked = false;
+                this.selectedPlayer = true;
+                this.renderAll();
+            },
+        );
         this.rulesOverlay = { root: overlay, buttons: [previous, next, close] };
     }
 
@@ -1450,24 +1624,61 @@ export class ChessEndlessGame extends Component implements MiniGame {
     ): OverlayState {
         const overlay = this.createOverlayRoot(name);
         const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
-        const height = Math.min(rootSize.height - 150, 760, 340 + actions.length * 82 + Math.max(0, body.split('\n').length - 2) * 32);
-        const panelWidth = Math.min(600, rootSize.width - 100);
-        const panel = this.createNode(overlay, 'Panel', 0, 0, panelWidth, height);
+        const bodyLines = body.split('\n').length;
+        const bodyLineHeight = 32;
+        const bodyHeight = Math.max(72, bodyLines * bodyLineHeight + 12);
+        const headerHeight = artKey ? 188 : 108;
+        const buttonHeight = 56;
+        const buttonGap = 12;
+        const footerHeight = actions.length * buttonHeight + Math.max(0, actions.length - 1) * buttonGap + 28;
+        const innerHeight = headerHeight + bodyHeight + footerHeight;
+        const innerWidth = 468;
+        const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, rootSize);
+        const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', 0, 0, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
-        let titleY = height / 2 - 72;
+
+        let cursorY = content.top - 18;
         if (artKey) {
-            const art = this.createNode(panel, 'Artwork', 0, height / 2 - 92, 110, 110);
+            const artSize = 92;
+            const art = this.createNode(panel, 'Artwork', 0, cursorY - artSize / 2 + 6, artSize, artSize);
             this.applySprite(art, artKey);
-            titleY -= 72;
+            cursorY -= artSize + 14;
         }
-        this.createLabel(panel, 'Kicker', kicker, 0, titleY + 34, 20, COLORS.cinnabar, 460, 30);
-        this.createLabel(panel, 'Title', title, 0, titleY - 8, 42, COLORS.ink, 520, 58);
-        const bodyHeight = Math.max(96, Math.min(280, body.split('\n').length * 35));
-        this.createLabel(panel, 'Body', body, 0, titleY - 92 - bodyHeight / 2, 24, COLORS.inkSoft, panelWidth - 64, bodyHeight);
+        this.createLabel(panel, 'Kicker', kicker, 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 28);
+        cursorY -= 36;
+        this.createLabel(panel, 'Title', title, 0, cursorY, 36, COLORS.ink, content.width - 24, 52);
+        cursorY -= 52;
+        const bodyLabel = this.createLabel(
+            panel,
+            'Body',
+            body,
+            0,
+            cursorY - bodyHeight / 2 + 8,
+            23,
+            COLORS.inkSoft,
+            content.width - 24,
+            bodyHeight,
+        );
+        bodyLabel.verticalAlign = 0;
+        bodyLabel.horizontalAlign = 1;
+        bodyLabel.overflow = Label.Overflow.CLAMP;
+        bodyLabel.lineHeight = bodyLineHeight;
+
         const buttons: Button[] = [];
         actions.forEach((action, index) => {
-            const y = -height / 2 + 56 + (actions.length - 1 - index) * 76;
-            const button = this.createActionButton(panel, `Action-${index}`, action.label, 0, y, panelWidth - 100, 60, action.tone, action.action);
+            const y = content.bottom + 34 + (actions.length - 1 - index) * (buttonHeight + buttonGap);
+            const button = this.createActionButton(
+                panel,
+                `Action-${index}`,
+                action.label,
+                0,
+                y,
+                content.width - 16,
+                buttonHeight,
+                action.tone,
+                action.action,
+            );
             button.interactable = action.enabled !== false;
             if (!button.interactable) button.node.getComponent(UIOpacity)!.opacity = 100;
             buttons.push(button);
@@ -1475,9 +1686,195 @@ export class ChessEndlessGame extends Component implements MiniGame {
         return { root: overlay, buttons };
     }
 
+    private buildPauseModal(score: number, model: MiniGamePauseModel): OverlayState {
+        const overlay = this.createOverlayRoot('PauseOverlay');
+        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const body = `当前得分 ${score}\n增援与棋局都已冻结`;
+        const actions: readonly OverlayAction[] = [
+            { label: '继续棋局', tone: 'jade', action: model.resume },
+            { label: '重新开始', tone: 'cinnabar', action: model.restart },
+            { label: '返回游戏大厅', tone: 'paper', action: model.exit },
+        ];
+        const bodyLineHeight = 32;
+        const bodyHeight = Math.max(72, body.split('\n').length * bodyLineHeight + 12);
+        const toggleRowHeight = 50;
+        const copyGap = 12;
+        const headerHeight = 108;
+        const buttonHeight = 56;
+        const buttonGap = 12;
+        const copyHeight = bodyHeight + copyGap + toggleRowHeight;
+        const footerHeight = actions.length * buttonHeight
+            + Math.max(0, actions.length - 1) * buttonGap
+            + 28;
+        const innerHeight = headerHeight + copyHeight + footerHeight;
+        const innerWidth = 468;
+        const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, rootSize);
+        const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', 0, 0, panelSize.width, panelSize.height);
+        this.applySprite(panel, 'modalPanel');
+
+        let cursorY = content.top - 18;
+        this.createLabel(panel, 'Kicker', '棋局暂歇', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 28);
+        cursorY -= 36;
+        this.createLabel(panel, 'Title', '暂停', 0, cursorY, 36, COLORS.ink, content.width - 24, 52);
+        cursorY -= 52;
+        const bodyLabel = this.createLabel(
+            panel,
+            'Body',
+            body,
+            0,
+            cursorY - bodyHeight / 2 + 8,
+            23,
+            COLORS.inkSoft,
+            content.width - 24,
+            bodyHeight,
+        );
+        bodyLabel.verticalAlign = 0;
+        bodyLabel.horizontalAlign = 1;
+        bodyLabel.overflow = Label.Overflow.CLAMP;
+        bodyLabel.lineHeight = bodyLineHeight;
+
+        const bodyBottomY = cursorY - bodyHeight + 8;
+        const toggleY = bodyBottomY - copyGap - toggleRowHeight / 2;
+        const toggle = this.createToggleSwitch(
+            panel,
+            'DangerHintsToggle',
+            0,
+            toggleY,
+            content.width - 16,
+            toggleRowHeight,
+            '危险点提示',
+            this.dangerHintsEnabled,
+            (enabled) => {
+                this.dangerHintsEnabled = enabled;
+                this.persistProgress(false);
+                this.renderAll();
+            },
+        );
+
+        const buttons: Button[] = [toggle];
+        actions.forEach((action, index) => {
+            const y = content.bottom + 34 + (actions.length - 1 - index) * (buttonHeight + buttonGap);
+            const button = this.createActionButton(
+                panel,
+                `Action-${index}`,
+                action.label,
+                0,
+                y,
+                content.width - 16,
+                buttonHeight,
+                action.tone,
+                action.action,
+            );
+            buttons.push(button);
+        });
+        return { root: overlay, buttons };
+    }
+
+    private createToggleSwitch(
+        parent: Node,
+        name: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        label: string,
+        enabled: boolean,
+        onChange: (enabled: boolean) => void,
+    ): Button {
+        const row = this.createNode(parent, name, x, y, width, height);
+        const rowGraphics = row.addComponent(Graphics);
+        rowGraphics.fillColor = new Color(236, 218, 178, 210);
+        rowGraphics.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 150);
+        rowGraphics.lineWidth = 1.5;
+        rowGraphics.roundRect(-width / 2, -height / 2, width, height, 8);
+        rowGraphics.fill();
+        rowGraphics.stroke();
+
+        const switchWidth = 68;
+        const switchHeight = 34;
+        const labelWidth = width - 108;
+        const labelNode = this.createLabel(
+            row,
+            'Label',
+            label,
+            -width / 2 + 14 + labelWidth / 2,
+            0,
+            20,
+            COLORS.ink,
+            labelWidth,
+            height - 8,
+        );
+        labelNode.horizontalAlign = 0;
+
+        const switchNode = this.createNode(row, 'Switch', width / 2 - switchWidth / 2 - 12, 0, switchWidth, switchHeight);
+        const track = switchNode.addComponent(Graphics);
+        const thumbNode = this.createNode(switchNode, 'Thumb', 0, 0, 28, 28);
+        const thumb = thumbNode.addComponent(Graphics);
+        let current = enabled;
+        const refresh = (on: boolean, animate = false) => {
+            current = on;
+            track.clear();
+            track.fillColor = on ? COLORS.jade : new Color(188, 171, 142, 255);
+            track.roundRect(-switchWidth / 2, -switchHeight / 2, switchWidth, switchHeight, switchHeight / 2);
+            track.fill();
+            track.strokeColor = new Color(COLORS.ink.r, COLORS.ink.g, COLORS.ink.b, on ? 70 : 45);
+            track.lineWidth = 1.5;
+            track.stroke();
+            thumb.clear();
+            thumb.fillColor = COLORS.white;
+            thumb.circle(0, 0, 12);
+            thumb.fill();
+            thumb.strokeColor = new Color(COLORS.woodDark.r, COLORS.woodDark.g, COLORS.woodDark.b, 55);
+            thumb.lineWidth = 1;
+            thumb.stroke();
+            const targetX = on ? switchWidth / 2 - 18 : -switchWidth / 2 + 18;
+            Tween.stopAllByTarget(thumbNode);
+            if (animate) {
+                tween(thumbNode).to(0.16, { position: new Vec3(targetX, 0, 0) }, { easing: 'quadOut' }).start();
+            } else {
+                thumbNode.setPosition(targetX, 0);
+            }
+        };
+        refresh(enabled);
+
+        const button = row.addComponent(Button);
+        row.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
+            event.propagationStopped = true;
+            const next = !current;
+            refresh(next, true);
+            this.playSound('uiClick', 0.58);
+            onChange(next);
+        }, this);
+        return button;
+    }
+
+    private estimateScrollTextHeight(
+        text: string,
+        fontSize: number,
+        width: number,
+        lineHeight: number,
+        minHeight: number,
+    ): number {
+        const charsPerLine = Math.max(8, Math.floor(width / (fontSize * 0.92)));
+        const wrappedLines = text.split('\n').reduce((total, line) => (
+            total + Math.max(1, Math.ceil(line.length / charsPerLine))
+        ), 0);
+        return Math.max(minHeight, wrappedLines * lineHeight + 28);
+    }
+
+    private resolveFullscreenOverlaySize(): { readonly width: number; readonly height: number } {
+        const viewport = readChessEndlessViewport(this.node);
+        return Object.freeze({
+            width: viewport.width,
+            height: viewport.height,
+        });
+    }
+
     private createOverlayRoot(name: string): Node {
-        const size = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const size = this.resolveFullscreenOverlaySize();
         const overlay = this.createNode(this.node, name, 0, 0, size.width, size.height);
+        overlay.setSiblingIndex(this.node.children.length - 1);
         overlay.addComponent(BlockInputEvents);
         const graphics = overlay.addComponent(Graphics);
         graphics.fillColor = COLORS.overlay;
@@ -1584,20 +1981,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (node.isValid) node.destroy();
     }
 
-    private showComboVfx(combo: number): void {
-        const node = this.createNode(this.node, `ComboVfx-${combo}`, 0, 78, 560, 220);
-        this.applySprite(node, 'comboBurst');
-        node.setScale(0.34, 0.34, 1);
-        const opacity = node.addComponent(UIOpacity);
-        opacity.opacity = 0;
-        const label = this.createLabel(node, 'Label', `连斩 ×${combo}`, 0, 0, 42, COLORS.goldLight, 420, 74);
-        label.isBold = true;
-        tween(node).to(0.2, { scale: new Vec3(1, 1, 1), angle: combo % 2 ? 2 : -2 }, { easing: 'backOut' }).delay(0.56).to(0.18, { scale: new Vec3(0.78, 0.78, 1) }).start();
-        tween(opacity).to(0.1, { opacity: 255 }).delay(0.7).to(0.16, { opacity: 0 }).call(() => node.destroy()).start();
-    }
-
     private showTransientBanner(text: string, y: number, fontSize: number, color: Color, duration: number): void {
-        const width = Math.min(590, (this.node.getComponent(UITransform)?.contentSize.width ?? 750) - 120);
+        const rootWidth = this.node.getComponent(UITransform)?.contentSize.width ?? 750;
+        const width = Math.max(1, Math.min(590, rootWidth - 32));
         const node = this.createNode(this.node, `Banner-${Date.now()}`, 0, y, width, 58);
         const graphics = node.addComponent(Graphics);
         graphics.fillColor = new Color(14, 43, 37, 218);
@@ -1651,36 +2037,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
         tween(opacity).delay(0.18).to(0.26, { opacity: 0 }).call(() => node.destroy()).start();
     }
 
-    private async flyRewardToDock(overlay: Node, item: ItemType, start: Vec3): Promise<void> {
-        const targetNode = this.itemDock?.getChildByName(`Item-${item}`);
-        const rootTransform = this.node.getComponent(UITransform);
-        const targetTransform = targetNode?.getComponent(UITransform);
-        if (!targetNode || !rootTransform || !targetTransform) return;
-        const target = rootTransform.convertToNodeSpaceAR(targetTransform.convertToWorldSpaceAR(new Vec3()));
-        const dx = target.x - start.x;
-        const dy = target.y - start.y;
-        const distance = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-        const beam = this.createNode(this.node, 'RewardBeam', (start.x + target.x) / 2, (start.y + target.y) / 2, 76, distance);
-        this.applySprite(beam, 'rewardBeam');
-        beam.angle = -Math.atan2(dx, dy) * 180 / Math.PI;
-        const beamOpacity = beam.addComponent(UIOpacity);
-        beamOpacity.opacity = 210;
-        const orb = this.createNode(this.node, 'RewardOrb', start.x, start.y, 66, 66);
-        this.applySprite(orb, 'lightParticle');
-        const orbOpacity = orb.addComponent(UIOpacity);
-        await this.tweenNode(orb, 0.48, { position: target, scale: new Vec3(0.45, 0.45, 1) }, 'quadIn');
-        tween(beamOpacity).to(0.14, { opacity: 0 }).call(() => beam.destroy()).start();
-        tween(orbOpacity).to(0.12, { opacity: 0 }).call(() => orb.destroy()).start();
-        targetNode.setScale(1.16, 1.16, 1);
-        tween(targetNode).to(0.18, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
-        this.spawnScreenParticle(this.node, 'lightParticle', target.x, target.y, 92, 0);
-        void overlay;
-    }
-
     private showCallout(text: string, color: Color, fontSize: number, duration: number): void {
-        const rootSize = this.node.getComponent(UITransform)?.contentSize;
-        const node = this.createNode(this.node, `Callout-${text}`, 0, (rootSize?.height ?? 1334) / 2 - 260, 560, 90);
-        const label = this.createLabel(node, 'Label', text, 0, 0, fontSize, color, 560, 80);
+        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const calloutWidth = Math.max(1, Math.min(560, rootSize.width - 32));
+        const node = this.createNode(this.node, `Callout-${text}`, 0, rootSize.height / 2 - 260, calloutWidth, 90);
+        const label = this.createLabel(node, 'Label', text, 0, 0, fontSize, color, calloutWidth, 80);
         label.isBold = true;
         const opacity = node.addComponent(UIOpacity);
         opacity.opacity = 0;
@@ -1854,7 +2215,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             custom: Object.freeze({
                 totalKills: snapshot.totalKills,
                 generalKills: snapshot.generalKills,
-                maxCombo: snapshot.maxCombo,
                 dangerHintsEnabled: this.dangerHintsEnabled,
                 completedRounds: Math.max(0, Number(previous?.custom?.completedRounds ?? 0)) + (finished ? 1 : 0),
             }),
@@ -1940,7 +2300,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.infoOverlay = undefined;
     }
 
-    private readonly handleCanvasResize = (): void => {
+    private readonly handleLayoutChange = (): void => {
         if (this.resizeQueued || this.lifecycle === 'disposed') return;
         this.resizeQueued = true;
         this.scheduleOnce(() => {

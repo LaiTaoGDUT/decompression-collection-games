@@ -29,8 +29,10 @@ const scene = fs.readFileSync(path.join(gameRoot, 'scenes/ChessEndless.scene'), 
 assert(scene.includes(`"__type__": "${compressed}"`), 'Scene does not reference ChessEndlessGame meta UUID.');
 
 const audioRoot = path.join(gameRoot, 'visual/audio');
-const audioFiles = fs.readdirSync(audioRoot).filter((name) => name.endsWith('.mp3'));
-assert.strictEqual(audioFiles.length, 29, 'Expected 2 BGM loops and 27 event sounds.');
+const audioFiles = fs.readdirSync(audioRoot).filter((name) => (
+    name.endsWith('.mp3') && name !== 'chess-reinforcement-ready-v1.mp3'
+));
+assert.strictEqual(audioFiles.length, 27, 'Expected 2 BGM loops and 25 active event sounds.');
 audioFiles.forEach((name) => {
     const filePath = path.join(audioRoot, name);
     const bytes = fs.readFileSync(filePath);
@@ -46,9 +48,6 @@ const requiredImages = [
     'visual/boards/img_board_main.png',
     'visual/boards/img_board_backplate.png',
     'visual/boards/img_board_frame.png',
-    'visual/pieces/piece_player_base.png',
-    'visual/pieces/piece_enemy_base.png',
-    'visual/pieces/piece_general_base.png',
     'visual/pieces/piece_player_rook.png',
     'visual/pieces/piece_enemy_pawn.png',
     'visual/pieces/piece_enemy_advisor.png',
@@ -71,18 +70,14 @@ const requiredImages = [
     'visual/ui/ui_hud_ribbon.png',
     'visual/ui/ui_item_card_bg.png',
     'visual/ui/ui_item_slot.png',
-    'visual/ui/ui_reinforcement_panel.png',
-    'visual/ui/ui_reinforcement_panel_v2.png',
-    'visual/ui/ui_reinforcement_general.png',
+    'visual/ui/ui_reinforcement_panel_v1.png',
     'visual/ui/ui_modal_panel.png',
     'visual/ui/ui_reward_card.png',
     'visual/vfx/vfx_capture_burst.png',
-    'visual/vfx/vfx_combo_burst.png',
     'visual/vfx/vfx_general_arrival.png',
     'visual/vfx/vfx_general_kill.png',
     'visual/vfx/vfx_general_guard.png',
     'visual/vfx/vfx_cross_slash.png',
-    'visual/vfx/vfx_reward_beam.png',
     'visual/vfx/vfx_reward_chest_closed.png',
     'visual/vfx/vfx_reward_chest_open.png',
     'visual/vfx/vfx_spawn_shadow.png',
@@ -104,6 +99,11 @@ requiredImages.forEach((relative) => {
 assert(fs.existsSync(path.join(root, 'assets/lobby/visual/covers/chess-endless/chess-endless-cover-v1.png')));
 assert(fs.existsSync(path.join(root, 'assets/lobby/visual/icons/chess-endless/chess-endless-icon-v1.png')));
 
+assert(fs.existsSync(path.join(gameRoot, 'scripts/ChessEndlessLayout.ts')), 'Missing ChessEndlessLayout.ts');
+assert(fs.existsSync(path.join(gameRoot, 'scripts/ChessEndlessResponsiveRules.ts')), 'Missing ChessEndlessResponsiveRules.ts');
+const layoutCode = fs.readFileSync(path.join(gameRoot, 'scripts/ChessEndlessLayout.ts'), 'utf8');
+assert(layoutCode.includes('calculateChessEndlessLayout('), 'ChessEndlessLayout must export calculateChessEndlessLayout.');
+assert(layoutCode.includes('calculateTopRightControlPosition('), 'ChessEndlessLayout must route top-right controls through PlatformSafeLayout.');
 const sourceCode = fs.readFileSync(path.join(gameRoot, 'scripts/ChessEndlessGame.ts'), 'utf8');
 const routedAudio = [...sourceCode.matchAll(/'visual\/audio\/([^']+)'/g)].map((match) => `${match[1]}.mp3`);
 assert.strictEqual(new Set(routedAudio).size, audioFiles.length, 'Every runtime MP3 must have one AUDIO_PATHS route.');
@@ -112,9 +112,12 @@ audioFiles.forEach((name) => assert(routedAudio.includes(name), `Unrouted runtim
     'requestPause()', 'requestExit(', 'showPauseMenu', 'showResultView',
     'showCrossSlash(', 'showGeneralArrival(', 'handleRevive(', 'showRewardOverlay(',
     'showRewardChestSequence(', 'showCenterVfx(', 'showRulesPage(', 'showItemHelp(',
-    'renderDangerPositions(', 'flyRewardToDock(', 'showPieceInfo(',
-    'updatePressureMusic(', 'calculateTopRightControlPosition(',
+    'renderDangerPositions(', 'showPieceInfo(',
+    'updatePressureMusic(', 'ChessEndlessLayout', 'readChessEndlessViewport(',
+    'setPlatformLayout(',
 ].forEach((needle) => assert(sourceCode.includes(needle), `Missing runtime feature: ${needle}`));
+assert(sourceCode.includes('backgroundWidth'), 'The full-screen background must use cover sizing from layout metrics.');
+assert(sourceCode.includes('resolveFullscreenOverlaySize('), 'Modal overlays must size against the visible viewport.');
 assert(
     sourceCode.includes('this.applySprite(piece, PIECE_TEXTURE_KEY[type]);'),
     'Reinforcement preview must render the baked piece PNG mapped for each type.',
@@ -125,9 +128,21 @@ assert(
 );
 assert(sourceCode.includes("'下一批增援'"), 'Normal reinforcement title is missing.');
 assert(sourceCode.includes("'将军来袭'"), 'General alert title is missing.');
-assert(sourceCode.includes("result.threatCount >= 3"), 'Threat banner must only appear for three or more threatened enemies.');
+assert(sourceCode.includes("'reinforcementV1'"), 'The first-version compact reinforcement panel must be used.');
+assert(sourceCode.includes("this.applySprite(this.reinforcementArtwork, 'reinforcementV1')"), 'General reinforcement must reuse the normal panel without a red alert frame.');
+assert(!sourceCode.includes('reinforcementGeneralV1'), 'The general reinforcement panel must not swap in a separate red-framed artwork.');
+assert(sourceCode.includes('reinforcementArtworkWidth = 232 * reinforcementScale'), 'Reinforcement artwork must scale with the fitted panel width.');
+assert(sourceCode.includes('reinforcementContentCenterY = 14 * reinforcementScale'), 'Reinforcement copy must center on the measured panel parchment area.');
+assert(sourceCode.includes('this.reinforcementArtwork,'), 'Reinforcement copy must share the panel artwork coordinate space.');
+assert(sourceCode.includes('reinforcementLabelTitleY'), 'Reinforcement title position must be derived from the centered two-line block.');
+assert(sourceCode.includes('reinforcementLabelStatusY'), 'Reinforcement countdown position must be derived from the centered two-line block.');
+assert(sourceCode.includes('let gap = 10'), 'Reinforcement preview spacing must stay compact for small waves.');
+assert(sourceCode.includes('reinforcementTitle.horizontalAlign = 2'), 'The reinforcement title must align tightly to the panel edge.');
+assert(sourceCode.includes('LabelOutline'), 'Reinforcement text needs a contrast outline over the tabletop.');
+assert(sourceCode.includes("'PreviewPieces'") && sourceCode.includes('reinforcementContentCenterY'), 'The preview row must share the panel content center with the copy block.');
+assert(sourceCode.includes('pieceSize = 60'), 'Reinforcement preview pieces must render larger for small waves.');
+assert(sourceCode.includes("this.reinforcementTitle.color = general ? COLORS.cinnabar : COLORS.goldLight"), 'Reinforcement title must stay readable over the dark tabletop.');
 assert(sourceCode.includes("'查看最后残局'"), 'The final result must allow board inspection.');
-assert(sourceCode.includes('width + 320'), 'The full-screen background bleed guard is missing.');
 assert(!sourceCode.includes("'点击己方車查看可走位置'"), 'The obsolete bottom-board text hint must be removed.');
 ['items', 'general', 'reward', 'guard', 'fullInventory', 'noRevive']
     .forEach((scenario) => assert(sourceCode.includes(`scenario === '${scenario}'`), `Missing preview QA scenario ${scenario}.`));

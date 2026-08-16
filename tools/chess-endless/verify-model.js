@@ -27,8 +27,8 @@ assert.strictEqual(BOARD_ROWS, 10);
     const second = new ChessEndlessModel(123456).snapshot;
     assert.deepStrictEqual(first.enemies, second.enemies);
     assert.deepStrictEqual(first.queuedReinforcement, second.queuedReinforcement);
-    assert.strictEqual(first.enemies.length, 4);
-    assert.deepStrictEqual(first.enemies.map((piece) => piece.type).sort(), ['advisor', 'elephant', 'pawn', 'pawn']);
+    assert.strictEqual(first.enemies.length, 5);
+    assert.deepStrictEqual(first.enemies.map((piece) => piece.type).sort(), ['advisor', 'advisor', 'elephant', 'pawn', 'pawn']);
 }
 
 {
@@ -281,30 +281,6 @@ for (const [type, piecePosition, blockers] of immediateCases) {
 }
 
 {
-    const model = new ChessEndlessModel(71);
-    model.loadForTesting({
-        playerPosition: at(4, 4),
-        enemies: [enemy(1, 'pawn', 4, 0)],
-        phase: 'player',
-        score: 0,
-        combo: 0,
-        nextPieceId: 2,
-    });
-    const first = model.movePlayer(at(4, 0));
-    assert.strictEqual(first.scoreDelta, 10);
-    assert.strictEqual(first.combo, 1);
-    model.loadForTesting({
-        playerPosition: at(4, 0),
-        enemies: [enemy(2, 'pawn', 0, 0)],
-        phase: 'player',
-        nextPieceId: 3,
-    });
-    const second = model.movePlayer(at(0, 0));
-    assert.strictEqual(second.scoreDelta, 12, 'The second consecutive capture should use the 1.2 combo multiplier.');
-    assert.strictEqual(second.combo, 2);
-}
-
-{
     const model = new ChessEndlessModel(81);
     model.loadForTesting({
         playerPosition: at(4, 4),
@@ -336,19 +312,24 @@ for (const [type, piecePosition, blockers] of immediateCases) {
 }
 
 {
-    const model = new ChessEndlessModel(83);
-    model.loadForTesting({
-        playerPosition: at(4, 4),
-        enemies: [enemy(1, 'general', 4, 0), enemy(2, 'advisor', 3, 0)],
-        phase: 'enemy',
-        reinforcementTimer: 99,
-        generalActive: true,
-        difficultyLevel: 20,
-        nextPieceId: 3,
-    });
-    const result = model.resolveEnemyTurn();
-    assert.strictEqual(result.moved.pieceId, 2, 'A guard must block the rook line before the general tries to wander.');
-    assert.deepStrictEqual(result.moved.to, at(4, 1));
+    let exposedMoves = 0;
+    let escapingMoves = 0;
+    for (let seed = 1; seed <= 200; seed += 1) {
+        const model = new ChessEndlessModel(seed);
+        model.loadForTesting({
+            playerPosition: at(4, 4),
+            enemies: [enemy(1, 'general', 4, 0)],
+            phase: 'enemy',
+            reinforcementTimer: 99,
+            generalActive: true,
+            nextPieceId: 2,
+        });
+        const result = model.resolveEnemyTurn();
+        if (result.moved.to.column === 4) exposedMoves += 1;
+        else escapingMoves += 1;
+    }
+    assert(exposedMoves >= 20, 'A threatened general must retain a meaningful rook-line kill window.');
+    assert(escapingMoves > exposedMoves, 'The general should prefer an ordinary escaping move without making it mandatory.');
 }
 
 {
@@ -408,4 +389,4 @@ for (const [type, piecePosition, blockers] of immediateCases) {
     }
 }
 
-console.log('chess_endless_model=passed, cases=22, board=9x10, pieces=7, items=5, danger_map=passed, general_guard=passed, reward_weighting=passed, immediate_wave=passed, all_items=passed, combo_scoring=passed, reinforcements=passed, general_formation=passed, revive_snapshot=passed, cross_slash=passed');
+console.log('chess_endless_model=passed, cases=21, board=9x10, pieces=7, items=5, danger_map=passed, general_kill_window=passed, reward_weighting=passed, immediate_wave=passed, all_items=passed, reinforcements=passed, general_formation=passed, revive_snapshot=passed, cross_slash=passed');

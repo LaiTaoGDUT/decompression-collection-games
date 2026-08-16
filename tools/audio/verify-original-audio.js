@@ -7,13 +7,13 @@ if (report.sampleRate !== 48000 || report.assets.length !== 57) {
 }
 
 const chessAssets = report.assets.filter((asset) => asset.owner === 'chess-endless');
-if (chessAssets.length !== 29) throw new Error('Expected 29 Chess Endless tracks.');
+if (chessAssets.length !== 28) throw new Error('Expected 28 Chess Endless tracks.');
 const chessNormal = chessAssets.find((asset) => asset.name === 'chess-game-normal-loop-v1');
 const chessPressure = chessAssets.find((asset) => asset.name === 'chess-game-pressure-loop-v1');
 if (!chessNormal || chessNormal.durationSeconds < 60) throw new Error('Chess normal BGM must be at least 60 seconds.');
 if (!chessPressure || chessPressure.durationSeconds < 45) throw new Error('Chess pressure BGM must be at least 45 seconds.');
 [
-    'chess-item-help-v1', 'chess-danger-warning-v1',
+    'chess-item-help-v1',
     'chess-general-guard-v1', 'chess-reward-close-v1',
 ].forEach((name) => {
     if (!chessAssets.some((asset) => asset.name === name)) throw new Error(`Missing Chess cue ${name}.`);

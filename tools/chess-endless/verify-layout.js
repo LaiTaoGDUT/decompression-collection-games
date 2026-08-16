@@ -1,6 +1,7 @@
 const assert = require('assert');
 
 const DESIGN_WIDTH = 750;
+const HUD_STACK_ABOVE_PAUSE_CENTER = 41;
 const devices = [
     { name: 'iPhone SE', width: 375, height: 667, safe: { left: 0, top: 20, right: 375, bottom: 667 }, menuBottom: 58 },
     { name: 'iPhone X', width: 375, height: 812, safe: { left: 0, top: 44, right: 375, bottom: 778 }, menuBottom: 82 },
@@ -18,15 +19,24 @@ for (const device of devices) {
     const safeLeft = device.safe.left * scale;
     const safeRight = width - device.safe.right * scale;
     const reservedBottom = device.menuBottom * scale;
-    const topInset = Math.max(safeTop + 12, reservedBottom + 18);
-    const contentTop = height / 2 - topInset;
     const contentBottom = -height / 2 + safeBottom;
+    const contentWidth = width - safeLeft - safeRight;
+    const headerBrandWidth = Math.min(214, contentWidth - 16);
+    const headerBrandHeight = 96 * (headerBrandWidth / 214);
 
-    const topHudY = contentTop - 53;
-    const pauseCenterFromTop = Math.max(topInset + 48, reservedBottom + 14 + 29);
+    const pauseCenterFromTop = Math.max(
+        safeTop + HUD_STACK_ABOVE_PAUSE_CENTER + 7,
+        reservedBottom + 14 + 29,
+    );
     const pauseY = height / 2 - pauseCenterFromTop;
+    const topHudY = pauseY - 6;
     assert(pauseCenterFromTop - 29 >= reservedBottom + 14, `${device.name}: pause button overlaps the menu capsule.`);
     assert(pauseY + 29 <= height / 2 - safeTop, `${device.name}: pause button crosses the safe top.`);
+
+    const headerBrandTopFromTop = pauseCenterFromTop + 12 - headerBrandHeight / 2;
+    const scoreTopFromTop = pauseCenterFromTop + 35;
+    assert(headerBrandTopFromTop >= safeTop + 4, `${device.name}: header brand crosses the safe top.`);
+    assert(scoreTopFromTop >= safeTop + 4, `${device.name}: score block crosses the safe top.`);
 
     const reinforcementY = topHudY - 112;
     const dockHeight = 184;
@@ -46,7 +56,6 @@ for (const device of devices) {
     assert(boardY + boardNodeHeight / 2 < reinforcementY - 58, `${device.name}: board overlaps reinforcement panel.`);
     assert(boardY - boardNodeHeight / 2 > dockY + dockHeight / 2, `${device.name}: board overlaps item dock.`);
     assert(dockY - dockHeight / 2 >= -height / 2 + safeBottom, `${device.name}: item dock crosses the safe bottom.`);
-    assert(topHudY + 53 <= contentTop, `${device.name}: top HUD crosses the reserved top inset.`);
     assert(width + 320 >= width * 1.35, `${device.name}: background bleed is insufficient.`);
 }
 

@@ -27,9 +27,9 @@
     "atlasSplit": "Fixed 4x4 cells, alpha-island cleanup, crop, contain and deterministic PNG export.",
     "pieceTypography": "Character-aware calligraphy is baked into independent PNG sprites; both player and enemy rooks use 車. Runtime pieces and reinforcement previews never compose glyph labels over a base image.",
     "outputs": {
-      "gamePng": 54,
+      "gamePng": 58,
       "lobbyPng": 2,
-      "totalPng": 56,
+      "totalPng": 60,
       "pieceSprites": 8,
       "itemIcons": 5,
       "vfxTextures": 20

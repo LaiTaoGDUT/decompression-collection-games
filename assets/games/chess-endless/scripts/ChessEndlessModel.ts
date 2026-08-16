@@ -54,8 +54,6 @@ export interface PlayerMoveResult {
     readonly captured?: KillRecord;
     readonly crossSlashKills: readonly KillRecord[];
     readonly scoreDelta: number;
-    readonly combo: number;
-    readonly threatCount: number;
     readonly generalKilled: boolean;
     readonly immediateSpawned: readonly EnemyPiece[];
     readonly immediateReinforcementKind?: 'normal' | 'general';
@@ -94,8 +92,6 @@ export interface ChessEndlessSnapshot {
     readonly enemies: readonly EnemyPiece[];
     readonly turnNumber: number;
     readonly score: number;
-    readonly combo: number;
-    readonly maxCombo: number;
     readonly totalKills: number;
     readonly killStats: Readonly<Record<EnemyPieceType, number>>;
     readonly normalReinforcementCount: number;
@@ -221,14 +217,6 @@ function emptyInventory(): Inventory {
     return { crossSlash: 0, freeze: 0, delay: 0, banish: 0, teleport: 0 };
 }
 
-function comboMultiplier(combo: number): number {
-    if (combo <= 1) return 1;
-    if (combo === 2) return 1.2;
-    if (combo === 3) return 1.4;
-    if (combo === 4) return 1.6;
-    return 2;
-}
-
 /** Small stateful RNG; the state is included in revive snapshots. */
 export class SeededRandom {
     private value: number;
@@ -274,8 +262,6 @@ interface MutableState {
     enemies: EnemyPiece[];
     turnNumber: number;
     score: number;
-    combo: number;
-    maxCombo: number;
     totalKills: number;
     killStats: Record<EnemyPieceType, number>;
     normalReinforcementCount: number;
@@ -322,8 +308,6 @@ export class ChessEndlessModel {
             enemies: [],
             turnNumber: 0,
             score: 0,
-            combo: 0,
-            maxCombo: 0,
             totalKills: 0,
             killStats: emptyKillStats(),
             normalReinforcementCount: 0,
@@ -358,8 +342,6 @@ export class ChessEndlessModel {
             enemies: Object.freeze(state.enemies.map(cloneEnemy)),
             turnNumber: state.turnNumber,
             score: state.score,
-            combo: state.combo,
-            maxCombo: state.maxCombo,
             totalKills: state.totalKills,
             killStats: Object.freeze({ ...state.killStats }),
             normalReinforcementCount: state.normalReinforcementCount,
@@ -395,11 +377,6 @@ export class ChessEndlessModel {
 
     getSafePlayerMoves(): readonly BoardPosition[] {
         return Object.freeze(this.safePlayerMoves(this.state.playerPosition, this.state.enemies));
-    }
-
-    getThreatenedEnemies(): readonly EnemyPiece[] {
-        const threatened = this.playerThreatenedIds(this.state.playerPosition, this.state.enemies);
-        return Object.freeze(this.state.enemies.filter((piece) => threatened.has(piece.id)).map(cloneEnemy));
     }
 
     getDangerPositions(): readonly BoardPosition[] {
@@ -466,11 +443,7 @@ export class ChessEndlessModel {
         let captured: KillRecord | undefined;
 
         if (capturedEnemy) {
-            this.state.combo += 1;
-            this.state.maxCombo = Math.max(this.state.maxCombo, this.state.combo);
             captured = this.removeAndScore(capturedEnemy, 'normal');
-        } else {
-            this.state.combo = 0;
         }
 
         this.state.playerPosition = copyPosition(target);
@@ -478,7 +451,6 @@ export class ChessEndlessModel {
         this.state.pendingCrossSlash = false;
         const generalKilled = Boolean(captured?.piece.type === 'general')
             || crossSlashKills.some((record) => record.piece.type === 'general');
-        const threatCount = this.playerThreatenedIds(this.state.playerPosition, this.state.enemies).size;
         let immediateSpawned: EnemyPiece[] = [];
         let immediateReinforcementKind: 'normal' | 'general' | undefined;
         if (this.state.enemies.length === 0) {
@@ -501,8 +473,6 @@ export class ChessEndlessModel {
             ...(captured ? { captured } : {}),
             crossSlashKills: Object.freeze(crossSlashKills),
             scoreDelta: this.state.score - scoreBefore,
-            combo: this.state.combo,
-            threatCount,
             generalKilled,
             immediateSpawned: Object.freeze(immediateSpawned.map(cloneEnemy)),
             ...(immediateReinforcementKind ? { immediateReinforcementKind } : {}),
@@ -622,8 +592,6 @@ export class ChessEndlessModel {
             enemies: snapshot.enemies.map(cloneEnemy),
             turnNumber: snapshot.turnNumber,
             score: snapshot.score,
-            combo: snapshot.combo,
-            maxCombo: snapshot.maxCombo,
             totalKills: snapshot.totalKills,
             killStats: { ...snapshot.killStats },
             normalReinforcementCount: snapshot.normalReinforcementCount,
@@ -650,7 +618,7 @@ export class ChessEndlessModel {
     }
 
     private placeInitialEnemies(): void {
-        const types: readonly EnemyPieceType[] = ['pawn', 'pawn', 'advisor', 'elephant'];
+        const types: readonly EnemyPieceType[] = ['pawn', 'pawn', 'advisor', 'advisor', 'elephant'];
         const candidates: BoardPosition[] = [];
         for (let row = 0; row < BOARD_ROWS; row += 1) {
             for (let column = 0; column < BOARD_COLUMNS; column += 1) {
@@ -674,6 +642,7 @@ export class ChessEndlessModel {
             this.createEnemy('pawn', position(8, 9), false),
             this.createEnemy('advisor', position(0, 9), false),
             this.createEnemy('elephant', position(8, 0), false),
+            this.createEnemy('advisor', position(4, 0), false),
         ];
     }
 
@@ -831,7 +800,6 @@ export class ChessEndlessModel {
     private buildEnemyCandidates(): EnemyCandidate[] {
         const beforeThreatened = this.playerThreatenedIds(this.state.playerPosition, this.state.enemies);
         const beforeSafe = this.safePlayerMoves(this.state.playerPosition, this.state.enemies).length;
-        const beforeGeneralThreatened = this.generalIsThreatened(this.state.enemies);
         const beforeCannonAttack = this.state.enemies.some((piece) => (
             piece.type === 'cannon' && this.enemyCanCapturePlayer(piece, this.state.playerPosition, this.state.enemies)
         ));
@@ -845,30 +813,21 @@ export class ChessEndlessModel {
                 moved.position = copyPosition(target);
                 const afterThreatened = this.playerThreatenedIds(this.state.playerPosition, simulated);
                 const afterSafe = this.safePlayerMoves(this.state.playerPosition, simulated).length;
-                const afterGeneralThreatened = this.generalIsThreatened(simulated);
                 let score = 0;
                 if (beforeThreatened.has(piece.id) && !afterThreatened.has(piece.id)) {
-                    score += 600 + PIECE_VALUE[piece.type] * 3;
+                    score += piece.type === 'general'
+                        ? 100
+                        : 600 + PIECE_VALUE[piece.type] * 3;
                 }
                 if (simulated.some((enemy) => this.enemyCanCapturePlayer(enemy, this.state.playerPosition, simulated))) score += 400;
-                if (!beforeGeneralThreatened && afterGeneralThreatened) score -= 5000;
-                if (beforeGeneralThreatened && afterGeneralThreatened) score -= 1800;
-                if (beforeGeneralThreatened && !afterGeneralThreatened) {
-                    const general = simulated.find((enemy) => enemy.type === 'general');
-                    const adjacentToGeneral = general
-                        ? Math.abs(moved.position.column - general.position.column)
-                            + Math.abs(moved.position.row - general.position.row) === 1
-                        : false;
-                    score += piece.type === 'general'
-                        ? 1400
-                        : adjacentToGeneral ? 3000 : 2400;
-                }
                 const afterCannonAttack = simulated.some((enemy) => (
                     enemy.type === 'cannon' && this.enemyCanCapturePlayer(enemy, this.state.playerPosition, simulated)
                 ));
                 if (!beforeCannonAttack && afterCannonAttack) score += 180;
                 score += Math.max(0, beforeSafe - afterSafe) * 30;
-                if (afterThreatened.has(piece.id)) score -= 250 + PIECE_VALUE[piece.type] * 2;
+                if (piece.type !== 'general' && afterThreatened.has(piece.id)) {
+                    score -= 250 + PIECE_VALUE[piece.type] * 2;
+                }
                 score += this.aiNoise();
                 candidates.push({
                     pieceId: piece.id,
@@ -880,12 +839,6 @@ export class ChessEndlessModel {
             }
         }
         return candidates;
-    }
-
-    private generalIsThreatened(enemies: readonly EnemyPiece[]): boolean {
-        const general = enemies.find((piece) => piece.type === 'general');
-        if (!general) return false;
-        return this.playerThreatenedIds(this.state.playerPosition, enemies).has(general.id);
     }
 
     private aiNoise(): number {
@@ -900,7 +853,7 @@ export class ChessEndlessModel {
         if (enemy.type === 'general') {
             score = 300;
         } else if (source === 'normal') {
-            score = Math.floor(PIECE_SCORE[enemy.type] * comboMultiplier(this.state.combo));
+            score = PIECE_SCORE[enemy.type];
         } else {
             score = Math.floor(PIECE_SCORE[enemy.type] * 0.6);
         }

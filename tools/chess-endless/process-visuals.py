@@ -303,13 +303,6 @@ def make_vfx_assets() -> None:
         d.line((a, b), fill=(255, 220, 128, 235), width=8)
     save_png(capture, vfx / "vfx_capture_burst.png")
 
-    combo = Image.new("RGBA", (720, 300), (0, 0, 0, 0))
-    combo.alpha_composite(glow_ring(300, (248, 202, 93), (198, 49, 35)), (210, 0))
-    cd = ImageDraw.Draw(combo)
-    cd.arc((55, 42, 665, 254), 198, 342, fill=(239, 193, 91, 210), width=11)
-    cd.arc((92, 67, 628, 232), 20, 160, fill=(179, 45, 33, 205), width=8)
-    save_png(combo, vfx / "vfx_combo_burst.png")
-
     arrival = Image.new("RGBA", (720, 420), (0, 0, 0, 0))
     arrival.alpha_composite(glow_ring(420, (251, 201, 91), (170, 31, 25)), (150, 0))
     ad = ImageDraw.Draw(arrival)
@@ -402,6 +395,18 @@ def make_ui_surfaces(tabletop: Image.Image) -> None:
     hd.line((150, 112, 570, 112), fill=(246, 220, 158, 80), width=3)
     save_png(hud, GAME / "ui" / "ui_hud_ribbon.png")
 
+    # Restore the compact first-version reinforcement card.  The source art
+    # includes transparent atlas padding, so crop only that padding and keep
+    # the card's original aspect ratio at runtime instead of stretching it
+    # across the screen.
+    original_panel = Image.open(GAME / "ui" / "ui_reinforcement_panel.png").convert("RGBA")
+    original_box = original_panel.getchannel("A").getbbox()
+    if not original_box:
+        raise RuntimeError("First-version reinforcement panel has no visible artwork")
+    original_panel = original_panel.crop(original_box)
+    save_png(original_panel, GAME / "ui" / "ui_reinforcement_panel_v1.png")
+    save_png(original_panel.copy(), GAME / "ui" / "ui_reinforcement_general_v1.png")
+
     reinforcement = Image.new("RGBA", (720, 150), (0, 0, 0, 0))
     rd = ImageDraw.Draw(reinforcement)
     rd.rounded_rectangle((14, 10, 706, 140), radius=31, fill=(233, 213, 168, 232), outline=(125, 77, 38, 205), width=5)
@@ -414,18 +419,12 @@ def make_ui_surfaces(tabletop: Image.Image) -> None:
     gd.rounded_rectangle((18, 14, 702, 136), radius=27, outline=(181, 43, 31, 245), width=10)
     save_png(general, GAME / "ui" / "ui_reinforcement_general.png")
 
-    panel = Image.new("RGBA", (700, 920), (0, 0, 0, 0))
-    pd = ImageDraw.Draw(panel)
-    pd.rounded_rectangle((20, 18, 680, 902), radius=42, fill=(246, 231, 194, 250), outline=(77, 49, 29, 230), width=8)
-    pd.rounded_rectangle((38, 36, 662, 884), radius=31, outline=(191, 133, 57, 190), width=3)
-    pd.line((80, 108, 620, 108), fill=(164, 59, 42, 160), width=3)
-    save_png(panel, GAME / "ui" / "ui_modal_panel.png")
-
     card = Image.new("RGBA", (300, 430), (0, 0, 0, 0))
     c = ImageDraw.Draw(card)
     c.rounded_rectangle((12, 10, 288, 420), radius=34, fill=(241, 221, 178, 250), outline=(115, 72, 36, 225), width=7)
     c.rounded_rectangle((28, 26, 272, 404), radius=25, outline=(199, 147, 68, 180), width=3)
     save_png(card, GAME / "ui" / "ui_reward_card.png")
+    save_png(card.resize((600, 860), Image.Resampling.LANCZOS), GAME / "ui" / "ui_modal_panel.png")
 
 
 def make_lobby_cover(rich: Image.Image, logo: Image.Image) -> None:

@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "2cf88bcc-9eff-4b6e-8960-53ac4d64fabb",
+  "uuid": "bd0b27d2-213d-4d87-8dab-6c078e5f6ebd",
   "files": [
     ".json",
     ".png"
@@ -10,19 +10,19 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "2cf88bcc-9eff-4b6e-8960-53ac4d64fabb@6c48a",
+      "uuid": "bd0b27d2-213d-4d87-8dab-6c078e5f6ebd@6c48a",
       "displayName": "chess-endless-cover-v1",
       "id": "6c48a",
       "name": "texture",
       "userData": {
-        "wrapModeS": "clamp-to-edge",
-        "wrapModeT": "clamp-to-edge",
+        "wrapModeS": "repeat",
+        "wrapModeT": "repeat",
         "minfilter": "linear",
         "magfilter": "linear",
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "2cf88bcc-9eff-4b6e-8960-53ac4d64fabb",
+        "imageUuidOrDatabaseUri": "bd0b27d2-213d-4d87-8dab-6c078e5f6ebd",
         "visible": false
       },
       "ver": "1.0.22",
@@ -35,8 +35,8 @@
   },
   "userData": {
     "type": "texture",
-    "fixAlphaTransparencyArtifacts": true,
-    "hasAlpha": true,
-    "redirect": "2cf88bcc-9eff-4b6e-8960-53ac4d64fabb@6c48a"
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": false,
+    "redirect": "bd0b27d2-213d-4d87-8dab-6c078e5f6ebd@6c48a"
   }
 }
