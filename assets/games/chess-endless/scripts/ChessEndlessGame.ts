@@ -63,6 +63,7 @@ const GAME_ID = 'chess-endless';
 const BUNDLE = 'game-chess-endless';
 const MOVE_DURATION = 0.15;
 const CAPTURE_DURATION = 0.24;
+const CHESS_MUSIC_VOLUME = 0.8;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
 
@@ -102,7 +103,7 @@ const COLORS = Object.freeze({
     jade: new Color(41, 92, 81, 255),
     white: new Color(255, 248, 226, 255),
     muted: new Color(116, 96, 66, 255),
-    overlay: new Color(12, 25, 22, 224),
+    overlay: new Color(0, 0, 0, 77),
 });
 
 const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
@@ -459,16 +460,20 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }
 
         const {
-            pauseX,
-            pauseY,
-            topHudY,
-            contentWidth,
+            hudX,
+            hudY,
+            hudWidth,
+            hudHeight,
+            reinforcementX,
             reinforcementWidth,
             reinforcementScale,
             reinforcementHeight,
             reinforcementY,
+            dockX,
+            dockWidth,
             dockHeight,
             dockY,
+            boardX,
             boardY,
             boardNodeWidth,
             boardNodeHeight,
@@ -482,19 +487,33 @@ export class ChessEndlessGame extends Component implements MiniGame {
         background.setSiblingIndex(0);
         this.applySprite(background, 'background');
 
-        const headerBrandWidth = Math.max(1, Math.min(214, contentWidth - 16));
-        const headerBrandHeight = 96 * (headerBrandWidth / 214);
-        const headerBrandPaddingX = 18;
-        const headerBrandPaddingY = 14;
-        const headerLogoWidth = 166 * (headerBrandWidth / 214);
-        const headerLogoHeight = 50 * (headerBrandWidth / 214);
+        const hud = this.createNode(this.node, 'TopHud', hudX, hudY, hudWidth, hudHeight);
+        const hudScale = Math.max(0.1, Math.min(1, hudHeight / 104));
+
+        const headerBrandWidth = Math.max(1, Math.min(214 * hudScale, hudWidth * 0.31 - 8 * hudScale));
+        const headerBrandScale = headerBrandWidth / 214;
+        const headerBrandHeight = Math.min(96 * headerBrandScale, hudHeight - 8 * hudScale);
+        const headerBrandPaddingX = 18 * headerBrandScale;
+        const headerBrandPaddingY = 14 * headerBrandScale;
+        const headerLogoWidth = 166 * headerBrandScale;
+        const headerLogoHeight = 50 * headerBrandScale;
         const innerTop = headerBrandHeight / 2 - headerBrandPaddingY;
         const innerBottom = -headerBrandHeight / 2 + headerBrandPaddingY;
-        const headerBrandX = -contentWidth / 2 + headerBrandWidth / 2 + 8;
-        const headerBrandY = topHudY - 6;
-        const headerBrand = this.createNode(this.node, 'HeaderBrand', headerBrandX, headerBrandY, headerBrandWidth, headerBrandHeight);
-        const headerBackplate = this.createNode(headerBrand, 'Backplate', 0, 0, headerBrandWidth, headerBrandHeight);
-        this.applySprite(headerBackplate, 'hudRibbon');
+        const headerBrandX = -hudWidth / 2 + headerBrandWidth / 2 + 20 * hudScale;
+        const headerBrand = this.createNode(hud, 'HeaderBrand', headerBrandX, 0, headerBrandWidth, headerBrandHeight);
+        const headerBrandBackground = headerBrand.addComponent(Graphics);
+        headerBrandBackground.fillColor = new Color(22, 66, 52, 77);
+        headerBrandBackground.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 220);
+        headerBrandBackground.lineWidth = Math.max(1.5, 2 * headerBrandScale);
+        headerBrandBackground.roundRect(
+            -headerBrandWidth / 2,
+            -headerBrandHeight / 2,
+            headerBrandWidth,
+            headerBrandHeight,
+            12 * headerBrandScale,
+        );
+        headerBrandBackground.fill();
+        headerBrandBackground.stroke();
         const headerLogo = this.createNode(
             headerBrand,
             'HeaderLogo',
@@ -504,14 +523,14 @@ export class ChessEndlessGame extends Component implements MiniGame {
             headerLogoHeight,
         );
         this.applySprite(headerLogo, 'logo');
-        const bestLabelHeight = 24;
+        const bestLabelHeight = 24 * headerBrandScale;
         this.bestLabel = this.createLabel(
             headerBrand,
             'BestScore',
             `纪录 ${this.bestScore.toLocaleString()}`,
             0,
             innerBottom + bestLabelHeight / 2,
-            16,
+            Math.max(10, Math.round(16 * headerBrandScale)),
             COLORS.goldLight,
             headerBrandWidth - headerBrandPaddingX * 2,
             bestLabelHeight,
@@ -521,28 +540,33 @@ export class ChessEndlessGame extends Component implements MiniGame {
         bestOutline.color = new Color(18, 36, 32, 235);
         bestOutline.width = 2;
 
-        this.createImageButtonOn(this.node, 'PauseButton', 'pauseIcon', pauseX, pauseY, 58, () => {
+        const controlSize = 58 * hudScale;
+        const controlGap = 10 * hudScale;
+        const controlRightPadding = 20 * hudScale;
+        const pauseX = hudWidth / 2 - controlRightPadding - controlSize / 2;
+        const rulesX = pauseX - controlSize - controlGap;
+        this.createImageButtonOn(hud, 'PauseButton', 'pauseIcon', pauseX, 0, controlSize, () => {
             if (!this.inputLocked) {
                 this.playSound('uiClick', 0.6);
                 this.context?.requestPause();
             }
         });
         this.createImageButtonOn(
-            this.node,
+            hud,
             'RulesButton',
             'rulesIcon',
-            Math.max(-contentWidth / 2 + 29, pauseX - 68),
-            pauseY,
-            58,
+            rulesX,
+            0,
+            controlSize,
             () => this.showRules(),
         );
 
-        const scoreBlockWidth = Math.min(320, contentWidth);
-        this.scoreLabel = this.createLabel(this.node, 'Score', '0', 0, topHudY + 12, 48, COLORS.goldLight, scoreBlockWidth, 58);
+        const scoreBlockWidth = Math.max(1, hudWidth * 0.32);
+        this.scoreLabel = this.createLabel(hud, 'Score', '0', 0, 11 * hudScale, Math.max(24, Math.round(48 * hudScale)), COLORS.goldLight, scoreBlockWidth, 58 * hudScale);
         const scoreOutline = this.scoreLabel.node.addComponent(LabelOutline);
         scoreOutline.color = new Color(45, 25, 12, 210);
         scoreOutline.width = 2;
-        const scoreTitle = this.createLabel(this.node, 'ScoreTitle', '本局得分', 0, topHudY - 30, 20, COLORS.white, scoreBlockWidth, 28);
+        const scoreTitle = this.createLabel(hud, 'ScoreTitle', '本局得分', 0, -30 * hudScale, Math.max(12, Math.round(20 * hudScale)), COLORS.white, scoreBlockWidth, 28 * hudScale);
         const scoreTitleOutline = scoreTitle.node.addComponent(LabelOutline);
         scoreTitleOutline.color = new Color(45, 25, 12, 210);
         scoreTitleOutline.width = 2;
@@ -550,7 +574,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.reinforcementNode = this.createNode(
             this.node,
             'ReinforcementPanel',
-            0,
+            reinforcementX,
             reinforcementY,
             reinforcementWidth,
             reinforcementHeight,
@@ -620,7 +644,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             72 * reinforcementScale,
         );
 
-        this.boardNode = this.createNode(this.node, 'Board', 0, boardY, boardNodeWidth, boardNodeHeight);
+        this.boardNode = this.createNode(this.node, 'Board', boardX, boardY, boardNodeWidth, boardNodeHeight);
         this.applySprite(this.boardNode, 'boardBackplate');
         const boardSurface = this.createNode(this.boardNode, 'BoardSurface', 0, 0, surfaceWidth, surfaceHeight);
         this.applySprite(boardSurface, 'board');
@@ -635,16 +659,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         this.hintLabel = undefined;
 
-        this.itemDock = this.createNode(this.node, 'ItemDock', 0, dockY, contentWidth, dockHeight);
-        const dockGraphics = this.itemDock.addComponent(Graphics);
-        dockGraphics.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 115);
-        dockGraphics.lineWidth = 1.5;
-        const dockRuleWidth = Math.max(0, contentWidth - 24);
-        dockGraphics.moveTo(-dockRuleWidth / 2, dockHeight / 2 - 14);
-        dockGraphics.lineTo(dockRuleWidth / 2, dockHeight / 2 - 14);
-        dockGraphics.stroke();
-        const dockTitleY = dockHeight / 2 - Math.min(32, dockHeight * 0.24);
-        const dockTitleFontSize = Math.max(12, Math.min(18, Math.round(dockHeight * 0.105)));
+        this.itemDock = this.createNode(this.node, 'ItemDock', dockX, dockY, dockWidth, dockHeight);
+        const dockScale = Math.max(0.1, Math.min(1, dockWidth / 750));
+        const dockTopPadding = 8 * dockScale;
+        const dockTitleHeight = 24 * dockScale;
+        const dockTitleY = dockHeight / 2 - dockTopPadding - dockTitleHeight / 2;
+        const dockTitleFontSize = Math.max(12, Math.round(18 * dockScale));
         this.createLabel(
             this.itemDock,
             'DockTitle',
@@ -653,8 +673,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
             dockTitleY,
             dockTitleFontSize,
             COLORS.goldLight,
-            Math.max(1, contentWidth - 32),
-            Math.max(20, dockTitleFontSize * 1.6),
+            Math.max(1, dockWidth - 32 * dockScale),
+            dockTitleHeight,
         );
     }
 
@@ -857,24 +877,30 @@ export class ChessEndlessGame extends Component implements MiniGame {
         });
 
         const types: readonly ItemType[] = ['crossSlash', 'freeze', 'delay', 'banish', 'teleport'];
-        const width = this.layout?.getMetrics().contentWidth
-            ?? this.node.getComponent(UITransform)?.contentSize.width
+        const width = dock.getComponent(UITransform)?.contentSize.width
+            ?? this.layout?.getMetrics().dockWidth
             ?? 750;
         const dockHeight = dock.getComponent(UITransform)?.contentSize.height ?? 176;
-        const totalWidth = Math.max(1, Math.min(610, width - 24));
+        const dockScale = Math.max(0.1, Math.min(1, width / 750));
+        const topPadding = 8 * dockScale;
+        const titleHeight = 24 * dockScale;
+        const titleGap = 10 * dockScale;
+        const bottomPadding = 2 * dockScale;
+        const listHeight = Math.max(1, dockHeight - topPadding - titleHeight - titleGap - bottomPadding);
+        const totalWidth = Math.max(1, Math.min(750, width) - 48 * dockScale);
         const cellWidth = totalWidth / types.length;
         const visualScale = Math.max(0.1, Math.min(
             1,
             (cellWidth - 6) / 112,
-            Math.max(1, dockHeight - 38) / 128,
+            listHeight / 128,
         ));
         const buttonGap = Math.max(3, 9 * visualScale);
         const buttonWidth = Math.max(1, cellWidth - buttonGap);
         const buttonHeight = Math.max(1, 128 * visualScale);
-        const buttonY = -Math.min(11, dockHeight * 0.07);
+        // 卡片贴着底部安全边界排列，多出的高度留在标题与卡片之间。
+        const buttonY = -dockHeight / 2 + bottomPadding + buttonHeight / 2;
         const cornerRadius = Math.max(5, 14 * visualScale);
-        const slotSize = 88 * visualScale;
-        const iconSize = 76 * visualScale;
+            const iconSize = 76 * visualScale;
         const badgeSize = 32 * visualScale;
         const helpSize = 27 * visualScale;
         const nameFontSize = Math.max(11, Math.round(19 * visualScale));
@@ -887,10 +913,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const active = this.selectedItem === type;
             const available = snapshot.inventory[type] > 0 && !snapshot.usedItemThisTurn;
             graphics.fillColor = active
-                ? new Color(COLORS.cinnabar.r, COLORS.cinnabar.g, COLORS.cinnabar.b, 220)
+                ? new Color(28, 82, 60, 220)
                 : available
-                ? new Color(COLORS.cinnabar.r, COLORS.cinnabar.g, COLORS.cinnabar.b, 168)
-                : new Color(COLORS.cinnabar.r, COLORS.cinnabar.g, COLORS.cinnabar.b, 92);
+                ? new Color(22, 66, 52, 190)
+                : new Color(18, 50, 42, 115);
             graphics.strokeColor = active
                 ? COLORS.goldLight
                 : new Color(COLORS.goldLight.r, COLORS.goldLight.g, COLORS.goldLight.b, available ? 168 : 72);
@@ -898,13 +924,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             graphics.roundRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, cornerRadius);
             graphics.fill();
             graphics.stroke();
-
-            const slotY = 18 * visualScale;
-            const slotArt = this.createNode(button, 'SlotArtwork', 0, slotY, slotSize, slotSize);
-            this.applySprite(slotArt, 'itemSlot');
-            slotArt.getComponent(Sprite)!.color = available
-                ? new Color(255, 255, 255, 176)
-                : new Color(166, 151, 120, 110);
 
             const icon = this.createNode(button, 'Icon', 0, 19 * visualScale, iconSize, iconSize);
             this.applySprite(icon, ITEM_ICON_KEY[type]);
@@ -1157,7 +1176,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async animateCapture(node: Node, record?: KillRecord): Promise<void> {
         if (!record) return;
         const origin = node.position.clone();
-        const burst = this.createNode(this.effectLayer ?? this.node, 'CaptureBurst', origin.x, origin.y, 148, 148);
+        const burst = this.createNode(this.effectLayer ?? this.node, 'CaptureBurst', origin.x, origin.y, 128, 128);
         this.applySprite(burst, 'captureBurst');
         burst.setScale(0.2, 0.2, 1);
         const burstOpacity = burst.addComponent(UIOpacity);
@@ -1253,7 +1272,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async showGeneralArrival(): Promise<void> {
         this.duckMusic('generalArrive', 1.45);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.cinnabar, 0.95, 620, 320);
+        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320);
         const general = this.model.snapshot.enemies.find((piece) => piece.type === 'general');
         if (general) {
             const point = this.boardPoint(general.position);
@@ -1264,7 +1283,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async showGeneralKillMoment(): Promise<void> {
         this.duckMusic('generalKill', 1.0);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.cinnabar, 0.9, 650, 350);
+        await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.goldLight, 0.9, 650, 350);
     }
 
     private async animatePlayerDeath(): Promise<void> {
@@ -1331,7 +1350,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.inputLocked = false;
             this.selectedPlayer = true;
             this.renderAll();
-            this.setHint('复活成功，轮到你走棋');
         }
     }
 
@@ -1340,13 +1358,14 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.inputLocked = true;
         this.playSound('rewardOpen');
         const overlay = this.createOverlayRoot('RewardOverlay');
+        const safeRect = this.resolveSafeContentRect();
         this.rewardOverlay = { root: overlay, buttons: [] };
-        const closed = this.createNode(overlay, 'ChestClosed', 0, -40, 320, 260);
+        const closed = this.createNode(overlay, 'ChestClosed', safeRect.x, safeRect.y - 40, 320, 260);
         this.applySprite(closed, 'rewardChestClosed');
         closed.setScale(0.2, 0.2, 1);
         await this.tweenNode(closed, 0.3, { scale: new Vec3(1, 1, 1) }, 'backOut');
         await this.waitSeconds(0.16);
-        const open = this.createNode(overlay, 'ChestOpen', 0, -30, 350, 285);
+        const open = this.createNode(overlay, 'ChestOpen', safeRect.x, safeRect.y - 30, 350, 285);
         this.applySprite(open, 'rewardChestOpen');
         closed.destroy();
         for (let index = 0; index < 8; index += 1) {
@@ -1368,7 +1387,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private buildRewardPanel(overlay: Node, animateFromChest: boolean): void {
         const choices = this.model.snapshot.pendingRewardChoices;
-        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const safeRect = this.resolveSafeContentRect();
         const cardWidth = choices.length >= 3 ? 156 : 168;
         const cardHeight = Math.round(cardWidth * (430 / 300));
         const cardEdgeGap = choices.length >= 3 ? 10 : 16;
@@ -1381,15 +1400,15 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const panelSize = resolveChessEndlessModalPanelSize(
             cardRowWidth,
             headerHeight + cardsTopGap + cardRowHeight + bottomPadding,
-            rootSize,
+            safeRect,
         );
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
-        const panel = this.createNode(overlay, 'Panel', 0, 20, panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y + 20, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
         if (animateFromChest) {
-            panel.setPosition(0, -44);
+            panel.setPosition(safeRect.x, safeRect.y - 44);
             panel.setScale(0.12, 0.12, 1);
-            tween(panel).to(0.34, { position: new Vec3(0, 20, 0), scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+            tween(panel).to(0.34, { position: new Vec3(safeRect.x, safeRect.y + 20, 0), scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
         }
         let cursorY = content.top - 18;
         this.createLabel(panel, 'Kicker', '斩将奖励', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 30);
@@ -1487,12 +1506,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.destroyOverlay(this.rulesOverlay);
         const page = RULE_PAGES[this.rulesPageIndex]!;
         const overlay = this.createOverlayRoot('RulesOverlay');
-        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const safeRect = this.resolveSafeContentRect();
         const footerHeight = 136;
         const headerHeight = 132;
-        const panelSize = resolveChessEndlessModalPanelSize(480, headerHeight + footerHeight + 320, rootSize);
+        const panelSize = resolveChessEndlessModalPanelSize(480, headerHeight + footerHeight + 320, safeRect);
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
-        const panel = this.createNode(overlay, 'Panel', 0, 0, panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
         let cursorY = content.top - 18;
         this.createLabel(panel, 'Kicker', '入局须知', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 30);
@@ -1623,7 +1642,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         artKey?: string,
     ): OverlayState {
         const overlay = this.createOverlayRoot(name);
-        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const safeRect = this.resolveSafeContentRect();
         const bodyLines = body.split('\n').length;
         const bodyLineHeight = 32;
         const bodyHeight = Math.max(72, bodyLines * bodyLineHeight + 12);
@@ -1633,9 +1652,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const footerHeight = actions.length * buttonHeight + Math.max(0, actions.length - 1) * buttonGap + 28;
         const innerHeight = headerHeight + bodyHeight + footerHeight;
         const innerWidth = 468;
-        const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, rootSize);
+        const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, safeRect);
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
-        const panel = this.createNode(overlay, 'Panel', 0, 0, panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
 
         let cursorY = content.top - 18;
@@ -1688,7 +1707,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private buildPauseModal(score: number, model: MiniGamePauseModel): OverlayState {
         const overlay = this.createOverlayRoot('PauseOverlay');
-        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
+        const safeRect = this.resolveSafeContentRect();
         const body = `当前得分 ${score}\n增援与棋局都已冻结`;
         const actions: readonly OverlayAction[] = [
             { label: '继续棋局', tone: 'jade', action: model.resume },
@@ -1708,9 +1727,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             + 28;
         const innerHeight = headerHeight + copyHeight + footerHeight;
         const innerWidth = 468;
-        const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, rootSize);
+        const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, safeRect);
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
-        const panel = this.createNode(overlay, 'Panel', 0, 0, panelSize.width, panelSize.height);
+        const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
 
         let cursorY = content.top - 18;
@@ -1863,7 +1882,39 @@ export class ChessEndlessGame extends Component implements MiniGame {
         return Math.max(minHeight, wrappedLines * lineHeight + 28);
     }
 
+    private resolveSafeContentRect(): {
+        readonly width: number;
+        readonly height: number;
+        readonly x: number;
+        readonly y: number;
+    } {
+        const metrics = this.layout?.getMetrics();
+        if (metrics) {
+            return Object.freeze({
+                width: metrics.contentWidth,
+                height: Math.max(1, metrics.height - metrics.safeTop - metrics.safeBottom),
+                x: metrics.contentX,
+                y: (metrics.safeBottom - metrics.safeTop) / 2,
+            });
+        }
+
+        const viewport = readChessEndlessViewport(this.node);
+        return Object.freeze({
+            width: viewport.width,
+            height: Math.max(1, viewport.height - viewport.safeTop - viewport.safeBottom),
+            x: 0,
+            y: (viewport.safeBottom - viewport.safeTop) / 2,
+        });
+    }
+
     private resolveFullscreenOverlaySize(): { readonly width: number; readonly height: number } {
+        const metrics = this.layout?.getMetrics();
+        if (metrics) {
+            return Object.freeze({
+                width: metrics.width,
+                height: metrics.height,
+            });
+        }
         const viewport = readChessEndlessViewport(this.node);
         return Object.freeze({
             width: viewport.width,
@@ -2038,9 +2089,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private showCallout(text: string, color: Color, fontSize: number, duration: number): void {
-        const rootSize = this.node.getComponent(UITransform)?.contentSize ?? { width: 750, height: 1334 };
-        const calloutWidth = Math.max(1, Math.min(560, rootSize.width - 32));
-        const node = this.createNode(this.node, `Callout-${text}`, 0, rootSize.height / 2 - 260, calloutWidth, 90);
+        const safeRect = this.resolveSafeContentRect();
+        const calloutWidth = Math.max(1, Math.min(560, safeRect.width - 32));
+        const calloutY = safeRect.y + safeRect.height / 2 - 180;
+        const node = this.createNode(this.node, `Callout-${text}`, safeRect.x, calloutY, calloutWidth, 90);
         const label = this.createLabel(node, 'Label', text, 0, 0, fontSize, color, calloutWidth, 80);
         label.isBold = true;
         const opacity = node.addComponent(UIOpacity);
@@ -2152,7 +2204,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private playMusic(key: 'musicNormal' | 'musicPressure'): void {
         const clip = this.clips.get(key);
-        if (clip) this.context?.services.audio.playMusic(clip);
+        if (clip) this.context?.services.audio.playMusic(clip, CHESS_MUSIC_VOLUME);
     }
 
     private updatePressureMusic(snapshot: ChessEndlessSnapshot): void {

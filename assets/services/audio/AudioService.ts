@@ -4,6 +4,7 @@ import type { StorageService, UserSettings } from '../storage/StorageService';
 export interface AudioChannel {
     clip: AudioClip | null;
     loop: boolean;
+    volume?: number;
     readonly playing: boolean;
     play(): void;
     pause(): void;
@@ -39,7 +40,8 @@ export class AudioService {
         return this.soundEnabled;
     }
 
-    playMusic(clip: AudioClip): void {
+    playMusic(clip: AudioClip, volumeScale = 1): void {
+        this.musicChannel.volume = Math.max(0, Math.min(1, volumeScale));
         if (this.currentMusic === clip && this.musicChannel.playing) {
             return;
         }

@@ -27,6 +27,12 @@ for (let index = 5; index < 32; index += 3) {
 }
 const scene = fs.readFileSync(path.join(gameRoot, 'scenes/ChessEndless.scene'), 'utf8');
 assert(scene.includes(`"__type__": "${compressed}"`), 'Scene does not reference ChessEndlessGame meta UUID.');
+const sceneData = JSON.parse(scene);
+const canvasComponent = sceneData.find((entry) => entry.__type__ === 'cc.Canvas');
+assert(canvasComponent, 'Chess scene must contain a Canvas component.');
+assert(canvasComponent._cameraComponent?.__id__ !== undefined, 'Chess Canvas must bind its UI Camera so layout and visible width use the same coordinate space.');
+const boundCamera = sceneData[canvasComponent._cameraComponent.__id__];
+assert.strictEqual(boundCamera?.__type__, 'cc.Camera', 'Chess Canvas camera binding must resolve to a Camera component.');
 
 const audioRoot = path.join(gameRoot, 'visual/audio');
 const audioFiles = fs.readdirSync(audioRoot).filter((name) => (
@@ -103,7 +109,12 @@ assert(fs.existsSync(path.join(gameRoot, 'scripts/ChessEndlessLayout.ts')), 'Mis
 assert(fs.existsSync(path.join(gameRoot, 'scripts/ChessEndlessResponsiveRules.ts')), 'Missing ChessEndlessResponsiveRules.ts');
 const layoutCode = fs.readFileSync(path.join(gameRoot, 'scripts/ChessEndlessLayout.ts'), 'utf8');
 assert(layoutCode.includes('calculateChessEndlessLayout('), 'ChessEndlessLayout must export calculateChessEndlessLayout.');
-assert(layoutCode.includes('calculateTopRightControlPosition('), 'ChessEndlessLayout must route top-right controls through PlatformSafeLayout.');
+['contentX', 'hudWidth', 'hudHeight', 'reinforcementX', 'dockWidth', 'boardX']
+    .forEach((metric) => assert(layoutCode.includes(`readonly ${metric}: number`), `Missing responsive layout metric ${metric}.`));
+assert(layoutCode.includes('topRightReservedArea?.bottom'), 'The full HUD must be positioned below the WeChat menu capsule.');
+assert(layoutCode.includes('boardTop - boardNodeHeight / 2'), 'The board must stay top-aligned below reinforcement.');
+assert(layoutCode.includes('const contentWidth = Math.min(750, availableWidth)'), 'All main content modules must be capped to the 750 design width.');
+assert(layoutCode.includes('visible.width > 0 ? visible.width : rootSize.width'), 'The background viewport must retain the actual visible width.');
 const sourceCode = fs.readFileSync(path.join(gameRoot, 'scripts/ChessEndlessGame.ts'), 'utf8');
 const routedAudio = [...sourceCode.matchAll(/'visual\/audio\/([^']+)'/g)].map((match) => `${match[1]}.mp3`);
 assert.strictEqual(new Set(routedAudio).size, audioFiles.length, 'Every runtime MP3 must have one AUDIO_PATHS route.');
@@ -142,6 +153,22 @@ assert(sourceCode.includes('LabelOutline'), 'Reinforcement text needs a contrast
 assert(sourceCode.includes("'PreviewPieces'") && sourceCode.includes('reinforcementContentCenterY'), 'The preview row must share the panel content center with the copy block.');
 assert(sourceCode.includes('pieceSize = 60'), 'Reinforcement preview pieces must render larger for small waves.');
 assert(sourceCode.includes("this.reinforcementTitle.color = general ? COLORS.cinnabar : COLORS.goldLight"), 'Reinforcement title must stay readable over the dark tabletop.');
+assert(sourceCode.includes("'TopHud'"), 'The title, score and menu controls must share one full-width HUD container.');
+assert(sourceCode.includes('new Color(22, 66, 52, 190)'), 'Available item cards must use the translucent ink-green background.');
+assert(sourceCode.includes('new Color(18, 50, 42, 115)'), 'Unavailable item cards must keep a translucent ink-green background.');
+assert(!sourceCode.includes('new Color(12, 38, 30, 178)'), 'The full HUD must not have a green fill.');
+assert(!sourceCode.includes('new Color(10, 34, 27, 168)'), 'The full item dock must not have a green fill.');
+assert(sourceCode.includes('overlay: new Color(0, 0, 0, 77)'), 'Modal overlays must use a 30% translucent black full-screen mask.');
+assert(sourceCode.includes('width: metrics.width') && sourceCode.includes('height: metrics.height'), 'Modal overlays must use the complete calculated viewport.');
+assert(sourceCode.includes('headerBrandBackground.fillColor = new Color(22, 66, 52, 77)'), 'The title and best-score block must use the 0.3-alpha ink-green background.');
+assert(sourceCode.includes('headerBrandBackground.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 220)'), 'The title and best-score block must use a clearly visible gold outline.');
+assert(sourceCode.includes('headerBrandBackground.lineWidth = Math.max(1.5, 2 * headerBrandScale)'), 'The title and best-score block gold outline must remain visible after responsive scaling.');
+assert(!sourceCode.includes("'Backplate', 0, 0, headerBrandWidth"), 'The HUD must not render the green ribbon backplate.');
+assert(!sourceCode.includes("'SlotArtwork'"), 'Item cards must not render an extra opaque green slot background.');
+assert(sourceCode.includes('resolveSafeContentRect()'), 'Modal content must be constrained to the safe area.');
+assert(sourceCode.includes("this.createNode(this.effectLayer ?? this.node, 'CaptureBurst'") && sourceCode.includes("this.createNode(this.effectLayer ?? this.node, 'CaptureChip'"), 'Capture artwork must render above chess pieces.');
+assert(sourceCode.includes('const CHESS_MUSIC_VOLUME = 0.8') && sourceCode.includes('playMusic(clip, CHESS_MUSIC_VOLUME)'), 'Chess background music must play at 80% volume.');
+assert(!sourceCode.includes("this.setHint('复活成功，轮到你走棋')"), 'Reviving must not show the obsolete success hint.');
 assert(sourceCode.includes("'查看最后残局'"), 'The final result must allow board inspection.');
 assert(!sourceCode.includes("'点击己方車查看可走位置'"), 'The obsolete bottom-board text hint must be removed.');
 ['items', 'general', 'reward', 'guard', 'fullInventory', 'noRevive']

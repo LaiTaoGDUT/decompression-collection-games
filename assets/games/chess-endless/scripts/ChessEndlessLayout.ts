@@ -7,7 +7,6 @@ import {
     Widget,
 } from 'cc';
 import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
-import { calculateTopRightControlPosition } from '../../../shared/ui/PlatformSafeLayout';
 
 const { ccclass } = _decorator;
 
@@ -26,16 +25,22 @@ export interface ChessEndlessLayoutMetrics {
     readonly safeBottom: number;
     readonly safeLeft: number;
     readonly safeRight: number;
-    readonly pauseX: number;
-    readonly pauseY: number;
-    readonly topHudY: number;
+    readonly contentX: number;
     readonly contentWidth: number;
+    readonly hudX: number;
+    readonly hudY: number;
+    readonly hudWidth: number;
+    readonly hudHeight: number;
+    readonly reinforcementX: number;
     readonly reinforcementWidth: number;
     readonly reinforcementScale: number;
     readonly reinforcementHeight: number;
     readonly reinforcementY: number;
+    readonly dockX: number;
+    readonly dockWidth: number;
     readonly dockHeight: number;
     readonly dockY: number;
+    readonly boardX: number;
     readonly boardY: number;
     readonly boardWidth: number;
     readonly boardHeight: number;
@@ -96,8 +101,7 @@ export function resolveChessEndlessViewportSize(
 function fitBoardMetrics(
     boardTop: number,
     boardBottom: number,
-    contentWidth: number,
-    maxGridWidth: number,
+    maxNodeWidth: number,
 ): Pick<
     ChessEndlessLayoutMetrics,
     | 'boardWidth'
@@ -109,11 +113,9 @@ function fitBoardMetrics(
     | 'surfaceHeight'
 > {
     const slotHeight = Math.max(0, boardTop - boardBottom);
-    const maxNodeWidth = Math.max(0, contentWidth);
-    const widthScale = maxGridWidth > 0 ? maxGridWidth / BOARD_DESIGN_WIDTH : 0;
     const nodeWidthScale = maxNodeWidth > 0 ? maxNodeWidth / BOARD_NODE_DESIGN_WIDTH : 0;
     const heightScale = slotHeight > 0 ? slotHeight / BOARD_NODE_DESIGN_HEIGHT : 0;
-    const scale = Math.max(0, Math.min(1, widthScale, nodeWidthScale, heightScale));
+    const scale = Math.max(0, Math.min(nodeWidthScale, heightScale));
 
     const boardWidth = BOARD_DESIGN_WIDTH * scale;
     const boardHeight = BOARD_DESIGN_HEIGHT * scale;
@@ -121,7 +123,9 @@ function fitBoardMetrics(
     const boardNodeHeight = BOARD_NODE_DESIGN_HEIGHT * scale;
     const surfaceWidth = BOARD_SURFACE_DESIGN_WIDTH * scale;
     const surfaceHeight = BOARD_SURFACE_DESIGN_HEIGHT * scale;
-    const boardY = (boardTop + boardBottom) / 2;
+    // 棋盘始终贴着增援模块向下排。高屏的额外空间留在棋盘与道具栏之间，
+    // 只有矮屏才通过 heightScale 缩小棋盘。
+    const boardY = boardTop - boardNodeHeight / 2;
 
     return {
         boardWidth,
@@ -165,53 +169,53 @@ export function calculateChessEndlessLayout(
     }
 
     const availableWidth = Math.max(1, width - safeLeft - safeRight);
-    const horizontalPadding = Math.min(16, Math.max(6, availableWidth * 0.035));
-    const contentWidth = Math.max(1, Math.min(750, availableWidth - horizontalPadding * 2));
-
-    const pausePosition = calculateTopRightControlPosition(
-        width,
-        height,
-        platformLayout,
-        {
-            controlWidth: 58,
-            controlHeight: 120,
-            rightInset: 58,
-            defaultTopInset: clampedTop + 68,
-            reservedGap: 10,
-        },
-    );
-
-    const controlHalf = 29;
-    const controlGap = 8;
-    const minPauseX = -width / 2 + safeLeft + controlHalf + controlGap;
-    const maxPauseX = width / 2 - safeRight - controlHalf - controlGap;
-    const pauseX = minPauseX <= maxPauseX
-        ? clamp(pausePosition.x, minPauseX, maxPauseX)
-        : 0;
-    const minPauseY = -height / 2 + clampedBottom + controlHalf + controlGap;
-    const maxPauseY = height / 2 - clampedTop - controlHalf - controlGap;
-    const pauseY = minPauseY <= maxPauseY
-        ? clamp(pausePosition.y, minPauseY, maxPauseY)
-        : 0;
-    const topHudY = pauseY;
-
+    const contentX = (safeLeft - safeRight) / 2;
+    // 背景依然按真实 viewport cover，但所有内容模块最宽只使用
+    // 项目的 750 设计宽度，并在安全区内居中。
+    const contentWidth = Math.min(750, availableWidth);
     const safeHeight = Math.max(1, height - clampedTop - clampedBottom);
-    const verticalScale = Math.min(1, Math.max(0.55, safeHeight / 980));
+    const uiScale = clamp(availableWidth / 750, 0.64, 1);
 
-    const reinforcementWidth = Math.max(1, Math.min(480, contentWidth - 32));
-    const reinforcementScale = Math.min(1, reinforcementWidth / 500);
+    const reservedBottom = clamp(
+        platformLayout?.topRightReservedArea?.bottom ?? 0,
+        0,
+        height - clampedBottom,
+    );
+    const hudTopFromTop = Math.max(clampedTop, reservedBottom) + 12 * uiScale;
+    const hudHeight = 104 * uiScale;
+    const hudWidth = contentWidth;
+    const hudX = contentX;
+    const hudY = height / 2 - hudTopFromTop - hudHeight / 2;
+
+    const reinforcementScale = Math.max(0, Math.min(
+        1,
+        uiScale,
+        (contentWidth - 24 * uiScale) / 500,
+    ));
+    const reinforcementWidth = 500 * reinforcementScale;
     const reinforcementHeight = 121 * reinforcementScale;
-    const hudGap = 108 * verticalScale;
-    const reinforcementY = topHudY - hudGap;
+    const reinforcementX = contentX;
+    const reinforcementGap = 10 * uiScale;
+    const reinforcementY = hudY - hudHeight / 2 - reinforcementGap - reinforcementHeight / 2;
 
-    const dockHeight = Math.max(1, Math.min(176 * verticalScale, safeHeight * 0.24));
-    const dockBottomGap = 14 * verticalScale;
+    const dockWidth = contentWidth;
+    const dockHeight = Math.max(1, Math.min(178 * uiScale, safeHeight * 0.22));
+    const dockBottomGap = 0;
+    const dockX = contentX;
     const dockY = -height / 2 + clampedBottom + dockBottomGap + dockHeight / 2;
 
-    const boardTop = reinforcementY - 68 * verticalScale;
-    const boardBottom = dockY + dockHeight / 2 + 24 * verticalScale;
-    const maxGridWidth = Math.max(0, Math.min(BOARD_DESIGN_WIDTH, contentWidth));
-    const boardMetrics = fitBoardMetrics(boardTop, boardBottom, contentWidth, maxGridWidth);
+    const boardGap = 12 * uiScale;
+    const boardTop = reinforcementY - reinforcementHeight / 2 - boardGap;
+    const boardBottom = dockY + dockHeight / 2 + boardGap;
+    // 高度充足时棋盘外框直接铺满安全内容宽度；矮屏仍由
+    // fitBoardMetrics 的高度约束等比缩小。
+    // backplate 素材左右各有约 2% 透明留白，小幅放大节点来缩小
+    // 实际可见棋盘与屏幕的边距，透明像素仍不会溢出可见区。
+    const maxNodeWidth = Math.max(0, contentWidth + 40 * uiScale);
+    // 棋盘节点始终对齐安全内容区中心；素材透明边缘只通过宽度补偿处理，
+    // 避免横向偏移在真机上造成明显的左右不对称。
+    const boardX = contentX;
+    const boardMetrics = fitBoardMetrics(boardTop, boardBottom, maxNodeWidth);
     const backgroundCover = calculateChessEndlessBackgroundCover(width, height);
 
     return Object.freeze({
@@ -221,16 +225,22 @@ export function calculateChessEndlessLayout(
         safeBottom: clampedBottom,
         safeLeft,
         safeRight,
-        pauseX,
-        pauseY,
-        topHudY,
+        contentX,
         contentWidth,
+        hudX,
+        hudY,
+        hudWidth,
+        hudHeight,
+        reinforcementX,
         reinforcementWidth,
         reinforcementScale,
         reinforcementHeight,
         reinforcementY,
+        dockX,
+        dockWidth,
         dockHeight,
         dockY,
+        boardX,
         ...boardMetrics,
         backgroundWidth: backgroundCover.width,
         backgroundHeight: backgroundCover.height,
@@ -283,8 +293,13 @@ export class ChessEndlessLayout extends Component {
         const rootSize = this.node.getComponent(UITransform)?.contentSize
             ?? this.node.parent?.getComponent(UITransform)?.contentSize
             ?? { width: 750, height: 1334 };
-        const viewport = resolveChessEndlessViewportSize(rootSize.width, rootSize.height);
         const visible = view.getVisibleSize();
+        // viewport 保留微信返回的真实尺寸，用于背景与安全区换算；
+        // HUD、增援、棋盘和道具栏的 750 宽度上限由布局计算统一实施。
+        const viewport = resolveChessEndlessViewportSize(
+            visible.width > 0 ? visible.width : rootSize.width,
+            visible.height > 0 ? visible.height : rootSize.height,
+        );
         const safeRect = sys.getSafeAreaRect();
         const scaleX = visible.width > 0 ? viewport.width / visible.width : 1;
         const scaleY = visible.height > 0 ? viewport.height / visible.height : 1;

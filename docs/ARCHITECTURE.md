@@ -411,6 +411,16 @@ Canvas
 - 所有动态加载和释放必须经过 `AssetService`。
 - 每次构建检查主包体积、分包体积和重复资源。
 
+### Canvas 与 UI Camera 绑定（强制）
+
+每个小游戏场景中的 `cc.Canvas` 必须通过 `_cameraComponent` 显式绑定负责该画布的 `cc.Camera`，该字段不得为 `null`。场景层级中存在 Camera 节点并不代表 Canvas 已经使用该相机；未绑定时，Cocos 的 UI 坐标、Canvas 适配结果和微信小游戏最终可视区域可能不在同一套投影中，常见表现是设计宽度和安全区计算均正确，但界面仍从左右越界或被裁切。
+
+- UI Camera 使用正交投影，只渲染当前游戏的 UI Layer；Canvas、Camera 和 UI 根节点必须使用一致的 Layer。
+- `Canvas._cameraComponent` 的引用必须解析到有效的 `cc.Camera` 组件，禁止仅依赖运行时自动查找或编辑器预览中的隐式行为。
+- 屏幕适配应以绑定后的 Canvas 坐标系计算 `view.getVisibleSize()`、平台安全区、胶囊位置和响应式布局，不能用物理像素直接设置 UI 节点坐标。
+- 新增或复制小游戏场景时，项目校验脚本必须检查 Canvas 的相机引用；微信开发者工具验收至少覆盖一个窄屏和一个高屏设备，并检查左右边界与顶部胶囊区域。
+- 若出现“数值上未超过 750 设计宽度但真机仍然溢出”的问题，先检查 Canvas 的 `_cameraComponent`、Camera 正交尺寸、可见 Layer 和 Canvas 适配策略，再调整业务布局参数。
+
 ## 14. 2D/3D 渲染与性能基线
 
 合集正式支持 2D 与 3D 小游戏。3D 游戏仍使用统一 `MiniGame` 生命周期、独立场景和独立 Bundle，不建立第二套运行框架。
