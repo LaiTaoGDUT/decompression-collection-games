@@ -25,6 +25,29 @@
       ]
     },
     {
+      "id": "chess-endless",
+      "version": "1.0.0",
+      "name": "棋逢对手·无尽挑战",
+      "description": "只控一枚车，在不断增援的中国象棋战阵中步步突围。",
+      "bundle": "game-chess-endless",
+      "scene": "scenes/ChessEndless",
+      "entryComponent": "ChessEndlessGame",
+      "icon": "visual/icons/chess-endless/chess-endless-icon-v1/texture",
+      "cover": "visual/covers/chess-endless/chess-endless-cover-v1/texture",
+      "orientation": "portrait",
+      "renderMode": "2d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "visibility": "public",
+      "preload": [],
+      "tags": [
+        "strategy",
+        "turn-based",
+        "endless"
+      ]
+    },
+    {
       "id": "game2048",
       "version": "1.0.0",
       "name": "霓光 2048",

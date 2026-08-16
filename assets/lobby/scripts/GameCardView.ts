@@ -52,6 +52,7 @@ export class GameCardView extends Component {
     private coverRoot?: Node;
     private coverSprite?: Sprite;
     private cardSurface?: Graphics;
+    private coverFallback?: Graphics;
     private titleOverlay?: Graphics;
     private actionBackground?: Graphics;
     private decorRoot?: Node;
@@ -177,11 +178,6 @@ export class GameCardView extends Component {
         button.zoomScale = 0.965;
         button.duration = 0.12;
 
-        if (!this.getComponent(Graphics)) {
-            this.node.addComponent(Graphics);
-        }
-        this.getComponent(Graphics)?.clear();
-
         let surface = this.node.getChildByName('CardSurface');
         if (!surface) {
             surface = new Node('CardSurface');
@@ -207,9 +203,17 @@ export class GameCardView extends Component {
         if (legacySprite) {
             legacySprite.enabled = false;
         }
-        if (!this.coverRoot.getComponent(Graphics)) {
-            this.coverRoot.addComponent(Graphics);
+
+        let coverFallback = this.coverRoot.getChildByName('CoverFallback');
+        if (!coverFallback) {
+            coverFallback = new Node('CoverFallback');
+            coverFallback.layer = parentLayer;
+            this.coverRoot.addChild(coverFallback);
+            coverFallback.addComponent(UITransform);
+            coverFallback.addComponent(Graphics);
         }
+        coverFallback.setSiblingIndex(0);
+        this.coverFallback = coverFallback.getComponent(Graphics) ?? undefined;
 
         let coverClip = this.coverRoot.getChildByName('CoverClip');
         if (!coverClip) {
@@ -318,6 +322,8 @@ export class GameCardView extends Component {
         if (this.coverRoot) {
             this.coverRoot.setPosition(0, coverY);
             this.coverRoot.getComponent(UITransform)?.setContentSize(innerWidth, coverHeight);
+            this.coverFallback?.node.setPosition(0, 0);
+            this.coverFallback?.node.getComponent(UITransform)?.setContentSize(innerWidth, coverHeight);
             const coverClip = this.coverRoot.getChildByName('CoverClip');
             coverClip?.setPosition(0, 0);
             coverClip?.getComponent(UITransform)?.setContentSize(
@@ -492,7 +498,7 @@ export class GameCardView extends Component {
 
     private drawCoverFallback(comingSoon: boolean): void {
         const root = this.coverRoot;
-        const graphics = root?.getComponent(Graphics);
+        const graphics = this.coverFallback;
         const transform = root?.getComponent(UITransform);
         if (!root || !graphics || !transform) {
             return;
@@ -620,7 +626,7 @@ export class GameCardView extends Component {
             return;
         }
         bundle.load(path, Texture2D, (error: Error | null, texture: Texture2D) => {
-            if (token !== this.coverLoadToken || !this.node.isValid) {
+            if (token !== this.coverLoadToken || !this.node?.isValid) {
                 return;
             }
             if (error || !texture) {
@@ -633,7 +639,7 @@ export class GameCardView extends Component {
             this.ownedCoverFrame = frame;
             if (this.coverSprite) {
                 if (this.mode === 'coming-soon') {
-                    this.coverRoot?.getComponent(Graphics)?.clear();
+                    this.coverFallback?.clear();
                 }
                 this.coverSprite.spriteFrame = frame;
                 this.coverSprite.node.active = true;

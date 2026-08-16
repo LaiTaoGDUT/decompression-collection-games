@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "revision": 2,
+  "generatedAt": "2026-08-15",
+  "owner": "chess-endless",
+  "generator": "OpenAI built-in image generation plus deterministic raster post-processing",
+  "style": "Rich top-down Chinese scholar-table scene, carved dark wood, pale jade, parchment, cinnabar and antique gold",
+  "masters": [
+    {
+      "id": "chess-ui-atlas-v1",
+      "path": "art_sources/chess-endless/generated/v1/chess-ui-atlas-v1.png",
+      "strategy": "One coherent 4x4 transparent atlas generated in a single pass so small UI assets share lighting, material, perspective and palette."
+    },
+    {
+      "id": "chess-tabletop-master-v1",
+      "path": "art_sources/chess-endless/generated/v1/chess-tabletop-master-v1.png",
+      "strategy": "Shared wood-and-jade source used for the board surface and matching UI treatments."
+    },
+    {
+      "id": "chess-rich-background-master-v2",
+      "path": "art_sources/chess-endless/generated/v2/chess-rich-background-master-v2.png",
+      "strategy": "New integrated portrait scene generated as a single image for the game background and lobby cover, with bamboo, incense, scroll, inkstone, brush and chess pieces already composed in one perspective."
+    }
+  ],
+  "processing": {
+    "script": "tools/chess-endless/process-visuals.py",
+    "atlasSplit": "Fixed 4x4 cells, alpha-island cleanup, crop, contain and deterministic PNG export.",
+    "pieceTypography": "Character-aware calligraphy is baked into independent PNG sprites; both player and enemy rooks use 車. Runtime pieces and reinforcement previews never compose glyph labels over a base image.",
+    "outputs": {
+      "gamePng": 54,
+      "lobbyPng": 2,
+      "totalPng": 56,
+      "pieceSprites": 8,
+      "itemIcons": 5,
+      "vfxTextures": 20
+    }
+  },
+  "runtimeRoots": [
+    "assets/games/chess-endless/visual",
+    "assets/lobby/visual/covers/chess-endless",
+    "assets/lobby/visual/icons/chess-endless"
+  ],
+  "verification": {
+    "cocosImport": "passed",
+    "staticAssetAndRuntimeChecks": "passed",
+    "browserPreview": "pending: current V2 browser regression was blocked by the in-app browser security review for localhost and must be rerun before delivery",
+    "consistentSourceSheet": true
+  }
+}

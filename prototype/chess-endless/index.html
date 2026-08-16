@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>棋逢对手 · 无尽挑战 — 界面原型</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="prototype-shell">
+    <aside class="prototype-nav" aria-label="原型页面切换">
+      <div class="prototype-mark">UI PROTOTYPE <span>V0.1</span></div>
+      <h1>棋逢对手<br><em>无尽挑战</em></h1>
+      <p>无图片交互线框。用于确认信息层级、布局和主要弹层。</p>
+      <div class="prototype-links">
+        <button class="nav-button active" data-screen="game">对局 HUD</button>
+        <button class="nav-button" data-overlay="reward">斩将奖励</button>
+        <button class="nav-button" data-overlay="revive">死亡 / 复活</button>
+        <button class="nav-button" data-overlay="result">单局结算</button>
+      </div>
+      <div class="prototype-notes">
+        <strong>操作提示</strong>
+        <span>点击敌棋：查看规则</span>
+        <span>点击玩家车：显示可移动位置</span>
+        <span>点击道具：进入目标选择态</span>
+      </div>
+    </aside>
+
+    <section class="device-stage">
+      <div class="device" id="device">
+        <section class="screen game-screen active" data-screen-panel="game">
+          <header class="game-header">
+            <div class="header-balance" aria-hidden="true"></div>
+            <div class="scoreboard" aria-label="本局得分 2460，历史最高分 12680">
+              <div class="score-stat current-score"><small>本局得分</small><strong id="score">2,460</strong></div>
+              <span class="score-divider"></span>
+              <div class="score-stat best-score"><small>历史最高</small><strong>12,680</strong></div>
+            </div>
+            <div class="header-actions">
+              <button class="round-button" data-overlay="rules" aria-label="规则">?</button>
+              <button class="round-button" data-overlay="pause" aria-label="暂停">Ⅱ</button>
+            </div>
+          </header>
+
+          <section class="reinforcement-card" id="reinforcement-card">
+            <div class="reinforcement-title"><span>援</span><div><small>下一批增援</small><strong id="reinforcement-status">2 回合后</strong></div></div>
+            <div class="incoming-pieces" aria-label="下一批增援：马一枚、卒两枚">
+              <span class="piece incoming-piece enemy-piece">马<small>×1</small></span>
+              <span class="piece incoming-piece enemy-piece">卒<small>×2</small></span>
+            </div>
+          </section>
+
+          <div class="combat-callout" id="combat-callout">双重威胁</div>
+
+          <section class="board-wrap" aria-label="九列八行网格棋盘，棋子位于顶点">
+            <div class="board" id="board"></div>
+            <div class="combo-chip">连斩 <b>×3</b></div>
+          </section>
+
+          <div class="context-hint" id="context-hint">点击「车」，查看本回合合法落点</div>
+
+          <section class="item-dock">
+            <div class="dock-label"><small>本回合</small><strong>可用 1 个道具</strong></div>
+            <div class="item-list">
+              <button class="item-button" data-item="十字斩" data-mode="instant"><i>斩</i><span>十字斩</span><b>1</b></button>
+              <button class="item-button" data-item="定身符"><i>定</i><span>定身</span><b>2</b></button>
+              <button class="item-button" data-item="缓兵符" data-mode="instant"><i>缓</i><span>缓兵</span><b>1</b></button>
+              <button class="item-button" data-item="驱逐令"><i>逐</i><span>驱逐</span><b>1</b></button>
+              <button class="item-button" data-item="移形符" data-mode="empty"><i>移</i><span>移形</span><b>2</b></button>
+            </div>
+          </section>
+        </section>
+
+        <div class="overlay" id="overlay" aria-hidden="true">
+          <div class="overlay-backdrop" data-close-overlay></div>
+
+          <article class="modal pause-modal" data-modal="pause">
+            <span class="modal-kicker">棋局暂歇</span>
+            <h3>暂停</h3>
+            <p>当前棋局与增援倒计时已暂停。</p>
+            <button class="modal-primary" data-close-overlay>继续棋局</button>
+            <button class="modal-secondary" data-screen="game">重新开始</button>
+            <button class="modal-secondary" data-return-lobby>返回游戏大厅</button>
+          </article>
+
+          <article class="modal rules-modal" data-modal="rules">
+            <button class="modal-close" data-close-overlay>×</button>
+            <span class="modal-kicker">入局须知</span>
+            <h3>以车破局</h3>
+            <div class="rule-lead"><span class="piece player-piece">车</span><p>每回合必须沿横线或竖线移动一次，不能穿过棋子。</p></div>
+            <ol>
+              <li><b>先用道具</b><span>每个玩家回合最多使用 1 个，不消耗移动。</span></li>
+              <li><b>移动或吃子</b><span>多重威胁可以诱导敌方唯一一次行动。</span></li>
+              <li><b>留意增援</b><span>增援内容提前可见，落点在执行时确定。</span></li>
+              <li><b>斩将得宝</b><span>击杀“将”后，从三个一次性道具中选择一个。</span></li>
+            </ol>
+          </article>
+
+          <article class="modal reward-modal" data-modal="reward">
+            <span class="modal-kicker">将军已破</span>
+            <h3>斩 将</h3>
+            <p>选择一件道具，继续你的棋局</p>
+            <div class="reward-cards">
+              <button><i>斩</i><strong>十字斩</strong><span>清除车所在横纵线</span><small>持有 1 / 2</small></button>
+              <button><i>定</i><strong>定身符</strong><span>封住一枚普通敌棋 1 回合</span><small>持有 0 / 2</small></button>
+              <button><i>移</i><strong>移形符</strong><span>立刻移动到任意空格</span><small>持有 1 / 2</small></button>
+            </div>
+          </article>
+
+          <article class="modal revive-modal" data-modal="revive">
+            <span class="broken-piece">车</span>
+            <span class="modal-kicker">一步失守</span>
+            <h3>棋局未尽</h3>
+            <p>复活将回到致死行动前，并自动释放一次十字斩。</p>
+            <button class="modal-primary">▶ 看视频复活</button>
+            <button class="modal-secondary" data-overlay="result">结束本局</button>
+            <small>本局仅可复活 1 次</small>
+          </article>
+
+          <article class="modal result-modal" data-modal="result">
+            <span class="modal-kicker">本局落幕</span>
+            <h3>12,680</h3>
+            <p>本局得分</p>
+            <div class="result-grid">
+              <div><strong>86</strong><span>生存回合</span></div>
+              <div><strong>4</strong><span>斩将</span></div>
+              <div><strong>×7</strong><span>最大连斩</span></div>
+            </div>
+            <div class="new-record">新纪录 · 超越历史最佳 2,340 分</div>
+            <button class="modal-primary" data-screen="game">再来一局</button>
+            <button class="modal-secondary" data-return-lobby>返回游戏大厅</button>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

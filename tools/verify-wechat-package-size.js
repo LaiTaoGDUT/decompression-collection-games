@@ -7,6 +7,16 @@ const maxMainPackageBytes = 4 * 1024 * 1024;
 
 assert(fs.existsSync(root), 'build/wechatgame does not exist; build the project first.');
 
+const gameJsonPath = path.join(root, 'game.json');
+assert(fs.existsSync(gameJsonPath), 'build/wechatgame/game.json is missing; rebuild the project.');
+const gameJson = JSON.parse(fs.readFileSync(gameJsonPath, 'utf8'));
+const expectedSubpackages = ['game-blocks3d', 'game-chess-endless', 'game-2048', 'game-watermelon'];
+const actualSubpackages = new Set((gameJson.subpackages ?? []).map((entry) => entry.name));
+expectedSubpackages.forEach((name) => assert(
+    actualSubpackages.has(name),
+    `WeChat output is stale: missing subpackage ${name}; rebuild with the current Cocos bundle configuration.`,
+));
+
 function directorySize(directory, excludedDirectoryName) {
     let total = 0;
 

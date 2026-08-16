@@ -164,7 +164,10 @@ export class LobbyPresentation {
         }
         bundle.load(BACKGROUND_ASSET_PATH, Texture2D, (error: Error | null, texture: Texture2D) => {
             const artworkNode = this.artworkNode;
-            if (error || !texture || !artworkNode?.isValid) {
+            if (!artworkNode?.isValid) {
+                return;
+            }
+            if (error || !texture) {
                 console.error('[LobbyPresentation] Formal background failed to load.', error);
                 return;
             }
@@ -188,7 +191,10 @@ export class LobbyPresentation {
         }
         bundle.load(BRAND_EMBLEM_ASSET_PATH, Texture2D, (error: Error | null, texture: Texture2D) => {
             const node = this.brandEmblemNode;
-            if (error || !texture || !node?.isValid) {
+            if (!node?.isValid) {
+                return;
+            }
+            if (error || !texture) {
                 console.error('[LobbyPresentation] Brand emblem failed to load.', error);
                 return;
             }
