@@ -34,7 +34,10 @@ export class AssetBundleReleaseError extends Error {
     }
 }
 
-const DEFAULT_BUNDLE_LOAD_TIMEOUT_MS = 15000;
+// WeChat subpackages are downloaded on first use. Large game bundles can take
+// well over 15 seconds on a weak mobile connection even though the platform is
+// still making progress, so do not report a false bundle failure too early.
+const DEFAULT_BUNDLE_LOAD_TIMEOUT_MS = 60000;
 
 function normalizeBundleName(name: string): string {
     const normalized = name.trim();

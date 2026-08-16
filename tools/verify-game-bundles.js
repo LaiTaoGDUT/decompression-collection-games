@@ -5,6 +5,7 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const gamesRoot = path.join(root, 'assets', 'games');
 const expectedSubpackageConfigId = '00mTKQ64hMUZEoY95Dbj9L';
+const minimumBundleLoadTimeoutMs = 60000;
 const verifiedBundles = [];
 
 function assertSubpackage(metaPath, expectedBundleName) {
@@ -60,4 +61,31 @@ for (const entry of fs.readdirSync(gamesRoot, { withFileTypes: true })) {
 }
 
 assert(verifiedBundles.length > 0, 'No game bundles were found.');
+
+const appConfig = JSON.parse(fs.readFileSync(
+    path.join(root, 'assets', 'resources', 'configs', 'app.json'),
+    'utf8',
+));
+assert(
+    appConfig.timeouts?.bundleLoadMs >= minimumBundleLoadTimeoutMs,
+    `Bundle loading must allow at least ${minimumBundleLoadTimeoutMs} ms for WeChat subpackage downloads.`,
+);
+
+const appConfigSource = fs.readFileSync(
+    path.join(root, 'assets', 'app', 'AppConfig.ts'),
+    'utf8',
+);
+const assetServiceSource = fs.readFileSync(
+    path.join(root, 'assets', 'services', 'asset', 'AssetService.ts'),
+    'utf8',
+);
+assert(
+    appConfigSource.includes(`bundleLoadMs: ${minimumBundleLoadTimeoutMs}`),
+    'AppConfig fallback bundle timeout must match the production configuration.',
+);
+assert(
+    assetServiceSource.includes(`DEFAULT_BUNDLE_LOAD_TIMEOUT_MS = ${minimumBundleLoadTimeoutMs}`),
+    'AssetService default bundle timeout must protect slow WeChat subpackage downloads.',
+);
+
 console.log(`game_bundles=passed, subpackages=${verifiedBundles.join(',')}`);

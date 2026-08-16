@@ -116,7 +116,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     },
     timeouts: {
         platformInitializationMs: 5000,
-        bundleLoadMs: 15000,
+        bundleLoadMs: 60000,
         sceneLoadMs: 15000,
         gameInitializationMs: 10000,
     },
