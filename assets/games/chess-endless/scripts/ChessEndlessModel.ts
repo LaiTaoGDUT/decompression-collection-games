@@ -4,13 +4,13 @@ export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 24;
 
 export const GENERAL_AI_SCORING = Object.freeze({
     // 将军成功脱离玩家车的直接威胁时获得的分数；越高越优先逃生。
-    escapeThreat: 800,
+    escapeThreat: 700,
     // 其他棋子通过挡线解除将军威胁时获得的分数；越高越倾向协同护将。
-    guardedByAlly: 300,
+    guardedByAlly: 200,
     // 将军原本已受威胁且行动后仍未脱险的扣分；越高越少无视眼前危险。
     remainsThreatened: 350,
     // 将军原本安全却因本次行动暴露在车线上的扣分；越高越不愿主动拆掉保护。
-    newlyExposed: 1600,
+    newlyExposed: 1400,
 });
 
 export type EnemyPieceType =
