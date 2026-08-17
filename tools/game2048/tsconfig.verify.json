@@ -15,7 +15,6 @@
   ],
   "exclude": [
     "../../extensions",
-    "../../build",
-    "../../build-step22"
+    "../../build"
   ]
 }
