@@ -436,14 +436,11 @@ export class Game2048Game extends Component implements MiniGame {
         if (this.state !== 'playing') return;
         this.state = 'target';
         this.inputLocked = true;
-        this.targetOverlay = this.buildOverlay(
-            'Game2048TargetOverlay',
-            '2048 已点亮',
-            `当前分数  ${this.model.score}\n继续挑战更高数字？`,
+        this.targetOverlay = this.buildTargetOverlay(
             [
                 {
                     name: 'ContinueButton',
-                    label: '继续挑战',
+                    label: '继续冲击更高纪录',
                     tone: 'cyan',
                     action: () => {
                         this.destroyOverlay(this.targetOverlay);
@@ -1188,6 +1185,151 @@ export class Game2048Game extends Component implements MiniGame {
         const value = this.createLabel(card, 'Value', '0', 0, -12, 30, COLORS.white, 160, 46);
         value.isBold = true;
         return value;
+    }
+
+    /** 2048 首次达成是本局最重要的奖励时刻，使用独立庆祝层而不是通用系统弹窗。 */
+    private buildTargetOverlay(actions: readonly OverlayAction[]): OverlayState {
+        const rootSize = this.node.getComponent(UITransform)?.contentSize;
+        const width = rootSize?.width ?? 750;
+        const height = rootSize?.height ?? 1334;
+        const root = this.createNode(this.node, 'Game2048TargetOverlay', 0, 0, width, height);
+        root.setSiblingIndex(this.node.children.length - 1);
+        root.addComponent(BlockInputEvents);
+
+        const shade = root.addComponent(Graphics);
+        shade.fillColor = new Color(2, 5, 14, 232);
+        shade.rect(-width / 2, -height / 2, width, height);
+        shade.fill();
+
+        const panelWidth = Math.min(548, width - 82);
+        const panelHeight = Math.min(700, height - 112);
+        const panel = this.createNode(root, 'AchievementPanel', 0, 0, panelWidth, panelHeight);
+        const graphics = panel.addComponent(Graphics);
+
+        // 暖金代表刚刚解锁的成就，青色和紫色保留霓光 2048 的世界观。
+        graphics.fillColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 13);
+        graphics.roundRect(-panelWidth / 2 - 14, -panelHeight / 2 - 14, panelWidth + 28, panelHeight + 28, 44);
+        graphics.fill();
+        graphics.strokeColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 42);
+        graphics.lineWidth = 14;
+        graphics.roundRect(-panelWidth / 2 - 7, -panelHeight / 2 - 7, panelWidth + 14, panelHeight + 14, 38);
+        graphics.stroke();
+        graphics.fillColor = new Color(14, 25, 48, 250);
+        graphics.strokeColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 226);
+        graphics.lineWidth = 2.5;
+        graphics.roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 32);
+        graphics.fill();
+        graphics.stroke();
+        graphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 72);
+        graphics.lineWidth = 1;
+        graphics.roundRect(-panelWidth / 2 + 8, -panelHeight / 2 + 8, panelWidth - 16, panelHeight - 16, 25);
+        graphics.stroke();
+
+        const burst = this.createNode(panel, 'AchievementBurst', 0, 184, 340, 260);
+        const burstGraphics = burst.addComponent(Graphics);
+        for (let index = 0; index < 20; index += 1) {
+            const angle = (Math.PI * 2 * index) / 20;
+            const inner = index % 2 === 0 ? 88 : 98;
+            const outer = index % 2 === 0 ? 125 : 116;
+            burstGraphics.strokeColor = index % 3 === 0
+                ? new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 92)
+                : new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 110);
+            burstGraphics.lineWidth = index % 2 === 0 ? 3 : 2;
+            burstGraphics.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+            burstGraphics.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+            burstGraphics.stroke();
+        }
+        burstGraphics.strokeColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 72);
+        burstGraphics.lineWidth = 2;
+        burstGraphics.circle(0, 0, 108);
+        burstGraphics.stroke();
+
+        const badge = this.createNode(panel, 'Unlocked2048Tile', 0, 184, 142, 142);
+        this.drawTile(badge, 2048, 142);
+
+        const sparkColors = [COLORS.amber, COLORS.cyan, COLORS.violet] as const;
+        const sparkPositions = [
+            [-174, 240], [-142, 128], [162, 245], [182, 142], [-211, 188], [214, 198],
+        ] as const;
+        sparkPositions.forEach(([x, y], index) => {
+            const spark = this.createNode(panel, `CelebrationSpark-${index}`, x, y, 16, 16);
+            const opacity = spark.addComponent(UIOpacity);
+            const sparkGraphics = spark.addComponent(Graphics);
+            const color = sparkColors[index % sparkColors.length];
+            sparkGraphics.fillColor = new Color(color.r, color.g, color.b, 230);
+            if (index % 2 === 0) {
+                sparkGraphics.moveTo(0, 8);
+                sparkGraphics.lineTo(3, 3);
+                sparkGraphics.lineTo(8, 0);
+                sparkGraphics.lineTo(3, -3);
+                sparkGraphics.lineTo(0, -8);
+                sparkGraphics.lineTo(-3, -3);
+                sparkGraphics.lineTo(-8, 0);
+                sparkGraphics.lineTo(-3, 3);
+                sparkGraphics.close();
+                sparkGraphics.fill();
+            } else {
+                sparkGraphics.circle(0, 0, 4);
+                sparkGraphics.fill();
+            }
+            spark.setScale(0.35, 0.35, 1);
+            tween(spark)
+                .delay(0.08 + index * 0.035)
+                .to(0.28, { scale: new Vec3(1.15, 1.15, 1) }, { easing: 'backOut' })
+                .to(0.18, { scale: new Vec3(0.9, 0.9, 1) }, { easing: 'sineInOut' })
+                .start();
+            tween(opacity)
+                .repeatForever(
+                    tween()
+                        .to(0.62 + index * 0.04, { opacity: 115 }, { easing: 'sineInOut' })
+                        .to(0.62 + index * 0.04, { opacity: 255 }, { easing: 'sineInOut' }),
+                )
+                .start();
+        });
+
+        const kicker = this.createLabel(
+            panel, 'AchievementKicker', 'ACHIEVEMENT  UNLOCKED', 0, panelHeight / 2 - 34,
+            14, COLORS.amber, panelWidth - 72, 24,
+        );
+        kicker.spacingX = 3;
+
+        const title = this.createLabel(panel, 'Title', '恭喜你！', 0, 80, 42, COLORS.white, panelWidth - 64, 58);
+        title.isBold = true;
+        const subtitle = this.createLabel(
+            panel, 'Subtitle', '成功点亮 2048', 0, 31, 24, COLORS.amber, panelWidth - 72, 40,
+        );
+        subtitle.isBold = true;
+
+        const scoreChip = this.createNode(panel, 'AchievementScore', 0, -24, panelWidth - 112, 54);
+        const scoreGraphics = scoreChip.addComponent(Graphics);
+        scoreGraphics.fillColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 12);
+        scoreGraphics.strokeColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 90);
+        scoreGraphics.lineWidth = 1.5;
+        scoreGraphics.roundRect(-(panelWidth - 112) / 2, -27, panelWidth - 112, 54, 15);
+        scoreGraphics.fill();
+        scoreGraphics.stroke();
+        const score = this.createLabel(
+            scoreChip, 'Score', `本局得分  ${this.model.score}`, 0, 0, 22, COLORS.white, panelWidth - 136, 42,
+        );
+        score.isBold = true;
+
+        const state: OverlayState = { root, buttons: [], busy: false };
+        const buttonWidth = Math.min(390, panelWidth - 64);
+        const buttonStartY = -102;
+        actions.forEach((action, index) => {
+            const button = this.createButton(
+                panel, action.name, action.label, 0, buttonStartY - index * 75,
+                buttonWidth, 58, action.tone,
+            );
+            button.node.on(Button.EventType.CLICK, () => this.runOverlayAction(state, action), this);
+            state.buttons.push(button);
+        });
+
+        burst.setScale(0.55, 0.55, 1);
+        tween(burst).to(0.5, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        panel.setScale(0.82, 0.76, 1);
+        tween(panel).to(0.28, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        return state;
     }
 
     private buildOverlay(name: string, title: string, body: string, actions: readonly OverlayAction[]): OverlayState {
