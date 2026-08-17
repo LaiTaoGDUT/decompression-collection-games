@@ -21,6 +21,7 @@ import {
     STORAGE_SERVICE,
 } from '../../app/App';
 import type { GameManifest } from '../../runtime/GameManifest';
+import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 import { GameCardView } from './GameCardView';
 import { EnterRequestLock } from './EnterRequestLock';
 import { calculateLobbyGridLayout } from './LobbyGridLayout';
@@ -32,10 +33,11 @@ import type { FeedbackService } from '../../services/feedback/FeedbackService';
 const { ccclass, property } = _decorator;
 const EMPTY_GAMES: readonly GameManifest[] = Object.freeze([]);
 const GRID_SIDE_PADDING = 40;
-// Keep the cards at the same distance below the title after moving the whole
-// lobby hero row up to the settings-button center line.
-const GRID_TOP = 258;
+// Leave enough room for the complete 300 px logo box plus a small gap before
+// the first card; the logo itself is now kept inside the scroll viewport.
+const GRID_TOP = 320;
 const GRID_BOTTOM = 40;
+const VIEWPORT_TOP_GAP = 12;
 export type EnterGameRequest = (manifest: GameManifest) => Promise<void>;
 
 /** 大厅入口，只负责从应用服务中取得当前可玩的游戏清单。 */
@@ -57,6 +59,7 @@ export class LobbyEntry extends Component {
     private enterGameRequest?: EnterGameRequest;
     private audioBank?: BundleAudioBank;
     private feedback?: FeedbackService;
+    private platformLayout?: PlatformLayoutInfo;
 
     get playableGames(): readonly GameManifest[] {
         return this.games;
@@ -73,10 +76,10 @@ export class LobbyEntry extends Component {
 
     protected start(): void {
         this.presentation.mount(this.node);
-        this.setupGridViewport();
         const app = App.current;
 
         if (!app) {
+            this.setupGridViewport();
             console.warn(
                 '[LobbyEntry] App is unavailable; game list remains empty.',
             );
@@ -86,6 +89,8 @@ export class LobbyEntry extends Component {
         const services = app.services;
         const registry = services.get(GAME_REGISTRY_SERVICE);
         const platform = services.get(PLATFORM_SERVICE);
+        this.platformLayout = platform.getLayoutInfo();
+        this.setupGridViewport(this.platformLayout);
         const config = services.get(CONFIG_SERVICE).config;
         const storage = services.get(STORAGE_SERVICE);
         const audio = services.get(AUDIO_SERVICE);
@@ -134,22 +139,22 @@ export class LobbyEntry extends Component {
         view.off('canvas-resize', this.handleCanvasResize, this);
     }
 
-    private setupGridViewport(): void {
+    private setupGridViewport(layout = this.platformLayout): void {
         const gameList = this.gameList;
         if (!gameList) {
             return;
         }
 
         // ContentRoot lives below Cocos' SafeArea node. The scrolling surface
-        // must instead be mounted on SceneLayer so its mask and gesture area
-        // cover the entire canvas, including the regions around a notch and
-        // the home indicator.
-        const safeArea = this.node.parent;
-        const fullscreenRoot = safeArea?.name === 'SafeArea'
-            ? safeArea.parent
+        // must stay inside that node so both the mask and the scrollable cards
+        // remain inside the real safe content rectangle.
+        const safeArea = this.node.parent?.name === 'SafeArea'
+            ? this.node.parent
             : null;
-        const viewportParent = fullscreenRoot ?? this.node;
+        const fullscreenRoot = safeArea?.parent;
+        const viewportParent = safeArea ?? this.node;
         let viewport = viewportParent.getChildByName('GameGridViewport')
+            ?? fullscreenRoot?.getChildByName('GameGridViewport')
             ?? this.node.getChildByName('GameGridViewport');
         if (!viewport) {
             viewport = new Node('GameGridViewport');
@@ -157,35 +162,37 @@ export class LobbyEntry extends Component {
             viewportParent.addChild(viewport);
             viewport.addComponent(UITransform);
             viewport.addComponent(Mask);
-            const widget = viewport.addComponent(Widget);
-            widget.isAlignTop = true;
-            widget.isAlignBottom = true;
-            widget.isAlignLeft = true;
-            widget.isAlignRight = true;
-            widget.top = 0;
-            widget.bottom = 0;
-            widget.left = 0;
-            widget.right = 0;
-            widget.updateAlignment();
-
-            const scrollView = viewport.addComponent(ScrollView);
-            scrollView.horizontal = false;
-            scrollView.vertical = true;
-            scrollView.inertia = true;
-            scrollView.brake = 0.75;
-            scrollView.cancelInnerEvents = true;
-            gameList.setParent(viewport);
-            scrollView.content = gameList;
         }
+        const widget = viewport.getComponent(Widget) ?? viewport.addComponent(Widget);
+        widget.isAlignTop = true;
+        widget.isAlignBottom = true;
+        widget.isAlignLeft = true;
+        widget.isAlignRight = true;
+        widget.top = this.getViewportTopInset(layout);
+        widget.bottom = 0;
+        widget.left = 0;
+        widget.right = 0;
+        widget.updateAlignment();
+
+        const scrollView = viewport.getComponent(ScrollView)
+            ?? viewport.addComponent(ScrollView);
+        scrollView.horizontal = false;
+        scrollView.vertical = true;
+        scrollView.inertia = true;
+        scrollView.brake = 0.75;
+        scrollView.cancelInnerEvents = true;
+        gameList.setParent(viewport);
+        scrollView.content = gameList;
         if (viewport.parent !== viewportParent) {
             viewport.setParent(viewportParent);
         }
-        if (fullscreenRoot && safeArea?.parent === fullscreenRoot) {
-            // Background < scrolling content < fixed safe-area controls.
-            const safeAreaIndex = safeArea.getSiblingIndex();
-            const targetIndex = viewport.getSiblingIndex() < safeAreaIndex
-                ? safeAreaIndex - 1
-                : safeAreaIndex;
+        if (safeArea) {
+            // Keep the scroll surface below ContentRoot's fixed controls.
+            const contentRootIndex = this.node.getSiblingIndex();
+            const viewportIndex = viewport.getSiblingIndex();
+            const targetIndex = viewportIndex < contentRootIndex
+                ? contentRootIndex - 1
+                : contentRootIndex;
             viewport.setSiblingIndex(Math.max(0, targetIndex));
         }
 
@@ -201,6 +208,20 @@ export class LobbyEntry extends Component {
         this.gridViewport = viewport;
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.layoutCards();
+    }
+
+    private getViewportTopInset(layout?: PlatformLayoutInfo): number {
+        const reservedBottom = layout?.topRightReservedArea?.bottom;
+        if (reservedBottom === undefined) {
+            return 0;
+        }
+
+        // The viewport is a child of the platform SafeArea node, so subtract
+        // the safe area's own top inset before applying the capsule clearance.
+        return Math.max(
+            0,
+            reservedBottom - (layout.safeArea.top ?? 0) + VIEWPORT_TOP_GAP,
+        );
     }
 
     private renderGames(): void {

@@ -16,9 +16,17 @@ import { calculateLobbyBackgroundCover } from './LobbyVisualLayout';
 const BACKGROUND_ASSET_PATH = 'visual/backgrounds/lobby-arcade-warm-rays-v3/texture';
 const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
 const BACKGROUND_FALLBACK = new Color(246, 173, 106, 255);
-// SettingsEntry is 92 px high with a 36 px top offset, so its center is 82 px
-// below the safe-area top. BrandArea itself starts 18 px below that edge.
-const BRAND_EMBLEM_CENTER_Y = -(36 + 92 / 2 - 18);
+const BRAND_AREA_TOP = 18;
+const BRAND_EMBLEM_TOP_GAP = 12;
+const BRAND_EMBLEM_WIDTH = 450;
+const BRAND_EMBLEM_HEIGHT = 300;
+// BrandArea uses a top anchor and sits 18 px below the viewport top. Keep the
+// complete logo box 12 px inside that viewport instead of centering the logo
+// on the settings button, which made its transparent bounds cross the mask.
+const BRAND_EMBLEM_CENTER_Y =
+    BRAND_AREA_TOP
+    - BRAND_EMBLEM_TOP_GAP
+    - BRAND_EMBLEM_HEIGHT / 2;
 
 /** Builds a light, playful mini-game lobby while keeping the L1 palette. */
 export class LobbyPresentation {
@@ -140,7 +148,7 @@ export class LobbyPresentation {
         widget.isAlignTop = true;
         widget.isAlignLeft = true;
         widget.isAlignRight = true;
-        widget.top = 18;
+        widget.top = BRAND_AREA_TOP;
         widget.left = 40;
         widget.right = 40;
         widget.updateAlignment();
@@ -149,7 +157,10 @@ export class LobbyPresentation {
         emblem.layer = brand.layer;
         brand.addChild(emblem);
         emblem.setPosition(0, BRAND_EMBLEM_CENTER_Y);
-        emblem.addComponent(UITransform).setContentSize(450, 300);
+        emblem.addComponent(UITransform).setContentSize(
+            BRAND_EMBLEM_WIDTH,
+            BRAND_EMBLEM_HEIGHT,
+        );
         const emblemSprite = emblem.addComponent(Sprite);
         emblemSprite.sizeMode = Sprite.SizeMode.CUSTOM;
         this.brandEmblemNode = emblem;

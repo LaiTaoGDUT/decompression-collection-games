@@ -28,7 +28,7 @@ function calculate(device) {
     const safeRight = width - device.safe.right * scale;
     const availableWidth = width - safeLeft - safeRight;
     const contentX = (safeLeft - safeRight) / 2;
-    const uiScale = clamp(availableWidth / 750, 0.64, 1);
+    const uiScale = availableWidth / 750;
 
     const reservedBottom = device.menuBottom * scale;
     const hudTopFromTop = Math.max(safeTop, reservedBottom) + 12 * uiScale;

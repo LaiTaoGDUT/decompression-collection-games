@@ -1,5 +1,5 @@
 export const BOARD_SIZE = 4;
-export const TARGET_TILE = 2048;
+export const TARGET_TILE = 4096;
 
 export type Game2048Direction = 'left' | 'right' | 'up' | 'down';
 
@@ -110,7 +110,7 @@ function lineIndices(direction: Game2048Direction, outer: number): number[] {
 export class Game2048Model {
     private cells: number[] = Array(BOARD_SIZE * BOARD_SIZE).fill(0);
     private currentScore = 0;
-    private targetAcknowledged = false;
+    private targetAcknowledgedState = false;
 
     constructor(private random: () => number = Math.random) {}
 
@@ -124,6 +124,14 @@ export class Game2048Model {
 
     get highestTile(): number {
         return this.cells.reduce((highest, value) => Math.max(highest, value), 0);
+    }
+
+    get targetAcknowledged(): boolean {
+        return this.targetAcknowledgedState;
+    }
+
+    get needsTargetCelebration(): boolean {
+        return this.highestTile >= TARGET_TILE && !this.targetAcknowledgedState;
     }
 
     get hasAvailableMove(): boolean {
@@ -142,7 +150,7 @@ export class Game2048Model {
         return Object.freeze({
             board: Object.freeze([...this.cells]),
             score: this.currentScore,
-            targetAcknowledged: this.targetAcknowledged,
+            targetAcknowledged: this.targetAcknowledgedState,
         });
     }
 
@@ -153,7 +161,7 @@ export class Game2048Model {
     reset(): readonly Game2048Spawn[] {
         this.cells = Array(BOARD_SIZE * BOARD_SIZE).fill(0);
         this.currentScore = 0;
-        this.targetAcknowledged = false;
+        this.targetAcknowledgedState = false;
         return Object.freeze([this.spawn(), this.spawn()].filter((spawn): spawn is Game2048Spawn => !!spawn));
     }
 
@@ -165,7 +173,7 @@ export class Game2048Model {
         if (!Number.isFinite(score) || score < 0) throw new Error('2048 score must be non-negative.');
         this.cells = requireBoard(board);
         this.currentScore = Math.floor(score);
-        this.targetAcknowledged = targetAcknowledged;
+        this.targetAcknowledgedState = targetAcknowledged;
     }
 
     restore(snapshot: Game2048Snapshot): void {
@@ -173,6 +181,10 @@ export class Game2048Model {
             throw new Error('2048 target acknowledgement must be boolean.');
         }
         this.loadForTesting(snapshot.board, snapshot.score, snapshot.targetAcknowledged);
+    }
+
+    acknowledgeTarget(): void {
+        if (this.highestTile >= TARGET_TILE) this.targetAcknowledgedState = true;
     }
 
     move(direction: Game2048Direction): Game2048MoveResult {
@@ -215,9 +227,7 @@ export class Game2048Model {
         this.cells = next;
         this.currentScore += scoreGained;
         const spawned = this.spawn();
-        const reachedTarget = !this.targetAcknowledged
-            && this.cells.some((value) => value >= TARGET_TILE);
-        if (reachedTarget) this.targetAcknowledged = true;
+        const reachedTarget = this.needsTargetCelebration;
 
         return Object.freeze({
             changed: true,

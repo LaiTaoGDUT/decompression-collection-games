@@ -364,7 +364,7 @@ interface UserData {
 
 合成大西瓜当前使用游戏内 `dataVersion: 2`，其 `custom` 已知字段为 `maxFruitLevel`、`continueOfferCount` 和 `continueCompletedCount`。读取 `dataVersion: 1` 或字段不完整的数据时，在游戏命名空间内补齐非负默认值并保留未知自定义字段；根存档版本不因此升级。`playCount/lastPlayedAt` 只在新一局开始写入，最高分、历史最大水果和续玩统计只在最终结算写入，中途退出和暂停重开不刷新纪录。回滚到不识别 v2 的旧游戏代码时，公共存储仍会保留该命名空间；安全回滚策略是旧代码忽略新增 `custom` 字段，禁止删除或重置用户根存档。
 
-霓光 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 1`，其 `custom` 已知字段为 `highestTile`；`highScore` 保存历史最高分。新局开始写入 `playCount/lastPlayedAt`，有效移动可即时刷新最高分与最高数字。该增量不修改根存档 schema；回滚时旧代码忽略整个 `game2048` 命名空间，禁止因隐藏游戏入口而删除用户记录。
+霓光 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 3`，其 `custom` 已知字段为 `highestTile`、`activeRound`；`highScore` 保存历史最高分。版本迁移沿游戏命名空间执行：历史 v1/v2 均按 v2 → v3 的兼容入口读取，旧 `activeRound.targetAcknowledged` 的语义是“2048 目标层已确认”，迁移后强制写为 `false`，表示新的 4096 目标尚未确认；v3 之后该字段才表示 4096 目标确认。迁移保留 `board`、`score`、`highestTile`、`highScore`、未知 `custom` 字段及 activeRound 中未知字段，下一次成功写入时统一落为 v3；不修改根存档 schema。回滚到不识别 v3 的旧游戏代码时，旧代码只能忽略新增字段或整个 `game2048` 命名空间，禁止删除或重置用户记录；恢复新代码后仍按 v2 → v3 规则读取，根存档不受影响。
 
 ## 12. 公共 UI 层级
 

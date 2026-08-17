@@ -707,7 +707,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_symmetric": true,
+    "_symmetric": false,
     "_id": "20f+EOuS1F4JmaujBpCgdc"
   },
   {

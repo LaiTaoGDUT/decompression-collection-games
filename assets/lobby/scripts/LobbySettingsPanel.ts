@@ -60,7 +60,7 @@ export class LobbySettingsPanel {
         }
 
         this.services = services;
-        this.createSettingsEntry(contentRoot);
+        this.createSettingsEntry(contentRoot, services);
         this.root = this.createPanel(contentRoot);
         this.root.active = false;
     }
@@ -72,7 +72,10 @@ export class LobbySettingsPanel {
         this.errorLabel = undefined;
     }
 
-    private createSettingsEntry(contentRoot: Node): void {
+    private createSettingsEntry(
+        contentRoot: Node,
+        services: LobbySettingsServices,
+    ): void {
         if (contentRoot.getChildByName('SettingsEntry')) {
             return;
         }
@@ -84,7 +87,13 @@ export class LobbySettingsPanel {
         const widget = entry.addComponent(Widget);
         widget.isAlignTop = true;
         widget.isAlignRight = true;
-        widget.top = 36;
+        const layout = services.platform.getLayoutInfo();
+        const capsuleBottom = layout.topRightReservedArea?.bottom ?? 0;
+        const capsuleInset = Math.max(
+            0,
+            capsuleBottom - layout.safeArea.top + 12,
+        );
+        widget.top = Math.max(36, capsuleInset);
         widget.right = 37;
         widget.updateAlignment();
         const graphics = entry.addComponent(Graphics);

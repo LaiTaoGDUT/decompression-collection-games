@@ -174,7 +174,7 @@ export function calculateChessEndlessLayout(
     // 项目的 750 设计宽度，并在安全区内居中。
     const contentWidth = Math.min(750, availableWidth);
     const safeHeight = Math.max(1, height - clampedTop - clampedBottom);
-    const uiScale = clamp(availableWidth / 750, 0.64, 1);
+    const uiScale = availableWidth / 750;
 
     const reservedBottom = clamp(
         platformLayout?.topRightReservedArea?.bottom ?? 0,

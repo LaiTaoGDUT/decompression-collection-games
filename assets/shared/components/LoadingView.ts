@@ -17,6 +17,7 @@ import {
     Tween,
     UITransform,
     VerticalTextAlignment,
+    sys,
     view,
     Widget,
 } from 'cc';
@@ -24,6 +25,7 @@ import type {
     LoadingModel,
     LoadingPresenter,
 } from '../../runtime/GameRuntime';
+import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 
 const { ccclass } = _decorator;
 
@@ -38,11 +40,79 @@ const COLORS = {
 
 const STARTUP_BACKGROUND_PATH = 'loading/loading-lobby-background-v1/texture';
 const STARTUP_TITLE_PATH = 'loading/loading-lobby-title-v1/texture';
-// Match the lobby logo to SettingsEntry's vertical center: 36 px top spacing
-// plus half of its 92 px touch target. The safe-area inset is added below.
-const STARTUP_TITLE_BASE_CENTER_FROM_TOP = 36 + 92 / 2;
 const STARTUP_TITLE_WIDTH = 450;
 const STARTUP_TITLE_HEIGHT = 300;
+const STARTUP_TITLE_TOP_GAP = 12;
+
+interface LoadingLayoutMetrics {
+    readonly width: number;
+    readonly height: number;
+    readonly safeTop: number;
+    readonly safeBottom: number;
+    readonly safeLeft: number;
+    readonly safeRight: number;
+    readonly contentWidth: number;
+    readonly contentHeight: number;
+    readonly contentX: number;
+    readonly contentY: number;
+    readonly scale: number;
+    readonly panelWidth: number;
+    readonly panelHeight: number;
+    readonly coverWidth: number;
+    readonly coverHeight: number;
+    readonly trackWidth: number;
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+    return Math.min(maximum, Math.max(minimum, value));
+}
+
+function calculateLoadingLayout(
+    width: number,
+    height: number,
+    safeTop: number,
+    safeBottom: number,
+    safeLeft: number,
+    safeRight: number,
+    variant: 'game' | 'lobby',
+): LoadingLayoutMetrics {
+    const normalizedTop = clamp(Math.max(0, safeTop), 0, height * 0.45);
+    const normalizedBottom = clamp(Math.max(0, safeBottom), 0, height * 0.45);
+    const normalizedLeft = clamp(Math.max(0, safeLeft), 0, width * 0.45);
+    const normalizedRight = clamp(Math.max(0, safeRight), 0, width * 0.45);
+    const contentWidth = Math.max(1, width - normalizedLeft - normalizedRight);
+    const contentHeight = Math.max(1, height - normalizedTop - normalizedBottom);
+    const contentX = (normalizedLeft - normalizedRight) / 2;
+    const contentY = (normalizedBottom - normalizedTop) / 2;
+    const widthScale = Math.min(1, contentWidth / 750);
+    const scale = variant === 'game'
+        ? Math.max(0.01, Math.min(widthScale, contentHeight / 822))
+        : Math.max(0.01, Math.min(widthScale, contentHeight / 1334));
+    const panelWidth = 640 * scale;
+    const panelHeight = 790 * scale;
+    const coverWidth = Math.max(1, panelWidth - 64 * scale);
+    const coverHeight = coverWidth * 0.75;
+    const trackWidth = Math.max(1, panelWidth - 96 * scale);
+
+    return Object.freeze({
+        width,
+        height,
+        safeTop: normalizedTop,
+        safeBottom: normalizedBottom,
+        safeLeft: normalizedLeft,
+        safeRight: normalizedRight,
+        contentWidth,
+        contentHeight,
+        contentX,
+        contentY,
+        scale,
+        panelWidth,
+        panelHeight,
+        coverWidth,
+        coverHeight,
+        trackWidth,
+    });
+}
 
 /** 持久化游戏加载页：展示当前游戏封面与真实分阶段进度。 */
 @ccclass('LoadingView')
@@ -62,6 +132,8 @@ export class LoadingView extends Component implements LoadingPresenter {
     private progressTweenState?: { value: number };
     private progressLoadToken = 0;
     private realProgress = 0;
+    private layoutMetrics?: LoadingLayoutMetrics;
+    private platformLayout?: PlatformLayoutInfo;
 
     protected onLoad(): void {
         if (!this.node.getComponent(BlockInputEvents)) {
@@ -97,6 +169,14 @@ export class LoadingView extends Component implements LoadingPresenter {
             this.loadStartupArtwork();
         } else {
             this.loadCover(model.cover);
+        }
+    }
+
+    /** 由应用组合根注入真实平台安全区和微信胶囊边界。 */
+    setPlatformLayout(layout: PlatformLayoutInfo): void {
+        this.platformLayout = layout;
+        if (this.node.active) {
+            this.layoutAndDraw();
         }
     }
 
@@ -245,7 +325,9 @@ export class LoadingView extends Component implements LoadingPresenter {
             widget.left = 0;
             widget.right = 0;
             const safeArea = safeAreaNode.addComponent(SafeArea);
-            safeArea.symmetric = true;
+            // Preserve asymmetric left/right insets on devices with a notch or
+            // a cutout. The loading content must follow the actual safe rect.
+            safeArea.symmetric = false;
         }
 
         let content = safeAreaNode.getChildByName('StartupContent');
@@ -269,16 +351,49 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.startupContentNode = content;
     }
 
-    private layoutStartupContainer(startup: boolean): void {
+    private layoutStartupContainer(
+        startup: boolean,
+        metrics: LoadingLayoutMetrics,
+    ): void {
         const safeAreaNode = this.startupSafeAreaNode;
         const content = this.startupContentNode;
         if (!safeAreaNode || !content) return;
 
         safeAreaNode.active = startup;
         if (startup) {
-            safeAreaNode.getComponent(Widget)?.updateAlignment();
-            safeAreaNode.getComponent(SafeArea)?.updateArea();
-            content.getComponent(Widget)?.updateAlignment();
+            // SafeArea's native calculation is useful for scene-authored UI,
+            // but it does not know the WeChat capsule. Use the already
+            // normalized platform metrics as the single source of truth so
+            // the safe content size and the coordinates below cannot diverge.
+            const safeAreaWidget = safeAreaNode.getComponent(Widget);
+            if (safeAreaWidget) {
+                safeAreaWidget.isAlignTop = false;
+                safeAreaWidget.isAlignBottom = false;
+                safeAreaWidget.isAlignLeft = false;
+                safeAreaWidget.isAlignRight = false;
+            }
+            const safeArea = safeAreaNode.getComponent(SafeArea);
+            if (safeArea) {
+                safeArea.enabled = false;
+            }
+            safeAreaNode.getComponent(UITransform)?.setContentSize(
+                metrics.width,
+                metrics.height,
+            );
+            safeAreaNode.setPosition(0, 0);
+
+            const contentWidget = content.getComponent(Widget);
+            if (contentWidget) {
+                contentWidget.isAlignTop = false;
+                contentWidget.isAlignBottom = false;
+                contentWidget.isAlignLeft = false;
+                contentWidget.isAlignRight = false;
+            }
+            content.getComponent(UITransform)?.setContentSize(
+                metrics.contentWidth,
+                metrics.contentHeight,
+            );
+            content.setPosition(metrics.contentX, metrics.contentY);
         }
 
         const targetParent = startup ? content : this.node;
@@ -302,27 +417,48 @@ export class LoadingView extends Component implements LoadingPresenter {
             ?? null;
     }
 
-    private getStartupContentHeight(fallback: number): number {
-        return this.startupContentNode?.getComponent(UITransform)?.contentSize.height
-            ?? fallback;
-    }
-
     private layoutAndDraw(): void {
         const size = this.node.getComponent(UITransform)?.contentSize;
         const visibleSize = view.getVisibleSize();
-        const width = Math.max(750, visibleSize.width, size?.width ?? 750);
-        const height = Math.max(1334, visibleSize.height, size?.height ?? 1334);
-        this.node.getComponent(UITransform)?.setContentSize(width, height);
-        const panelWidth = Math.min(640, width - 64);
-        const panelHeight = 790;
-        const coverWidth = panelWidth - 64;
-        const coverHeight = coverWidth * 0.75;
+        const width = Math.max(1, visibleSize.width || size?.width || 750);
+        const height = Math.max(1, visibleSize.height || size?.height || 1334);
+        const safeRect = sys.getSafeAreaRect();
+        const scaleX = visibleSize.width > 0 ? width / visibleSize.width : 1;
+        const scaleY = visibleSize.height > 0 ? height / visibleSize.height : 1;
+        const safeTop = Math.max(0, visibleSize.height - safeRect.y - safeRect.height) * scaleY;
+        const safeBottom = Math.max(0, safeRect.y) * scaleY;
+        const safeLeft = Math.max(0, safeRect.x) * scaleX;
+        const safeRight = Math.max(0, visibleSize.width - safeRect.x - safeRect.width) * scaleX;
+        const platformSafeArea = this.platformLayout?.safeArea;
+        const platformSafeBottom = platformSafeArea
+            ? Math.max(0, height - platformSafeArea.bottom)
+            : 0;
+        const platformSafeRight = platformSafeArea
+            ? Math.max(0, width - platformSafeArea.right)
+            : 0;
+        const capsuleBottom = this.platformLayout?.topRightReservedArea?.bottom ?? 0;
 
         const startup = this.variant === 'lobby';
-        this.layoutStartupContainer(startup);
-        const contentHeight = startup
-            ? this.getStartupContentHeight(height)
-            : height;
+        const metrics = calculateLoadingLayout(
+            width,
+            height,
+            Math.max(
+                safeTop,
+                platformSafeArea?.top ?? 0,
+                capsuleBottom > 0 ? capsuleBottom + STARTUP_TITLE_TOP_GAP : 0,
+            ),
+            Math.max(safeBottom, platformSafeBottom),
+            Math.max(safeLeft, platformSafeArea?.left ?? 0),
+            Math.max(safeRight, platformSafeRight),
+            this.variant,
+        );
+        this.layoutMetrics = metrics;
+        this.node.getComponent(UITransform)?.setContentSize(width, height);
+        this.layoutStartupContainer(startup, metrics);
+        const contentHeight = metrics.contentHeight;
+        const scale = metrics.scale;
+        const centerX = startup ? 0 : metrics.contentX;
+        const centerY = startup ? 0 : metrics.contentY;
         const startupBackground = this.startupBackgroundSprite?.node;
         if (startupBackground) {
             startupBackground.active = startup;
@@ -338,10 +474,14 @@ export class LoadingView extends Component implements LoadingPresenter {
         const startupTitle = this.startupTitleSprite?.node;
         if (startupTitle) {
             startupTitle.active = startup;
-            startupTitle.setPosition(0, contentHeight / 2 - STARTUP_TITLE_BASE_CENTER_FROM_TOP);
+            startupTitle.setPosition(
+                0,
+                contentHeight / 2
+                    - (STARTUP_TITLE_TOP_GAP + STARTUP_TITLE_HEIGHT / 2) * scale,
+            );
             startupTitle.getComponent(UITransform)?.setContentSize(
-                STARTUP_TITLE_WIDTH,
-                STARTUP_TITLE_HEIGHT,
+                STARTUP_TITLE_WIDTH * scale,
+                STARTUP_TITLE_HEIGHT * scale,
             );
         }
 
@@ -358,83 +498,142 @@ export class LoadingView extends Component implements LoadingPresenter {
 
         const panel = this.graphics('LoadingPanel');
         panel.node.active = !startup;
-        panel.node.setPosition(0, 0);
-        panel.node.getComponent(UITransform)?.setContentSize(panelWidth, panelHeight);
+        panel.node.setPosition(centerX, centerY);
+        panel.node.getComponent(UITransform)?.setContentSize(
+            metrics.panelWidth,
+            metrics.panelHeight,
+        );
         panel.clear();
         panel.fillColor = new Color(8, 22, 74, 74);
-        panel.roundRect(-panelWidth / 2 + 8, -panelHeight / 2 - 14, panelWidth - 16, panelHeight, 42);
+        panel.roundRect(
+            -metrics.panelWidth / 2 + 8 * scale,
+            -metrics.panelHeight / 2 - 14 * scale,
+            metrics.panelWidth - 16 * scale,
+            metrics.panelHeight,
+            42 * scale,
+        );
         panel.fill();
         panel.fillColor = COLORS.panel;
         panel.strokeColor = new Color(255, 255, 255, 210);
-        panel.lineWidth = 3;
-        panel.roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 42);
+        panel.lineWidth = 3 * scale;
+        panel.roundRect(
+            -metrics.panelWidth / 2,
+            -metrics.panelHeight / 2,
+            metrics.panelWidth,
+            metrics.panelHeight,
+            42 * scale,
+        );
         panel.fill();
         panel.stroke();
 
         const frame = this.graphics('LoadingCoverFrame');
         frame.node.active = !startup;
         // Keep a visible breathing space between the panel top and cover.
-        frame.node.setPosition(0, 155);
-        frame.node.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
+        frame.node.setPosition(centerX, centerY + 155 * scale);
+        frame.node.getComponent(UITransform)?.setContentSize(
+            metrics.coverWidth,
+            metrics.coverHeight,
+        );
         frame.clear();
         frame.fillColor = new Color(221, 233, 249, 255);
-        frame.roundRect(-coverWidth / 2, -coverHeight / 2, coverWidth, coverHeight, 28);
+        frame.roundRect(
+            -metrics.coverWidth / 2,
+            -metrics.coverHeight / 2,
+            metrics.coverWidth,
+            metrics.coverHeight,
+            28 * scale,
+        );
         frame.fill();
         const clip = frame.node.getChildByName('CoverClip');
-        clip?.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
+        clip?.getComponent(UITransform)?.setContentSize(
+            metrics.coverWidth,
+            metrics.coverHeight,
+        );
         const mask = clip?.getComponent(Graphics);
         mask?.clear();
         if (mask) {
             mask.fillColor = Color.WHITE;
-            mask.roundRect(-coverWidth / 2, -coverHeight / 2, coverWidth, coverHeight, 28);
+            mask.roundRect(
+                -metrics.coverWidth / 2,
+                -metrics.coverHeight / 2,
+                metrics.coverWidth,
+                metrics.coverHeight,
+                28 * scale,
+            );
             mask.fill();
         }
-        this.layoutCover(coverWidth, coverHeight);
+        this.layoutCover(metrics.coverWidth, metrics.coverHeight);
 
-        this.styleLabel('LoadingGameName', 40, COLORS.ink, 0, -112, panelWidth - 70, 58, true);
-        const trackWidth = panelWidth - 96;
-        const trackLeft = -trackWidth / 2;
+        this.styleLabel(
+            'LoadingGameName',
+            40 * scale,
+            COLORS.ink,
+            centerX,
+            centerY - 112 * scale,
+            Math.max(1, metrics.panelWidth - 70 * scale),
+            58 * scale,
+            true,
+        );
+        const trackWidth = metrics.trackWidth;
+        const trackLeft = centerX - trackWidth / 2;
         this.styleLabel(
             'LoadingMessage',
-            23,
+            23 * scale,
             startup ? new Color(123, 75, 74, 235) : COLORS.secondary,
             trackLeft,
-            startup ? -contentHeight / 2 + 176 : -194,
-            trackWidth - 90,
-            42,
+            startup
+                ? -contentHeight / 2 + 176 * scale
+                : centerY - 194 * scale,
+            Math.max(1, trackWidth - 90 * scale),
+            42 * scale,
             false,
             HorizontalTextAlignment.LEFT,
         );
         this.styleLabel(
             'LoadingPercent',
-            23,
+            23 * scale,
             startup ? new Color(155, 77, 73, 255) : COLORS.blue,
-            panelWidth / 2 - 72,
-            startup ? -contentHeight / 2 + 176 : -194,
-            72,
-            42,
+            startup
+                ? trackLeft + trackWidth - 36 * scale
+                : centerX + metrics.panelWidth / 2 - 72 * scale,
+            startup
+                ? -contentHeight / 2 + 176 * scale
+                : centerY - 194 * scale,
+            72 * scale,
+            42 * scale,
             true,
         );
         this.styleLabel(
             'LoadingTip',
-            19,
+            19 * scale,
             startup ? new Color(123, 75, 74, 220) : new Color(121, 133, 165, 210),
-            0,
-            startup ? -contentHeight / 2 + 80 : -308,
-            panelWidth - 90,
-            32,
+            centerX,
+            startup
+                ? -contentHeight / 2 + 80 * scale
+                : centerY - 308 * scale,
+            Math.max(1, metrics.panelWidth - 90 * scale),
+            32 * scale,
             false,
         );
         this.node.getChildByName('LoadingGameName')!.active = !startup;
 
         const track = this.graphics('ProgressTrack');
-        track.node.setPosition(0, startup ? -contentHeight / 2 + 130 : -254);
-        track.node.getComponent(UITransform)?.setContentSize(trackWidth, 32);
+        track.node.setPosition(
+            startup ? 0 : centerX,
+            startup ? -contentHeight / 2 + 130 * scale : centerY - 254 * scale,
+        );
+        track.node.getComponent(UITransform)?.setContentSize(trackWidth, 32 * scale);
         track.clear();
         track.fillColor = startup
             ? new Color(255, 248, 228, 220)
             : new Color(198, 211, 231, 255);
-        track.roundRect(-trackWidth / 2, -12, trackWidth, 24, 12);
+        track.roundRect(
+            -trackWidth / 2,
+            -12 * scale,
+            trackWidth,
+            24 * scale,
+            12 * scale,
+        );
         track.fill();
         this.drawProgressFill();
     }
@@ -493,42 +692,48 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     private drawProgressFill(): void {
-        const width = Math.max(
-            750,
-            view.getVisibleSize().width,
-            this.node.getComponent(UITransform)?.contentSize.width ?? 750,
-        );
-        const panelWidth = Math.min(640, width - 64);
-        const trackWidth = panelWidth - 96;
+        const metrics = this.layoutMetrics;
+        if (!metrics) return;
+        const scale = metrics.scale;
+        const trackWidth = metrics.trackWidth;
         const fill = this.graphics('ProgressFill');
-        const height = Math.max(
-            1334,
-            view.getVisibleSize().height,
-            this.node.getComponent(UITransform)?.contentSize.height ?? 1334,
-        );
         const contentHeight = this.variant === 'lobby'
-            ? this.getStartupContentHeight(height)
-            : height;
+            ? metrics.contentHeight
+            : metrics.contentHeight;
         fill.node.setPosition(
-            0,
-            this.variant === 'lobby' ? -contentHeight / 2 + 130 : -254,
+            this.variant === 'lobby' ? 0 : metrics.contentX,
+            this.variant === 'lobby'
+                ? -contentHeight / 2 + 130 * scale
+                : metrics.contentY - 254 * scale,
         );
-        fill.node.getComponent(UITransform)?.setContentSize(trackWidth, 32);
+        fill.node.getComponent(UITransform)?.setContentSize(trackWidth, 32 * scale);
         fill.clear();
-        const inset = 3;
+        const inset = 3 * scale;
         const available = trackWidth - inset * 2;
         const filled = available * this.progress;
         if (filled > 0.5) {
             fill.fillColor = this.variant === 'lobby'
                 ? new Color(239, 116, 105, 255)
                 : COLORS.blue;
-            fill.roundRect(-trackWidth / 2 + inset, -9, filled, 18, 9);
+            fill.roundRect(
+                -trackWidth / 2 + inset,
+                -9 * scale,
+                filled,
+                18 * scale,
+                9 * scale,
+            );
             fill.fill();
-            if (filled > 28) {
+            if (filled > 28 * scale) {
                 fill.fillColor = this.variant === 'lobby'
                     ? new Color(255, 225, 145, 210)
                     : new Color(100, 220, 247, 175);
-                fill.roundRect(-trackWidth / 2 + inset + 5, 1, Math.max(0, filled - 10), 3, 1.5);
+                fill.roundRect(
+                    -trackWidth / 2 + inset + 5 * scale,
+                    1 * scale,
+                    Math.max(0, filled - 10 * scale),
+                    3 * scale,
+                    1.5 * scale,
+                );
                 fill.fill();
             }
         }

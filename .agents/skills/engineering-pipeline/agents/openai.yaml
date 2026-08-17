@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Pipeline"
+  short_description: "Route complex work through design, build, checks, review"
+  default_prompt: "Use $engineering-pipeline to plan, implement, validate, and review this change."
+
+policy:
+  allow_implicit_invocation: true

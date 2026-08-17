@@ -210,10 +210,11 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.context = context;
-        this.node.getComponent(WatermelonLayout)
-            ?.setPlatformLayout(context.services.platform.getLayoutInfo());
+        const layout = this.node.getComponent(WatermelonLayout);
+        layout?.setPlatformLayout(context.services.platform.getLayoutInfo());
         this.fruitContainer = container;
         this.dropPreview = preview;
+        layout?.setLayoutChangeHandler(this.handleLayoutChange);
         this.overlayView = new WatermelonOverlayView(this.node, context.services.feedback);
         this.gameplay = await this.loadGameplayConfig();
         configureFruitCatalog(this.gameplay);
@@ -386,6 +387,7 @@ export class WatermelonGame extends Component implements MiniGame {
             this.handlePause,
             this,
         );
+        this.node.getComponent(WatermelonLayout)?.setLayoutChangeHandler();
         this.clearFruitSpriteBindings();
         this.clearFruits();
         this.cleanupTransientEffects();
@@ -594,6 +596,19 @@ export class WatermelonGame extends Component implements MiniGame {
             12,
         );
     }
+
+    private readonly handleLayoutChange = (): void => {
+        if (!this.fruitContainer) {
+            return;
+        }
+
+        this.configureContainerBounds();
+        if (this.state === 'ready' || this.state === 'playing') {
+            this.positionDropPreview();
+            return;
+        }
+        this.setAimGuideVisible(false);
+    };
 
     private configureWall(
         wall: Node | null,
@@ -1080,6 +1095,9 @@ export class WatermelonGame extends Component implements MiniGame {
             viewport.height,
             viewport.safeTop,
             viewport.safeBottom,
+            650,
+            viewport.safeLeft,
+            viewport.safeRight,
         );
         const overlay = new Node('ContinueOverlay');
         overlay.layer = this.node.layer;
@@ -1101,7 +1119,7 @@ export class WatermelonGame extends Component implements MiniGame {
         const panel = new Node('Panel');
         panel.layer = overlay.layer;
         panel.setParent(overlay);
-        panel.setPosition(0, metrics.panelY);
+        panel.setPosition(metrics.contentX, metrics.panelY);
         panel.addComponent(UITransform).setContentSize(metrics.panelWidth, metrics.panelHeight);
         const panelGraphics = panel.addComponent(Graphics);
         panelGraphics.fillColor = catUiColor('ink', 38);
@@ -1150,6 +1168,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.createOverlayButton(panel, 'LobbyButton', '回到大厅', 0, -210, () => {
             this.returnToLobbyFromFailure();
         }, false);
+        panel.setScale(metrics.panelScale, metrics.panelScale, 1);
         this.continueOverlay = overlay;
     }
 

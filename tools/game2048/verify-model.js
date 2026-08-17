@@ -78,9 +78,31 @@ function zeroRandom() {
     const model = new Game2048Model(zeroRandom);
     model.loadForTesting([1024, 1024, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     const result = model.move('left');
-    assert.strictEqual(result.reachedTarget, true);
+    assert.strictEqual(result.reachedTarget, false);
     assert.strictEqual(model.highestTile, 2048);
     assert.strictEqual(model.score, 2048);
 }
 
-console.log('game2048_model=passed, cases=8, directions=left+right+up+down, invalid_move=passed, target=passed, gameover=passed');
+{
+    const model = new Game2048Model(zeroRandom);
+    model.loadForTesting([2048, 2048, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const result = model.move('left');
+    assert.strictEqual(result.reachedTarget, true);
+    assert.strictEqual(model.highestTile, 4096);
+    assert.strictEqual(model.score, 4096);
+    assert.strictEqual(model.snapshot.targetAcknowledged, false);
+    assert.strictEqual(model.needsTargetCelebration, true);
+    model.acknowledgeTarget();
+    assert.strictEqual(model.snapshot.targetAcknowledged, true);
+    assert.strictEqual(model.needsTargetCelebration, false);
+}
+
+{
+    const model = new Game2048Model(zeroRandom);
+    model.loadForTesting([4096, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    assert.strictEqual(model.snapshot.targetAcknowledged, false);
+    model.acknowledgeTarget();
+    assert.strictEqual(model.snapshot.targetAcknowledged, true);
+}
+
+console.log('game2048_model=passed, cases=10, directions=left+right+up+down, invalid_move=passed, milestone_2048=passed, target_4096=passed, resume_target_ack=passed, gameover=passed');

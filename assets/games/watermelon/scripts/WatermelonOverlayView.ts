@@ -107,6 +107,9 @@ export class WatermelonOverlayView {
             viewport.height,
             viewport.safeTop,
             viewport.safeBottom,
+            650,
+            viewport.safeLeft,
+            viewport.safeRight,
         );
         const root = new Node(name);
         root.layer = this.owner.layer;
@@ -132,7 +135,7 @@ export class WatermelonOverlayView {
         const panel = new Node('CozyPanel');
         panel.layer = root.layer;
         panel.setParent(root);
-        panel.setPosition(0, metrics.panelY);
+        panel.setPosition(metrics.contentX, metrics.panelY);
         panel.addComponent(UITransform).setContentSize(metrics.panelWidth, metrics.panelHeight);
         const panelGraphics = panel.addComponent(Graphics);
         panelGraphics.fillColor = catUiColor('ink', 38);
@@ -187,8 +190,12 @@ export class WatermelonOverlayView {
             ));
         });
 
-        panel.setScale(0.88, 0.72, 1);
-        tween(panel).to(0.22, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        panel.setScale(0.88 * metrics.panelScale, 0.72 * metrics.panelScale, 1);
+        tween(panel)
+            .to(0.22, {
+                scale: new Vec3(metrics.panelScale, metrics.panelScale, 1),
+            }, { easing: 'backOut' })
+            .start();
         return state;
     }
 
