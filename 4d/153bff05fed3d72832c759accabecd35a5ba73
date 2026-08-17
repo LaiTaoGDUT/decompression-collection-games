@@ -1,0 +1,33 @@
+tools/watermelon/tsconfig.verify.json
+  s_e528b3b705d916::t_bf036997c440b7 18
+tools/game2048/tsconfig.verify.json
+  s_e528b3b705d916::t_bf036997c440b7 18
+.gitignore
+  s_e528b3b705d916::t_a62dc10c72f635 24-36
+tools/chess-endless/tsconfig.verify.json
+  s_e528b3b705d916::t_a6d26a1aa24cad 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4d153bff05fed3d72832c759accabecd35a5ba73",
+  "prompts": {},
+  "logical_commit_id": "4d153bff05fed3d72832c759accabecd35a5ba73",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_e528b3b705d916": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "9e8fba02-6fd3-433e-8665-fca9a14aa41f",
+        "model": "composer-2.5"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 17,
+      "total_deletions": 7
+    }
+  }
+}
