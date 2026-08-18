@@ -1,10 +1,10 @@
-# 解压小游戏合集：架构基线与实施计划
+# 解压小游戏合集：架构基线
 
 > 状态：已确认，作为项目首版及后续迭代的架构基线  
 > Cocos Creator：3.8.8  
 > 目标平台：微信小游戏，浏览器预览作为开发环境  
 > 设计基准：竖屏 750 × 1334；横向使用 Canvas `Fit Width`，纵向避让顶部胶囊和底部安全区
-> 最后更新：2026-08-18
+> 最后更新：2026-08-19
 
 逐步实施与验收清单见：[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)。
 
@@ -80,6 +80,7 @@ assets/
 │   └── lobby.bundle.json
 ├── games/
 │   ├── watermelon/
+│   ├── sliding-puzzle/
 │   ├── blocks3d/
 │   ├── switch/
 │   └── catch/
@@ -302,11 +303,21 @@ export interface Platform {
   dispose(): void;
   getDeviceProfile(): DeviceProfile;
   getSafeArea(): SafeArea;
+  getLayoutInfo(): PlatformLayoutInfo;
   getLaunchOptions(): LaunchOptions;
+  supportsVibration(): boolean;
   vibrate(type: 'light' | 'medium' | 'heavy'): void;
   showShareMenu(): void;
   onShow(callback: () => void): Unsubscribe;
   onHide(callback: () => void): Unsubscribe;
+  pickLocalImage(): Promise<LocalImageSelection | null>;
+}
+
+export interface LocalImageSelection {
+  readonly uri: string;
+  readonly mimeType?: string;
+  readonly sizeBytes?: number;
+  readonly release: () => void;
 }
 ```
 
@@ -316,6 +327,8 @@ export interface Platform {
 - `WeChatPlatform`：微信小游戏运行环境。
 
 `wx.*` 调用只能存在于 `WeChatPlatform` 或明确的平台服务实现中。
+
+`pickLocalImage()` 是业务层唯一的本地图片入口。Web 使用浏览器文件选择；微信使用相册选择并在平台层兼容不同基础库的图片选择 API。平台只返回本地临时引用和可选元信息，不提供上传能力；图片的解码、裁切、压缩和棋盘采样在客户端完成。调用方必须在重新选择、退出、应用销毁和 Bundle 释放前调用 `release()`，不得把图片路径、文件名、Object URL、图片字节或图片哈希写入统计、广告、远程配置或跨会话存档。
 
 `DeviceProfile` 至少包含性能档位、像素比，以及平台能提供时的内存和性能基准信息。浏览器实现必须允许注入设备档位，以便稳定复现低、中、高画质路径。
 
@@ -381,6 +394,8 @@ interface UserData {
 
 霓虹 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 4`，其 `custom` 已知字段为 `highestTile`、`activeRound`；`highScore` 保存历史最高分。`activeRound` 在原有 `targetAcknowledged`（4096 目标确认）之外增加 `milestoneAcknowledged`（2048 里程碑弹窗确认）。版本迁移沿游戏命名空间执行：历史 v1/v2 的 `activeRound.targetAcknowledged` 语义是“2048 目标层已确认”，迁移为 `milestoneAcknowledged` 并将新的 `targetAcknowledged` 置为 `false`；v3 的 `targetAcknowledged` 已表示 4096 目标确认，缺少 `milestoneAcknowledged` 时补为 `false`，让恢复中的 2048 棋盘可以展示新增里程碑弹窗；v4 之后两个字段分别保持各自语义。迁移保留 `board`、`score`、`highestTile`、`highScore`、未知 `custom` 字段及 activeRound 中未知字段，下一次成功写入时统一落为 v4；不修改根存档 schema。有效移动和暂停路径都会同步写入当前 activeRound。回滚到不识别 v4 的旧游戏代码时，旧代码只能忽略新增字段或整个 `game2048` 命名空间，禁止删除或重置用户记录；恢复新代码后仍按 v1/v2 → v3 → v4 规则读取，根存档不受影响。
 
+滑块拼图不建立持久化活动局，也不保存自定义图片或跨会话的“继续上一局”快照。其结算页“再来一局”到开始页的快捷项只保留在当前运行时内存中，复用图片、裁切和棋盘规格后生成新的合法打乱；回大厅、应用销毁或重新进入游戏后清理该引用，因此不需要新增根存档或游戏命名空间迁移。
+
 棋逢对手·无尽挑战使用独立游戏命名空间 `chess-endless`，当前游戏内 `dataVersion: 2`。v1 → v2 为增量迁移：保留原有分数、局数、设置、统计和未知 `custom` 字段；v2 新增可恢复的 `custom.activeRound`，其中保存完整 `ChessEndlessSnapshot` 以及死亡状态所需的致死前 `recoverySnapshot`。老版本没有活动局时按新局处理，损坏或越界的活动局只被忽略，不清空根存档。新局、道具使用、玩家移动、敌方回合结算、奖励选择、复活、暂停和退出兜底都在逻辑状态改变后同步写盘；结算或明确重开时写入 `activeRound.inProgress: false`。恢复时按 `player`、`enemy`、`reward`、`dead` 阶段分别继续，禁止把 `ended` 快照当作活动局恢复。回滚到不识别 v2 的旧游戏代码时，旧代码可能忽略新增活动局字段，但不得删除或重置根存档；正式回滚前应先由新代码清除活动局标记。
 
 ## 12. 公共 UI 层级
@@ -415,6 +430,7 @@ Canvas
 | `shared` | 高频公共 UI 和公共资源 | 主包或公共分包 |
 | `game-watermelon` | 合成大西瓜游戏全部内容 | 独立游戏分包 |
 | `game-2048` | 霓虹 2048 的场景、规则、主题 UI 与音频 | 独立游戏分包 |
+| `game-sliding-puzzle` | 滑块拼图的场景、规则、图片处理、主题 UI 与音频 | 独立游戏分包 |
 | `game-blocks-3d` | 3D 推倒积木验证游戏全部内容 | 独立游戏分包 |
 | `game-switch` | 开关游戏全部内容 | 独立游戏分包 |
 | `game-catch` | 接球游戏全部内容 | 独立游戏分包 |
@@ -516,78 +532,3 @@ ad_result
 - 3D Shader 编译、物理初始化或 GPU 资源创建失败后的安全退出。
 
 任何单个小游戏异常都不得导致整个合集失去响应。
-
-## 17. 实施计划
-
-### 阶段一：架构骨架
-
-- 创建目录与 TypeScript 接口。
-- 实现 `App` 启动入口和持久根节点。
-- 实现服务容器、事件系统和状态机。
-- 实现 Web、微信平台适配器。
-- 实现游戏注册中心、加载器和会话模型。
-- 建立版本化配置和存档模型。
-
-验收标准：应用能完成启动、进入空大厅，并正确处理前后台事件和启动异常。
-
-### 阶段二：大厅与公共体验
-
-- 实现配置驱动的游戏列表。
-- 实现安全区和多分辨率适配。
-- 实现加载、错误、暂停、退出和结果 UI。
-- 接入音频、振动、统计和广告抽象层的开发环境实现。
-
-验收标准：大厅不引用任何具体小游戏类；禁用或调整配置后，列表行为正确变化。
-
-### 阶段三：首个完整小游戏
-
-- 创建首个独立游戏 Bundle。
-- 实现完整 `MiniGame` 生命周期。
-- 接入分数、结果、音效、振动、存档和统计。
-- 验证进入、暂停、恢复、重开和退出。
-
-验收标准：连续进入退出 30 次，无持续内存增长、重复监听和重复音频实例。
-
-### 阶段四：2D/3D 扩展性验证
-
-- 创建第二个独立的极简 3D 推倒积木游戏 Bundle。
-- 不修改核心加载器，通过 Manifest 完成注册。
-- 验证 2D/3D Camera、物理、Shader、CPU/GPU 资源、存档和 Bundle 隔离。
-
-验收标准：第二个游戏仅新增自身模块和配置；若必须修改核心协议，需要先记录架构决策并说明兼容影响。
-
-### 阶段五：微信构建与质量门禁
-
-- 配置主包、公共资源和游戏分包。
-- 在微信开发者工具和真机验证加载流程。
-- 检查包体、启动时间、分包加载、弱网、前后台和低内存行为。
-- 接入正式广告与统计实现，但保持业务接口不变。
-
-验收标准：真机能稳定完成大厅与所有游戏的完整闭环；任一游戏加载失败均可恢复到大厅。
-
-## 18. 首期质量门禁
-
-满足以下条件才视为架构首版完成：
-
-- TypeScript 无编译错误。
-- 主包不包含独立小游戏的非必要资源。
-- 游戏之间没有 Bundle 交叉依赖。
-- 连续进入退出压力测试通过。
-- 前后台切换不会重复启动游戏或音频。
-- 快速重复点击不会创建多个 GameSession。
-- 所有加载失败路径均能重试或安全返回大厅。
-- 浏览器预览与微信真机使用同一业务代码。
-- 第二个游戏接入时无需修改大厅和核心加载流程。
-- 极简 3D 游戏在低、中、高设备档位均走到正确的画质或兼容性路径。
-- 退出 3D 游戏后不残留 Camera、物理回调、Shader 预热资源和 GPU 资源引用。
-
-## 19. 架构变更规则
-
-本文件是实现依据，不是不可修改的历史记录。后续如需改变核心边界、生命周期、Bundle 策略、数据结构或状态机，必须先更新本文件，并记录：
-
-1. 变更原因。
-2. 被替代的方案。
-3. 对现有游戏和存档的兼容影响。
-4. 迁移与回滚方式。
-
-未记录的临时绕过不得进入正式实现。

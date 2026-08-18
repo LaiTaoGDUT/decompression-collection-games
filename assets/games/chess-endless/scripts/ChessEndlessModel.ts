@@ -2,61 +2,22 @@ export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 10;
 export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 16;
 
-export interface GeneralAiProtectionStage {
-    readonly maxDifficulty: number;
-    /** 当前阶段高于将的保护优先级；仅用于 AI 行为，不改变击杀分。 */
-    readonly higherPriorityPiece: 'horse' | 'cannon' | 'rook' | 'general';
-    // 将军成功脱离玩家车的直接威胁时获得的分数；越高越优先逃生。
-    readonly escapeThreat: number;
-    // 其他棋子通过挡线解除将军威胁时获得的分数；越高越倾向协同护将。
-    readonly guardedByAlly: number;
-    // 将军原本已受威胁且行动后仍未脱险的扣分；越高越少无视眼前危险。
-    readonly remainsThreatened: number;
-    // 将军原本安全却因本次行动暴露在车线上的扣分；越高越不愿主动拆掉保护。
-    readonly newlyExposed: number;
-}
-
 /**
- * 将军保护优先级随隐藏难度分段成长：
- * 马 → 炮 → 车 → 将。
+ * 将军保护使用固定评分，不随隐藏难度递增。
  *
- * 每一段的分数都刻意放在对应棋子价值的两侧：前期高价值棋可以为了
- * 自身脱险而暂时放弃护将，后期才逐渐把将军重新抬到最高优先级。
+ * 普通棋脱离玩家车的直接威胁时会获得 `600 + 棋子价值 × 3`；
+ * 马的有效脱险分为 690，高于将军的 680，因此固定配置下马比将更重要。
  */
-export const GENERAL_AI_SCORING: readonly GeneralAiProtectionStage[] = Object.freeze([
-    Object.freeze({
-        maxDifficulty: 5,
-        higherPriorityPiece: 'horse',
-        escapeThreat: 672,
-        guardedByAlly: 40,
-        remainsThreatened: 8,
-        newlyExposed: 620,
-    }),
-    Object.freeze({
-        maxDifficulty: 8,
-        higherPriorityPiece: 'cannon',
-        escapeThreat: 705,
-        guardedByAlly: 55,
-        remainsThreatened: 10,
-        newlyExposed: 705,
-    }),
-    Object.freeze({
-        maxDifficulty: 12,
-        higherPriorityPiece: 'rook',
-        escapeThreat: 765,
-        guardedByAlly: 80,
-        remainsThreatened: 12,
-        newlyExposed: 750,
-    }),
-    Object.freeze({
-        maxDifficulty: Number.POSITIVE_INFINITY,
-        higherPriorityPiece: 'general',
-        escapeThreat: 840,
-        guardedByAlly: 160,
-        remainsThreatened: 60,
-        newlyExposed: 900,
-    }),
-]);
+export const GENERAL_AI_SCORING = Object.freeze({
+    // 将军成功脱离玩家车的直接威胁时获得的分数；马的有效脱险分仍更高。
+    escapeThreat: 600,
+    // 其他棋子通过挡线解除将军威胁时获得的分数。
+    guardedByAlly: 100,
+    // 将军原本已受威胁且行动后仍未脱险的扣分。
+    remainsThreatened: 350,
+    // 将军原本安全却因本次行动暴露在车线上的扣分。
+    newlyExposed: 600,
+});
 
 export type EnemyPieceType =
     | 'pawn'
@@ -1084,7 +1045,7 @@ export class ChessEndlessModel {
     private buildEnemyCandidates(): EnemyCandidate[] {
         const beforeThreatened = this.playerThreatenedIds(this.state.playerPosition, this.state.enemies);
         const general = this.state.enemies.find((piece) => piece.type === 'general');
-        const generalScoring = general ? this.generalProtectionScoring() : undefined;
+        const generalScoring = general ? GENERAL_AI_SCORING : undefined;
         const generalThreatenedBefore = Boolean(general && beforeThreatened.has(general.id));
         const beforeSafe = this.safePlayerMoves(this.state.playerPosition, this.state.enemies).length;
         const beforeCannonAttack = this.state.enemies.some((piece) => (
@@ -1136,11 +1097,6 @@ export class ChessEndlessModel {
             }
         }
         return candidates;
-    }
-
-    private generalProtectionScoring(): GeneralAiProtectionStage {
-        return GENERAL_AI_SCORING.find((stage) => this.state.difficultyLevel <= stage.maxDifficulty)
-            ?? GENERAL_AI_SCORING[GENERAL_AI_SCORING.length - 1]!;
     }
 
     private aiNoise(): number {
