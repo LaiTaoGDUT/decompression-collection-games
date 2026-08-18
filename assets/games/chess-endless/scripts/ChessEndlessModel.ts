@@ -1,17 +1,62 @@
 export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 10;
-export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 24;
+export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 16;
 
-export const GENERAL_AI_SCORING = Object.freeze({
+export interface GeneralAiProtectionStage {
+    readonly maxDifficulty: number;
+    /** 当前阶段高于将的保护优先级；仅用于 AI 行为，不改变击杀分。 */
+    readonly higherPriorityPiece: 'horse' | 'cannon' | 'rook' | 'general';
     // 将军成功脱离玩家车的直接威胁时获得的分数；越高越优先逃生。
-    escapeThreat: 680,
+    readonly escapeThreat: number;
     // 其他棋子通过挡线解除将军威胁时获得的分数；越高越倾向协同护将。
-    guardedByAlly: 100,
+    readonly guardedByAlly: number;
     // 将军原本已受威胁且行动后仍未脱险的扣分；越高越少无视眼前危险。
-    remainsThreatened: 350,
+    readonly remainsThreatened: number;
     // 将军原本安全却因本次行动暴露在车线上的扣分；越高越不愿主动拆掉保护。
-    newlyExposed: 1400,
-});
+    readonly newlyExposed: number;
+}
+
+/**
+ * 将军保护优先级随隐藏难度分段成长：
+ * 马 → 炮 → 车 → 将。
+ *
+ * 每一段的分数都刻意放在对应棋子价值的两侧：前期高价值棋可以为了
+ * 自身脱险而暂时放弃护将，后期才逐渐把将军重新抬到最高优先级。
+ */
+export const GENERAL_AI_SCORING: readonly GeneralAiProtectionStage[] = Object.freeze([
+    Object.freeze({
+        maxDifficulty: 5,
+        higherPriorityPiece: 'horse',
+        escapeThreat: 672,
+        guardedByAlly: 40,
+        remainsThreatened: 8,
+        newlyExposed: 620,
+    }),
+    Object.freeze({
+        maxDifficulty: 8,
+        higherPriorityPiece: 'cannon',
+        escapeThreat: 705,
+        guardedByAlly: 55,
+        remainsThreatened: 10,
+        newlyExposed: 705,
+    }),
+    Object.freeze({
+        maxDifficulty: 12,
+        higherPriorityPiece: 'rook',
+        escapeThreat: 765,
+        guardedByAlly: 80,
+        remainsThreatened: 12,
+        newlyExposed: 750,
+    }),
+    Object.freeze({
+        maxDifficulty: Number.POSITIVE_INFINITY,
+        higherPriorityPiece: 'general',
+        escapeThreat: 840,
+        guardedByAlly: 160,
+        remainsThreatened: 60,
+        newlyExposed: 900,
+    }),
+]);
 
 export type EnemyPieceType =
     | 'pawn'
@@ -1039,6 +1084,7 @@ export class ChessEndlessModel {
     private buildEnemyCandidates(): EnemyCandidate[] {
         const beforeThreatened = this.playerThreatenedIds(this.state.playerPosition, this.state.enemies);
         const general = this.state.enemies.find((piece) => piece.type === 'general');
+        const generalScoring = general ? this.generalProtectionScoring() : undefined;
         const generalThreatenedBefore = Boolean(general && beforeThreatened.has(general.id));
         const beforeSafe = this.safePlayerMoves(this.state.playerPosition, this.state.enemies).length;
         const beforeCannonAttack = this.state.enemies.some((piece) => (
@@ -1059,15 +1105,15 @@ export class ChessEndlessModel {
                 if (beforeThreatened.has(piece.id) && !afterThreatened.has(piece.id)) {
                     if (piece.type !== 'general') score += 600 + PIECE_VALUE[piece.type] * 3;
                 }
-                if (general) {
+                if (generalScoring) {
                     if (generalThreatenedBefore && !generalThreatenedAfter) {
                         score += piece.type === 'general'
-                            ? GENERAL_AI_SCORING.escapeThreat
-                            : GENERAL_AI_SCORING.guardedByAlly;
+                            ? generalScoring.escapeThreat
+                            : generalScoring.guardedByAlly;
                     } else if (generalThreatenedAfter) {
                         score -= generalThreatenedBefore
-                            ? GENERAL_AI_SCORING.remainsThreatened
-                            : GENERAL_AI_SCORING.newlyExposed;
+                            ? generalScoring.remainsThreatened
+                            : generalScoring.newlyExposed;
                     }
                 }
                 if (simulated.some((enemy) => this.enemyCanCapturePlayer(enemy, this.state.playerPosition, simulated))) score += 400;
@@ -1090,6 +1136,11 @@ export class ChessEndlessModel {
             }
         }
         return candidates;
+    }
+
+    private generalProtectionScoring(): GeneralAiProtectionStage {
+        return GENERAL_AI_SCORING.find((stage) => this.state.difficultyLevel <= stage.maxDifficulty)
+            ?? GENERAL_AI_SCORING[GENERAL_AI_SCORING.length - 1]!;
     }
 
     private aiNoise(): number {
@@ -1307,20 +1358,52 @@ export class ChessEndlessModel {
             }
         }
         if (open.length < count) return undefined;
+        const playerColumn = this.state.playerPosition.column;
+        const playerRow = this.state.playerPosition.row;
+        const directAttackRange = new Set(this.playerMoves(
+            this.state.playerPosition,
+            this.state.enemies,
+        ).map(positionKey));
+
+        // 先用“完全不与玩家车同横线/竖线”的候选，确保普通棋落地时肉眼可见地
+        // 离开车的攻击方向；若棋盘拥挤，再放宽到被已有棋挡住的线位，最后才
+        // 允许当前直接攻击线作为保底。
+        const preferredPools = [
+            open.filter((candidate) => candidate.column !== playerColumn && candidate.row !== playerRow),
+            open.filter((candidate) => !directAttackRange.has(positionKey(candidate))),
+            open,
+        ];
+        const queuedTypes = this.state.queuedReinforcement.types.slice(0, count);
+        for (const pool of preferredPools) {
+            const placements = this.searchNormalPlacementPool(pool, count, queuedTypes);
+            if (placements) return placements;
+        }
+        return undefined;
+    }
+
+    private searchNormalPlacementPool(
+        pool: readonly BoardPosition[],
+        count: number,
+        queuedTypes: readonly EnemyPieceType[],
+    ): BoardPosition[] | undefined {
+        if (pool.length < count || queuedTypes.length < count) return undefined;
+
         let safeFallback: BoardPosition[] | undefined;
+        // 多次洗牌仍保留随机性，但每次只接受整批通过安全检查的结果；这样不会
+        // 因一次随机抽样失败就把普通棋直接刷到车线上。
         for (let attempt = 0; attempt < 240; attempt += 1) {
-            const placements = this.rng.shuffle(open).slice(0, count);
+            const placements = this.rng.shuffle(pool).slice(0, count);
             const simulated = this.state.enemies.map(cloneEnemy);
             const spawnedIds = new Set<number>();
-            this.state.queuedReinforcement.types.forEach((type, index) => {
+            queuedTypes.forEach((type, index) => {
                 const id = -1 - index;
                 spawnedIds.add(id);
                 simulated.push({ id, type, position: placements[index]!, frozenTurns: 0, isNewlySpawned: true });
             });
             if (this.safePlayerMoves(this.state.playerPosition, simulated).length === 0) continue;
 
-            // 普通增援优先避开玩家车的直接吃子线；只有没有更好的整批安全落点时，
-            // 才使用这个保底位置，允许新棋成为玩家下一步的直接吃子目标。
+            // 普通增援优先避开玩家车的直接吃子线；只有前面的候选层都找不到
+            // 同时满足安全走法的整批落点时，才允许新棋成为下一步直接吃子目标。
             safeFallback ??= placements;
             const threatened = this.playerThreatenedIds(this.state.playerPosition, simulated);
             const newlyThreatened = [...spawnedIds].some((id) => threatened.has(id));

@@ -65,7 +65,8 @@ const { ccclass } = _decorator;
 const TILE_SLIDE_DURATION = 0.1;
 const TILE_SETTLE_DURATION = 0.06;
 const MERGE_CELEBRATION_DELAY = 0.55;
-const HIGH_MERGE_EFFECT_SCALE = 1.12;
+// 在现有合成特效基础上再整体放大 30%。
+const HIGH_MERGE_EFFECT_SCALE = 1.12 * 1.3;
 const GAME_2048_DATA_VERSION = 4;
 const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
 const GAME_2048_TITLE_ASSET_PATH = 'visual/title/t48-user-title-v1/texture';

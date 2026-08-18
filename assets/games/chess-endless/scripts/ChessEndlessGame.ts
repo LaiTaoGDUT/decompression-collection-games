@@ -265,15 +265,15 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
     Object.freeze({
         title: '道具用法',
         body: [
-            `十字斩：${ITEM_DESCRIPTIONS.crossSlash} 先点道具，再点己方車确认蓄力。`,
+            `十字斩：${ITEM_DESCRIPTIONS.crossSlash} 先点道具，再点己方車确认蓄力；再次点击当前道具可取消选择。`,
             '',
-            `定身符：${ITEM_DESCRIPTIONS.freeze} 先点道具，再点目标敌棋。`,
+            `定身符：${ITEM_DESCRIPTIONS.freeze} 先点道具，再点目标敌棋；再次点击当前道具可取消选择。`,
             '',
             `缓兵符：${ITEM_DESCRIPTIONS.delay} 连点道具两次确认使用。`,
             '',
-            `驱逐令：${ITEM_DESCRIPTIONS.banish} 先点道具，再点普通敌棋；会播放驱逐法阵，不计击杀。`,
+            `驱逐令：${ITEM_DESCRIPTIONS.banish} 先点道具，再点普通敌棋；再次点击当前道具可取消选择，会播放驱逐法阵，不计击杀。`,
             '',
-            `移形符：${ITEM_DESCRIPTIONS.teleport} 先点道具，再点任意空格，之后仍需走車。`,
+            `移形符：${ITEM_DESCRIPTIONS.teleport} 先点道具，再点任意空格，之后仍需走車；再次点击当前道具可取消选择。`,
             '',
             '每种道具最多持有 2 件。底部道具和斩将奖励卡上的「?」按钮都可打开单独说明。',
         ].join('\n'),
@@ -1114,16 +1114,22 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.selectedPlayer = type === 'crossSlash' || type === 'delay';
             this.renderAll();
             const instruction = type === 'freeze' || type === 'banish'
-                ? '请选择一枚普通敌棋'
+                ? '请选择一枚普通敌棋；再次点击取消'
                 : type === 'teleport'
-                    ? '请选择任意空格；不会提示是否安全'
+                    ? '请选择任意空格；再次点击取消，不会提示是否安全'
                     : type === 'crossSlash'
-                        ? '请点击己方「車」确认蓄力'
+                        ? '请点击己方「車」确认蓄力；再次点击取消'
                         : `再次点击确认使用${ITEM_DISPLAY[type]}`;
             this.setHint(`${ITEM_DISPLAY[type]}：${instruction}`);
             return;
         }
-        if (type === 'freeze' || type === 'banish' || type === 'teleport' || type === 'crossSlash') return;
+        if (type !== 'delay') {
+            this.selectedItem = undefined;
+            this.selectedPlayer = true;
+            this.renderAll();
+            this.setHint(`${ITEM_DISPLAY[type]}已取消；可继续正常走車`);
+            return;
+        }
         try {
             this.model.useItem(type);
             this.persistProgress(false);
@@ -2422,7 +2428,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         const generalOnBoard = snapshot.generalActive
             || snapshot.enemies.some((piece) => piece.type === 'general');
-        const shouldPressure = generalOnBoard || snapshot.enemies.length >= 20;
+        const shouldPressure = generalOnBoard || snapshot.enemies.length >= 16;
         if (this.pressureMode === shouldPressure) return;
 
         this.pressureMode = shouldPressure;

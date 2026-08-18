@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audio Prompt"
+  short_description: "为项目音乐与音效输出可复制的外部平台提示词与制作参数"
+  default_prompt: "使用 $audio-prompt 为这个项目的音乐或音效输出可复制到外部平台的生成提示词。"
