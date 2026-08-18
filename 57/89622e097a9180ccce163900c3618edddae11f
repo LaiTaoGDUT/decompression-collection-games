@@ -1,0 +1,125 @@
+assets/lobby/scripts/LobbySettingsPanel.ts
+  s_8a9c79f476da75::t_460fdee00dc3ee 21,160
+  s_8a9c79f476da75::t_74390ee4fb233d 18-20,23
+  s_8a9c79f476da75::t_3670ecf5799854 22,106-108
+  s_8a9c79f476da75::t_7921b26682f4f3 8,11,59,67,76,80,83,91-99,105,146,148-149,151,154-159,161-164,173-174,415-417,425-427,429-432
+  s_8a9c79f476da75::t_1410e763dd93b3 165,167-168,170-172
+  s_8a9c79f476da75::t_6501414172db18 73,147,150,152-153,166,169,175-176
+assets/shared/components/LoadingView.ts
+  s_dafd3354c9b8b0::t_b6c63b87e3e8eb 29-31,33,48,93,95-119,121-123,126,484-499,503-521,523,546-548
+  s_dafd3354c9b8b0::t_a0734c381db401 32,483,552-553,555
+  s_dafd3354c9b8b0::t_e89642e248254f 49-51,554,558-559
+  s_0b211ba666d267::t_aecc8631dbe149 53-54,131-138,700-702,708,711,713-714,789-791,798
+  s_0b211ba666d267::t_8573897194d5b8 52,55-60,656,660,662-663,669,672,675,677-678,683,690,788,792-797,809,811-812
+  s_0b211ba666d267::t_8ba72ffbac1fa2 699
+tsconfig.json
+  s_1d698dafb60a12::t_e8c717255cbc86 7-25
+assets/shared/ui/LobbyBrandLayout.ts
+  s_0b211ba666d267::t_1661773b902c1f 61-73,75-77
+  s_0b211ba666d267::t_2981e0b92dba1f 74
+  s_dafd3354c9b8b0::t_9e1ffcea211625 1-10,14-19,22-44,78-93,95-133,135-141,147-151,154-188,247,249-268,270-279
+  s_8a9c79f476da75::t_a6c3d49149af26 11-13,189-246
+  s_dafd3354c9b8b0::t_93cd627ddf6f44 45-60
+assets/games/blocks3d/scripts/Blocks3DGame.ts
+  s_1d698dafb60a12::t_4916a765a7e6c1 435
+docs/asset-generation/W1_GAME_ART_V1.md
+  s_6f491994ad7856::t_9ef2c5e3060a5d 52
+docs/asset-generation/CAT_MERGE_CUTE_REFRESH_SPEC.md
+  s_6f491994ad7856::t_9ef2c5e3060a5d 237
+AGENTS.md
+  h_293365c3a5ebee 8-9
+  s_6f491994ad7856::t_9ef2c5e3060a5d 71
+  s_f74c2ddc60b7b3::t_746c5147a62534 5-7,10
+assets/lobby/scripts/LobbyEntry.ts
+  s_0b211ba666d267::t_7831f0af0ae6fc 302-303,312,321,332-333
+  s_0b211ba666d267::t_0e22a84b97d9aa 314
+  s_dafd3354c9b8b0::t_dcfce54e76a5c9 100,150,329
+  s_dafd3354c9b8b0::t_d2b46b8466d270 9,34-35,37,39-40,69,147,164,166,174-183,185-186,198-202,289,291,294-301,304-305,310,324,331,334,336,342,345,347,358,361,374-395
+  s_dafd3354c9b8b0::t_93cd627ddf6f44 11,38,279,281,285-288,290,335,337-341,343-344,346,348-351
+  s_0b211ba666d267::t_0f06ba1aa649e4 156-159
+  s_0b211ba666d267::t_6e5a73bbc032f1 36,46,292-293,311,313,315-320,325-327,362-373
+.codex/agents/sol.toml
+  h_293365c3a5ebee 1-4,9,11,13,15-16,18,20-21,23
+assets/lobby/scripts/LobbyPresentation.ts
+  s_dafd3354c9b8b0::t_37c6515b597618 15-21,133-136,147,152,154-155,160-171,173-183
+docs/WATERMELON_BALANCE_REPORT.md
+  s_6f491994ad7856::t_9ef2c5e3060a5d 9,29
+.codex/config.toml
+  h_293365c3a5ebee 1-4
+assets/shared/ui/LobbyBrandLayout.ts.meta
+  s_dafd3354c9b8b0::t_9e1ffcea211625 2-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5789622e097a9180ccce163900c3618edddae11f",
+  "prompts": {},
+  "logical_commit_id": "5789622e097a9180ccce163900c3618edddae11f",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_0b211ba666d267": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01309-c002-7da2-8559-6dc709588500",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 177,
+      "total_deletions": 119
+    },
+    "s_1d698dafb60a12": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01323-c6f9-7812-beef-bd19c8edd069",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 20,
+      "total_deletions": 3
+    },
+    "s_6f491994ad7856": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01322-d937-79c0-ae04-fc3936142c67",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6,
+      "total_deletions": 1976
+    },
+    "s_8a9c79f476da75": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01317-6ee2-7d41-8c24-5c2a3caf2e55",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 258,
+      "total_deletions": 89
+    },
+    "s_dafd3354c9b8b0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a00fd5-0001-79c3-8d36-55286b832182",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 672,
+      "total_deletions": 131
+    },
+    "s_f74c2ddc60b7b3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a012f8-d35d-7991-9958-081f890884d9",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 44,
+      "total_deletions": 4
+    }
+  }
+}
