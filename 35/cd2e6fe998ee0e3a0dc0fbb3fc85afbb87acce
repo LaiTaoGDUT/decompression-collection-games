@@ -1,0 +1,244 @@
+assets/app/App.ts
+  s_044b3f026a32b5::t_36a8748da2dccc 217-220,362,379,424-432
+assets/games/twenty48/scripts/Game2048Layout.ts
+  s_bc30b1206c4f2e::t_a90a001246db99 15-16,40-41,133-136,182-183
+  s_a06d8340cbd2cd::t_865dc08ce1da2c 6,9-14,116-119,122-125,132,142,145-146
+assets/core/state/AppState.ts
+  s_21a106161d9547::t_bcf01777159802 8,23-25
+assets/games/twenty48/scripts/Game2048Model.ts
+  s_875d973c70deda::t_3dec5475673b81 2,33-34,117,141-144,162,174
+  s_875d973c70deda::t_817e9baa908a3d 182,188-189,208-210,212-217,222-225
+  s_bc30b1206c4f2e::t_a90a001246db99 191-201
+  s_875d973c70deda::t_347a579e7ea27c 207
+  s_875d973c70deda::t_e3e778d07811cf 190
+docs/GAME2048_GAMEPLAY_SPEC.md
+  s_875d973c70deda::t_0554ab889c4855 14,27,34
+docs/ARCHITECTURE.md
+  s_21a106161d9547::t_c50792bf57d6f7 179,285-287
+  s_044b3f026a32b5::t_a03336b8454017 7,384
+  s_875d973c70deda::t_841751648fef9f 382
+  s_74e97f8c1113d1::t_c6014b4fda92a0 431-436
+  s_74e97f8c1113d1::t_eeba190eab7a5c 437
+  s_74e97f8c1113d1::t_ee1cf492a707cd 445
+  s_21a106161d9547::t_12fce887b2c88d 152,175,248-259
+  s_74e97f8c1113d1::t_d6fc1a09339ada 6
+  s_21a106161d9547::t_85a22051910c2f 274
+  s_044b3f026a32b5::t_6bc13ab052ba3f 334
+  s_74e97f8c1113d1::t_c0ba14cdb6f2fd 444
+  s_74e97f8c1113d1::t_dc3a6db9b20fbc 446
+  s_044b3f026a32b5::t_22207d41edfbd8 380
+  s_21a106161d9547::t_4a8221afb5aa7b 260
+  s_044b3f026a32b5::t_fcc5bf6b4e94a7 379
+  s_74e97f8c1113d1::t_c562a9a56e9083 430
+assets/games/blocks3d/scripts/Blocks3DGame.ts
+  s_21a106161d9547::t_fdb2cf6c84d15d 190,195
+  s_21a106161d9547::t_f5b5c1003d1600 197
+docs/SECOND_PHASE_PAGE_STATE_MATRIX.md
+  s_21a106161d9547::t_769bf34760a8fe 65
+assets/games/chess-endless/scripts/ChessEndlessModel.ts
+  s_044b3f026a32b5::t_d740ab69543979 195-218,228-248,250-256,258-269,272-289,291-294,296-368,375-376
+  s_044b3f026a32b5::t_f3b0dbdb8e3e7b 249,257,290,295
+  s_044b3f026a32b5::t_38252225885920 369-374,597-599
+  s_044b3f026a32b5::t_deec8cc314b62f 582,584-596,600-603,605
+  h_293365c3a5ebee 7,9
+  s_044b3f026a32b5::t_ffd64c24372883 219-227,270-271
+  s_872adea4d3218f::t_fadad325ee368a 1310,1314,1316-1318,1320-1327,1329
+  s_044b3f026a32b5::t_dd6f278e44e601 583
+assets/runtime/GameRuntime.ts
+  s_21a106161d9547::t_080e7bce1e6a94 41,43,727,797-798
+  s_21a106161d9547::t_ff21a8c34daa46 121,397-398,410,412,421,481,653,668-669,680-726,728-729,744-745,747-760,766-787,790,795-796,799,801-805,823-826,832-833
+  s_21a106161d9547::t_73540d1a3c3de4 995,1063,1066-1069,1071
+  s_044b3f026a32b5::t_a6f232e3c14b8d 267-268,278-279,318-319,329-330
+  s_044b3f026a32b5::t_e91438ab8a2abb 12,83-84
+  s_21a106161d9547::t_bcf01777159802 59-61,63,737-743,746,788-789,791-794,806-822,827-831
+  s_044b3f026a32b5::t_c0d77e1f777d40 496
+  s_044b3f026a32b5::t_e18da2db29db9d 568-569,571-572,613-614,622-623,634
+  s_044b3f026a32b5::t_4a16113333f83f 670-679
+  s_044b3f026a32b5::t_6c274f7527da8b 730-736,761-765
+  s_044b3f026a32b5::t_daaaa1e316b218 9,133
+  s_21a106161d9547::t_42a4172874da88 538,554,583-595,598-599,605-612,651-652
+  s_21a106161d9547::t_281ec879e71cf0 57-58
+  s_044b3f026a32b5::t_09dbd29de1eeab 85-86
+  s_21a106161d9547::t_d43f6093b5d5c4 654
+  s_21a106161d9547::t_130b9dacafa146 834
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_21a106161d9547::t_d0c4bd8a14e7cc 781-784,821,823-824,1002,1014,1023,1069,1071-1073,1655,1657-1659
+  s_21a106161d9547::t_fbfdba9d938851 188,300,341,381,711,740-742
+  s_21a106161d9547::t_f5b5c1003d1600 1669-1672,1674
+  s_21a106161d9547::t_a56f9f63d6f754 344
+  s_21a106161d9547::t_fdb2cf6c84d15d 335,340
+  s_21a106161d9547::t_59466bf72dd767 1667-1668
+assets/services/storage/StorageService.ts
+  s_044b3f026a32b5::t_dbf3a945436e51 286,342,435,440,456,463
+  s_044b3f026a32b5::t_d92f01725c5208 6,33-37,79-82,260-268,270-277,280-285,287,292-295,298,310,325,335-338,340-341,343-344,372,374-375,377-379,381-415,417-418,420-424,427-434,436-439,441-455,457-462,464-491
+docs/PLAYTEST_ACCEPTANCE_TEMPLATE.md
+  s_74e97f8c1113d1::t_215929013e00fb 103
+assets/runtime/MiniGame.ts
+  s_21a106161d9547::t_ff21a8c34daa46 41-42,50
+docs/WATERMELON_GAMEPLAY_SPEC.md
+  s_21a106161d9547::t_ae31f68a81155b 119
+AGENTS.md
+  s_74e97f8c1113d1::t_794f72359340a1 8,27,31-36
+  s_74e97f8c1113d1::t_bfcdbe15c8cbf6 37-38
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_044b3f026a32b5::t_a5df15cfdf4a88 1420,1422,1431,1436,1440
+  s_95ce706b432e2d::t_4abad5a8d606b1 2418-2424
+  s_044b3f026a32b5::t_c05d9cd7433907 351-352,354-370,386,389-391,397,400,406-407,427-429,434-438
+  s_044b3f026a32b5::t_df405560bd1fc5 1041,1064,1078,1129,1158-1159
+  s_21a106161d9547::t_7223ea5397ebb7 1630-1635,2433,2438-2440,2598,2601
+  s_044b3f026a32b5::t_5af7d222b4fedb 1450,1460-1463,1465-1468,1476-1479,1482,1492-1498
+  s_044b3f026a32b5::t_9d5df62f58beac 1587-1589,1599-1629,1638
+  s_044b3f026a32b5::t_3c0d5363120ea6 1590-1598
+  s_044b3f026a32b5::t_4054b0e6145f66 64,97-99,101,325-327
+  s_044b3f026a32b5::t_ca2df7f3a15884 71-74,95,2450,2453-2478,2483-2498,2500,2505,2510-2511
+  s_21a106161d9547::t_fdb2cf6c84d15d 403,405
+  s_044b3f026a32b5::t_ae8352cd59e76c 1562,1565,1573
+  s_044b3f026a32b5::t_4f8193d569c09c 1143,1170,1172,1179,1183,1187,1189,1193,1200-1201,1203,1206-1208,1218,1222,1234,1240
+  s_21a106161d9547::t_128e500a3d2c26 1249,1264-1268,1278,1303,1324,1337-1340,1356,1360,1369,1373
+  s_95ce706b432e2d::t_72ea75e2b7a0ba 2425-2429
+  s_044b3f026a32b5::t_5ae6b5838b6de2 1025,1047,1051,1069
+  s_044b3f026a32b5::t_aabe5d0d109bbb 96
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_044b3f026a32b5::t_de3227662e669c 268-269
+  s_875d973c70deda::t_69a5f5fe6cddc0 612,623-629,632,642-650
+  s_875d973c70deda::t_2d36496de186b4 800-802,807,812,815-819,831-842
+  s_875d973c70deda::t_c9c3524a1bd0ce 1383
+  s_875d973c70deda::t_c2b3e1682fa4fa 1617-1621,1646,1648,1667,1695,1750-1751,1798,1806,1826
+  s_bc30b1206c4f2e::t_5d066c25108b6c 1941-1948
+  s_875d973c70deda::t_b7bb1db557e399 1232-1233,1293,1299,1301,1305-1309,1313,1316-1317,1322
+  s_21a106161d9547::t_14373a592a3c88 2120
+  s_bc30b1206c4f2e::t_c1400c37ee060c 539
+  s_875d973c70deda::t_f07dd1472f35ea 409
+  s_875d973c70deda::t_a11497c011f37f 407-408,410,423-424
+  s_875d973c70deda::t_3329eda3e359ce 285
+  s_875d973c70deda::t_05c4c03109f9f8 135
+  s_875d973c70deda::t_71f4d70602acfa 67-68,71
+  s_a06d8340cbd2cd::t_1a03a82526f020 54-59,954-961,965-971,976-982,987-993,997-1000,1003-1004,1006-1007,1009,1011-1012,1015,1028,1034-1037,1566-1573,1577-1583,1588-1594,1599-1605,1608-1609,1611-1612
+  s_21a106161d9547::t_1c7b6a7d3a1b9b 222,259,294,313,596,615,617,622,659-662,684,689
+  s_875d973c70deda::t_98c450f5a37c7f 279-284,286-287
+  s_bc30b1206c4f2e::t_3695454ff819d5 536,538,540-570,572-593
+  s_044b3f026a32b5::t_666888b193c984 638,640-641,651-652
+  s_21a106161d9547::t_9e923e3979c306 265,275,639
+  s_875d973c70deda::t_b64cd970df3e4a 701-705,715-716,746
+  s_a06d8340cbd2cd::t_db79fb1f5ad57e 1031,1033,1971,1976-1997,2008,2013,2015,2019-2026,2040-2065
+  s_21a106161d9547::t_fdb2cf6c84d15d 291,293
+  s_875d973c70deda::t_426d0ae263aad1 1294,1330,1332-1334,1337-1340,1343-1347,1350-1352,1355,1359,1381,1384,1391-1392,1394,1396-1397,1401
+  s_bc30b1206c4f2e::t_ca29570b990e00 1018-1021,1039-1051
+  s_bc30b1206c4f2e::t_b0ce352aece16c 459,464,470,486-487
+  s_bc30b1206c4f2e::t_247eafaa390a5d 53,196,198,200,223-224,296,299-302,329,338,392-395,432,434,445,447
+  s_875d973c70deda::t_51a7d429ff26d9 42
+  s_bc30b1206c4f2e::t_39ace636cb76f0 537
+assets/shared/components/LoadingView.ts
+  s_21a106161d9547::t_5cf748f20bbd41 671-682,684,686
+  s_21a106161d9547::t_080e7bce1e6a94 174,197,220-244,255,265,281-282
+  s_21a106161d9547::t_14373a592a3c88 249-250,491-508,510-527,529,531-540,542-568,669
+  s_21a106161d9547::t_d1ee68146aff0e 509,528,530,541
+  s_21a106161d9547::t_4e932adff3cdb0 670
+docs/REVIEW_LOG.md
+  s_21a106161d9547::t_5f29bcbb27d61a 1417-1419
+  s_21a106161d9547::t_82dfe087b0f07c 1406-1416
+  s_044b3f026a32b5::t_e1365ec65d2d38 1420-1432
+  s_044b3f026a32b5::t_28a61096dc53b7 1391-1405
+docs/GAME2048_VISUAL_SPEC.md
+  s_875d973c70deda::t_0554ab889c4855 24
+  s_a06d8340cbd2cd::t_23b88548c33552 19
+  s_875d973c70deda::t_e370ffc79fade4 10,25
+"docs/《棋逢对手·无尽挑战》完整游戏玩法方案 V1.0.md"
+  s_872adea4d3218f::t_fadad325ee368a 1609-1616
+docs/VISUAL_STYLE_GUIDE.md
+  s_74e97f8c1113d1::t_215929013e00fb 5,21,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "35cd2e6fe998ee0e3a0dc0fbb3fc85afbb87acce",
+  "prompts": {},
+  "logical_commit_id": "35cd2e6fe998ee0e3a0dc0fbb3fc85afbb87acce",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_044b3f026a32b5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0138a-4aa0-7ef0-bdd6-a789134f50f1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 707,
+      "total_deletions": 69
+    },
+    "s_21a106161d9547": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01389-cf64-7f32-805f-5371eb2bc005",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 480,
+      "total_deletions": 98
+    },
+    "s_74e97f8c1113d1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a013bc-085b-75b3-a065-ba655329839b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 26,
+      "total_deletions": 18
+    },
+    "s_872adea4d3218f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a013ca-6d85-7530-9d12-90c6061dd88e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 22,
+      "total_deletions": 3
+    },
+    "s_875d973c70deda": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a013eb-3c43-7150-b642-953722c6c854",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 193,
+      "total_deletions": 324
+    },
+    "s_95ce706b432e2d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a013b6-c93f-7642-a038-91205f64bf7a",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 14,
+      "total_deletions": 35
+    },
+    "s_a06d8340cbd2cd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a013b7-eae2-73a0-b881-9a4404dbaca9",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 168,
+      "total_deletions": 50
+    },
+    "s_bc30b1206c4f2e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a013f3-890c-7c11-bfc4-4321463867dd",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 132,
+      "total_deletions": 2
+    }
+  }
+}
