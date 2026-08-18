@@ -26,6 +26,11 @@ import type {
     LoadingPresenter,
 } from '../../runtime/GameRuntime';
 import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
+import {
+    calculateLobbyBrandMetrics,
+    calculateLobbySafeContent,
+    LOBBY_DESIGN_WIDTH,
+} from '../ui/LobbyBrandLayout';
 
 const { ccclass } = _decorator;
 
@@ -40,9 +45,19 @@ const COLORS = {
 
 const STARTUP_BACKGROUND_PATH = 'loading/loading-lobby-background-v1/texture';
 const STARTUP_TITLE_PATH = 'loading/loading-lobby-title-v1/texture';
-const STARTUP_TITLE_WIDTH = 450;
-const STARTUP_TITLE_HEIGHT = 300;
-const STARTUP_TITLE_TOP_GAP = 12;
+const LEGACY_LOADING_RESERVED_GAP = 12;
+const LEGACY_LOADING_TITLE_WIDTH = 450;
+const LEGACY_LOADING_TITLE_HEIGHT = 300;
+const LEGACY_LOADING_TITLE_TOP_GAP = 12;
+const LOBBY_STARTUP_PROGRESS_SIDE_INSET = 48;
+const LOBBY_STARTUP_PROGRESS_NODE_HEIGHT = 40;
+const LOBBY_STARTUP_PROGRESS_BAR_HEIGHT = 30;
+const LOBBY_STARTUP_PROGRESS_FILL_HEIGHT = 24;
+const LOBBY_STARTUP_TEXT_SIZE = 28;
+const LOBBY_STARTUP_TEXT_BOX_HEIGHT = 50;
+const LOBBY_STARTUP_TIP_SIZE = 22;
+const LOBBY_STARTUP_TIP_BOX_HEIGHT = 38;
+const LOBBY_STARTUP_PERCENT_WIDTH = 88;
 
 interface LoadingLayoutMetrics {
     readonly width: number;
@@ -75,24 +90,52 @@ function calculateLoadingLayout(
     safeLeft: number,
     safeRight: number,
     variant: 'game' | 'lobby',
+    topRightReservedBottom = 0,
 ): LoadingLayoutMetrics {
-    const normalizedTop = clamp(Math.max(0, safeTop), 0, height * 0.45);
-    const normalizedBottom = clamp(Math.max(0, safeBottom), 0, height * 0.45);
-    const normalizedLeft = clamp(Math.max(0, safeLeft), 0, width * 0.45);
-    const normalizedRight = clamp(Math.max(0, safeRight), 0, width * 0.45);
-    const contentWidth = Math.max(1, width - normalizedLeft - normalizedRight);
-    const contentHeight = Math.max(1, height - normalizedTop - normalizedBottom);
-    const contentX = (normalizedLeft - normalizedRight) / 2;
-    const contentY = (normalizedBottom - normalizedTop) / 2;
+    const lobbyContent = variant === 'lobby'
+        ? calculateLobbySafeContent(width, height, {
+            top: safeTop,
+            bottom: safeBottom,
+            left: safeLeft,
+            right: safeRight,
+            topRightReservedBottom,
+        })
+        : undefined;
+    const normalizedTop = lobbyContent?.safeTop
+        ?? clamp(Math.max(0, safeTop), 0, height * 0.45);
+    const normalizedBottom = lobbyContent?.safeBottom
+        ?? clamp(Math.max(0, safeBottom), 0, height * 0.45);
+    const normalizedLeft = lobbyContent?.safeLeft
+        ?? clamp(Math.max(0, safeLeft), 0, width * 0.45);
+    const normalizedRight = lobbyContent?.safeRight
+        ?? clamp(Math.max(0, safeRight), 0, width * 0.45);
+    const contentWidth = lobbyContent?.contentWidth
+        ?? Math.max(1, width - normalizedLeft - normalizedRight);
+    const contentHeight = lobbyContent?.contentHeight
+        ?? Math.max(1, height - normalizedTop - normalizedBottom);
+    const contentX = lobbyContent?.contentX
+        ?? (normalizedLeft - normalizedRight) / 2;
+    const contentY = lobbyContent?.contentY
+        ?? (normalizedBottom - normalizedTop) / 2;
     const widthScale = Math.min(1, contentWidth / 750);
+    const lobbyBrand = variant === 'lobby'
+        ? calculateLobbyBrandMetrics(contentWidth, contentHeight)
+        : undefined;
     const scale = variant === 'game'
         ? Math.max(0.01, Math.min(widthScale, contentHeight / 822))
-        : Math.max(0.01, Math.min(widthScale, contentHeight / 1334));
+        : lobbyBrand!.scale;
     const panelWidth = 640 * scale;
     const panelHeight = 790 * scale;
     const coverWidth = Math.max(1, panelWidth - 64 * scale);
     const coverHeight = coverWidth * 0.75;
-    const trackWidth = Math.max(1, panelWidth - 96 * scale);
+    const trackWidth = Math.max(
+        1,
+        panelWidth - (
+            variant === 'lobby'
+                ? LOBBY_STARTUP_PROGRESS_SIDE_INSET
+                : 96
+        ) * scale,
+    );
 
     return Object.freeze({
         width,
@@ -436,21 +479,48 @@ export class LoadingView extends Component implements LoadingPresenter {
         const platformSafeRight = platformSafeArea
             ? Math.max(0, width - platformSafeArea.right)
             : 0;
-        const capsuleBottom = this.platformLayout?.topRightReservedArea?.bottom ?? 0;
-
         const startup = this.variant === 'lobby';
+        const platformScale = startup ? width / LOBBY_DESIGN_WIDTH : 1;
+        const startupPlatformSafeTop = platformSafeArea
+            ? platformSafeArea.top * platformScale
+            : 0;
+        const startupPlatformSafeBottom = platformSafeArea
+            ? Math.max(0, height - platformSafeArea.bottom * platformScale)
+            : 0;
+        const startupPlatformSafeLeft = platformSafeArea
+            ? platformSafeArea.left * platformScale
+            : 0;
+        const startupPlatformSafeRight = platformSafeArea
+            ? Math.max(0, width - platformSafeArea.right * platformScale)
+            : 0;
+        const startupCapsuleBottom = this.platformLayout?.topRightReservedArea?.bottom
+            ? this.platformLayout.topRightReservedArea.bottom * platformScale
+            : 0;
+
         const metrics = calculateLoadingLayout(
             width,
             height,
-            Math.max(
-                safeTop,
-                platformSafeArea?.top ?? 0,
-                capsuleBottom > 0 ? capsuleBottom + STARTUP_TITLE_TOP_GAP : 0,
-            ),
-            Math.max(safeBottom, platformSafeBottom),
-            Math.max(safeLeft, platformSafeArea?.left ?? 0),
-            Math.max(safeRight, platformSafeRight),
+            startup
+                ? Math.max(safeTop, startupPlatformSafeTop)
+                : Math.max(
+                    safeTop,
+                    platformSafeArea?.top ?? 0,
+                    (this.platformLayout?.topRightReservedArea?.bottom ?? 0) > 0
+                        ? (this.platformLayout?.topRightReservedArea?.bottom ?? 0)
+                            + LEGACY_LOADING_RESERVED_GAP
+                        : 0,
+                ),
+            startup
+                ? Math.max(safeBottom, startupPlatformSafeBottom)
+                : Math.max(safeBottom, platformSafeBottom),
+            startup
+                ? Math.max(safeLeft, startupPlatformSafeLeft)
+                : Math.max(safeLeft, platformSafeArea?.left ?? 0),
+            startup
+                ? Math.max(safeRight, startupPlatformSafeRight)
+                : Math.max(safeRight, platformSafeRight),
             this.variant,
+            startup ? startupCapsuleBottom : 0,
         );
         this.layoutMetrics = metrics;
         this.node.getComponent(UITransform)?.setContentSize(width, height);
@@ -473,15 +543,20 @@ export class LoadingView extends Component implements LoadingPresenter {
         }
         const startupTitle = this.startupTitleSprite?.node;
         if (startupTitle) {
+            const brand = startup
+                ? calculateLobbyBrandMetrics(metrics.contentWidth, metrics.contentHeight)
+                : undefined;
             startupTitle.active = startup;
             startupTitle.setPosition(
                 0,
-                contentHeight / 2
-                    - (STARTUP_TITLE_TOP_GAP + STARTUP_TITLE_HEIGHT / 2) * scale,
+                contentHeight / 2 - (
+                    brand?.centerFromTop
+                    ?? (LEGACY_LOADING_TITLE_TOP_GAP + LEGACY_LOADING_TITLE_HEIGHT / 2) * scale
+                ),
             );
             startupTitle.getComponent(UITransform)?.setContentSize(
-                STARTUP_TITLE_WIDTH * scale,
-                STARTUP_TITLE_HEIGHT * scale,
+                brand?.width ?? LEGACY_LOADING_TITLE_WIDTH * scale,
+                brand?.height ?? LEGACY_LOADING_TITLE_HEIGHT * scale,
             );
         }
 
@@ -578,41 +653,41 @@ export class LoadingView extends Component implements LoadingPresenter {
         const trackLeft = centerX - trackWidth / 2;
         this.styleLabel(
             'LoadingMessage',
-            23 * scale,
+            (startup ? LOBBY_STARTUP_TEXT_SIZE : 23) * scale,
             startup ? new Color(123, 75, 74, 235) : COLORS.secondary,
             trackLeft,
             startup
-                ? -contentHeight / 2 + 176 * scale
+                ? -contentHeight / 2 + 182 * scale
                 : centerY - 194 * scale,
-            Math.max(1, trackWidth - 90 * scale),
-            42 * scale,
+            Math.max(1, trackWidth - (startup ? 108 : 90) * scale),
+            (startup ? LOBBY_STARTUP_TEXT_BOX_HEIGHT : 42) * scale,
             false,
             HorizontalTextAlignment.LEFT,
         );
         this.styleLabel(
             'LoadingPercent',
-            23 * scale,
+            (startup ? LOBBY_STARTUP_TEXT_SIZE : 23) * scale,
             startup ? new Color(155, 77, 73, 255) : COLORS.blue,
             startup
-                ? trackLeft + trackWidth - 36 * scale
+                ? trackLeft + trackWidth - LOBBY_STARTUP_PERCENT_WIDTH * scale / 2
                 : centerX + metrics.panelWidth / 2 - 72 * scale,
             startup
-                ? -contentHeight / 2 + 176 * scale
+                ? -contentHeight / 2 + 182 * scale
                 : centerY - 194 * scale,
-            72 * scale,
-            42 * scale,
+            (startup ? LOBBY_STARTUP_PERCENT_WIDTH : 72) * scale,
+            (startup ? LOBBY_STARTUP_TEXT_BOX_HEIGHT : 42) * scale,
             true,
         );
         this.styleLabel(
             'LoadingTip',
-            19 * scale,
+            (startup ? LOBBY_STARTUP_TIP_SIZE : 19) * scale,
             startup ? new Color(123, 75, 74, 220) : new Color(121, 133, 165, 210),
             centerX,
             startup
                 ? -contentHeight / 2 + 80 * scale
                 : centerY - 308 * scale,
             Math.max(1, metrics.panelWidth - 90 * scale),
-            32 * scale,
+            (startup ? LOBBY_STARTUP_TIP_BOX_HEIGHT : 32) * scale,
             false,
         );
         this.node.getChildByName('LoadingGameName')!.active = !startup;
@@ -622,17 +697,21 @@ export class LoadingView extends Component implements LoadingPresenter {
             startup ? 0 : centerX,
             startup ? -contentHeight / 2 + 130 * scale : centerY - 254 * scale,
         );
-        track.node.getComponent(UITransform)?.setContentSize(trackWidth, 32 * scale);
+        track.node.getComponent(UITransform)?.setContentSize(
+            trackWidth,
+            (startup ? LOBBY_STARTUP_PROGRESS_NODE_HEIGHT : 32) * scale,
+        );
         track.clear();
         track.fillColor = startup
             ? new Color(255, 248, 228, 220)
             : new Color(198, 211, 231, 255);
+        const trackHeight = (startup ? LOBBY_STARTUP_PROGRESS_BAR_HEIGHT : 24) * scale;
         track.roundRect(
             -trackWidth / 2,
-            -12 * scale,
+            -trackHeight / 2,
             trackWidth,
-            24 * scale,
-            12 * scale,
+            trackHeight,
+            trackHeight / 2,
         );
         track.fill();
         this.drawProgressFill();
@@ -706,7 +785,17 @@ export class LoadingView extends Component implements LoadingPresenter {
                 ? -contentHeight / 2 + 130 * scale
                 : metrics.contentY - 254 * scale,
         );
-        fill.node.getComponent(UITransform)?.setContentSize(trackWidth, 32 * scale);
+        const fillNodeHeight = (
+            this.variant === 'lobby'
+                ? LOBBY_STARTUP_PROGRESS_NODE_HEIGHT
+                : 32
+        ) * scale;
+        fill.node.getComponent(UITransform)?.setContentSize(trackWidth, fillNodeHeight);
+        const fillHeight = (
+            this.variant === 'lobby'
+                ? LOBBY_STARTUP_PROGRESS_FILL_HEIGHT
+                : 18
+        ) * scale;
         fill.clear();
         const inset = 3 * scale;
         const available = trackWidth - inset * 2;
@@ -717,10 +806,10 @@ export class LoadingView extends Component implements LoadingPresenter {
                 : COLORS.blue;
             fill.roundRect(
                 -trackWidth / 2 + inset,
-                -9 * scale,
+                -fillHeight / 2,
                 filled,
-                18 * scale,
-                9 * scale,
+                fillHeight,
+                fillHeight / 2,
             );
             fill.fill();
             if (filled > 28 * scale) {

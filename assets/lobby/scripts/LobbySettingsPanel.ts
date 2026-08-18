@@ -5,14 +5,22 @@ import {
     HorizontalTextAlignment,
     Label,
     Node,
+    sys,
     UITransform,
     VerticalTextAlignment,
+    view,
     Widget,
 } from 'cc';
 import type { Platform } from '../../platform/Platform';
 import type { AudioService } from '../../services/audio/AudioService';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import type { StorageService } from '../../services/storage/StorageService';
+import {
+    calculateLobbySettingsEntryMetrics,
+    LOBBY_DESIGN_WIDTH,
+    LOBBY_DESIGN_HEIGHT,
+    LOBBY_SETTINGS_ENTRY_SIZE,
+} from '../../shared/ui/LobbyBrandLayout';
 
 interface LobbySettingsServices {
     readonly audio: AudioService;
@@ -48,6 +56,7 @@ const COLOR = {
 /** L1 settings UI. It only talks to public services and owns no game node. */
 export class LobbySettingsPanel {
     private root: Node | null = null;
+    private settingsEntry: Node | null = null;
     private services?: LobbySettingsServices;
     private errorLabel?: Label;
     private readonly rows = new Map<SettingKey, SettingRow>();
@@ -55,47 +64,49 @@ export class LobbySettingsPanel {
     mount(contentRoot: Node, services: LobbySettingsServices): void {
         if (this.root?.isValid) {
             this.services = services;
+            this.layoutSettingsEntry();
             this.refresh();
             return;
         }
 
         this.services = services;
-        this.createSettingsEntry(contentRoot, services);
+        this.createSettingsEntry(contentRoot);
         this.root = this.createPanel(contentRoot);
         this.root.active = false;
+        view.on('canvas-resize', this.handleCanvasResize, this);
     }
 
     unmount(): void {
+        view.off('canvas-resize', this.handleCanvasResize, this);
         this.rows.clear();
         this.root = null;
+        this.settingsEntry = null;
         this.services = undefined;
         this.errorLabel = undefined;
     }
 
     private createSettingsEntry(
         contentRoot: Node,
-        services: LobbySettingsServices,
     ): void {
-        if (contentRoot.getChildByName('SettingsEntry')) {
+        const fullscreenParent = contentRoot.parent?.parent ?? contentRoot;
+        const existing = fullscreenParent.getChildByName('SettingsEntry')
+            ?? contentRoot.getChildByName('SettingsEntry');
+        if (existing) {
+            if (existing.parent !== fullscreenParent) {
+                existing.setParent(fullscreenParent);
+            }
+            this.settingsEntry = existing;
+            this.layoutSettingsEntry();
             return;
         }
 
         const entry = new Node('SettingsEntry');
         entry.layer = contentRoot.layer;
-        contentRoot.addChild(entry);
-        entry.addComponent(UITransform).setContentSize(92, 92);
-        const widget = entry.addComponent(Widget);
-        widget.isAlignTop = true;
-        widget.isAlignRight = true;
-        const layout = services.platform.getLayoutInfo();
-        const capsuleBottom = layout.topRightReservedArea?.bottom ?? 0;
-        const capsuleInset = Math.max(
-            0,
-            capsuleBottom - layout.safeArea.top + 12,
+        fullscreenParent.addChild(entry);
+        entry.addComponent(UITransform).setContentSize(
+            LOBBY_SETTINGS_ENTRY_SIZE,
+            LOBBY_SETTINGS_ENTRY_SIZE,
         );
-        widget.top = Math.max(36, capsuleInset);
-        widget.right = 37;
-        widget.updateAlignment();
         const graphics = entry.addComponent(Graphics);
         graphics.fillColor = new Color(12, 37, 149, 145);
         graphics.circle(3, -6, 39);
@@ -132,6 +143,37 @@ export class LobbySettingsPanel {
         button.zoomScale = 0.96;
         button.duration = 0.09;
         entry.on(Button.EventType.CLICK, this.open, this);
+        this.settingsEntry = entry;
+        this.layoutSettingsEntry();
+    }
+
+    private layoutSettingsEntry(): void {
+        const entry = this.settingsEntry;
+        const services = this.services;
+        if (!entry?.isValid || !services) {
+            return;
+        }
+
+        const visibleSize = view.getVisibleSize();
+        const parentSize = entry.parent?.getComponent(UITransform)?.contentSize;
+        const width = Math.max(1, visibleSize.width || parentSize?.width || LOBBY_DESIGN_WIDTH);
+        const height = Math.max(1, visibleSize.height || parentSize?.height || LOBBY_DESIGN_HEIGHT);
+        const safeRect = sys.getSafeAreaRect();
+        const scaleX = visibleSize.width > 0 ? width / visibleSize.width : 1;
+        const scaleY = visibleSize.height > 0 ? height / visibleSize.height : 1;
+        const systemSafeTop = Math.max(0, visibleSize.height - safeRect.y - safeRect.height) * scaleY;
+        const systemSafeRight = Math.max(0, visibleSize.width - safeRect.x - safeRect.width) * scaleX;
+        const metrics = calculateLobbySettingsEntryMetrics(
+            width,
+            height,
+            services.platform.getLayoutInfo(),
+            {
+                top: systemSafeTop,
+                right: systemSafeRight,
+            },
+        );
+        entry.setScale(metrics.scale, metrics.scale, 1);
+        entry.setPosition(metrics.x, metrics.y);
     }
 
     private createPanel(contentRoot: Node): Node {
@@ -370,6 +412,9 @@ export class LobbySettingsPanel {
         this.refresh();
         this.services?.feedback.vibrate('light');
         this.services?.feedback.play('popup');
+        if (this.settingsEntry) {
+            this.settingsEntry.active = false;
+        }
         this.root.active = true;
     };
 
@@ -377,7 +422,14 @@ export class LobbySettingsPanel {
         if (this.root) {
             this.services?.feedback.play('uiButton');
             this.root.active = false;
+            if (this.settingsEntry) {
+                this.settingsEntry.active = true;
+            }
         }
+    };
+
+    private readonly handleCanvasResize = (): void => {
+        this.layoutSettingsEntry();
     };
 
     private toggle(key: SettingKey): void {

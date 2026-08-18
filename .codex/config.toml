@@ -1,2 +1,4 @@
-[agents]
-max_concurrent_threads_per_session = 4
+[agents.sol]
+description = "处理复杂工程场景的专家 subAgent，负责深度分析、架构审查、疑难问题查找、风险识别和验证建议。"
+config_file = "./agents/sol.toml"
+nickname_candidates = ["Sol"]

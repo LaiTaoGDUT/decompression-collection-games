@@ -234,5 +234,5 @@ Avoid: cropping ears, tiny details, huge anime eyes, photorealism, 3D, plastic, 
 - [ ] 大厅卡片封面为 920×690 JPG，在圆角遮罩和 1.025 缓慢缩放时主体不被裁掉。
 - [ ] 入口图标为 512×512 RGBA PNG，在 48px 和圆形蒙版下仍清晰，并已接入真实配置路径。
 - [ ] 程序绘制的 HUD、按钮、弹层、危险线、投放引导和爪印特效不再新增重复位图。
-- [ ] `node tools/watermelon/verify-cat-physical-scale.js` 通过。
+- [ ] 通过 Cocos Creator Web/微信构建，并确认猫咪碰撞半径、视觉尺寸和投放预览在实际画面中一致。
 - [ ] Cocos Creator Web/微信构建成功，桌面和移动端实际画面通过。

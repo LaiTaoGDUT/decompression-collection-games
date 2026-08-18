@@ -12,21 +12,17 @@ import {
     Widget,
 } from 'cc';
 import { calculateLobbyBackgroundCover } from './LobbyVisualLayout';
+import {
+    calculateLobbyBrandMetrics,
+    LOBBY_BRAND_HEIGHT,
+    LOBBY_BRAND_WIDTH,
+    LOBBY_DESIGN_HEIGHT,
+    LOBBY_DESIGN_WIDTH,
+} from '../../shared/ui/LobbyBrandLayout';
 
 const BACKGROUND_ASSET_PATH = 'visual/backgrounds/lobby-arcade-warm-rays-v3/texture';
 const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
 const BACKGROUND_FALLBACK = new Color(246, 173, 106, 255);
-const BRAND_AREA_TOP = 18;
-const BRAND_EMBLEM_TOP_GAP = 12;
-const BRAND_EMBLEM_WIDTH = 450;
-const BRAND_EMBLEM_HEIGHT = 300;
-// BrandArea uses a top anchor and sits 18 px below the viewport top. Keep the
-// complete logo box 12 px inside that viewport instead of centering the logo
-// on the settings button, which made its transparent bounds cross the mask.
-const BRAND_EMBLEM_CENTER_Y =
-    BRAND_AREA_TOP
-    - BRAND_EMBLEM_TOP_GAP
-    - BRAND_EMBLEM_HEIGHT / 2;
 
 /** Builds a light, playful mini-game lobby while keeping the L1 palette. */
 export class LobbyPresentation {
@@ -134,7 +130,10 @@ export class LobbyPresentation {
     }
 
     private createBrandArea(contentRoot: Node): void {
-        if (contentRoot.getChildByName('BrandArea')) {
+        const existing = contentRoot.getChildByName('BrandArea');
+        if (existing) {
+            this.brandEmblemNode = existing.getChildByName('BrandEmblem');
+            this.layoutBrand(LOBBY_DESIGN_WIDTH, LOBBY_DESIGN_HEIGHT);
             return;
         }
         const brand = new Node('BrandArea');
@@ -145,26 +144,43 @@ export class LobbyPresentation {
         transform.setContentSize(670, 330);
         transform.setAnchorPoint(0.5, 1);
         const widget = brand.addComponent(Widget);
-        widget.isAlignTop = true;
-        widget.isAlignLeft = true;
-        widget.isAlignRight = true;
-        widget.top = BRAND_AREA_TOP;
-        widget.left = 40;
-        widget.right = 40;
-        widget.updateAlignment();
+        widget.enabled = false;
 
         const emblem = new Node('BrandEmblem');
         emblem.layer = brand.layer;
         brand.addChild(emblem);
-        emblem.setPosition(0, BRAND_EMBLEM_CENTER_Y);
+        emblem.setPosition(0, 0);
         emblem.addComponent(UITransform).setContentSize(
-            BRAND_EMBLEM_WIDTH,
-            BRAND_EMBLEM_HEIGHT,
+            LOBBY_BRAND_WIDTH,
+            LOBBY_BRAND_HEIGHT,
         );
         const emblemSprite = emblem.addComponent(Sprite);
         emblemSprite.sizeMode = Sprite.SizeMode.CUSTOM;
         this.brandEmblemNode = emblem;
+        this.layoutBrand(LOBBY_DESIGN_WIDTH, LOBBY_DESIGN_HEIGHT);
+    }
 
+    /** 将品牌区固定在 ScrollView content 顶部，并与启动页共享 logo 几何。 */
+    layoutBrand(contentWidth: number, contentHeight: number): void {
+        const emblem = this.brandEmblemNode;
+        const brand = emblem?.parent;
+        const brandTransform = brand?.getComponent(UITransform);
+        const emblemTransform = emblem?.getComponent(UITransform);
+        if (!brand || !brandTransform || !emblem || !emblemTransform) {
+            return;
+        }
+
+        const metrics = calculateLobbyBrandMetrics(contentWidth, contentHeight);
+        const widget = brand.getComponent(Widget);
+        if (widget) {
+            widget.enabled = false;
+        }
+        brandTransform.setAnchorPoint(0.5, 1);
+        brandTransform.setContentSize(Math.max(1, contentWidth), metrics.areaHeight);
+        brand.setPosition(0, 0);
+        emblemTransform.setAnchorPoint(0.5, 0.5);
+        emblemTransform.setContentSize(metrics.width, metrics.height);
+        emblem.setPosition(0, -metrics.centerFromTop);
     }
 
     private loadBackgroundArtwork(): void {

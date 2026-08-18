@@ -432,7 +432,7 @@ export class Blocks3DGame extends Component implements MiniGame {
             const body = block.getComponent(RigidBody);
             if (!state || !body) continue;
             this.applyBodyState(block, body, state);
-            if (saved.toppled.includes(block.name)) this.toppled.add(block);
+            if (saved.toppled.indexOf(block.name) !== -1) this.toppled.add(block);
         }
         for (const state of saved.balls) {
             const body = this.createBall(

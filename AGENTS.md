@@ -2,6 +2,12 @@
 
 本文件是仓库内所有编码代理的执行规范。完整依据见 `docs/ARCHITECTURE.md`、`docs/IMPLEMENTATION_PLAN.md`、`docs/CONTENT_PRODUCTION_PLAN.md`、`docs/VISUAL_STYLE_GUIDE.md` 与 `docs/PLAYTEST_ACCEPTANCE_TEMPLATE.md`；若规则冲突，以用户当前要求和 `docs/ARCHITECTURE.md` 的已确认架构基线为准。
 
+## Codex Agent 模型与协作约定
+
+- 遇到架构边界、跨 Bundle 依赖、生命周期与资源释放、存档迁移、并发状态、安全风险、复杂 UI/平台适配或难以解释的验证失败时，主 Agent 应将边界清晰的专项任务委派给 `sol`（昵称 `Sol`）专家 subAgent，定义见 `.codex/agents/sol.toml`。
+- 委派给 Sol 的任务必须包含目标、已有证据和期望产出；Sol 只处理明确范围，不得擅自扩大需求。主 Agent 负责整合结论、采纳、执行最终修改并完成验证。
+- 简单的小修改任务、确定性任务、单点文案、格式或局部确定性修改不必调用 Sol。
+
 ## 项目基线
 
 - 引擎固定为 Cocos Creator 3.8.8，目标平台为微信小游戏；浏览器预览只作为开发和自动化验证环境。
@@ -62,12 +68,10 @@
 
 - 修改前先定位已有实现和同类游戏的成熟做法；保留用户已有改动，不覆盖无关文件或素材。
 - 每个步骤完成后先执行针对性验证和代码 Review，再继续后续工作。验证失败时修复根因，不用后续功能或硬编码掩盖问题。
-- 最低完成门槛：TypeScript 无编译错误、相关游戏的模型/布局/项目校验通过、`git diff --check` 通过。涉及 Bundle 或微信构建时，还要运行：
+- 最低完成门槛：TypeScript 无编译错误、相关游戏的构建/运行验证通过、`git diff --check` 通过。涉及 Bundle 或微信构建时，还要运行：
 
   ```text
   npm run verify:game-bundles
   npm run verify:wechat-package-size
   ```
-
-- 对 `tools/<game>/verify-*.js` 已覆盖的游戏，修改规则、场景、布局或资源后必须运行对应校验；新增关键约束时同步增加自动断言，不能只写文档。
 - 涉及显示、输入、安全区、生命周期或平台行为的改动，不能只依赖静态检查：必须重新编译。

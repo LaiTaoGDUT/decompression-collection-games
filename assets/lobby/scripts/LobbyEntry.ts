@@ -6,7 +6,9 @@ import {
     Node,
     Prefab,
     ScrollView,
+    sys,
     UITransform,
+    Vec2,
     view,
     Widget,
 } from 'cc';
@@ -29,15 +31,19 @@ import { LobbyPresentation } from './LobbyPresentation';
 import { LobbySettingsPanel } from './LobbySettingsPanel';
 import { BundleAudioBank } from '../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
+import {
+    calculateLobbyBrandMetrics,
+    calculateLobbyScrollViewportMetrics,
+    calculateLobbySafeContentFromPlatform,
+    clampLobbyScrollOffset,
+    type LobbySafeContentMetrics,
+} from '../../shared/ui/LobbyBrandLayout';
 
 const { ccclass, property } = _decorator;
 const EMPTY_GAMES: readonly GameManifest[] = Object.freeze([]);
 const GRID_SIDE_PADDING = 40;
-// Leave enough room for the complete 300 px logo box plus a small gap before
-// the first card; the logo itself is now kept inside the scroll viewport.
-const GRID_TOP = 320;
 const GRID_BOTTOM = 40;
-const VIEWPORT_TOP_GAP = 12;
+const GRID_BOTTOM_SPACER_NAME = 'GameListBottomSpacer';
 export type EnterGameRequest = (manifest: GameManifest) => Promise<void>;
 
 /** 大厅入口，只负责从应用服务中取得当前可玩的游戏清单。 */
@@ -60,6 +66,7 @@ export class LobbyEntry extends Component {
     private audioBank?: BundleAudioBank;
     private feedback?: FeedbackService;
     private platformLayout?: PlatformLayoutInfo;
+    private hasLaidOut = false;
 
     get playableGames(): readonly GameManifest[] {
         return this.games;
@@ -90,7 +97,7 @@ export class LobbyEntry extends Component {
         const registry = services.get(GAME_REGISTRY_SERVICE);
         const platform = services.get(PLATFORM_SERVICE);
         this.platformLayout = platform.getLayoutInfo();
-        this.setupGridViewport(this.platformLayout);
+        this.setupGridViewport();
         const config = services.get(CONFIG_SERVICE).config;
         const storage = services.get(STORAGE_SERVICE);
         const audio = services.get(AUDIO_SERVICE);
@@ -137,24 +144,26 @@ export class LobbyEntry extends Component {
         this.audioBank = undefined;
         this.feedback = undefined;
         view.off('canvas-resize', this.handleCanvasResize, this);
+        this.hasLaidOut = false;
     }
 
-    private setupGridViewport(layout = this.platformLayout): void {
+    private setupGridViewport(): void {
         const gameList = this.gameList;
         if (!gameList) {
             return;
         }
 
-        // ContentRoot lives below Cocos' SafeArea node. The scrolling surface
-        // must stay inside that node so both the mask and the scrollable cards
-        // remain inside the real safe content rectangle.
+        // Keep the viewport on the full Canvas UI root, then assign its
+        // top/side-safe rectangle below; its bottom intentionally reaches the
+        // screen edge. Relying on the SafeArea child's Widget size leaves
+        // stale design-size bounds on tablet resize.
         const safeArea = this.node.parent?.name === 'SafeArea'
             ? this.node.parent
             : null;
         const fullscreenRoot = safeArea?.parent;
-        const viewportParent = safeArea ?? this.node;
+        const viewportParent = fullscreenRoot ?? this.node;
         let viewport = viewportParent.getChildByName('GameGridViewport')
-            ?? fullscreenRoot?.getChildByName('GameGridViewport')
+            ?? safeArea?.getChildByName('GameGridViewport')
             ?? this.node.getChildByName('GameGridViewport');
         if (!viewport) {
             viewport = new Node('GameGridViewport');
@@ -163,16 +172,18 @@ export class LobbyEntry extends Component {
             viewport.addComponent(UITransform);
             viewport.addComponent(Mask);
         }
-        const widget = viewport.getComponent(Widget) ?? viewport.addComponent(Widget);
-        widget.isAlignTop = true;
-        widget.isAlignBottom = true;
-        widget.isAlignLeft = true;
-        widget.isAlignRight = true;
-        widget.top = this.getViewportTopInset(layout);
-        widget.bottom = 0;
-        widget.left = 0;
-        widget.right = 0;
-        widget.updateAlignment();
+        if (viewport.parent !== viewportParent) {
+            viewport.setParent(viewportParent);
+        }
+        const viewportTransform = viewport.getComponent(UITransform)
+            ?? viewport.addComponent(UITransform);
+        viewportTransform.setAnchorPoint(0.5, 0.5);
+        const viewportWidget = viewport.getComponent(Widget);
+        if (viewportWidget) {
+            viewportWidget.enabled = false;
+        }
+        const mask = viewport.getComponent(Mask) ?? viewport.addComponent(Mask);
+        mask.enabled = true;
 
         const scrollView = viewport.getComponent(ScrollView)
             ?? viewport.addComponent(ScrollView);
@@ -183,17 +194,12 @@ export class LobbyEntry extends Component {
         scrollView.cancelInnerEvents = true;
         gameList.setParent(viewport);
         scrollView.content = gameList;
-        if (viewport.parent !== viewportParent) {
-            viewport.setParent(viewportParent);
-        }
         if (safeArea) {
-            // Keep the scroll surface below ContentRoot's fixed controls.
-            const contentRootIndex = this.node.getSiblingIndex();
-            const viewportIndex = viewport.getSiblingIndex();
-            const targetIndex = viewportIndex < contentRootIndex
-                ? contentRootIndex - 1
-                : contentRootIndex;
-            viewport.setSiblingIndex(Math.max(0, targetIndex));
+            // Background < scrolling content < fixed safe-area controls.
+            const safeAreaIndex = safeArea.getSiblingIndex();
+            if (viewport.getSiblingIndex() > safeAreaIndex) {
+                viewport.setSiblingIndex(safeAreaIndex);
+            }
         }
 
         // The brand/title is part of the page content so it naturally leaves
@@ -208,20 +214,6 @@ export class LobbyEntry extends Component {
         this.gridViewport = viewport;
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.layoutCards();
-    }
-
-    private getViewportTopInset(layout?: PlatformLayoutInfo): number {
-        const reservedBottom = layout?.topRightReservedArea?.bottom;
-        if (reservedBottom === undefined) {
-            return 0;
-        }
-
-        // The viewport is a child of the platform SafeArea node, so subtract
-        // the safe area's own top inset before applying the capsule clearance.
-        return Math.max(
-            0,
-            reservedBottom - (layout.safeArea.top ?? 0) + VIEWPORT_TOP_GAP,
-        );
     }
 
     private renderGames(): void {
@@ -284,43 +276,123 @@ export class LobbyEntry extends Component {
         const viewport = this.gridViewport;
         const listTransform = gameList?.getComponent(UITransform);
         const viewportTransform = viewport?.getComponent(UITransform);
+        const scrollView = viewport?.getComponent(ScrollView);
 
-        if (!gameList || !viewport || !listTransform || !viewportTransform) {
+        if (!gameList || !viewport || !listTransform || !viewportTransform || !scrollView) {
             return;
         }
 
-        viewport.getComponent(Widget)?.updateAlignment();
-        const viewportSize = viewportTransform.contentSize;
-        const safeContentHeight = this.node.getComponent(UITransform)?.contentSize.height
-            ?? viewportSize.height;
-        const safeEdgeInset = Math.max(0, (viewportSize.height - safeContentHeight) / 2);
-        const gridWidth = Math.max(0, viewportSize.width - GRID_SIDE_PADDING * 2);
+        // A resize can arrive while inertia/bounce is still active. Stop the
+        // engine-owned auto-scroll before changing either boundary, then use
+        // the public offset API instead of reading content.position directly.
+        scrollView.stopAutoScroll();
+        const previousScrollOffset = this.hasLaidOut
+            ? scrollView.getScrollOffset().y
+            : 0;
+        const safeContentMetrics = this.readLobbyViewportMetrics();
+        const viewportMetrics = calculateLobbyScrollViewportMetrics(safeContentMetrics);
+        viewportTransform.setAnchorPoint(0.5, 0.5);
+        viewportTransform.setContentSize(
+            viewportMetrics.contentWidth,
+            viewportMetrics.contentHeight,
+        );
+        viewport.setPosition(viewportMetrics.contentX, viewportMetrics.contentY);
+
+        const brandMetrics = calculateLobbyBrandMetrics(
+            safeContentMetrics.contentWidth,
+            safeContentMetrics.contentHeight,
+        );
+        const gridWidth = Math.max(0, viewportMetrics.contentWidth - GRID_SIDE_PADDING * 2);
         const cards = gameList.children.filter((child) => Boolean(child.getComponent(GameCardView)));
         const layout = calculateLobbyGridLayout(
             cards.length,
             gridWidth,
         );
-        const contentHeight = Math.max(
-            viewportSize.height,
-            safeEdgeInset + GRID_TOP + layout.contentHeight + GRID_BOTTOM + safeEdgeInset,
+        const bottomSpacer = this.ensureBottomSpacer(gameList);
+        const bottomSpacerHeight = Math.max(0, safeContentMetrics.safeBottom) + GRID_BOTTOM;
+        const bottomSpacerTransform = bottomSpacer.getComponent(UITransform);
+        bottomSpacerTransform?.setAnchorPoint(0.5, 0.5);
+        bottomSpacerTransform?.setContentSize(
+            viewportMetrics.contentWidth,
+            bottomSpacerHeight,
         );
-        listTransform.setContentSize(viewportSize.width, contentHeight);
+        bottomSpacer.setPosition(
+            0,
+            -brandMetrics.gridTop - layout.contentHeight - bottomSpacerHeight / 2,
+        );
+        const contentHeight = Math.max(
+            viewportMetrics.contentHeight,
+            brandMetrics.gridTop
+                + layout.contentHeight
+                + bottomSpacerHeight,
+        );
+        listTransform.setContentSize(viewportMetrics.contentWidth, contentHeight);
         listTransform.setAnchorPoint(0.5, 1);
-        gameList.setPosition(0, viewportSize.height / 2);
-        const brandWidget = gameList.getChildByName('BrandArea')?.getComponent(Widget);
-        if (brandWidget) {
-            brandWidget.top = safeEdgeInset + 18;
-            brandWidget.updateAlignment();
-        }
+        this.presentation.layoutBrand(
+            safeContentMetrics.contentWidth,
+            safeContentMetrics.contentHeight,
+        );
+        const maxScrollOffset = scrollView.getMaxScrollOffset().y;
+        const scrollOffset = this.hasLaidOut
+            ? clampLobbyScrollOffset(
+                previousScrollOffset,
+                contentHeight,
+                viewportMetrics.contentHeight,
+            )
+            : 0;
+        scrollView.scrollToOffset(
+            new Vec2(0, Math.min(scrollOffset, maxScrollOffset)),
+            0,
+            false,
+        );
+        // scrollToOffset(..., 0) is immediate in Cocos 3.8.8; keep this
+        // explicit stop as a guard against a stale auto-scroll state arriving
+        // from the same frame as the resize event.
+        scrollView.stopAutoScroll();
 
         cards.forEach((card, index) => {
             const item = layout.items[index];
             if (!item) {
                 return;
             }
-            card.setPosition(item.x, item.y - safeEdgeInset - GRID_TOP);
+            card.setPosition(item.x, item.y - brandMetrics.gridTop);
             card.getComponent(GameCardView)?.setCardSize(item.width, item.height);
         });
+        this.hasLaidOut = true;
+    }
+
+    private ensureBottomSpacer(gameList: Node): Node {
+        const existing = gameList.getChildByName(GRID_BOTTOM_SPACER_NAME);
+        const spacer = existing ?? new Node(GRID_BOTTOM_SPACER_NAME);
+        if (!existing) {
+            spacer.layer = gameList.layer;
+            spacer.setParent(gameList);
+        }
+        spacer.getComponent(UITransform) ?? spacer.addComponent(UITransform);
+        spacer.setSiblingIndex(Math.max(0, gameList.children.length - 1));
+        return spacer;
+    }
+
+    private readLobbyViewportMetrics(): LobbySafeContentMetrics {
+        const visibleSize = view.getVisibleSize();
+        const fallbackSize = this.gridViewport?.parent?.getComponent(UITransform)?.contentSize;
+        const width = Math.max(1, visibleSize.width || fallbackSize?.width || 750);
+        const height = Math.max(1, visibleSize.height || fallbackSize?.height || 1334);
+        const safeRect = sys.getSafeAreaRect();
+        const scaleX = visibleSize.width > 0 ? width / visibleSize.width : 1;
+        const scaleY = visibleSize.height > 0 ? height / visibleSize.height : 1;
+
+        return calculateLobbySafeContentFromPlatform(
+            width,
+            height,
+            this.platformLayout,
+            {
+                top: Math.max(0, visibleSize.height - safeRect.y - safeRect.height) * scaleY,
+                bottom: Math.max(0, safeRect.y) * scaleY,
+                left: Math.max(0, safeRect.x) * scaleX,
+                right: Math.max(0, visibleSize.width - safeRect.x - safeRect.width) * scaleX,
+            },
+        );
     }
 
     private readonly handleCardClick = (manifest: GameManifest): void => {

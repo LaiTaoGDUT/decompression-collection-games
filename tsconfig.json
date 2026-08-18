@@ -4,6 +4,23 @@
 
   /* Add your custom configuration here. */
   "compilerOptions": {
-    "strict": false
-  }
+    "strict": false,
+    "skipLibCheck": true
+  },
+
+  /*
+   * Cocos' generated project config has no include list, so TypeScript's
+   * default project discovery also picks up the editor extension and its
+   * separate Node/editor type environment. Keep the runtime project check
+   * scoped to assets; the extension has its own tsconfig.json.
+   */
+  "include": [
+    "assets/**/*.ts"
+  ],
+  "exclude": [
+    "extensions",
+    "build",
+    "temp",
+    "node_modules"
+  ]
 }

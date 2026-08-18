@@ -49,6 +49,6 @@ Create an original vertical mobile game background for a fruit merge game, W1 su
 - 11 个文件均为 512×512 透明 PNG，48px 降采样后均有安全 Alpha 覆盖。
 - 11 个平均色彩签名全部不同；目视接触表确认樱桃/草莓/葡萄/两类柑橘/苹果/梨/桃/菠萝/甜瓜/西瓜轮廓与纹理可区分。
 - Creator 资源库抽查樱桃、西瓜和背景均为 `cc.ImageAsset`。
-- `tools/watermelon/verify-paper-assets.js` 可复现尺寸、透明度、差异和包体检查。
+- 生成阶段已确认尺寸、透明度和差异；后续以 Cocos 资源导入、构建和实际画面验收为准。
 
 验证输出：`fruits=11, dimensions=512x512, alpha=passed, color_signatures=11, fruit_bytes=1143177, background=750x1334/29243B`。
