@@ -1,0 +1,24 @@
+assets/games/watermelon/scripts/WatermelonGameplayConfig.ts
+  s_aa1ce559bb48ba::t_020c312dc37161 40
+assets/games/watermelon/configs/gameplay.json
+  s_aa1ce559bb48ba::t_020c312dc37161 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "1be6beedc4793497f45bbb9e822904f1d8429086",
+  "prompts": {},
+  "logical_commit_id": "1be6beedc4793497f45bbb9e822904f1d8429086",
+  "sessions": {
+    "s_aa1ce559bb48ba": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a014a7-3bc4-76d1-876b-5146b5f37f93",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 2,
+      "total_deletions": 2
+    }
+  }
+}
