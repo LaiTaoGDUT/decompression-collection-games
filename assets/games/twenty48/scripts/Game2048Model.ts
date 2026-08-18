@@ -1,4 +1,5 @@
 export const BOARD_SIZE = 4;
+export const MILESTONE_TILE = 2048;
 export const TARGET_TILE = 4096;
 
 export type Game2048Direction = 'left' | 'right' | 'up' | 'down';
@@ -29,6 +30,8 @@ export interface Game2048Snapshot {
     readonly board: readonly number[];
     readonly score: number;
     readonly targetAcknowledged: boolean;
+    /** v4 新增；旧活动局缺失时按 false 迁移。 */
+    readonly milestoneAcknowledged?: boolean;
 }
 
 interface LineResult {
@@ -111,6 +114,7 @@ export class Game2048Model {
     private cells: number[] = Array(BOARD_SIZE * BOARD_SIZE).fill(0);
     private currentScore = 0;
     private targetAcknowledgedState = false;
+    private milestoneAcknowledgedState = false;
 
     constructor(private random: () => number = Math.random) {}
 
@@ -134,6 +138,10 @@ export class Game2048Model {
         return this.highestTile >= TARGET_TILE && !this.targetAcknowledgedState;
     }
 
+    get needsMilestoneCelebration(): boolean {
+        return this.highestTile >= MILESTONE_TILE && !this.milestoneAcknowledgedState;
+    }
+
     get hasAvailableMove(): boolean {
         if (this.cells.some((value) => value === 0)) return true;
         for (let row = 0; row < BOARD_SIZE; row += 1) {
@@ -151,6 +159,7 @@ export class Game2048Model {
             board: Object.freeze([...this.cells]),
             score: this.currentScore,
             targetAcknowledged: this.targetAcknowledgedState,
+            milestoneAcknowledged: this.milestoneAcknowledgedState,
         });
     }
 
@@ -162,6 +171,7 @@ export class Game2048Model {
         this.cells = Array(BOARD_SIZE * BOARD_SIZE).fill(0);
         this.currentScore = 0;
         this.targetAcknowledgedState = false;
+        this.milestoneAcknowledgedState = false;
         return Object.freeze([this.spawn(), this.spawn()].filter((spawn): spawn is Game2048Spawn => !!spawn));
     }
 
@@ -169,22 +179,50 @@ export class Game2048Model {
         board: readonly number[],
         score = 0,
         targetAcknowledged = false,
+        milestoneAcknowledged = false,
     ): void {
         if (!Number.isFinite(score) || score < 0) throw new Error('2048 score must be non-negative.');
         this.cells = requireBoard(board);
         this.currentScore = Math.floor(score);
         this.targetAcknowledgedState = targetAcknowledged;
+        this.milestoneAcknowledgedState = milestoneAcknowledged;
+    }
+
+    /** 开发验证用：随机选取一个已有的小于 256 的棋子并提升为 256。 */
+    promoteRandomTileTo256(): number | undefined {
+        const candidates = this.cells
+            .map((value, index) => value > 0 && value < 256 ? index : -1)
+            .filter((index) => index >= 0);
+        if (candidates.length === 0) return undefined;
+
+        const locationRoll = Math.max(0, Math.min(0.999999, this.random()));
+        const index = candidates[Math.floor(locationRoll * candidates.length)];
+        this.cells[index] = 256;
+        return index;
     }
 
     restore(snapshot: Game2048Snapshot): void {
         if (typeof snapshot.targetAcknowledged !== 'boolean') {
             throw new Error('2048 target acknowledgement must be boolean.');
         }
-        this.loadForTesting(snapshot.board, snapshot.score, snapshot.targetAcknowledged);
+        if (snapshot.milestoneAcknowledged !== undefined
+            && typeof snapshot.milestoneAcknowledged !== 'boolean') {
+            throw new Error('2048 milestone acknowledgement must be boolean.');
+        }
+        this.loadForTesting(
+            snapshot.board,
+            snapshot.score,
+            snapshot.targetAcknowledged,
+            snapshot.milestoneAcknowledged ?? false,
+        );
     }
 
     acknowledgeTarget(): void {
         if (this.highestTile >= TARGET_TILE) this.targetAcknowledgedState = true;
+    }
+
+    acknowledgeMilestone(): void {
+        if (this.highestTile >= MILESTONE_TILE) this.milestoneAcknowledgedState = true;
     }
 
     move(direction: Game2048Direction): Game2048MoveResult {

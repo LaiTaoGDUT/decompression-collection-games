@@ -5,6 +5,7 @@ export const APP_STATES = [
     'loading-game',
     'playing',
     'paused',
+    'restarting-game',
     'leaving-game',
     'error',
 ] as const;
@@ -19,8 +20,9 @@ export const APP_STATE_TRANSITIONS: Readonly<Record<AppState, readonly AppState[
     booting: ['lobby', 'error'],
     lobby: ['loading-game'],
     'loading-game': ['playing', 'error'],
-    playing: ['paused', 'leaving-game'],
-    paused: ['playing', 'leaving-game'],
+    playing: ['paused', 'restarting-game', 'leaving-game'],
+    paused: ['playing', 'restarting-game', 'leaving-game'],
+    'restarting-game': ['playing', 'leaving-game', 'error'],
     'leaving-game': ['lobby', 'error'],
     error: ['lobby', 'loading-game'],
 };

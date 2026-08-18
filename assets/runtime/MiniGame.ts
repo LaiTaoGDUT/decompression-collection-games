@@ -38,6 +38,8 @@ export interface MiniGameContext<TServices extends object = object> {
  *
  * 正常调用顺序：
  * `initialize → begin → pause/resume/restart → dispose`。
+ * 运行层执行局内重开时，会通过 `restart` 注入新的本局上下文；小游戏
+ * 必须保留已加载的场景资源，只重置本局状态。
  * `dispose` 完成后，该实例不得继续持有运行层资源或监听。
  */
 export interface MiniGame<TServices extends object = object> {
@@ -45,7 +47,7 @@ export interface MiniGame<TServices extends object = object> {
     begin(): void;
     pause(): void;
     resume(): void;
-    restart(): Promise<void>;
+    restart(context?: MiniGameContext<TServices>): Promise<void>;
     /** 运行层准备执行“重新开局”时，清除当前局的可恢复标记。 */
     discardSavedProgress?(): void;
     dispose(): Promise<void>;

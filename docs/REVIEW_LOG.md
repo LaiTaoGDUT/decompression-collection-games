@@ -1388,3 +1388,45 @@
 - 旧 `cat-08-silver-tabby` 三帧及 Meta 已移出运行 Bundle 并归档；目录继续保留 33 张实际加载帧，不增加无用纹理包体。
 - 删除 `CAT_VISUAL_SCALE`。11 级物理半径从 `[24…158]` 统一乘以 1.12 为 `[26.88…176.96]`；节点尺寸、Sprite 可见圆、`CircleCollider2D.radius`、投放夹取、出生位置和危险判定均使用同一个新半径。
 - 保持原质量参数，因此物理尺寸变大但重量阶梯不变；碰撞密度按新圆面积自动重算，避免视觉越出碰撞体。
+
+## 2026-08-18：异常退出存档耐久性修正 Review
+
+审查范围：同步存档策略、微信 hide → pause 生命周期、棋逢对手活动局快照、死亡复活快照、异步动画与暂停竞态、2048 暂停落盘、游戏内存档版本迁移和回滚边界。
+
+结论：通过；采用“逻辑状态改变后立即同步写入，连续物理状态继续由游戏内约 250ms 节流”的方案，不增加公共全局 debounce。
+
+- `StorageService` 当前写入本来就是同步 `sys.localStorage.setItem`；全局延迟队列会扩大突然闪退的丢档窗口，因此保持公共服务不变。
+- `chess-endless` 升至 `dataVersion: 2`，新增完整 `activeRound` 和死亡状态的 `recoverySnapshot`；恢复入口独立于测试入口，并校验棋盘坐标、棋子 ID/位置、枚举、库存、阶段、RNG 和数值字段。
+- 棋类在道具使用、玩家移动、敌方回合结算、复活、奖励选择、新局/暂停/退出兜底后写盘；切后台复用既有运行层暂停路径，不在小游戏中直接监听微信 API。
+- 棋类异步动画使用操作代次校验；暂停、重开、结算、丢弃存档和销毁会使旧协程失效，恢复时按 `player/enemy/reward/dead` 阶段继续，避免重复敌方回合或把清除的活动局重新写活。
+- 2048 的有效移动本来已立即保存，本次补齐手动暂停和平台 hide 路径的同步保存；西瓜和 3D 积木原有操作/物理节奏及暂停保存保持不变。
+- 架构文档已修正西瓜 `dataVersion: 3` 与 `activeRound` 说明，并记录棋类 v1 → v2 的增量迁移和回滚约束；根存档 schema 不变。
+
+验证结果：`tsc=passed`；`git diff --check=passed`；`game_bundles=passed`；`wechat_main_package=passed`。尚未替代微信开发者工具真机执行“操作后立即杀进程”的验收，该项仍需在目标设备上确认底层同步存储的实际耐久性和低端机写盘耗时。
+
+## 2026-08-18：小游戏局内短路径重开 Review
+
+审查范围：GameRuntime 重开路由、MiniGame 新 Session/context 注入、四款小游戏局内 reset、重复点击和完整加载回退。
+
+结论：实现局内短路径重开；不再为正常重开销毁场景或释放 Bundle。旧 Session 仍固化并上报，新 Session 获得新的 `sessionId`；只有局内 `restart` 异常时才回退原完整退出/加载流程。
+
+- `GameRuntime` 增加单任务重开锁；暂停、结算和小游戏 `requestRestart` 均优先调用当前入口 `restart(nextContext)`。
+- `Game2048Game`、`WatermelonGame`、`Blocks3DGame` 和 `ChessEndlessGame` 接收新上下文并保留已初始化资源，只重置棋盘、水果、物理世界或棋局状态。
+- 结果重开不会重复固化旧 Session；主动重开和失败重开各创建唯一的新 Session，并继续发出新的 `game_start`。
+- 局内重开失败时，运行层销毁可能半重置的入口，释放 Bundle，再按原 Manifest 完整进入，避免把不确定状态交给玩家。
+- `LoadingView` 的重开态只绘制轻量输入遮罩，不加载封面、启动图或游戏资源；2048、西瓜、棋类延迟回调和广告结果均按回合代次丢弃，3D 物理体在重建前先禁用。
+
+验证结果：`tsc=passed`；`git diff --check=passed`；`game_bundles=passed`；`wechat_main_package=passed`。
+
+## 2026-08-18：存档底层写盘节流与关键边界 Review
+
+审查范围：小游戏每次逻辑操作后的保存调用、StorageService 单根快照队列、1000ms 底层写盘节流、同步 flush、微信 hide、暂停/结算/退出/局内重开、Bundle 释放、应用销毁和写入失败重试。
+
+结论：通过；保留各小游戏“每次操作触发保存”的语义，但将 `sys.localStorage.setItem` 收敛为单一最新根快照的 1000ms throttle；关键生命周期边界统一强制 flush，不使用按游戏分裂的队列，也不把 throttle 错写成持续操作时无限延迟的 debounce。
+
+- `StorageService.writeGameData()` / `writeSettings()` 现在立即更新内存快照并完成 JSON 序列化，延迟队列只保留最新 `revision` 和完整根存档字符串；`getGameData()` 始终能读到最新逻辑状态。
+- `StorageService.flush()` 会取消定时器并同步写入最新 dirty 快照；暂停、微信 hide、结算、退出、重开、销毁和 Bundle 释放前均由 App/运行层调用。应用销毁时 `StorageService.dispose()` 最终 flush，失败也不阻断资源释放。
+- 定时写入或 flush 失败时保留 pending 快照，后续写入/flush 继续重试；旧 timer 通过 generation 校验失效，避免 `clearTimeout` 后旧回调回写过期活动局。
+- 快速连续操作只降低底层 `setItem` 频率，不改变小游戏现有的每次操作保存调用；连续物理游戏原有约 250ms 游戏内快照节奏保持不变。
+
+验证要求：1 秒内连续写入只落盘最新根快照；持续操作按约 1 秒持续落盘；跨游戏与设置写入不互相覆盖；timer 与 flush 并发、快速重开、退出后进入另一 Bundle、销毁后旧 timer、写入失败重试和微信真机“操作后立即杀进程”均需覆盖。

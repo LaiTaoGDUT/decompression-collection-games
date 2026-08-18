@@ -6,12 +6,10 @@ import {
     type SceneAsset,
 } from 'cc';
 import type { AppStateMachine } from '../core/state/AppStateMachine';
-import type {
-    GameResult,
-    GameServices,
-} from '../core/types/CommonTypes';
+import type { GameResult } from '../core/types/CommonTypes';
 import type { AssetService } from '../services/asset/AssetService';
 import type { AnalyticsService } from '../services/analytics/AnalyticsService';
+import type { StorageService } from '../services/storage/StorageService';
 import type { GameLoader } from './GameLoader';
 import type { GameManifest } from './GameManifest';
 import type {
@@ -40,7 +38,9 @@ export interface LoadingModel {
 
 export interface LoadingPresenter {
     show(model: LoadingModel): void;
+    showRestart?(message: string): void;
     updateProgress(message: string, progress: number): void;
+    hideRestart?(): void;
     hide(): void;
 }
 
@@ -54,6 +54,11 @@ export interface GameErrorModel {
 export interface GameErrorPresenter {
     show(model: GameErrorModel): void;
     hide(): void;
+}
+
+interface ExitOptions {
+    readonly skipSessionFinalization?: boolean;
+    readonly bestEffortDiscard?: boolean;
 }
 
 export interface PauseMenuModel extends MiniGamePauseModel {}
@@ -73,6 +78,10 @@ export interface ResultPresenter {
 export interface GameRuntimeTimeouts {
     readonly sceneLoadMs: number;
     readonly initializeMs: number;
+}
+
+interface GameRuntimeServices {
+    readonly storage?: StorageService;
 }
 
 const DEFAULT_RUNTIME_TIMEOUTS: GameRuntimeTimeouts = Object.freeze({
@@ -109,6 +118,7 @@ export class GameRuntimeError extends Error {
 export class GameRuntime {
     private entering?: Promise<void>;
     private leaving?: Promise<void>;
+    private restarting?: Promise<void>;
     private session?: GameSession;
     private entry?: MiniGame;
     private manifest?: GameManifest;
@@ -120,7 +130,7 @@ export class GameRuntime {
         private readonly stateMachine: AppStateMachine,
         private readonly assets: AssetService,
         private readonly loader: GameLoader,
-        private readonly services: GameServices = Object.freeze({}),
+        private readonly services: GameRuntimeServices = Object.freeze({}),
         private readonly sceneDirector: SceneDirector = director,
         private readonly loading?: LoadingPresenter,
         private readonly errors?: GameErrorPresenter,
@@ -254,6 +264,8 @@ export class GameRuntime {
                 entry.pause();
             } catch (cause: unknown) {
                 throw new GameRuntimeError('pause', manifest.id, cause);
+            } finally {
+                this.flushStorage('pause');
             }
 
             if (!this.stateMachine.transition('paused')) {
@@ -263,6 +275,8 @@ export class GameRuntime {
                     new Error('Cannot transition to paused.'),
                 );
             }
+        } else {
+            this.flushStorage('pause');
         }
 
         const model = Object.freeze({
@@ -301,6 +315,8 @@ export class GameRuntime {
                 entry.pause();
             } catch (cause: unknown) {
                 throw new GameRuntimeError('pause', manifest.id, cause);
+            } finally {
+                this.flushStorage('finish');
             }
 
             if (!this.stateMachine.transition('paused')) {
@@ -310,6 +326,8 @@ export class GameRuntime {
                     new Error('Cannot transition to paused for results.'),
                 );
             }
+        } else {
+            this.flushStorage('finish');
         }
 
         try {
@@ -376,12 +394,10 @@ export class GameRuntime {
         }
 
         this.hidePausePresenter();
-        this.trackRestart('pause');
-        await this.exitGame(
+        await this.restartInPlace(
+            'pause',
             { score: this.score, duration: 0, completed: false },
-            'restart',
         );
-        await this.enterGame(manifest);
     };
 
     private readonly exitFromPause = async (): Promise<void> => {
@@ -391,8 +407,9 @@ export class GameRuntime {
 
     private readonly restartFromResult = async (): Promise<void> => {
         const manifest = this.manifest;
+        const result = this.completedResult;
 
-        if (!manifest || !this.completedResult) {
+        if (!manifest || !result) {
             throw new GameRuntimeError(
                 'restart',
                 manifest?.id ?? 'unknown',
@@ -401,9 +418,7 @@ export class GameRuntime {
         }
 
         this.hideResultPresenter();
-        this.trackRestart('result');
-        await this.exitGame(this.completedResult, 'restart');
-        await this.enterGame(manifest);
+        await this.restartInPlace('result', result);
     };
 
     private readonly returnToLobbyFromResult = async (): Promise<void> => {
@@ -463,16 +478,7 @@ export class GameRuntime {
                 throw new GameRuntimeError('entry', manifest.id, cause);
             }
 
-            const context: MiniGameContext = Object.freeze({
-                gameId: manifest.id,
-                sessionId: session.id,
-                services: this.services,
-                reportScore: this.handleScore,
-                requestPause: this.handlePauseRequest,
-                requestExit: this.handleExitRequest,
-                requestRestart: this.handleRestartRequest,
-                requestLobby: this.handleLobbyRequest,
-            });
+            const context = this.createContext(manifest, session);
 
             try {
                 await this.withTimeout(
@@ -487,6 +493,7 @@ export class GameRuntime {
 
             try {
                 entry.begin();
+                this.flushStorage('game begin');
                 this.loading?.updateProgress('加载完成', 1);
                 await new Promise<void>((resolve) => {
                     setTimeout(resolve, 180);
@@ -528,6 +535,7 @@ export class GameRuntime {
     private async performExit(
         result?: GameResult,
         intent: 'exit' | 'restart' | 'completed' = 'exit',
+        options: ExitOptions = {},
     ): Promise<void> {
         const entry = this.entry;
         const session = this.session;
@@ -543,7 +551,7 @@ export class GameRuntime {
 
         const state = this.stateMachine.currentState;
 
-        if (state !== 'playing' && state !== 'paused') {
+        if (state !== 'playing' && state !== 'paused' && state !== 'restarting-game') {
             throw new GameRuntimeError(
                 'state',
                 manifest.id,
@@ -557,7 +565,11 @@ export class GameRuntime {
                     entry.pause();
                 } catch (cause: unknown) {
                     throw new GameRuntimeError('pause', manifest.id, cause);
+                } finally {
+                    this.flushStorage('game exit');
                 }
+            } else {
+                this.flushStorage('game exit');
             }
 
             if (!this.stateMachine.transition('leaving-game')) {
@@ -568,27 +580,38 @@ export class GameRuntime {
                 );
             }
 
-            if (session.state === 'finished' && session.result) {
-                this.completedResult = session.result;
-            } else {
-                try {
-                    this.completedResult = session.finish(result ?? {
-                        score: this.score,
-                        duration: 0,
-                        completed: false,
-                    });
-                } catch (cause: unknown) {
-                    throw new GameRuntimeError('finish', manifest.id, cause);
+            if (!options.skipSessionFinalization) {
+                if (session.state === 'finished' && session.result) {
+                    this.completedResult = session.result;
+                } else {
+                    try {
+                        this.completedResult = session.finish(result ?? {
+                            score: this.score,
+                            duration: 0,
+                            completed: false,
+                        });
+                    } catch (cause: unknown) {
+                        throw new GameRuntimeError('finish', manifest.id, cause);
+                    }
                 }
-            }
 
-            this.trackSessionEnd(session, manifest, intent);
+                this.trackSessionEnd(session, manifest, intent);
+            }
 
             if (intent === 'restart') {
                 try {
                     entry.discardSavedProgress?.();
                 } catch (cause: unknown) {
-                    throw new GameRuntimeError('restart', manifest.id, cause);
+                    if (options.bestEffortDiscard) {
+                        console.warn(
+                            '[GameRuntime] Failed to discard progress during restart fallback.',
+                            cause,
+                        );
+                    } else {
+                        throw new GameRuntimeError('restart', manifest.id, cause);
+                    }
+                } finally {
+                    this.flushStorage('restart discard');
                 }
             }
 
@@ -596,6 +619,8 @@ export class GameRuntime {
                 await entry.dispose();
             } catch (cause: unknown) {
                 throw new GameRuntimeError('dispose', manifest.id, cause);
+            } finally {
+                this.flushStorage('game dispose');
             }
 
             try {
@@ -606,6 +631,7 @@ export class GameRuntime {
 
             let releaseError: GameRuntimeError | undefined;
 
+            this.flushStorage('before bundle release');
             try {
                 await this.assets.releaseBundle(manifest.bundle);
             } catch (cause: unknown) {
@@ -622,6 +648,10 @@ export class GameRuntime {
                 this.stateMachine.transition('leaving-game');
             }
 
+            if (this.stateMachine.currentState === 'restarting-game') {
+                this.stateMachine.transition('error');
+            }
+
             if (this.stateMachine.currentState === 'leaving-game') {
                 this.stateMachine.transition('error');
             }
@@ -635,6 +665,171 @@ export class GameRuntime {
         this.session = undefined;
         this.manifest = undefined;
         this.score = 0;
+    }
+
+    private flushStorage(reason: string): void {
+        try {
+            this.services.storage?.flush();
+        } catch (error: unknown) {
+            // 存储失败不能阻断暂停、退出、重开或 Bundle 释放；服务会保留
+            // pending 快照，后续普通写入或下一次关键 flush 继续重试。
+            console.error(`[GameRuntime] Storage flush failed at ${reason}.`, error);
+        }
+    }
+
+    /**
+     * 在保留当前场景和 Bundle 的前提下创建新一局。
+     * 失败时回退到既有的完整退出/重新进入流程，避免继续使用半重置实例。
+     */
+    private restartInPlace(
+        source: 'pause' | 'result' | 'direct',
+        result: GameResult,
+    ): Promise<void> {
+        if (this.restarting) {
+            return this.restarting;
+        }
+
+        const restarting = this.performRestartInPlace(source, result);
+        this.restarting = restarting;
+        const clearRestarting = (): void => {
+            if (this.restarting === restarting) {
+                this.restarting = undefined;
+            }
+        };
+        void restarting.then(clearRestarting, clearRestarting);
+        return restarting;
+    }
+
+    private async performRestartInPlace(
+        source: 'pause' | 'result' | 'direct',
+        result: GameResult,
+    ): Promise<void> {
+        const entry = this.entry;
+        const previousSession = this.session;
+        const manifest = this.manifest;
+
+        if (!entry || !previousSession || !manifest) {
+            throw new GameRuntimeError(
+                'restart',
+                manifest?.id ?? 'unknown',
+                new Error('No active game can be restarted.'),
+            );
+        }
+
+        const state = this.stateMachine.currentState;
+        if (state !== 'playing' && state !== 'paused') {
+            throw new GameRuntimeError(
+                'restart',
+                manifest.id,
+                new Error(`Cannot restart from state "${state}".`),
+            );
+        }
+
+        try {
+            if (state === 'playing') {
+                try {
+                    entry.pause();
+                } finally {
+                    this.flushStorage('restart');
+                }
+            } else {
+                this.flushStorage('restart');
+            }
+            if (!this.stateMachine.transition('restarting-game')) {
+                throw new GameRuntimeError(
+                    'state',
+                    manifest.id,
+                    new Error('Cannot transition to restarting-game.'),
+                );
+            }
+
+            this.loading?.showRestart?.('正在重新开始');
+            this.trackRestart(source);
+            if (previousSession.state === 'active') {
+                const previousResult = previousSession.finish(result);
+                this.completedResult = previousResult;
+                this.trackSessionEnd(previousSession, manifest, 'restart');
+            } else if (previousSession.result) {
+                this.completedResult = previousSession.result;
+            }
+
+            const nextSession = new GameSession(manifest.id);
+            this.session = nextSession;
+            this.score = 0;
+            this.completedResult = undefined;
+
+            try {
+                await entry.restart(this.createContext(manifest, nextSession));
+            } finally {
+                this.flushStorage('restart begin');
+            }
+
+            if (!this.stateMachine.transition('playing')) {
+                throw new GameRuntimeError(
+                    'state',
+                    manifest.id,
+                    new Error('Cannot transition to playing after restart.'),
+                );
+            }
+
+            this.failedManifest = undefined;
+            this.analytics?.track('game_start', {
+                gameId: manifest.id,
+                sessionId: nextSession.id,
+            });
+        } catch (error: unknown) {
+            console.warn(
+                '[GameRuntime] In-place restart failed; falling back to full reload.',
+                error,
+            );
+
+            // The entry may have been partially reset. The standard exit path
+            // disposes that instance and releases the Bundle before retrying.
+            await this.performExit(
+                undefined,
+                'restart',
+                {
+                    skipSessionFinalization: true,
+                    bestEffortDiscard: true,
+                },
+            );
+            await this.enterGame(manifest);
+        } finally {
+            this.loading?.hideRestart?.();
+        }
+    }
+
+    private createContext(
+        manifest: GameManifest,
+        session: GameSession,
+    ): MiniGameContext {
+        const isCurrentSession = (): boolean => this.session === session;
+        const reportScore = (score: number): void => {
+            if (isCurrentSession()) this.handleScore(score);
+        };
+        const requestPause = (): void => {
+            if (isCurrentSession()) this.handlePauseRequest();
+        };
+        const requestExit = (result?: GameResult): void => {
+            if (isCurrentSession()) this.handleExitRequest(result);
+        };
+        const requestRestart = (result?: GameResult): void => {
+            if (isCurrentSession()) this.handleRestartRequest(result);
+        };
+        const requestLobby = (result?: GameResult): void => {
+            if (isCurrentSession()) this.handleLobbyRequest(result);
+        };
+
+        return Object.freeze({
+            gameId: manifest.id,
+            sessionId: session.id,
+            services: this.services,
+            reportScore,
+            requestPause,
+            requestExit,
+            requestRestart,
+            requestLobby,
+        });
     }
 
     private presentGameLoadError(
@@ -797,7 +992,7 @@ export class GameRuntime {
         });
     };
 
-    private trackRestart(source: 'pause' | 'result'): void {
+    private trackRestart(source: 'pause' | 'result' | 'direct'): void {
         const manifest = this.manifest;
         const session = this.session;
 
@@ -865,14 +1060,15 @@ export class GameRuntime {
     };
 
     private readonly handleRestartRequest = (result?: GameResult): void => {
-        const manifest = this.manifest;
-        if (!manifest) return;
+        if (!this.manifest) return;
         this.hidePausePresenter();
         this.hideResultPresenter();
-        void this.exitGame(result, 'restart')
-            .then(() => this.enterGame(manifest))
+        void this.restartInPlace(
+            'direct',
+            result ?? { score: this.score, duration: 0, completed: false },
+        )
             .catch((error: unknown) => {
-                console.error('[GameRuntime] Direct restart request failed.', error);
+                console.error('[GameRuntime] In-place restart request failed.', error);
             });
     };
 

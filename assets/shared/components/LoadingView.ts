@@ -171,6 +171,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     private startupContentNode?: Node;
     private ownedStartupFrames: SpriteFrame[] = [];
     private variant: 'game' | 'lobby' = 'game';
+    private restartMode = false;
     private progress = 0;
     private progressTweenState?: { value: number };
     private progressLoadToken = 0;
@@ -193,6 +194,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     show(model: LoadingModel): void {
+        this.restartMode = false;
         this.node.active = true;
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
         this.node.getComponent(Widget)?.updateAlignment();
@@ -215,16 +217,42 @@ export class LoadingView extends Component implements LoadingPresenter {
         }
     }
 
+    /**
+     * 局内重开只需要短暂拦截输入，不应展示完整资源加载面板。
+     * 该遮罩复用常驻 LoadingLayer，但不会触发任何资源加载。
+     */
+    showRestart(message: string): void {
+        this.restartMode = true;
+        this.node.active = true;
+        this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
+        this.ensureStructure();
+        this.unschedule(this.advanceFakeProgress);
+        this.stopProgressTween();
+        this.progressLoadToken += 1;
+        this.releaseCoverFrame();
+        this.releaseStartupFrames();
+        this.variant = 'game';
+        this.layoutRestart();
+        this.setMessage(message);
+    }
+
+    hideRestart(): void {
+        if (!this.restartMode) return;
+        this.restartMode = false;
+        this.node.active = false;
+    }
+
     /** 由应用组合根注入真实平台安全区和微信胶囊边界。 */
     setPlatformLayout(layout: PlatformLayoutInfo): void {
         this.platformLayout = layout;
         if (this.node.active) {
-            this.layoutAndDraw();
+            if (this.restartMode) this.layoutRestart();
+            else this.layoutAndDraw();
         }
     }
 
     updateProgress(message: string, progress: number): void {
-        if (!this.node.active) return;
+        if (!this.node.active || this.restartMode) return;
         this.setMessage(message);
         this.realProgress = Math.max(this.realProgress, Math.min(1, Math.max(0, progress)));
         if (this.realProgress >= 1) {
@@ -234,6 +262,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     hide(): void {
+        this.restartMode = false;
         this.progressLoadToken += 1;
         this.unschedule(this.advanceFakeProgress);
         this.stopProgressTween();
@@ -249,7 +278,8 @@ export class LoadingView extends Component implements LoadingPresenter {
 
     private readonly handleCanvasResize = (): void => {
         if (this.node.active) {
-            this.layoutAndDraw();
+            if (this.restartMode) this.layoutRestart();
+            else this.layoutAndDraw();
         }
     };
 
@@ -460,6 +490,84 @@ export class LoadingView extends Component implements LoadingPresenter {
             ?? null;
     }
 
+    private layoutRestart(): void {
+        this.layoutAndDraw();
+        const metrics = this.layoutMetrics;
+        if (!metrics) return;
+
+        const scale = metrics.scale;
+        const panelWidth = Math.min(
+            500 * scale,
+            Math.max(1, metrics.contentWidth - 36 * scale),
+        );
+        const panelHeight = Math.min(
+            156 * scale,
+            Math.max(1, metrics.contentHeight - 36 * scale),
+        );
+        const centerX = metrics.contentX;
+        const centerY = metrics.contentY;
+        const radius = Math.min(26 * scale, panelWidth / 2, panelHeight / 2);
+
+        const backdrop = this.graphics('LoadingBackdrop');
+        backdrop.node.active = true;
+        backdrop.node.getComponent(UITransform)?.setContentSize(metrics.width, metrics.height);
+        backdrop.clear();
+        backdrop.fillColor = new Color(10, 18, 34, 156);
+        backdrop.rect(-metrics.width / 2, -metrics.height / 2, metrics.width, metrics.height);
+        backdrop.fill();
+
+        const panel = this.graphics('LoadingPanel');
+        panel.node.active = true;
+        panel.node.setPosition(centerX, centerY);
+        panel.node.getComponent(UITransform)?.setContentSize(panelWidth, panelHeight);
+        panel.clear();
+        panel.fillColor = new Color(8, 22, 74, 82);
+        panel.roundRect(
+            -panelWidth / 2 + 6 * scale,
+            -panelHeight / 2 - 8 * scale,
+            Math.max(1, panelWidth - 12 * scale),
+            panelHeight,
+            radius,
+        );
+        panel.fill();
+        panel.fillColor = COLORS.panel;
+        panel.strokeColor = new Color(255, 255, 255, 220);
+        panel.lineWidth = Math.max(1, 3 * scale);
+        panel.roundRect(
+            -panelWidth / 2,
+            -panelHeight / 2,
+            panelWidth,
+            panelHeight,
+            radius,
+        );
+        panel.fill();
+        panel.stroke();
+
+        for (const name of [
+            'StartupBackground',
+            'StartupTitle',
+            'LoadingCoverFrame',
+            'LoadingGameName',
+            'LoadingPercent',
+            'ProgressTrack',
+            'ProgressFill',
+            'LoadingTip',
+        ]) {
+            const node = this.findManagedNode(name);
+            if (node) node.active = false;
+        }
+        this.styleLabel(
+            'LoadingMessage',
+            Math.max(12, 25 * scale),
+            COLORS.ink,
+            centerX,
+            centerY,
+            Math.max(1, panelWidth - 48 * scale),
+            Math.max(1, panelHeight - 28 * scale),
+            true,
+        );
+    }
+
     private layoutAndDraw(): void {
         const size = this.node.getComponent(UITransform)?.contentSize;
         const visibleSize = view.getVisibleSize();
@@ -560,7 +668,22 @@ export class LoadingView extends Component implements LoadingPresenter {
             );
         }
 
+        // layoutRestart() temporarily hides the normal loading controls. Make
+        // the regular loading layout restore every control explicitly so a
+        // later game/lobby load cannot inherit the restart mask's visibility.
+        for (const name of [
+            'LoadingMessage',
+            'LoadingPercent',
+            'ProgressTrack',
+            'ProgressFill',
+            'LoadingTip',
+        ]) {
+            const node = this.findManagedNode(name);
+            if (node) node.active = true;
+        }
+
         const backdrop = this.graphics('LoadingBackdrop');
+        backdrop.node.active = true;
         backdrop.node.getComponent(UITransform)?.setContentSize(width, height);
         backdrop.clear();
         backdrop.fillColor = startup

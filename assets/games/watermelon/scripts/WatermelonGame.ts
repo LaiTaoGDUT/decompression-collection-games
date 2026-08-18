@@ -185,6 +185,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private randomSource: () => number = Math.random;
     private roundSaveElapsed = 0;
     private savedProgressDiscarded = false;
+    private operationGeneration = 0;
 
     /** 固定种子回归入口；生产默认始终使用平台随机源。 */
     setRandomSourceForTesting(source: () => number): void {
@@ -296,6 +297,7 @@ export class WatermelonGame extends Component implements MiniGame {
             throw new Error(`Cannot begin WatermelonGame from ${this.state}.`);
         }
 
+        this.operationGeneration += 1;
         this.state = 'playing';
         this.saveData = normalizeWatermelonSave(
             this.context?.services.storage.getGameData('watermelon'),
@@ -330,13 +332,16 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context?.services.audio.resumeMusic();
     }
 
-    async restart(): Promise<void> {
+    async restart(context?: MiniGameContext<WatermelonGameServices>): Promise<void> {
         if (this.state !== 'playing' && this.state !== 'paused') {
             throw new Error(`Cannot restart WatermelonGame from ${this.state}.`);
         }
 
+        if (context) this.context = context;
+        this.operationGeneration += 1;
         this.persistHighScore(this.progress.snapshot.score, 'restart');
         this.persistRoundProgress(false);
+        this.destroyContinueOverlay();
         this.state = 'playing';
         this.context?.services.audio.resumeMusic();
         this.resetRound();
@@ -373,6 +378,7 @@ export class WatermelonGame extends Component implements MiniGame {
             return;
         }
 
+        this.operationGeneration += 1;
         this.persistHighScore(this.progress.snapshot.score, 'exit');
         if (!this.gameEnding && !this.savedProgressDiscarded) {
             this.persistRoundProgress(true);
@@ -702,6 +708,7 @@ export class WatermelonGame extends Component implements MiniGame {
             return;
         }
 
+        const generation = this.operationGeneration;
         const config = getFruitConfig(this.currentLevel);
         const boardHeight = this.fruitContainer.getComponent(UITransform)
             ?.contentSize.height ?? 800;
@@ -730,7 +737,9 @@ export class WatermelonGame extends Component implements MiniGame {
         );
         this.updateNextPreview();
         this.scheduleOnce(() => {
-            if (this.state !== 'disposed') {
+            if (this.isGenerationCurrent(generation)
+                && this.state === 'playing'
+                && !this.gameEnding) {
                 this.dropGate.enable();
                 this.positionDropPreview();
                 if (this.dropPreview) {
@@ -769,7 +778,10 @@ export class WatermelonGame extends Component implements MiniGame {
         first: FruitBody,
         second: FruitBody,
     ): void => {
-        if (this.state !== 'playing' || this.gameEnding) {
+        if (this.state !== 'playing'
+            || this.gameEnding
+            || !first.node.isValid
+            || !second.node.isValid) {
             return;
         }
 
@@ -806,8 +818,10 @@ export class WatermelonGame extends Component implements MiniGame {
             ) + 1
             : 1;
         const resultDropSequenceId = continuesCurrentDrop ? dropSequenceId : 0;
+        const generation = this.operationGeneration;
         this.scheduleOnce(() => {
-            if (this.state !== 'playing'
+            if (!this.isGenerationCurrent(generation)
+                || this.state !== 'playing'
                 || this.gameEnding
                 || !first.node.isValid
                 || !second.node.isValid) {
@@ -985,6 +999,7 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     private async requestContinue(): Promise<void> {
+        const generation = this.operationGeneration;
         const ads = this.context?.services.ads;
 
         if (!ads || !this.continueRule.beginRequest()) {
@@ -996,6 +1011,7 @@ export class WatermelonGame extends Component implements MiniGame {
 
         try {
             const result = await ads.showRewarded();
+            if (!this.isGenerationCurrent(generation)) return;
             const resolution = this.continueRule.resolve(result.outcome);
 
             if (resolution === 'continue') {
@@ -1004,6 +1020,7 @@ export class WatermelonGame extends Component implements MiniGame {
                 this.finalizeFrozenRound(`ad_${result.outcome}`);
             }
         } catch (_error: unknown) {
+            if (!this.isGenerationCurrent(generation)) return;
             const resolution = this.continueRule.resolve('failed');
             if (resolution === 'settle') {
                 this.finalizeFrozenRound('ad_failed');
@@ -1049,8 +1066,11 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context?.services.feedback.play('continue');
         this.context?.services.audio.resumeMusic();
         this.persistRoundProgress(true);
+        const generation = this.operationGeneration;
         this.scheduleOnce(() => {
-            if (this.state === 'playing' && !this.gameEnding) {
+            if (this.isGenerationCurrent(generation)
+                && this.state === 'playing'
+                && !this.gameEnding) {
                 this.dropGate.enable();
                 this.positionDropPreview();
                 if (this.dropPreview) {
@@ -1632,8 +1652,11 @@ export class WatermelonGame extends Component implements MiniGame {
         label.color = event.isChain
             ? catUiColor('peachDark')
             : catUiColor('ink', 230);
+        const generation = this.operationGeneration;
         this.scheduleOnce(() => {
-            if (label.node.isValid && this.state === 'playing') {
+            if (this.isGenerationCurrent(generation)
+                && label.node.isValid
+                && this.state === 'playing') {
                 label.string = '左右移动，松手投放';
                 label.fontSize = 23;
                 label.lineHeight = 33;
@@ -1641,6 +1664,12 @@ export class WatermelonGame extends Component implements MiniGame {
                 label.color = catUiColor('ink', 230);
             }
         }, event.isChain ? 1.15 : 0.8);
+    }
+
+    private isGenerationCurrent(generation: number): boolean {
+        return this.operationGeneration === generation
+            && this.state !== 'disposed'
+            && this.node.isValid;
     }
 
     private updateNextPreview(): void {

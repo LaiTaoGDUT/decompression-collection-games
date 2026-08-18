@@ -3,6 +3,7 @@ import { sys } from 'cc';
 export const USER_DATA_SCHEMA_VERSION = 2;
 export const DEFAULT_STORAGE_KEY = 'decompression-collection.user-data';
 export const MIGRATION_BACKUP_SUFFIX = '.migration-backup';
+export const DEFAULT_STORAGE_WRITE_THROTTLE_MS = 1000;
 
 export interface UserSettings {
     readonly musicEnabled: boolean;
@@ -27,6 +28,11 @@ export interface UserData {
 export interface StorageProvider {
     getItem(key: string): string | null;
     setItem(key: string, value: string): void;
+}
+
+export interface StorageServiceOptions {
+    /** 底层 setItem 的最小尝试间隔；关键 flush 会绕过该间隔。 */
+    readonly writeThrottleMs?: number;
 }
 
 export class StorageWriteError extends Error {
@@ -70,6 +76,10 @@ function isFiniteNumber(value: unknown): value is number {
 
 type MutableData = Record<string, unknown>;
 type StorageMigration = (data: MutableData) => MutableData;
+interface PendingWrite {
+    readonly revision: number;
+    readonly payload: string;
+}
 
 const STORAGE_MIGRATIONS: Readonly<Record<number, StorageMigration>> = Object.freeze({
     1: (data: MutableData): MutableData => {
@@ -249,16 +259,43 @@ function normalizeGameId(gameId: string): string {
     return normalized;
 }
 
-/** 版本化用户存档；所有游戏写入都被限制在各自 gameId 命名空间。 */
+function normalizeWriteThrottleMs(value: number | undefined): number {
+    const normalized = value ?? DEFAULT_STORAGE_WRITE_THROTTLE_MS;
+    if (!Number.isFinite(normalized) || normalized < 0) {
+        throw new Error('Storage write throttle must be a finite non-negative number.');
+    }
+
+    return Math.floor(normalized);
+}
+
+/**
+ * 版本化用户存档；所有游戏写入都被限制在各自 gameId 命名空间。
+ *
+ * writeGameData/writeSettings 是“逻辑提交”：内存快照立即更新，底层
+ * localStorage.setItem 由单一最新根快照队列按节流间隔写入。flush 用于
+ * 暂停、切后台、退出和销毁等必须立即落盘的边界。
+ */
 export class StorageService {
     private data?: UserData;
+    private readonly writeThrottleMs: number;
+    private pendingWrite?: PendingWrite;
+    private flushTimer?: ReturnType<typeof setTimeout>;
+    private flushTimerGeneration = 0;
+    private revision = 0;
+    private lastPersistAttemptAt = 0;
+    private persistenceError?: StorageWriteError;
+    private disposed = false;
 
     constructor(
         private readonly provider: StorageProvider = sys.localStorage,
         private readonly storageKey = DEFAULT_STORAGE_KEY,
-    ) {}
+        options: StorageServiceOptions = {},
+    ) {
+        this.writeThrottleMs = normalizeWriteThrottleMs(options.writeThrottleMs);
+    }
 
     load(): UserData {
+        this.ensureActive();
         const stored = this.provider.getItem(this.storageKey);
 
         if (stored !== null) {
@@ -270,7 +307,7 @@ export class StorageService {
                     this.data = parsed;
 
                     if (migration.migrated) {
-                        this.persist(parsed);
+                        this.persistImmediately(parsed);
                     }
 
                     return parsed;
@@ -285,7 +322,7 @@ export class StorageService {
         }
 
         this.data = DEFAULT_USER_DATA;
-        this.persist(DEFAULT_USER_DATA);
+        this.persistImmediately(DEFAULT_USER_DATA);
         return DEFAULT_USER_DATA;
     }
 
@@ -295,6 +332,14 @@ export class StorageService {
 
     getGameData(gameId: string): GameSaveData | undefined {
         return this.snapshot.games[normalizeGameId(gameId)];
+    }
+
+    get hasPendingWrites(): boolean {
+        return this.pendingWrite !== undefined;
+    }
+
+    get lastPersistenceError(): StorageWriteError | undefined {
+        return this.persistenceError;
     }
 
     writeGameData(gameId: string, gameData: GameSaveData): UserData {
@@ -324,17 +369,126 @@ export class StorageService {
     }
 
     private commit(data: UserData): UserData {
+        this.ensureActive();
         const frozen = freezeUserData(data);
-        this.persist(frozen);
+        const payload = this.serialize(frozen);
+        const revision = this.revision + 1;
         this.data = frozen;
+        this.revision = revision;
+        this.pendingWrite = Object.freeze({ revision, payload });
+        this.scheduleFlush();
         return frozen;
     }
 
-    private persist(data: UserData): void {
+    /** 关键生命周期边界调用；同步写入当前最新根快照。 */
+    flush(): void {
+        if (this.disposed) return;
+
+        this.cancelScheduledFlush();
+        if (!this.pendingWrite) return;
+
         try {
-            this.provider.setItem(this.storageKey, JSON.stringify(data));
+            this.persistPendingWrite();
+        } catch (error: unknown) {
+            this.scheduleFlush();
+            throw error;
+        }
+    }
+
+    /** 应用销毁前的最后一次同步落盘；失败也不能阻断资源释放。 */
+    dispose(): void {
+        if (this.disposed) return;
+
+        try {
+            this.flush();
+        } catch (error: unknown) {
+            console.error('[StorageService] Final flush failed during dispose.', error);
+        }
+
+        this.disposed = true;
+        this.cancelScheduledFlush();
+    }
+
+    private ensureActive(): void {
+        if (this.disposed) {
+            throw new Error('StorageService has been disposed.');
+        }
+    }
+
+    private serialize(data: UserData): string {
+        try {
+            const payload = JSON.stringify(data);
+            if (typeof payload !== 'string') {
+                throw new Error('Storage payload must serialize to a string.');
+            }
+            return payload;
         } catch (cause: unknown) {
             throw new StorageWriteError(cause);
+        }
+    }
+
+    private persistImmediately(data: UserData): void {
+        const payload = this.serialize(data);
+        this.lastPersistAttemptAt = Date.now();
+        try {
+            this.provider.setItem(this.storageKey, payload);
+            this.persistenceError = undefined;
+        } catch (cause: unknown) {
+            const error = cause instanceof StorageWriteError
+                ? cause
+                : new StorageWriteError(cause);
+            this.persistenceError = error;
+            throw error;
+        }
+    }
+
+    private persistPendingWrite(): void {
+        const pending = this.pendingWrite;
+        if (!pending) return;
+
+        this.lastPersistAttemptAt = Date.now();
+        try {
+            this.provider.setItem(this.storageKey, pending.payload);
+        } catch (cause: unknown) {
+            const error = cause instanceof StorageWriteError
+                ? cause
+                : new StorageWriteError(cause);
+            this.persistenceError = error;
+            throw error;
+        }
+
+        if (this.pendingWrite?.revision === pending.revision) {
+            this.pendingWrite = undefined;
+        }
+        this.persistenceError = undefined;
+    }
+
+    private scheduleFlush(): void {
+        if (this.disposed || !this.pendingWrite || this.flushTimer !== undefined) return;
+
+        const generation = ++this.flushTimerGeneration;
+        const elapsed = this.lastPersistAttemptAt > 0
+            ? Math.max(0, Date.now() - this.lastPersistAttemptAt)
+            : this.writeThrottleMs;
+        const delay = Math.max(0, this.writeThrottleMs - elapsed);
+        this.flushTimer = setTimeout(() => {
+            if (generation !== this.flushTimerGeneration) return;
+            this.flushTimer = undefined;
+            try {
+                this.persistPendingWrite();
+            } catch (error: unknown) {
+                // 定时写入不能抛出未处理异常；保留 pendingWrite，下一轮继续重试。
+                console.error('[StorageService] Deferred flush failed.', error);
+                this.scheduleFlush();
+            }
+        }, delay);
+    }
+
+    private cancelScheduledFlush(): void {
+        this.flushTimerGeneration += 1;
+        if (this.flushTimer !== undefined) {
+            clearTimeout(this.flushTimer);
+            this.flushTimer = undefined;
         }
     }
 

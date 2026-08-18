@@ -61,11 +61,16 @@ const { ccclass } = _decorator;
 
 const GAME_ID = 'chess-endless';
 const BUNDLE = 'game-chess-endless';
+const CHESS_DATA_VERSION = 2;
 const MOVE_DURATION = 0.15;
 const CAPTURE_DURATION = 0.24;
 const CHESS_MUSIC_VOLUME = 0.5;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 type LifecycleState = 'idle' | 'ready' | 'playing' | 'paused' | 'completed' | 'disposed';
 
@@ -87,6 +92,11 @@ interface OverlayAction {
 interface OverlayState {
     readonly root: Node;
     readonly buttons: Button[];
+}
+
+interface ResumableChessRound {
+    readonly snapshot: ChessEndlessSnapshot;
+    readonly recoverySnapshot?: ChessEndlessSnapshot;
 }
 
 const COLORS = Object.freeze({
@@ -300,8 +310,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private playCount = 0;
     private roundStartedAt = 0;
     private pressureMode = false;
-    private pressureReleaseStreak = 0;
-    private pressureReleaseObservedTurn = -1;
     private deathOverlay?: OverlayState;
     private rewardOverlay?: OverlayState;
     private pauseOverlay?: OverlayState;
@@ -314,6 +322,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private dangerHintsEnabled = true;
     private rulesPageIndex = 0;
     private readonly rewardCardNodes = new Map<ItemType, Node>();
+    private resumableRound?: ResumableChessRound;
+    private savedProgressDiscarded = false;
+    private operationGeneration = 0;
 
     async initialize(context: MiniGameContext<ChessEndlessServices>): Promise<void> {
         if (this.lifecycle !== 'idle') throw new Error(`Cannot initialize ChessEndlessGame from ${this.lifecycle}.`);
@@ -337,18 +348,32 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     begin(): void {
         if (this.lifecycle !== 'ready') throw new Error(`Cannot begin ChessEndlessGame from ${this.lifecycle}.`);
+        this.operationGeneration += 1;
+        this.savedProgressDiscarded = false;
         this.lifecycle = 'playing';
+        this.selectedItem = undefined;
+        this.pressureMode = false;
+        this.playMusic('musicNormal');
+
+        const resumable = this.resumableRound;
+        this.resumableRound = undefined;
+        if (resumable) {
+            this.roundStartedAt = Date.now();
+            this.model.restoreSnapshot(resumable.snapshot, resumable.recoverySnapshot);
+            this.context?.reportScore(this.model.snapshot.score);
+            this.renderAll();
+            this.persistProgress(false);
+            this.resumeCurrentPhase();
+            console.info('[ChessEndless] resumed saved round');
+            return;
+        }
+
         this.playCount += 1;
         this.roundStartedAt = Date.now();
         this.model.reset((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
         this.selectedPlayer = true;
-        this.selectedItem = undefined;
         const qaScenario = this.applyPreviewQaScenario();
-        this.pressureMode = false;
-        this.pressureReleaseStreak = 0;
-        this.pressureReleaseObservedTurn = -1;
         this.context?.reportScore(0);
-        this.playMusic('musicNormal');
         this.renderAll();
         if (qaScenario === 'reward') void this.showRewardChestSequence();
         if (qaScenario === 'noRevive') void this.performEnemyTurn();
@@ -358,20 +383,28 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     pause(): void {
         if (this.lifecycle !== 'playing') return;
+        this.operationGeneration += 1;
         this.lifecycle = 'paused';
         this.inputLocked = true;
+        if (!this.savedProgressDiscarded) {
+            this.persistProgress(false);
+        }
         this.context?.services.audio.pauseMusic();
     }
 
     resume(): void {
         if (this.lifecycle !== 'paused') return;
+        this.operationGeneration += 1;
         this.lifecycle = 'playing';
-        this.inputLocked = false;
         this.context?.services.audio.resumeMusic();
+        this.resumeCurrentPhase();
     }
 
-    async restart(): Promise<void> {
+    async restart(context?: MiniGameContext<ChessEndlessServices>): Promise<void> {
         if (this.lifecycle === 'disposed') throw new Error('Cannot restart a disposed game.');
+        if (context) this.context = context;
+        this.operationGeneration += 1;
+        this.savedProgressDiscarded = false;
         this.destroyAllOverlays();
         this.lifecycle = 'playing';
         this.inputLocked = false;
@@ -381,8 +414,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.model.reset((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
         const qaScenario = this.applyPreviewQaScenario();
         this.pressureMode = false;
-        this.pressureReleaseStreak = 0;
-        this.pressureReleaseObservedTurn = -1;
         this.playCount += 1;
         this.context?.services.audio.resumeMusic();
         this.playMusic('musicNormal');
@@ -393,11 +424,18 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     discardSavedProgress(): void {
-        this.persistProgress(false);
+        this.operationGeneration += 1;
+        this.savedProgressDiscarded = true;
+        this.persistProgress(false, false);
     }
 
     async dispose(): Promise<void> {
         if (this.lifecycle === 'disposed') return;
+        this.operationGeneration += 1;
+        if (!this.savedProgressDiscarded
+            && (this.lifecycle === 'playing' || this.lifecycle === 'paused')) {
+            this.persistProgress(false);
+        }
         this.lifecycle = 'disposed';
         Tween.stopAll();
         this.destroyAllOverlays();
@@ -984,6 +1022,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private async handleCellTap(target: BoardPosition): Promise<void> {
         if (this.inputLocked || this.lifecycle !== 'playing' || this.model.snapshot.phase !== 'player') return;
+        const generation = this.operationGeneration;
         const snapshot = this.model.snapshot;
         const enemy = snapshot.enemies.find((piece) => same(piece.position, target));
 
@@ -999,14 +1038,17 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const item = this.selectedItem;
             const oldNode = this.pieceLayer?.getChildByName(`Enemy-${enemy.id}`);
             const result = this.model.useItem(item, enemy.id);
+            this.persistProgress(false);
             this.selectedItem = undefined;
             this.selectedPlayer = true;
             this.playSound(item === 'freeze' ? 'itemFreeze' : 'itemBanish');
             this.context?.services.feedback.vibrate('medium');
             await this.showItemEffect(item, enemy.position);
+            if (!this.isOperationCurrent(generation)) return;
             if (item === 'banish' && oldNode) {
                 await this.tweenNode(oldNode, CAPTURE_DURATION, { scale: new Vec3(0.1, 0.1, 1) }, 'quadIn');
             }
+            if (!this.isOperationCurrent(generation)) return;
             this.renderAll();
             this.setHint(item === 'freeze' ? '封印已生效；现在仍须正常走车' : `已驱逐${PIECE_DISPLAY[result.removed!.type]}；不计击杀分`);
             return;
@@ -1019,10 +1061,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
             }
             const from = snapshot.playerPosition;
             this.model.useItem('teleport', target);
+            this.persistProgress(false);
             this.selectedItem = undefined;
             this.selectedPlayer = true;
             this.playSound('itemTeleport');
             await this.showTeleportEffect(from, target);
+            if (!this.isOperationCurrent(generation)) return;
             this.renderAll();
             this.setHint('移形完成；本回合仍须正常走车一次');
             return;
@@ -1031,6 +1075,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (same(target, snapshot.playerPosition)) {
             if (this.selectedItem === 'crossSlash') {
                 this.model.useItem('crossSlash');
+                this.persistProgress(false);
                 this.selectedItem = undefined;
                 this.selectedPlayer = true;
                 this.playSound('crossCharge');
@@ -1081,6 +1126,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (type === 'freeze' || type === 'banish' || type === 'teleport' || type === 'crossSlash') return;
         try {
             this.model.useItem(type);
+            this.persistProgress(false);
             this.selectedItem = undefined;
             this.selectedPlayer = true;
             this.playSound('itemDelay');
@@ -1094,6 +1140,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async performPlayerMove(target: BoardPosition): Promise<void> {
+        const generation = this.operationGeneration;
         this.inputLocked = true;
         this.selectedPlayer = false;
         this.selectedItem = undefined;
@@ -1108,6 +1155,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const targetEnemy = before.enemies.find((piece) => same(piece.position, target));
         const capturedNode = targetEnemy ? this.pieceLayer?.getChildByName(`Enemy-${targetEnemy.id}`) : undefined;
         const result = this.model.movePlayer(target);
+        // 先保存逻辑快照，再播放移动/吃子动画；进程在动画期间退出也不会回退棋局。
+        this.persistProgress(false);
         // Combo progression is visual and score-only; every normal capture reuses the same SFX.
         this.playSound(result.captured ? 'playerCapture' : 'playerMove');
         this.context?.services.feedback.vibrate(result.captured ? 'medium' : 'light');
@@ -1118,33 +1167,45 @@ export class ChessEndlessGame extends Component implements MiniGame {
         } else {
             await this.waitSeconds(MOVE_DURATION);
         }
+        if (!this.isOperationCurrent(generation)) return;
         if (capturedNode) await this.animateCapture(capturedNode, result.captured);
+        if (!this.isOperationCurrent(generation)) return;
         if (result.crossSlashKills.length > 0 || before.pendingCrossSlash) {
             await this.showCrossSlash(
                 result.crossSlashKills,
                 result.crossSlashKills.reduce((sum, record) => sum + record.score, 0),
             );
         }
+        if (!this.isOperationCurrent(generation)) return;
         this.renderAll();
         if (result.combo >= 2) this.showComboVfx(result.combo);
         if (result.generalKilled) await this.showGeneralKillMoment();
+        if (!this.isOperationCurrent(generation)) return;
         if (result.immediateSpawned.length > 0) {
             this.playSound('reinforcementDrop');
             await this.animateSpawns(result.immediateSpawned, result.immediateReinforcementKind === 'general');
+            if (!this.isOperationCurrent(generation)) return;
             if (result.immediateReinforcementKind === 'general') await this.showGeneralArrival();
+            if (!this.isOperationCurrent(generation)) return;
         }
         if (this.model.snapshot.phase === 'reward') {
             await this.showRewardChestSequence();
+            if (!this.isOperationCurrent(generation)) return;
             return;
         }
         await this.performEnemyTurn();
     }
 
     private async performEnemyTurn(): Promise<void> {
-        if (this.model.snapshot.phase !== 'enemy') return;
+        const generation = this.operationGeneration;
+        if (!this.isOperationCurrent(generation) || this.model.snapshot.phase !== 'enemy') return;
         await this.waitSeconds(0.1);
+        if (!this.isOperationCurrent(generation)) return;
         const before = this.model.snapshot;
         const result = this.model.resolveEnemyTurn();
+        // 敌方逻辑结算完成即落盘，后续移动动画不参与存档正确性。
+        this.persistProgress(false);
+        if (!this.isOperationCurrent(generation)) return;
         if (result.moved) {
             const moving = this.pieceLayer?.getChildByName(`Enemy-${result.moved.pieceId}`);
             this.playSound(result.killedPlayer ? 'playerKilled' : 'enemyMove', result.killedPlayer ? 1 : 0.72);
@@ -1154,9 +1215,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             } else {
                 await this.waitSeconds(MOVE_DURATION);
             }
+            if (!this.isOperationCurrent(generation)) return;
         }
         if (result.killedPlayer) {
             await this.animatePlayerDeath();
+            if (!this.isOperationCurrent(generation)) return;
             this.renderAll();
             this.showDeathOverlay();
             return;
@@ -1168,11 +1231,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
             await this.animateSpawns(result.spawned, result.reinforcementKind === 'general');
             if (result.reinforcementKind === 'general') {
                 await this.showGeneralArrival();
+                if (!this.isOperationCurrent(generation)) return;
             }
         } else if (result.enteredWaiting) {
             this.playSound(before.queuedReinforcement.kind === 'general' ? 'generalWait' : 'reinforcementWait', 0.75);
             this.setHint(before.queuedReinforcement.kind === 'general' ? '棋盘拥挤：将军待降' : '棋盘拥挤：本批增援等待入场');
         }
+        if (!this.isOperationCurrent(generation)) return;
         this.renderAll();
         this.inputLocked = false;
         this.selectedPlayer = true;
@@ -1181,6 +1246,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private async animateCapture(node: Node, record?: KillRecord): Promise<void> {
         if (!record) return;
+        const generation = this.operationGeneration;
         const origin = node.position.clone();
         const burst = this.createNode(this.effectLayer ?? this.node, 'CaptureBurst', origin.x, origin.y, 136, 136);
         this.applySprite(burst, 'captureBurst');
@@ -1195,6 +1261,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.tweenNode(chip, CAPTURE_DURATION, { scale: new Vec3(1, 1, 1), angle: -14 }, 'quadOut'),
             this.tweenNode(burst, CAPTURE_DURATION, { scale: new Vec3(1.18, 1.18, 1), angle: 12 }, 'backOut'),
         ]);
+        if (!this.isGenerationCurrent(generation)) {
+            if (burst.isValid) burst.destroy();
+            if (chip.isValid) chip.destroy();
+            return;
+        }
         opacity.opacity = 0;
         tween(burstOpacity).to(0.18, { opacity: 0 }).call(() => burst.destroy()).start();
         chip.destroy();
@@ -1204,6 +1275,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private async showCrossSlash(kills: readonly KillRecord[], scoreDelta: number): Promise<void> {
         const layer = this.underPieceEffectLayer;
         if (!layer) return;
+        const generation = this.operationGeneration;
         this.duckMusic('crossSlash', 0.55);
         if (kills.length > 1) this.playSound('multiCapture', 0.85);
         const metrics = this.boardMetrics();
@@ -1228,6 +1300,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         tween(ring).to(0.24, { scale: new Vec3(1.18, 1.18, 1), angle: 32 }, { easing: 'backOut' }).start();
         kills.forEach((record, index) => {
             this.scheduleOnce(() => {
+                if (!this.isGenerationCurrent(generation)) return;
                 const point = this.boardPoint(record.piece.position);
                 this.spawnParticle('inkParticle', point.x, point.y, 66, index % 2 ? 12 : -12);
             }, 0.2 + index * 0.025);
@@ -1248,6 +1321,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async animateSpawns(spawned: readonly EnemyPiece[], general: boolean): Promise<void> {
+        const generation = this.operationGeneration;
         spawned.forEach((piece, index) => {
             const node = this.pieceLayer?.getChildByName(`Enemy-${piece.id}`);
             if (!node) return;
@@ -1260,7 +1334,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const shadowOpacity = shadow.addComponent(UIOpacity);
             shadowOpacity.opacity = 80;
             this.scheduleOnce(() => {
-                if (!node.isValid) return;
+                if (!this.isGenerationCurrent(generation) || !node.isValid) {
+                    if (shadow.isValid) shadow.destroy();
+                    return;
+                }
                 tween(node)
                     .to(general && piece.type === 'general' ? 0.34 : 0.27, {
                         position: new Vec3(point.x, point.y, 0),
@@ -1276,9 +1353,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async showGeneralArrival(): Promise<void> {
+        const generation = this.operationGeneration;
         this.duckMusic('generalArrive', 1.45);
         this.context?.services.feedback.vibrate('heavy');
         await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320, -26);
+        if (!this.isGenerationCurrent(generation)) return;
         const general = this.model.snapshot.enemies.find((piece) => piece.type === 'general');
         if (general) {
             const point = this.boardPoint(general.position);
@@ -1287,9 +1366,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async showGeneralKillMoment(): Promise<void> {
+        const generation = this.operationGeneration;
         this.duckMusic('generalKill', 1.0);
         this.context?.services.feedback.vibrate('heavy');
         await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.goldLight, 0.9, 650, 350);
+        if (!this.isGenerationCurrent(generation)) return;
     }
 
     private async animatePlayerDeath(): Promise<void> {
@@ -1336,7 +1417,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private async handleRevive(): Promise<void> {
         if (!this.model.canRevive) return;
+        const generation = this.operationGeneration;
         const adResult = await this.context?.services.ads?.showRewarded();
+        if (!this.isOperationCurrent(generation)) return;
         if (adResult && adResult.outcome !== 'completed') {
             this.setHint('视频未完整播放，暂未复活');
             return;
@@ -1345,13 +1428,16 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.deathOverlay = undefined;
         this.playSound('revive');
         const result = this.model.revive();
+        this.persistProgress(false);
         this.renderAll();
         const revivePoint = this.boardPoint(this.model.snapshot.playerPosition);
         this.spawnParticle('lightParticle', revivePoint.x, revivePoint.y, 120, 0);
         await this.showCrossSlash(result.kills, result.scoreDelta);
+        if (!this.isOperationCurrent(generation)) return;
         this.renderAll();
         if (this.model.snapshot.phase === 'reward') {
             await this.showRewardChestSequence();
+            if (!this.isOperationCurrent(generation)) return;
         } else {
             this.inputLocked = false;
             this.selectedPlayer = true;
@@ -1361,6 +1447,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private async showRewardChestSequence(): Promise<void> {
         if (this.model.snapshot.pendingRewardChoices.length === 0) return;
+        const generation = this.operationGeneration;
         this.inputLocked = true;
         this.playSound('rewardOpen');
         const overlay = this.createOverlayRoot('RewardOverlay');
@@ -1370,7 +1457,15 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.applySprite(closed, 'rewardChestClosed');
         closed.setScale(0.2, 0.2, 1);
         await this.tweenNode(closed, 0.3, { scale: new Vec3(1, 1, 1) }, 'backOut');
+        if (!this.isOperationCurrent(generation)) {
+            this.cancelRewardSequence(overlay);
+            return;
+        }
         await this.waitSeconds(0.16);
+        if (!this.isOperationCurrent(generation)) {
+            this.cancelRewardSequence(overlay);
+            return;
+        }
         const open = this.createNode(overlay, 'ChestOpen', safeRect.x, safeRect.y - 30, 350, 285);
         this.applySprite(open, 'rewardChestOpen');
         closed.destroy();
@@ -1378,8 +1473,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.spawnScreenParticle(overlay, 'lightParticle', (index - 3.5) * 42, 28 + (index % 2) * 30, 48 + index * 3, index * 17);
         }
         await this.waitSeconds(0.38);
+        if (!this.isOperationCurrent(generation)) {
+            this.cancelRewardSequence(overlay);
+            return;
+        }
         this.buildRewardPanel(overlay, true);
         await this.waitSeconds(0.34);
+        if (!this.isOperationCurrent(generation)) return;
         if (open.isValid) open.destroy();
     }
 
@@ -1389,6 +1489,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const overlay = this.createOverlayRoot('RewardOverlay');
         this.rewardOverlay = { root: overlay, buttons: [] };
         this.buildRewardPanel(overlay, false);
+    }
+
+    private cancelRewardSequence(overlay: Node): void {
+        if (this.rewardOverlay?.root !== overlay) return;
+        this.destroyOverlay(this.rewardOverlay);
+        this.rewardOverlay = undefined;
+        this.rewardCardNodes.clear();
     }
 
     private buildRewardPanel(overlay: Node, animateFromChest: boolean): void {
@@ -1452,8 +1559,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async chooseReward(item: ItemType): Promise<void> {
+        const generation = this.operationGeneration;
         const overlay = this.rewardOverlay?.root;
         this.model.chooseReward(item);
+        this.persistProgress(false);
         this.playSound('itemSelect');
         const panel = overlay?.getChildByName('Panel');
         if (panel) {
@@ -1461,6 +1570,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             tween(opacity).to(0.22, { opacity: 0 }).start();
             await this.tweenNode(panel, 0.24, { scale: new Vec3(0.08, 0.08, 1), position: new Vec3(0, -70, 0) }, 'quadIn');
         }
+        if (!this.isOperationCurrent(generation)) return;
         this.playSound('rewardClose', 0.72);
         this.destroyOverlay(this.rewardOverlay);
         this.rewardOverlay = undefined;
@@ -1474,8 +1584,58 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }
     }
 
+    private resumeCurrentPhase(): void {
+        if (this.lifecycle !== 'playing') return;
+        const phase = this.model.snapshot.phase;
+        if (phase !== 'reward' && this.rewardOverlay) {
+            this.destroyOverlay(this.rewardOverlay);
+            this.rewardOverlay = undefined;
+            this.rewardCardNodes.clear();
+        }
+        if (phase !== 'dead' && this.deathOverlay) {
+            this.destroyOverlay(this.deathOverlay);
+            this.deathOverlay = undefined;
+        }
+        if (phase === 'enemy') {
+            this.inputLocked = true;
+            void this.performEnemyTurn();
+            return;
+        }
+        if (phase === 'reward') {
+            this.inputLocked = true;
+            if (!this.rewardOverlay) this.showRewardOverlay();
+            return;
+        }
+        if (phase === 'dead') {
+            this.inputLocked = true;
+            if (!this.deathOverlay) this.showDeathOverlay();
+            return;
+        }
+        if (phase === 'ended') return;
+
+        this.inputLocked = false;
+        this.selectedPlayer = true;
+        this.renderAll();
+        if (this.model.snapshot.pendingCrossSlash) {
+            this.setHint('十字斩已蓄势，将在本次正常移动结束后释放');
+        }
+    }
+
+    private isOperationCurrent(generation: number): boolean {
+        return this.lifecycle === 'playing'
+            && this.operationGeneration === generation
+            && this.node.isValid;
+    }
+
+    private isGenerationCurrent(generation: number): boolean {
+        return this.operationGeneration === generation
+            && this.lifecycle !== 'disposed'
+            && this.node.isValid;
+    }
+
     private finishRound(): void {
         if (this.lifecycle === 'completed' || this.lifecycle === 'disposed') return;
+        this.operationGeneration += 1;
         this.model.endGame();
         const snapshot = this.model.snapshot;
         const newRecord = snapshot.score > this.bestScore;
@@ -2255,41 +2415,29 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private updatePressureMusic(snapshot: ChessEndlessSnapshot): void {
-        const shouldPressure = snapshot.enemies.length >= 20
-            || snapshot.generalActive
-            || (snapshot.queuedReinforcement.types.length >= 3 && snapshot.reinforcementTimer <= 1);
-        if (!this.pressureMode && shouldPressure) {
-            this.pressureMode = true;
-            this.pressureReleaseStreak = 0;
-            this.pressureReleaseObservedTurn = snapshot.turnNumber;
-            this.playMusic('musicPressure');
-            return;
-        }
-        if (!this.pressureMode) return;
+        // 玩家走子后模型会短暂处于 enemy phase，敌方回合还没有完成结算。
+        // 此时的棋盘/增援快照不是一个完整回合的稳定状态，不能用它切换
+        // BGM，否则普通回合可能先误入高压层，下一回合又立刻被释放。
+        if (snapshot.phase !== 'player') return;
 
-        const releaseCandidate = !snapshot.generalActive && snapshot.enemies.length <= 15;
-        if (!releaseCandidate) {
-            this.pressureReleaseStreak = 0;
-            this.pressureReleaseObservedTurn = snapshot.turnNumber;
-            return;
-        }
-        if (this.pressureReleaseObservedTurn !== snapshot.turnNumber) {
-            this.pressureReleaseObservedTurn = snapshot.turnNumber;
-            this.pressureReleaseStreak += 1;
-        }
-        if (this.pressureReleaseStreak >= 2) {
-            this.pressureMode = false;
-            this.pressureReleaseStreak = 0;
-            this.playMusic('musicNormal');
-        }
+        const generalOnBoard = snapshot.generalActive
+            || snapshot.enemies.some((piece) => piece.type === 'general');
+        const shouldPressure = generalOnBoard || snapshot.enemies.length >= 20;
+        if (this.pressureMode === shouldPressure) return;
+
+        this.pressureMode = shouldPressure;
+        this.playMusic(shouldPressure ? 'musicPressure' : 'musicNormal');
     }
 
     private duckMusic(stinger: string, resumeAfter: number, stayPaused = false): void {
+        const generation = this.operationGeneration;
         this.context?.services.audio.pauseMusic();
         this.playSound(stinger, 0.94);
         if (!stayPaused) {
             this.scheduleOnce(() => {
-                if (this.lifecycle === 'playing') this.context?.services.audio.resumeMusic();
+                if (this.isGenerationCurrent(generation) && this.lifecycle === 'playing') {
+                    this.context?.services.audio.resumeMusic();
+                }
             }, resumeAfter);
         }
     }
@@ -2299,24 +2447,68 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.playCount = data?.playCount ?? 0;
         this.bestScore = Math.max(0, Math.floor(data?.highScore ?? 0));
         this.dangerHintsEnabled = data?.custom?.dangerHintsEnabled !== false;
+        this.resumableRound = this.readResumableRound(data);
     }
 
-    private persistProgress(finished: boolean): void {
+    private readResumableRound(data?: GameSaveData): ResumableChessRound | undefined {
+        if (!data || data.dataVersion > CHESS_DATA_VERSION) return undefined;
+        const raw = data.custom?.activeRound;
+        if (!isRecord(raw) || raw.inProgress !== true) return undefined;
+
+        const recovery = raw.recoverySnapshot;
+        try {
+            this.model.restoreSnapshot(
+                raw as unknown as ChessEndlessSnapshot,
+                recovery === undefined
+                    ? undefined
+                    : recovery as unknown as ChessEndlessSnapshot,
+            );
+            if (this.model.snapshot.phase === 'ended') return undefined;
+            const recoverySnapshot = this.model.recoverySnapshot;
+            return Object.freeze({
+                snapshot: this.model.snapshot,
+                ...(recoverySnapshot ? { recoverySnapshot } : {}),
+            });
+        } catch (error: unknown) {
+            console.warn('[ChessEndless] Ignoring invalid active round save.', error);
+            return undefined;
+        }
+    }
+
+    private persistProgress(finished: boolean, inProgress = !finished): void {
         const storage = this.context?.services.storage;
         if (!storage) return;
         const snapshot = this.model.snapshot;
         const previous = storage.getGameData(GAME_ID);
+        const previousCustom = isRecord(previous?.custom)
+            ? previous.custom
+            : {};
+        const previousCompletedRounds = typeof previousCustom.completedRounds === 'number'
+            && Number.isFinite(previousCustom.completedRounds)
+            ? Math.max(0, Math.floor(previousCustom.completedRounds))
+            : 0;
+        const activeRound = inProgress
+            ? Object.freeze({
+                inProgress: true,
+                ...snapshot,
+                ...(this.model.recoverySnapshot
+                    ? { recoverySnapshot: this.model.recoverySnapshot }
+                    : {}),
+            })
+            : Object.freeze({ inProgress: false });
         const save: GameSaveData = {
-            dataVersion: 1,
+            dataVersion: CHESS_DATA_VERSION,
             playCount: this.playCount,
             highScore: Math.max(this.bestScore, snapshot.score),
             lastPlayedAt: Date.now(),
             custom: Object.freeze({
+                ...previousCustom,
                 totalKills: snapshot.totalKills,
                 generalKills: snapshot.generalKills,
                 maxCombo: snapshot.maxCombo,
                 dangerHintsEnabled: this.dangerHintsEnabled,
-                completedRounds: Math.max(0, Number(previous?.custom?.completedRounds ?? 0)) + (finished ? 1 : 0),
+                completedRounds: previousCompletedRounds + (finished ? 1 : 0),
+                activeRound,
             }),
         };
         try {
@@ -2403,9 +2595,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private readonly handleLayoutChange = (): void => {
         if (this.resizeQueued || this.lifecycle === 'disposed') return;
         this.resizeQueued = true;
+        const generation = this.operationGeneration;
         this.scheduleOnce(() => {
             this.resizeQueued = false;
-            if (this.lifecycle === 'disposed') return;
+            if (!this.isGenerationCurrent(generation)) return;
             const overlayOpen = Boolean(this.deathOverlay || this.rewardOverlay || this.pauseOverlay
                 || this.resultOverlay || this.rulesOverlay || this.infoOverlay);
             if (!overlayOpen) {

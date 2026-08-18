@@ -3,8 +3,8 @@
 > 状态：已确认，作为项目首版及后续迭代的架构基线  
 > Cocos Creator：3.8.8  
 > 目标平台：微信小游戏，浏览器预览作为开发环境  
-> 设计基准：竖屏 750 × 1334，运行时适配安全区  
-> 最后更新：2026-08-01
+> 设计基准：竖屏 750 × 1334；横向使用 Canvas `Fit Width`，纵向避让顶部胶囊和底部安全区
+> 最后更新：2026-08-18
 
 逐步实施与验收清单见：[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)。
 
@@ -149,7 +149,7 @@ export interface MiniGame {
   begin(): void;
   pause(): void;
   resume(): void;
-  restart(): Promise<void>;
+  restart(nextContext?: MiniGameContext): Promise<void>;
   dispose(): Promise<void>;
   showPauseMenu?(model: MiniGamePauseModel): void;
   hidePauseMenu?(): void;
@@ -172,11 +172,11 @@ export interface GameResult {
 - 不持有已销毁节点。
 - 不持有应释放的 Asset Bundle 资源引用。
 - 3D 游戏不残留物理回调、动画、粒子、RenderTexture、动态 Mesh、材质实例、后处理与 GPU 纹理引用。
-- 再次进入该游戏时得到一个全新的 `GameSession`。
+- 每次重开或再次进入该游戏时都得到一个全新的 `GameSession`；局内短路径重开可以复用已加载的场景和 Bundle，但必须注入新的 `MiniGameContext.sessionId`。
 
 暂停与结果呈现采用“公共行为模型 + 游戏可选自有视图”。运行层始终拥有暂停、恢复、重开、结算和返回大厅的流程与去重逻辑，并通过 `MiniGamePauseModel` / `MiniGameResultModel` 注入动作；小游戏若实现可选 Presenter 方法，则在自己的 Bundle 内绘制独立视觉，否则继续使用 `assets/shared` 的公共回退视图。失败/续玩页可通过 `requestRestart` 或 `requestLobby` 直接表达最终去向，但不得自行切场景、卸载 Bundle 或绕过结果持久化。
 
-本次协议扩展为纯增量：已有小游戏无需实现任何新 Presenter 方法，原有 `requestExit` 路径保持不变，存档、Manifest 和 Session 结构均不变化。迁移时可逐个游戏接入主题视图；若回滚，只需移除游戏的可选 Presenter 实现并恢复调用 `requestExit`，运行层会自动回到公共暂停/结果视图，无需迁移或清空用户数据。
+本次协议扩展保持向后兼容：已有小游戏无需实现新的 Presenter 方法，原有 `requestExit` 路径保持不变，存档和 Manifest 结构无需迁移；运行层仅在局内短路径重开时创建新的 `GameSession` 并注入新的上下文。迁移时可逐个游戏接入短路径；若回滚，运行层仍可退回完整退出/重新进入流程，无需清空用户数据。
 
 ## 6. 游戏清单与注册中心
 
@@ -245,6 +245,19 @@ interface GameCatalog {
 → 完成资源与监听泄漏检查
 ```
 
+重开优先走局内短路径：
+
+```text
+锁定重开操作
+→ 必要时 pause 当前入口
+→ 固化并上报旧 Session 的重开结果
+→ 创建新的 GameSession 和 MiniGameContext
+→ 调用当前入口 restart(nextContext)，只重置本局状态
+→ 状态回到 playing，记录新的 game_start
+```
+
+局内 `restart` 失败时，必须回退到完整退出流程，销毁可能处于半重置状态的入口、释放游戏 Bundle，再重新进入同一 Manifest；不能继续把半重置实例交给玩家。
+
 加载失败、初始化超时或入口组件不存在时，必须进入统一错误状态，允许重试或返回大厅。
 
 ## 8. 应用状态机
@@ -258,6 +271,7 @@ type AppState =
   | 'loading-game'
   | 'playing'
   | 'paused'
+  | 'restarting-game'
   | 'leaving-game'
   | 'error';
 ```
@@ -268,8 +282,9 @@ type AppState =
 booting → lobby | error
 lobby → loading-game
 loading-game → playing | error
-playing → paused | leaving-game
-paused → playing | leaving-game
+playing → paused | restarting-game | leaving-game
+paused → playing | restarting-game | leaving-game
+restarting-game → playing | leaving-game | error
 leaving-game → lobby | error
 error → lobby | loading-game
 ```
@@ -316,7 +331,7 @@ export interface Platform {
 
 ### StorageService
 
-负责默认值、版本迁移、异常恢复、写入节流和游戏数据隔离。
+负责默认值、版本迁移、异常恢复、游戏数据隔离和底层持久化。小游戏的每次逻辑操作都必须立即提交最新根快照到内存并触发保存；公共服务只对 `localStorage.setItem` 做单一根快照的 1000ms throttle，连续操作不会无限推迟写入。暂停、微信 hide、结算、退出、重开、Bundle 释放前和应用销毁都必须调用同步 `flush()`，绕过节流写入最新快照。序列化在逻辑提交点完成，延迟队列只保存最新 revision；写入失败保留 dirty 快照并由后续写入或 flush 重试。连续物理状态仍可由小游戏额外使用约 250ms 节流。
 
 ### NavigationService
 
@@ -362,9 +377,11 @@ interface UserData {
 
 当前根存档版本为 `schemaVersion: 2`。迁移必须按 `vN → vN+1` 顺序逐级执行；首个示例迁移 `v1 → v2` 将早期可缺省的 `settings.vibrationEnabled` 补为 `true`。迁移完成并通过当前结构校验后才能覆盖主存档；迁移失败时先把原始字符串写入独立备份键，再恢复默认数据。
 
-合成大西瓜当前使用游戏内 `dataVersion: 2`，其 `custom` 已知字段为 `maxFruitLevel`、`continueOfferCount` 和 `continueCompletedCount`。读取 `dataVersion: 1` 或字段不完整的数据时，在游戏命名空间内补齐非负默认值并保留未知自定义字段；根存档版本不因此升级。`playCount/lastPlayedAt` 只在新一局开始写入，最高分、历史最大水果和续玩统计只在最终结算写入，中途退出和暂停重开不刷新纪录。回滚到不识别 v2 的旧游戏代码时，公共存储仍会保留该命名空间；安全回滚策略是旧代码忽略新增 `custom` 字段，禁止删除或重置用户根存档。
+合成大西瓜当前使用游戏内 `dataVersion: 3`，其 `custom` 已知字段为 `maxFruitLevel`、`continueOfferCount`、`continueCompletedCount` 和 `activeRound`。读取旧版本或字段不完整的数据时，在游戏命名空间内补齐非负默认值并保留未知自定义字段；根存档版本不因此升级。`playCount` 只在新一局开始写入，`lastPlayedAt` 会随开始、投放/合成、暂停和约 250ms 的物理快照写入；活动局快照用于异常退出后恢复，最高分、历史最大水果和续玩统计在结算或退出兜底时更新。回滚到不识别 v3 的旧游戏代码时，公共存储仍会保留该命名空间；安全回滚策略是旧代码忽略新增 `custom` 字段，禁止删除或重置用户根存档。
 
-霓光 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 3`，其 `custom` 已知字段为 `highestTile`、`activeRound`；`highScore` 保存历史最高分。版本迁移沿游戏命名空间执行：历史 v1/v2 均按 v2 → v3 的兼容入口读取，旧 `activeRound.targetAcknowledged` 的语义是“2048 目标层已确认”，迁移后强制写为 `false`，表示新的 4096 目标尚未确认；v3 之后该字段才表示 4096 目标确认。迁移保留 `board`、`score`、`highestTile`、`highScore`、未知 `custom` 字段及 activeRound 中未知字段，下一次成功写入时统一落为 v3；不修改根存档 schema。回滚到不识别 v3 的旧游戏代码时，旧代码只能忽略新增字段或整个 `game2048` 命名空间，禁止删除或重置用户记录；恢复新代码后仍按 v2 → v3 规则读取，根存档不受影响。
+霓光 2048 使用独立游戏命名空间 `game2048` 和游戏内 `dataVersion: 4`，其 `custom` 已知字段为 `highestTile`、`activeRound`；`highScore` 保存历史最高分。`activeRound` 在原有 `targetAcknowledged`（4096 目标确认）之外增加 `milestoneAcknowledged`（2048 里程碑弹窗确认）。版本迁移沿游戏命名空间执行：历史 v1/v2 的 `activeRound.targetAcknowledged` 语义是“2048 目标层已确认”，迁移为 `milestoneAcknowledged` 并将新的 `targetAcknowledged` 置为 `false`；v3 的 `targetAcknowledged` 已表示 4096 目标确认，缺少 `milestoneAcknowledged` 时补为 `false`，让恢复中的 2048 棋盘可以展示新增里程碑弹窗；v4 之后两个字段分别保持各自语义。迁移保留 `board`、`score`、`highestTile`、`highScore`、未知 `custom` 字段及 activeRound 中未知字段，下一次成功写入时统一落为 v4；不修改根存档 schema。有效移动和暂停路径都会同步写入当前 activeRound。回滚到不识别 v4 的旧游戏代码时，旧代码只能忽略新增字段或整个 `game2048` 命名空间，禁止删除或重置用户记录；恢复新代码后仍按 v1/v2 → v3 → v4 规则读取，根存档不受影响。
+
+棋逢对手·无尽挑战使用独立游戏命名空间 `chess-endless`，当前游戏内 `dataVersion: 2`。v1 → v2 为增量迁移：保留原有分数、局数、设置、统计和未知 `custom` 字段；v2 新增可恢复的 `custom.activeRound`，其中保存完整 `ChessEndlessSnapshot` 以及死亡状态所需的致死前 `recoverySnapshot`。老版本没有活动局时按新局处理，损坏或越界的活动局只被忽略，不清空根存档。新局、道具使用、玩家移动、敌方回合结算、奖励选择、复活、暂停和退出兜底都在逻辑状态改变后同步写盘；结算或明确重开时写入 `activeRound.inProgress: false`。恢复时按 `player`、`enemy`、`reward`、`dead` 阶段分别继续，禁止把 `ended` 快照当作活动局恢复。回滚到不识别 v2 的旧游戏代码时，旧代码可能忽略新增活动局字段，但不得删除或重置根存档；正式回滚前应先由新代码清除活动局标记。
 
 ## 12. 公共 UI 层级
 
@@ -411,15 +428,22 @@ Canvas
 - 所有动态加载和释放必须经过 `AssetService`。
 - 每次构建检查主包体积、分包体积和重复资源。
 
+### 布局适配基线（强制）
+
+- Canvas 设计宽度固定为 750，游戏 UI 横向统一使用 Cocos `Fit Width`（`fitWidth`）；布局宽度直接使用绑定 Canvas 的可见宽度，左右以屏幕边界为横向布局边界，不把左右系统安全区从内容宽度中扣除。
+- 布局安全边界只作用于纵向：顶部内容从微信胶囊和顶部安全区的下方开始，底部内容止于底部安全区的上方；HUD、玩法区、内容面板和可交互控件都必须落在这两个边界之间。
+- `SafeArea.left` / `SafeArea.right` 只作为平台原始信息保留、调试或兼容数据，不得参与通用 UI 的横向居中、宽度计算、右上角控件定位或缩放决策。主题自身的视觉留白仍可按设计坐标保留。
+- 背景可按 `cover` 等比铺满并允许裁切；矮屏优先等比缩小核心玩法区以落入上下可用高度，高屏保留自然留白，不通过左右安全区、左右裁切或上下越界腾空间。
+
 ### Canvas 与 UI Camera 绑定（强制）
 
 每个小游戏场景中的 `cc.Canvas` 必须通过 `_cameraComponent` 显式绑定负责该画布的 `cc.Camera`，该字段不得为 `null`。场景层级中存在 Camera 节点并不代表 Canvas 已经使用该相机；未绑定时，Cocos 的 UI 坐标、Canvas 适配结果和微信小游戏最终可视区域可能不在同一套投影中，常见表现是设计宽度和安全区计算均正确，但界面仍从左右越界或被裁切。
 
 - UI Camera 使用正交投影，只渲染当前游戏的 UI Layer；Canvas、Camera 和 UI 根节点必须使用一致的 Layer。
 - `Canvas._cameraComponent` 的引用必须解析到有效的 `cc.Camera` 组件，禁止仅依赖运行时自动查找或编辑器预览中的隐式行为。
-- 屏幕适配应以绑定后的 Canvas 坐标系计算 `view.getVisibleSize()`、平台安全区、胶囊位置和响应式布局，不能用物理像素直接设置 UI 节点坐标。
-- 新增或复制小游戏场景时，项目校验脚本必须检查 Canvas 的相机引用；微信开发者工具验收至少覆盖一个窄屏和一个高屏设备，并检查左右边界与顶部胶囊区域。
-- 若出现“数值上未超过 750 设计宽度但真机仍然溢出”的问题，先检查 Canvas 的 `_cameraComponent`、Camera 正交尺寸、可见 Layer 和 Canvas 适配策略，再调整业务布局参数。
+- 屏幕适配应以绑定后的 Canvas 坐标系计算 `view.getVisibleSize()` 和纵向平台约束；横向使用 `fitWidth`，纵向使用顶部胶囊/安全区与底部安全区，不能用物理像素直接设置 UI 节点坐标。
+- 新增或复制小游戏场景时，项目校验脚本必须检查 Canvas 的相机引用；微信开发者工具验收至少覆盖一个窄屏和一个高屏设备，并检查 Fit Width 横向铺满结果、顶部胶囊避让和底部安全边界。
+- 若出现“数值上未超过 750 设计宽度但真机仍然溢出”的问题，先检查 Canvas 的 `_cameraComponent`、Camera 正交尺寸、可见 Layer 和 Canvas 的 `fitWidth`/适配策略，再调整业务布局参数；不得以左右系统安全区作为默认修复手段。
 
 ## 14. 2D/3D 渲染与性能基线
 

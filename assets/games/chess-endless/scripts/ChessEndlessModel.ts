@@ -4,9 +4,9 @@ export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 24;
 
 export const GENERAL_AI_SCORING = Object.freeze({
     // 将军成功脱离玩家车的直接威胁时获得的分数；越高越优先逃生。
-    escapeThreat: 700,
+    escapeThreat: 680,
     // 其他棋子通过挡线解除将军威胁时获得的分数；越高越倾向协同护将。
-    guardedByAlly: 200,
+    guardedByAlly: 100,
     // 将军原本已受威胁且行动后仍未脱险的扣分；越高越少无视眼前危险。
     remainsThreatened: 350,
     // 将军原本安全却因本次行动暴露在车线上的扣分；越高越不愿主动拆掉保护。
@@ -191,6 +191,188 @@ const HORSE_MOVES: readonly BoardPosition[] = Object.freeze([
     Object.freeze({ column: 1, row: 2 }), Object.freeze({ column: -1, row: 2 }),
     Object.freeze({ column: 1, row: -2 }), Object.freeze({ column: -1, row: -2 }),
 ]);
+
+const ENEMY_TYPES: readonly EnemyPieceType[] = Object.freeze([
+    'pawn', 'advisor', 'elephant', 'horse', 'cannon', 'rook', 'general',
+]);
+
+const PHASES: readonly GamePhase[] = Object.freeze([
+    'player', 'enemy', 'reward', 'dead', 'ended',
+]);
+
+const REINFORCEMENT_STATES: readonly ReinforcementState[] = Object.freeze([
+    'COUNTDOWN', 'WAITING', 'GENERAL_COUNTDOWN', 'GENERAL_WAITING',
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function requireSnapshotInteger(value: unknown, field: string, minimum = 0): number {
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < minimum) {
+        throw new Error(`Invalid chess snapshot field: ${field}.`);
+    }
+
+    return value;
+}
+
+function requireSnapshotUint32(value: unknown, field: string): number {
+    const integer = requireSnapshotInteger(value, field);
+    if (integer > 0xffffffff) {
+        throw new Error(`Invalid chess snapshot field: ${field}.`);
+    }
+
+    return integer;
+}
+
+function requireSnapshotBoolean(value: unknown, field: string): boolean {
+    if (typeof value !== 'boolean') {
+        throw new Error(`Invalid chess snapshot field: ${field}.`);
+    }
+
+    return value;
+}
+
+function requireSnapshotPosition(value: unknown, field: string): void {
+    if (!isRecord(value)) {
+        throw new Error(`Invalid chess snapshot field: ${field}.`);
+    }
+
+    const column = requireSnapshotInteger(value.column, `${field}.column`);
+    const row = requireSnapshotInteger(value.row, `${field}.row`);
+    if (!isInside(position(column, row))) {
+        throw new Error(`Chess snapshot position is outside the board: ${field}.`);
+    }
+}
+
+function requireSnapshotEnemyType(value: unknown, field: string): EnemyPieceType {
+    if (typeof value !== 'string' || ENEMY_TYPES.indexOf(value as EnemyPieceType) < 0) {
+        throw new Error(`Invalid chess snapshot field: ${field}.`);
+    }
+
+    return value as EnemyPieceType;
+}
+
+function requireSnapshotItemType(value: unknown, field: string): ItemType {
+    if (typeof value !== 'string' || ITEM_TYPES.indexOf(value as ItemType) < 0) {
+        throw new Error(`Invalid chess snapshot field: ${field}.`);
+    }
+
+    return value as ItemType;
+}
+
+/** 验证可恢复快照，避免损坏的本地存档把游戏带入不可操作状态。 */
+function validateSnapshot(value: unknown): asserts value is ChessEndlessSnapshot {
+    if (!isRecord(value)) {
+        throw new Error('Chess snapshot must be an object.');
+    }
+
+    requireSnapshotUint32(value.seed, 'seed');
+    requireSnapshotUint32(value.rngState, 'rngState');
+    requireSnapshotPosition(value.playerPosition, 'playerPosition');
+    requireSnapshotInteger(value.turnNumber, 'turnNumber');
+    requireSnapshotInteger(value.score, 'score');
+    requireSnapshotInteger(value.combo, 'combo');
+    requireSnapshotInteger(value.maxCombo, 'maxCombo');
+    requireSnapshotInteger(value.totalKills, 'totalKills');
+    requireSnapshotInteger(value.normalReinforcementCount, 'normalReinforcementCount');
+    requireSnapshotInteger(value.reinforcementTimer, 'reinforcementTimer');
+    requireSnapshotInteger(value.difficultyLevel, 'difficultyLevel', 1);
+    requireSnapshotInteger(value.generalCounter, 'generalCounter');
+    requireSnapshotInteger(value.generalTargetN, 'generalTargetN', 1);
+    requireSnapshotInteger(value.generalKills, 'generalKills');
+    requireSnapshotInteger(value.nextPieceId, 'nextPieceId', 1);
+    requireSnapshotBoolean(value.generalActive, 'generalActive');
+    requireSnapshotBoolean(value.reviveUsed, 'reviveUsed');
+    requireSnapshotBoolean(value.usedItemThisTurn, 'usedItemThisTurn');
+    requireSnapshotBoolean(value.pendingCrossSlash, 'pendingCrossSlash');
+
+    if (typeof value.phase !== 'string' || PHASES.indexOf(value.phase as GamePhase) < 0) {
+        throw new Error('Invalid chess snapshot field: phase.');
+    }
+
+    if (typeof value.reinforcementState !== 'string'
+        || REINFORCEMENT_STATES.indexOf(value.reinforcementState as ReinforcementState) < 0) {
+        throw new Error('Invalid chess snapshot field: reinforcementState.');
+    }
+
+    const enemies = value.enemies;
+    if (!Array.isArray(enemies)) {
+        throw new Error('Invalid chess snapshot field: enemies.');
+    }
+    const enemyIds = new Set<number>();
+    const occupied = new Set<string>();
+    for (const [index, rawEnemy] of enemies.entries()) {
+        if (!isRecord(rawEnemy)) {
+            throw new Error(`Invalid chess snapshot enemy at index ${index}.`);
+        }
+        const id = requireSnapshotInteger(rawEnemy.id, `enemies[${index}].id`);
+        requireSnapshotEnemyType(rawEnemy.type, `enemies[${index}].type`);
+        requireSnapshotPosition(rawEnemy.position, `enemies[${index}].position`);
+        requireSnapshotInteger(rawEnemy.frozenTurns, `enemies[${index}].frozenTurns`);
+        requireSnapshotBoolean(rawEnemy.isNewlySpawned, `enemies[${index}].isNewlySpawned`);
+        if (enemyIds.has(id)) {
+            throw new Error(`Duplicate chess snapshot enemy ID: ${id}.`);
+        }
+        enemyIds.add(id);
+        const positionValue = rawEnemy.position as Record<string, unknown>;
+        const positionId = `${positionValue.column},${positionValue.row}`;
+        if (occupied.has(positionId)) {
+            throw new Error(`Duplicate chess snapshot position: ${positionId}.`);
+        }
+        occupied.add(positionId);
+    }
+
+    const playerPosition = value.playerPosition as Record<string, unknown>;
+    if (occupied.has(`${playerPosition.column},${playerPosition.row}`)) {
+        throw new Error('Chess snapshot player overlaps an enemy.');
+    }
+
+    if (!isRecord(value.killStats)) {
+        throw new Error('Invalid chess snapshot field: killStats.');
+    }
+    for (const type of ENEMY_TYPES) {
+        requireSnapshotInteger(value.killStats[type], `killStats.${type}`);
+    }
+
+    if (!isRecord(value.queuedReinforcement)
+        || (value.queuedReinforcement.kind !== 'normal'
+            && value.queuedReinforcement.kind !== 'general')
+        || !Array.isArray(value.queuedReinforcement.types)) {
+        throw new Error('Invalid chess snapshot field: queuedReinforcement.');
+    }
+    value.queuedReinforcement.types.forEach((type, index) => {
+        requireSnapshotEnemyType(type, `queuedReinforcement.types[${index}]`);
+    });
+
+    if (!isRecord(value.inventory)) {
+        throw new Error('Invalid chess snapshot field: inventory.');
+    }
+    for (const item of ITEM_TYPES) {
+        const count = requireSnapshotInteger(value.inventory[item], `inventory.${item}`);
+        if (count > 2) {
+            throw new Error(`Chess snapshot inventory exceeds capacity: ${item}.`);
+        }
+    }
+
+    if (!Array.isArray(value.pendingRewardChoices)) {
+        throw new Error('Invalid chess snapshot field: pendingRewardChoices.');
+    }
+    value.pendingRewardChoices.forEach((item, index) => {
+        requireSnapshotItemType(item, `pendingRewardChoices[${index}]`);
+    });
+    if (value.rewardResumePhase !== undefined
+        && value.rewardResumePhase !== 'player'
+        && value.rewardResumePhase !== 'enemy') {
+        throw new Error('Invalid chess snapshot field: rewardResumePhase.');
+    }
+    const phase = value.phase as GamePhase;
+    if (phase === 'reward'
+        ? value.pendingRewardChoices.length === 0 || value.rewardResumePhase === undefined
+        : value.pendingRewardChoices.length > 0 || value.rewardResumePhase !== undefined) {
+        throw new Error('Chess snapshot reward state is inconsistent.');
+    }
+}
 
 function position(column: number, row: number): BoardPosition {
     return Object.freeze({ column, row });
@@ -397,6 +579,28 @@ export class ChessEndlessModel {
 
     get canRevive(): boolean {
         return this.state.phase === 'dead' && !this.state.reviveUsed && Boolean(this.reviveSnapshot);
+    }
+
+    /** 保存死亡状态时一并保留广告复活所需的致死前快照。 */
+    get recoverySnapshot(): ChessEndlessSnapshot | undefined {
+        return this.reviveSnapshot;
+    }
+
+    /** 生产存档使用的恢复入口；与测试专用的部分加载入口分开。 */
+    restoreSnapshot(
+        snapshot: ChessEndlessSnapshot,
+        recoverySnapshot?: ChessEndlessSnapshot,
+    ): void {
+        validateSnapshot(snapshot);
+        if (recoverySnapshot !== undefined) {
+            validateSnapshot(recoverySnapshot);
+            if (recoverySnapshot.phase !== 'enemy') {
+                throw new Error('Chess recovery snapshot must be captured before an enemy turn.');
+            }
+        }
+
+        this.restore(snapshot);
+        this.reviveSnapshot = recoverySnapshot;
     }
 
     getPlayerLegalMoves(): readonly BoardPosition[] {
@@ -1103,15 +1307,26 @@ export class ChessEndlessModel {
             }
         }
         if (open.length < count) return undefined;
+        let safeFallback: BoardPosition[] | undefined;
         for (let attempt = 0; attempt < 240; attempt += 1) {
             const placements = this.rng.shuffle(open).slice(0, count);
             const simulated = this.state.enemies.map(cloneEnemy);
+            const spawnedIds = new Set<number>();
             this.state.queuedReinforcement.types.forEach((type, index) => {
-                simulated.push({ id: -1 - index, type, position: placements[index]!, frozenTurns: 0, isNewlySpawned: true });
+                const id = -1 - index;
+                spawnedIds.add(id);
+                simulated.push({ id, type, position: placements[index]!, frozenTurns: 0, isNewlySpawned: true });
             });
-            if (this.safePlayerMoves(this.state.playerPosition, simulated).length > 0) return placements;
+            if (this.safePlayerMoves(this.state.playerPosition, simulated).length === 0) continue;
+
+            // 普通增援优先避开玩家车的直接吃子线；只有没有更好的整批安全落点时，
+            // 才使用这个保底位置，允许新棋成为玩家下一步的直接吃子目标。
+            safeFallback ??= placements;
+            const threatened = this.playerThreatenedIds(this.state.playerPosition, simulated);
+            const newlyThreatened = [...spawnedIds].some((id) => threatened.has(id));
+            if (!newlyThreatened) return placements;
         }
-        return undefined;
+        return safeFallback;
     }
 
     private findGeneralPlacements(): BoardPosition[] | undefined {

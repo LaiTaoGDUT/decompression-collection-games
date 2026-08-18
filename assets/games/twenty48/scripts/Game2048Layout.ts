@@ -3,9 +3,17 @@ import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
 export const GAME_2048_DESIGN_WIDTH = 750;
 export const GAME_2048_DESIGN_HEIGHT = 1334;
 export const GAME_2048_BACKGROUND_ASPECT = GAME_2048_DESIGN_WIDTH / GAME_2048_DESIGN_HEIGHT;
-// 棋盘外框贴近安全内容边界，仅保留约 23 个设计坐标的横向间距。
+// 顶部 HUD 使用全屏可见宽度；棋盘外框仍保留约 23 个设计坐标的横向间距。
 export const GAME_2048_BOARD_SIZE = 680;
 export const GAME_2048_BOARD_NODE_SIZE = GAME_2048_BOARD_SIZE + 24;
+export const GAME_2048_TITLE_WIDTH = 460;
+export const GAME_2048_TITLE_HEIGHT = 104;
+export const GAME_2048_SCORE_CARD_WIDTH = 220;
+export const GAME_2048_SCORE_CARD_HEIGHT = 104;
+export const GAME_2048_PAUSE_BUTTON_WIDTH = 104;
+export const GAME_2048_PAUSE_TOUCH_HEIGHT = 88;
+export const GAME_2048_CHEAT_BUTTON_HEIGHT = 52;
+export const GAME_2048_CHEAT_BUTTON_GAP = 8;
 
 export interface Game2048LayoutInsets {
     readonly safeTop?: number;
@@ -29,6 +37,8 @@ export interface Game2048LayoutMetrics {
     readonly titleY: number;
     readonly pauseX: number;
     readonly pauseY: number;
+    readonly cheatX: number;
+    readonly cheatY: number;
     readonly scoreLeftX: number;
     readonly scoreRightX: number;
     readonly scoreY: number;
@@ -103,38 +113,37 @@ export function calculateGame2048Layout(
     const width = Math.max(1, canvasWidth);
     const height = Math.max(1, canvasHeight);
     const normalized = normalizeInsets(width, height, insets);
-    const contentWidth = Math.max(1, width - normalized.safeLeft - normalized.safeRight);
-    const contentX = (normalized.safeLeft - normalized.safeRight) / 2;
+    // 2048 的标题、分数和暂停操作区按屏幕可见宽度布局，不额外扣除左右系统安全区。
+    // 顶部胶囊和上下安全区仍由 safeTop/safeBottom 参与纵向计算。
+    const contentWidth = width;
+    const contentX = 0;
     const fitScale = Math.max(0.001, contentWidth / GAME_2048_DESIGN_WIDTH);
 
-    const titleHeight = 92 * fitScale;
-    const pauseWidth = 104 * fitScale;
-    const pauseHeight = 88 * fitScale;
-    const titleCenterFromTop = normalized.safeTop + 104 * fitScale;
+    const titleHeight = GAME_2048_TITLE_HEIGHT * fitScale;
+    const pauseWidth = GAME_2048_PAUSE_BUTTON_WIDTH * fitScale;
+    const pauseHeight = GAME_2048_PAUSE_TOUCH_HEIGHT * fitScale;
+    const titleCenterFromTop = normalized.safeTop + 106 * fitScale;
     const pauseDefaultCenterFromTop = normalized.safeTop + 116 * fitScale;
     const reservedBottom = Math.max(0, insets.topRightReservedBottom ?? 0);
     const pauseReservedCenterFromTop = reservedBottom + 10 * fitScale + pauseHeight / 2;
     const pauseCenterFromTop = Math.max(pauseDefaultCenterFromTop, pauseReservedCenterFromTop);
     const titleY = height / 2 - titleCenterFromTop;
     const pauseY = height / 2 - pauseCenterFromTop;
-    const rightInset = Math.max(112 * fitScale, 52 * fitScale);
-    const pauseMinX = contentX - contentWidth / 2 + pauseWidth * 0.5;
-    const pauseMaxX = contentX + contentWidth / 2 - pauseWidth * 0.5;
-    const pauseX = clamp(
-        contentX + contentWidth / 2 - rightInset,
-        Math.min(pauseMinX, pauseMaxX),
-        Math.max(pauseMinX, pauseMaxX),
-    );
+    const pauseX = contentX + contentWidth / 2 - pauseWidth / 2;
+    const cheatHeight = GAME_2048_CHEAT_BUTTON_HEIGHT * fitScale;
+    const cheatGap = GAME_2048_CHEAT_BUTTON_GAP * fitScale;
+    const cheatCenterFromTop = pauseCenterFromTop + pauseHeight / 2 + cheatGap + cheatHeight / 2;
+    const cheatY = height / 2 - cheatCenterFromTop;
 
     const topBlockBottomFromTop = Math.max(
         titleCenterFromTop + titleHeight / 2,
         pauseCenterFromTop + pauseHeight / 2,
     );
-    const scoreHeight = 92 * fitScale;
+    const scoreHeight = GAME_2048_SCORE_CARD_HEIGHT * fitScale;
     const scoreCenterFromTop = topBlockBottomFromTop + 24 * fitScale + scoreHeight / 2;
     const scoreY = height / 2 - scoreCenterFromTop;
-    const scoreLeftX = contentX - 108 * fitScale;
-    const scoreRightX = contentX + 108 * fitScale;
+    const scoreLeftX = contentX - 126 * fitScale;
+    const scoreRightX = contentX + 126 * fitScale;
 
     const scoreBottomFromTop = scoreCenterFromTop + scoreHeight / 2;
     const boardTopFromTop = scoreBottomFromTop + 72 * fitScale;
@@ -170,6 +179,8 @@ export function calculateGame2048Layout(
         titleY,
         pauseX,
         pauseY,
+        cheatX: pauseX,
+        cheatY,
         scoreLeftX,
         scoreRightX,
         scoreY,

@@ -187,12 +187,14 @@ export class Blocks3DGame extends Component implements MiniGame {
         this.setBodiesEnabled(true);
     }
 
-    async restart(): Promise<void> {
+    async restart(context?: MiniGameContext<Blocks3DServices>): Promise<void> {
         if (this.state !== 'playing' && this.state !== 'paused') {
             throw new Error(`Cannot restart Blocks3DGame from ${this.state}.`);
         }
 
+        if (context) this.context = context;
         this.unscheduleAllCallbacks();
+        this.setBodiesEnabled(false);
         this.state = 'playing';
         this.persistRound(false);
         this.startNewRound();

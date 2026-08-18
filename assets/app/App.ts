@@ -214,6 +214,10 @@ export class App extends Component {
         App.activeInstance = null;
         this.clearLifecycleListeners();
 
+        if (this.container?.has(STORAGE_SERVICE)) {
+            this.container.get(STORAGE_SERVICE).dispose();
+        }
+
         if (this.container?.has(PLATFORM_SERVICE)) {
             this.container.get(PLATFORM_SERVICE).dispose();
         }
@@ -355,6 +359,7 @@ export class App extends Component {
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
 
         if (stateMachine.currentState !== 'playing') {
+            this.flushStorage('platform hide');
             audio.onHide();
             return;
         }
@@ -371,6 +376,7 @@ export class App extends Component {
         } finally {
             // Pause the MiniGame first so AudioService records the game-owned
             // pause.  Otherwise onShow could restart music under the pause UI.
+            this.flushStorage('platform hide');
             audio.onHide();
         }
     };
@@ -415,6 +421,15 @@ export class App extends Component {
         }
 
         this.pausedByPlatform = false;
+    }
+
+    private flushStorage(reason: string): void {
+        try {
+            this.services.get(STORAGE_SERVICE).flush();
+        } catch (error: unknown) {
+            // 切后台不能因存储异常阻断音频暂停和平台生命周期。
+            console.error(`[App] Storage flush failed at ${reason}.`, error);
+        }
     }
 
     private createAudioSource(root: Node, name: string): AudioSource {

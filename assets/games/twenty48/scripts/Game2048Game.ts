@@ -39,6 +39,7 @@ import type { GameSaveData, StorageService } from '../../../services/storage/Sto
 import {
     BOARD_SIZE,
     Game2048Model,
+    MILESTONE_TILE,
     TARGET_TILE,
     type Game2048Direction,
     type Game2048MoveResult,
@@ -49,6 +50,13 @@ import {
     calculateGame2048LayoutFromPlatform,
     GAME_2048_BOARD_NODE_SIZE,
     GAME_2048_BOARD_SIZE,
+    GAME_2048_CHEAT_BUTTON_HEIGHT,
+    GAME_2048_PAUSE_BUTTON_WIDTH,
+    GAME_2048_PAUSE_TOUCH_HEIGHT,
+    GAME_2048_SCORE_CARD_HEIGHT,
+    GAME_2048_SCORE_CARD_WIDTH,
+    GAME_2048_TITLE_HEIGHT,
+    GAME_2048_TITLE_WIDTH,
     type Game2048LayoutMetrics,
 } from './Game2048Layout';
 
@@ -56,9 +64,11 @@ const { ccclass } = _decorator;
 
 const TILE_SLIDE_DURATION = 0.1;
 const TILE_SETTLE_DURATION = 0.06;
-const GAME_2048_DATA_VERSION = 3;
+const MERGE_CELEBRATION_DELAY = 0.55;
+const GAME_2048_DATA_VERSION = 4;
 
 type Game2048State = 'idle' | 'ready' | 'playing' | 'paused' | 'target' | 'completed' | 'disposed';
+type AchievementTile = typeof MILESTONE_TILE | typeof TARGET_TILE;
 
 export interface Game2048Services {
     readonly audio: AudioService;
@@ -100,15 +110,11 @@ const COLORS = Object.freeze({
 type Rgb = readonly [number, number, number];
 
 interface TileMaterial {
-    readonly body: Rgb;
     readonly surface: Rgb;
     readonly facet: Rgb;
     readonly core: Rgb;
     readonly accent: Rgb;
     readonly glow: Rgb;
-    readonly layerCount: number;
-    readonly pulse: number;
-    readonly signature: 'plasma' | 'molten' | 'ultimate';
 }
 
 const TILE_COLORS: Readonly<Record<number, Rgb>> = Object.freeze({
@@ -126,7 +132,7 @@ const TILE_COLORS: Readonly<Record<number, Rgb>> = Object.freeze({
     4096: [127, 52, 224],
 });
 
-// 高阶数字块拥有独立的实体材质，不用单纯加粗外框冒充升级。
+// 高阶合成与目标庆祝使用独立材质；棋子本身不再挂载常驻高阶视觉层。
 const HIGH_TIER_LEVELS: Readonly<Record<number, number>> = Object.freeze({
     1024: 1,
     2048: 2,
@@ -135,38 +141,26 @@ const HIGH_TIER_LEVELS: Readonly<Record<number, number>> = Object.freeze({
 
 const TILE_MATERIALS: Readonly<Record<number, TileMaterial>> = Object.freeze({
     1024: {
-        body: [174, 76, 244],
         surface: [44, 17, 88],
         facet: [218, 132, 255],
         core: [246, 218, 255],
         accent: [92, 238, 218],
         glow: [199, 91, 255],
-        layerCount: 3,
-        pulse: 0.56,
-        signature: 'plasma',
     },
     2048: {
-        body: [244, 171, 43],
         surface: [104, 45, 18],
         facet: [255, 207, 101],
         core: [255, 239, 177],
         accent: [255, 116, 54],
         glow: [255, 190, 65],
-        layerCount: 4,
-        pulse: 0.46,
-        signature: 'molten',
     },
     4096: {
         // 紫电 × 熔金 × 冰蓝高光：最终目标的独立配色组。
-        body: [127, 52, 224],
         surface: [30, 9, 70],
         facet: [255, 175, 41],
         core: [190, 243, 255],
         accent: [125, 224, 255],
         glow: [164, 67, 255],
-        layerCount: 5,
-        pulse: 0.36,
-        signature: 'ultimate',
     },
 });
 
@@ -199,8 +193,11 @@ export class Game2048Game extends Component implements MiniGame {
     private boardContent?: Node;
     private scoreLabel?: Label;
     private bestLabel?: Label;
+    private titleButton?: Button;
     private pauseButton?: Button;
+    private cheatButton?: Button;
     private pauseOverlay?: OverlayState;
+    private cheatOverlay?: OverlayState;
     private resultOverlay?: OverlayState;
     private completedResultModel?: MiniGameResultModel;
     private targetOverlay?: OverlayState;
@@ -222,6 +219,9 @@ export class Game2048Game extends Component implements MiniGame {
     private savedProgressDiscarded = false;
     private layoutMetrics?: Game2048LayoutMetrics;
     private resizeListening = false;
+    private operationGeneration = 0;
+    private titleClickCount = 0;
+    private cheatUnlocked = false;
 
     setRandomSourceForTesting(random: () => number): void {
         this.model.setRandomSource(random);
@@ -256,37 +256,50 @@ export class Game2048Game extends Component implements MiniGame {
 
     begin(): void {
         if (this.state !== 'ready') throw new Error(`Cannot begin Game2048Game from ${this.state}.`);
+        this.operationGeneration += 1;
         this.startRound(true);
     }
 
     pause(): void {
         if (this.state !== 'playing' && this.state !== 'target') return;
+        this.operationGeneration += 1;
         this.inputLocked = true;
         this.state = 'paused';
+        // 平台 hide 会复用统一暂停路径；在这里同步落盘，避免只依赖最近一次移动。
+        this.persistProgress(true);
         this.context?.services.audio.pauseMusic();
     }
 
     resume(): void {
         if (this.state !== 'paused') return;
+        this.operationGeneration += 1;
         this.state = 'playing';
         this.inputLocked = false;
         this.context?.services.audio.resumeMusic();
-        if (this.model.needsTargetCelebration) {
-            if (this.targetOverlay?.root.isValid) {
-                this.state = 'target';
-                this.inputLocked = true;
-            } else {
-                this.targetOverlay = undefined;
-                this.showTargetOverlay();
-            }
+        if (this.targetOverlay?.root.isValid) {
+            this.state = 'target';
+            this.inputLocked = true;
+        } else if (this.model.needsTargetCelebration) {
+            this.targetOverlay = undefined;
+            this.showAchievementOverlay(TARGET_TILE);
+        } else if (this.model.highestTile < TARGET_TILE && this.model.needsMilestoneCelebration) {
+            this.targetOverlay = undefined;
+            this.showAchievementOverlay(MILESTONE_TILE);
         }
     }
 
-    async restart(): Promise<void> {
+    async restart(context?: MiniGameContext<Game2048Services>): Promise<void> {
         if (this.state === 'disposed') throw new Error('Cannot restart a disposed Game2048Game.');
+        if (context) this.context = context;
+        this.operationGeneration += 1;
         this.destroyOverlay(this.pauseOverlay);
+        this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
+        this.pauseOverlay = undefined;
+        this.cheatOverlay = undefined;
+        this.resultOverlay = undefined;
+        this.targetOverlay = undefined;
         this.startRound();
     }
 
@@ -297,6 +310,7 @@ export class Game2048Game extends Component implements MiniGame {
 
     async dispose(): Promise<void> {
         if (this.state === 'disposed') return;
+        this.operationGeneration += 1;
         if (!this.savedProgressDiscarded
             && (this.state === 'playing' || this.state === 'paused' || this.state === 'target')) {
             this.persistProgress(true);
@@ -312,6 +326,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.ownedBackgroundFrame?.destroy();
         this.ownedBackgroundFrame = undefined;
         this.destroyOverlay(this.pauseOverlay);
+        this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
         this.node.children.slice().forEach((child) => this.destroyNodeWithTweens(child));
@@ -320,6 +335,7 @@ export class Game2048Game extends Component implements MiniGame {
 
     showPauseMenu(model: MiniGamePauseModel): void {
         this.hidePauseMenu();
+        this.hideCheatOverlay();
         this.pauseOverlay = this.buildOverlay(
             'Game2048PauseOverlay',
             '信号暂停',
@@ -373,6 +389,10 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private startRound(allowResume = false): void {
+        this.hideCheatOverlay();
+        this.titleClickCount = 0;
+        this.cheatUnlocked = false;
+        if (this.cheatButton?.node.isValid) this.cheatButton.node.active = false;
         this.savedProgressDiscarded = false;
         const savedRound = allowResume ? this.resumableRound : undefined;
         this.resumableRound = undefined;
@@ -384,6 +404,10 @@ export class Game2048Game extends Component implements MiniGame {
         }
         const resumedTarget = !!savedRound
             && this.model.needsTargetCelebration;
+        const resumedMilestone = !!savedRound
+            && !resumedTarget
+            && this.model.highestTile < TARGET_TILE
+            && this.model.needsMilestoneCelebration;
         const resumedDeadTarget = !!savedRound
             && this.model.highestTile >= TARGET_TILE
             && !this.model.hasAvailableMove;
@@ -396,7 +420,8 @@ export class Game2048Game extends Component implements MiniGame {
         this.persistProgress(true);
         this.renderBoard();
         this.refreshHud();
-        if (resumedTarget) this.showTargetOverlay();
+        if (resumedTarget) this.showAchievementOverlay(TARGET_TILE);
+        else if (resumedMilestone) this.showAchievementOverlay(MILESTONE_TILE);
         else if (resumedDeadTarget) this.finishRound('target-complete');
         else this.updateDangerState();
     }
@@ -404,7 +429,9 @@ export class Game2048Game extends Component implements MiniGame {
     private registerInput(): void {
         this.node.on(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.node.on(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
+        this.titleButton?.node.on(Button.EventType.CLICK, this.handleTitleClick, this);
         this.pauseButton?.node.on(Button.EventType.CLICK, this.handlePause, this);
+        this.cheatButton?.node.on(Button.EventType.CLICK, this.handleCheatButton, this);
         input.on(Input.EventType.KEY_DOWN, this.handleKeyDown, this);
         if (!this.resizeListening) {
             view.on('canvas-resize', this.handleCanvasResize, this);
@@ -415,7 +442,9 @@ export class Game2048Game extends Component implements MiniGame {
     private unregisterInput(): void {
         this.node.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.node.off(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
+        this.titleButton?.node.off(Button.EventType.CLICK, this.handleTitleClick, this);
         this.pauseButton?.node.off(Button.EventType.CLICK, this.handlePause, this);
+        this.cheatButton?.node.off(Button.EventType.CLICK, this.handleCheatButton, this);
         input.off(Input.EventType.KEY_DOWN, this.handleKeyDown, this);
         if (this.resizeListening) {
             view.off('canvas-resize', this.handleCanvasResize, this);
@@ -427,15 +456,18 @@ export class Game2048Game extends Component implements MiniGame {
         if (!this.node.isValid || this.state === 'disposed' || this.state === 'idle') return;
 
         const pauseRebuild = this.pauseOverlay?.rebuild;
+        const cheatRebuild = this.cheatOverlay?.rebuild;
         const resultRebuild = this.resultOverlay?.rebuild;
         const targetRebuild = this.targetOverlay?.rebuild;
         const shouldRestoreDanger = this.dangerMode;
         const wasPaused = this.state === 'paused';
+        const wasCheat = !!this.cheatOverlay;
         const wasCompleted = this.state === 'completed';
         const wasTarget = this.state === 'target';
 
         this.unregisterInput();
         this.pauseOverlay = undefined;
+        this.cheatOverlay = undefined;
         this.resultOverlay = undefined;
         this.targetOverlay = undefined;
         this.dangerLayer = undefined;
@@ -451,6 +483,8 @@ export class Game2048Game extends Component implements MiniGame {
 
         if (wasPaused && pauseRebuild) {
             this.pauseOverlay = pauseRebuild();
+        } else if (wasCheat && cheatRebuild) {
+            this.cheatOverlay = cheatRebuild();
         } else if (wasCompleted && resultRebuild) {
             this.resultOverlay = resultRebuild();
         } else if (wasTarget && targetRebuild) {
@@ -501,8 +535,65 @@ export class Game2048Game extends Component implements MiniGame {
         this.context?.requestPause();
     };
 
+    private readonly handleTitleClick = (): void => {
+        if (this.state !== 'playing' || this.cheatUnlocked) return;
+        this.titleClickCount += 1;
+        if (this.titleClickCount < 7) return;
+
+        this.cheatUnlocked = true;
+        if (this.cheatButton?.node.isValid) this.cheatButton.node.active = true;
+        this.context?.services.feedback.play('uiButton');
+    };
+
+    private readonly handleCheatButton = (): void => {
+        if (!this.cheatUnlocked || this.state !== 'playing' || this.inputLocked) return;
+        if (this.cheatOverlay?.root.isValid) return;
+        this.context?.services.feedback.play('uiButton');
+        this.cheatOverlay = this.buildOverlay(
+            'Game2048CheatOverlay',
+            '作弊工具',
+            '仅用于验证 256 及以上棋子的合成与显示',
+            [
+                {
+                    name: 'PromoteTileButton',
+                    label: '随机提升一枚棋子至 256',
+                    tone: 'amber',
+                    action: () => this.promoteRandomTileTo256(),
+                },
+                {
+                    name: 'CloseCheatButton',
+                    label: '关闭作弊弹窗',
+                    tone: 'dark',
+                    action: () => this.hideCheatOverlay(),
+                },
+            ],
+        );
+    };
+
+    private promoteRandomTileTo256(): void {
+        if (this.state !== 'playing' || this.inputLocked) return;
+        const index = this.model.promoteRandomTileTo256();
+        if (index === undefined) {
+            this.context?.services.feedback.play('collision');
+            return;
+        }
+
+        this.historicalHighestTile = Math.max(this.historicalHighestTile, this.model.highestTile);
+        this.renderBoard();
+        this.refreshHud();
+        this.updateDangerState();
+        this.persistProgress();
+        this.context?.services.feedback.play('milestone');
+    }
+
+    private hideCheatOverlay(): void {
+        this.destroyOverlay(this.cheatOverlay);
+        this.cheatOverlay = undefined;
+    }
+
     private performMove(direction: Game2048Direction): void {
         if (this.state !== 'playing' || this.inputLocked) return;
+        const generation = this.operationGeneration;
         const result = this.model.move(direction);
         if (!result.changed) {
             this.context?.services.feedback.play('collision');
@@ -518,24 +609,45 @@ export class Game2048Game extends Component implements MiniGame {
         this.animateBoardMove(result);
         this.refreshHud();
         this.persistProgress();
+        const achievementTile = this.achievementTileForMove(result);
 
         this.scheduleOnce(() => {
-            if (this.state === 'disposed') return;
+            if (!this.isOperationCurrent(generation)) return;
             this.renderBoard(result);
-            this.playHighMergeFeedback(result);
+            this.playHighMergeFeedback(result, generation);
             this.updateDangerState(result.gameOver);
         }, TILE_SLIDE_DURATION);
 
         this.scheduleOnce(() => {
-            if (this.state !== 'playing') return;
+            if (!this.isOperationCurrent(generation) || this.state !== 'playing') return;
+            if (achievementTile !== undefined) {
+                this.scheduleOnce(() => {
+                    if (!this.isOperationCurrent(generation)) return;
+                    this.showAchievementOverlay(achievementTile);
+                }, MERGE_CELEBRATION_DELAY);
+                return;
+            }
             this.inputLocked = false;
             this.refreshHud();
-            if (result.reachedTarget) {
-                this.showTargetOverlay();
-            } else if (result.gameOver) {
+            if (result.gameOver) {
                 this.finishRound('no-moves');
             }
         }, TILE_SLIDE_DURATION + TILE_SETTLE_DURATION);
+    }
+
+    private isOperationCurrent(generation: number): boolean {
+        return this.state === 'playing'
+            && this.operationGeneration === generation
+            && this.node.isValid;
+    }
+
+    private achievementTileForMove(result: Game2048MoveResult): AchievementTile | undefined {
+        if (result.reachedTarget) return TARGET_TILE;
+        if (this.highestMergedValue(result) >= MILESTONE_TILE
+            && this.model.needsMilestoneCelebration) {
+            return MILESTONE_TILE;
+        }
+        return undefined;
     }
 
     private playMoveFeedback(result: Game2048MoveResult): void {
@@ -544,7 +656,10 @@ export class Game2048Game extends Component implements MiniGame {
         else this.context?.services.feedback.play('drop');
     }
 
-    private playHighMergeFeedback(result: Game2048MoveResult): void {
+    private playHighMergeFeedback(
+        result: Game2048MoveResult,
+        generation: number,
+    ): void {
         const highest = this.highestMergedValue(result);
         if (highest < 128) {
             if (result.reachedTarget) this.context?.services.feedback.play('milestone');
@@ -566,12 +681,12 @@ export class Game2048Game extends Component implements MiniGame {
         feedback.play('chain');
         if (level >= 3 && level !== 4) {
             this.scheduleOnce(() => {
-                if (this.state !== 'disposed') feedback.play('fold');
+                if (this.isOperationCurrent(generation)) feedback.play('fold');
             }, 0.035);
         }
         if (level >= 4) {
             this.scheduleOnce(() => {
-                if (this.state !== 'disposed') feedback.play('milestone');
+                if (this.isOperationCurrent(generation)) feedback.play('milestone');
             }, level >= 5 ? 0.07 : 0.045);
         }
     }
@@ -583,8 +698,11 @@ export class Game2048Game extends Component implements MiniGame {
         );
     }
 
-    private showTargetOverlay(): void {
-        if (this.state !== 'playing' || !this.model.needsTargetCelebration) return;
+    private showAchievementOverlay(tile: AchievementTile): void {
+        const needsCelebration = tile === TARGET_TILE
+            ? this.model.needsTargetCelebration
+            : this.model.needsMilestoneCelebration;
+        if (this.state !== 'playing' || !needsCelebration) return;
         this.state = 'target';
         this.inputLocked = true;
         this.targetOverlay = this.buildTargetOverlay(
@@ -594,7 +712,8 @@ export class Game2048Game extends Component implements MiniGame {
                     label: '继续冲击更高纪录',
                     tone: 'cyan',
                     action: () => {
-                        this.model.acknowledgeTarget();
+                        if (tile === TARGET_TILE) this.model.acknowledgeTarget();
+                        else this.model.acknowledgeMilestone();
                         this.persistProgress(true);
                         this.destroyOverlay(this.targetOverlay);
                         this.targetOverlay = undefined;
@@ -624,6 +743,7 @@ export class Game2048Game extends Component implements MiniGame {
                     },
                 },
             ],
+            tile,
         );
     }
 
@@ -677,17 +797,25 @@ export class Game2048Game extends Component implements MiniGame {
         if (value.inProgress !== true
             || !Array.isArray(value.board)
             || typeof value.score !== 'number'
-            || typeof value.targetAcknowledged !== 'boolean') {
+            || typeof value.targetAcknowledged !== 'boolean'
+            || (value.milestoneAcknowledged !== undefined
+                && typeof value.milestoneAcknowledged !== 'boolean')) {
             return undefined;
         }
 
         try {
+            const dataVersion = data?.dataVersion ?? 1;
             const snapshot: Game2048Snapshot = {
                 board: value.board as number[],
                 score: value.score,
                 targetAcknowledged: this.migrateTargetAcknowledgement(
-                    data?.dataVersion ?? 1,
+                    dataVersion,
                     value.targetAcknowledged,
+                ),
+                milestoneAcknowledged: this.migrateMilestoneAcknowledgement(
+                    dataVersion,
+                    value.targetAcknowledged,
+                    value.milestoneAcknowledged,
                 ),
             };
             this.model.restore(snapshot);
@@ -700,8 +828,18 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private migrateTargetAcknowledgement(dataVersion: number, acknowledged: boolean): boolean {
-        // v1/v2 的 true 只代表“2048 目标层已确认”，对 v3 的 4096 目标必须重置为未确认。
-        return dataVersion < GAME_2048_DATA_VERSION ? false : acknowledged;
+        // v1/v2 的 true 只代表“2048 目标层已确认”；v3 起才表示 4096 目标确认。
+        return dataVersion < 3 ? false : acknowledged;
+    }
+
+    private migrateMilestoneAcknowledgement(
+        dataVersion: number,
+        legacyTargetAcknowledged: boolean,
+        acknowledged: unknown,
+    ): boolean {
+        if (typeof acknowledged === 'boolean') return acknowledged;
+        // v1/v2 的旧目标层就是 2048；v3 没有 2048 弹窗确认字段，需要补为未确认。
+        return dataVersion < 3 ? legacyTargetAcknowledged : false;
     }
 
     private persistProgress(inProgress = true): void {
@@ -813,58 +951,104 @@ export class Game2048Game extends Component implements MiniGame {
             });
         });
 
-        const titleFrame = this.createNode(this.node, 'TitleCircuit', metrics.titleX, metrics.titleY, 390, 92);
+        const titleFrame = this.createNode(
+            this.node,
+            'TitleCircuit',
+            metrics.titleX,
+            metrics.titleY,
+            GAME_2048_TITLE_WIDTH,
+            GAME_2048_TITLE_HEIGHT,
+        );
         titleFrame.setScale(metrics.fitScale, metrics.fitScale, 1);
         const titleGraphics = titleFrame.addComponent(Graphics);
         titleGraphics.fillColor = new Color(0, 0, 0, 82);
-        titleGraphics.roundRect(-190, -52, 390, 92, 24);
+        titleGraphics.roundRect(
+            -GAME_2048_TITLE_WIDTH / 2 - 4,
+            -GAME_2048_TITLE_HEIGHT / 2 - 6,
+            GAME_2048_TITLE_WIDTH,
+            GAME_2048_TITLE_HEIGHT,
+            26,
+        );
         titleGraphics.fill();
         titleGraphics.fillColor = new Color(COLORS.panel.r, COLORS.panel.g, COLORS.panel.b, 244);
         titleGraphics.strokeColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 168);
         titleGraphics.lineWidth = 3;
-        titleGraphics.roundRect(-195, -46, 390, 92, 24);
+        titleGraphics.roundRect(
+            -GAME_2048_TITLE_WIDTH / 2,
+            -GAME_2048_TITLE_HEIGHT / 2,
+            GAME_2048_TITLE_WIDTH,
+            GAME_2048_TITLE_HEIGHT,
+            26,
+        );
         titleGraphics.fill();
         titleGraphics.stroke();
         titleGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 92);
         titleGraphics.lineWidth = 1;
-        titleGraphics.roundRect(-186, -37, 372, 74, 18);
+        titleGraphics.roundRect(
+            -GAME_2048_TITLE_WIDTH / 2 + 9,
+            -GAME_2048_TITLE_HEIGHT / 2 + 9,
+            GAME_2048_TITLE_WIDTH - 18,
+            GAME_2048_TITLE_HEIGHT - 18,
+            20,
+        );
         titleGraphics.stroke();
         titleGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 170);
         titleGraphics.lineWidth = 2;
-        titleGraphics.moveTo(-158, 30);
-        titleGraphics.lineTo(-72, 30);
-        titleGraphics.moveTo(72, 30);
-        titleGraphics.lineTo(158, 30);
+        titleGraphics.moveTo(-GAME_2048_TITLE_WIDTH / 2 + 38, 34);
+        titleGraphics.lineTo(-GAME_2048_TITLE_WIDTH / 2 + 124, 34);
+        titleGraphics.moveTo(GAME_2048_TITLE_WIDTH / 2 - 124, 34);
+        titleGraphics.lineTo(GAME_2048_TITLE_WIDTH / 2 - 38, 34);
         titleGraphics.stroke();
         titleGraphics.fillColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 155);
-        titleGraphics.circle(-166, 30, 3);
-        titleGraphics.circle(166, 30, 3);
+        titleGraphics.circle(-GAME_2048_TITLE_WIDTH / 2 + 30, 34, 3);
+        titleGraphics.circle(GAME_2048_TITLE_WIDTH / 2 - 30, 34, 3);
         titleGraphics.fillColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 210);
-        titleGraphics.circle(-166, -27, 3);
-        titleGraphics.circle(166, -27, 3);
+        titleGraphics.circle(-GAME_2048_TITLE_WIDTH / 2 + 30, -31, 3);
+        titleGraphics.circle(GAME_2048_TITLE_WIDTH / 2 - 30, -31, 3);
         titleGraphics.fill();
-        const kicker = this.createLabel(titleFrame, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 25, 12, COLORS.cyan, 310, 20);
+        const kicker = this.createLabel(titleFrame, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 29, 14, COLORS.cyan, 370, 22);
         kicker.spacingX = 2;
-        const titleVioletGlow = this.createLabel(titleFrame, 'TitleVioletGlow', 'NEON  2048', 2, -10, 39,
-            new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 72), 340, 52);
+        const titleVioletGlow = this.createLabel(titleFrame, 'TitleVioletGlow', 'NEON  2048', 2, -10, 44,
+            new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 72), 400, 58);
         titleVioletGlow.isBold = true;
         titleVioletGlow.spacingX = 4;
-        const title = this.createLabel(titleFrame, 'Title', 'NEON  2048', 0, -7, 37, COLORS.white, 340, 50);
+        const title = this.createLabel(titleFrame, 'Title', 'NEON  2048', 0, -7, 42, COLORS.white, 400, 58);
         title.isBold = true;
         title.spacingX = 4;
+        this.titleButton = titleFrame.addComponent(Button);
+        this.titleButton.transition = Button.Transition.SCALE;
+        this.titleButton.zoomScale = 0.98;
+        this.titleButton.duration = 0.08;
         this.pauseButton = this.createButton(
             this.node,
             'PauseButton',
             '暂停',
             metrics.pauseX,
             metrics.pauseY,
-            104,
+            GAME_2048_PAUSE_BUTTON_WIDTH,
             52,
             'dark',
+            true,
         );
-        // 霓光面板维持轻薄外观，实际触摸热区扩展到 104×88。
-        this.pauseButton.node.getComponent(UITransform)?.setContentSize(104, 88);
+        // 右侧面板直接延伸到屏幕边缘，实际触摸热区扩展到 104×88。
+        this.pauseButton.node.getComponent(UITransform)?.setContentSize(
+            GAME_2048_PAUSE_BUTTON_WIDTH,
+            GAME_2048_PAUSE_TOUCH_HEIGHT,
+        );
         this.pauseButton.node.setScale(metrics.fitScale, metrics.fitScale, 1);
+
+        this.cheatButton = this.createButton(
+            this.node,
+            'CheatButton',
+            '作弊',
+            metrics.cheatX,
+            metrics.cheatY,
+            GAME_2048_PAUSE_BUTTON_WIDTH,
+            GAME_2048_CHEAT_BUTTON_HEIGHT,
+            'amber',
+        );
+        this.cheatButton.node.setScale(metrics.fitScale, metrics.fitScale, 1);
+        this.cheatButton.node.active = this.cheatUnlocked;
 
         this.scoreLabel = this.createHudCard(metrics.scoreLeftX, metrics.scoreY, '分数', COLORS.cyan, metrics.fitScale);
         this.bestLabel = this.createHudCard(metrics.scoreRightX, metrics.scoreY, '最高', COLORS.amber, metrics.fitScale);
@@ -1045,8 +1229,8 @@ export class Game2048Game extends Component implements MiniGame {
                 const effectLevel = value >= 128
                     ? Math.min(5, Math.max(1, Math.log2(value) - 6))
                     : 0;
-                const peakScale = 1.1 + effectLevel * 0.025;
-                const startScale = effectLevel > 0 ? 0.68 : 0.78;
+                const peakScale = 1.04 + effectLevel * 0.008;
+                const startScale = effectLevel > 0 ? 0.82 : 0.8;
                 tile.setScale(startScale, startScale, 1);
                 tween(tile)
                     .to(0.07, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'quadOut' })
@@ -1106,36 +1290,36 @@ export class Game2048Game extends Component implements MiniGame {
         const accent: Rgb = material?.accent ?? rgb;
         const level = Math.min(5, Math.max(1, Math.log2(value) - 6));
         const tier = HIGH_TIER_LEVELS[value] ?? 0;
-        const eliteBoost = (level >= 3 ? 1 + (level - 2) * 0.14 : 1) + tier * 0.08;
-        const ringCount = Math.min(10, level + 1 + (level >= 3 ? 1 : 0) + tier);
+        const eliteBoost = (level >= 3 ? 1 + (level - 2) * 0.05 : 1) + tier * 0.025;
+        const ringCount = Math.min(4, level);
 
         const flash = this.createNode(content, `MergeFlash-${index}-${value}`, x, y, tileSize, tileSize);
         flash.setSiblingIndex(content.children.length - 1);
         const flashOpacity = flash.addComponent(UIOpacity);
-        flashOpacity.opacity = Math.min(255, (150 + level * 16) * eliteBoost);
+        flashOpacity.opacity = Math.min(200, (100 + level * 8) * eliteBoost);
         const flashGraphics = flash.addComponent(Graphics);
-        flashGraphics.fillColor = colorWithAlpha(material?.surface ?? rgb, 50 + level * 9 + tier * 12);
+        flashGraphics.fillColor = colorWithAlpha(material?.surface ?? rgb, 30 + level * 4 + tier * 5);
         flashGraphics.roundRect(-tileSize / 2, -tileSize / 2, tileSize, tileSize, 20);
         flashGraphics.fill();
         if (material) {
-            flashGraphics.fillColor = colorWithAlpha(material.core, 42 + tier * 18);
-            flashGraphics.moveTo(0, -tileSize * 0.28);
-            flashGraphics.lineTo(tileSize * 0.28, 0);
-            flashGraphics.lineTo(0, tileSize * 0.28);
-            flashGraphics.lineTo(-tileSize * 0.28, 0);
+            flashGraphics.fillColor = colorWithAlpha(material.core, 30 + tier * 10);
+            flashGraphics.moveTo(0, -tileSize * 0.22);
+            flashGraphics.lineTo(tileSize * 0.22, 0);
+            flashGraphics.lineTo(0, tileSize * 0.22);
+            flashGraphics.lineTo(-tileSize * 0.22, 0);
             flashGraphics.close();
             flashGraphics.fill();
         }
-        flash.setScale(0.7, 0.7, 1);
+        flash.setScale(0.84, 0.84, 1);
         tween(flash)
             .to(
-                0.13 + level * 0.015 + tier * 0.02,
-                { scale: new Vec3((1.18 + level * 0.04 + tier * 0.08) * eliteBoost, (1.18 + level * 0.04 + tier * 0.08) * eliteBoost, 1) },
+                0.11 + level * 0.01 + tier * 0.012,
+                { scale: new Vec3((1.04 + level * 0.015 + tier * 0.025) * eliteBoost, (1.04 + level * 0.015 + tier * 0.025) * eliteBoost, 1) },
                 { easing: 'quadOut' },
             )
             .start();
         tween(flashOpacity)
-            .to(0.15 + level * 0.018 + tier * 0.02, { opacity: 0 })
+            .to(0.12 + level * 0.012 + tier * 0.012, { opacity: 0 })
             .call(() => this.destroyNodeWithTweens(flash))
             .start();
 
@@ -1143,36 +1327,36 @@ export class Game2048Game extends Component implements MiniGame {
             const ring = this.createNode(content, `MergeRing-${index}-${value}-${ringIndex}`, x, y, tileSize, tileSize);
             ring.setSiblingIndex(content.children.length - 1);
             const opacity = ring.addComponent(UIOpacity);
-            opacity.opacity = Math.max(100, 230 - ringIndex * 20);
+            opacity.opacity = Math.max(60, 145 - ringIndex * 14);
             const graphics = ring.addComponent(Graphics);
-            graphics.strokeColor = colorWithAlpha(ringIndex % 3 === 0 ? accent : rgb, 235);
-            graphics.lineWidth = (2 + Math.min(3, level * 0.6) + tier * 0.7) * eliteBoost;
-            graphics.circle(0, 0, tileSize * (0.32 + ringIndex * 0.025));
+            graphics.strokeColor = colorWithAlpha(ringIndex % 3 === 0 ? accent : rgb, 155);
+            graphics.lineWidth = (1 + Math.min(1.4, level * 0.22) + tier * 0.2) * eliteBoost;
+            graphics.circle(0, 0, tileSize * (0.27 + ringIndex * 0.015));
             graphics.stroke();
             if (level >= 3 && ringIndex < 2) {
-                graphics.moveTo(-tileSize * 0.4, 0);
-                graphics.lineTo(tileSize * 0.4, 0);
-                graphics.moveTo(0, -tileSize * 0.4);
-                graphics.lineTo(0, tileSize * 0.4);
+                graphics.moveTo(-tileSize * 0.28, 0);
+                graphics.lineTo(tileSize * 0.28, 0);
+                graphics.moveTo(0, -tileSize * 0.28);
+                graphics.lineTo(0, tileSize * 0.28);
                 graphics.stroke();
             }
-            if (tier >= 2 && ringIndex % 2 === 0) {
-                graphics.moveTo(-tileSize * 0.31, -tileSize * 0.31);
-                graphics.lineTo(tileSize * 0.31, tileSize * 0.31);
-                graphics.moveTo(-tileSize * 0.31, tileSize * 0.31);
-                graphics.lineTo(tileSize * 0.31, -tileSize * 0.31);
+            if (tier >= 2 && ringIndex === 0) {
+                graphics.moveTo(-tileSize * 0.22, -tileSize * 0.22);
+                graphics.lineTo(tileSize * 0.22, tileSize * 0.22);
+                graphics.moveTo(-tileSize * 0.22, tileSize * 0.22);
+                graphics.lineTo(tileSize * 0.22, -tileSize * 0.22);
                 graphics.stroke();
             }
-            const startScale = 0.58 + ringIndex * 0.07;
-            const duration = 0.18 + level * 0.025 + ringIndex * 0.018 + tier * 0.025;
-            const endScale = (1.25 + level * 0.12 + ringIndex * 0.1 + tier * 0.08) * eliteBoost;
+            const startScale = 0.82 + ringIndex * 0.04;
+            const duration = 0.13 + level * 0.015 + ringIndex * 0.01 + tier * 0.012;
+            const endScale = (1.03 + level * 0.03 + ringIndex * 0.025 + tier * 0.02) * eliteBoost;
             ring.setScale(startScale, startScale, 1);
             tween(ring)
-                .delay(ringIndex * 0.018)
+                .delay(ringIndex * 0.014)
                 .to(duration, { scale: new Vec3(endScale, endScale, 1) }, { easing: 'quadOut' })
                 .start();
             tween(opacity)
-                .delay(ringIndex * 0.018)
+                .delay(ringIndex * 0.014)
                 .to(duration, { opacity: 0 })
                 .call(() => this.destroyNodeWithTweens(ring))
                 .start();
@@ -1194,51 +1378,36 @@ export class Game2048Game extends Component implements MiniGame {
         const core = this.createNode(content, `MergeCore-${index}-${value}`, x, y, tileSize, tileSize);
         core.setSiblingIndex(content.children.length - 1);
         const opacity = core.addComponent(UIOpacity);
-        opacity.opacity = 220;
+        opacity.opacity = 150;
         const graphics = core.addComponent(Graphics);
-        const radius = tileSize * (0.2 + tier * 0.025);
-        graphics.fillColor = colorWithAlpha(material.core, 104 + tier * 28);
+        const radius = tileSize * (0.18 + tier * 0.018);
+        graphics.fillColor = colorWithAlpha(material.core, 50 + tier * 12);
         graphics.moveTo(0, -radius);
         graphics.lineTo(radius, 0);
         graphics.lineTo(0, radius);
         graphics.lineTo(-radius, 0);
         graphics.close();
         graphics.fill();
-        graphics.strokeColor = colorWithAlpha(material.accent, 220);
-        graphics.lineWidth = 2 + tier;
+        graphics.strokeColor = colorWithAlpha(material.accent, 150);
+        graphics.lineWidth = 1.2 + tier * 0.3;
         graphics.stroke();
-        core.setScale(0.45, 0.45, 1);
+        core.setScale(0.72, 0.72, 1);
         tween(core)
-            .to(0.16 + tier * 0.035, {
-                scale: new Vec3(1.15 + tier * 0.08, 1.15 + tier * 0.08, 1),
+            .to(0.12 + tier * 0.02, {
+                scale: new Vec3(1.02 + tier * 0.025, 1.02 + tier * 0.025, 1),
             }, { easing: 'backOut' })
             .start();
         tween(opacity)
-            .to(0.2 + tier * 0.035, { opacity: 0 })
+            .to(0.15 + tier * 0.02, { opacity: 0 })
             .call(() => this.destroyNodeWithTweens(core))
             .start();
     }
 
     private drawTile(tile: Node, value: number, size: number): void {
         const rgb: Rgb = TILE_COLORS[value] ?? [214, 112, 188];
-        const material = TILE_MATERIALS[value];
-        const tier = HIGH_TIER_LEVELS[value] ?? 0;
-        const neonLevel = value >= 512 ? Math.min(3, Math.log2(value) - 8) : 0;
         const base = [10, 21, 38] as const;
         const fill = rgb.map((channel, index) => Math.round(base[index] + channel * 0.38));
         const graphics = tile.addComponent(Graphics);
-        for (let layer = neonLevel + 1; layer >= 1 && neonLevel > 0; layer -= 1) {
-            const expansion = 7 + layer * 5;
-            graphics.fillColor = new Color(rgb[0], rgb[1], rgb[2], 10 + neonLevel * 7);
-            graphics.roundRect(
-                -size / 2 - expansion,
-                -size / 2 - expansion,
-                size + expansion * 2,
-                size + expansion * 2,
-                27 + layer * 2,
-            );
-            graphics.fill();
-        }
         graphics.fillColor = new Color(0, 0, 0, 70);
         graphics.roundRect(-size / 2 - 2, -size / 2 - 7, size + 4, size + 4, 23);
         graphics.fill();
@@ -1262,8 +1431,6 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.moveTo(-size / 2 + 18, size / 2 - 9);
         graphics.lineTo(size / 2 - 18, size / 2 - 9);
         graphics.stroke();
-        if (material) this.drawHighTierTileMaterial(graphics, size, material, tier);
-        if (neonLevel > 0) this.createPersistentTileGlow(tile, value, size, rgb, neonLevel, material);
         const digits = value.toString().length;
         const fontSize = digits <= 2 ? 52 : digits === 3 ? 46 : digits === 4 ? 38 : 31;
         const color = new Color(
@@ -1274,179 +1441,6 @@ export class Game2048Game extends Component implements MiniGame {
         );
         const label = this.createLabel(tile, 'Value', String(value), 0, 2, fontSize, color, size - 12, size - 12);
         label.isBold = true;
-    }
-
-    private drawHighTierTileMaterial(
-        graphics: Graphics,
-        size: number,
-        material: TileMaterial,
-        tier: number,
-    ): void {
-        const outerRect = calculateHighTierTileRect(size, -1);
-        const safeSize = outerRect.size + outerRect.inset * 2;
-        const half = safeSize / 2;
-        // 多层不透明/半透明内嵌面，形成实体深度和逐级增加的结构层。
-        graphics.fillColor = colorWithAlpha(material.surface, 238);
-        graphics.roundRect(
-            -half + outerRect.inset,
-            -half + outerRect.inset,
-            outerRect.size,
-            outerRect.size,
-            outerRect.radius,
-        );
-        graphics.fill();
-        for (let layer = 0; layer < material.layerCount; layer += 1) {
-            const rect = calculateHighTierTileRect(safeSize, layer);
-            const alpha = 154 - layer * 17;
-            graphics.fillColor = colorWithAlpha(layer % 2 === 0 ? material.body : material.facet, alpha);
-            graphics.roundRect(-half + rect.inset, -half + rect.inset, rect.size, rect.size, rect.radius);
-            graphics.fill();
-            graphics.strokeColor = colorWithAlpha(material.accent, 70 + tier * 20 - layer * 8);
-            graphics.lineWidth = 1.2 + tier * 0.35;
-            graphics.roundRect(-half + rect.inset, -half + rect.inset, rect.size, rect.size, rect.radius);
-            graphics.stroke();
-        }
-
-        const facet = safeSize * (0.28 + tier * 0.018);
-        graphics.fillColor = colorWithAlpha(material.facet, 74 + tier * 15);
-        graphics.moveTo(0, -facet);
-        graphics.lineTo(facet, 0);
-        graphics.lineTo(0, facet);
-        graphics.lineTo(-facet, 0);
-        graphics.close();
-        graphics.fill();
-        graphics.strokeColor = colorWithAlpha(material.core, 146 + tier * 20);
-        graphics.lineWidth = 1.5 + tier * 0.4;
-        graphics.stroke();
-
-        const core = safeSize * (0.12 + tier * 0.012);
-        graphics.fillColor = colorWithAlpha(material.core, 82 + tier * 22);
-        graphics.roundRect(-core, -core * 0.62, core * 2, core * 1.24, 7 + tier);
-        graphics.fill();
-        graphics.strokeColor = colorWithAlpha(material.accent, 190);
-        graphics.lineWidth = 1.5 + tier * 0.25;
-        graphics.roundRect(-core, -core * 0.62, core * 2, core * 1.24, 7 + tier);
-        graphics.stroke();
-
-        // 4096 额外加入紫电折线和冰蓝切面；2048 保留熔金扫描，1024 使用等离子晶面。
-        const scanOffset = safeSize * (0.27 + tier * 0.02);
-        graphics.strokeColor = colorWithAlpha(material.accent, 112 + tier * 22);
-        graphics.lineWidth = 1.5 + tier * 0.3;
-        graphics.moveTo(-scanOffset, -safeSize * 0.32);
-        graphics.lineTo(-scanOffset * 0.42, safeSize * 0.18);
-        graphics.lineTo(scanOffset * 0.08, -safeSize * 0.02);
-        graphics.lineTo(scanOffset, safeSize * 0.32);
-        graphics.stroke();
-        if (material.signature === 'ultimate') {
-            graphics.strokeColor = colorWithAlpha(material.facet, 224);
-            graphics.lineWidth = 2.5;
-            graphics.moveTo(-safeSize * 0.34, safeSize * 0.22);
-            graphics.lineTo(-safeSize * 0.1, safeSize * 0.04);
-            graphics.lineTo(safeSize * 0.02, safeSize * 0.22);
-            graphics.lineTo(safeSize * 0.3, -safeSize * 0.24);
-            graphics.stroke();
-            graphics.strokeColor = colorWithAlpha(material.core, 218);
-            graphics.lineWidth = 1.5;
-            graphics.moveTo(-safeSize * 0.28, -safeSize * 0.22);
-            graphics.lineTo(safeSize * 0.3, safeSize * 0.22);
-            graphics.stroke();
-        }
-    }
-
-    private createPersistentTileGlow(
-        tile: Node,
-        value: number,
-        size: number,
-        rgb: Rgb,
-        level: number,
-        material?: TileMaterial,
-    ): void {
-        const glow = this.createNode(tile, `EliteGlow-${value}`, 0, 0, size, size);
-        const opacity = glow.addComponent(UIOpacity);
-        const tier = HIGH_TIER_LEVELS[value] ?? 0;
-        const glowRgb = material?.glow ?? rgb;
-        opacity.opacity = Math.min(255, 115 + level * 28 + tier * 12);
-        const graphics = glow.addComponent(Graphics);
-        const ringCount = material?.layerCount ?? level + 1;
-        for (let ring = 0; ring < ringCount; ring += 1) {
-            const inset = 2 + ring * 4;
-            graphics.strokeColor = colorWithAlpha(ring % 2 === 0 ? glowRgb : (material?.accent ?? rgb), 205 - ring * 32);
-            graphics.lineWidth = Math.max(1.5, 4.5 - ring * 0.55 + level * 0.8 + tier * 0.5);
-            graphics.roundRect(
-                -size / 2 - inset,
-                -size / 2 - inset,
-                size + inset * 2,
-                size + inset * 2,
-                22 + ring * 2,
-            );
-            graphics.stroke();
-        }
-        if (material) {
-            const core = this.createNode(tile, `EnergyCore-${value}`, 0, 0, size * 0.72, size * 0.72);
-            const coreOpacity = core.addComponent(UIOpacity);
-            coreOpacity.opacity = 120 + tier * 28;
-            const coreGraphics = core.addComponent(Graphics);
-            const radius = size * (0.19 + tier * 0.018);
-            coreGraphics.fillColor = colorWithAlpha(material.core, 86 + tier * 20);
-            coreGraphics.circle(0, 0, radius);
-            coreGraphics.fill();
-            coreGraphics.strokeColor = colorWithAlpha(material.accent, 186 + tier * 18);
-            coreGraphics.lineWidth = 1.5 + tier * 0.4;
-            coreGraphics.circle(0, 0, radius * 1.26);
-            coreGraphics.stroke();
-
-            const scan = this.createNode(tile, `MaterialScan-${value}`, 0, 0, size, size);
-            const scanGraphics = scan.addComponent(Graphics);
-            scanGraphics.strokeColor = colorWithAlpha(material.accent, 96 + tier * 25);
-            scanGraphics.lineWidth = 1.5 + tier * 0.25;
-            scanGraphics.moveTo(-size * 0.34, -size * 0.16);
-            scanGraphics.lineTo(size * 0.34, size * 0.16);
-            scanGraphics.moveTo(-size * 0.34, size * 0.16);
-            scanGraphics.lineTo(size * 0.34, -size * 0.16);
-            scanGraphics.stroke();
-            if (material.signature === 'ultimate') {
-                scanGraphics.strokeColor = colorWithAlpha(material.facet, 186);
-                scanGraphics.lineWidth = 2;
-                scanGraphics.moveTo(-size * 0.4, 0);
-                scanGraphics.lineTo(size * 0.4, 0);
-                scanGraphics.stroke();
-            }
-            tween(scan)
-                .repeatForever(
-                    tween().by(0.85 - tier * 0.08, { angle: 360 }, { easing: 'linear' }),
-                )
-                .start();
-            tween(core)
-                .repeatForever(
-                    tween()
-                        .to(material.pulse, { scale: new Vec3(1.08 + tier * 0.035, 1.08 + tier * 0.035, 1) }, { easing: 'sineInOut' })
-                        .to(material.pulse, { scale: new Vec3(0.94, 0.94, 1) }, { easing: 'sineInOut' }),
-                )
-                .start();
-            tween(coreOpacity)
-                .repeatForever(
-                    tween()
-                        .to(material.pulse, { opacity: Math.min(255, 165 + tier * 25) }, { easing: 'sineInOut' })
-                        .to(material.pulse, { opacity: 120 + tier * 28 }, { easing: 'sineInOut' }),
-                )
-                .start();
-        }
-        const pulseScale = 1.035 + level * 0.018 + tier * 0.012;
-        const pulseDuration = material?.pulse ?? (0.42 - level * 0.04);
-        tween(glow)
-            .repeatForever(
-                tween()
-                    .to(pulseDuration, { scale: new Vec3(pulseScale, pulseScale, 1) }, { easing: 'sineInOut' })
-                    .to(pulseDuration, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' }),
-            )
-            .start();
-        tween(opacity)
-            .repeatForever(
-                tween()
-                    .to(pulseDuration, { opacity: Math.min(255, 175 + level * 25 + tier * 16) }, { easing: 'sineInOut' })
-                    .to(pulseDuration, { opacity: Math.min(255, 115 + level * 28 + tier * 12) }, { easing: 'sineInOut' }),
-            )
-            .start();
     }
 
     private updateDangerState(gameOver = false): void {
@@ -1569,34 +1563,62 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private createHudCard(x: number, y: number, caption: string, accent: Color, scale = 1): Label {
-        const card = this.createNode(this.node, `${caption}Card`, x, y, 188, 92);
+        const card = this.createNode(
+            this.node,
+            `${caption}Card`,
+            x,
+            y,
+            GAME_2048_SCORE_CARD_WIDTH,
+            GAME_2048_SCORE_CARD_HEIGHT,
+        );
         card.setScale(scale, scale, 1);
         const graphics = card.addComponent(Graphics);
         graphics.fillColor = new Color(accent.r, accent.g, accent.b, 14);
-        graphics.roundRect(-99, -51, 198, 102, 22);
+        graphics.roundRect(
+            -GAME_2048_SCORE_CARD_WIDTH / 2 - 5,
+            -GAME_2048_SCORE_CARD_HEIGHT / 2 - 6,
+            GAME_2048_SCORE_CARD_WIDTH + 10,
+            GAME_2048_SCORE_CARD_HEIGHT + 10,
+            24,
+        );
         graphics.fill();
         graphics.fillColor = COLORS.panelLight;
         graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 155);
         graphics.lineWidth = 2;
-        graphics.roundRect(-94, -46, 188, 92, 18);
+        graphics.roundRect(
+            -GAME_2048_SCORE_CARD_WIDTH / 2,
+            -GAME_2048_SCORE_CARD_HEIGHT / 2,
+            GAME_2048_SCORE_CARD_WIDTH,
+            GAME_2048_SCORE_CARD_HEIGHT,
+            20,
+        );
         graphics.fill();
         graphics.stroke();
         graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 48);
         graphics.lineWidth = 1;
-        graphics.roundRect(-88, -40, 176, 80, 14);
+        graphics.roundRect(
+            -GAME_2048_SCORE_CARD_WIDTH / 2 + 6,
+            -GAME_2048_SCORE_CARD_HEIGHT / 2 + 6,
+            GAME_2048_SCORE_CARD_WIDTH - 12,
+            GAME_2048_SCORE_CARD_HEIGHT - 12,
+            16,
+        );
         graphics.stroke();
         graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 100);
-        graphics.moveTo(-55, 39);
-        graphics.lineTo(55, 39);
+        graphics.moveTo(-62, 45);
+        graphics.lineTo(62, 45);
         graphics.stroke();
-        this.createLabel(card, 'Caption', caption, 0, 24, 17, accent, 150, 28).spacingX = 2;
-        const value = this.createLabel(card, 'Value', '0', 0, -12, 30, COLORS.white, 160, 46);
+        this.createLabel(card, 'Caption', caption, 0, 28, 19, accent, 180, 30).spacingX = 2;
+        const value = this.createLabel(card, 'Value', '0', 0, -13, 36, COLORS.white, 188, 52);
         value.isBold = true;
         return value;
     }
 
-    /** 4096 首次达成是本局最终庆祝时刻，使用独立庆祝层而不是通用系统弹窗。 */
-    private buildTargetOverlay(actions: readonly OverlayAction[]): OverlayState {
+    /** 2048 里程碑与 4096 目标共用同一套庆祝层，而不是通用系统弹窗。 */
+    private buildTargetOverlay(
+        actions: readonly OverlayAction[],
+        tile: AchievementTile,
+    ): OverlayState {
         const rootSize = this.node.getComponent(UITransform)?.contentSize;
         const width = rootSize?.width ?? 750;
         const height = rootSize?.height ?? 1334;
@@ -1621,9 +1643,9 @@ export class Game2048Game extends Component implements MiniGame {
             panelHeight,
         );
         const graphics = panel.addComponent(Graphics);
-        const targetMaterial = TILE_MATERIALS[4096];
+        const targetMaterial = TILE_MATERIALS[tile] ?? TILE_MATERIALS[TARGET_TILE];
 
-        // 4096 使用紫电、熔金与冰蓝高光组成独立的终极材质庆祝层。
+        // 2048/4096 复用同一套庆祝构图，只根据目标数字切换材质和文案。
         graphics.fillColor = colorWithAlpha(targetMaterial.glow, 18);
         graphics.roundRect(-panelWidth / 2 - 14, -panelHeight / 2 - 14, panelWidth + 28, panelHeight + 28, 44);
         graphics.fill();
@@ -1642,7 +1664,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.roundRect(-panelWidth / 2 + 8, -panelHeight / 2 + 8, panelWidth - 16, panelHeight - 16, 25);
         graphics.stroke();
 
-        const halo = this.createNode(panel, 'Target4096Halo', 0, 184, 390, 300);
+        const halo = this.createNode(panel, `Target${tile}Halo`, 0, 184, 390, 300);
         const haloGraphics = halo.addComponent(Graphics);
         [142, 122, 101, 82].forEach((radius, index) => {
             haloGraphics.strokeColor = colorWithAlpha(
@@ -1670,7 +1692,7 @@ export class Game2048Game extends Component implements MiniGame {
             )
             .start();
 
-        const crystalCore = this.createNode(panel, 'Target4096CrystalCore', 0, 184, 192, 192);
+        const crystalCore = this.createNode(panel, `Target${tile}CrystalCore`, 0, 184, 192, 192);
         const crystalOpacity = crystalCore.addComponent(UIOpacity);
         crystalOpacity.opacity = 210;
         const crystalGraphics = crystalCore.addComponent(Graphics);
@@ -1725,8 +1747,8 @@ export class Game2048Game extends Component implements MiniGame {
         burstGraphics.circle(0, 0, 108);
         burstGraphics.stroke();
 
-        const badge = this.createNode(panel, 'Unlocked4096Tile', 0, 184, 142, 142);
-        this.drawTile(badge, 4096, 142);
+        const badge = this.createNode(panel, `Unlocked${tile}Tile`, 0, 184, 142, 142);
+        this.drawTile(badge, tile, 142);
 
         const sparkColors = [
             colorWithAlpha(targetMaterial.facet, 255),
@@ -1773,7 +1795,7 @@ export class Game2048Game extends Component implements MiniGame {
         });
 
         const kicker = this.createLabel(
-            panel, 'AchievementKicker', 'ACHIEVEMENT  //  4096', 0, panelHeight / 2 - 34,
+            panel, 'AchievementKicker', `ACHIEVEMENT  //  ${tile}`, 0, panelHeight / 2 - 34,
             14, colorWithAlpha(targetMaterial.accent, 255), panelWidth - 72, 24,
         );
         kicker.spacingX = 3;
@@ -1781,7 +1803,7 @@ export class Game2048Game extends Component implements MiniGame {
         const title = this.createLabel(panel, 'Title', '恭喜你！', 0, 80, 42, COLORS.white, panelWidth - 64, 58);
         title.isBold = true;
         const subtitle = this.createLabel(
-            panel, 'Subtitle', '成功点亮 4096', 0, 31, 24, colorWithAlpha(targetMaterial.facet, 255), panelWidth - 72, 40,
+            panel, 'Subtitle', `成功点亮 ${tile}`, 0, 31, 24, colorWithAlpha(targetMaterial.facet, 255), panelWidth - 72, 40,
         );
         subtitle.isBold = true;
 
@@ -1801,7 +1823,7 @@ export class Game2048Game extends Component implements MiniGame {
         const state: OverlayState = {
             root,
             buttons: [],
-            rebuild: () => this.buildTargetOverlay(actions),
+            rebuild: () => this.buildTargetOverlay(actions, tile),
             busy: false,
         };
         const buttonWidth = Math.min(390, panelWidth - 64);
@@ -1916,6 +1938,14 @@ export class Game2048Game extends Component implements MiniGame {
         });
         try {
             await action.action();
+            if (state.root.isValid) {
+                state.busy = false;
+                state.buttons.forEach((button) => {
+                    button.interactable = true;
+                    const opacity = button.node.getComponent(UIOpacity);
+                    if (opacity) opacity.opacity = 255;
+                });
+            }
         } catch (error: unknown) {
             console.error(`[Game2048Game] ${action.name} failed.`, error);
             if (state.root.isValid) {
@@ -1938,10 +1968,33 @@ export class Game2048Game extends Component implements MiniGame {
         width: number,
         height: number,
         tone: 'cyan' | 'amber' | 'dark',
+        flushRightEdge = false,
     ): Button {
         const node = this.createNode(parent, name, x, y, width, height);
         node.addComponent(UIOpacity);
         const graphics = node.addComponent(Graphics);
+        const drawButtonShape = (
+            shapeX: number,
+            shapeY: number,
+            shapeWidth: number,
+            shapeHeight: number,
+            radius: number,
+            includeRightEdge: boolean,
+        ): void => {
+            if (flushRightEdge) {
+                this.drawLeftRoundedButtonPath(
+                    graphics,
+                    shapeX,
+                    shapeY,
+                    shapeWidth,
+                    shapeHeight,
+                    radius,
+                    includeRightEdge,
+                );
+                return;
+            }
+            graphics.roundRect(shapeX, shapeY, shapeWidth, shapeHeight, radius);
+        };
         const accent = tone === 'cyan' ? COLORS.cyan
             : tone === 'amber' ? COLORS.amber
                 : new Color(91, 157, 177, 255);
@@ -1952,17 +2005,25 @@ export class Game2048Game extends Component implements MiniGame {
             255,
         );
         graphics.fillColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 9 : 16);
-        graphics.roundRect(-width / 2 - 5, -height / 2 - 5, width + 10, height + 10, 19);
+        drawButtonShape(-width / 2 - 5, -height / 2 - 5, width + 10, height + 10, 19, true);
         graphics.fill();
         graphics.fillColor = fill;
         graphics.strokeColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 130 : 188);
         graphics.lineWidth = 2;
-        graphics.roundRect(-width / 2, -height / 2, width, height, 15);
+        drawButtonShape(-width / 2, -height / 2, width, height, 15, true);
         graphics.fill();
+        drawButtonShape(-width / 2, -height / 2, width, height, 15, !flushRightEdge);
         graphics.stroke();
         graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 58);
         graphics.lineWidth = 1;
-        graphics.roundRect(-width / 2 + 5, -height / 2 + 5, width - 10, height - 10, 11);
+        drawButtonShape(
+            -width / 2 + 5,
+            -height / 2 + 5,
+            flushRightEdge ? width - 5 : width - 10,
+            height - 10,
+            11,
+            !flushRightEdge,
+        );
         graphics.stroke();
         graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 112);
         graphics.moveTo(-width / 2 + 22, height / 2 - 7);
@@ -1976,6 +2037,32 @@ export class Game2048Game extends Component implements MiniGame {
             COLORS.white, width - 20, height - 8);
         label.isBold = true;
         return button;
+    }
+
+    private drawLeftRoundedButtonPath(
+        graphics: Graphics,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        radius: number,
+        includeRightEdge: boolean,
+    ): void {
+        const left = x;
+        const right = x + width;
+        const bottom = y;
+        const top = y + height;
+        const corner = Math.max(0, Math.min(radius, Math.min(width, height) / 2));
+
+        graphics.moveTo(left + corner, top);
+        graphics.lineTo(right, top);
+        if (includeRightEdge) graphics.lineTo(right, bottom);
+        else graphics.moveTo(right, bottom);
+        graphics.lineTo(left + corner, bottom);
+        graphics.quadraticCurveTo(left, bottom, left, bottom + corner);
+        graphics.lineTo(left, top - corner);
+        graphics.quadraticCurveTo(left, top, left + corner, top);
+        graphics.close();
     }
 
     private createNode(parent: Node, name: string, x: number, y: number, width: number, height: number): Node {
@@ -2030,4 +2117,5 @@ export class Game2048Game extends Component implements MiniGame {
         node.getComponents(UIOpacity).forEach((opacity) => Tween.stopAllByTarget(opacity));
         node.destroy();
     }
+
 }
