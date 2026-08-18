@@ -65,7 +65,16 @@ const { ccclass } = _decorator;
 const TILE_SLIDE_DURATION = 0.1;
 const TILE_SETTLE_DURATION = 0.06;
 const MERGE_CELEBRATION_DELAY = 0.55;
+const HIGH_MERGE_EFFECT_SCALE = 1.12;
 const GAME_2048_DATA_VERSION = 4;
+const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
+const GAME_2048_TITLE_ASSET_PATH = 'visual/title/t48-user-title-v1/texture';
+const GAME_2048_BOARD_ASSET_PATH = 'visual/boards/t48-user-board-v1/texture';
+const GAME_2048_TILE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096] as const;
+const GAME_2048_TILE_ASSET_PREFIX = 'visual/pieces/t48-user-piece-';
+// 新版棋盘图已去掉外圈留白；四列槽位连同内外间距约占 548/572，棋子间距略放宽为 9px。
+const GAME_2048_BOARD_GRID_RATIO = 548 / 572;
+const GAME_2048_BOARD_GAP_RATIO = 9 / 548;
 
 type Game2048State = 'idle' | 'ready' | 'playing' | 'paused' | 'target' | 'completed' | 'disposed';
 type AchievementTile = typeof MILESTONE_TILE | typeof TARGET_TILE;
@@ -92,19 +101,19 @@ interface OverlayState {
 }
 
 const COLORS = Object.freeze({
-    void: new Color(5, 8, 22, 255),
-    panel: new Color(16, 29, 52, 246),
-    panelLight: new Color(24, 43, 70, 255),
-    slot: new Color(23, 41, 67, 226),
-    cyan: new Color(66, 222, 207, 255),
-    cyanDim: new Color(66, 222, 207, 64),
-    violet: new Color(154, 119, 244, 255),
-    violetDim: new Color(154, 119, 244, 54),
-    amber: new Color(246, 183, 82, 255),
-    amberDim: new Color(246, 183, 82, 64),
-    white: new Color(238, 249, 255, 255),
-    muted: new Color(166, 194, 216, 255),
-    overlay: new Color(2, 5, 14, 224),
+    void: new Color(2, 6, 22, 255),
+    panel: new Color(11, 22, 54, 248),
+    panelLight: new Color(21, 39, 82, 255),
+    slot: new Color(8, 18, 42, 226),
+    cyan: new Color(30, 245, 250, 255),
+    cyanDim: new Color(30, 245, 250, 64),
+    violet: new Color(181, 78, 255, 255),
+    violetDim: new Color(181, 78, 255, 54),
+    amber: new Color(255, 214, 55, 255),
+    amberDim: new Color(255, 214, 55, 64),
+    white: new Color(245, 252, 255, 255),
+    muted: new Color(194, 220, 247, 255),
+    overlay: new Color(1, 4, 22, 204),
 });
 
 type Rgb = readonly [number, number, number];
@@ -118,18 +127,18 @@ interface TileMaterial {
 }
 
 const TILE_COLORS: Readonly<Record<number, Rgb>> = Object.freeze({
-    2: [62, 181, 255],
-    4: [137, 112, 255],
-    8: [35, 224, 190],
-    16: [79, 226, 116],
-    32: [170, 226, 76],
-    64: [255, 194, 61],
-    128: [255, 139, 69],
-    256: [241, 91, 158],
-    512: [255, 91, 93],
-    1024: [174, 76, 244],
-    2048: [244, 171, 43],
-    4096: [127, 52, 224],
+    2: [57, 216, 246],
+    4: [128, 191, 252],
+    8: [30, 245, 250],
+    16: [129, 237, 132],
+    32: [181, 250, 112],
+    64: [253, 243, 22],
+    128: [233, 117, 9],
+    256: [247, 71, 149],
+    512: [247, 86, 80],
+    1024: [183, 83, 255],
+    2048: [255, 216, 55],
+    4096: [255, 75, 197],
 });
 
 // 高阶合成与目标庆祝使用独立材质；棋子本身不再挂载常驻高阶视觉层。
@@ -141,26 +150,26 @@ const HIGH_TIER_LEVELS: Readonly<Record<number, number>> = Object.freeze({
 
 const TILE_MATERIALS: Readonly<Record<number, TileMaterial>> = Object.freeze({
     1024: {
-        surface: [44, 17, 88],
+        surface: [42, 7, 112],
         facet: [218, 132, 255],
-        core: [246, 218, 255],
-        accent: [92, 238, 218],
-        glow: [199, 91, 255],
+        core: [246, 232, 255],
+        accent: [183, 83, 255],
+        glow: [183, 83, 255],
     },
     2048: {
-        surface: [104, 45, 18],
-        facet: [255, 207, 101],
-        core: [255, 239, 177],
-        accent: [255, 116, 54],
-        glow: [255, 190, 65],
+        surface: [111, 60, 1],
+        facet: [255, 231, 82],
+        core: [255, 245, 183],
+        accent: [255, 170, 20],
+        glow: [255, 216, 55],
     },
     4096: {
-        // 紫电 × 熔金 × 冰蓝高光：最终目标的独立配色组。
-        surface: [30, 9, 70],
-        facet: [255, 175, 41],
-        core: [190, 243, 255],
-        accent: [125, 224, 255],
-        glow: [164, 67, 255],
+        // 与用户提供的 4096 品红棋子保持同一组颜色，不再叠加冰蓝/熔金材质。
+        surface: [113, 11, 72],
+        facet: [255, 112, 219],
+        core: [255, 222, 246],
+        accent: [255, 75, 197],
+        glow: [255, 75, 197],
     },
 });
 
@@ -207,6 +216,13 @@ export class Game2048Game extends Component implements MiniGame {
     private dangerLayer?: Node;
     private dangerMode = false;
     private ownedBackgroundFrame?: SpriteFrame;
+    private ownedTitleFrame?: SpriteFrame;
+    private ownedBoardFrame?: SpriteFrame;
+    private readonly ownedTileFrames = new Map<number, SpriteFrame>();
+    private titleFallback?: Node;
+    private titleArtwork?: Sprite;
+    private boardFallback?: Node;
+    private boardArtwork?: Sprite;
     private inputLocked = false;
     private touchStartX = 0;
     private touchStartY = 0;
@@ -232,7 +248,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.context = context;
         this.readSave();
         this.buildInterface();
-        await Promise.all([this.loadBackground(), this.loadMusic()]);
+        await Promise.all([this.loadBackground(), this.loadThemeAssets(), this.loadMusic()]);
         this.registerInput();
         this.audioBank = new BundleAudioBank({
             bundle: 'game-2048',
@@ -323,14 +339,24 @@ export class Game2048Game extends Component implements MiniGame {
         this.audioBank = undefined;
         this.normalMusicClip = undefined;
         this.dangerMusicClip = undefined;
-        this.ownedBackgroundFrame?.destroy();
-        this.ownedBackgroundFrame = undefined;
         this.destroyOverlay(this.pauseOverlay);
         this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
         this.node.children.slice().forEach((child) => this.destroyNodeWithTweens(child));
+        this.destroyOwnedThemeFrames();
         this.context = undefined;
+    }
+
+    private destroyOwnedThemeFrames(): void {
+        this.ownedBackgroundFrame?.destroy();
+        this.ownedBackgroundFrame = undefined;
+        this.ownedTitleFrame?.destroy();
+        this.ownedTitleFrame = undefined;
+        this.ownedBoardFrame?.destroy();
+        this.ownedBoardFrame = undefined;
+        this.ownedTileFrames.forEach((frame) => frame.destroy());
+        this.ownedTileFrames.clear();
     }
 
     showPauseMenu(model: MiniGamePauseModel): void {
@@ -472,6 +498,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.targetOverlay = undefined;
         this.dangerLayer = undefined;
         this.buildInterface();
+        this.applyLoadedThemeAssets();
         this.renderBoard();
         this.refreshHud();
         if (shouldRestoreDanger) {
@@ -899,7 +926,8 @@ export class Game2048Game extends Component implements MiniGame {
             height + backdropBleed,
         );
         const background = backdrop.addComponent(Graphics);
-        background.fillColor = new Color(COLORS.void.r, COLORS.void.g, COLORS.void.b, 94);
+        // 用户背景本身已包含电路与环境光，运行时只保留一层很轻的可读性遮罩。
+        background.fillColor = new Color(COLORS.void.r, COLORS.void.g, COLORS.void.b, 18);
         background.rect(
             -(width + backdropBleed) / 2,
             -(height + backdropBleed) / 2,
@@ -960,7 +988,15 @@ export class Game2048Game extends Component implements MiniGame {
             GAME_2048_TITLE_HEIGHT,
         );
         titleFrame.setScale(metrics.fitScale, metrics.fitScale, 1);
-        const titleGraphics = titleFrame.addComponent(Graphics);
+        const titleFallback = this.createNode(
+            titleFrame,
+            'TitleFallback',
+            0,
+            0,
+            GAME_2048_TITLE_WIDTH,
+            GAME_2048_TITLE_HEIGHT,
+        );
+        const titleGraphics = titleFallback.addComponent(Graphics);
         titleGraphics.fillColor = new Color(0, 0, 0, 82);
         titleGraphics.roundRect(
             -GAME_2048_TITLE_WIDTH / 2 - 4,
@@ -1006,15 +1042,29 @@ export class Game2048Game extends Component implements MiniGame {
         titleGraphics.circle(-GAME_2048_TITLE_WIDTH / 2 + 30, -31, 3);
         titleGraphics.circle(GAME_2048_TITLE_WIDTH / 2 - 30, -31, 3);
         titleGraphics.fill();
-        const kicker = this.createLabel(titleFrame, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 29, 14, COLORS.cyan, 370, 22);
+        const kicker = this.createLabel(titleFallback, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 29, 14, COLORS.cyan, 370, 22);
         kicker.spacingX = 2;
-        const titleVioletGlow = this.createLabel(titleFrame, 'TitleVioletGlow', 'NEON  2048', 2, -10, 44,
+        const titleVioletGlow = this.createLabel(titleFallback, 'TitleVioletGlow', 'NEON  2048', 2, -10, 44,
             new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 72), 400, 58);
         titleVioletGlow.isBold = true;
         titleVioletGlow.spacingX = 4;
-        const title = this.createLabel(titleFrame, 'Title', 'NEON  2048', 0, -7, 42, COLORS.white, 400, 58);
+        const title = this.createLabel(titleFallback, 'Title', 'NEON  2048', 0, -7, 42, COLORS.white, 400, 58);
         title.isBold = true;
         title.spacingX = 4;
+        const titleArtworkNode = this.createNode(
+            titleFrame,
+            'TitleArtwork',
+            0,
+            0,
+            GAME_2048_TITLE_WIDTH,
+            GAME_2048_TITLE_HEIGHT,
+        );
+        const titleArtwork = titleArtworkNode.addComponent(Sprite);
+        titleArtwork.sizeMode = Sprite.SizeMode.CUSTOM;
+        titleArtworkNode.active = false;
+        titleArtworkNode.setSiblingIndex(titleFrame.children.length - 1);
+        this.titleFallback = titleFallback;
+        this.titleArtwork = titleArtwork;
         this.titleButton = titleFrame.addComponent(Button);
         this.titleButton.transition = Button.Transition.SCALE;
         this.titleButton.zoomScale = 0.98;
@@ -1027,7 +1077,8 @@ export class Game2048Game extends Component implements MiniGame {
             metrics.pauseY,
             GAME_2048_PAUSE_BUTTON_WIDTH,
             52,
-            'dark',
+            'cyan',
+            true,
             true,
         );
         // 右侧面板直接延伸到屏幕边缘，实际触摸热区扩展到 104×88。
@@ -1063,7 +1114,15 @@ export class Game2048Game extends Component implements MiniGame {
             GAME_2048_BOARD_NODE_SIZE,
         );
         this.boardNode.setScale(metrics.boardScale, metrics.boardScale, 1);
-        const boardGraphics = this.boardNode.addComponent(Graphics);
+        const boardFallback = this.createNode(
+            this.boardNode,
+            'BoardFallback',
+            0,
+            0,
+            boardSize,
+            boardSize,
+        );
+        const boardGraphics = boardFallback.addComponent(Graphics);
         boardGraphics.fillColor = new Color(0, 0, 0, 80);
         boardGraphics.roundRect(-boardSize / 2 - 7, -boardSize / 2 - 13, boardSize + 18, boardSize + 18, 34);
         boardGraphics.fill();
@@ -1085,8 +1144,23 @@ export class Game2048Game extends Component implements MiniGame {
         boardGraphics.lineWidth = 1;
         boardGraphics.roundRect(-boardSize / 2 + 7, -boardSize / 2 + 7, boardSize - 14, boardSize - 14, 25);
         boardGraphics.stroke();
-        this.boardContent = this.createNode(this.boardNode, 'BoardContent', 0, 0, boardSize, boardSize);
-        this.buildSlots(boardSize);
+        const boardArtworkNode = this.createNode(
+            this.boardNode,
+            'BoardArtwork',
+            0,
+            0,
+            boardSize,
+            boardSize,
+        );
+        const boardArtwork = boardArtworkNode.addComponent(Sprite);
+        boardArtwork.sizeMode = Sprite.SizeMode.CUSTOM;
+        boardArtworkNode.active = false;
+        const boardGridSize = this.boardGridSize(boardSize);
+        this.boardContent = this.createNode(this.boardNode, 'BoardContent', 0, 0, boardGridSize, boardGridSize);
+        this.boardContent.setSiblingIndex(this.boardNode.children.length - 1);
+        this.boardFallback = boardFallback;
+        this.boardArtwork = boardArtwork;
+        this.buildSlots(boardGridSize);
 
         this.createLabel(
             this.node,
@@ -1099,6 +1173,7 @@ export class Game2048Game extends Component implements MiniGame {
             metrics.hintWidth,
             metrics.hintHeight,
         );
+        this.applyLoadedThemeAssets();
     }
 
     private readLayoutMetrics(): Game2048LayoutMetrics {
@@ -1132,7 +1207,7 @@ export class Game2048Game extends Component implements MiniGame {
         if (!bundle || !background) return Promise.resolve();
 
         return new Promise((resolve) => {
-            bundle.load('visual/backgrounds/t48-neon-v2/texture', Texture2D, (error, texture) => {
+            bundle.load(GAME_2048_BACKGROUND_ASSET_PATH, Texture2D, (error, texture) => {
                 if (!error && texture && this.node.isValid && background.isValid) {
                     const sprite = background.addComponent(Sprite);
                     const spriteFrame = new SpriteFrame();
@@ -1146,15 +1221,83 @@ export class Game2048Game extends Component implements MiniGame {
                     const rootSize = this.node.getComponent(UITransform)?.contentSize;
                     const targetWidth = rootSize?.width ?? 750;
                     const targetHeight = rootSize?.height ?? 1334;
-                    const cover = calculateGame2048BackgroundCover(targetWidth, targetHeight);
+                    const cover = calculateGame2048BackgroundCover(
+                        targetWidth,
+                        targetHeight,
+                        texture.width / Math.max(1, texture.height),
+                    );
                     // Cover 只按统一比例放大，超出视口的部分交给 Camera 裁切，禁止非等比拉伸。
                     background.getComponent(UITransform)?.setContentSize(cover.width, cover.height);
+                    const backdrop = this.node.getChildByName('NeonBackdrop');
+                    if (backdrop) backdrop.active = false;
                 } else if (error) {
                     console.warn('[Game2048Game] Neon background failed to load.', error);
                 }
                 resolve();
             });
         });
+    }
+
+    private async loadThemeAssets(): Promise<void> {
+        const [title, board, ...tiles] = await Promise.all([
+            this.loadTextureFrame(GAME_2048_TITLE_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_BOARD_ASSET_PATH),
+            ...GAME_2048_TILE_VALUES.map((value) => this.loadTextureFrame(
+                `${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`,
+            )),
+        ]);
+
+        if (!this.node.isValid || this.state === 'disposed') {
+            title?.destroy();
+            board?.destroy();
+            tiles.forEach((frame) => frame?.destroy());
+            return;
+        }
+
+        this.ownedTitleFrame = title;
+        this.ownedBoardFrame = board;
+        GAME_2048_TILE_VALUES.forEach((value, index) => {
+            const frame = tiles[index];
+            if (frame) this.ownedTileFrames.set(value, frame);
+        });
+        this.applyLoadedThemeAssets();
+    }
+
+    private loadTextureFrame(assetPath: string): Promise<SpriteFrame | undefined> {
+        const bundle = assetManager.getBundle('game-2048');
+        if (!bundle) return Promise.resolve(undefined);
+        return new Promise((resolve) => {
+            bundle.load(assetPath, Texture2D, (error, texture) => {
+                if (error || !texture) {
+                    console.warn(`[Game2048Game] Theme asset failed to load: ${assetPath}`, error);
+                    resolve(undefined);
+                    return;
+                }
+                const frame = new SpriteFrame();
+                frame.texture = texture;
+                resolve(frame);
+            });
+        });
+    }
+
+    private applyLoadedThemeAssets(): void {
+        if (this.titleArtwork?.node.isValid) {
+            this.titleArtwork.spriteFrame = this.ownedTitleFrame ?? null;
+            this.titleArtwork.node.active = !!this.ownedTitleFrame;
+        }
+        if (this.titleFallback?.isValid) {
+            this.titleFallback.active = !this.ownedTitleFrame;
+        }
+        if (this.boardArtwork?.node.isValid) {
+            this.boardArtwork.spriteFrame = this.ownedBoardFrame ?? null;
+            this.boardArtwork.node.active = !!this.ownedBoardFrame;
+        }
+        if (this.boardFallback?.isValid) {
+            this.boardFallback.active = !this.ownedBoardFrame;
+        }
+        this.boardContent?.children
+            .filter((child) => child.name.startsWith('Slot-'))
+            .forEach((slot) => { slot.active = !this.ownedBoardFrame; });
     }
 
     private async loadMusic(): Promise<void> {
@@ -1273,7 +1416,11 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private boardGap(boardSize: number): number {
-        return Math.max(0.5, boardSize * 13 / GAME_2048_BOARD_SIZE);
+        return Math.max(0.5, boardSize * GAME_2048_BOARD_GAP_RATIO);
+    }
+
+    private boardGridSize(boardSize: number): number {
+        return boardSize * GAME_2048_BOARD_GRID_RATIO;
     }
 
     private createHighMergeEffect(
@@ -1310,11 +1457,17 @@ export class Game2048Game extends Component implements MiniGame {
             flashGraphics.close();
             flashGraphics.fill();
         }
-        flash.setScale(0.84, 0.84, 1);
+        flash.setScale(0.84 * HIGH_MERGE_EFFECT_SCALE, 0.84 * HIGH_MERGE_EFFECT_SCALE, 1);
         tween(flash)
             .to(
                 0.11 + level * 0.01 + tier * 0.012,
-                { scale: new Vec3((1.04 + level * 0.015 + tier * 0.025) * eliteBoost, (1.04 + level * 0.015 + tier * 0.025) * eliteBoost, 1) },
+                {
+                    scale: new Vec3(
+                        (1.04 + level * 0.015 + tier * 0.025) * eliteBoost * HIGH_MERGE_EFFECT_SCALE,
+                        (1.04 + level * 0.015 + tier * 0.025) * eliteBoost * HIGH_MERGE_EFFECT_SCALE,
+                        1,
+                    ),
+                },
                 { easing: 'quadOut' },
             )
             .start();
@@ -1347,9 +1500,10 @@ export class Game2048Game extends Component implements MiniGame {
                 graphics.lineTo(tileSize * 0.22, -tileSize * 0.22);
                 graphics.stroke();
             }
-            const startScale = 0.82 + ringIndex * 0.04;
+            const startScale = (0.82 + ringIndex * 0.04) * HIGH_MERGE_EFFECT_SCALE;
             const duration = 0.13 + level * 0.015 + ringIndex * 0.01 + tier * 0.012;
-            const endScale = (1.03 + level * 0.03 + ringIndex * 0.025 + tier * 0.02) * eliteBoost;
+            const endScale = (1.03 + level * 0.03 + ringIndex * 0.025 + tier * 0.02)
+                * eliteBoost * HIGH_MERGE_EFFECT_SCALE;
             ring.setScale(startScale, startScale, 1);
             tween(ring)
                 .delay(ringIndex * 0.014)
@@ -1391,10 +1545,14 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.strokeColor = colorWithAlpha(material.accent, 150);
         graphics.lineWidth = 1.2 + tier * 0.3;
         graphics.stroke();
-        core.setScale(0.72, 0.72, 1);
+        core.setScale(0.72 * HIGH_MERGE_EFFECT_SCALE, 0.72 * HIGH_MERGE_EFFECT_SCALE, 1);
         tween(core)
             .to(0.12 + tier * 0.02, {
-                scale: new Vec3(1.02 + tier * 0.025, 1.02 + tier * 0.025, 1),
+                scale: new Vec3(
+                    (1.02 + tier * 0.025) * HIGH_MERGE_EFFECT_SCALE,
+                    (1.02 + tier * 0.025) * HIGH_MERGE_EFFECT_SCALE,
+                    1,
+                ),
             }, { easing: 'backOut' })
             .start();
         tween(opacity)
@@ -1404,6 +1562,15 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private drawTile(tile: Node, value: number, size: number): void {
+        const spriteFrame = this.ownedTileFrames.get(value);
+        if (spriteFrame) {
+            const artwork = this.createNode(tile, 'Artwork', 0, 0, size, size);
+            const sprite = artwork.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.spriteFrame = spriteFrame;
+            return;
+        }
+
         const rgb: Rgb = TILE_COLORS[value] ?? [214, 112, 188];
         const base = [10, 21, 38] as const;
         const fill = rgb.map((channel, index) => Math.round(base[index] + channel * 0.38));
@@ -1969,6 +2136,7 @@ export class Game2048Game extends Component implements MiniGame {
         height: number,
         tone: 'cyan' | 'amber' | 'dark',
         flushRightEdge = false,
+        matchScoreCardStyle = false,
     ): Button {
         const node = this.createNode(parent, name, x, y, width, height);
         node.addComponent(UIOpacity);
@@ -1998,37 +2166,66 @@ export class Game2048Game extends Component implements MiniGame {
         const accent = tone === 'cyan' ? COLORS.cyan
             : tone === 'amber' ? COLORS.amber
                 : new Color(91, 157, 177, 255);
-        const fill = tone === 'dark' ? COLORS.panelLight : new Color(
-            Math.round(COLORS.panel.r * 0.68 + accent.r * 0.32),
-            Math.round(COLORS.panel.g * 0.68 + accent.g * 0.32),
-            Math.round(COLORS.panel.b * 0.68 + accent.b * 0.32),
-            255,
-        );
-        graphics.fillColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 9 : 16);
-        drawButtonShape(-width / 2 - 5, -height / 2 - 5, width + 10, height + 10, 19, true);
-        graphics.fill();
-        graphics.fillColor = fill;
-        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 130 : 188);
-        graphics.lineWidth = 2;
-        drawButtonShape(-width / 2, -height / 2, width, height, 15, true);
-        graphics.fill();
-        drawButtonShape(-width / 2, -height / 2, width, height, 15, !flushRightEdge);
-        graphics.stroke();
-        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 58);
-        graphics.lineWidth = 1;
-        drawButtonShape(
-            -width / 2 + 5,
-            -height / 2 + 5,
-            flushRightEdge ? width - 5 : width - 10,
-            height - 10,
-            11,
-            !flushRightEdge,
-        );
-        graphics.stroke();
-        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 112);
-        graphics.moveTo(-width / 2 + 22, height / 2 - 7);
-        graphics.lineTo(width / 2 - 22, height / 2 - 7);
-        graphics.stroke();
+        if (matchScoreCardStyle) {
+            // 暂停按钮与分数卡片复用同一套面板底色、外发光、主边框和内描边。
+            graphics.fillColor = new Color(accent.r, accent.g, accent.b, 14);
+            drawButtonShape(-width / 2 - 5, -height / 2 - 6, width + 10, height + 10, 24, true);
+            graphics.fill();
+            graphics.fillColor = COLORS.panelLight;
+            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 155);
+            graphics.lineWidth = 2;
+            drawButtonShape(-width / 2, -height / 2, width, height, 20, true);
+            graphics.fill();
+            drawButtonShape(-width / 2, -height / 2, width, height, 20, !flushRightEdge);
+            graphics.stroke();
+            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 48);
+            graphics.lineWidth = 1;
+            drawButtonShape(
+                -width / 2 + 6,
+                -height / 2 + 6,
+                width - 12,
+                height - 12,
+                16,
+                !flushRightEdge,
+            );
+            graphics.stroke();
+            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 100);
+            graphics.moveTo(-width / 2 + 22, height / 2 - 7);
+            graphics.lineTo(width / 2 - 22, height / 2 - 7);
+            graphics.stroke();
+        } else {
+            const fill = tone === 'dark' ? COLORS.panelLight : new Color(
+                Math.round(COLORS.panel.r * 0.68 + accent.r * 0.32),
+                Math.round(COLORS.panel.g * 0.68 + accent.g * 0.32),
+                Math.round(COLORS.panel.b * 0.68 + accent.b * 0.32),
+                255,
+            );
+            graphics.fillColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 9 : 16);
+            drawButtonShape(-width / 2 - 5, -height / 2 - 5, width + 10, height + 10, 19, true);
+            graphics.fill();
+            graphics.fillColor = fill;
+            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 130 : 188);
+            graphics.lineWidth = 2;
+            drawButtonShape(-width / 2, -height / 2, width, height, 15, true);
+            graphics.fill();
+            drawButtonShape(-width / 2, -height / 2, width, height, 15, !flushRightEdge);
+            graphics.stroke();
+            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 58);
+            graphics.lineWidth = 1;
+            drawButtonShape(
+                -width / 2 + 5,
+                -height / 2 + 5,
+                flushRightEdge ? width - 5 : width - 10,
+                height - 10,
+                11,
+                !flushRightEdge,
+            );
+            graphics.stroke();
+            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 112);
+            graphics.moveTo(-width / 2 + 22, height / 2 - 7);
+            graphics.lineTo(width / 2 - 22, height / 2 - 7);
+            graphics.stroke();
+        }
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.95;

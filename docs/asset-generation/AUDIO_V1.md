@@ -4,7 +4,7 @@
 > 状态：V4 工程可导入；等待用户复听确认后升级为候选可用  
 > 完整指标：[audio-v1-report.json](./audio-v1-report.json)
 
-> 注：指标报告自 revision 5 起同时包含 T48 霓光 2048 的 10 个独立资产；本文件下方的 17 个资产与包体数字只统计 L1/W1，T48 记录见 [GAME2048_AUDIO_V1.md](./GAME2048_AUDIO_V1.md)。
+> 注：指标报告自 revision 5 起同时包含 T48 霓虹 2048 的 10 个独立资产；本文件下方的 17 个资产与包体数字只统计 L1/W1，T48 记录见 [GAME2048_AUDIO_V1.md](./GAME2048_AUDIO_V1.md)。
 
 ## 1. 原创方法
 

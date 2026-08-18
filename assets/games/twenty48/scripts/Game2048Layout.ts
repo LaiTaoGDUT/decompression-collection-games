@@ -6,8 +6,9 @@ export const GAME_2048_BACKGROUND_ASPECT = GAME_2048_DESIGN_WIDTH / GAME_2048_DE
 // 顶部 HUD 使用全屏可见宽度；棋盘外框仍保留约 23 个设计坐标的横向间距。
 export const GAME_2048_BOARD_SIZE = 680;
 export const GAME_2048_BOARD_NODE_SIZE = GAME_2048_BOARD_SIZE + 24;
-export const GAME_2048_TITLE_WIDTH = 460;
-export const GAME_2048_TITLE_HEIGHT = 104;
+// 标题 Logo 与两张分数卡片的整体视觉宽度对齐（220×2 + 两侧间距 32），保持素材约 3:1 比例。
+export const GAME_2048_TITLE_WIDTH = 472;
+export const GAME_2048_TITLE_HEIGHT = 472 / 3;
 export const GAME_2048_SCORE_CARD_WIDTH = 220;
 export const GAME_2048_SCORE_CARD_HEIGHT = 104;
 export const GAME_2048_PAUSE_BUTTON_WIDTH = 104;
@@ -122,9 +123,11 @@ export function calculateGame2048Layout(
     const titleHeight = GAME_2048_TITLE_HEIGHT * fitScale;
     const pauseWidth = GAME_2048_PAUSE_BUTTON_WIDTH * fitScale;
     const pauseHeight = GAME_2048_PAUSE_TOUCH_HEIGHT * fitScale;
-    const titleCenterFromTop = normalized.safeTop + 106 * fitScale;
-    const pauseDefaultCenterFromTop = normalized.safeTop + 116 * fitScale;
     const reservedBottom = Math.max(0, insets.topRightReservedBottom ?? 0);
+    // 标题需要同时避让顶部安全区和微信胶囊，额外留出 12 设计像素缓冲。
+    const titleTopFromTop = Math.max(normalized.safeTop, reservedBottom) + 12 * fitScale;
+    const titleCenterFromTop = titleTopFromTop + titleHeight / 2;
+    const pauseDefaultCenterFromTop = normalized.safeTop + 116 * fitScale;
     const pauseReservedCenterFromTop = reservedBottom + 10 * fitScale + pauseHeight / 2;
     const pauseCenterFromTop = Math.max(pauseDefaultCenterFromTop, pauseReservedCenterFromTop);
     const titleY = height / 2 - titleCenterFromTop;
