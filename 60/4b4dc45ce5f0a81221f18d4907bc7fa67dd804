@@ -1,0 +1,120 @@
+assets/games/twenty48/visual/pieces/t48-user-piece-8-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/lobby/visual/covers/game2048/t48-user-cover-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/pieces/t48-user-piece-4096-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/pieces/t48-user-piece-2048-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+docs/asset-generation/GAME2048_AUDIO_V1.md
+  h_293365c3a5ebee 1
+docs/asset-generation/AUDIO_V1.md
+  h_293365c3a5ebee 7
+assets/games/twenty48/visual/backgrounds/t48-user-background-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/pieces/t48-user-piece-64-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/scripts/Game2048Layout.ts
+  s_c62a4f2b08f099::t_1818ff2ff990b8 127-130
+  s_c62a4f2b08f099::t_65e9d9e45af052 9-11
+docs/ASSET_LEDGER.md
+  h_293365c3a5ebee 27,40,50
+  s_c62a4f2b08f099::t_0849f14d31377f 3
+  s_c62a4f2b08f099::t_9b7c279ca770a3 46
+assets/games/twenty48/visual/pieces/t48-user-piece-256-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/boards/t48-user-board-v1.png.meta
+  s_c62a4f2b08f099::t_cedf57b75fdad7 5,13
+  s_c62a4f2b08f099::t_4baa4254e93a3f 7-8,14
+  s_c62a4f2b08f099::t_9a8cb9299f9d6b 25,40
+assets/games/twenty48/visual/pieces/t48-user-piece-32-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+docs/ARCHITECTURE.md
+  h_293365c3a5ebee 382,417
+assets/games/twenty48/visual/pieces/t48-user-piece-4-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/pieces/t48-user-piece-128-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/title/t48-user-title-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/resources/configs/games.json
+  h_293365c3a5ebee 53-54
+  s_c62a4f2b08f099::t_85ec4370981f25 59
+assets/games/twenty48/visual/pieces.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-9
+docs/GAME2048_GAMEPLAY_SPEC.md
+  h_293365c3a5ebee 1
+assets/games/twenty48/visual/pieces/t48-user-piece-1024-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+docs/GAME2048_VISUAL_SPEC.md
+  h_293365c3a5ebee 1
+  s_c62a4f2b08f099::t_03d63cfac3e03e 3-4
+  s_c62a4f2b08f099::t_0849f14d31377f 31,33,35-36
+  s_c62a4f2b08f099::t_0efb5f42b09b9c 10,14,34
+  s_c62a4f2b08f099::t_33e32ea0786aa9 9,11-12
+docs/SECOND_PHASE_SCOPE.md
+  h_293365c3a5ebee 11,13,21,26,58,61,81,89,95
+assets/games/twenty48/visual/title.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-9
+assets/games/twenty48/visual/pieces/t48-user-piece-16-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+assets/games/twenty48/visual/pieces/t48-user-piece-512-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+docs/REVIEW_LOG.md
+  h_293365c3a5ebee 1359,1361,1364
+assets/games/twenty48/visual/boards.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-9
+docs/CONTENT_PRODUCTION_PLAN.md
+  h_293365c3a5ebee 11,21,26,33,60,77,123-124,187,191,272,275,286
+docs/SECOND_PHASE_PAGE_STATE_MATRIX.md
+  h_293365c3a5ebee 30,54,59,100
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_c62a4f2b08f099::t_f5da7d9c11854f 501
+  s_c62a4f2b08f099::t_fcba9f633f8297 68,1460,1464-1470,1503,1505-1506
+  s_c62a4f2b08f099::t_cf1d0665a1bc13 1231-1232
+  s_c62a4f2b08f099::t_42cd5ddae63abe 1242,1244,1252,1258,1291-1300
+  s_c62a4f2b08f099::t_a7aa0ea373b384 1117-1125,1161
+  s_c62a4f2b08f099::t_b68dd8b6eeb78d 1424-1425,1565-1573
+  s_c62a4f2b08f099::t_c1a570ddc1ceb6 1147-1160,1162-1163
+  s_c62a4f2b08f099::t_6b6c263343f197 1210,1238-1241,1243,1245-1251,1253-1257,1259-1278,1281-1290
+  s_c62a4f2b08f099::t_33b27f75e5c32c 72,220,224-225,356-357
+  s_c62a4f2b08f099::t_323e4b9cacd102 991-999,1045,1047,1051,1054-1067
+  s_c62a4f2b08f099::t_4bfba792d2d6df 1082,2139,2169-2228
+  s_c62a4f2b08f099::t_556eff00b3ccb5 1419,1421-1423
+  s_c62a4f2b08f099::t_a0042d471c142e 70-71,73-74,104-116,130-141,153,155-157,160-164,167-172
+  s_c62a4f2b08f099::t_d38ae1a148ea76 75-77
+  s_c62a4f2b08f099::t_3620b3e73ebbb0 929-930
+  s_c62a4f2b08f099::t_5cecd6cc61d375 1548,1551-1555
+  s_c62a4f2b08f099::t_ee9259e372026b 251
+  s_c62a4f2b08f099::t_53e126dbb6c832 219,221-223,347,349-355,358-359
+  s_c62a4f2b08f099::t_5ca0c05b125abb 1080
+  s_c62a4f2b08f099::t_1a37cfcc4285c7 1224-1228
+  s_c62a4f2b08f099::t_1e5f2bdda0a37d 1176
+  s_c62a4f2b08f099::t_687ce0c0636e0c 1237
+assets/games/twenty48/visual/pieces/t48-user-piece-2-v1.png.meta
+  s_c62a4f2b08f099::t_4baa4254e93a3f 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "604b4dc45ce5f0a81221f18d4907bc7fa67dd804",
+  "prompts": {},
+  "logical_commit_id": "604b4dc45ce5f0a81221f18d4907bc7fa67dd804",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_c62a4f2b08f099": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01434-7ecf-7ae2-ac85-c4f8d8cbc70e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 1113,
+      "total_deletions": 213
+    }
+  }
+}
