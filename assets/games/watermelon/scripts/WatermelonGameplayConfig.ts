@@ -37,7 +37,7 @@ export const DEFAULT_WATERMELON_GAMEPLAY_CONFIG: WatermelonGameplayConfig = deep
     dropCooldownSeconds: 0.45,
     dropEdgePadding: 8,
     dangerStableSpeedSquared: 0.25,
-    dangerOverflowSeconds: 1.5,
+    dangerOverflowSeconds: 3,
     continueSettleSeconds: 0.6,
     gravityScale: 2.15,
     linearDamping: 1,
