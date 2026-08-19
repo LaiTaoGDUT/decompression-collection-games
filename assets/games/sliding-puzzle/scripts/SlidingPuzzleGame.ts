@@ -16,6 +16,7 @@ import {
     SpriteFrame,
     Texture2D,
     UITransform,
+    Vec3,
     view,
 } from 'cc';
 import type { Platform } from '../../../platform/Platform';
@@ -34,12 +35,15 @@ import { SlidingPuzzleModel } from './SlidingPuzzleModel';
 import {
     calculateSlidingPuzzleBackgroundCover,
     calculateSlidingPuzzleLayout,
+    calculateSlidingPuzzleTileSourceRect,
+    SLIDING_PUZZLE_TOUCH_SIZE,
     type SlidingPuzzleLayoutMetrics,
 } from './SlidingPuzzleLayout';
 import {
     SLIDING_PUZZLE_BOARD_SIZES,
     type SlidingPuzzleBoardSize,
     type SlidingPuzzleDirection,
+    type SlidingPuzzleMoveResult,
     type SlidingPuzzleRoundConfig,
 } from './SlidingPuzzleTypes';
 
@@ -76,7 +80,7 @@ const COLORS = Object.freeze({
     red: new Color(166, 92, 69, 255),
     ink: new Color(45, 37, 32, 255),
     muted: new Color(139, 121, 104, 255),
-    shadow: new Color(45, 37, 32, 88),
+    shadow: new Color(45, 37, 32, 44),
     overlay: new Color(45, 37, 32, 178),
 });
 
@@ -86,6 +90,9 @@ const PREVIEW_PAN_EPSILON = 0.0001;
 const TILE_SKIN_INSET_RATIO = 0.018;
 const TILE_CORNER_RADIUS_RATIO = 0.035;
 const TILE_EDGE_INSET = 2;
+const BUTTON_PRESS_SCALE = 0.96;
+const BUTTON_PRESS_OFFSET = 4;
+const POPUP_LIFT = 36;
 // 棋盘背景素材为 512×512，实际木框内槽从约 32px 处开始。
 // 用素材比例计算，确保不同屏幕尺寸下拼图外沿仍与内槽边界对齐。
 const BOARD_INNER_INSET_RATIO = 32 / 512;
@@ -97,12 +104,7 @@ export const SLIDING_PUZZLE_BOARD_ASSET_PATH =
     'visual/boards/sliding-puzzle-board-v1/texture';
 
 const SLIDING_PUZZLE_PRESET_ASSET_PATHS: readonly string[] = Object.freeze([
-    'visual/presets/preset-01-forest-cabin-v1/texture',
-    'visual/presets/preset-02-lighthouse-bay-v1/texture',
-    'visual/presets/preset-03-autumn-kite-cart-v1/texture',
-    'visual/presets/preset-04-greenhouse-copper-pot-v1/texture',
-    'visual/presets/preset-05-toy-train-valley-v1/texture',
-    'visual/presets/preset-06-moonlit-pier-lantern-v1/texture',
+    // 当前仓库已实际交付的预置图；后续 V01～V06 进入 Bundle 后只需在这里登记。
     'visual/presets/preset-07-cats-cover-v1/texture',
 ]);
 
@@ -134,7 +136,6 @@ const BUTTON_ICON_ASSET_KEYS: Readonly<Record<string, SlidingPuzzleVisualKey>> =
     CancelCrop: 'closeIcon',
     ConfirmCrop: 'cropIcon',
     CloseReference: 'closeIcon',
-    LobbyButton: 'backIcon',
 });
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -169,8 +170,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private readonly cropController = new SlidingPuzzleCropController();
 
     private selectedSize: SlidingPuzzleBoardSize = 4;
-    // 当前先默认使用用户提供的猫咪图，便于直接验证切片和棋盘贴合效果。
-    private selectedPresetIndex = SLIDING_PUZZLE_PRESET_ASSET_PATHS.length - 1;
+    private selectedPresetIndex = 0;
     private selectedConfig: SlidingPuzzleRoundConfig = Object.freeze({
         boardSize: 4,
         imageSource: 'preset',
@@ -182,10 +182,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private touchStartX = 0;
     private touchStartY = 0;
     private layout?: SlidingPuzzleLayoutMetrics;
-    private titleLabel?: Label;
     private timerLabel?: Label;
     private movesLabel?: Label;
     private boardNode?: Node;
+    private backgroundNode?: Node;
     private dynamicNode?: Node;
     private overlayNode?: Node;
     private activePauseModel?: MiniGamePauseModel;
@@ -209,6 +209,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private readonly pendingAssetLoads = new Set<Promise<unknown>>();
     private disposePromise?: Promise<void>;
     private uiActionPending = false;
+    private restartToSetupAfterRuntimeRestart = false;
     private cropPreviewNode?: Node;
     private cropPreviewSprite?: Sprite;
     private cropPreviewFrame?: SpriteFrame;
@@ -290,6 +291,16 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.hidePauseMenu();
         this.hideResultView();
         this.hideReferencePreview();
+        const restartToSetup = this.restartToSetupAfterRuntimeRestart;
+        this.restartToSetupAfterRuntimeRestart = false;
+        if (restartToSetup) {
+            this.state = 'setup';
+            this.elapsedSeconds = 0;
+            this.completionRequested = false;
+            this.inputLocked = false;
+            this.showSetup();
+            return;
+        }
         await this.startRound();
     }
 
@@ -327,8 +338,13 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.resizeListening = false;
         }
         this.unscheduleAllCallbacks();
+        this.clearSpriteFrameReferences(this.node);
         this.destroyOverlay();
         this.destroyDynamicView();
+        if (this.backgroundNode?.isValid) {
+            this.backgroundNode.destroy();
+        }
+        this.backgroundNode = undefined;
         this.cropController.dispose();
 
         const pendingLoads = [...this.pendingAssetLoads];
@@ -358,27 +374,40 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.activePauseModel = model;
         this.inputLocked = true;
         const overlay = this.createOverlay('SlidingPuzzlePauseOverlay');
-        const panel = this.createPopupPanel(overlay, 'PausePanel', 560, 500);
-        panel.setPosition(0, 20, 0);
-        this.createLabel(panel, 'PauseKicker', '拼图暂停', 0, 170, 26, COLORS.tealDark, 460, 44);
+        const panelWidth = 640;
+        const panelHeight = 720;
+        const panel = this.createPopupPanel(overlay, 'PausePanel', panelWidth, panelHeight);
+        panel.setPosition(0, this.getPopupCenterY(), 0);
+        this.setPopupScale(panel, panelWidth, panelHeight);
+        this.createLabel(panel, 'PauseKicker', '拼图暂停', 0, 290, 40, COLORS.tealDark, 520, 58);
         this.createLabel(
             panel,
             'PauseBody',
-            '棋盘状态已安全冻结\n回来后继续寻找下一块空槽',
+            '棋盘和计时已停住\n回来后继续寻找下一块空位',
             0,
-            85,
+            202,
             24,
             COLORS.ink,
-            470,
-            90,
+            540,
+            94,
         );
-        this.createButton(panel, 'ResumeButton', '继续拼图', 0, -42, 430, 88, COLORS.teal, () => {
+        this.createButton(panel, 'ResumeButton', '继续拼图', 0, 68, 480, 84, COLORS.teal, () => {
             this.runUiAction('resume', model.resume);
         });
-        this.createButton(panel, 'RestartButton', '重新开局', 0, -148, 430, 88, COLORS.wood, () => {
+        this.createButton(panel, 'RestartButton', '重新开局', 0, -40, 480, 84, COLORS.wood, () => {
             this.runUiAction('restart', model.restart);
         });
-        this.createButton(panel, 'LobbyButton', '返回大厅', 0, -254, 430, 88, COLORS.red, () => {
+        this.createButton(panel, 'ChooseImageButton', '重新选图', 0, -148, 480, 84, COLORS.wood, () => {
+            this.runUiAction('choose-image', async () => {
+                this.restartToSetupAfterRuntimeRestart = true;
+                try {
+                    await model.restart();
+                } finally {
+                    this.restartToSetupAfterRuntimeRestart = false;
+                }
+            });
+        });
+        this.createButton(panel, 'LobbyButton', '返回大厅', 0, -256, 480, 84, COLORS.red, () => {
             this.runUiAction('exit', model.exit);
         });
     }
@@ -399,30 +428,33 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.inputLocked = true;
         this.destroyOverlay();
         const overlay = this.createOverlay('SlidingPuzzleResultOverlay');
-        const panel = this.createPopupPanel(overlay, 'ResultPanel', 580, 590);
-        panel.setPosition(0, 10, 0);
+        const panelWidth = 640;
+        const panelHeight = 650;
+        const panel = this.createPopupPanel(overlay, 'ResultPanel', panelWidth, panelHeight);
+        panel.setPosition(0, this.getPopupCenterY(), 0);
+        this.setPopupScale(panel, panelWidth, panelHeight);
         const title = model.result.completed ? '拼图完成' : '本局结束';
-        this.createLabel(panel, 'ResultTitle', title, 0, 210, 34, COLORS.woodDark, 500, 52);
+        this.createLabel(panel, 'ResultTitle', title, 0, 258, 36, COLORS.woodDark, 540, 56);
         this.createLabel(
             panel,
             'ResultStats',
-            `用时 ${this.formatDuration(this.elapsedSeconds)}\n移动 ${this.model.moves} 步\n${this.selectedConfig.imageSource === 'local' ? '自选图片' : '预设图片'}`,
+            `用时 ${this.formatDuration(this.elapsedSeconds)}  ·  步数 ${this.model.moves}\n${this.selectedConfig.imageSource === 'local' ? '自选图片' : '预设图片'}`,
             0,
-            92,
-            27,
+            154,
+            26,
             COLORS.ink,
-            500,
-            150,
+            540,
+            84,
         );
         if (this.imageTexture) {
-            this.createImagePreview(panel, 0, -72, 270, 150, '完成图片');
+            this.createImagePreview(panel, 0, -32, 280, 280, '');
         } else {
-            this.createPlaceholderPreview(panel, 0, -72, 270, 150, '完成图片占位');
+            this.createPlaceholderPreview(panel, 0, -32, 280, 280, '完成图片占位');
         }
-        this.createButton(panel, 'RestartButton', '再来一局', -116, -222, 210, 88, COLORS.teal, () => {
+        this.createButton(panel, 'RestartButton', '再来一局', -140, -248, 240, 84, COLORS.teal, () => {
             this.runUiAction('restart', model.restart);
         });
-        this.createButton(panel, 'LobbyButton', '返回大厅', 116, -222, 210, 88, COLORS.red, () => {
+        this.createButton(panel, 'LobbyButton', '返回大厅', 140, -248, 240, 84, COLORS.red, () => {
             this.runUiAction('exit', model.returnToLobby);
         });
     }
@@ -437,11 +469,16 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private buildBackground(): void {
         this.destroyDynamicView();
-        this.node.getChildByName('SlidingPuzzleBackground')?.destroy();
+        const previousBackground = this.backgroundNode ?? this.node.getChildByName('SlidingPuzzleBackground');
+        if (previousBackground?.isValid) {
+            this.clearSpriteFrameReferences(previousBackground);
+            previousBackground.destroy();
+        }
         const background = new Node('SlidingPuzzleBackground');
         background.layer = this.node.layer;
         background.setParent(this.node);
         background.setSiblingIndex(0);
+        this.backgroundNode = background;
         const transform = background.addComponent(UITransform);
         const size = view.getVisibleSize();
         transform.setContentSize(Math.max(750, size.width), Math.max(1334, size.height));
@@ -483,37 +520,73 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.dynamicNode = root;
 
         const metrics = this.layout;
-        this.createLabel(root, 'Title', '木框里的小拼图', 0, metrics.titleY, 42, COLORS.paperLight, 680, 64);
-        this.createLabel(
+        this.createIconButton(
             root,
-            'Subtitle',
-            '滑动方块，让熟悉的画面重新完整',
-            0,
-            metrics.titleY - 54,
-            23,
-            COLORS.paper,
-            660,
-            40,
+            'BackButton',
+            -metrics.viewportWidth / 2 + 58,
+            metrics.headerY,
+            'backIcon',
+            58,
+            () => this.requestLobbyFromSetup(),
         );
-        const setupImageCaption = this.selectedConfig.imageSource === 'local' ? '本地图片' : '预设图片';
+        this.createLabel(root, 'Title', '木框拼图', 0, metrics.headerY - 22, 38, COLORS.paperLight, 420, 56);
+
+        const panel = this.createPanel(
+            root,
+            'SetupCard',
+            metrics.setupPanelWidth,
+            metrics.setupPanelHeight,
+            COLORS.paper,
+            32,
+        );
+        panel.setPosition(0, metrics.setupPanelCenterY, 0);
+        const panelTop = metrics.setupPanelHeight / 2;
+        const compact = metrics.setupPanelHeight < 760;
+        const previewSize = clamp(
+            Math.min(compact ? 220 : 292, metrics.setupPanelHeight * (compact ? 0.34 : 0.34)),
+            compact ? 160 : 220,
+            compact ? 220 : 292,
+        );
+        const previewY = panelTop - (compact ? 130 : 210);
         if (this.imageTexture) {
-            this.createImagePreview(root, 0, metrics.titleY - 208, 340, 220, setupImageCaption);
+            this.createImagePreview(
+                panel,
+                0,
+                previewY,
+                previewSize,
+                previewSize,
+                '',
+            );
         } else {
-            this.createPlaceholderPreview(root, 0, metrics.titleY - 208, 340, 220, `${setupImageCaption}占位`);
+            this.createPlaceholderPreview(panel, 0, previewY, previewSize, previewSize, '正在准备图片');
         }
 
-        this.createLabel(root, 'SizeCaption', '选择棋盘尺寸', 0, metrics.titleY - 352, 22, COLORS.paper, 360, 38);
-        const sizeSpacing = 118;
+        const sizeCaptionY = previewY - previewSize / 2 - (compact ? 26 : 34);
+        this.createLabel(
+            panel,
+            'SizeCaption',
+            '选择棋盘尺寸',
+            0,
+            sizeCaptionY,
+            compact ? 24 : 28,
+            COLORS.ink,
+            440,
+            compact ? 36 : 42,
+        );
+        const sizeButtonWidth = Math.min(compact ? 94 : 108, Math.max(64, (metrics.setupPanelWidth - 64) / 4 - 4));
+        const sizeButtonHeight = compact ? 72 : 76;
+        const sizeSpacing = sizeButtonWidth + 8;
+        const sizeY = sizeCaptionY - (compact ? 52 : 60);
         SLIDING_PUZZLE_BOARD_SIZES.forEach((size, index) => {
             const x = (index - 1.5) * sizeSpacing;
             this.createButton(
-                root,
+                panel,
                 `Size${size}`,
                 `${size} × ${size}`,
                 x,
-                metrics.titleY - 420,
-                104,
-                88,
+                sizeY,
+                sizeButtonWidth,
+                sizeButtonHeight,
                 size === this.selectedSize ? COLORS.teal : COLORS.wood,
                 () => {
                     this.selectedSize = size;
@@ -527,10 +600,12 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             );
         });
 
-        this.createButton(root, 'PresetButton', '换一张预设图', -144, metrics.footerY + 154, 260, 88, COLORS.wood, () => {
-            const offset = 1 + Math.floor(Math.random() * Math.max(1, SLIDING_PUZZLE_PRESET_ASSET_PATHS.length - 1));
-            this.selectedPresetIndex = (this.selectedPresetIndex + offset)
-                % SLIDING_PUZZLE_PRESET_ASSET_PATHS.length;
+        const sourceButtonWidth = Math.min(compact ? 240 : 258, Math.max(132, (metrics.setupPanelWidth - 48) / 2));
+        const sourceButtonHeight = compact ? 74 : 78;
+        const sourceOffset = sourceButtonWidth / 2 + 16;
+        const sourceY = sizeY - (compact ? 96 : 116);
+        this.createButton(panel, 'PresetButton', '随机一张拼图', -sourceOffset, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.wood, () => {
+            this.selectedPresetIndex = this.getRandomPresetIndex();
             this.imageLoadToken += 1;
             this.releaseImageResources();
             this.selectedConfig = Object.freeze({
@@ -543,25 +618,18 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.showSetup();
             void this.trackAssetLoad(this.loadPresetImage(true));
         });
-        this.createButton(root, 'ImageButton', '选择本地图片', 144, metrics.footerY + 154, 260, 88, COLORS.teal, () => {
+        this.createButton(panel, 'ImageButton', '选择图片', sourceOffset, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.teal, () => {
             void this.pickLocalImage();
         });
-        this.createButton(root, 'StartButton', '开始拼图', 0, metrics.footerY + 42, 450, 96, COLORS.red, () => {
+
+        const startWidth = Math.min(compact ? 440 : 480, metrics.setupPanelWidth - 32);
+        const startHeight = compact ? 80 : 100;
+        const startY = compact
+            ? Math.max(-panelTop + startHeight / 2 + 4, sourceY - 92)
+            : sourceY - 130;
+        this.createButton(panel, 'StartButton', '开始拼图', 0, startY, startWidth, startHeight, COLORS.red, () => {
             void this.startRound();
-        });
-        this.createLabel(
-            root,
-            'PlaceholderNote',
-            this.selectedConfig.imageSource === 'local'
-                ? '已选择本地图片 · 可拖动取景框调整构图'
-                : '图片、木纹和音效暂用占位资源，后续可直接替换',
-            0,
-            metrics.footerY - 32,
-            18,
-            COLORS.paper,
-            690,
-            32,
-        );
+        }, compact ? 28 : 30);
     }
 
     private async pickLocalImage(): Promise<void> {
@@ -873,19 +941,23 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         const boardSize = this.selectedSize;
         const cropRect = this.getCropRect(this.imageTexture, this.getActiveCrop());
-        const cellSize = cropRect.width / boardSize;
         for (let index = 0; index < boardSize * boardSize - 1; index += 1) {
-            const row = Math.floor(index / boardSize);
-            const column = index % boardSize;
+            const sourceRect = calculateSlidingPuzzleTileSourceRect(
+                cropRect.x,
+                cropRect.y,
+                cropRect.width,
+                boardSize,
+                index,
+            );
             const frame = new SpriteFrame();
             frame.texture = this.imageTexture;
             frame.rect = new Rect(
-                cropRect.x + column * cellSize,
-                cropRect.y + cropRect.height - (row + 1) * cellSize,
-                cellSize,
-                cellSize,
+                sourceRect.x,
+                sourceRect.y,
+                sourceRect.width,
+                sourceRect.height,
             );
-            frame.originalSize = new Size(cellSize, cellSize);
+            frame.originalSize = new Size(sourceRect.width, sourceRect.height);
             this.tileFrames.push(frame);
         }
     }
@@ -990,7 +1062,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private async startRound(): Promise<void> {
-        if (this.state === 'disposed' || this.state === 'starting' || this.state === 'playing') {
+        if (this.state === 'disposed'
+            || this.state === 'starting'
+            || this.state === 'playing'
+            || this.uiActionPending) {
             return;
         }
 
@@ -1024,13 +1099,20 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         root.setParent(this.node);
         this.dynamicNode = root;
         const metrics = this.layout;
-        this.titleLabel = this.createLabel(root, 'Title', '木框拼图', 0, metrics.headerY, 31, COLORS.paperLight, 280, 48);
-        this.timerLabel = this.createLabel(root, 'Timer', '00:00', -188, metrics.headerY - 54, 23, COLORS.paper, 180, 36);
-        this.movesLabel = this.createLabel(root, 'Moves', '移动 0 步', 18, metrics.headerY - 54, 23, COLORS.paper, 190, 36);
-        this.createButton(root, 'ReferenceButton', '参考图', -metrics.viewportWidth / 2 + 86, metrics.pauseY, 126, 88, COLORS.wood, () => {
-            this.showReferencePreview();
-        });
-        this.createButton(root, 'PauseButton', '暂停', metrics.pauseX, metrics.pauseY, 116, 88, COLORS.teal, () => {
+        this.timerLabel = this.createLabel(root, 'Timer', '用时 00:00', -112, metrics.headerY - 58, 28, COLORS.paperLight, 240, 44);
+        this.movesLabel = this.createLabel(root, 'Moves', '步数 000', 112, metrics.headerY - 58, 28, COLORS.paperLight, 240, 44);
+        this.createIconButton(
+            root,
+            'ReferenceButton',
+            -metrics.viewportWidth / 2 + 64,
+            metrics.headerY,
+            'referenceIcon',
+            58,
+            () => {
+                this.showReferencePreview();
+            },
+        );
+        this.createIconButton(root, 'PauseButton', metrics.pauseX, metrics.pauseY, 'pauseIcon', 58, () => {
             if (this.state === 'playing') {
                 this.context?.services.feedback.play('uiButton');
                 this.context?.requestPause();
@@ -1048,17 +1130,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         board.on(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
         board.on(Node.EventType.TOUCH_CANCEL, this.handleTouchCancel, this);
         this.boardNode = board;
-        this.createLabel(
-            root,
-            'Hint',
-            '滑动方块 · 每一步都会留下轻轻的木屑回声',
-            0,
-            metrics.footerY,
-            18,
-            COLORS.paper,
-            metrics.viewportWidth - 48,
-            32,
-        );
         this.rebuildTileFrames();
         this.renderBoard();
         this.refreshHud();
@@ -1075,7 +1146,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const boardSize = metrics.boardSize;
         graphics.clear();
         graphics.fillColor = COLORS.shadow;
-        graphics.roundRect(-boardSize / 2 + 10, -boardSize / 2 - 12, boardSize, boardSize, 26);
+        graphics.roundRect(-boardSize / 2 + 6, -boardSize / 2 - 7, boardSize, boardSize, 26);
         graphics.fill();
         graphics.fillColor = COLORS.woodDark;
         graphics.roundRect(-boardSize / 2, -boardSize / 2, boardSize, boardSize, 26);
@@ -1135,7 +1206,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 skinGraphics.roundRect(-tileSize / 2, -tileSize / 2, tileSize, tileSize, tileRadius);
                 skinGraphics.fill();
                 skinGraphics.lineWidth = 2;
-                skinGraphics.strokeColor = colorWithAlpha(COLORS.woodDark, 190);
+                skinGraphics.strokeColor = colorWithAlpha(COLORS.woodDark, 120);
                 skinGraphics.roundRect(
                     -tileSize / 2 + 1,
                     -tileSize / 2 + 1,
@@ -1178,7 +1249,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             bevel.addComponent(UITransform).setContentSize(tileSize, tileSize);
             const bevelGraphics = bevel.addComponent(Graphics);
             bevelGraphics.lineWidth = 2;
-            bevelGraphics.strokeColor = colorWithAlpha(COLORS.woodDark, 150);
+            bevelGraphics.strokeColor = colorWithAlpha(COLORS.woodDark, 96);
             bevelGraphics.roundRect(
                 -tileSize / 2 + 2,
                 -tileSize / 2 + 2,
@@ -1209,6 +1280,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const deltaX = location.x - this.touchStartX;
         const deltaY = location.y - this.touchStartY;
         if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < SWIPE_THRESHOLD) {
+            this.handleBoardTap(location);
             return;
         }
 
@@ -1217,6 +1289,45 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             : (deltaY > 0 ? 'up' : 'down');
         this.performMove(direction);
     };
+
+    private handleBoardTap(location: { readonly x: number; readonly y: number }): void {
+        const tileIndex = this.getBoardTileIndex(location);
+        if (tileIndex < 0) {
+            return;
+        }
+
+        const result = this.model.moveTileAt(tileIndex);
+        if (result.changed) {
+            this.applyMoveResult(result);
+        }
+    }
+
+    private getBoardTileIndex(location: { readonly x: number; readonly y: number }): number {
+        const board = this.boardNode;
+        const metrics = this.layout;
+        if (!board || !metrics) {
+            return -1;
+        }
+
+        const transform = board.getComponent(UITransform);
+        if (!transform) {
+            return -1;
+        }
+
+        const local = transform.convertToNodeSpaceAR(new Vec3(location.x, location.y, 0));
+        const innerSize = metrics.boardSize * (1 - BOARD_INNER_INSET_RATIO * 2);
+        const tileAreaSize = Math.max(1, innerSize - TILE_EDGE_INSET * 2);
+        const size = this.model.boardSize;
+        const cellSize = tileAreaSize / size;
+        if (local.x < -tileAreaSize / 2 || local.x > tileAreaSize / 2
+            || local.y < -tileAreaSize / 2 || local.y > tileAreaSize / 2) {
+            return -1;
+        }
+
+        const column = Math.min(size - 1, Math.floor((local.x + tileAreaSize / 2) / cellSize));
+        const row = Math.min(size - 1, Math.floor((tileAreaSize / 2 - local.y) / cellSize));
+        return row * size + column;
+    }
 
     private readonly handleTouchCancel = (): void => {
         this.touchStartX = 0;
@@ -1231,6 +1342,14 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const result = this.model.move(direction);
         if (!result.changed) {
             this.context?.services.feedback.play('collision');
+            return;
+        }
+
+        this.applyMoveResult(result);
+    }
+
+    private applyMoveResult(result: SlidingPuzzleMoveResult): void {
+        if (!result.changed) {
             return;
         }
 
@@ -1281,32 +1400,40 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.inputLocked = true;
         this.destroyOverlay();
         const overlay = this.createOverlay('SlidingPuzzleReferenceOverlay');
-        const panel = this.createPopupPanel(overlay, 'ReferencePanel', 590, 650);
-        panel.setPosition(0, 0, 0);
-        this.createLabel(panel, 'ReferenceTitle', '参考图', 0, 240, 34, COLORS.woodDark, 480, 52);
+        const panelWidth = 640;
+        const panelHeight = 650;
+        const panel = this.createPopupPanel(overlay, 'ReferencePanel', panelWidth, panelHeight);
+        panel.setPosition(0, this.getPopupCenterY(), 0);
+        this.setPopupScale(panel, panelWidth, panelHeight);
+        this.createLabel(panel, 'ReferenceTitle', '参考图', 0, 244, 34, COLORS.woodDark, 480, 52);
+        this.createIconButton(
+            panel,
+            'CloseReference',
+            panelWidth / 2 - 92,
+            panelHeight / 2 - 92,
+            'closeIcon',
+            56,
+            () => this.hideReferencePreview(),
+        );
         if (this.imageTexture) {
             this.createImagePreview(
                 panel,
                 0,
-                20,
-                390,
-                390,
-                this.selectedConfig.imageSource === 'local' ? '本地图片' : '预设图片',
+                4,
+            430,
+            430,
+                '',
             );
         } else {
             this.createPlaceholderPreview(
                 panel,
                 0,
-                20,
-                390,
-                390,
-                this.selectedConfig.imageSource === 'local' ? '本地图片占位' : '预设图片占位',
+                4,
+                430,
+                430,
+                '图片准备中',
             );
         }
-        this.createLabel(panel, 'ReferenceNote', '当前拼图图片预览', 0, -190, 21, COLORS.muted, 500, 40);
-        this.createButton(panel, 'CloseReference', '返回拼图', 0, -270, 350, 88, COLORS.teal, () => {
-            this.hideReferencePreview();
-        });
     }
 
     private hideReferencePreview(): void {
@@ -1342,7 +1469,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         panel.addComponent(UITransform).setContentSize(width, height);
         const graphics = panel.addComponent(Graphics);
         graphics.fillColor = COLORS.shadow;
-        graphics.roundRect(-width / 2 + 10, -height / 2 - 12, width, height, radius);
+        graphics.roundRect(-width / 2 + 6, -height / 2 - 7, width, height, radius);
         graphics.fill();
         graphics.fillColor = color;
         graphics.roundRect(-width / 2, -height / 2, width, height, radius);
@@ -1355,7 +1482,12 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private createPopupPanel(parent: Node, name: string, width: number, height: number): Node {
-        const panel = this.createPanel(parent, name, width, height, COLORS.paper, 28);
+        // 弹窗容器只使用 PZ1 的九宫格背景图；不再在图片下面叠一层
+        // Graphics 绘制的“假面板”，避免边框和图片边缘出现双层错位。
+        const panel = new Node(name);
+        panel.layer = this.node.layer;
+        panel.setParent(parent);
+        panel.addComponent(UITransform).setContentSize(width, height);
         const frame = this.visualFrames.get('popup');
         if (frame) {
             const artwork = new Node('PopupArtwork');
@@ -1366,13 +1498,36 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             const sprite = artwork.addComponent(Sprite);
             sprite.type = Sprite.Type.SLICED;
             sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-            sprite.spriteFrame = frame;
             frame.insetLeft = Math.min(180, frame.originalSize.width * 0.24);
             frame.insetRight = Math.min(180, frame.originalSize.width * 0.24);
             frame.insetTop = Math.min(150, frame.originalSize.height * 0.24);
             frame.insetBottom = Math.min(150, frame.originalSize.height * 0.24);
+            sprite.spriteFrame = frame;
         }
         return panel;
+    }
+
+    private getPopupCenterY(): number {
+        const metrics = this.layout ?? this.getLayout();
+        return metrics.safeContentCenterY + POPUP_LIFT;
+    }
+
+    private setPopupScale(panel: Node, designWidth: number, designHeight: number): void {
+        const metrics = this.layout ?? this.getLayout();
+        const availableHeight = Math.max(
+            320,
+            metrics.viewportHeight - metrics.topReserved - metrics.safeBottom - 96,
+        );
+        const availableWidth = Math.max(280, metrics.viewportWidth - 40);
+        const scale = Math.max(
+            0.5,
+            Math.min(
+                1,
+                availableHeight / Math.max(1, designHeight),
+                availableWidth / Math.max(1, designWidth),
+            ),
+        );
+        panel.setScale(scale, scale, 1);
     }
 
     private createPlaceholderPreview(parent: Node, x: number, y: number, width: number, height: number, caption: string): Node {
@@ -1586,8 +1741,13 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         height: number,
         color: Color,
         onClick: () => void,
+        fontSize?: number,
     ): Node {
         const button = this.createPanel(parent, name, width, height, color, 16);
+        button.getComponent(UITransform)?.setContentSize(
+            Math.max(width, SLIDING_PUZZLE_TOUCH_SIZE),
+            Math.max(height, SLIDING_PUZZLE_TOUCH_SIZE),
+        );
         button.setPosition(x, y, 0);
         const label = this.createLabel(
             button,
@@ -1595,7 +1755,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             text,
             0,
             0,
-            Math.min(26, height * 0.3),
+            fontSize ?? Math.min(26, height * 0.3),
             COLORS.paperLight,
             width - 12,
             height - 10,
@@ -1616,15 +1776,76 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             if (width <= 160) {
                 label.node.active = false;
             } else {
+                const labelWidth = width - iconSize - 36;
                 const labelTransform = label.node.getComponent(UITransform);
-                label.node.setPosition(iconNode.position.x + iconSize / 2 + 10, 0, 0);
-                labelTransform?.setContentSize(width - iconSize - 36, height - 10);
+                label.node.setPosition(
+                    -width / 2 + iconSize + 18 + labelWidth / 2,
+                    0,
+                    0,
+                );
+                labelTransform?.setContentSize(labelWidth, height - 10);
             }
         }
+        this.bindButtonInteraction(button, onClick);
+        return button;
+    }
+
+    private createIconButton(
+        parent: Node,
+        name: string,
+        x: number,
+        y: number,
+        iconKey: SlidingPuzzleVisualKey,
+        iconSize: number,
+        onClick: () => void,
+    ): Node {
+        const button = new Node(name);
+        button.layer = this.node.layer;
+        button.setParent(parent);
+        const hitSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, iconSize + 28);
+        button.addComponent(UITransform).setContentSize(hitSize, hitSize);
+        button.setPosition(x, y, 0);
+
+        const frame = this.visualFrames.get(iconKey);
+        if (frame) {
+            const icon = new Node('Icon');
+            icon.layer = this.node.layer;
+            icon.setParent(button);
+            icon.addComponent(UITransform).setContentSize(iconSize, iconSize);
+            const sprite = icon.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.spriteFrame = frame;
+        }
+
+        this.bindButtonInteraction(button, onClick);
+        return button;
+    }
+
+    private bindButtonInteraction(button: Node, onClick: () => void): void {
+        const baseX = button.position.x;
+        const baseY = button.position.y;
+        const baseScaleX = button.scale.x;
+        const baseScaleY = button.scale.y;
+        const press = (): void => {
+            if (!button.isValid) {
+                return;
+            }
+            button.setScale(baseScaleX * BUTTON_PRESS_SCALE, baseScaleY * BUTTON_PRESS_SCALE, 1);
+            button.setPosition(baseX, baseY - BUTTON_PRESS_OFFSET, 0);
+        };
+        const release = (): void => {
+            if (!button.isValid) {
+                return;
+            }
+            button.setScale(baseScaleX, baseScaleY, 1);
+            button.setPosition(baseX, baseY, 0);
+        };
+        button.on(Node.EventType.TOUCH_START, press, this);
+        button.on(Node.EventType.TOUCH_CANCEL, release, this);
         button.on(Node.EventType.TOUCH_END, () => {
+            release();
             onClick();
         }, this);
-        return button;
     }
 
     private runUiAction(label: string, action: () => Promise<void>): void {
@@ -1656,6 +1877,48 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         );
     }
 
+    private requestLobbyFromSetup(): void {
+        if (this.uiActionPending || this.state === 'disposed' || !this.context) {
+            return;
+        }
+
+        this.uiActionPending = true;
+        this.inputLocked = true;
+        try {
+            this.context.requestLobby(Object.freeze({
+                score: 0,
+                duration: 0,
+                completed: false,
+                extra: Object.freeze({ reason: 'setup_lobby' }),
+            }));
+            // requestLobby 是跨运行层的 fire-and-forget 契约；成功时组件会被
+            // dispose，失败时给开始页一个可恢复的重试窗口，避免按钮永久锁死。
+            this.scheduleOnce(() => {
+                if (this.state !== 'disposed' && this.state === 'setup') {
+                    this.uiActionPending = false;
+                    this.inputLocked = false;
+                }
+            }, 1.5);
+        } catch (error: unknown) {
+            console.error('[SlidingPuzzleGame] Failed to return to lobby from setup.', error);
+            this.uiActionPending = false;
+            this.inputLocked = false;
+        }
+    }
+
+    private getRandomPresetIndex(): number {
+        const count = SLIDING_PUZZLE_PRESET_ASSET_PATHS.length;
+        if (count <= 1) {
+            return 0;
+        }
+
+        let next = this.selectedPresetIndex;
+        while (next === this.selectedPresetIndex) {
+            next = Math.floor(Math.random() * count);
+        }
+        return next;
+    }
+
     private createLabel(
         parent: Node,
         name: string,
@@ -1684,13 +1947,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private refreshHud(): void {
         if (this.timerLabel) {
-            this.timerLabel.string = this.formatDuration(this.elapsedSeconds);
+            this.timerLabel.string = `用时 ${this.formatDuration(this.elapsedSeconds)}`;
         }
         if (this.movesLabel) {
-            this.movesLabel.string = `移动 ${this.model.moves} 步`;
-        }
-        if (this.titleLabel) {
-            this.titleLabel.string = this.selectedConfig.imageSource === 'local' ? '自选图拼图' : '木框拼图';
+            this.movesLabel.string = `步数 ${this.padThree(this.model.moves)}`;
         }
     }
 
@@ -1714,6 +1974,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private padTwo(value: number): string {
         const text = Math.max(0, Math.floor(value)).toString();
         return text.length >= 2 ? text : `0${text}`;
+    }
+
+    private padThree(value: number): string {
+        const text = Math.max(0, Math.floor(value)).toString();
+        return text.length >= 3 ? text : `${'0'.repeat(3 - text.length)}${text}`;
     }
 
     private drawBackground(graphics: Graphics, width: number, height: number): void {
@@ -1778,6 +2043,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.cropPreviewNode?.off(Node.EventType.TOUCH_END, this.handleCropTouchEnd, this);
         this.cropPreviewNode?.off(Node.EventType.TOUCH_CANCEL, this.handleCropTouchEnd, this);
         this.cropPreviewNode?.off(Node.EventType.MOUSE_WHEEL, this.handleCropMouseWheel, this);
+        this.clearSpriteFrameReferences(this.dynamicNode);
         this.destroyTransientFrames();
         this.boardNode = undefined;
         this.cropPreviewNode = undefined;
@@ -1785,7 +2051,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.cropLastX = 0;
         this.cropLastY = 0;
         this.cropPinchDistance = 0;
-        this.titleLabel = undefined;
         this.timerLabel = undefined;
         this.movesLabel = undefined;
         if (this.dynamicNode?.isValid) {
@@ -1796,8 +2061,21 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private destroyOverlay(): void {
         if (this.overlayNode?.isValid) {
+            this.clearSpriteFrameReferences(this.overlayNode);
             this.overlayNode.destroy();
         }
         this.overlayNode = undefined;
+    }
+
+    private clearSpriteFrameReferences(node?: Node): void {
+        if (!node?.isValid) {
+            return;
+        }
+
+        const sprite = node.getComponent(Sprite);
+        if (sprite) {
+            sprite.spriteFrame = null;
+        }
+        node.children.slice().forEach((child) => this.clearSpriteFrameReferences(child));
     }
 }

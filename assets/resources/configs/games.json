@@ -10,7 +10,7 @@
       "scene": "scenes/Watermelon",
       "entryComponent": "WatermelonGame",
       "icon": "visual/icons/watermelon/cat-merge-icon-v1/texture",
-      "cover": "visual/covers/watermelon/c1-fat-orange-cover-v1/texture",
+      "cover": "visual/covers/watermelon/c1-cat-room-cover-v2/texture",
       "orientation": "portrait",
       "renderMode": "2d",
       "minimumDeviceTier": "low",

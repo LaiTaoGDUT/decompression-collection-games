@@ -159,6 +159,31 @@ export class SlidingPuzzleModel {
         };
     }
 
+    /** 点击方块时使用：只有与空位正交相邻的方块可以滑入空位。 */
+    moveTileAt(index: number): SlidingPuzzleMoveResult {
+        if (!Number.isInteger(index) || index < 0 || index >= this.tiles.length || index === this.empty) {
+            return this.createNoMoveResult('up');
+        }
+
+        const emptyRow = Math.floor(this.empty / this.size);
+        const emptyColumn = this.empty % this.size;
+        const tileRow = Math.floor(index / this.size);
+        const tileColumn = index % this.size;
+        let direction: SlidingPuzzleDirection | undefined;
+
+        if (tileRow === emptyRow && tileColumn === emptyColumn - 1) {
+            direction = 'right';
+        } else if (tileRow === emptyRow && tileColumn === emptyColumn + 1) {
+            direction = 'left';
+        } else if (tileColumn === emptyColumn && tileRow === emptyRow - 1) {
+            direction = 'down';
+        } else if (tileColumn === emptyColumn && tileRow === emptyRow + 1) {
+            direction = 'up';
+        }
+
+        return direction ? this.move(direction) : this.createNoMoveResult('up');
+    }
+
     private shuffle(): void {
         let previous: SlidingPuzzleDirection | undefined;
         let remaining = this.shuffleCount;
@@ -185,11 +210,49 @@ export class SlidingPuzzleModel {
             }
         }
 
+        // 选关页约定空位落在右下角，但这不代表空位是固定的：
+        // 开局后玩家仍可把相邻方块滑入空位。把空位沿合法移动带回目标角，
+        // 既保留从完成局面生成的可解性，也让玩家一眼知道最终缺口在哪。
+        this.returnEmptyToBottomRight();
+
         // 极端的固定随机源也不能让开始按钮得到一个已完成的“乱序”局面。
         if (this.isSolved && this.tiles.length > 1) {
-            const fallback = this.canMove('right') ? 'right' : 'down';
-            this.move(fallback);
+            this.createNonSolvedBottomRightState();
         }
+    }
+
+    private returnEmptyToBottomRight(): void {
+        const target = this.tiles.length - 1;
+        let guard = 0;
+        const guardLimit = this.tiles.length * 4 + 4;
+
+        while (this.empty !== target && guard < guardLimit) {
+            guard += 1;
+            const row = Math.floor(this.empty / this.size);
+            const column = this.empty % this.size;
+
+            // move() 的 direction 描述“方块滑入空位”的方向，
+            // 所以空位向下/向右移动时分别要选择 up/left。
+            const direction: SlidingPuzzleDirection = row < this.size - 1
+                ? 'up'
+                : column < this.size - 1
+                    ? 'left'
+                    : row > 0
+                        ? 'down'
+                        : 'right';
+            if (!this.move(direction).changed) {
+                break;
+            }
+        }
+    }
+
+    private createNonSolvedBottomRightState(): void {
+        // 这条四步合法路径以右下角为空位结束，同时会扰动至少三块方块。
+        // 3×3～6×6 都满足这些方向的邻接条件。
+        const fallback: readonly SlidingPuzzleDirection[] = ['right', 'down', 'left', 'up'];
+        fallback.forEach((direction) => {
+            this.move(direction);
+        });
     }
 
     private findSourceIndex(direction: SlidingPuzzleDirection): number {
@@ -206,6 +269,16 @@ export class SlidingPuzzleModel {
             case 'right':
                 return column > 0 ? this.empty - 1 : -1;
         }
+    }
+
+    private createNoMoveResult(direction: SlidingPuzzleDirection): SlidingPuzzleMoveResult {
+        return {
+            changed: false,
+            direction,
+            emptyIndex: this.empty,
+            moves: this.moveCount,
+            completed: this.isSolved,
+        };
     }
 
     private randomIndex(length: number): number {

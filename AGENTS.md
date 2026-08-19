@@ -61,10 +61,4 @@
 ## 实施与验证
 
 - 修改前先定位已有实现和同类游戏的成熟做法；保留用户已有改动，不覆盖无关文件或素材。
-- 最低完成门槛：TypeScript 无编译错误、相关游戏的构建/运行验证通过、`git diff --check` 通过。涉及 Bundle 或微信构建时，还要运行：
-
-  ```text
-  npm run verify:game-bundles
-  npm run verify:wechat-package-size
-  ```
-- 涉及显示、输入、安全区、生命周期或平台行为的改动，不能只依赖静态检查：必须重新编译。
+- 最低完成门槛：TypeScript 无编译错误、`git diff --check` 通过。

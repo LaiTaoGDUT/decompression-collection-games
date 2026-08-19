@@ -1,7 +1,9 @@
 import { Node, sys, UITransform, view } from 'cc';
 
-export const CHESS_MODAL_PANEL_ASPECT = 300 / 430;
-export const CHESS_MODAL_SAFE_X = 28 / 300;
+// Keep the chess popup comfortably wide enough for larger copy while retaining
+// the original panel's vertical rhythm and inset proportions.
+export const CHESS_MODAL_PANEL_ASPECT = 360 / 430;
+export const CHESS_MODAL_SAFE_X = 32 / 360;
 export const CHESS_MODAL_SAFE_Y = 26 / 430;
 
 export interface ChessEndlessViewportMetrics {
@@ -93,7 +95,7 @@ export function resolveChessEndlessModalPanelSize(
 ): { readonly width: number; readonly height: number } {
     const viewportWidth = Math.max(1, viewport.width);
     const viewportHeight = Math.max(1, viewport.height);
-    const maxPanelWidth = Math.max(1, Math.min(580, viewportWidth - 32));
+    const maxPanelWidth = Math.max(1, Math.min(620, viewportWidth - 32));
     const maxPanelHeight = Math.max(1, viewportHeight - 96);
     const contentWidth = Math.max(1, preferredContentWidth) / (1 - 2 * CHESS_MODAL_SAFE_X);
     const contentHeight = Math.max(1, preferredContentHeight) / (1 - 2 * CHESS_MODAL_SAFE_Y);

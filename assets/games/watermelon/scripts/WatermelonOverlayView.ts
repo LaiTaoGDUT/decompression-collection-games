@@ -220,10 +220,12 @@ export class WatermelonOverlayView {
             : spec.tone === 'peach'
                 ? catUiColor('peach')
                 : spec.tone === 'danger' ? catUiColor('danger') : catUiColor('cream');
+        // Keep an opaque, high-contrast outline on every popup action so the
+        // button edge remains visible against both the panel and the dimmer.
         graphics.strokeColor = spec.tone === 'soft'
-            ? catUiColor('blush')
-            : catUiColor('surface', 190);
-        graphics.lineWidth = 3;
+            ? catUiColor('peachDark')
+            : catUiColor('surface');
+        graphics.lineWidth = 5;
         graphics.roundRect(
             -buttonWidth / 2,
             -buttonHeight / 2,
@@ -245,7 +247,9 @@ export class WatermelonOverlayView {
             0,
             0,
             25,
-            spec.tone === 'mint' || spec.tone === 'danger'
+            spec.name === 'RestartButton'
+                || spec.tone === 'mint'
+                || spec.tone === 'danger'
                 ? catUiColor('surface')
                 : catUiColor('ink'),
             buttonWidth - 30,

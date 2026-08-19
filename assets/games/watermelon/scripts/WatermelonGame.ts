@@ -159,6 +159,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private dropPreview?: Node;
     private prefabs: Prefab[] = [];
     private spriteFrames: SpriteFrame[][] = [];
+    private bubbleFrame?: SpriteFrame;
     private currentLevel = 0;
     private nextLevel = 0;
     private activeDropSequenceId = 0;
@@ -221,13 +222,15 @@ export class WatermelonGame extends Component implements MiniGame {
         configureFruitCatalog(this.gameplay);
         this.overflowGuard = new OverflowGuard(this.gameplay.dangerOverflowSeconds);
         try {
-            [this.prefabs, this.spriteFrames] = await Promise.all([
+            [this.prefabs, this.spriteFrames, this.bubbleFrame] = await Promise.all([
                 this.loadFruitPrefabs(),
                 this.loadFruitSpriteFrames(),
+                this.loadBubbleFrame(),
             ]);
         } catch (error) {
             console.error('[WatermelonGame] Required gameplay assets failed to load.', error);
             this.destroyFruitSpriteFrames();
+            this.destroyBubbleFrame();
             throw error;
         }
         this.audioBank = new BundleAudioBank({
@@ -393,7 +396,8 @@ export class WatermelonGame extends Component implements MiniGame {
             this.handlePause,
             this,
         );
-        this.node.getComponent(WatermelonLayout)?.setLayoutChangeHandler();
+        const layout = this.node.getComponent(WatermelonLayout);
+        layout?.setLayoutChangeHandler();
         this.clearFruitSpriteBindings();
         this.clearFruits();
         this.cleanupTransientEffects();
@@ -407,6 +411,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.pointer.reset();
         this.prefabs = [];
         await this.releaseFruitSpriteFramesAfterDraw();
+        this.destroyBubbleFrame();
         this.context = undefined;
         this.saveData = undefined;
         this.fruitContainer = undefined;
@@ -459,6 +464,35 @@ export class WatermelonGame extends Component implements MiniGame {
         )));
     }
 
+    private loadBubbleFrame(): Promise<SpriteFrame | undefined> {
+        const bundle = assetManager.getBundle('game-watermelon');
+
+        if (!bundle) {
+            return Promise.resolve(undefined);
+        }
+
+        return new Promise<SpriteFrame | undefined>((resolve) => {
+            bundle.load(
+                'visual/ui/c1-cat-bubble-highlight-v2/texture',
+                Texture2D,
+                (error, texture) => {
+                    if (error || !texture) {
+                        console.warn(
+                            '[WatermelonGame] Optional cat bubble foreground failed to load.',
+                            error ?? 'Asset missing.',
+                        );
+                        resolve(undefined);
+                        return;
+                    }
+                    const spriteFrame = new SpriteFrame();
+                    spriteFrame.texture = texture;
+                    this.bubbleFrame = spriteFrame;
+                    resolve(spriteFrame);
+                },
+            );
+        });
+    }
+
     private destroyFruitSpriteFrames(frames = this.spriteFrames): void {
         for (const animationFrames of frames) {
             for (const spriteFrame of animationFrames) {
@@ -472,12 +506,22 @@ export class WatermelonGame extends Component implements MiniGame {
         }
     }
 
+    private destroyBubbleFrame(): void {
+        if (this.bubbleFrame?.isValid) {
+            this.bubbleFrame.destroy();
+        }
+        this.bubbleFrame = undefined;
+    }
+
     private clearFruitSpriteBindings(): void {
         const owned = new Set<SpriteFrame>();
         for (const animationFrames of this.spriteFrames) {
             for (const spriteFrame of animationFrames) {
                 owned.add(spriteFrame);
             }
+        }
+        if (this.bubbleFrame) {
+            owned.add(this.bubbleFrame);
         }
         for (const sprite of this.node.getComponentsInChildren(Sprite)) {
             if (sprite.spriteFrame && owned.has(sprite.spriteFrame)) {
@@ -771,7 +815,14 @@ export class WatermelonGame extends Component implements MiniGame {
         const label = this.node.getChildByName('PauseButton')
             ?.getChildByName('Label')
             ?.getComponent(Label);
-        if (label) label.string = text;
+        if (label) {
+            label.string = text;
+        }
+        const pauseArtwork = this.node.getChildByName('PauseButton')
+            ?.getChildByName('PauseArtwork');
+        if (pauseArtwork) {
+            pauseArtwork.active = text === '暂停';
+        }
     }
 
     private readonly handleFruitCollision = (
@@ -1238,10 +1289,12 @@ export class WatermelonGame extends Component implements MiniGame {
         graphics.fillColor = primary
             ? catUiColor('peach')
             : catUiColor('cream');
+        // Every action gets a clear outline; secondary actions use a warm
+        // border while primary actions keep the light picture-book edge.
         graphics.strokeColor = primary
-            ? catUiColor('surface', 190)
-            : catUiColor('blush');
-        graphics.lineWidth = 3;
+            ? catUiColor('surface')
+            : catUiColor('peachDark');
+        graphics.lineWidth = 5;
         graphics.roundRect(
             -buttonWidth / 2,
             -buttonHeight / 2,
@@ -1258,7 +1311,7 @@ export class WatermelonGame extends Component implements MiniGame {
         node.on(Button.EventType.CLICK, handler, this);
 
         const label = this.createOverlayLabel(node, 'Text', text, 0, 0, 26);
-        label.color = primary
+        label.color = primary || name === 'RestartButton'
             ? catUiColor('surface')
             : catUiColor('ink');
     }
@@ -1603,6 +1656,7 @@ export class WatermelonGame extends Component implements MiniGame {
         body.setDropChain(dropSequenceId, dropMergeCount);
         body.applyConfig();
         body.setAnimationFrames(this.spriteFrames[level]);
+        body.setBubbleFrame(this.bubbleFrame);
         return body;
     }
 
@@ -1772,6 +1826,18 @@ export class WatermelonGame extends Component implements MiniGame {
         const graphics = graphicsNode.getComponent(Graphics)
             ?? graphicsNode.addComponent(Graphics);
         graphics.clear();
+        const previewSize = diameter / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
+        // The configured ball color must reach the entire circular boundary;
+        // the cat artwork and highlight are layered above this backing.
+        const previewRadius = previewSize / 2;
+        graphics.fillColor = new Color(
+            config.backgroundColor.r,
+            config.backgroundColor.g,
+            config.backgroundColor.b,
+            255,
+        );
+        graphics.circle(0, 0, previewRadius);
+        graphics.fill();
         let spriteNode = preview.getChildByName('CatPreview');
         if (!spriteNode) {
             spriteNode = new Node('CatPreview');
@@ -1780,13 +1846,26 @@ export class WatermelonGame extends Component implements MiniGame {
             spriteNode.addComponent(UITransform);
             spriteNode.addComponent(Sprite);
         }
-        const previewSize = diameter / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
         const sprite = spriteNode.getComponent(Sprite)!;
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         sprite.spriteFrame = this.spriteFrames[level]?.[0] ?? null;
         // Assigning a runtime-created SpriteFrame can restore raw texture size.
         // Re-assert the catalog size after the assignment.
         spriteNode.getComponent(UITransform)?.setContentSize(previewSize, previewSize);
+        let bubbleNode = preview.getChildByName('BubblePreview');
+        if (!bubbleNode) {
+            bubbleNode = new Node('BubblePreview');
+            bubbleNode.layer = preview.layer;
+            bubbleNode.setParent(preview);
+            bubbleNode.addComponent(UITransform);
+            bubbleNode.addComponent(Sprite);
+        }
+        bubbleNode.getComponent(UITransform)?.setContentSize(previewSize, previewSize);
+        const bubbleSprite = bubbleNode.getComponent(Sprite)!;
+        bubbleSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        bubbleSprite.spriteFrame = this.bubbleFrame ?? null;
+        bubbleNode.active = !!this.bubbleFrame;
+        bubbleNode.setSiblingIndex(spriteNode.getSiblingIndex() + 1);
         let ringNode = preview.getChildByName('FruitPreviewOutline');
         if (!ringNode) {
             ringNode = new Node('FruitPreviewOutline');
@@ -1801,17 +1880,14 @@ export class WatermelonGame extends Component implements MiniGame {
         ringNode.setSiblingIndex(Math.max(0, spriteNode.getSiblingIndex() - 1));
         ringNode.getComponent(UITransform)?.setContentSize(previewSize + 12, previewSize + 12);
         const ring = ringNode.getComponent(Graphics)!;
-        const radius = previewSize / 2 - 3;
+        const radius = previewSize / 2;
         ring.clear();
         ring.fillColor = catUiColor('ink', 28);
         ring.circle(1.5, -2, radius + 1.5);
         ring.fill();
-        ring.fillColor = catUiColor('cream', 54);
-        ring.circle(0, 0, radius);
-        ring.fill();
-        ring.strokeColor = new Color(105, 75, 95, 138);
+        ring.strokeColor = new Color(105, 75, 95, 90);
         ring.lineWidth = Math.max(2, previewSize * 0.018);
-        ring.circle(0, 0, radius);
+        ring.circle(0, 0, Math.max(0, radius - ring.lineWidth / 2));
         ring.stroke();
     }
 }

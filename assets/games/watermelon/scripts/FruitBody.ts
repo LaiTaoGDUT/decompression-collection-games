@@ -40,6 +40,7 @@ export class FruitBody extends Component {
     private ageSeconds = 0;
     private enteredSafeZone = false;
     private animationFrames: readonly SpriteFrame[] = [];
+    private bubbleFrame?: SpriteFrame;
     private idleFrameIndex = 0;
     private frameMode: 'idle' | 'fall' = 'idle';
     private hasPhysicalContact = false;
@@ -160,7 +161,34 @@ export class FruitBody extends Component {
         sprite.spriteFrame = spriteFrames[0];
         visual.getComponent(UITransform)?.setContentSize(visualSize, visualSize);
         this.drawFruitContrastBacking(visual, visualSize);
+        this.setBubbleFrame(this.bubbleFrame);
         this.startIdleFrameAnimation();
+    }
+
+    /** Apply the shared transparent highlight after the cat and colored ball are ready. */
+    setBubbleFrame(frame?: SpriteFrame): void {
+        this.bubbleFrame = frame;
+        const visual = this.node.getChildByName('CatVisual');
+        if (!visual) {
+            return;
+        }
+
+        let bubble = this.node.getChildByName('BubbleForeground');
+        if (!bubble) {
+            bubble = new Node('BubbleForeground');
+            bubble.layer = this.node.layer;
+            bubble.setParent(this.node);
+            bubble.addComponent(UITransform);
+            bubble.addComponent(Sprite);
+        }
+
+        const visualSize = getFruitConfig(this.level).radius * 2 / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
+        bubble.getComponent(UITransform)?.setContentSize(visualSize, visualSize);
+        const sprite = bubble.getComponent(Sprite)!;
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        sprite.spriteFrame = frame ?? null;
+        bubble.active = !!frame;
+        bubble.setSiblingIndex(visual.getSiblingIndex() + 1);
     }
 
     private drawFruitContrastBacking(visual: Node, visualSize: number): void {
@@ -178,18 +206,26 @@ export class FruitBody extends Component {
         // Keep the translucent contrast ring behind the sprite across repeated
         // visual setup; matching its index would alternate their draw order.
         ring.setSiblingIndex(Math.max(0, visual.getSiblingIndex() - 1));
-        const radius = visualSize / 2 - 3;
+        // Draw the configured color to the complete circular boundary. The
+        // cat sprite and bubble highlight are layered above this backing.
+        const backgroundRadius = visualSize / 2;
         const graphics = ring.getComponent(Graphics)!;
+        const config = getFruitConfig(this.level);
         graphics.clear();
         graphics.fillColor = new Color(86, 62, 82, 30);
-        graphics.circle(1.5, -2, radius + 1.5);
+        graphics.circle(1.5, -2, backgroundRadius + 1.5);
         graphics.fill();
-        graphics.fillColor = new Color(255, 248, 236, 54);
-        graphics.circle(0, 0, radius);
+        graphics.fillColor = new Color(
+            config.backgroundColor.r,
+            config.backgroundColor.g,
+            config.backgroundColor.b,
+            255,
+        );
+        graphics.circle(0, 0, backgroundRadius);
         graphics.fill();
-        graphics.strokeColor = new Color(105, 75, 95, 142);
+        graphics.strokeColor = new Color(105, 75, 95, 90);
         graphics.lineWidth = Math.max(2, visualSize * 0.018);
-        graphics.circle(0, 0, radius);
+        graphics.circle(0, 0, Math.max(0, backgroundRadius - graphics.lineWidth / 2));
         graphics.stroke();
     }
 

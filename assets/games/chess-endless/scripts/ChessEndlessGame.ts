@@ -608,7 +608,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const scoreOutline = this.scoreLabel.node.addComponent(LabelOutline);
         scoreOutline.color = new Color(45, 25, 12, 210);
         scoreOutline.width = 2;
-        const scoreTitle = this.createLabel(hud, 'ScoreTitle', '本局得分', 0, -30 * hudScale, Math.max(12, Math.round(20 * hudScale)), COLORS.white, scoreBlockWidth, 28 * hudScale);
+        const scoreTitle = this.createLabel(hud, 'ScoreTitle', '本局得分', 0, -30 * hudScale, Math.max(12, Math.round(24 * hudScale)), COLORS.white, scoreBlockWidth, 28 * hudScale);
+        scoreTitle.lineHeight = 28 * hudScale;
         const scoreTitleOutline = scoreTitle.node.addComponent(LabelOutline);
         scoreTitleOutline.color = new Color(45, 25, 12, 210);
         scoreTitleOutline.width = 2;
@@ -653,11 +654,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
             '下一批增援',
             0,
             reinforcementLabelTitleY,
-            16,
+            20,
             COLORS.goldLight,
             reinforcementLabelWidth,
             reinforcementTitleLine,
         );
+        this.reinforcementTitle.lineHeight = reinforcementTitleLine;
         this.reinforcementTitle.horizontalAlign = 2;
         const titleOutline = this.reinforcementTitle.node.addComponent(LabelOutline);
         titleOutline.color = new Color(45, 25, 12, 235);
@@ -668,11 +670,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
             '',
             0,
             reinforcementLabelStatusY,
-            20,
+            24,
             COLORS.white,
             reinforcementLabelWidth,
             reinforcementStatusLine,
         );
+        this.reinforcementStatus.lineHeight = reinforcementStatusLine;
         this.reinforcementStatus.horizontalAlign = 2;
         const statusOutline = this.reinforcementStatus.node.addComponent(LabelOutline);
         statusOutline.color = new Color(45, 25, 12, 235);
@@ -706,8 +709,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const dockTopPadding = 8 * dockScale;
         const dockTitleHeight = 24 * dockScale;
         const dockTitleY = dockHeight / 2 - dockTopPadding - dockTitleHeight / 2;
-        const dockTitleFontSize = Math.max(12, Math.round(18 * dockScale));
-        this.createLabel(
+        const dockTitleFontSize = Math.max(12, Math.round(22 * dockScale));
+        const dockTitle = this.createLabel(
             this.itemDock,
             'DockTitle',
             '每回合最多使用 1 件道具',
@@ -718,6 +721,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             Math.max(1, dockWidth - 32 * dockScale),
             dockTitleHeight,
         );
+        dockTitle.lineHeight = dockTitleHeight;
     }
 
     private drawBoardGrid(node: Node, width: number, height: number): void {
@@ -1513,7 +1517,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const cardGap = choices.length <= 1 ? 0 : cardWidth + cardEdgeGap;
         const cardRowWidth = choices.length <= 1 ? cardWidth : (choices.length - 1) * cardGap + cardWidth;
         const cardRowHeight = cardHeight + 24;
-        const headerHeight = 132;
+        const headerHeight = 144;
         const cardsTopGap = 18;
         const bottomPadding = 22;
         const panelSize = resolveChessEndlessModalPanelSize(
@@ -1530,11 +1534,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             tween(panel).to(0.34, { position: new Vec3(safeRect.x, safeRect.y + 20, 0), scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
         }
         let cursorY = content.top - 18;
-        this.createLabel(panel, 'Kicker', '斩将奖励', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 30);
-        cursorY -= 38;
-        this.createLabel(panel, 'Title', '择一道具', 0, cursorY, 38, COLORS.ink, content.width - 24, 52);
-        cursorY -= 46;
-        this.createLabel(panel, 'Description', '每种最多持有 2 件 · 点 ? 查看说明', 0, cursorY, 20, COLORS.muted, content.width - 24, 32);
+        this.createLabel(panel, 'Kicker', '斩将奖励', 0, cursorY, 22, COLORS.cinnabar, content.width - 24, 32);
+        cursorY -= 42;
+        this.createLabel(panel, 'Title', '择一道具', 0, cursorY, 40, COLORS.ink, content.width - 24, 56);
+        cursorY -= 50;
+        this.createLabel(panel, 'Description', '每种最多持有 2 件 · 点 ? 查看说明', 0, cursorY, 22, COLORS.muted, content.width - 24, 34);
         const cardCenterY = cursorY - 16 - cardsTopGap - cardHeight / 2;
         this.rewardCardNodes.clear();
         choices.forEach((item, index) => {
@@ -1545,9 +1549,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const iconSize = Math.round(cardWidth * 0.58);
             const icon = this.createNode(card, 'Icon', 0, cardHeight * 0.17, iconSize, iconSize);
             this.applySprite(icon, ITEM_ICON_KEY[item]);
-            this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, -cardHeight * 0.08, 22, COLORS.ink, cardWidth - 18, 36);
+            this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, -cardHeight * 0.08, 24, COLORS.ink, cardWidth - 18, 38);
             const count = this.model.snapshot.inventory[item];
-            this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -cardHeight * 0.28, 18, COLORS.jade, cardWidth - 18, 28);
+            this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -cardHeight * 0.28, 20, COLORS.jade, cardWidth - 18, 30);
             const help = this.createNode(card, 'Help', cardWidth * 0.31, cardHeight * 0.34, 32, 32);
             this.applySprite(help, 'helpIcon');
             help.addComponent(Button);
@@ -1680,24 +1684,25 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const page = RULE_PAGES[this.rulesPageIndex]!;
         const overlay = this.createOverlayRoot('RulesOverlay');
         const safeRect = this.resolveSafeContentRect();
-        const footerHeight = 136;
-        const headerHeight = 132;
-        const panelSize = resolveChessEndlessModalPanelSize(480, headerHeight + footerHeight + 320, safeRect);
+        const footerHeight = 148;
+        const headerHeight = 144;
+        const panelSize = resolveChessEndlessModalPanelSize(520, headerHeight + footerHeight + 320, safeRect);
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
         const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
         let cursorY = content.top - 18;
-        this.createLabel(panel, 'Kicker', '入局须知', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 30);
-        cursorY -= 38;
-        this.createLabel(panel, 'Title', page.title, 0, cursorY, 34, COLORS.ink, content.width - 24, 50);
+        this.createLabel(panel, 'Kicker', '入局须知', 0, cursorY, 22, COLORS.cinnabar, content.width - 24, 32);
         cursorY -= 42;
-        this.createLabel(panel, 'Pager', `${this.rulesPageIndex + 1} / ${RULE_PAGES.length}`, 0, cursorY, 18, COLORS.muted, 160, 26);
+        this.createLabel(panel, 'Title', page.title, 0, cursorY, 38, COLORS.ink, content.width - 24, 54);
+        cursorY -= 48;
+        this.createLabel(panel, 'Pager', `${this.rulesPageIndex + 1} / ${RULE_PAGES.length}`, 0, cursorY, 20, COLORS.muted, 180, 28);
 
-        const buttonWidth = Math.min(196, (content.width - 36) / 2);
-        const buttonY = content.bottom + 58;
+        const buttonWidth = Math.min(220, (content.width - 36) / 2);
+        const buttonHeight = 62;
+        const buttonY = content.bottom + 66;
         const viewportWidth = content.width - 8;
         const viewportTop = cursorY - 14;
-        const viewportBottom = buttonY + 40;
+        const viewportBottom = buttonY + 44;
         const viewportHeight = Math.max(180, viewportTop - viewportBottom);
         const viewportCenterY = (viewportTop + viewportBottom) / 2;
         const viewport = this.createNode(panel, 'ScrollViewport', 0, viewportCenterY, viewportWidth, viewportHeight);
@@ -1708,12 +1713,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const mask = viewport.addComponent(Mask);
         mask.type = Mask.Type.GRAPHICS_STENCIL;
 
-        const bodyLineHeight = 31;
+        const bodyLineHeight = 35;
         const bodyTextWidth = viewportWidth - 36;
-        const bodyHeight = this.estimateScrollTextHeight(page.body, 22, bodyTextWidth, bodyLineHeight, viewportHeight + 12);
+        const bodyHeight = this.estimateScrollTextHeight(page.body, 24, bodyTextWidth, bodyLineHeight, viewportHeight + 12);
         const body = this.createNode(viewport, 'ScrollBody', 0, viewportHeight / 2, viewportWidth - 20, bodyHeight);
         body.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
-        const label = this.createLabel(body, 'Body', page.body, 0, -14, 22, COLORS.inkSoft, bodyTextWidth, bodyHeight - 28);
+        const label = this.createLabel(body, 'Body', page.body, 0, -14, 24, COLORS.inkSoft, bodyTextWidth, bodyHeight - 28);
         label.verticalAlign = 0;
         label.horizontalAlign = 0;
         label.overflow = Label.Overflow.CLAMP;
@@ -1747,11 +1752,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             }
         }, this, true);
 
-        const previous = this.createActionButton(panel, 'Previous', '‹ 上一页', -buttonWidth / 2 - 10, buttonY, buttonWidth, 54, 'paper', () => {
+        const previous = this.createActionButton(panel, 'Previous', '‹ 上一页', -buttonWidth / 2 - 10, buttonY, buttonWidth, buttonHeight, 'paper', () => {
             this.rulesPageIndex = (this.rulesPageIndex + RULE_PAGES.length - 1) % RULE_PAGES.length;
             this.showRulesPage();
         });
-        const next = this.createActionButton(panel, 'Next', '下一页 ›', buttonWidth / 2 + 10, buttonY, buttonWidth, 54, 'paper', () => {
+        const next = this.createActionButton(panel, 'Next', '下一页 ›', buttonWidth / 2 + 10, buttonY, buttonWidth, buttonHeight, 'paper', () => {
             this.rulesPageIndex = (this.rulesPageIndex + 1) % RULE_PAGES.length;
             this.showRulesPage();
         });
@@ -1817,14 +1822,14 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const overlay = this.createOverlayRoot(name);
         const safeRect = this.resolveSafeContentRect();
         const bodyLines = body.split('\n').length;
-        const bodyLineHeight = 32;
-        const bodyHeight = Math.max(72, bodyLines * bodyLineHeight + 12);
-        const headerHeight = artKey ? 188 : 108;
-        const buttonHeight = 56;
-        const buttonGap = 12;
-        const footerHeight = actions.length * buttonHeight + Math.max(0, actions.length - 1) * buttonGap + 28;
+        const bodyLineHeight = 36;
+        const bodyHeight = Math.max(84, bodyLines * bodyLineHeight + 16);
+        const headerHeight = artKey ? 204 : 118;
+        const buttonHeight = 64;
+        const buttonGap = 14;
+        const footerHeight = actions.length * buttonHeight + Math.max(0, actions.length - 1) * buttonGap + 32;
         const innerHeight = headerHeight + bodyHeight + footerHeight;
-        const innerWidth = 468;
+        const innerWidth = 504;
         const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, safeRect);
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
         const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y, panelSize.width, panelSize.height);
@@ -1832,22 +1837,22 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         let cursorY = content.top - 18;
         if (artKey) {
-            const artSize = 92;
+            const artSize = 96;
             const art = this.createNode(panel, 'Artwork', 0, cursorY - artSize / 2 + 6, artSize, artSize);
             this.applySprite(art, artKey);
             cursorY -= artSize + 14;
         }
-        this.createLabel(panel, 'Kicker', kicker, 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 28);
-        cursorY -= 36;
-        this.createLabel(panel, 'Title', title, 0, cursorY, 36, COLORS.ink, content.width - 24, 52);
-        cursorY -= 52;
+        this.createLabel(panel, 'Kicker', kicker, 0, cursorY, 22, COLORS.cinnabar, content.width - 24, 32);
+        cursorY -= 42;
+        this.createLabel(panel, 'Title', title, 0, cursorY, 40, COLORS.ink, content.width - 24, 56);
+        cursorY -= 58;
         const bodyLabel = this.createLabel(
             panel,
             'Body',
             body,
             0,
             cursorY - bodyHeight / 2 + 8,
-            23,
+            26,
             COLORS.inkSoft,
             content.width - 24,
             bodyHeight,
@@ -1859,7 +1864,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         const buttons: Button[] = [];
         actions.forEach((action, index) => {
-            const y = content.bottom + 34 + (actions.length - 1 - index) * (buttonHeight + buttonGap);
+            const y = content.bottom + 38 + (actions.length - 1 - index) * (buttonHeight + buttonGap);
             const button = this.createActionButton(
                 panel,
                 `Action-${index}`,
@@ -1887,36 +1892,36 @@ export class ChessEndlessGame extends Component implements MiniGame {
             { label: '重新开始', tone: 'cinnabar', action: model.restart },
             { label: '返回游戏大厅', tone: 'paper', action: model.exit },
         ];
-        const bodyLineHeight = 32;
-        const bodyHeight = Math.max(72, body.split('\n').length * bodyLineHeight + 12);
-        const toggleRowHeight = 50;
-        const copyGap = 12;
-        const headerHeight = 108;
-        const buttonHeight = 56;
-        const buttonGap = 12;
+        const bodyLineHeight = 36;
+        const bodyHeight = Math.max(84, body.split('\n').length * bodyLineHeight + 16);
+        const toggleRowHeight = 56;
+        const copyGap = 14;
+        const headerHeight = 118;
+        const buttonHeight = 64;
+        const buttonGap = 14;
         const copyHeight = bodyHeight + copyGap + toggleRowHeight;
         const footerHeight = actions.length * buttonHeight
             + Math.max(0, actions.length - 1) * buttonGap
-            + 28;
+            + 32;
         const innerHeight = headerHeight + copyHeight + footerHeight;
-        const innerWidth = 468;
+        const innerWidth = 504;
         const panelSize = resolveChessEndlessModalPanelSize(innerWidth, innerHeight, safeRect);
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
         const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y, panelSize.width, panelSize.height);
         this.applySprite(panel, 'modalPanel');
 
         let cursorY = content.top - 18;
-        this.createLabel(panel, 'Kicker', '棋局暂歇', 0, cursorY, 20, COLORS.cinnabar, content.width - 24, 28);
-        cursorY -= 36;
-        this.createLabel(panel, 'Title', '暂停', 0, cursorY, 36, COLORS.ink, content.width - 24, 52);
-        cursorY -= 52;
+        this.createLabel(panel, 'Kicker', '棋局暂歇', 0, cursorY, 22, COLORS.cinnabar, content.width - 24, 32);
+        cursorY -= 42;
+        this.createLabel(panel, 'Title', '暂停', 0, cursorY, 40, COLORS.ink, content.width - 24, 56);
+        cursorY -= 58;
         const bodyLabel = this.createLabel(
             panel,
             'Body',
             body,
             0,
             cursorY - bodyHeight / 2 + 8,
-            23,
+            26,
             COLORS.inkSoft,
             content.width - 24,
             bodyHeight,
@@ -1946,7 +1951,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         const buttons: Button[] = [toggle];
         actions.forEach((action, index) => {
-            const y = content.bottom + 34 + (actions.length - 1 - index) * (buttonHeight + buttonGap);
+            const y = content.bottom + 38 + (actions.length - 1 - index) * (buttonHeight + buttonGap);
             const button = this.createActionButton(
                 panel,
                 `Action-${index}`,
@@ -1992,7 +1997,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             label,
             -width / 2 + 14 + labelWidth / 2,
             0,
-            20,
+            22,
             COLORS.ink,
             labelWidth,
             height - 8,
@@ -2128,7 +2133,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         graphics.roundRect(-width / 2, -height / 2, width, height, 7);
         graphics.fill();
         graphics.stroke();
-        this.createLabel(node, 'Label', text, 0, 0, 21, textColor, width - 28, height - 8);
+        this.createLabel(node, 'Label', text, 0, 0, 24, textColor, width - 28, height - 8);
         const opacity = node.addComponent(UIOpacity);
         const button = node.addComponent(Button);
         node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {

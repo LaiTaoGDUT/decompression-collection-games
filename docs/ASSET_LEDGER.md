@@ -13,6 +13,20 @@
 | 大厅游戏卡片封面.jpg | 用户提供；原样复制到大厅副本 | 大厅卡片封面 | `lobby` / `visual/covers/sliding-puzzle/sliding-puzzle-cover-v1.jpg` | 待许可确认 |
 | 游戏大厅封面.jpg | 用户提供；原样复制，作为拼图预设图 | 拼图图片切片预览与棋盘方块 | `game-sliding-puzzle` / `visual/presets/preset-07-cats-cover-v1.jpg` | 待许可确认 |
 
+## 猫咪游戏素材
+
+| 素材 | 来源/修改 | 用途 | Bundle / 路径 | 状态 |
+| --- | --- | --- | --- | --- |
+| 游戏背景.jpg | 用户提供；原样替换 | 猫咪游戏全屏背景，运行时按 cover 适配 | `game-watermelon` / `visual/backgrounds/c1-cat-room-bg-v1.jpg` | 待许可确认 |
+| lv1～lv11 idle-1/idle-2、lv1～lv5 drop | 用户提供；按等级映射到现有猫咪动画资源 | 1～11 级猫咪待机与下落动画；6～11 级下落状态回退对应 idle-1 | `game-watermelon` / `visual/cats/frames-c6/` | 待许可确认 |
+| c1-cat-board-v2.png | 用户提供 PNG；复制为游戏内新文件名，运行时九段图 Sliced | 可变尺寸棋盘背景 | `game-watermelon` / `visual/ui/c1-cat-board-v2.png` | 待许可确认 |
+| c1-cat-score-panel-v2.png、c1-cat-high-score-panel-v2.png、c1-cat-next-panel-v2.png | 用户提供；复制为游戏内新文件名，运行时九段图横向拉伸 | 主界面分数、最高分、下一只猫 HUD 背景 | `game-watermelon` / `visual/ui/c1-cat-*-panel-v2.png` | 待许可确认 |
+| c1-cat-instruction-strip-v2.png | 用户提供；复制为游戏内新文件名，运行时九段图横向拉伸 | 主界面底部提示条背景 | `game-watermelon` / `visual/ui/c1-cat-instruction-strip-v2.png` | 待许可确认 |
+| c1-cat-pause-button-v2.png | 用户提供；复制为游戏内新文件名，运行时按 UI 缩放 | 主界面暂停按钮 | `game-watermelon` / `visual/ui/c1-cat-pause-button-v2.png` | 待许可确认 |
+| c1-cat-bubble-highlight-v2.png | 用户提供；复制为游戏内新文件名，按猫咪球尺寸缩放 | 猫咪圆球高光前景 | `game-watermelon` / `visual/ui/c1-cat-bubble-highlight-v2.png` | 待许可确认 |
+| 猫咪圆球背景色配置.txt | 用户提供；已转为代码配置 | 1～11 级猫咪圆球背景颜色 | `game-watermelon` / `scripts/FruitCatalog.ts` | 已接入，来源许可待确认 |
+| 大厅封面图.jpg | 用户提供；原样复制为新路径，避免复用旧导入缓存 | 大厅猫咪游戏卡片封面 | `lobby` / `visual/covers/watermelon/c1-cat-room-cover-v2.jpg` | 待许可确认 |
+
 ## 尚未导入
 
 - V01～V06 方形预置图。

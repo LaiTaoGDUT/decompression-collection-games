@@ -7,8 +7,8 @@ import { Color } from 'cc';
  * overlay, and transient effect draws from the same soft picture-book palette.
  */
 export const CAT_UI_PALETTE = Object.freeze({
-    ink: [86, 62, 82],
-    mutedInk: [127, 101, 116],
+    ink: [75, 45, 69],
+    mutedInk: [75, 45, 69],
     // Warm oat-white: softer than pure white against the bright cat-room art.
     surface: [250, 243, 232],
     cream: [255, 244, 226],

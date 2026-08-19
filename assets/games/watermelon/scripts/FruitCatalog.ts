@@ -21,6 +21,11 @@ export interface FruitLevelConfig {
         g: number;
         b: number;
     }>;
+    readonly backgroundColor: Readonly<{
+        r: number;
+        g: number;
+        b: number;
+    }>;
     readonly prefab: string;
     readonly sprite: string;
     readonly animationSprites: readonly [string, string, string];
@@ -52,8 +57,23 @@ const FRAME_VERSIONS = [
 
 /** Per-level pair with the smallest measured pixel delta among the old three idle frames. */
 const IDLE_FRAME_PAIRS = [
-    [1, 2], [1, 2], [1, 2], [1, 2], [2, 3], [2, 3],
+    [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
     [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
+] as const;
+
+/** 用户提供的 1～11 级猫咪圆球背景色配置。 */
+const BALL_BACKGROUND_COLORS = [
+    [220, 238, 244],
+    [220, 239, 227],
+    [248, 230, 183],
+    [246, 216, 220],
+    [245, 221, 201],
+    [240, 222, 190],
+    [213, 232, 245],
+    [240, 222, 190],
+    [242, 214, 225],
+    [245, 210, 168],
+    [204, 231, 217],
 ] as const;
 
 function createFruitCatalog(
@@ -85,6 +105,11 @@ function createFruitCatalog(
             angularDamping: gameplay.angularDamping,
             score: gameplay.mergeScores[level],
             color: Object.freeze({ r: rgb[0], g: rgb[1], b: rgb[2] }),
+            backgroundColor: Object.freeze({
+                r: BALL_BACKGROUND_COLORS[level][0],
+                g: BALL_BACKGROUND_COLORS[level][1],
+                b: BALL_BACKGROUND_COLORS[level][2],
+            }),
             // Keep the existing serialized physics prefabs for save and scene
             // compatibility; only the runtime visual catalog changes to cats.
             prefab: `prefabs/fruits/fruit-${level < 10 ? '0' : ''}${level}-${legacyPrefabId}`,
