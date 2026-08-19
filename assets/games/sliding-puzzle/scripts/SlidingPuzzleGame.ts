@@ -83,9 +83,12 @@ const COLORS = Object.freeze({
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const SWIPE_THRESHOLD = 34;
 const PREVIEW_PAN_EPSILON = 0.0001;
-const TILE_GAP_RATIO = 0.024;
 const TILE_SKIN_INSET_RATIO = 0.018;
 const TILE_CORNER_RADIUS_RATIO = 0.035;
+const TILE_EDGE_INSET = 2;
+// 棋盘背景素材为 512×512，实际木框内槽从约 32px 处开始。
+// 用素材比例计算，确保不同屏幕尺寸下拼图外沿仍与内槽边界对齐。
+const BOARD_INNER_INSET_RATIO = 32 / 512;
 
 export const SLIDING_PUZZLE_BACKGROUND_ASSET_PATH =
     'visual/backgrounds/sliding-puzzle-background-v1/texture';
@@ -100,6 +103,7 @@ const SLIDING_PUZZLE_PRESET_ASSET_PATHS: readonly string[] = Object.freeze([
     'visual/presets/preset-04-greenhouse-copper-pot-v1/texture',
     'visual/presets/preset-05-toy-train-valley-v1/texture',
     'visual/presets/preset-06-moonlit-pier-lantern-v1/texture',
+    'visual/presets/preset-07-cats-cover-v1/texture',
 ]);
 
 export const SLIDING_PUZZLE_POPUP_BACKGROUND_ASSET_PATH =
@@ -165,7 +169,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private readonly cropController = new SlidingPuzzleCropController();
 
     private selectedSize: SlidingPuzzleBoardSize = 4;
-    private selectedPresetIndex = Math.floor(Math.random() * SLIDING_PUZZLE_PRESET_ASSET_PATHS.length);
+    // 当前先默认使用用户提供的猫咪图，便于直接验证切片和棋盘贴合效果。
+    private selectedPresetIndex = SLIDING_PUZZLE_PRESET_ASSET_PATHS.length - 1;
     private selectedConfig: SlidingPuzzleRoundConfig = Object.freeze({
         boardSize: 4,
         imageSource: 'preset',
@@ -201,6 +206,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private visualLoadToken = 0;
     private readonly tileFrames: SpriteFrame[] = [];
     private readonly transientFrames = new Set<SpriteFrame>();
+    private readonly pendingAssetLoads = new Set<Promise<unknown>>();
+    private disposePromise?: Promise<void>;
+    private uiActionPending = false;
     private cropPreviewNode?: Node;
     private cropPreviewSprite?: Sprite;
     private cropPreviewFrame?: SpriteFrame;
@@ -229,8 +237,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.buildBackground();
         this.showSetup();
         // 视觉素材和预置图都异步预热；任一资源缺失都不阻塞进入游戏。
-        void this.loadVisualAssets();
-        void this.loadPresetImage(true);
+        void this.trackAssetLoad(this.loadVisualAssets());
+        void this.trackAssetLoad(this.loadPresetImage(true));
     }
 
     begin(): void {
@@ -290,9 +298,25 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     async dispose(): Promise<void> {
+        if (this.disposePromise) {
+            return this.disposePromise;
+        }
+
+        this.disposePromise = this.disposeInternal();
+        return this.disposePromise;
+    }
+
+    private async disposeInternal(): Promise<void> {
         if (this.state === 'disposed') {
             return;
         }
+
+        // 先把状态切到 disposed，令所有晚到的异步回调进入清理分支，
+        // 再等待它们结束，避免回调和 Bundle release 并发操作同一份纹理。
+        this.state = 'disposed';
+        this.imageLoadToken += 1;
+        this.visualLoadToken += 1;
+        this.uiActionPending = true;
 
         this.unsubscribeShow?.();
         this.unsubscribeHide?.();
@@ -302,19 +326,27 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             view.off('canvas-resize', this.handleCanvasResize, this);
             this.resizeListening = false;
         }
-        this.hidePauseMenu();
-        this.hideResultView();
-        this.hideReferencePreview();
         this.unscheduleAllCallbacks();
+        this.destroyOverlay();
         this.destroyDynamicView();
-        this.imageLoadToken += 1;
-        this.visualLoadToken += 1;
+        this.cropController.dispose();
+
+        const pendingLoads = [...this.pendingAssetLoads];
+        await Promise.all(pendingLoads.map(async (load) => {
+            try {
+                await load;
+            } catch (error: unknown) {
+                // 单个资源失败不应阻断其余资源的释放和返回大厅。
+                console.warn('[SlidingPuzzleGame] Pending asset load finished with an error during dispose.', error);
+            }
+        }));
+
         this.releaseImageResources();
         this.releasePendingImageResources();
         this.releaseVisualAssets();
-        this.cropController.dispose();
+        this.activePauseModel = undefined;
+        this.activeResultModel = undefined;
         this.context = undefined;
-        this.state = 'disposed';
     }
 
     showPauseMenu(model: MiniGamePauseModel): void {
@@ -341,13 +373,13 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             90,
         );
         this.createButton(panel, 'ResumeButton', '继续拼图', 0, -42, 430, 88, COLORS.teal, () => {
-            void model.resume();
+            this.runUiAction('resume', model.resume);
         });
         this.createButton(panel, 'RestartButton', '重新开局', 0, -148, 430, 88, COLORS.wood, () => {
-            void model.restart();
+            this.runUiAction('restart', model.restart);
         });
         this.createButton(panel, 'LobbyButton', '返回大厅', 0, -254, 430, 88, COLORS.red, () => {
-            void model.exit();
+            this.runUiAction('exit', model.exit);
         });
     }
 
@@ -388,10 +420,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.createPlaceholderPreview(panel, 0, -72, 270, 150, '完成图片占位');
         }
         this.createButton(panel, 'RestartButton', '再来一局', -116, -222, 210, 88, COLORS.teal, () => {
-            void model.restart();
+            this.runUiAction('restart', model.restart);
         });
         this.createButton(panel, 'LobbyButton', '返回大厅', 116, -222, 210, 88, COLORS.red, () => {
-            void model.returnToLobby();
+            this.runUiAction('exit', model.returnToLobby);
         });
     }
 
@@ -509,7 +541,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.cropController.cancel();
             this.context?.services.feedback.play('uiButton');
             this.showSetup();
-            void this.loadPresetImage(true);
+            void this.trackAssetLoad(this.loadPresetImage(true));
         });
         this.createButton(root, 'ImageButton', '选择本地图片', 144, metrics.footerY + 154, 260, 88, COLORS.teal, () => {
             void this.pickLocalImage();
@@ -565,7 +597,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         this.cropController.begin(selection);
         this.releasePendingImageResources();
-        if (!await this.loadLocalImage(selection.uri, selection.mimeType)) {
+        if (!await this.trackAssetLoad(this.loadLocalImage(selection.uri, selection.mimeType))) {
             this.cropController.cancel();
             this.state = 'setup';
             this.context.services.feedback.play('collision');
@@ -622,6 +654,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private async loadPresetImage(refreshSetup: boolean): Promise<boolean> {
+        if (this.state === 'disposed') {
+            return false;
+        }
+
         const path = this.selectedConfig.presetAssetPath;
         const bundle = assetManager.getBundle('game-sliding-puzzle');
         if (!path || !bundle) {
@@ -651,6 +687,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         });
 
         if (token !== this.imageLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
+            if (texture) {
+                // 这次请求已经拿到 Bundle 资源，但所属局面已经失效，
+                // 必须在 Bundle 释放前平衡本次 load 的引用。
+                this.releaseBundleTexture(texture);
+            }
             return false;
         }
 
@@ -726,6 +767,15 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.visualFrames.clear();
         this.visualTextures.forEach((texture) => this.releaseBundleTexture(texture));
         this.visualTextures.clear();
+    }
+
+    private trackAssetLoad<T>(load: Promise<T>): Promise<T> {
+        this.pendingAssetLoads.add(load);
+        const clear = (): void => {
+            this.pendingAssetLoads.delete(load);
+        };
+        void load.then(clear, clear);
+        return load;
     }
 
     private releaseBundleTexture(texture: Texture2D): void {
@@ -953,7 +1003,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             boardSize: this.selectedSize,
         });
         if (this.selectedConfig.imageSource === 'preset') {
-            await this.loadPresetImage(false);
+            await this.trackAssetLoad(this.loadPresetImage(false));
         }
         if ((this.state as SlidingPuzzleState) === 'disposed') {
             return;
@@ -1046,21 +1096,19 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             boardSprite.sizeMode = Sprite.SizeMode.CUSTOM;
             boardSprite.spriteFrame = boardFrame;
         }
-        const innerSize = boardSize - 48;
-        const originX = -innerSize / 2;
-        const originY = innerSize / 2;
-        const cellSize = innerSize / this.model.boardSize;
-        // 参考封面图的贴合式排布：tileSize 已经包含两块之间的完整缝隙，
-        // 不再给每块左右各留一份大内缩，避免棋盘看起来像分散的卡片。
-        const tileGap = clamp(cellSize * TILE_GAP_RATIO, 3, 6);
-        const tileSize = cellSize - tileGap;
-        const tileRadius = Math.min(6, Math.max(2, tileSize * TILE_CORNER_RADIUS_RATIO));
+        const innerSize = boardSize * (1 - BOARD_INNER_INSET_RATIO * 2);
+        const tileAreaSize = Math.max(1, innerSize - TILE_EDGE_INSET * 2);
         const size = this.model.boardSize;
+        const cellSize = tileAreaSize / size;
+        // 方块之间完全贴合，网格外沿向内槽四边各收 2px。
+        const tileGap = 0;
+        const tileSize = (tileAreaSize - tileGap * (size - 1)) / size;
+        const tileRadius = Math.min(6, Math.max(2, tileSize * TILE_CORNER_RADIUS_RATIO));
         this.model.snapshot.board.forEach((value, index) => {
             const row = Math.floor(index / size);
             const column = index % size;
-            const x = originX + column * cellSize + cellSize / 2;
-            const y = originY - row * cellSize - cellSize / 2;
+            const x = -tileAreaSize / 2 + tileSize / 2 + column * (tileSize + tileGap);
+            const y = tileAreaSize / 2 - tileSize / 2 - row * (tileSize + tileGap);
             // 空位不创建独立模块，直接露出棋盘内槽的木质底色。
             if (value === 0) {
                 return;
@@ -1577,6 +1625,35 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             onClick();
         }, this);
         return button;
+    }
+
+    private runUiAction(label: string, action: () => Promise<void>): void {
+        if (this.uiActionPending || this.state === 'disposed') {
+            return;
+        }
+
+        this.uiActionPending = true;
+        let pendingAction: Promise<void>;
+        try {
+            pendingAction = action();
+        } catch (error: unknown) {
+            console.error(`[SlidingPuzzleGame] ${label} action failed.`, error);
+            this.uiActionPending = false;
+            return;
+        }
+        void pendingAction.then(
+            () => {
+                if (this.state !== 'disposed') {
+                    this.uiActionPending = false;
+                }
+            },
+            (error: unknown) => {
+                console.error(`[SlidingPuzzleGame] ${label} action failed.`, error);
+                if (this.state !== 'disposed') {
+                    this.uiActionPending = false;
+                }
+            },
+        );
     }
 
     private createLabel(

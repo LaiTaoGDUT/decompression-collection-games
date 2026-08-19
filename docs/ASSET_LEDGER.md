@@ -11,6 +11,7 @@
 | 返回/暂停/剪裁/参考图/相册/关闭按钮.png | 用户提供；原样复制 | 游戏内按钮图标 | `game-sliding-puzzle` / `visual/icons/pz1-*-v1.png` | 待许可确认 |
 | 图标合集.png | 用户提供；裁取上排中间 512×512 图标 | 游戏图标 | `game-sliding-puzzle` / `visual/icons/sliding-puzzle-icon-v1.png` | 待许可确认 |
 | 大厅游戏卡片封面.jpg | 用户提供；原样复制到大厅副本 | 大厅卡片封面 | `lobby` / `visual/covers/sliding-puzzle/sliding-puzzle-cover-v1.jpg` | 待许可确认 |
+| 游戏大厅封面.jpg | 用户提供；原样复制，作为拼图预设图 | 拼图图片切片预览与棋盘方块 | `game-sliding-puzzle` / `visual/presets/preset-07-cats-cover-v1.jpg` | 待许可确认 |
 
 ## 尚未导入
 

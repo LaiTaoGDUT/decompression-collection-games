@@ -51,9 +51,9 @@ export function calculateSlidingPuzzleLayout(
     const footerY = -height / 2 + safeBottom + 54;
     const boardAvailableHeight = Math.max(260, height - safeTop - safeBottom - 390);
     const board = clamp(
-        Math.min(width - 56, boardAvailableHeight),
+        Math.min(width - 28, boardAvailableHeight),
         Math.min(292, width - 32),
-        Math.min(620, width - 32),
+        Math.min(700, width - 20),
     );
     const boardTopFromTop = safeTop + 226;
     const boardBottomFromTop = boardTopFromTop + board;
