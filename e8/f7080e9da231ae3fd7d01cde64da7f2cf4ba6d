@@ -1,0 +1,38 @@
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  s_f80190a4ca1eaf::t_8c3df2db73618a 88,1100,1102,1105,1110-1111
+  s_f80190a4ca1eaf::t_eb1eb3b744a83d 1103-1104
+  s_f80190a4ca1eaf::t_8ab21d578d8667 209-211,240-241,301-309,313-320,330,332-343,347-348,376,379,382,423,426
+  s_f80190a4ca1eaf::t_e6dfcc70b90c39 544,1628-1635,1651-1654
+  s_f80190a4ca1eaf::t_c7c6881d165502 89-91,1099,1106
+  s_f80190a4ca1eaf::t_88d6daae2b4006 600,657-660,690-694,770-778,780,1006
+  s_f80190a4ca1eaf::t_9b330892dbf6f3 172-173
+  s_f80190a4ca1eaf::t_4a30364bc28f55 1636-1650,1655-1656
+  s_f80190a4ca1eaf::t_c7e775f6a4d74c 106
+assets/games/sliding-puzzle/visual/presets/preset-07-cats-cover-v1.jpg.meta
+  s_f80190a4ca1eaf::t_c7e775f6a4d74c 1-42
+docs/ASSET_LEDGER.md
+  s_f80190a4ca1eaf::t_c7e775f6a4d74c 14
+assets/games/sliding-puzzle/visual/presets.meta
+  s_f80190a4ca1eaf::t_c7e775f6a4d74c 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleLayout.ts
+  s_f80190a4ca1eaf::t_c7c6881d165502 54,56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e8f7080e9da231ae3fd7d01cde64da7f2cf4ba6d",
+  "prompts": {},
+  "logical_commit_id": "e8f7080e9da231ae3fd7d01cde64da7f2cf4ba6d",
+  "sessions": {
+    "s_f80190a4ca1eaf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01819-16b7-7442-9d0a-5fa21c65478e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 177,
+      "total_deletions": 48
+    }
+  }
+}
