@@ -1,0 +1,166 @@
+assets/lobby/visual/covers/sliding-puzzle.meta
+  s_f80190a4ca1eaf::t_19600d71f41f1d 1-4,6-9
+  s_f80190a4ca1eaf::t_e16afe841ec932 5
+assets/games/sliding-puzzle/visual/icons/pz1-close-v1.png.meta
+  s_f80190a4ca1eaf::t_c48b18b0fe215d 1-4,6-12,15-24,26-39,41-42
+  s_f80190a4ca1eaf::t_c916388cc050b0 5
+  s_f80190a4ca1eaf::t_c9efc2cbf69f7a 13-14
+  s_f80190a4ca1eaf::t_d86b8e1ac71c0a 25
+  s_f80190a4ca1eaf::t_c54f7486d1cb4b 40
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_5a0dc3344cbabf::t_1815767c31237d 1046,1048,1052,1172,1603,1779-1780,1967,1971,1974,1987,2066-2067,2069,2234
+assets/games/sliding-puzzle/visual/backgrounds.meta
+  s_f80190a4ca1eaf::t_d3fd00f0a5ed3a 1-4,6-9
+  s_f80190a4ca1eaf::t_7239ea0b3c100f 5
+docs/SLIDING_PUZZLE_PLAN.md
+  s_f80190a4ca1eaf::t_6b6c6419fc0f88 3,19,249
+  s_f80190a4ca1eaf::t_137728a2b3f177 248
+  s_f80190a4ca1eaf::t_f7b2ae178698ca 260-261,266-268,272-275,281
+assets/games/sliding-puzzle/visual/boards.meta
+  s_f80190a4ca1eaf::t_562bc29246a1bd 1-4,6-9
+  s_f80190a4ca1eaf::t_357ddd19efc2e8 5
+assets/games/sliding-puzzle/visual/backgrounds/sliding-puzzle-background-v1.jpg.meta
+  s_f80190a4ca1eaf::t_3fe43b7540e29e 1-4,6-12,15-17,20-24,26-39,41-42
+  s_f80190a4ca1eaf::t_38e28b5269e041 5
+  s_f80190a4ca1eaf::t_27fd9ed74ae521 13-14
+  s_f80190a4ca1eaf::t_b1f6c237642501 18-19
+  s_f80190a4ca1eaf::t_97dab33fed49a4 25
+  s_f80190a4ca1eaf::t_1779531d8dad6e 40
+docs/SLIDING_PUZZLE_VISUAL_SPEC.md
+  s_f80190a4ca1eaf::t_2a6b53415bc66a 40,42,55,66
+  s_f80190a4ca1eaf::t_302a7b338da745 38,70
+  s_f80190a4ca1eaf::t_6b6c6419fc0f88 3,68-69
+  s_f80190a4ca1eaf::t_fa6a26379552fb 37
+assets/games/sliding-puzzle/visual.meta
+  s_f80190a4ca1eaf::t_688b5717dc4032 1-4,6-9
+  s_f80190a4ca1eaf::t_951b3e6256603c 5
+assets/lobby/visual/covers/sliding-puzzle/sliding-puzzle-cover-v1.jpg.meta
+  s_f80190a4ca1eaf::t_c90865756a72b9 1-4,6-12,15-24,26-39,41-42
+  s_f80190a4ca1eaf::t_859dba3472d4b3 5
+  s_f80190a4ca1eaf::t_9a469992fe1e88 13-14
+  s_f80190a4ca1eaf::t_538109e997bdd8 25
+  s_f80190a4ca1eaf::t_31e8055d1466b8 40
+assets/games/sliding-puzzle/visual/icons/sliding-puzzle-icon-v1.png.meta
+  s_f80190a4ca1eaf::t_bde54f46164792 1-4,6-12,15-24,26-39,41-42
+  s_f80190a4ca1eaf::t_f45078f7d183d3 5
+  s_f80190a4ca1eaf::t_40ba7d3ac32de7 13-14
+  s_f80190a4ca1eaf::t_154c3d8a7a7cce 25
+  s_f80190a4ca1eaf::t_2770a484db84c4 40
+docs/SLIDING_PUZZLE_ASSET_PROMPTS.md
+  s_f80190a4ca1eaf::t_78459084b9c602 1-2,4-567,569-573,575-578,580-595,597-599,601-604,608-612,614,616-619,621,623-625,627-630,632-633,635-638,640,642,644-647,649,651-653,655-656,658-662,665,667-671,673-675,678-693
+  s_f80190a4ca1eaf::t_fa6a26379552fb 622,634,639,641,643,648
+  s_f80190a4ca1eaf::t_8200055ab87ec1 568,650,657,663-664,666
+  s_f80190a4ca1eaf::t_843900282d88f5 615,654
+  s_f80190a4ca1eaf::t_210aa17c3a53e9 3,574,579,600,605-607,613,620,626,631,672,676-677,694
+  s_f80190a4ca1eaf::t_0b357ee4b50383 596
+docs/ASSET_LEDGER.md
+  s_f80190a4ca1eaf::t_6b6c6419fc0f88 1-23
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  s_f80190a4ca1eaf::t_9590e8ec384c6c 665-671,677-694,696-718,720-738
+  s_f80190a4ca1eaf::t_162dddb79f291e 1053-1056,1100,1103-1104,1108
+  s_f80190a4ca1eaf::t_c32d1909b463b9 1310-1327
+  s_f80190a4ca1eaf::t_3a312b4d0c5358 1038-1048
+  s_f80190a4ca1eaf::t_1fcd1d85ed5fd8 1064-1068
+  s_f80190a4ca1eaf::t_5b69cff3e352ed 672-676,695,719
+  s_f80190a4ca1eaf::t_9d222b83e6d560 35,90-95,109-122,124-135,158,199-201,231-232,311,314,418-438
+  s_f80190a4ca1eaf::t_18fdb029ff5ce9 1544-1575
+  s_f80190a4ca1eaf::t_085aa71230e750 1069
+  s_f80190a4ca1eaf::t_3e39969d17433c 1-34,36-87,89,96-108,123,136-157,159-198,202-230,233-310,312-313,315-417,439-664,739-1037,1049-1052,1058-1063,1070-1073,1105-1107,1109-1110,1112,1124-1125,1142-1309,1328-1543,1576-1726
+  s_f80190a4ca1eaf::t_e87f56a43c95ba 1074-1099,1101-1102,1111,1113-1123,1126-1141
+  s_f80190a4ca1eaf::t_fa6a26379552fb 88,1057
+assets/core/types/CommonTypes.ts
+  s_f80190a4ca1eaf::t_c8684fb4dc0256 58-68
+assets/games/sliding-puzzle.meta
+  s_f80190a4ca1eaf::t_2c19e0d52134b1 1-17
+assets/games/sliding-puzzle/scenes.meta
+  s_f80190a4ca1eaf::t_7dd46d12a3ed8a 1-9
+assets/games/sliding-puzzle/scenes/SlidingPuzzle.scene
+  s_f80190a4ca1eaf::t_61c5b91e8d6b3c 1-287
+assets/games/sliding-puzzle/scenes/SlidingPuzzle.scene.meta
+  s_f80190a4ca1eaf::t_ccc37b2c5f8a60 1-9
+assets/games/sliding-puzzle/scripts.meta
+  s_f80190a4ca1eaf::t_0b1056c2f2e8df 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleCropController.ts
+  s_f80190a4ca1eaf::t_5c844f3c7a7be8 1-103
+assets/games/sliding-puzzle/scripts/SlidingPuzzleCropController.ts.meta
+  s_f80190a4ca1eaf::t_be289c4064464a 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts.meta
+  s_f80190a4ca1eaf::t_94588f3a34195c 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleLayout.ts
+  s_f80190a4ca1eaf::t_29802696ce8c9a 1-106
+assets/games/sliding-puzzle/scripts/SlidingPuzzleLayout.ts.meta
+  s_f80190a4ca1eaf::t_083994cb9a89ea 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleModel.ts
+  s_f80190a4ca1eaf::t_2f1ba4d49fbc15 1-220
+assets/games/sliding-puzzle/scripts/SlidingPuzzleModel.ts.meta
+  s_f80190a4ca1eaf::t_e57e3e1e585cbb 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleTypes.ts
+  s_f80190a4ca1eaf::t_be36e1cc8094f4 1-45
+assets/games/sliding-puzzle/scripts/SlidingPuzzleTypes.ts.meta
+  s_f80190a4ca1eaf::t_d4f9363a2c1dfe 1-9
+assets/games/sliding-puzzle/visual/boards/sliding-puzzle-board-v1.png.meta
+  s_f80190a4ca1eaf::t_04c00d0245aab6 1-42
+assets/games/sliding-puzzle/visual/icons.meta
+  s_f80190a4ca1eaf::t_4818c416a7a27a 1-9
+assets/games/sliding-puzzle/visual/icons/pz1-album-v1.png.meta
+  s_f80190a4ca1eaf::t_29b2864dd759a2 1-42
+assets/games/sliding-puzzle/visual/icons/pz1-back-v1.png.meta
+  s_f80190a4ca1eaf::t_385965a9b22241 1-42
+assets/games/sliding-puzzle/visual/icons/pz1-crop-v1.png.meta
+  s_f80190a4ca1eaf::t_7b74c7d7c972c2 1-42
+assets/games/sliding-puzzle/visual/icons/pz1-pause-v1.png.meta
+  s_f80190a4ca1eaf::t_d7026e3581449f 1-42
+assets/games/sliding-puzzle/visual/icons/pz1-reference-v1.png.meta
+  s_f80190a4ca1eaf::t_2f96057f9c4ef0 1-42
+assets/games/sliding-puzzle/visual/popups.meta
+  s_f80190a4ca1eaf::t_8b9be5f8c972cb 1-9
+assets/games/sliding-puzzle/visual/popups/pz1-popup-background-v1.png.meta
+  s_f80190a4ca1eaf::t_9a4855a96be0f1 1-42
+assets/games/sliding-puzzle/visual/tiles.meta
+  s_f80190a4ca1eaf::t_4d987ce54214d3 1-9
+assets/games/sliding-puzzle/visual/tiles/sliding-puzzle-tile-skin-v1.png.meta
+  s_f80190a4ca1eaf::t_bdd8bc3f351865 1-42
+assets/lobby/visual/icons/sliding-puzzle.meta
+  s_f80190a4ca1eaf::t_476883930d5c83 1-9
+assets/lobby/visual/icons/sliding-puzzle/sliding-puzzle-icon-v1.png.meta
+  s_f80190a4ca1eaf::t_482ca595115d23 1-42
+assets/platform/Platform.ts
+  s_f80190a4ca1eaf::t_9d4c2becd35683 4,24
+assets/platform/WeChatPlatform.ts
+  s_f80190a4ca1eaf::t_20096c8ab8423d 6,52-82,93-94,129-130,162-164,206-279
+assets/platform/WebPlatform.ts
+  s_f80190a4ca1eaf::t_1e409389b85bc9 5,55-57,91-93,119-189
+assets/resources/configs/games.json
+  s_f80190a4ca1eaf::t_8efe8bb293652e 95-117
+tools/verify-wechat-package-size.js
+  s_f80190a4ca1eaf::t_6b02bb5c5311a7 7-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3d6ca1540e0151cdb19361fc6beebc8d0d281476",
+  "prompts": {},
+  "logical_commit_id": "3d6ca1540e0151cdb19361fc6beebc8d0d281476",
+  "sessions": {
+    "s_5a0dc3344cbabf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a017d8-ade6-71b0-8b1a-dd940146644e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 22,
+      "total_deletions": 22
+    },
+    "s_f80190a4ca1eaf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01819-16b7-7442-9d0a-5fa21c65478e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 2885,
+      "total_deletions": 234
+    }
+  }
+}
