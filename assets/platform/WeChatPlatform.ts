@@ -3,6 +3,7 @@ import type {
     DevicePerformanceTier,
     DeviceProfile,
     LaunchOptions,
+    LocalImageSelection,
     PlatformLayoutInfo,
     PlatformUiRect,
     SafeArea,
@@ -48,6 +49,37 @@ interface WeChatLaunchOptions {
     }>;
 }
 
+interface WeChatMediaFile {
+    readonly tempFilePath: string;
+    readonly fileType?: string;
+    readonly size?: number;
+}
+
+interface WeChatChooseMediaResult {
+    readonly tempFiles?: readonly WeChatMediaFile[];
+}
+
+interface WeChatChooseImageResult {
+    readonly tempFilePaths?: readonly string[];
+    readonly tempFiles?: readonly WeChatMediaFile[];
+}
+
+interface WeChatChooseMediaOptions {
+    readonly count: number;
+    readonly mediaType: readonly ['image'];
+    readonly sourceType: readonly ['album'];
+    readonly success?: (result: WeChatChooseMediaResult) => void;
+    readonly fail?: () => void;
+}
+
+interface WeChatChooseImageOptions {
+    readonly count: number;
+    readonly sizeType?: readonly ('original' | 'compressed')[];
+    readonly sourceType: readonly ['album'];
+    readonly success?: (result: WeChatChooseImageResult) => void;
+    readonly fail?: () => void;
+}
+
 interface WeChatApi {
     getSystemInfoSync(): WeChatSystemInfo;
     getMenuButtonBoundingClientRect?(): WeChatMenuButtonRect;
@@ -58,6 +90,8 @@ interface WeChatApi {
     showShareMenu?(options: {
         withShareTicket: boolean;
     }): void;
+    chooseMedia?(options: WeChatChooseMediaOptions): void;
+    chooseImage?(options: WeChatChooseImageOptions): void;
     onShow(callback: () => void): void;
     onHide(callback: () => void): void;
     offShow?(callback: () => void): void;
@@ -92,6 +126,8 @@ export class WeChatPlatform implements Platform {
     private launchOptions?: LaunchOptions;
     private deviceProfile?: DeviceProfile;
     private initialized = false;
+    private imagePickerGeneration = 0;
+    private cancelImagePicker?: () => void;
 
     constructor(options: WeChatPlatformOptions = {}) {
         if ((options.designWidth ?? 750) <= 0) {
@@ -123,6 +159,9 @@ export class WeChatPlatform implements Platform {
     }
 
     dispose(): void {
+        this.imagePickerGeneration += 1;
+        this.cancelImagePicker?.();
+        this.cancelImagePicker = undefined;
         this.api?.offShow?.(this.handleShow);
         this.api?.offHide?.(this.handleHide);
         this.events.clear();
@@ -164,6 +203,80 @@ export class WeChatPlatform implements Platform {
         }
 
         return this.launchOptions;
+    }
+
+    async pickLocalImage(): Promise<LocalImageSelection | null> {
+        const api = this.api;
+        if (!api || (!api.chooseMedia && !api.chooseImage)) {
+            return null;
+        }
+
+        this.cancelImagePicker?.();
+        const generation = ++this.imagePickerGeneration;
+        const isCurrent = (): boolean => this.initialized
+            && this.api === api
+            && this.imagePickerGeneration === generation;
+        const normalize = (
+            file: WeChatMediaFile | undefined,
+            fallbackPath?: string,
+        ): LocalImageSelection | null => {
+            const uri = file?.tempFilePath ?? fallbackPath;
+            if (!uri || !isCurrent()) {
+                return null;
+            }
+
+            return Object.freeze({
+                uri,
+                // chooseMedia 返回的 fileType 常见值是 image，而不是 image/jpeg。
+                mimeType: file?.fileType === 'image' ? undefined : file?.fileType,
+                sizeBytes: file?.size,
+                // 微信临时文件由平台生命周期管理，业务层只需在会话结束时丢弃引用。
+                release: (): void => {},
+            });
+        };
+
+        return new Promise<LocalImageSelection | null>((resolve) => {
+            let settled = false;
+            const finish = (selection: LocalImageSelection | null): void => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                if (this.cancelImagePicker === cancel) {
+                    this.cancelImagePicker = undefined;
+                }
+                resolve(isCurrent() ? selection : null);
+            };
+            const cancel = (): void => finish(null);
+            this.cancelImagePicker = cancel;
+
+            try {
+                if (api.chooseMedia) {
+                    api.chooseMedia({
+                        count: 1,
+                        mediaType: ['image'],
+                        sourceType: ['album'],
+                        success: (result) => finish(normalize(result.tempFiles?.[0])),
+                        fail: () => finish(null),
+                    });
+                    return;
+                }
+
+                api.chooseImage?.({
+                    count: 1,
+                    sizeType: ['original'],
+                    sourceType: ['album'],
+                    success: (result) => finish(normalize(
+                        result.tempFiles?.[0],
+                        result.tempFilePaths?.[0],
+                    )),
+                    fail: () => finish(null),
+                });
+            } catch (_error: unknown) {
+                finish(null);
+            }
+        });
     }
 
     supportsVibration(): boolean {

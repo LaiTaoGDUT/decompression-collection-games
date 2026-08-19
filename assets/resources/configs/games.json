@@ -92,6 +92,29 @@
         "physics",
         "validation"
       ]
+    },
+    {
+      "id": "sliding-puzzle",
+      "version": "0.1.0",
+      "name": "木框里的小拼图",
+      "description": "滑动方块，让预设图片或本地图片重新完整。",
+      "bundle": "game-sliding-puzzle",
+      "scene": "scenes/SlidingPuzzle",
+      "entryComponent": "SlidingPuzzleGame",
+      "icon": "visual/icons/sliding-puzzle/sliding-puzzle-icon-v1/texture",
+      "cover": "visual/covers/sliding-puzzle/sliding-puzzle-cover-v1/texture",
+      "orientation": "portrait",
+      "renderMode": "2d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "visibility": "public",
+      "preload": [],
+      "tags": [
+        "puzzle",
+        "sliding",
+        "relaxing"
+      ]
     }
   ]
 }

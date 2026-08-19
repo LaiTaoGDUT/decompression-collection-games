@@ -2,6 +2,7 @@ import { EventBus } from '../core/events/EventBus';
 import type {
     DeviceProfile,
     LaunchOptions,
+    LocalImageSelection,
     PlatformLayoutInfo,
     PlatformUiRect,
     SafeArea,
@@ -51,6 +52,9 @@ export class WebPlatform implements Platform {
     private readonly deviceProfile: DeviceProfile;
     private initialized = false;
     private visible = true;
+    private activeImagePicker?: {
+        readonly cancel: () => void;
+    };
 
     constructor(options: WebPlatformOptions = {}) {
         this.safeArea = Object.freeze({
@@ -84,6 +88,9 @@ export class WebPlatform implements Platform {
     }
 
     dispose(): void {
+        this.activeImagePicker?.cancel();
+        this.activeImagePicker = undefined;
+
         if (this.initialized && typeof document !== 'undefined') {
             document.removeEventListener(
                 'visibilitychange',
@@ -109,6 +116,77 @@ export class WebPlatform implements Platform {
 
     getLaunchOptions(): LaunchOptions {
         return this.launchOptions;
+    }
+
+    async pickLocalImage(): Promise<LocalImageSelection | null> {
+        if (typeof document === 'undefined') {
+            return null;
+        }
+
+        this.activeImagePicker?.cancel();
+
+        const host = document.body ?? document.documentElement;
+        if (!host) {
+            return null;
+        }
+
+        return new Promise<LocalImageSelection | null>((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/png,image/jpeg';
+            input.multiple = false;
+            input.style.display = 'none';
+
+            let settled = false;
+            const settle = (selection: LocalImageSelection | null): void => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                if (this.activeImagePicker?.cancel === cancel) {
+                    this.activeImagePicker = undefined;
+                }
+                input.remove();
+                resolve(selection);
+            };
+            const cancel = (): void => settle(null);
+
+            this.activeImagePicker = { cancel };
+            input.addEventListener('change', () => {
+                const file = input.files?.[0];
+                if (!file
+                    || typeof URL === 'undefined'
+                    || typeof URL.createObjectURL !== 'function') {
+                    settle(null);
+                    return;
+                }
+
+                const uri = URL.createObjectURL(file);
+                let released = false;
+                settle({
+                    uri,
+                    mimeType: file.type || undefined,
+                    sizeBytes: file.size,
+                    release: (): void => {
+                        if (released) {
+                            return;
+                        }
+
+                        released = true;
+                        URL.revokeObjectURL(uri);
+                    },
+                });
+            });
+            input.addEventListener('cancel', cancel);
+            host.appendChild(input);
+
+            try {
+                input.click();
+            } catch (_error: unknown) {
+                settle(null);
+            }
+        });
     }
 
     supportsVibration(): boolean {

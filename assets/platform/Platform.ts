@@ -1,6 +1,7 @@
 import type {
     DeviceProfile,
     LaunchOptions,
+    LocalImageSelection,
     PlatformLayoutInfo,
     SafeArea,
     Unsubscribe,
@@ -20,6 +21,7 @@ export interface Platform {
     getSafeArea(): SafeArea;
     getLayoutInfo(): PlatformLayoutInfo;
     getLaunchOptions(): LaunchOptions;
+    pickLocalImage(): Promise<LocalImageSelection | null>;
     supportsVibration(): boolean;
     vibrate(type: 'light' | 'medium' | 'heavy'): void;
     showShareMenu(): void;

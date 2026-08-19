@@ -55,6 +55,17 @@ export interface DeviceProfile {
     readonly benchmarkLevel?: number;
 }
 
+/**
+ * 平台返回给小游戏的本地图片选择结果。
+ * `uri` 只在当前游戏会话内有效，释放时必须调用 `release`。
+ */
+export interface LocalImageSelection {
+    readonly uri: string;
+    readonly mimeType?: string;
+    readonly sizeBytes?: number;
+    readonly release: () => void;
+}
+
 /** 一局小游戏结束后交给运行层的标准结果。 */
 export interface GameResult {
     readonly score: number;

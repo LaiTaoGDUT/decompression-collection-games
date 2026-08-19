@@ -1043,13 +1043,13 @@ export class Game2048Game extends Component implements MiniGame {
         titleGraphics.circle(-GAME_2048_TITLE_WIDTH / 2 + 30, -31, 3);
         titleGraphics.circle(GAME_2048_TITLE_WIDTH / 2 - 30, -31, 3);
         titleGraphics.fill();
-        const kicker = this.createLabel(titleFallback, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 29, 14, COLORS.cyan, 370, 22);
+        const kicker = this.createLabel(titleFallback, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 29, 16, COLORS.cyan, 370, 22);
         kicker.spacingX = 2;
-        const titleVioletGlow = this.createLabel(titleFallback, 'TitleVioletGlow', 'NEON  2048', 2, -10, 44,
+        const titleVioletGlow = this.createLabel(titleFallback, 'TitleVioletGlow', 'NEON  2048', 2, -10, 50,
             new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 72), 400, 58);
         titleVioletGlow.isBold = true;
         titleVioletGlow.spacingX = 4;
-        const title = this.createLabel(titleFallback, 'Title', 'NEON  2048', 0, -7, 42, COLORS.white, 400, 58);
+        const title = this.createLabel(titleFallback, 'Title', 'NEON  2048', 0, -7, 48, COLORS.white, 400, 58);
         title.isBold = true;
         title.spacingX = 4;
         const titleArtworkNode = this.createNode(
@@ -1169,7 +1169,7 @@ export class Game2048Game extends Component implements MiniGame {
             '',
             metrics.hintX,
             metrics.hintY,
-            22 * metrics.fitScale,
+            25 * metrics.fitScale,
             COLORS.muted,
             metrics.hintWidth,
             metrics.hintHeight,
@@ -1600,7 +1600,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.lineTo(size / 2 - 18, size / 2 - 9);
         graphics.stroke();
         const digits = value.toString().length;
-        const fontSize = digits <= 2 ? 52 : digits === 3 ? 46 : digits === 4 ? 38 : 31;
+        const fontSize = digits <= 2 ? 59 : digits === 3 ? 52 : digits === 4 ? 43 : 35;
         const color = new Color(
             Math.round(COLORS.white.r * 0.88 + rgb[0] * 0.12),
             Math.round(COLORS.white.g * 0.88 + rgb[1] * 0.12),
@@ -1776,8 +1776,8 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.moveTo(-62, 45);
         graphics.lineTo(62, 45);
         graphics.stroke();
-        this.createLabel(card, 'Caption', caption, 0, 28, 19, accent, 180, 30).spacingX = 2;
-        const value = this.createLabel(card, 'Value', '0', 0, -13, 36, COLORS.white, 188, 52);
+        this.createLabel(card, 'Caption', caption, 0, 28, 22, accent, 180, 30).spacingX = 2;
+        const value = this.createLabel(card, 'Value', '0', 0, -13, 41, COLORS.white, 188, 52);
         value.isBold = true;
         return value;
     }
@@ -1964,14 +1964,14 @@ export class Game2048Game extends Component implements MiniGame {
 
         const kicker = this.createLabel(
             panel, 'AchievementKicker', `ACHIEVEMENT  //  ${tile}`, 0, panelHeight / 2 - 34,
-            14, colorWithAlpha(targetMaterial.accent, 255), panelWidth - 72, 24,
+            16, colorWithAlpha(targetMaterial.accent, 255), panelWidth - 72, 24,
         );
         kicker.spacingX = 3;
 
-        const title = this.createLabel(panel, 'Title', '恭喜你！', 0, 80, 42, COLORS.white, panelWidth - 64, 58);
+        const title = this.createLabel(panel, 'Title', '恭喜你！', 0, 80, 48, COLORS.white, panelWidth - 64, 58);
         title.isBold = true;
         const subtitle = this.createLabel(
-            panel, 'Subtitle', `成功点亮 ${tile}`, 0, 31, 24, colorWithAlpha(targetMaterial.facet, 255), panelWidth - 72, 40,
+            panel, 'Subtitle', `成功点亮 ${tile}`, 0, 31, 27, colorWithAlpha(targetMaterial.facet, 255), panelWidth - 72, 40,
         );
         subtitle.isBold = true;
 
@@ -1984,7 +1984,7 @@ export class Game2048Game extends Component implements MiniGame {
         scoreGraphics.fill();
         scoreGraphics.stroke();
         const score = this.createLabel(
-            scoreChip, 'Score', `本局得分  ${this.model.score}`, 0, 0, 22, COLORS.white, panelWidth - 136, 42,
+            scoreChip, 'Score', `本局得分  ${this.model.score}`, 0, 0, 25, COLORS.white, panelWidth - 136, 42,
         );
         score.isBold = true;
 
@@ -2063,10 +2063,10 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.moveTo(-72, panelHeight / 2 - 78);
         graphics.lineTo(72, panelHeight / 2 - 78);
         graphics.stroke();
-        this.createLabel(panel, 'Kicker', 'SYSTEM // 2048', 0, panelHeight / 2 - 55, 15, COLORS.cyan, panelWidth - 70, 26).spacingX = 3;
-        const titleLabel = this.createLabel(panel, 'Title', title, 0, panelHeight / 2 - 120, 40, COLORS.white, panelWidth - 70, 58);
+        this.createLabel(panel, 'Kicker', 'SYSTEM // 2048', 0, panelHeight / 2 - 55, 17, COLORS.cyan, panelWidth - 70, 26).spacingX = 3;
+        const titleLabel = this.createLabel(panel, 'Title', title, 0, panelHeight / 2 - 120, 46, COLORS.white, panelWidth - 70, 58);
         titleLabel.isBold = true;
-        this.createLabel(panel, 'Body', body, 0, panelHeight / 2 - 210, 24, COLORS.muted, panelWidth - 80, 90);
+        this.createLabel(panel, 'Body', body, 0, panelHeight / 2 - 210, 27, COLORS.muted, panelWidth - 80, 90);
 
         const state: OverlayState = {
             root,
@@ -2231,7 +2231,7 @@ export class Game2048Game extends Component implements MiniGame {
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.95;
         button.duration = 0.08;
-        const label = this.createLabel(node, 'Label', text, 0, 0, height <= 58 ? 20 : 24,
+        const label = this.createLabel(node, 'Label', text, 0, 0, height <= 58 ? 23 : 27,
             COLORS.white, width - 20, height - 8);
         label.isBold = true;
         return button;
