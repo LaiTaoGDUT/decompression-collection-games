@@ -22,6 +22,7 @@ import {
     Vec3,
     view,
 } from 'cc';
+import type { Touch } from 'cc';
 import type { Platform } from '../../../platform/Platform';
 import type {
     MiniGame,
@@ -32,7 +33,7 @@ import type {
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { StorageService } from '../../../services/storage/StorageService';
-import type { GameResult } from '../../../core/types/CommonTypes';
+import type { GameResult, LocalImageSelection } from '../../../core/types/CommonTypes';
 import { SlidingPuzzleCropController } from './SlidingPuzzleCropController';
 import { SlidingPuzzleModel } from './SlidingPuzzleModel';
 import {
@@ -115,6 +116,8 @@ const CROP_PREVIEW_MIN_SIZE = 240;
 const SETUP_BACK_ICON_SIZE = 68;
 const SETUP_TITLE_FONT_SIZE = 42;
 const SETUP_HINT_FONT_SIZE = 24;
+const CROP_TITLE_FONT_SIZE = 42;
+const CROP_HINT_FONT_SIZE = 24;
 const SETUP_PREVIEW_MAX_SIZE = 320;
 const SETUP_COMPACT_PREVIEW_MAX_SIZE = 240;
 const SETUP_SIZE_BUTTON_FONT_SIZE = 30;
@@ -223,6 +226,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private timerLabel?: Label;
     private movesLabel?: Label;
     private boardNode?: Node;
+    private pauseButtonNode?: Node;
     /** 以实际渲染出来的方块节点为准，避免 Canvas 适配后手动坐标换算产生偏移。 */
     private readonly tileIndexByNode = new Map<Node, number>();
     private backgroundNode?: Node;
@@ -233,6 +237,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private completionImageRevealed = false;
     private activePauseModel?: MiniGamePauseModel;
     private activeResultModel?: MiniGameResultModel;
+    /** 完成弹窗关闭后仍保留结果，让完成态暂停按钮可以再次打开它。 */
+    private completedResultModel?: MiniGameResultModel;
     private referenceReturnState: 'playing' | 'paused' | 'completed' = 'playing';
     private unsubscribeShow?: () => void;
     private unsubscribeHide?: () => void;
@@ -259,6 +265,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private cropLastX = 0;
     private cropLastY = 0;
     private cropPinchDistance = 0;
+    private cropPinchCenterX = 0;
+    private cropPinchCenterY = 0;
+    private cropPinchTouchIds: readonly [number, number] | undefined;
+    private readonly cropActiveTouchIds = new Set<number>();
 
     async initialize(context: MiniGameContext<SlidingPuzzleServices>): Promise<void> {
         if (this.state === 'disposed') {
@@ -310,6 +320,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         this.state = 'paused';
         this.inputLocked = true;
+        this.pauseButtonNode && (this.pauseButtonNode.active = false);
     }
 
     resume(): void {
@@ -319,6 +330,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         this.state = 'playing';
         this.inputLocked = false;
+        if (this.pauseButtonNode?.isValid) {
+            this.pauseButtonNode.active = true;
+        }
         this.hidePauseMenu();
     }
 
@@ -331,6 +345,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             throw new Error('Cannot restart a disposed sliding puzzle.');
         }
 
+        this.completedResultModel = undefined;
         this.hidePauseMenu();
         this.hideResultView();
         this.hideReferencePreview();
@@ -407,6 +422,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.releaseVisualAssets();
         this.activePauseModel = undefined;
         this.activeResultModel = undefined;
+        this.completedResultModel = undefined;
         this.context = undefined;
     }
 
@@ -497,7 +513,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     showResultView(model: MiniGameResultModel): void {
         this.state = 'completed';
         this.activeResultModel = model;
+        this.completedResultModel = model;
         this.inputLocked = true;
+        if (this.pauseButtonNode?.isValid) {
+            this.pauseButtonNode.active = true;
+        }
         this.completionTransitionPending = false;
         this.destroyCompletionEffect();
         this.destroyOverlay();
@@ -663,6 +683,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
+        // 选择页是可重复进入的入口；无论上一次选图是取消、失败还是
+        // 页面重建，都要清掉遗留的输入锁，保证“从相册选择”可以再次触发。
+        this.inputLocked = false;
         this.destroyDynamicView();
         this.layout = this.getLayout();
         const root = new Node('SlidingPuzzleSetup');
@@ -808,19 +831,34 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private async pickLocalImage(): Promise<void> {
-        if (!this.context || this.state === 'disposed') {
+        if (!this.context
+            || this.state === 'disposed'
+            || this.inputLocked
+            || this.state === 'picking-image') {
             return;
         }
 
         this.state = 'picking-image';
         this.inputLocked = true;
         // 必须先在当前触摸回调中启动微信原生选择器，再销毁页面节点。
-        const selectionPromise = this.context.services.platform.pickLocalImage();
+        const platform = this.context.services.platform;
         this.destroyDynamicView();
-        const selection = await selectionPromise;
+        let selection: LocalImageSelection | null = null;
+        try {
+            selection = await platform.pickLocalImage();
+        } catch (error: unknown) {
+            // 平台选图接口偶发抛错时也要回到可重试的选择页，不能让
+            // picking-image 状态和已销毁的动态节点一起卡住入口。
+            console.warn('[SlidingPuzzleGame] Failed to pick local image.', error);
+        }
 
         this.inputLocked = false;
         if ((this.state as SlidingPuzzleState) === 'disposed') {
+            selection?.release();
+            return;
+        }
+
+        if (this.state !== 'picking-image') {
             selection?.release();
             return;
         }
@@ -1179,22 +1217,32 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         root.setParent(this.node);
         this.dynamicNode = root;
         const metrics = this.layout;
-        this.createLabel(root, 'CropTitle', '选择图片', 0, metrics.titleY, 40, COLORS.paperLight, 650, 60);
+        this.createLabel(
+            root,
+            'CropTitle',
+            '选择图片',
+            0,
+            metrics.titleY,
+            CROP_TITLE_FONT_SIZE,
+            COLORS.paperLight,
+            680,
+            68,
+        );
         this.createLabel(
             root,
             'CropBody',
             '拖动图片调整位置，双指操作放大缩小',
             0,
-            metrics.titleY - 62,
-            21,
+            metrics.titleY - 68,
+            CROP_HINT_FONT_SIZE,
             COLORS.paper,
-            650,
-            48,
+            680,
+            54,
         );
         const actionHeight = 88;
         const actionY = metrics.footerY + 38;
-        const bodyY = metrics.titleY - 62;
-        const bodyHeight = 48;
+        const bodyY = metrics.titleY - 68;
+        const bodyHeight = 54;
         const previewTop = bodyY - bodyHeight / 2 - 28;
         const previewBottom = actionY + actionHeight / 2 + 32;
         const availablePreviewSize = Math.max(CROP_PREVIEW_MIN_SIZE, previewTop - previewBottom);
@@ -1292,12 +1340,24 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 this.showReferencePreview();
             },
         );
-        this.createIconButton(root, 'PauseButton', metrics.pauseX, metrics.pauseY, 'pauseIcon', PLAY_SIDE_ICON_SIZE, () => {
+        this.pauseButtonNode = this.createIconButton(root, 'PauseButton', metrics.pauseX, metrics.pauseY, 'pauseIcon', PLAY_SIDE_ICON_SIZE, () => {
             if (this.state === 'playing') {
                 this.context?.services.feedback.play('uiButton');
                 this.context?.requestPause();
+                return;
+            }
+
+            if (this.state === 'completed') {
+                const resultModel = this.activeResultModel ?? this.completedResultModel;
+                if (!resultModel) {
+                    return;
+                }
+
+                this.context?.services.feedback.play('uiButton');
+                this.showResultView(resultModel);
             }
         });
+        this.pauseButtonNode.active = this.state === 'playing' || this.state === 'completed';
 
         const board = new Node('Board');
         board.layer = this.node.layer;
@@ -1588,6 +1648,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.completionTransitionPending = true;
         this.state = 'completed';
         this.inputLocked = true;
+        if (this.pauseButtonNode?.isValid) {
+            this.pauseButtonNode.active = true;
+        }
         this.context?.services.feedback.play('milestone');
         const score = Math.max(1, Math.round(100000 - this.elapsedSeconds * 20 - this.model.moves * 45));
         const result: GameResult = Object.freeze({
@@ -2136,7 +2199,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             preview.on(Node.EventType.TOUCH_START, this.handleCropTouchStart, this);
             preview.on(Node.EventType.TOUCH_MOVE, this.handleCropTouchMove, this);
             preview.on(Node.EventType.TOUCH_END, this.handleCropTouchEnd, this);
-            preview.on(Node.EventType.TOUCH_CANCEL, this.handleCropTouchEnd, this);
+            preview.on(Node.EventType.TOUCH_CANCEL, this.handleCropTouchCancel, this);
             preview.on(Node.EventType.MOUSE_WHEEL, this.handleCropMouseWheel, this);
         }
         return preview;
@@ -2181,9 +2244,15 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
-        const touches = event.getAllTouches();
-        if (touches.length >= 2) {
-            this.cropPinchDistance = this.getTouchDistance(touches[0], touches[1]);
+        const touchId = event.getID();
+        if (touchId === null) {
+            return;
+        }
+        this.cropActiveTouchIds.add(touchId);
+
+        const touches = this.getCropTouchPair(event);
+        if (touches) {
+            this.beginCropPinch(touches[0], touches[1]);
             return;
         }
 
@@ -2199,28 +2268,77 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         const previewTransform = this.cropPreviewNode.getComponent(UITransform);
         const previewWidth = Math.max(1, previewTransform?.width ?? 1);
-        const touches = event.getAllTouches();
-        if (touches.length >= 2) {
+        const texture = this.getPreviewTexture();
+        const touches = this.getCropTouchPair(event);
+        if (touches) {
             const nextDistance = this.getTouchDistance(touches[0], touches[1]);
-            if (this.cropPinchDistance > 0) {
-                const zoomDelta = (nextDistance - this.cropPinchDistance) / (previewWidth * 2);
+            const center = this.getTouchCenter(touches[0], touches[1]);
+            const firstId = touches[0].getID();
+            const secondId = touches[1].getID();
+            const pinchIds = this.cropPinchTouchIds;
+            if (!pinchIds
+                || !((pinchIds[0] === firstId && pinchIds[1] === secondId)
+                    || (pinchIds[0] === secondId && pinchIds[1] === firstId))) {
+                this.beginCropPinch(touches[0], touches[1]);
+                return;
+            }
+
+            const previousCrop = this.cropController.currentCrop;
+            const previousDistance = this.cropPinchDistance;
+            if (texture && previousDistance > PREVIEW_PAN_EPSILON) {
+                const previousCenter = {
+                    x: this.cropPinchCenterX,
+                    y: this.cropPinchCenterY,
+                };
+                const zoomDelta = previousCrop.scale
+                    * (nextDistance / previousDistance - 1);
                 if (Math.abs(zoomDelta) >= PREVIEW_PAN_EPSILON) {
-                    const center = this.getTouchCenter(touches[0], touches[1]);
-                    const anchor = this.getCropAnchor(center);
-                    this.zoomCropAt(zoomDelta, anchor.x, anchor.y);
+                    // 以双指中心的上一帧位置为锚点，再处理中心位移，
+                    // 这样缩放比例和双指平移可以连续组合，不会因中心漂移跳图。
+                    const anchor = this.getCropAnchor(previousCenter);
+                    this.cropController.zoomAt(
+                        zoomDelta,
+                        anchor.x,
+                        anchor.y,
+                        texture.width,
+                        texture.height,
+                    );
+                }
+
+                const centerDeltaX = center.x - previousCenter.x;
+                const centerDeltaY = center.y - previousCenter.y;
+                if (Math.abs(centerDeltaX) >= PREVIEW_PAN_EPSILON
+                    || Math.abs(centerDeltaY) >= PREVIEW_PAN_EPSILON) {
+                    this.cropController.panByViewportDelta(
+                        centerDeltaX,
+                        centerDeltaY,
+                        previewWidth,
+                        texture.width,
+                        texture.height,
+                    );
+                }
+
+                const nextCrop = this.cropController.currentCrop;
+                if (nextCrop.scale !== previousCrop.scale
+                    || nextCrop.offsetX !== previousCrop.offsetX
+                    || nextCrop.offsetY !== previousCrop.offsetY) {
+                    this.refreshCropPreview();
                 }
             }
+
             this.cropPinchDistance = nextDistance;
+            this.cropPinchCenterX = center.x;
+            this.cropPinchCenterY = center.y;
+            return;
+        }
+
+        // 两指状态丢失时等待 TOUCH_END/CANCEL 重建单指基准，
+        // 不能把这一帧当成从坐标原点开始的单指拖动。
+        if (this.cropPinchTouchIds) {
             return;
         }
 
         const location = event.getUILocation();
-        if (this.cropPinchDistance > 0) {
-            this.cropPinchDistance = 0;
-            this.cropLastX = location.x;
-            this.cropLastY = location.y;
-            return;
-        }
 
         const deltaX = (location.x - this.cropLastX) / previewWidth;
         const deltaY = (location.y - this.cropLastY) / previewWidth;
@@ -2236,10 +2354,29 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.refreshCropPreview();
     };
 
-    private readonly handleCropTouchEnd = (): void => {
+    private readonly handleCropTouchEnd = (event: EventTouch): void => {
+        const touchId = event.getID();
+        if (touchId !== null) {
+            this.cropActiveTouchIds.delete(touchId);
+        }
+
+        this.cropPinchTouchIds = undefined;
+        this.cropPinchDistance = 0;
+        const remainingTouch = this.getRemainingCropTouch(event);
+        if (remainingTouch) {
+            const location = remainingTouch.getUILocation();
+            this.cropLastX = location.x;
+            this.cropLastY = location.y;
+            return;
+        }
+
         this.cropLastX = 0;
         this.cropLastY = 0;
-        this.cropPinchDistance = 0;
+        this.cropActiveTouchIds.clear();
+    };
+
+    private readonly handleCropTouchCancel = (): void => {
+        this.resetCropGestureState();
     };
 
     private readonly handleCropMouseWheel = (event: EventMouse): void => {
@@ -2296,6 +2433,49 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             x: (firstLocation.x + secondLocation.x) / 2,
             y: (firstLocation.y + secondLocation.y) / 2,
         };
+    }
+
+    private getCropTouchPair(event: EventTouch): readonly [Touch, Touch] | undefined {
+        const touches = event.getAllTouches().filter((touch) => {
+            return this.cropActiveTouchIds.has(touch.getID());
+        });
+        if (touches.length < 2) {
+            return undefined;
+        }
+
+        if (this.cropPinchTouchIds) {
+            const first = touches.find((touch) => touch.getID() === this.cropPinchTouchIds![0]);
+            const second = touches.find((touch) => touch.getID() === this.cropPinchTouchIds![1]);
+            if (first && second) {
+                return [first, second];
+            }
+        }
+
+        return [touches[0], touches[1]];
+    }
+
+    private getRemainingCropTouch(event: EventTouch): Touch | undefined {
+        return event.getAllTouches().find((touch) => this.cropActiveTouchIds.has(touch.getID()));
+    }
+
+    private beginCropPinch(first: Touch, second: Touch): void {
+        const center = this.getTouchCenter(first, second);
+        this.cropPinchTouchIds = [first.getID(), second.getID()];
+        this.cropPinchDistance = this.getTouchDistance(first, second);
+        this.cropPinchCenterX = center.x;
+        this.cropPinchCenterY = center.y;
+        this.cropLastX = center.x;
+        this.cropLastY = center.y;
+    }
+
+    private resetCropGestureState(): void {
+        this.cropActiveTouchIds.clear();
+        this.cropPinchTouchIds = undefined;
+        this.cropLastX = 0;
+        this.cropLastY = 0;
+        this.cropPinchDistance = 0;
+        this.cropPinchCenterX = 0;
+        this.cropPinchCenterY = 0;
     }
 
     private createButton(
@@ -2624,18 +2804,17 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.cropPreviewNode?.off(Node.EventType.TOUCH_START, this.handleCropTouchStart, this);
         this.cropPreviewNode?.off(Node.EventType.TOUCH_MOVE, this.handleCropTouchMove, this);
         this.cropPreviewNode?.off(Node.EventType.TOUCH_END, this.handleCropTouchEnd, this);
-        this.cropPreviewNode?.off(Node.EventType.TOUCH_CANCEL, this.handleCropTouchEnd, this);
+        this.cropPreviewNode?.off(Node.EventType.TOUCH_CANCEL, this.handleCropTouchCancel, this);
         this.cropPreviewNode?.off(Node.EventType.MOUSE_WHEEL, this.handleCropMouseWheel, this);
         this.destroyCompletionEffect();
         this.destroyCompletedBoardImage();
         this.clearSpriteFrameReferences(this.dynamicNode);
         this.destroyTransientFrames();
         this.boardNode = undefined;
+        this.pauseButtonNode = undefined;
         this.cropPreviewNode = undefined;
         this.cropPreviewSprite = undefined;
-        this.cropLastX = 0;
-        this.cropLastY = 0;
-        this.cropPinchDistance = 0;
+        this.resetCropGestureState();
         this.timerLabel = undefined;
         this.movesLabel = undefined;
         if (this.dynamicNode?.isValid) {

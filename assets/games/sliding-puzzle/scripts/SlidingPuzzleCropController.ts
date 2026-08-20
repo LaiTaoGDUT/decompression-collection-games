@@ -56,6 +56,47 @@ export class SlidingPuzzleCropController {
         return this.crop;
     }
 
+    /**
+     * 按预览区域中的屏幕位移平移取景窗口。
+     * deltaX/deltaY 是预览坐标中的位移，方向与图片视觉移动保持一致；
+     * 这里把它换算成源图取景中心的变化，避免不同缩放比例或图片长宽比
+     * 下直接累加归一化偏移导致双指中心移动时出现跳变。
+     */
+    panByViewportDelta(
+        deltaX: number,
+        deltaY: number,
+        viewportSize: number,
+        sourceWidth: number,
+        sourceHeight: number,
+    ): SlidingPuzzleCrop {
+        const width = Math.max(1, Number.isFinite(sourceWidth) ? sourceWidth : 1);
+        const height = Math.max(1, Number.isFinite(sourceHeight) ? sourceHeight : 1);
+        const viewport = Math.max(1, Number.isFinite(viewportSize) ? viewportSize : 1);
+        const scale = clamp(this.crop.scale, MIN_SCALE, MAX_SCALE);
+        const cropSize = Math.min(width, height) / scale;
+        const availableX = Math.max(0, (width - cropSize) / 2);
+        const availableY = Math.max(0, (height - cropSize) / 2);
+        const currentCenterX = width / 2 + this.crop.offsetX * availableX;
+        const currentCenterY = height / 2 + this.crop.offsetY * availableY;
+        // SpriteFrame 的纹理矩形以左上角为原点：横向需要反向移动取景中心，
+        // 纵向则与 UI 坐标同向，才能让图片跟随双指中心移动。
+        const sourceDeltaX = Number.isFinite(deltaX) ? -deltaX * cropSize / viewport : 0;
+        const sourceDeltaY = Number.isFinite(deltaY) ? deltaY * cropSize / viewport : 0;
+        const nextCenterX = currentCenterX + sourceDeltaX;
+        const nextCenterY = currentCenterY + sourceDeltaY;
+
+        this.crop = Object.freeze({
+            ...this.crop,
+            offsetX: availableX > 0
+                ? clamp((nextCenterX - width / 2) / availableX, -MAX_OFFSET, MAX_OFFSET)
+                : 0,
+            offsetY: availableY > 0
+                ? clamp((nextCenterY - height / 2) / availableY, -MAX_OFFSET, MAX_OFFSET)
+                : 0,
+        });
+        return this.crop;
+    }
+
     zoom(delta: number): SlidingPuzzleCrop {
         this.crop = Object.freeze({
             ...this.crop,
@@ -104,7 +145,9 @@ export class SlidingPuzzleCropController {
         // 当前锚点对应的源图坐标：中心 + 锚点在当前裁切正方形中的偏移。
         // 下一缩放比例下反推新的中心，即可保持指针/手指下的内容不跳动。
         const nextCenterX = currentCenterX + safeAnchorX * (currentCropSize - nextCropSize);
-        const nextCenterY = currentCenterY + safeAnchorY * (currentCropSize - nextCropSize);
+        // 纹理矩形的 Y 原点在左上角，UI 锚点的 Y 正方向向上，因此纵向
+        // 需要与横向相反，才能让锚点下的原图内容保持在同一个屏幕位置。
+        const nextCenterY = currentCenterY - safeAnchorY * (currentCropSize - nextCropSize);
 
         this.crop = Object.freeze({
             scale: nextScale,
