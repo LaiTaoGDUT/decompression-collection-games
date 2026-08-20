@@ -1,0 +1,313 @@
+extensions/cocos-mcp-server/dist/tools/project-tools.js
+  s_534c2ae7a9dd74::t_262e9d10c4e908 9,22,105-111,113-139,142-145,282
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_e814a176de7a76::t_1d03b547929a5c 94
+  s_6d3d1edeb7ffb4::t_be30d28f2e336f 1313-1314,1317
+  s_6d3d1edeb7ffb4::t_31b734fbbd09ba 1310,1312,1315-1316,1318,1336
+  s_534c2ae7a9dd74::t_5285b4122a2b91 80,637-639,757,874,1679,1804
+  s_e814a176de7a76::t_651c3853726e9c 1714-1715,1718-1723,1727-1728,1730-1735
+  s_534c2ae7a9dd74::t_4a90004229df6b 79,82-85,635-636,644,646,651,653,659-661,1674-1677,1680,1682,1800-1803,1812
+  s_534c2ae7a9dd74::t_f7676bd0315634 78,640,1669,1840
+  s_534c2ae7a9dd74::t_6ff3159834b611 95,779-782,1666-1668,1670-1673,1678,1681,1805-1811
+  s_534c2ae7a9dd74::t_c1b364f3837e57 77,81,750,773,869,1664-1665,1796-1799,1830,1837-1838
+AGENTS.md
+  h_293365c3a5ebee 61,64
+  h_293365c3a5ebee 36
+extensions/cocos-mcp-server/source/tools/project-tools.ts
+  s_534c2ae7a9dd74::t_9cb42d858f55bb 8,21,110-118,120-148,151-153,156,295
+docs/SLIDING_PUZZLE_PLAN.md
+  s_f4f4b3bb51b65c::t_1a9c5fdebb6298 93,118
+assets/games/sliding-puzzle/scripts/SlidingPuzzleCropController.ts
+  s_5cc8bc93fd1ced::t_b73c23444fef96 70-120
+assets/games/twenty48/scripts/Game2048Layout.ts
+  s_8a01b776836fb1::t_4f4eee309d8743 14-17,126-127,137-140
+assets/games/chess-endless/scripts/ChessEndlessLayout.ts
+  s_fcd8532454a537::t_fdcb2dba5ed860 207-208
+assets/games/watermelon/scripts/WatermelonLayout.ts
+  s_95f909361b6a8c::t_5a6f42cc377077 145-146
+  s_534c2ae7a9dd74::t_f7676bd0315634 44-49,147
+  s_e814a176de7a76::t_9fea2d23aa2590 987-992
+  s_e814a176de7a76::t_3aca95f4e306e0 1057,1071
+  s_e814a176de7a76::t_5de2842c93d783 615-616,757-759
+  s_e814a176de7a76::t_cdc1cd482b8b1e 834,838-839
+  s_e814a176de7a76::t_1d03b547929a5c 890,901,910,912
+  s_534c2ae7a9dd74::t_4a90004229df6b 53,56
+  s_e814a176de7a76::t_651c3853726e9c 323,325,413-415,611,707-708,888,899,985-986,1001-1047,1049-1051,1053-1055,1058-1063,1068-1069,1072-1074
+  s_e814a176de7a76::t_da373c3a162e72 710,713,717-727,745-756,760-767,769-819
+  s_e814a176de7a76::t_19aa0267a53366 87-92,94,100,308,326,331,336,709
+  s_e814a176de7a76::t_6edac8cddc586c 93,95
+  s_e814a176de7a76::t_6a729fcaf9c591 1056,1070
+  h_293365c3a5ebee 98-99
+  s_e814a176de7a76::t_a86d585fe97541 10,70-86,184,211-215,235
+  s_e814a176de7a76::t_bf5bcad75da68a 96-97,1065-1067
+  s_e814a176de7a76::t_f56d0cbb0b92e2 584-585,587-599,623-668
+  s_534c2ae7a9dd74::t_3ec7b5d82ce671 54-55
+  s_534c2ae7a9dd74::t_5285b4122a2b91 50-52
+  s_e814a176de7a76::t_dab575b6e3e109 1052,1064
+  s_e814a176de7a76::t_4db691a3b80d84 13,504,541,581,613-614,617-622,853-854
+  s_e814a176de7a76::t_b4e36bcc2f1d47 612
+assets/games/watermelon/scripts/WatermelonUiTheme.ts
+  s_fcd8532454a537::t_d84351a353676f 36-38
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  s_54bbef6dbee380::t_352e1fc6f14fcd 1518-1520,1530-1535
+  s_c99ce2c4483b71::t_572825b53d37ba 115-127
+  s_c99ce2c4483b71::t_3f01e85e9afdb0 1282-1283,1290,1295
+  s_864f40d941140b::t_2e974f75f791d6 102-107,111,426-440,445-451,457,460-461,463,466-467,470-471,481-482,506-521,524,529-534,538,584,587-588,591,1919,1923,1926,1933-1935,1942-1944,2012-2015,2019-2025,2027-2029,2032
+  s_f4f4b3bb51b65c::t_8f4e1a537ecc04 2629
+  s_f4f4b3bb51b65c::t_f17e4d3b5a423f 2072-2074
+  s_f4f4b3bb51b65c::t_f2c10a648212cc 539,552-564
+  s_54bbef6dbee380::t_dcbe98d899459d 1469
+  s_5cc8bc93fd1ced::t_13b602cc8f3389 112,1182,1914-1915,1917-1918,2233-2235
+  s_c99ce2c4483b71::t_88e159db09a52f 799,802,807
+  s_c124cbf015e74d::t_a1de6868c24c5f 596-605,1243,1247-1249
+  s_5cc8bc93fd1ced::t_beb24de3789b8f 1889-1893,1916
+  s_5cc8bc93fd1ced::t_aa994420000919 1898,1908,1924
+  s_c99ce2c4483b71::t_7cb22d6559a8b7 2412-2415,2425
+  s_54bbef6dbee380::t_e1443295eecbc9 1459-1464,1473-1474,1542
+  s_f4f4b3bb51b65c::t_ef915bb9b5d469 1253
+  s_54bbef6dbee380::t_0b79d53b933293 1552
+  s_f4f4b3bb51b65c::t_09ff257cc11197 2611-2612
+  s_7f0c7bdc964c1e::t_5a6bc5a3a7aa26 1801-1805
+  s_54bbef6dbee380::t_10c83a97aac944 226-227,1338,1375,1512,1514,1521-1527,1538,1540,2623
+  s_5cc8bc93fd1ced::t_54d6e988b02161 1907
+  s_c99ce2c4483b71::t_c414ca4b314c69 419-421
+  s_78ad6b67d99720::t_a81da3fd5446fb 821
+  s_f4f4b3bb51b65c::t_734fc89e25fcd0 502,522-523,535-537,540-551,565,582,593-595,607-608
+  s_54bbef6dbee380::t_2e233ecbc4897b 217,221,1467-1468,1478-1480,1482-1489,1491,1501,1541,1543-1547,1551
+  s_864f40d941140b::t_ec9f96865c13ce 108,110,444,465,469,480,484,528,606,610,2030-2031
+  s_f4f4b3bb51b65c::t_9d0827e7d957b6 567-578
+  s_f4f4b3bb51b65c::t_87bd960ae8f1f3 216,501,1588,1618,2610
+  s_c99ce2c4483b71::t_45cf62f7d1bc83 680,685-695,700,702-703,714-719,721,735-738,740-742,763,767-771,773
+  s_5cc8bc93fd1ced::t_60f31681e8edb8 2254
+  s_c99ce2c4483b71::t_e24c1e87a665e6 2396,2417-2424,2426-2427,2439-2443,2455
+  s_f4f4b3bb51b65c::t_c0a63619b99143 18-20,98,231
+  s_54bbef6dbee380::t_36bea433fca55f 2622
+  s_c99ce2c4483b71::t_69278819377290 2444-2454
+  s_5cc8bc93fd1ced::t_7b7a85ed4692b3 1897,1899-1906,1909-1913
+  s_7f0c7bdc964c1e::t_4ae2346c46bb3c 99-100,232-233,343-344,1254,1339,1445-1450,1605-1612,1738-1786,1788-1800,1806-1810,2630
+  s_864f40d941140b::t_c516da9b4830a7 109
+  s_54bbef6dbee380::t_aa9c90b775a20e 218,1454,1548
+  s_f4f4b3bb51b65c::t_f5901284f7b0c1 1604,1613-1617,1619-1737,1787,1811-1875
+  s_f4f4b3bb51b65c::t_372720c1cfef67 683,696-699,701,705-710,724,732,746,774-786,800,805
+  s_5cc8bc93fd1ced::t_b73c23444fef96 113-114,128-129,1186,1192,1194-1202,1207-1210,1214,1216,1222,2033,2093-2096,2208-2210,2255-2256,2258-2282,2290-2298
+  s_5cc8bc93fd1ced::t_82039615cc5613 2034
+assets/games/twenty48/visual/icons/t48-user-pause-v1.png.meta
+  s_8a01b776836fb1::t_a9c58f1365a0c1 5,13-14,18-19,25,38,40
+docs/ASSET_LEDGER.md
+  s_dd6efb4a6740f7::t_e5b508e4432f89 31-35
+  s_8a01b776836fb1::t_a9c58f1365a0c1 15
+  s_dd6efb4a6740f7::t_7cc4414fc995ff 30
+assets/games/watermelon/configs/gameplay.json
+  s_534c2ae7a9dd74::t_f7676bd0315634 7
+  s_534c2ae7a9dd74::t_5285b4122a2b91 9
+assets/games/watermelon/scripts/WatermelonOverlayView.ts
+  s_6d3d1edeb7ffb4::t_31b734fbbd09ba 223-227,230-231,233,256
+  s_6d3d1edeb7ffb4::t_be30d28f2e336f 228-229,232
+assets/games/twenty48/visual/icons.meta
+  s_8a01b776836fb1::t_a9c58f1365a0c1 2-3,5-8
+assets/lobby/scripts/LobbySettingsPanel.ts
+  s_4204481a9eeb14::t_b64bf816bf1d69 3,195-199
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_8a01b776836fb1::t_c689e0b92e11dc 2126-2191
+  s_8a01b776836fb1::t_076fbaeb47c0d4 1237,1240,1249,1256,1295-1298,1300-1302
+  s_8a01b776836fb1::t_4f4eee309d8743 53,55-56,75,224,230-231,364-365,1083,1092
+  s_8a01b776836fb1::t_2a836ea7951e0c 1077
+docs/SLIDING_PUZZLE_VISUAL_SPEC.md
+  s_f4f4b3bb51b65c::t_1a9c5fdebb6298 47
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_25acb8a97c9d27::t_cd453795a20a40 801
+  s_25acb8a97c9d27::t_87263009a8848e 800
+  s_25acb8a97c9d27::t_9e6523ebfd0f64 70
+  s_fcd8532454a537::t_0a62678afb0d2f 73-76,878,900-901,903-905,907-908
+  s_fcd8532454a537::t_fdcb2dba5ed860 71-72,870-871,874-877,879-885,895-899,902,906,909
+assets/games/watermelon/scripts/WatermelonGameplayConfig.ts
+  s_534c2ae7a9dd74::t_5285b4122a2b91 42
+  s_534c2ae7a9dd74::t_f7676bd0315634 40
+assets/games/watermelon/scripts/FruitCatalog.ts
+  s_534c2ae7a9dd74::t_4a90004229df6b 64-69,71-81
+package.json
+  s_534c2ae7a9dd74::t_b2bd5ec79df799 13-14
+settings/tool-manager.json
+  h_293365c3a5ebee 149,155,161,310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7ea3aa74a565c75b81449d4bc68cf999516d9ead",
+  "prompts": {},
+  "logical_commit_id": "7ea3aa74a565c75b81449d4bc68cf999516d9ead",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_25acb8a97c9d27": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e82-1935-7f93-acd2-f877cdf1d99b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6,
+      "total_deletions": 7
+    },
+    "s_4204481a9eeb14": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01de1-7b8e-7b72-866b-5655f57359c7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6
+    },
+    "s_534c2ae7a9dd74": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e84-21ae-7d00-9aee-7506140e92ab",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 219,
+      "total_deletions": 83
+    },
+    "s_54bbef6dbee380": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e5b-8ce1-73e0-b34d-d2a92b9f0929",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 86,
+      "total_deletions": 53
+    },
+    "s_5cc8bc93fd1ced": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f15-a865-7d40-b438-f370b916f39f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 167,
+      "total_deletions": 56
+    },
+    "s_6d3d1edeb7ffb4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e52-3bd1-7f61-a9fe-70c6a67053db",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 26,
+      "total_deletions": 22
+    },
+    "s_78ad6b67d99720": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f5d-152a-75d1-8d34-f6cac1814e3e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 106,
+      "total_deletions": 50
+    },
+    "s_7f0c7bdc964c1e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f59-063f-7401-af7b-d4f653b5cb2f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 95
+    },
+    "s_864f40d941140b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e52-b826-7ed0-a913-cb979406482a",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 133,
+      "total_deletions": 47
+    },
+    "s_8a01b776836fb1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01dfb-9bb6-7353-bca4-dc482544a4ee",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 156,
+      "total_deletions": 35
+    },
+    "s_95f909361b6a8c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f58-5a66-72d3-b405-bc9a9feda55b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 2,
+      "total_deletions": 1
+    },
+    "s_c124cbf015e74d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e7f-ad33-7180-b4a1-ca05f713c322",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 14,
+      "total_deletions": 3
+    },
+    "s_c99ce2c4483b71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f4f-03a6-77a2-8afb-c0af0d047bde",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 94,
+      "total_deletions": 47
+    },
+    "s_dd6efb4a6740f7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e63-61eb-70b2-941f-0b23c719a01a",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6
+    },
+    "s_e814a176de7a76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e56-c2ba-7ba0-9b6a-764e9b67b2a5",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 350,
+      "total_deletions": 76
+    },
+    "s_f4f4b3bb51b65c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f30-8103-7480-98a0-5d219db8ab0c",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 300,
+      "total_deletions": 38
+    },
+    "s_fcd8532454a537": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01e6c-021d-7702-833f-c8b4475e35bc",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 48,
+      "total_deletions": 12
+    }
+  }
+}
