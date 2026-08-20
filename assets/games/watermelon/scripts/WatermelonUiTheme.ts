@@ -33,5 +33,7 @@ export function catUiColor(name: CatUiColorName, alpha = 255): Color {
 export const CAT_UI_SHAPE = Object.freeze({
     panelRadius: 36,
     chipRadius: 24,
-    buttonRadius: 33,
+    // Keep the radius below half the 66px button height. A radius exactly
+    // equal to half the height can leave roundRect seam dots at both ends.
+    buttonRadius: 30,
 });

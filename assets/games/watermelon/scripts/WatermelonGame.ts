@@ -73,7 +73,15 @@ import {
     type WatermelonGameplayConfig,
 } from './WatermelonGameplayConfig';
 import { WatermelonOverlayView } from './WatermelonOverlayView';
-import { WatermelonLayout } from './WatermelonLayout';
+import {
+    WATERMELON_BOARD_HEIGHT,
+    WATERMELON_BOARD_BOTTOM_PADDING,
+    WATERMELON_BOARD_INNER_PADDING,
+    WATERMELON_BOARD_SIDE_PADDING,
+    WATERMELON_BOARD_WIDTH,
+    WATERMELON_BOARD_WALL_THICKNESS,
+    WatermelonLayout,
+} from './WatermelonLayout';
 import {
     calculateWatermelonOverlayMetrics,
     readWatermelonViewport,
@@ -83,7 +91,8 @@ import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 const { ccclass } = _decorator;
 type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
 
-const NEXT_CAT_PREVIEW_SIZE = 64;
+const NEXT_CAT_PREVIEW_SIZE = 56;
+const CAT_DROP_TOP_GAP = 8;
 const ROUND_SAVE_INTERVAL_SECONDS = 0.25;
 
 interface SavedFruit {
@@ -624,26 +633,32 @@ export class WatermelonGame extends Component implements MiniGame {
             return;
         }
 
+        const wallThickness = WATERMELON_BOARD_WALL_THICKNESS;
+        const horizontalPadding = WATERMELON_BOARD_SIDE_PADDING;
+        const leftBoundary = -size.width / 2 + horizontalPadding;
+        const rightBoundary = size.width / 2 - horizontalPadding;
+        const bottomBoundary = -size.height / 2 + WATERMELON_BOARD_BOTTOM_PADDING;
+
         this.configureWall(
             container.getChildByName('LeftWall'),
-            -size.width / 2 - 6,
+            leftBoundary - wallThickness / 2,
             0,
-            12,
+            wallThickness,
             size.height,
         );
         this.configureWall(
             container.getChildByName('RightWall'),
-            size.width / 2 + 6,
+            rightBoundary + wallThickness / 2,
             0,
-            12,
+            wallThickness,
             size.height,
         );
         this.configureWall(
             container.getChildByName('BottomWall'),
             0,
-            -size.height / 2 - 6,
-            size.width + 24,
-            12,
+            bottomBoundary - wallThickness / 2,
+            size.width + wallThickness * 2,
+            wallThickness,
         );
     }
 
@@ -732,14 +747,14 @@ export class WatermelonGame extends Component implements MiniGame {
         const local = this.fruitContainer.getComponent(UITransform)
             ?.convertToNodeSpaceAR(new Vec3(location.x, location.y));
         const boardWidth = this.fruitContainer.getComponent(UITransform)
-            ?.contentSize.width ?? 650;
+            ?.contentSize.width ?? WATERMELON_BOARD_WIDTH;
 
         if (local) {
             this.aimX = clampDropX(
                 local.x,
                 boardWidth,
                 getFruitConfig(this.currentLevel).radius,
-                this.gameplay.dropEdgePadding,
+                WATERMELON_BOARD_SIDE_PADDING + this.gameplay.dropEdgePadding,
             );
             this.positionDropPreview();
         }
@@ -755,13 +770,16 @@ export class WatermelonGame extends Component implements MiniGame {
         const generation = this.operationGeneration;
         const config = getFruitConfig(this.currentLevel);
         const boardHeight = this.fruitContainer.getComponent(UITransform)
-            ?.contentSize.height ?? 800;
+            ?.contentSize.height ?? WATERMELON_BOARD_HEIGHT;
         const droppedLevel = this.currentLevel;
         this.activeDropSequenceId += 1;
         const dropped = this.spawnFruit(
             this.currentLevel,
             this.aimX,
-            boardHeight / 2 - config.radius - 12,
+            boardHeight / 2
+                - WATERMELON_BOARD_INNER_PADDING
+                - config.radius
+                - CAT_DROP_TOP_GAP,
             this.activeDropSequenceId,
         );
         dropped.playDropAnimation();
@@ -848,12 +866,12 @@ export class WatermelonGame extends Component implements MiniGame {
 
         const rawX = (first.node.position.x + second.node.position.x) / 2;
         const boardWidth = this.fruitContainer?.getComponent(UITransform)
-            ?.contentSize.width ?? 650;
+            ?.contentSize.width ?? WATERMELON_BOARD_WIDTH;
         const x = clampDropX(
             rawX,
             boardWidth,
             getFruitConfig(nextLevel).radius,
-            0,
+            WATERMELON_BOARD_SIDE_PADDING,
         );
         const y = (first.node.position.y + second.node.position.y) / 2;
         const dropSequenceId = this.activeDropSequenceId;
@@ -1289,11 +1307,15 @@ export class WatermelonGame extends Component implements MiniGame {
         graphics.fillColor = primary
             ? catUiColor('peach')
             : catUiColor('cream');
-        // Every action gets a clear outline; secondary actions use a warm
-        // border while primary actions keep the light picture-book edge.
-        graphics.strokeColor = primary
+        const labelColor = primary || name === 'RestartButton'
             ? catUiColor('surface')
-            : catUiColor('peachDark');
+            : catUiColor('ink');
+        // Primary actions use a dark ink edge for contrast; secondary actions
+        // keep the warm accent border used by this popup.
+        graphics.strokeColor = name === 'ContinueButton'
+            || name === 'RestartButton'
+            ? catUiColor('ink')
+            : primary ? catUiColor('surface') : catUiColor('peachDark');
         graphics.lineWidth = 5;
         graphics.roundRect(
             -buttonWidth / 2,
@@ -1311,9 +1333,7 @@ export class WatermelonGame extends Component implements MiniGame {
         node.on(Button.EventType.CLICK, handler, this);
 
         const label = this.createOverlayLabel(node, 'Text', text, 0, 0, 26);
-        label.color = primary || name === 'RestartButton'
-            ? catUiColor('surface')
-            : catUiColor('ink');
+        label.color = labelColor;
     }
 
     private setContinueOverlayBusy(busy: boolean, status: string): void {
@@ -1641,7 +1661,25 @@ export class WatermelonGame extends Component implements MiniGame {
 
         const fruit = instantiate(prefab);
         fruit.parent = container;
-        fruit.setPosition(x, y);
+        const boardWidth = container.getComponent(UITransform)?.contentSize.width
+            ?? WATERMELON_BOARD_WIDTH;
+        const boardHeight = container.getComponent(UITransform)?.contentSize.height
+            ?? WATERMELON_BOARD_HEIGHT;
+        const config = getFruitConfig(level);
+        const minY = -boardHeight / 2 + WATERMELON_BOARD_BOTTOM_PADDING + config.radius;
+        const maxY = boardHeight / 2
+            - WATERMELON_BOARD_INNER_PADDING
+            - config.radius
+            - CAT_DROP_TOP_GAP;
+        fruit.setPosition(
+            clampDropX(
+                x,
+                boardWidth,
+                config.radius,
+                WATERMELON_BOARD_SIDE_PADDING,
+            ),
+            Math.max(minY, Math.min(maxY, y)),
+        );
         const body = fruit.getComponent(FruitBody);
 
         if (!body) {
@@ -1673,16 +1711,28 @@ export class WatermelonGame extends Component implements MiniGame {
     private updateProgress(): void {
         const snapshot = this.progress.snapshot;
         this.persistHighScore(snapshot.score, 'score-update');
-        const label = this.node.getChildByName('ScoreLabel')?.getComponent(Label);
+        const label = this.node.getChildByName('ScoreLabel')
+            ?.getChildByName('Value')?.getComponent(Label);
 
         if (label) {
-            label.string = `分数\n${snapshot.score}`;
+            label.string = String(snapshot.score);
+        } else {
+            const legacyLabel = this.node.getChildByName('ScoreLabel')?.getComponent(Label);
+            if (legacyLabel) {
+                legacyLabel.string = `分数\n${snapshot.score}`;
+            }
         }
 
         const highScore = Math.max(this.saveData?.highScore ?? 0, snapshot.score);
-        const highLabel = this.node.getChildByName('HighScoreLabel')?.getComponent(Label);
+        const highLabel = this.node.getChildByName('HighScoreLabel')
+            ?.getChildByName('Value')?.getComponent(Label);
         if (highLabel) {
-            highLabel.string = `最高\n${highScore}`;
+            highLabel.string = String(highScore);
+        } else {
+            const legacyHighLabel = this.node.getChildByName('HighScoreLabel')?.getComponent(Label);
+            if (legacyHighLabel) {
+                legacyHighLabel.string = `最高\n${highScore}`;
+            }
         }
 
         this.context?.reportScore(snapshot.score);
@@ -1743,8 +1793,23 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         const config = getFruitConfig(this.currentLevel);
-        const boardHeight = container.getComponent(UITransform)?.contentSize.height ?? 800;
-        preview.setPosition(this.aimX, boardHeight / 2 - config.radius - 12);
+        const boardHeight = container.getComponent(UITransform)?.contentSize.height
+            ?? WATERMELON_BOARD_HEIGHT;
+        const boardWidth = container.getComponent(UITransform)?.contentSize.width
+            ?? WATERMELON_BOARD_WIDTH;
+        this.aimX = clampDropX(
+            this.aimX,
+            boardWidth,
+            config.radius,
+            WATERMELON_BOARD_SIDE_PADDING + this.gameplay.dropEdgePadding,
+        );
+        preview.setPosition(
+            this.aimX,
+            boardHeight / 2
+                - WATERMELON_BOARD_INNER_PADDING
+                - config.radius
+                - CAT_DROP_TOP_GAP,
+        );
         this.drawFruitPreview(preview, this.currentLevel);
         this.updateAimGuide();
     }
@@ -1762,16 +1827,17 @@ export class WatermelonGame extends Component implements MiniGame {
             guide = new Node('AimGuide');
             guide.layer = container.layer;
             guide.setParent(container);
-            guide.addComponent(UITransform).setContentSize(12, 800);
+            guide.addComponent(UITransform).setContentSize(12, WATERMELON_BOARD_HEIGHT);
             guide.addComponent(Graphics);
             guide.setSiblingIndex(1);
         }
         guide.active = true;
         guide.setPosition(this.aimX, 0);
         const graphics = guide.getComponent(Graphics)!;
-        const boardHeight = container.getComponent(UITransform)?.contentSize.height ?? 800;
+        const boardHeight = container.getComponent(UITransform)?.contentSize.height
+            ?? WATERMELON_BOARD_HEIGHT;
         const startY = preview.position.y - getFruitConfig(this.currentLevel).radius - 8;
-        const endY = -boardHeight / 2 + 28;
+        const endY = -boardHeight / 2 + WATERMELON_BOARD_BOTTOM_PADDING + 4;
         graphics.clear();
         graphics.strokeColor = catUiColor('sky', 190);
         graphics.lineWidth = 4;

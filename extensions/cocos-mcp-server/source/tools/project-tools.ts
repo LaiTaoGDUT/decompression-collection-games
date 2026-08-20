@@ -5,7 +5,7 @@ export class ProjectTools implements ToolExecutor {
         return [
             {
                 name: 'project_manage',
-                description: 'PROJECT MANAGEMENT: Core project operations and configuration. COMMON WORKFLOWS: get_info for project details, run for preview testing, build for deployment preparation, get_settings for configuration inspection. Note: Build operations require manual interaction due to API limitations.',
+                description: 'PROJECT MANAGEMENT: Core project operations and configuration. COMMON WORKFLOWS: get_info for project details, run for preview testing, build for deployment preparation, get_settings for configuration inspection. Browser and simulator preview use the editor preview runtime directly; build operations still require manual interaction due to API limitations.',
                 inputSchema: {
                     type: 'object',
                     properties: {
@@ -18,7 +18,7 @@ export class ProjectTools implements ToolExecutor {
                         platform: {
                             type: 'string',
                             enum: ['browser', 'simulator', 'preview'],
-                            description: 'Preview platform (run action). "browser" = web preview (most common), "simulator" = device simulation, "preview" = editor preview. Recommended: browser for quick testing.',
+                            description: 'Preview platform (run action). "browser" = start Cocos browser preview directly, "simulator" = device simulation, "preview" = editor Game View preview. Browser preview is equivalent to clicking the top toolbar Run button with Browser selected.',
                             default: 'browser'
                         },
                         // For build action
@@ -107,16 +107,53 @@ export class ProjectTools implements ToolExecutor {
 
     // Original implementation methods
     private async runProject(platform: string = 'browser'): Promise<ToolResponse> {
-        // Note: Preview module is not documented in official API
-        // Using fallback approach - open build panel as alternative
+        const supportedPlatforms = ['browser', 'simulator', 'preview'];
+
+        if (!supportedPlatforms.includes(platform)) {
+            return {
+                success: false,
+                error: `Unsupported preview platform: ${platform}. Supported platforms: ${supportedPlatforms.join(', ')}`
+            };
+        }
+
         try {
-            await Editor.Message.request('builder', 'open');
+            if (platform === 'preview') {
+                const isPlaying = await Editor.Message.request('scene', 'editor-preview-set-play', true);
+                return {
+                    success: Boolean(isPlaying),
+                    message: isPlaying
+                        ? '✅ Cocos editor Game View preview started'
+                        : '⚠️ Cocos editor Game View preview did not start',
+                    data: {
+                        platform,
+                        isPlaying: Boolean(isPlaying)
+                    }
+                };
+            }
+
+            // This mirrors the Preview toolbar's platform switch before it calls
+            // preview.open-terminal. Unlike builder.open, open-terminal starts
+            // the actual Cocos preview server and opens/reuses the browser.
+            await Editor.Profile.setConfig('preview', 'preview.current.platform', platform, 'local');
+            Editor.Message.send('preview', 'change-platform', platform);
+            await Editor.Message.request('preview', 'open-terminal', undefined);
+
+            let previewUrl: string | undefined;
+            try {
+                previewUrl = await Editor.Message.request('preview', 'query-preview-url');
+            } catch {
+                // The preview has already been started; URL lookup is optional
+                // because older Creator builds may not expose this response.
+            }
+
             return {
                 success: true,
-                message: `✅ Build panel opened. Preview functionality requires manual setup for ${platform}.`,
+                message: platform === 'browser'
+                    ? '✅ Cocos browser preview started (equivalent to the top toolbar Run button)'
+                    : '✅ Cocos simulator preview started',
                 data: {
                     platform,
-                    instruction: "Use the build panel to configure and start preview manually"
+                    ...(previewUrl ? { previewUrl } : {})
                 }
             };
         } catch (err: any) {

@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "fb9213a0-b92e-4947-a4bd-e4643422c717",
+  "uuid": "635efb1f-e412-4db1-b926-e41efff7b81c",
   "files": [
     ".json",
     ".png"
@@ -10,19 +10,19 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "fb9213a0-b92e-4947-a4bd-e4643422c717@6c48a",
-      "displayName": "cat-05-brown-tabby-idle-3-c6-v1",
+      "uuid": "635efb1f-e412-4db1-b926-e41efff7b81c@6c48a",
+      "displayName": "t48-user-pause-v1",
       "id": "6c48a",
       "name": "texture",
       "userData": {
-        "wrapModeS": "repeat",
-        "wrapModeT": "repeat",
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
         "minfilter": "linear",
         "magfilter": "linear",
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "fb9213a0-b92e-4947-a4bd-e4643422c717",
+        "imageUuidOrDatabaseUri": "635efb1f-e412-4db1-b926-e41efff7b81c",
         "visible": false
       },
       "ver": "1.0.22",
@@ -35,8 +35,8 @@
   },
   "userData": {
     "type": "texture",
-    "fixAlphaTransparencyArtifacts": false,
+    "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "fb9213a0-b92e-4947-a4bd-e4643422c717@6c48a"
+    "redirect": "635efb1f-e412-4db1-b926-e41efff7b81c@6c48a"
   }
 }

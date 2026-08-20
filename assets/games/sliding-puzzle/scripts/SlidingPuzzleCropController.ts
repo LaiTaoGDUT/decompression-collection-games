@@ -67,6 +67,57 @@ export class SlidingPuzzleCropController {
         return this.crop;
     }
 
+    /**
+     * 以预览区域内的锚点缩放。anchorX/anchorY 使用预览正方形的宽高归一化，
+     * 中心为 0，左右/上下边缘分别约为 -0.5/0.5。缩放后会同步移动取景中心，
+     * 让锚点下的原图内容保持在同一个屏幕位置。
+     */
+    zoomAt(
+        delta: number,
+        anchorX: number,
+        anchorY: number,
+        sourceWidth: number,
+        sourceHeight: number,
+    ): SlidingPuzzleCrop {
+        const currentScale = this.crop.scale;
+        const nextScale = Math.min(
+            MAX_SCALE,
+            Math.max(MIN_SCALE, currentScale + (Number.isFinite(delta) ? delta : 0)),
+        );
+        if (nextScale === currentScale) {
+            return this.crop;
+        }
+
+        const width = Math.max(1, Number.isFinite(sourceWidth) ? sourceWidth : 1);
+        const height = Math.max(1, Number.isFinite(sourceHeight) ? sourceHeight : 1);
+        const shortestSide = Math.min(width, height);
+        const currentCropSize = shortestSide / currentScale;
+        const nextCropSize = shortestSide / nextScale;
+        const currentAvailableX = Math.max(0, (width - currentCropSize) / 2);
+        const currentAvailableY = Math.max(0, (height - currentCropSize) / 2);
+        const nextAvailableX = Math.max(0, (width - nextCropSize) / 2);
+        const nextAvailableY = Math.max(0, (height - nextCropSize) / 2);
+        const currentCenterX = width / 2 + this.crop.offsetX * currentAvailableX;
+        const currentCenterY = height / 2 + this.crop.offsetY * currentAvailableY;
+        const safeAnchorX = clamp(Number.isFinite(anchorX) ? anchorX : 0, -0.5, 0.5);
+        const safeAnchorY = clamp(Number.isFinite(anchorY) ? anchorY : 0, -0.5, 0.5);
+        // 当前锚点对应的源图坐标：中心 + 锚点在当前裁切正方形中的偏移。
+        // 下一缩放比例下反推新的中心，即可保持指针/手指下的内容不跳动。
+        const nextCenterX = currentCenterX + safeAnchorX * (currentCropSize - nextCropSize);
+        const nextCenterY = currentCenterY + safeAnchorY * (currentCropSize - nextCropSize);
+
+        this.crop = Object.freeze({
+            scale: nextScale,
+            offsetX: nextAvailableX > 0
+                ? clamp((nextCenterX - width / 2) / nextAvailableX, -MAX_OFFSET, MAX_OFFSET)
+                : 0,
+            offsetY: nextAvailableY > 0
+                ? clamp((nextCenterY - height / 2) / nextAvailableY, -MAX_OFFSET, MAX_OFFSET)
+                : 0,
+        });
+        return this.crop;
+    }
+
     reset(): void {
         this.crop = Object.freeze({ scale: 1, offsetX: 0, offsetY: 0 });
     }

@@ -204,7 +204,8 @@ export function calculateChessEndlessLayout(
     const dockX = contentX;
     const dockY = -height / 2 + clampedBottom + dockBottomGap + dockHeight / 2;
 
-    const boardGap = 12 * uiScale;
+    // 给棋盘上下各留更紧凑的呼吸空间，让棋盘在安全区内轻微放大。
+    const boardGap = 8 * uiScale;
     const boardTop = reinforcementY - reinforcementHeight / 2 - boardGap;
     const boardBottom = dockY + dockHeight / 2 + boardGap;
     // 高度充足时棋盘外框直接铺满安全内容宽度；矮屏仍由

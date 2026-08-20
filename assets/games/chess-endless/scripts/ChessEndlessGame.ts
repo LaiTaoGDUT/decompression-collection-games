@@ -67,6 +67,13 @@ const CAPTURE_DURATION = 0.24;
 const CHESS_MUSIC_VOLUME = 0.5;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
+const REINFORCEMENT_PIECE_GAP = 0;
+const PIECE_DIAMETER_SCALE = 1.24;
+const GENERAL_PIECE_DIAMETER_SCALE = 1.29;
+const PIECE_SHADOW_X_SCALE = 0.06;
+const PIECE_SHADOW_WIDTH_SCALE = 0.88;
+const PIECE_SHADOW_HEIGHT_SCALE = 0.30;
+const PIECE_SHADOW_Y_SCALE = -0.21;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -790,16 +797,14 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const types = snapshot.queuedReinforcement.types;
             const count = types.length;
             let pieceSize = 60;
-            let gap = 10;
+            // 增援预览始终使用最小棋子间隔，避免列表长度改变时横向节奏跳变。
+            const gap = REINFORCEMENT_PIECE_GAP;
             if (count >= 5) {
                 pieceSize = 34;
-                gap = 4;
             } else if (count >= 4) {
                 pieceSize = 44;
-                gap = 6;
             } else if (count === 3) {
                 pieceSize = 50;
-                gap = 8;
             }
             types.forEach((type, index) => {
                 const x = (index - (count - 1) / 2) * (pieceSize + gap);
@@ -862,10 +867,22 @@ export class ChessEndlessGame extends Component implements MiniGame {
         // The generated discs keep a transparent safety margin for particles and
         // shadows. Size the sprite node above one grid interval so the visible
         // wooden disc still reads clearly within one cell without overlapping.
-        const diameter = Math.min(size.cellWidth, size.cellHeight) * (general ? 1.25 : 1.20);
+        const diameter = Math.min(size.cellWidth, size.cellHeight)
+            * (general ? GENERAL_PIECE_DIAMETER_SCALE : PIECE_DIAMETER_SCALE);
         const point = this.boardPoint(at);
         const node = this.createNode(this.pieceLayer ?? this.node, name, point.x, point.y, diameter, diameter);
-        this.applySprite(node, player ? 'piecePlayer' : PIECE_TEXTURE_KEY[type]);
+        // 棋子根节点只负责移动和缩放；阴影与棋面作为子节点，移动动画时会始终跟随棋子。
+        const shadow = this.createNode(
+            node,
+            'Shadow',
+            diameter * PIECE_SHADOW_X_SCALE,
+            diameter * PIECE_SHADOW_Y_SCALE,
+            diameter * PIECE_SHADOW_WIDTH_SCALE,
+            diameter * PIECE_SHADOW_HEIGHT_SCALE,
+        );
+        this.drawPieceShadow(shadow);
+        const visual = this.createNode(node, 'Visual', 0, 0, diameter, diameter);
+        this.applySprite(visual, player ? 'piecePlayer' : PIECE_TEXTURE_KEY[type]);
         if (player && this.selectedPlayer) {
             const ring = this.createNode(node, 'SelectedRing', 0, 0, diameter + 8, diameter + 8);
             const graphics = ring.addComponent(Graphics);
@@ -875,6 +892,21 @@ export class ChessEndlessGame extends Component implements MiniGame {
             graphics.stroke();
         }
         return node;
+    }
+
+    private drawPieceShadow(node: Node): void {
+        const size = node.getComponent(UITransform)?.contentSize ?? { width: 0, height: 0 };
+        const graphics = node.addComponent(Graphics);
+        // 暖棕色多层椭圆模拟弱阳光下的柔和投影，避免使用纯黑造成脏重感。
+        graphics.fillColor = new Color(92, 70, 48, 24);
+        graphics.ellipse(0, 0, size.width / 2, size.height / 2);
+        graphics.fill();
+        graphics.fillColor = new Color(82, 60, 40, 30);
+        graphics.ellipse(0, 0, size.width * 0.43, size.height * 0.40);
+        graphics.fill();
+        graphics.fillColor = new Color(72, 51, 34, 34);
+        graphics.ellipse(0, 0, size.width * 0.34, size.height * 0.31);
+        graphics.fill();
     }
 
     private decorateFrozen(node: Node): void {

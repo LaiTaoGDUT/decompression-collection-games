@@ -7,8 +7,10 @@ import {
     Graphics,
     Label,
     Node,
+    Rect,
     Sprite,
     SpriteFrame,
+    Size,
     Texture2D,
     sys,
     UITransform,
@@ -39,8 +41,19 @@ export interface WatermelonLayoutMetrics {
     readonly instructionY: number;
 }
 
-const WATERMELON_BOARD_WIDTH = 650;
-const WATERMELON_BOARD_HEIGHT = 800;
+// Board artwork is wider and taller than the old playfield. The collision
+// boundary stays inside the visible pink/teal frame so cat tokens never ride
+// over the decorative border; the bottom edge has extra breathing room for
+// the cat silhouette and its contrast backing.
+export const WATERMELON_BOARD_WIDTH = 720;
+export const WATERMELON_BOARD_HEIGHT = 900;
+// Vertical padding follows the visible inner frame. The side walls need a
+// little more inset because the cat sprite and its contrast ring extend past
+// the physical circle by a few pixels.
+export const WATERMELON_BOARD_INNER_PADDING = 34;
+export const WATERMELON_BOARD_SIDE_PADDING = 40;
+export const WATERMELON_BOARD_BOTTOM_PADDING = 46;
+export const WATERMELON_BOARD_WALL_THICKNESS = 12;
 
 const CAT_UI_ARTWORK_PATHS = Object.freeze({
     board: 'visual/ui/c1-cat-board-v2/texture',
@@ -53,6 +66,37 @@ const CAT_UI_ARTWORK_PATHS = Object.freeze({
 } as const);
 
 type CatUiArtworkKey = keyof typeof CAT_UI_ARTWORK_PATHS;
+
+type HorizontalArtworkFrames = Readonly<{
+    left: SpriteFrame;
+    center: SpriteFrame;
+    right: SpriteFrame;
+}>;
+
+// 这些比例表示原图中需要固定的左右装饰区；中间区域是唯一允许横向
+// 拉伸的区域。上下不再参与这四张 HUD 背景的切分。
+const CAT_UI_HORIZONTAL_SLICE_RATIOS: Readonly<
+    Partial<Record<CatUiArtworkKey, readonly [number, number]>>
+> = Object.freeze({
+    score: [0.23, 0.23],
+    highScore: [0.23, 0.23],
+    next: [0.23, 0.23],
+    instruction: [0.11, 0.11],
+});
+
+// HUD 两端给屏幕边缘留出额外呼吸空间，避免装饰叶片和文字贴到边界。
+const CAT_HUD_SCORE_CENTER_OFFSET = 132;
+const CAT_HUD_SCORE_PANEL_WIDTH = 206;
+const CAT_HUD_HIGH_SCORE_PANEL_WIDTH = 190;
+const CAT_HUD_NEXT_CENTER_OFFSET = 136;
+const CAT_HUD_NEXT_PANEL_WIDTH = 226;
+const CAT_HUD_NEXT_LABEL_OFFSET = 180;
+const CAT_HUD_NEXT_PREVIEW_OFFSET = 86;
+const CAT_HUD_CAPTION_FONT_SIZE = 18;
+const CAT_HUD_SCORE_VALUE_FONT_SIZE = 26;
+const CAT_HUD_HIGH_SCORE_VALUE_FONT_SIZE = 24;
+const CAT_HUD_CAPTION_Y = 13;
+const CAT_HUD_VALUE_Y = -14;
 
 /** 安全区只改变 HUD 与底部留白；玩法几何保持设计坐标，短屏整体缩放棋盘。 */
 export function calculateWatermelonLayout(
@@ -98,8 +142,9 @@ export function calculateWatermelonLayout(
     const scoreY = topY - 134 * uiScale;
     const dropY = scoreY - 88 * uiScale;
     const instructionY = -height / 2 + clampedBottom + 54 * uiScale;
-    const boardTop = dropY - 42 * uiScale;
-    const boardBottom = instructionY + 65 * uiScale;
+    // 收紧分数模块与棋盘面板之间的留白，把释放出的高度交给棋盘。
+    const boardTop = dropY - 20 * uiScale;
+    const boardBottom = instructionY + 58 * uiScale;
     const availableBoardHeight = Math.max(1, boardTop - boardBottom);
     const boardScale = Math.max(
         0.01,
@@ -136,6 +181,7 @@ export class WatermelonLayout extends Component {
     private ownedBackgroundFrame?: SpriteFrame;
     private ownedTitleFrame?: SpriteFrame;
     private readonly ownedUiFrames = new Map<CatUiArtworkKey, SpriteFrame>();
+    private readonly ownedHorizontalUiFrames = new Map<CatUiArtworkKey, HorizontalArtworkFrames>();
     private platformLayout?: PlatformLayoutInfo;
     private layoutChangeHandler?: () => void;
     private backgroundSourceAspect = 750 / 1334;
@@ -162,6 +208,11 @@ export class WatermelonLayout extends Component {
     releaseOwnedArtwork(detachBindings = true): void {
         const ownedFrames = new Set<SpriteFrame>();
         this.ownedUiFrames.forEach((frame) => ownedFrames.add(frame));
+        this.ownedHorizontalUiFrames.forEach((frames) => {
+            ownedFrames.add(frames.left);
+            ownedFrames.add(frames.center);
+            ownedFrames.add(frames.right);
+        });
         if (this.ownedBackgroundFrame) {
             ownedFrames.add(this.ownedBackgroundFrame);
         }
@@ -181,6 +232,7 @@ export class WatermelonLayout extends Component {
             if (frame.isValid) frame.destroy();
         }
         this.ownedUiFrames.clear();
+        this.ownedHorizontalUiFrames.clear();
         this.ownedBackgroundFrame = undefined;
         this.ownedTitleFrame = undefined;
     }
@@ -253,7 +305,7 @@ export class WatermelonLayout extends Component {
             ?.setContentSize(350 * metrics.uiScale, 140 * metrics.uiScale);
         this.node.getChildByName('HighScoreLabel')
             ?.getComponent(UITransform)
-            ?.setContentSize(190 * metrics.uiScale, 76 * metrics.uiScale);
+            ?.setContentSize(CAT_HUD_HIGH_SCORE_PANEL_WIDTH * metrics.uiScale, 76 * metrics.uiScale);
         this.setContentSize('ScoreLabel', 114, 66, metrics.uiScale);
         this.setContentSize('NextLabel', 84, 66, metrics.uiScale);
         this.setContentSize('DropZone', 40, 66, metrics.uiScale);
@@ -268,20 +320,20 @@ export class WatermelonLayout extends Component {
         const contentRight = metrics.contentX + metrics.contentWidth / 2;
         this.setPosition('Title', metrics.contentX, metrics.topY);
         this.setPosition('PauseButton', metrics.pauseX, metrics.pauseY);
+        this.setPosition('ScoreLabel', metrics.contentX, metrics.scoreY);
         this.setPosition(
-            'ScoreLabel',
-            contentLeft + 125 * metrics.uiScale,
+            'HighScoreLabel',
+            contentLeft + CAT_HUD_SCORE_CENTER_OFFSET * metrics.uiScale,
             metrics.scoreY,
         );
-        this.setPosition('HighScoreLabel', metrics.contentX, metrics.scoreY);
         this.setPosition(
             'NextLabel',
-            contentRight - 182 * metrics.uiScale,
+            contentRight - CAT_HUD_NEXT_LABEL_OFFSET * metrics.uiScale,
             metrics.scoreY + 14 * metrics.uiScale,
         );
         this.setPosition(
             'NextFruitPreview',
-            contentRight - 78 * metrics.uiScale,
+            contentRight - CAT_HUD_NEXT_PREVIEW_OFFSET * metrics.uiScale,
             metrics.scoreY,
         );
         this.setPosition('DropZone', metrics.contentX, metrics.dropY);
@@ -357,6 +409,9 @@ export class WatermelonLayout extends Component {
             label.horizontalAlign = 1;
             label.verticalAlign = 1;
         }
+
+        this.ensureNumericHudLabels('ScoreLabel', '分数');
+        this.ensureNumericHudLabels('HighScoreLabel', '最高');
 
         if (!this.node.getChildByName('HudDecorLayer')) {
             const decor = new Node('HudDecorLayer');
@@ -446,8 +501,7 @@ export class WatermelonLayout extends Component {
                         }
                         const sprite = background.getComponent(Sprite)!;
                         this.ownedBackgroundFrame?.destroy();
-                        const spriteFrame = new SpriteFrame();
-                        spriteFrame.texture = texture;
+                        const spriteFrame = this.createTextureFrame(texture);
                         this.ownedBackgroundFrame = spriteFrame;
                         const sourceWidth = spriteFrame.originalSize.width;
                         const sourceHeight = spriteFrame.originalSize.height;
@@ -484,8 +538,7 @@ export class WatermelonLayout extends Component {
                         artwork.addComponent(Sprite);
                     }
                     const sprite = artwork.getComponent(Sprite)!;
-                    const frame = new SpriteFrame();
-                    frame.texture = texture;
+                    const frame = this.createTextureFrame(texture);
                     this.ownedTitleFrame?.destroy();
                     this.ownedTitleFrame = frame;
                     sprite.spriteFrame = frame;
@@ -525,11 +578,25 @@ export class WatermelonLayout extends Component {
         return Promise.all(entries.map(([key, path]) => new Promise<void>((resolve) => {
             bundle.load(path, Texture2D, (error, texture) => {
                 if (!error && texture && this.node.isValid) {
-                    const frame = new SpriteFrame();
-                    frame.texture = texture;
+                    const frame = this.createTextureFrame(texture);
                     const previous = this.ownedUiFrames.get(key);
                     if (previous?.isValid) previous.destroy();
+                    const previousHorizontalFrames = this.ownedHorizontalUiFrames.get(key);
+                    this.destroyHorizontalArtworkFrames(previousHorizontalFrames);
                     this.ownedUiFrames.set(key, frame);
+                    const sliceRatios = CAT_UI_HORIZONTAL_SLICE_RATIOS[key];
+                    if (sliceRatios) {
+                        this.ownedHorizontalUiFrames.set(
+                            key,
+                            this.createHorizontalArtworkFrames(
+                                texture,
+                                sliceRatios[0],
+                                sliceRatios[1],
+                            ),
+                        );
+                    } else {
+                        this.ownedHorizontalUiFrames.delete(key);
+                    }
                     this.applyLayout();
                 } else if (error) {
                     console.warn(`[WatermelonLayout] UI artwork failed to load: ${key}.`, error);
@@ -541,6 +608,64 @@ export class WatermelonLayout extends Component {
 
     private hasUiArtwork(key: CatUiArtworkKey): boolean {
         return !!this.ownedUiFrames.get(key)?.isValid;
+    }
+
+    /**
+     * Runtime-created frames do not infer originalSize from texture. Keeping
+     * the source dimensions here is required by the board's Cocos SLICED
+     * layout and by the three-piece HUD layout below.
+     */
+    private createTextureFrame(texture: Texture2D): SpriteFrame {
+        const frame = new SpriteFrame();
+        frame.texture = texture;
+        frame.originalSize = new Size(texture.width, texture.height);
+        return frame;
+    }
+
+    /**
+     * Cocos 3.8 的 Sprite.Type.SLICED 是九宫格，会同时处理上下左右四条
+     * 边。HUD 这四张图只需要左、中、右三段，所以这里显式裁出三个
+     * SpriteFrame：左右段保持原图比例，中段只把宽度交给 UITransform。
+     */
+    private createHorizontalArtworkFrames(
+        texture: Texture2D,
+        leftRatio: number,
+        rightRatio: number,
+    ): HorizontalArtworkFrames {
+        const sourceWidth = Math.max(3, texture.width);
+        const sourceHeight = Math.max(1, texture.height);
+        const leftWidth = Math.max(
+            1,
+            Math.min(sourceWidth - 2, Math.round(sourceWidth * leftRatio)),
+        );
+        const rightWidth = Math.max(
+            1,
+            Math.min(sourceWidth - leftWidth - 1, Math.round(sourceWidth * rightRatio)),
+        );
+        const centerWidth = Math.max(1, sourceWidth - leftWidth - rightWidth);
+
+        const createSlice = (x: number, width: number): SpriteFrame => {
+            const frame = new SpriteFrame();
+            frame.texture = texture;
+            frame.rect = new Rect(x, 0, width, sourceHeight);
+            frame.originalSize = new Size(width, sourceHeight);
+            return frame;
+        };
+
+        return Object.freeze({
+            left: createSlice(0, leftWidth),
+            center: createSlice(leftWidth, centerWidth),
+            right: createSlice(leftWidth + centerWidth, rightWidth),
+        });
+    }
+
+    private destroyHorizontalArtworkFrames(frames?: HorizontalArtworkFrames): void {
+        if (!frames) {
+            return;
+        }
+        for (const frame of [frames.left, frames.center, frames.right]) {
+            if (frame.isValid) frame.destroy();
+        }
     }
 
     private ensureSpriteNode(
@@ -578,32 +703,29 @@ export class WatermelonLayout extends Component {
             number,
             number,
             number,
-            number,
-            number,
         ]> = [
-            ['score', 'ScoreBackground', left + 125 * scale, metrics.scoreY, 214 * scale, 82 * scale, 0.23, 0.26],
-            ['highScore', 'HighScoreBackground', metrics.contentX, metrics.scoreY, 190 * scale, 82 * scale, 0.23, 0.26],
-            ['next', 'NextBackground', right - 128 * scale, metrics.scoreY, 238 * scale, 82 * scale, 0.23, 0.26],
-            ['instruction', 'InstructionBackground', metrics.contentX, metrics.instructionY, 460 * scale, 54 * scale, 0.11, 0.22],
+            ['highScore', 'HighScoreBackground', left + CAT_HUD_SCORE_CENTER_OFFSET * scale, metrics.scoreY, CAT_HUD_HIGH_SCORE_PANEL_WIDTH * scale, 82 * scale],
+            ['score', 'ScoreBackground', metrics.contentX, metrics.scoreY, CAT_HUD_SCORE_PANEL_WIDTH * scale, 82 * scale],
+            ['next', 'NextBackground', right - CAT_HUD_NEXT_CENTER_OFFSET * scale, metrics.scoreY, CAT_HUD_NEXT_PANEL_WIDTH * scale, 82 * scale],
+            ['instruction', 'InstructionBackground', metrics.contentX, metrics.instructionY, 460 * scale, 54 * scale],
         ];
 
-        for (const [key, name, x, y, width, height, horizontalRatio, verticalRatio] of placements) {
+        for (const [key, name, x, y, width, height] of placements) {
             const artwork = this.ensureSpriteNode(decor, name);
             artwork.node.setPosition(x, y);
             artwork.transform.setContentSize(width, height);
-            artwork.sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-            artwork.sprite.spriteFrame = this.ownedUiFrames.get(key) ?? null;
+            // Parent is only a positioning container. Its Sprite component is
+            // kept for compatibility with dynamically-created old nodes, but
+            // the actual artwork is rendered by Left/Center/Right children.
+            artwork.sprite.spriteFrame = null;
+            artwork.sprite.enabled = false;
+            this.applyHorizontalArtwork(
+                artwork.node,
+                this.ownedHorizontalUiFrames.get(key),
+                width,
+                height,
+            );
             artwork.node.active = this.hasUiArtwork(key);
-            if (artwork.node.active && artwork.sprite.spriteFrame) {
-                artwork.sprite.type = Sprite.Type.SLICED;
-                this.applyNineSliceInsets(
-                    artwork.sprite.spriteFrame,
-                    horizontalRatio,
-                    verticalRatio,
-                    width,
-                    height,
-                );
-            }
         }
 
         const pause = this.node.getChildByName('PauseButton');
@@ -623,6 +745,80 @@ export class WatermelonLayout extends Component {
         }
     }
 
+    private applyHorizontalArtwork(
+        parent: Node,
+        frames: HorizontalArtworkFrames | undefined,
+        targetWidth: number,
+        targetHeight: number,
+    ): void {
+        const left = this.ensureSpriteNode(parent, 'Left');
+        const center = this.ensureSpriteNode(parent, 'Center');
+        const right = this.ensureSpriteNode(parent, 'Right');
+        left.node.setSiblingIndex(0);
+        center.node.setSiblingIndex(1);
+        right.node.setSiblingIndex(2);
+        const children = [left, center, right];
+
+        if (!frames?.left.isValid || !frames.center.isValid || !frames.right.isValid) {
+            children.forEach((child) => {
+                child.node.active = false;
+                child.sprite.spriteFrame = null;
+            });
+            return;
+        }
+
+        const sourceHeight = Math.max(1, frames.left.originalSize.height);
+        const heightScale = Math.max(0.01, targetHeight / sourceHeight);
+        let leftWidth = frames.left.originalSize.width * heightScale;
+        let rightWidth = frames.right.originalSize.width * heightScale;
+        let centerWidth = targetWidth - leftWidth - rightWidth;
+        if (centerWidth < 1) {
+            const edgeWidth = Math.max(1, leftWidth + rightWidth);
+            const edgeScale = Math.max(0.01, (targetWidth - 1) / edgeWidth);
+            leftWidth *= edgeScale;
+            rightWidth *= edgeScale;
+            centerWidth = 1;
+        }
+
+        this.applySimpleArtworkSlice(
+            left,
+            frames.left,
+            leftWidth,
+            targetHeight,
+            -targetWidth / 2 + leftWidth / 2,
+        );
+        this.applySimpleArtworkSlice(
+            center,
+            frames.center,
+            centerWidth,
+            targetHeight,
+            -targetWidth / 2 + leftWidth + centerWidth / 2,
+        );
+        this.applySimpleArtworkSlice(
+            right,
+            frames.right,
+            rightWidth,
+            targetHeight,
+            targetWidth / 2 - rightWidth / 2,
+        );
+    }
+
+    private applySimpleArtworkSlice(
+        artwork: { node: Node; sprite: Sprite; transform: UITransform },
+        frame: SpriteFrame,
+        width: number,
+        height: number,
+        x: number,
+    ): void {
+        artwork.node.active = true;
+        artwork.node.setPosition(x, 0);
+        artwork.transform.setContentSize(Math.max(1, width), Math.max(1, height));
+        artwork.sprite.enabled = true;
+        artwork.sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        artwork.sprite.type = Sprite.Type.SIMPLE;
+        artwork.sprite.spriteFrame = frame;
+    }
+
     private ensureBoardBackground(container: Node): void {
         const artwork = this.ensureSpriteNode(container, 'BoardBackground');
         artwork.node.setSiblingIndex(0);
@@ -635,12 +831,12 @@ export class WatermelonLayout extends Component {
         artwork.node.setPosition(0, 0);
         artwork.transform.setContentSize(width, height);
         artwork.sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        artwork.sprite.spriteFrame = frame ?? null;
-        artwork.node.active = !!frame?.isValid;
+        artwork.sprite.type = Sprite.Type.SLICED;
         if (frame?.isValid) {
-            artwork.sprite.type = Sprite.Type.SLICED;
             this.applyNineSliceInsets(frame, 0.12, 0.12, width, height);
         }
+        artwork.sprite.spriteFrame = frame ?? null;
+        artwork.node.active = !!frame?.isValid;
     }
 
     /**
@@ -654,8 +850,8 @@ export class WatermelonLayout extends Component {
         targetWidth: number,
         targetHeight: number,
     ): void {
-        const width = Math.max(1, frame.originalSize.width);
-        const height = Math.max(1, frame.originalSize.height);
+        const width = Math.max(1, frame.originalSize.width || frame.rect.width);
+        const height = Math.max(1, frame.originalSize.height || frame.rect.height);
         // Keep the source edge proportions fixed while reserving a non-zero
         // center patch for narrow devices and changed source dimensions.
         const horizontalInset = Math.min(
@@ -689,9 +885,9 @@ export class WatermelonLayout extends Component {
         if (!this.hasUiArtwork('score')) {
             this.drawSoftChip(
                 graphics,
-                left + 125 * scale,
+                metrics.contentX,
                 metrics.scoreY,
-                214 * scale,
+                CAT_HUD_SCORE_PANEL_WIDTH * scale,
                 82 * scale,
                 catUiColor('blush'),
                 scale,
@@ -700,9 +896,9 @@ export class WatermelonLayout extends Component {
         if (!this.hasUiArtwork('highScore')) {
             this.drawSoftChip(
                 graphics,
-                metrics.contentX,
+                left + CAT_HUD_SCORE_CENTER_OFFSET * scale,
                 metrics.scoreY,
-                190 * scale,
+                CAT_HUD_HIGH_SCORE_PANEL_WIDTH * scale,
                 82 * scale,
                 catUiColor('butter'),
                 scale,
@@ -711,9 +907,9 @@ export class WatermelonLayout extends Component {
         if (!this.hasUiArtwork('next')) {
             this.drawSoftChip(
                 graphics,
-                right - 128 * scale,
+                right - CAT_HUD_NEXT_CENTER_OFFSET * scale,
                 metrics.scoreY,
-                238 * scale,
+                CAT_HUD_NEXT_PANEL_WIDTH * scale,
                 82 * scale,
                 catUiColor('mint'),
                 scale,
@@ -786,9 +982,14 @@ export class WatermelonLayout extends Component {
 
     private applyLabelStyles(scale = 1): void {
         this.styleLabel('Title', 36 * scale, catUiColor('ink'), '');
-        this.styleLabel('ScoreLabel', 30 * scale, catUiColor('ink'));
-        this.styleLabel('HighScoreLabel', 27 * scale, catUiColor('ink'));
-        this.styleLabel('NextLabel', 23 * scale, catUiColor('ink'), '下一只');
+        this.styleNumericHudLabels('ScoreLabel', scale);
+        this.styleNumericHudLabels('HighScoreLabel', scale);
+        this.styleLabel('NextLabel', CAT_HUD_CAPTION_FONT_SIZE * scale, catUiColor('ink'), '下一只');
+        const nextLabel = this.node.getChildByName('NextLabel')?.getComponent(Label);
+        if (nextLabel) {
+            nextLabel.isBold = true;
+            nextLabel.enableOutline = false;
+        }
         this.styleLabel('DropZone', 21 * scale, catUiColor('ink', 220), '');
         this.styleLabel('Instruction', 23 * scale, catUiColor('ink', 230), '左右移动，松手投放');
         const danger = this.node.getChildByName('FruitContainer')
@@ -798,6 +999,79 @@ export class WatermelonLayout extends Component {
             danger.fontSize = 20;
             danger.lineHeight = 28;
         }
+    }
+
+    private ensureNumericHudLabels(parentName: string, caption: string): void {
+        const parent = this.node.getChildByName(parentName);
+        if (!parent) {
+            return;
+        }
+
+        const legacyLabel = parent.getComponent(Label);
+        if (legacyLabel) {
+            legacyLabel.string = '';
+            legacyLabel.enabled = false;
+        }
+
+        const captionLabel = this.ensureHudLabelNode(parent, 'Caption');
+        captionLabel.string = caption;
+        const valueLabel = this.ensureHudLabelNode(parent, 'Value');
+        if (!valueLabel.string) {
+            valueLabel.string = '0';
+        }
+    }
+
+    private ensureHudLabelNode(parent: Node, name: string): Label {
+        let node = parent.getChildByName(name);
+        if (!node) {
+            node = new Node(name);
+            node.layer = parent.layer;
+            node.setParent(parent);
+            node.addComponent(UITransform);
+            node.addComponent(Label);
+        }
+        return node.getComponent(Label)!;
+    }
+
+    private styleNumericHudLabels(parentName: string, scale: number): void {
+        const parent = this.node.getChildByName(parentName);
+        if (!parent) {
+            return;
+        }
+
+        const parentSize = parent.getComponent(UITransform)?.contentSize;
+        const width = parentSize?.width ?? 114 * scale;
+        const caption = parent.getChildByName('Caption')?.getComponent(Label);
+        const value = parent.getChildByName('Value')?.getComponent(Label);
+        if (!caption || !value) {
+            return;
+        }
+
+        const captionTransform = caption.node.getComponent(UITransform)!;
+        captionTransform.setContentSize(width, 18 * scale);
+        caption.node.setPosition(0, CAT_HUD_CAPTION_Y * scale);
+        caption.fontSize = CAT_HUD_CAPTION_FONT_SIZE * scale;
+        caption.lineHeight = 18 * scale;
+        caption.color = catUiColor('ink', 230);
+        caption.isBold = true;
+        caption.enableOutline = false;
+        caption.horizontalAlign = 1;
+        caption.verticalAlign = 1;
+        caption.overflow = Label.Overflow.SHRINK;
+
+        const valueTransform = value.node.getComponent(UITransform)!;
+        valueTransform.setContentSize(width, 30 * scale);
+        value.node.setPosition(0, CAT_HUD_VALUE_Y * scale);
+        value.fontSize = (parentName === 'ScoreLabel'
+            ? CAT_HUD_SCORE_VALUE_FONT_SIZE
+            : CAT_HUD_HIGH_SCORE_VALUE_FONT_SIZE) * scale;
+        value.lineHeight = 28 * scale;
+        value.color = catUiColor('ink');
+        value.isBold = true;
+        value.enableOutline = false;
+        value.horizontalAlign = 1;
+        value.verticalAlign = 1;
+        value.overflow = Label.Overflow.SHRINK;
     }
 
     private styleLabel(

@@ -1,5 +1,6 @@
 import {
     Button,
+    BlockInputEvents,
     Color,
     Graphics,
     HorizontalTextAlignment,
@@ -191,6 +192,11 @@ export class LobbySettingsPanel {
         widget.bottom = 0;
         widget.left = 0;
         widget.right = 0;
+
+        // Graphics only draws the dimmed backdrop; it does not participate in
+        // Cocos' input blocking. Keep the modal's full-screen hit area active
+        // so clicks and touches cannot reach the game cards underneath it.
+        root.addComponent(BlockInputEvents);
 
         const overlay = root.addComponent(Graphics);
         overlay.fillColor = COLOR.overlay;

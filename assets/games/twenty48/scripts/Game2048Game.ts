@@ -50,9 +50,10 @@ import {
     calculateGame2048LayoutFromPlatform,
     GAME_2048_BOARD_NODE_SIZE,
     GAME_2048_BOARD_SIZE,
+    GAME_2048_CHEAT_BUTTON_WIDTH,
     GAME_2048_CHEAT_BUTTON_HEIGHT,
-    GAME_2048_PAUSE_BUTTON_WIDTH,
-    GAME_2048_PAUSE_TOUCH_HEIGHT,
+    GAME_2048_PAUSE_ICON_SIZE,
+    GAME_2048_PAUSE_TOUCH_SIZE,
     GAME_2048_SCORE_CARD_HEIGHT,
     GAME_2048_SCORE_CARD_WIDTH,
     GAME_2048_TITLE_HEIGHT,
@@ -71,6 +72,7 @@ const GAME_2048_DATA_VERSION = 4;
 const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
 const GAME_2048_TITLE_ASSET_PATH = 'visual/title/t48-user-title-v1/texture';
 const GAME_2048_BOARD_ASSET_PATH = 'visual/boards/t48-user-board-v1/texture';
+const GAME_2048_PAUSE_ICON_ASSET_PATH = 'visual/icons/t48-user-pause-v1/texture';
 const GAME_2048_TILE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096] as const;
 const GAME_2048_TILE_ASSET_PREFIX = 'visual/pieces/t48-user-piece-';
 // 新版棋盘图已去掉外圈留白；四列槽位连同内外间距约占 548/572，棋子间距略放宽为 9px。
@@ -219,11 +221,14 @@ export class Game2048Game extends Component implements MiniGame {
     private ownedBackgroundFrame?: SpriteFrame;
     private ownedTitleFrame?: SpriteFrame;
     private ownedBoardFrame?: SpriteFrame;
+    private ownedPauseFrame?: SpriteFrame;
     private readonly ownedTileFrames = new Map<number, SpriteFrame>();
     private titleFallback?: Node;
     private titleArtwork?: Sprite;
     private boardFallback?: Node;
     private boardArtwork?: Sprite;
+    private pauseFallback?: Node;
+    private pauseArtwork?: Sprite;
     private inputLocked = false;
     private touchStartX = 0;
     private touchStartY = 0;
@@ -356,6 +361,8 @@ export class Game2048Game extends Component implements MiniGame {
         this.ownedTitleFrame = undefined;
         this.ownedBoardFrame?.destroy();
         this.ownedBoardFrame = undefined;
+        this.ownedPauseFrame?.destroy();
+        this.ownedPauseFrame = undefined;
         this.ownedTileFrames.forEach((frame) => frame.destroy());
         this.ownedTileFrames.clear();
     }
@@ -384,7 +391,6 @@ export class Game2048Game extends Component implements MiniGame {
         this.destroyOverlay(this.resultOverlay);
         this.resultOverlay = undefined;
         this.completedResultModel = model;
-        this.setPauseButtonLabel('结算');
         this.destroyOverlay(this.targetOverlay);
         this.targetOverlay = undefined;
         const extra = model.result.extra ?? {};
@@ -412,7 +418,6 @@ export class Game2048Game extends Component implements MiniGame {
         this.destroyOverlay(this.resultOverlay);
         this.resultOverlay = undefined;
         this.completedResultModel = undefined;
-        this.setPauseButtonLabel('暂停');
     }
 
     private startRound(allowResume = false): void {
@@ -443,7 +448,6 @@ export class Game2048Game extends Component implements MiniGame {
         this.inputLocked = false;
         this.context?.reportScore(0);
         this.completedResultModel = undefined;
-        this.setPauseButtonLabel('暂停');
         this.persistProgress(true);
         this.renderBoard();
         this.refreshHud();
@@ -1070,23 +1074,13 @@ export class Game2048Game extends Component implements MiniGame {
         this.titleButton.transition = Button.Transition.SCALE;
         this.titleButton.zoomScale = 0.98;
         this.titleButton.duration = 0.08;
-        this.pauseButton = this.createButton(
+        this.pauseButton = this.createPauseButton(
             this.node,
             'PauseButton',
-            '暂停',
             metrics.pauseX,
             metrics.pauseY,
-            GAME_2048_PAUSE_BUTTON_WIDTH,
-            52,
-            'cyan',
-            true,
-            true,
         );
-        // 右侧面板直接延伸到屏幕边缘，实际触摸热区扩展到 104×88。
-        this.pauseButton.node.getComponent(UITransform)?.setContentSize(
-            GAME_2048_PAUSE_BUTTON_WIDTH,
-            GAME_2048_PAUSE_TOUCH_HEIGHT,
-        );
+        // 暂停按钮使用独立图标，触摸热区略大于图标本身。
         this.pauseButton.node.setScale(metrics.fitScale, metrics.fitScale, 1);
 
         this.cheatButton = this.createButton(
@@ -1095,7 +1089,7 @@ export class Game2048Game extends Component implements MiniGame {
             '作弊',
             metrics.cheatX,
             metrics.cheatY,
-            GAME_2048_PAUSE_BUTTON_WIDTH,
+            GAME_2048_CHEAT_BUTTON_WIDTH,
             GAME_2048_CHEAT_BUTTON_HEIGHT,
             'amber',
         );
@@ -1240,9 +1234,10 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private async loadThemeAssets(): Promise<void> {
-        const [title, board, ...tiles] = await Promise.all([
+        const [title, board, pause, ...tiles] = await Promise.all([
             this.loadTextureFrame(GAME_2048_TITLE_ASSET_PATH),
             this.loadTextureFrame(GAME_2048_BOARD_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_PAUSE_ICON_ASSET_PATH),
             ...GAME_2048_TILE_VALUES.map((value) => this.loadTextureFrame(
                 `${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`,
             )),
@@ -1251,12 +1246,14 @@ export class Game2048Game extends Component implements MiniGame {
         if (!this.node.isValid || this.state === 'disposed') {
             title?.destroy();
             board?.destroy();
+            pause?.destroy();
             tiles.forEach((frame) => frame?.destroy());
             return;
         }
 
         this.ownedTitleFrame = title;
         this.ownedBoardFrame = board;
+        this.ownedPauseFrame = pause;
         GAME_2048_TILE_VALUES.forEach((value, index) => {
             const frame = tiles[index];
             if (frame) this.ownedTileFrames.set(value, frame);
@@ -1295,6 +1292,13 @@ export class Game2048Game extends Component implements MiniGame {
         }
         if (this.boardFallback?.isValid) {
             this.boardFallback.active = !this.ownedBoardFrame;
+        }
+        if (this.pauseArtwork?.node.isValid) {
+            this.pauseArtwork.spriteFrame = this.ownedPauseFrame ?? null;
+            this.pauseArtwork.node.active = !!this.ownedPauseFrame;
+        }
+        if (this.pauseFallback?.isValid) {
+            this.pauseFallback.active = !this.ownedPauseFrame;
         }
         this.boardContent?.children
             .filter((child) => child.name.startsWith('Slot-'))
@@ -1722,12 +1726,6 @@ export class Game2048Game extends Component implements MiniGame {
     private dismissResultOverlay(): void {
         this.destroyOverlay(this.resultOverlay);
         this.resultOverlay = undefined;
-        this.setPauseButtonLabel('结算');
-    }
-
-    private setPauseButtonLabel(text: string): void {
-        const label = this.pauseButton?.node.getChildByName('Label')?.getComponent(Label);
-        if (label) label.string = text;
     }
 
     private createHudCard(x: number, y: number, caption: string, accent: Color, scale = 1): Label {
@@ -2125,6 +2123,72 @@ export class Game2048Game extends Component implements MiniGame {
                 });
             }
         }
+    }
+
+    private createPauseButton(parent: Node, name: string, x: number, y: number): Button {
+        const node = this.createNode(
+            parent,
+            name,
+            x,
+            y,
+            GAME_2048_PAUSE_TOUCH_SIZE,
+            GAME_2048_PAUSE_TOUCH_SIZE,
+        );
+        node.addComponent(UIOpacity);
+
+        // 资源加载失败时保留一个无文字的暂停符号，保证入口仍然可见可用。
+        const fallback = this.createNode(
+            node,
+            'PauseFallback',
+            0,
+            0,
+            GAME_2048_PAUSE_ICON_SIZE,
+            GAME_2048_PAUSE_ICON_SIZE,
+        );
+        const fallbackGraphics = fallback.addComponent(Graphics);
+        fallbackGraphics.fillColor = new Color(COLORS.void.r, COLORS.void.g, COLORS.void.b, 245);
+        fallbackGraphics.roundRect(
+            -GAME_2048_PAUSE_ICON_SIZE / 2,
+            -GAME_2048_PAUSE_ICON_SIZE / 2,
+            GAME_2048_PAUSE_ICON_SIZE,
+            GAME_2048_PAUSE_ICON_SIZE,
+            11,
+        );
+        fallbackGraphics.fill();
+        fallbackGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 210);
+        fallbackGraphics.lineWidth = 2;
+        fallbackGraphics.roundRect(
+            -GAME_2048_PAUSE_ICON_SIZE / 2 + 1,
+            -GAME_2048_PAUSE_ICON_SIZE / 2 + 1,
+            GAME_2048_PAUSE_ICON_SIZE - 2,
+            GAME_2048_PAUSE_ICON_SIZE - 2,
+            10,
+        );
+        fallbackGraphics.stroke();
+        fallbackGraphics.fillColor = COLORS.cyan;
+        fallbackGraphics.roundRect(-11, -18, 6, 36, 3);
+        fallbackGraphics.roundRect(5, -18, 6, 36, 3);
+        fallbackGraphics.fill();
+
+        const artworkNode = this.createNode(
+            node,
+            'PauseArtwork',
+            0,
+            0,
+            GAME_2048_PAUSE_ICON_SIZE,
+            GAME_2048_PAUSE_ICON_SIZE,
+        );
+        const artwork = artworkNode.addComponent(Sprite);
+        artwork.sizeMode = Sprite.SizeMode.CUSTOM;
+        artworkNode.active = false;
+        this.pauseFallback = fallback;
+        this.pauseArtwork = artwork;
+
+        const button = node.addComponent(Button);
+        button.transition = Button.Transition.SCALE;
+        button.zoomScale = 0.95;
+        button.duration = 0.08;
+        return button;
     }
 
     private createButton(

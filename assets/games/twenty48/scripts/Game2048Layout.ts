@@ -11,8 +11,10 @@ export const GAME_2048_TITLE_WIDTH = 472;
 export const GAME_2048_TITLE_HEIGHT = 472 / 3;
 export const GAME_2048_SCORE_CARD_WIDTH = 220;
 export const GAME_2048_SCORE_CARD_HEIGHT = 104;
-export const GAME_2048_PAUSE_BUTTON_WIDTH = 104;
-export const GAME_2048_PAUSE_TOUCH_HEIGHT = 88;
+export const GAME_2048_PAUSE_TOUCH_SIZE = 88;
+export const GAME_2048_PAUSE_ICON_SIZE = 64;
+export const GAME_2048_PAUSE_EDGE_INSET = 24;
+export const GAME_2048_CHEAT_BUTTON_WIDTH = 104;
 export const GAME_2048_CHEAT_BUTTON_HEIGHT = 52;
 export const GAME_2048_CHEAT_BUTTON_GAP = 8;
 
@@ -121,8 +123,8 @@ export function calculateGame2048Layout(
     const fitScale = Math.max(0.001, contentWidth / GAME_2048_DESIGN_WIDTH);
 
     const titleHeight = GAME_2048_TITLE_HEIGHT * fitScale;
-    const pauseWidth = GAME_2048_PAUSE_BUTTON_WIDTH * fitScale;
-    const pauseHeight = GAME_2048_PAUSE_TOUCH_HEIGHT * fitScale;
+    const pauseWidth = GAME_2048_PAUSE_TOUCH_SIZE * fitScale;
+    const pauseHeight = GAME_2048_PAUSE_TOUCH_SIZE * fitScale;
     const reservedBottom = Math.max(0, insets.topRightReservedBottom ?? 0);
     // 标题需要同时避让顶部安全区和微信胶囊，额外留出 12 设计像素缓冲。
     const titleTopFromTop = Math.max(normalized.safeTop, reservedBottom) + 12 * fitScale;
@@ -132,7 +134,10 @@ export function calculateGame2048Layout(
     const pauseCenterFromTop = Math.max(pauseDefaultCenterFromTop, pauseReservedCenterFromTop);
     const titleY = height / 2 - titleCenterFromTop;
     const pauseY = height / 2 - pauseCenterFromTop;
-    const pauseX = contentX + contentWidth / 2 - pauseWidth / 2;
+    // 暂停图标独立于屏幕右边缘，触摸热区右侧保留 24 个设计像素。
+    const pauseX = contentX + contentWidth / 2
+        - pauseWidth / 2
+        - GAME_2048_PAUSE_EDGE_INSET * fitScale;
     const cheatHeight = GAME_2048_CHEAT_BUTTON_HEIGHT * fitScale;
     const cheatGap = GAME_2048_CHEAT_BUTTON_GAP * fitScale;
     const cheatCenterFromTop = pauseCenterFromTop + pauseHeight / 2 + cheatGap + cheatHeight / 2;

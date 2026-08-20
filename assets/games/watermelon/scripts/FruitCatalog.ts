@@ -61,19 +61,24 @@ const IDLE_FRAME_PAIRS = [
     [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
 ] as const;
 
-/** 用户提供的 1～11 级猫咪圆球背景色配置。 */
+/**
+ * 1～11 级猫咪的独立背景色相。
+ *
+ * Each level deliberately uses a different hue family so the cat silhouette
+ * remains readable after merges and the next-cat preview is easy to scan.
+ */
 const BALL_BACKGROUND_COLORS = [
-    [220, 238, 244],
-    [220, 239, 227],
-    [248, 230, 183],
-    [246, 216, 220],
-    [245, 221, 201],
-    [240, 222, 190],
-    [213, 232, 245],
-    [240, 222, 190],
-    [242, 214, 225],
-    [245, 210, 168],
-    [204, 231, 217],
+    [154, 184, 234], // 01 sky blue
+    [238, 158, 148], // 02 coral
+    [111, 201, 188], // 03 turquoise
+    [242, 199, 91],  // 04 sunflower
+    [192, 167, 229], // 05 lilac
+    [155, 201, 158], // 06 sage
+    [119, 169, 216], // 07 denim
+    [201, 141, 187], // 08 plum
+    [230, 164, 110], // 09 apricot
+    [182, 200, 107], // 10 olive
+    [215, 123, 157], // 11 berry
 ] as const;
 
 function createFruitCatalog(

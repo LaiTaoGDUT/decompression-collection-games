@@ -12,6 +12,7 @@
 | 图标合集.png | 用户提供；裁取上排中间 512×512 图标 | 游戏图标 | `game-sliding-puzzle` / `visual/icons/sliding-puzzle-icon-v1.png` | 待许可确认 |
 | 大厅游戏卡片封面.jpg | 用户提供；原样复制到大厅副本 | 大厅卡片封面 | `lobby` / `visual/covers/sliding-puzzle/sliding-puzzle-cover-v1.jpg` | 待许可确认 |
 | 游戏大厅封面.jpg | 用户提供；原样复制，作为拼图预设图 | 拼图图片切片预览与棋盘方块 | `game-sliding-puzzle` / `visual/presets/preset-07-cats-cover-v1.jpg` | 待许可确认 |
+| 2048 暂停图标.png | 用户提供；原样复制，63×64 | 2048 主界面暂停入口（纯图标、无文字） | `game-2048` / `visual/icons/t48-user-pause-v1.png` | 待许可确认 |
 
 ## 猫咪游戏素材
 
@@ -26,6 +27,12 @@
 | c1-cat-bubble-highlight-v2.png | 用户提供；复制为游戏内新文件名，按猫咪球尺寸缩放 | 猫咪圆球高光前景 | `game-watermelon` / `visual/ui/c1-cat-bubble-highlight-v2.png` | 待许可确认 |
 | 猫咪圆球背景色配置.txt | 用户提供；已转为代码配置 | 1～11 级猫咪圆球背景颜色 | `game-watermelon` / `scripts/FruitCatalog.ts` | 已接入，来源许可待确认 |
 | 大厅封面图.jpg | 用户提供；原样复制为新路径，避免复用旧导入缓存 | 大厅猫咪游戏卡片封面 | `lobby` / `visual/covers/watermelon/c1-cat-room-cover-v2.jpg` | 待许可确认 |
+
+## 象棋游戏素材
+
+| 素材 | 来源/修改 | 用途 | Bundle / 路径 | 状态 |
+| --- | --- | --- | --- | --- |
+| 敌方卒棋子.png | OpenAI Image Generation（Codex imagegen）生成；保留原棋子透明边缘并将中心字形改为方正易读的“卒” | 象棋无尽挑战敌方卒棋子 | `game-chess-endless` / `visual/pieces/piece_enemy_pawn.png` | 已接入，来源许可待确认 |
 
 ## 尚未导入
 
