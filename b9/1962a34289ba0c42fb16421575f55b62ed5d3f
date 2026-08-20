@@ -1,0 +1,30 @@
+assets/platform/WeChatPlatform.ts
+  s_78ad6b67d99720::t_867c40197e85a1 26,54-56,75,83-87,136,182,233,263-285,287-290,296-307,312,314-320,393-403
+  s_78ad6b67d99720::t_a81da3fd5446fb 157
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  s_78ad6b67d99720::t_9bcf6bda85297e 642-643,645
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b91962a34289ba0c42fb16421575f55b62ed5d3f",
+  "prompts": {},
+  "logical_commit_id": "b91962a34289ba0c42fb16421575f55b62ed5d3f",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_78ad6b67d99720": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f5d-152a-75d1-8d34-f6cac1814e3e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 106,
+      "total_deletions": 50
+    }
+  }
+}
