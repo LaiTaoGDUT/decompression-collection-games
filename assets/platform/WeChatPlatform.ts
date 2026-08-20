@@ -23,6 +23,7 @@ interface WeChatSafeArea {
 interface WeChatSystemInfo {
     readonly screenWidth: number;
     readonly screenHeight: number;
+    readonly SDKVersion?: string;
     readonly safeArea?: WeChatSafeArea;
     readonly pixelRatio?: number;
     readonly memorySize?: number;
@@ -50,7 +51,9 @@ interface WeChatLaunchOptions {
 }
 
 interface WeChatMediaFile {
-    readonly tempFilePath: string;
+    /** chooseMedia 返回 tempFilePath，chooseImage 的 tempFiles 返回 path。 */
+    readonly tempFilePath?: string;
+    readonly path?: string;
     readonly fileType?: string;
     readonly size?: number;
 }
@@ -69,7 +72,7 @@ interface WeChatChooseMediaOptions {
     readonly mediaType: readonly ['image'];
     readonly sourceType: readonly ['album'];
     readonly success?: (result: WeChatChooseMediaResult) => void;
-    readonly fail?: () => void;
+    readonly fail?: (error?: WeChatApiError) => void;
 }
 
 interface WeChatChooseImageOptions {
@@ -77,7 +80,11 @@ interface WeChatChooseImageOptions {
     readonly sizeType?: readonly ('original' | 'compressed')[];
     readonly sourceType: readonly ['album'];
     readonly success?: (result: WeChatChooseImageResult) => void;
-    readonly fail?: () => void;
+    readonly fail?: (error?: WeChatApiError) => void;
+}
+
+interface WeChatApiError {
+    readonly errMsg?: string;
 }
 
 interface WeChatApi {
@@ -126,6 +133,7 @@ export class WeChatPlatform implements Platform {
     private launchOptions?: LaunchOptions;
     private deviceProfile?: DeviceProfile;
     private initialized = false;
+    private chooseMediaSupported = true;
     private imagePickerGeneration = 0;
     private cancelImagePicker?: () => void;
 
@@ -146,6 +154,7 @@ export class WeChatPlatform implements Platform {
         const api = this.resolveApi();
         const systemInfo = api.getSystemInfoSync();
 
+        this.chooseMediaSupported = this.supportsChooseMedia(systemInfo.SDKVersion);
         this.safeArea = this.normalizeSafeArea(systemInfo);
         this.layoutInfo = this.normalizeLayoutInfo(systemInfo, api);
         this.deviceProfile = this.normalizeDeviceProfile(systemInfo);
@@ -170,6 +179,7 @@ export class WeChatPlatform implements Platform {
         this.layoutInfo = undefined;
         this.launchOptions = undefined;
         this.deviceProfile = undefined;
+        this.chooseMediaSupported = true;
         this.initialized = false;
     }
 
@@ -220,7 +230,7 @@ export class WeChatPlatform implements Platform {
             file: WeChatMediaFile | undefined,
             fallbackPath?: string,
         ): LocalImageSelection | null => {
-            const uri = file?.tempFilePath ?? fallbackPath;
+            const uri = file?.tempFilePath ?? file?.path ?? fallbackPath;
             if (!uri || !isCurrent()) {
                 return null;
             }
@@ -251,30 +261,63 @@ export class WeChatPlatform implements Platform {
             const cancel = (): void => finish(null);
             this.cancelImagePicker = cancel;
 
+            const chooseImage = (): void => {
+                if (typeof api.chooseImage !== 'function') {
+                    finish(null);
+                    return;
+                }
+
+                try {
+                    api.chooseImage({
+                        count: 1,
+                        sizeType: ['original'],
+                        sourceType: ['album'],
+                        success: (result) => finish(normalize(
+                            result.tempFiles?.[0],
+                            result.tempFilePaths?.[0],
+                        )),
+                        fail: () => finish(null),
+                    });
+                } catch (_error: unknown) {
+                    finish(null);
+                }
+            };
+
             try {
-                if (api.chooseMedia) {
+                // chooseMedia 从基础库 2.23.0 才可用；低版本即使暴露了同名
+                // 方法，也可能只静默失败。优先使用兼容性更好的 chooseImage。
+                if (typeof api.chooseMedia === 'function'
+                    && (this.chooseMediaSupported || typeof api.chooseImage !== 'function')) {
                     api.chooseMedia({
                         count: 1,
                         mediaType: ['image'],
                         sourceType: ['album'],
                         success: (result) => finish(normalize(result.tempFiles?.[0])),
-                        fail: () => finish(null),
+                        fail: (error) => {
+                            const message = error?.errMsg?.toLowerCase() ?? '';
+                            if (typeof api.chooseImage === 'function'
+                                && (message.includes('not support')
+                                    || message.includes('unsupported')
+                                    || message.includes('not implemented'))) {
+                                chooseImage();
+                                return;
+                            }
+
+                            finish(null);
+                        },
                     });
                     return;
                 }
 
-                api.chooseImage?.({
-                    count: 1,
-                    sizeType: ['original'],
-                    sourceType: ['album'],
-                    success: (result) => finish(normalize(
-                        result.tempFiles?.[0],
-                        result.tempFilePaths?.[0],
-                    )),
-                    fail: () => finish(null),
-                });
+                chooseImage();
             } catch (_error: unknown) {
-                finish(null);
+                // 某些旧基础库会保留 chooseMedia 属性，但调用时直接抛错；
+                // 这种情况仍应继续尝试 chooseImage，而不是让用户停在空白页。
+                if (typeof api.chooseImage === 'function') {
+                    chooseImage();
+                } else {
+                    finish(null);
+                }
             }
         });
     }
@@ -347,6 +390,17 @@ export class WeChatPlatform implements Platform {
             width: right - left,
             height: bottom - top,
         });
+    }
+
+    private supportsChooseMedia(version?: string): boolean {
+        if (!version) {
+            return true;
+        }
+
+        const parts = version.split('.').map((part) => Number.parseInt(part, 10));
+        const major = Number.isFinite(parts[0]) ? parts[0] : 0;
+        const minor = Number.isFinite(parts[1]) ? parts[1] : 0;
+        return major > 2 || (major === 2 && minor >= 23);
     }
 
     private normalizeLayoutInfo(

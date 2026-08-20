@@ -639,9 +639,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         this.state = 'picking-image';
         this.inputLocked = true;
-        // 选择器打开期间移除开始页点击层，避免用户在异步回调返回前重复开局或切换图片。
+        // 必须先在当前触摸回调中启动微信原生选择器，再销毁页面节点。
+        const selectionPromise = this.context.services.platform.pickLocalImage();
         this.destroyDynamicView();
-        const selection = await this.context.services.platform.pickLocalImage();
+        const selection = await selectionPromise;
         this.inputLocked = false;
         if ((this.state as SlidingPuzzleState) === 'disposed') {
             selection?.release();
