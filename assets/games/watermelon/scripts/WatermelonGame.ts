@@ -375,7 +375,8 @@ export class WatermelonGame extends Component implements MiniGame {
 
     showResultView(model: MiniGameResultModel): void {
         this.completedResultModel = model;
-        this.setPauseButtonLabel('结算');
+        // 结算态复用暂停按钮的图标，点击仍由 handlePause 打开结算弹窗。
+        this.setPauseButtonLabel('暂停');
         this.overlayView?.showResult(model, this.dismissResultOverlay);
     }
 
@@ -826,7 +827,7 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private readonly dismissResultOverlay = (): void => {
         this.overlayView?.hideResult();
-        this.setPauseButtonLabel('结算');
+        this.setPauseButtonLabel('暂停');
     };
 
     private setPauseButtonLabel(text: string): void {

@@ -46,7 +46,7 @@ export interface WatermelonLayoutMetrics {
 // over the decorative border; the bottom edge has extra breathing room for
 // the cat silhouette and its contrast backing.
 export const WATERMELON_BOARD_WIDTH = 720;
-export const WATERMELON_BOARD_HEIGHT = 900;
+export const WATERMELON_BOARD_HEIGHT = 930;
 // Vertical padding follows the visible inner frame. The side walls need a
 // little more inset because the cat sprite and its contrast ring extend past
 // the physical circle by a few pixels.
@@ -97,6 +97,9 @@ const CAT_HUD_SCORE_VALUE_FONT_SIZE = 26;
 const CAT_HUD_HIGH_SCORE_VALUE_FONT_SIZE = 24;
 const CAT_HUD_CAPTION_Y = 13;
 const CAT_HUD_VALUE_Y = -14;
+const CAT_BOARD_TOP_GAP = 10;
+const CAT_BOARD_BOTTOM_GAP = 58;
+const CAT_DANGER_LINE_TOP_OFFSET = 145;
 
 /** 安全区只改变 HUD 与底部留白；玩法几何保持设计坐标，短屏整体缩放棋盘。 */
 export function calculateWatermelonLayout(
@@ -143,8 +146,8 @@ export function calculateWatermelonLayout(
     const dropY = scoreY - 88 * uiScale;
     const instructionY = -height / 2 + clampedBottom + 54 * uiScale;
     // 收紧分数模块与棋盘面板之间的留白，把释放出的高度交给棋盘。
-    const boardTop = dropY - 20 * uiScale;
-    const boardBottom = instructionY + 58 * uiScale;
+    const boardTop = dropY + CAT_BOARD_TOP_GAP * uiScale;
+    const boardBottom = instructionY + CAT_BOARD_BOTTOM_GAP * uiScale;
     const availableBoardHeight = Math.max(1, boardTop - boardBottom);
     const boardScale = Math.max(
         0.01,
@@ -170,7 +173,7 @@ export function calculateWatermelonLayout(
         boardCenterY: (boardTop + boardBottom) / 2,
         boardWidth: WATERMELON_BOARD_WIDTH,
         boardHeight: WATERMELON_BOARD_HEIGHT,
-        dangerY: WATERMELON_BOARD_HEIGHT / 2 - 145,
+        dangerY: WATERMELON_BOARD_HEIGHT / 2 - CAT_DANGER_LINE_TOP_OFFSET,
         instructionY,
     });
 }

@@ -14,6 +14,7 @@ import {
     Texture2D,
     tween,
     Tween,
+    Vec2,
     UITransform,
     Vec3,
     VerticalTextAlignment,
@@ -36,7 +37,7 @@ const COLORS = {
     coral: new Color(238, 133, 103, 255),
     butter: new Color(246, 199, 84, 255),
     paper: new Color(255, 246, 224, 255),
-    shadow: new Color(129, 61, 33, 72),
+    textShadow: new Color(66, 25, 15, 220),
 };
 
 type CardMode = 'game' | 'coming-soon';
@@ -251,15 +252,6 @@ export class GameCardView extends Component {
         titleOverlay.setSiblingIndex(Math.max(1, nameLabelIndex));
         this.titleOverlay = titleOverlay.getComponent(Graphics) ?? undefined;
 
-        let nameShadow = this.node.getChildByName('NameShadow');
-        if (!nameShadow) {
-            nameShadow = new Node('NameShadow');
-            nameShadow.layer = parentLayer;
-            this.node.addChild(nameShadow);
-            nameShadow.addComponent(UITransform);
-            nameShadow.addComponent(Label);
-        }
-
         this.ensureLabel('ScoreLabel');
         let action = this.node.getChildByName('ActionBackground');
         if (!action) {
@@ -286,6 +278,10 @@ export class GameCardView extends Component {
             actionLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
             actionLabel.verticalAlign = VerticalTextAlignment.CENTER;
             actionLabel.overflow = Label.Overflow.SHRINK;
+        }
+        const actionLabel = action.getChildByName('ActionLabel')?.getComponent(Label);
+        if (actionLabel) {
+            this.configureTextShadow(actionLabel);
         }
 
         let decor = this.node.getChildByName('CardDecor');
@@ -390,7 +386,6 @@ export class GameCardView extends Component {
             label.lineHeight = 38;
             label.color = Color.WHITE;
             label.horizontalAlign = HorizontalTextAlignment.CENTER;
-            this.layoutNameShadow(label, x, y, width, height, anchorX);
         } else if (name === 'DescriptionLabel') {
             label.fontSize = this.mode === 'coming-soon' ? 18 : 16;
             label.lineHeight = 22;
@@ -407,35 +402,17 @@ export class GameCardView extends Component {
             label.color = Color.WHITE;
             label.horizontalAlign = HorizontalTextAlignment.CENTER;
         }
+        this.configureTextShadow(label);
         label.verticalAlign = VerticalTextAlignment.CENTER;
         label.overflow = Label.Overflow.SHRINK;
         label.enableWrapText = false;
     }
 
-    private layoutNameShadow(
-        source: Label,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        anchorX: number,
-    ): void {
-        const shadow = this.node.getChildByName('NameShadow')?.getComponent(Label);
-        if (!shadow) {
-            return;
-        }
-        shadow.string = source.string;
-        shadow.node.active = source.node.active;
-        shadow.node.setPosition(x + 1, y - 2);
-        shadow.node.getComponent(UITransform)?.setContentSize(width, height);
-        shadow.node.getComponent(UITransform)?.setAnchorPoint(anchorX, 0.5);
-        shadow.fontSize = source.fontSize;
-        shadow.lineHeight = source.lineHeight;
-        shadow.color = new Color(126, 54, 31, 170);
-        shadow.horizontalAlign = HorizontalTextAlignment.CENTER;
-        shadow.verticalAlign = VerticalTextAlignment.CENTER;
-        shadow.overflow = Label.Overflow.SHRINK;
-        shadow.enableWrapText = false;
+    private configureTextShadow(label: Label): void {
+        label.enableShadow = true;
+        label.shadowColor = COLORS.textShadow;
+        label.shadowOffset = new Vec2(2, -3);
+        label.shadowBlur = 1;
     }
 
     private raiseCardContent(): void {
@@ -446,7 +423,6 @@ export class GameCardView extends Component {
         };
         moveToTop(this.titleOverlay?.node);
         moveToTop(this.decorRoot);
-        moveToTop(this.node.getChildByName('NameShadow') ?? undefined);
         moveToTop(this.node.getChildByName('NameLabel') ?? undefined);
         moveToTop(this.requireActionNode());
     }
@@ -616,6 +592,7 @@ export class GameCardView extends Component {
         label.fontSize = 16;
         label.lineHeight = 20;
         label.color = Color.WHITE;
+        this.configureTextShadow(label);
     }
 
     private loadCover(path: string): void {
