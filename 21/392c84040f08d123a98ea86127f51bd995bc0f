@@ -1,0 +1,133 @@
+docs/CHESS_AUDIO_PROMPTS.md
+  s_edbda6f5c6019e::t_54906a0d39a7f4 1-621
+docs/ARCHITECTURE.md
+  s_fb1ecc234efa19::t_7358eb960d4cc5 314,332-334
+  s_9effb0f2a3bfc2::t_1cb70b6beadf28 348-349
+  s_fb1ecc234efa19::t_052e680789d134 335
+  s_9effb0f2a3bfc2::t_96ef48e9683575 347
+assets/platform/Platform.ts
+  s_fb1ecc234efa19::t_7358eb960d4cc5 25-26
+assets/games/watermelon/configs/gameplay.json
+  s_aabd6bfaf06dd9::t_c368e161b7ea27 5
+  s_aabd6bfaf06dd9::t_46875ddac804a9 10-11,16-26
+assets/games/watermelon/scripts/FruitBody.ts
+  s_aabd6bfaf06dd9::t_ccd218a6672a30 257
+  s_aabd6bfaf06dd9::t_3a3142687e353a 46-47,53-54,57-61,68-69,74-79,92-94,124-131,403,415-424
+assets/services/audio/BundleAudioBank.ts
+  s_9effb0f2a3bfc2::t_9612663f88670c 5-9,13-18,45-51,61-82,84-85
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_9effb0f2a3bfc2::t_19797cf6bf57a1 264-266
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  s_fb1ecc234efa19::t_7358eb960d4cc5 387,835,839
+  s_fb1ecc234efa19::t_ee760cfc79131d 119,706,717,1211,1222
+docs/T48_AUDIO_PROMPTS.md
+  s_20002523228c5e::t_8ade88587f5df7 1-387
+assets/lobby/scripts/GameCardView.ts
+  s_23207060c825c8::t_b8d5ac83b5f49d 285,412,414-419,425-428
+  s_23207060c825c8::t_5c6df53c07271f 10,413
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_edbda6f5c6019e::t_5e30899a4f1003 1216
+  s_edbda6f5c6019e::t_7565cb13661e26 205-207,209-221,1237-1240,2466-2470,2496-2501
+docs/ASSET_LEDGER.md
+  s_edbda6f5c6019e::t_c475dcb8caeeea 36-37,43-44
+  s_edbda6f5c6019e::t_a12f06575e48b5 42,45
+  s_edbda6f5c6019e::t_7565cb13661e26 38-40,50
+docs/WATERMELON_AUDIO_PROMPTS.md
+  s_9effb0f2a3bfc2::t_67e5c09fd9393c 1-12,14-479,481-482,486-487,489-499
+  s_9effb0f2a3bfc2::t_19797cf6bf57a1 13,480,483-485,488
+docs/LOBBY_AUDIO_PROMPTS.md
+  s_59f2f999f759f0::t_8ed043b6e1da85 1-205
+assets/platform/WebPlatform.ts
+  s_fb1ecc234efa19::t_7358eb960d4cc5 91,189-193
+assets/games/watermelon/scripts/WatermelonGameplayConfig.ts
+  s_aabd6bfaf06dd9::t_c368e161b7ea27 38
+  s_aabd6bfaf06dd9::t_46875ddac804a9 43-44,49-59
+assets/platform/WeChatPlatform.ts
+  s_fb1ecc234efa19::t_7358eb960d4cc5 139-141,174,184,228,262-264,329-335,337,359-363,368-372
+"docs/《无尽剑域》竖屏无尽割草 Roguelike 游戏策划案 V1.0.md"
+  h_293365c3a5ebee 1-5292
+settings/v2/packages/builder.json
+  h_293365c3a5ebee 41-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "21392c84040f08d123a98ea86127f51bd995bc0f",
+  "prompts": {},
+  "logical_commit_id": "21392c84040f08d123a98ea86127f51bd995bc0f",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_20002523228c5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a02295-04f1-7731-976d-51e69f96e789",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 387
+    },
+    "s_23207060c825c8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a02227-bb4a-7640-a0ed-8dc9369e6a94",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 28,
+      "total_deletions": 15
+    },
+    "s_59f2f999f759f0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a02291-cf38-7181-a9b9-efb44239c807",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 205
+    },
+    "s_9effb0f2a3bfc2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0228a-3861-7282-9c85-2796537a6c72",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 549,
+      "total_deletions": 11
+    },
+    "s_aabd6bfaf06dd9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a022bc-9fcd-7b72-b586-bd2705ff2998",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 68,
+      "total_deletions": 34
+    },
+    "s_edbda6f5c6019e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a02232-1166-7ac3-adfc-4cfa83a1a09d",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 757,
+      "total_deletions": 98
+    },
+    "s_fb1ecc234efa19": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a02299-c8a3-7d72-ba4f-6a2fa152b78d",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 46,
+      "total_deletions": 22
+    }
+  }
+}
