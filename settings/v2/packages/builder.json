@@ -38,7 +38,13 @@
   },
   "splash-setting": {
     "logo": {
-      "type": "none"
+      "type": "custom",
+      "image": "project://settings/lobby-cn-title-logo-v3.png"
+    },
+    "totalTime": 500,
+    "background": {
+      "image": "project://settings/lobby-arcade-warm-rays-v3.png",
+      "type": "custom"
     }
   }
 }

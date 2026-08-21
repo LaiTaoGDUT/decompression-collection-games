@@ -33,11 +33,21 @@
 | 素材 | 来源/修改 | 用途 | Bundle / 路径 | 状态 |
 | --- | --- | --- | --- | --- |
 | 敌方卒棋子.png | OpenAI Image Generation（Codex imagegen）生成；保留原棋子透明边缘并将中心字形改为方正易读的“卒” | 象棋无尽挑战敌方卒棋子 | `game-chess-endless` / `visual/pieces/piece_enemy_pawn.png` | 已接入，来源许可待确认 |
+| chess-general-arrive-v1.mp3 | 现有项目音频将被原创版本替换；来源、许可和后处理记录待补 | 将军增援落场后的“将军登场”提示 | `game-chess-endless` / `visual/audio/chess-general-arrive-v1.mp3` | 待重制/导入 |
+| chess-general-kill-v1.mp3 | 现有项目音频将被原创版本替换；来源、许可和后处理记录待补 | 斩杀将军后的独立结算提示 | `game-chess-endless` / `visual/audio/chess-general-kill-v1.mp3` | 待重制/导入 |
+| chess-combo-2-v1.mp3 | 待人工生成原创 one-shot；需与普通吃子音效独立并保持象棋木/墨声音身份 | 正常走車连续击杀达到连斩 ×2 时的额外提示 | `game-chess-endless` / `visual/audio/chess-combo-2-v1.mp3` | 待人工生成/导入 |
+| chess-combo-3-v1.mp3 | 待人工生成原创 one-shot；在 ×2 基础上递进能量或音高 | 正常走車连续击杀达到连斩 ×3 时的额外提示 | `game-chess-endless` / `visual/audio/chess-combo-3-v1.mp3` | 待人工生成/导入 |
+| chess-combo-4-v1.mp3 | 待人工生成原创 one-shot；在 ×3 基础上递进能量或音高 | 正常走車连续击杀达到连斩 ×4 时的额外提示 | `game-chess-endless` / `visual/audio/chess-combo-4-v1.mp3` | 待人工生成/导入 |
+
+连斩音效的完整生成提示词和手动验收要求见 [`docs/CHESS_AUDIO_PROMPTS.md`](./CHESS_AUDIO_PROMPTS.md)。
+
+本次重制范围为除提示词文档开头列出的 8 条保留音频之外的 18 条既有音效，以及连斩 ×2、×3、×4 三条新增音效；未使用的 `chess-general-guard-v1.mp3` 已删除。
 
 ## 尚未导入
 
 - V01～V06 方形预置图。
 - PZ1 BGM、滑动/落槽/无效/暂停/继续/完成等音效。
+- 象棋连斩 ×2、×3、×4 音效；接入代码已按可选资源处理，音频导入后会自动启用。
 
 ## 验收记录
 

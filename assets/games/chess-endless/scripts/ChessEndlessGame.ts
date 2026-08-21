@@ -197,12 +197,26 @@ const AUDIO_PATHS: Readonly<Record<string, string>> = Object.freeze({
     itemBanish: 'visual/audio/chess-item-banish-v1',
     itemTeleport: 'visual/audio/chess-item-teleport-v1',
     itemHelp: 'visual/audio/chess-item-help-v1',
-    generalGuard: 'visual/audio/chess-general-guard-v1',
     rewardClose: 'visual/audio/chess-reward-close-v1',
     revive: 'visual/audio/chess-revive-v1',
     gameOver: 'visual/audio/chess-game-over-v1',
     uiClick: 'visual/audio/chess-ui-click-v1',
     uiPopup: 'visual/audio/chess-ui-popup-v1',
+    combo2: 'visual/audio/chess-combo-2-v1',
+    combo3: 'visual/audio/chess-combo-3-v1',
+    combo4: 'visual/audio/chess-combo-4-v1',
+});
+
+const OPTIONAL_AUDIO_KEYS = new Set(['combo2', 'combo3', 'combo4']);
+const COMBO_AUDIO_KEYS: Readonly<Record<2 | 3 | 4, string>> = Object.freeze({
+    2: 'combo2',
+    3: 'combo3',
+    4: 'combo4',
+});
+const COMBO_AUDIO_VOLUMES: Readonly<Record<2 | 3 | 4, number>> = Object.freeze({
+    2: 0.78,
+    3: 0.86,
+    4: 0.94,
 });
 
 const ITEM_ICON_KEY: Readonly<Record<ItemType, string>> = Object.freeze({
@@ -1199,7 +1213,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const result = this.model.movePlayer(target);
         // 先保存逻辑快照，再播放移动/吃子动画；进程在动画期间退出也不会回退棋局。
         this.persistProgress(false);
-        // Combo progression is visual and score-only; every normal capture reuses the same SFX.
+        // 普通吃子音效保留为基础反馈；连斩里程碑音效在对应连斩特效出现时额外播放。
         this.playSound(result.captured ? 'playerCapture' : 'playerMove');
         this.context?.services.feedback.vibrate(result.captured ? 'medium' : 'light');
 
@@ -1220,7 +1234,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }
         if (!this.isOperationCurrent(generation)) return;
         this.renderAll();
-        if (result.combo >= 2) this.showComboVfx(result.combo);
+        if (result.combo >= 2) {
+            this.playComboMilestoneSound(result.combo);
+            this.showComboVfx(result.combo);
+        }
         if (result.generalKilled) await this.showGeneralKillMoment();
         if (!this.isOperationCurrent(generation)) return;
         if (result.immediateSpawned.length > 0) {
@@ -2446,6 +2463,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const path = AUDIO_PATHS[key]!;
             bundle.load(path, AudioClip, (error, clip) => {
                 if (error || !clip) {
+                    if (OPTIONAL_AUDIO_KEYS.has(key)) {
+                        console.warn(`[ChessEndless] Optional audio unavailable: ${path}`);
+                        resolve();
+                        return;
+                    }
                     reject(error ?? new Error(`Missing audio ${path}`));
                     return;
                 }
@@ -2471,6 +2493,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private playSound(key: string, volume = 0.8): void {
         const clip = this.clips.get(key);
         if (clip) this.context?.services.audio.playEffect(clip, volume);
+    }
+
+    private playComboMilestoneSound(combo: number): void {
+        if (combo !== 2 && combo !== 3 && combo !== 4) return;
+        const key = COMBO_AUDIO_KEYS[combo];
+        this.playSound(key, COMBO_AUDIO_VOLUMES[combo]);
     }
 
     private playMusic(key: 'musicNormal' | 'musicPressure'): void {

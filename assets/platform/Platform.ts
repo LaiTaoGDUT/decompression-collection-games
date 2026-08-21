@@ -22,6 +22,8 @@ export interface Platform {
     getLayoutInfo(): PlatformLayoutInfo;
     getLaunchOptions(): LaunchOptions;
     pickLocalImage(): Promise<LocalImageSelection | null>;
+    /** 取消当前平台原生图片选择请求；没有请求时必须安全无副作用。 */
+    cancelLocalImagePicker(): void;
     supportsVibration(): boolean;
     vibrate(type: 'light' | 'medium' | 'heavy'): void;
     showShareMenu(): void;

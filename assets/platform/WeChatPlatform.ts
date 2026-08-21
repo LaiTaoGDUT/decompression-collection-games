@@ -136,6 +136,9 @@ export class WeChatPlatform implements Platform {
     private chooseMediaSupported = true;
     private imagePickerGeneration = 0;
     private cancelImagePicker?: () => void;
+    private imagePickerActive = false;
+    /** 原生相册会触发一对 hide/show；这对回调不应改变小游戏运行状态。 */
+    private imagePickerLifecycleInterrupted = false;
 
     constructor(options: WeChatPlatformOptions = {}) {
         if ((options.designWidth ?? 750) <= 0) {
@@ -168,9 +171,7 @@ export class WeChatPlatform implements Platform {
     }
 
     dispose(): void {
-        this.imagePickerGeneration += 1;
-        this.cancelImagePicker?.();
-        this.cancelImagePicker = undefined;
+        this.cancelLocalImagePicker();
         this.api?.offShow?.(this.handleShow);
         this.api?.offHide?.(this.handleHide);
         this.events.clear();
@@ -180,6 +181,7 @@ export class WeChatPlatform implements Platform {
         this.launchOptions = undefined;
         this.deviceProfile = undefined;
         this.chooseMediaSupported = true;
+        this.imagePickerLifecycleInterrupted = false;
         this.initialized = false;
     }
 
@@ -223,6 +225,7 @@ export class WeChatPlatform implements Platform {
 
         this.cancelImagePicker?.();
         const generation = ++this.imagePickerGeneration;
+        this.imagePickerActive = true;
         const isCurrent = (): boolean => this.initialized
             && this.api === api
             && this.imagePickerGeneration === generation;
@@ -255,6 +258,9 @@ export class WeChatPlatform implements Platform {
                 settled = true;
                 if (this.cancelImagePicker === cancel) {
                     this.cancelImagePicker = undefined;
+                }
+                if (this.imagePickerGeneration === generation) {
+                    this.imagePickerActive = false;
                 }
                 resolve(isCurrent() ? selection : null);
             };
@@ -322,6 +328,13 @@ export class WeChatPlatform implements Platform {
         });
     }
 
+    cancelLocalImagePicker(): void {
+        this.imagePickerGeneration += 1;
+        this.imagePickerActive = false;
+        this.cancelImagePicker?.();
+        this.cancelImagePicker = undefined;
+    }
+
     supportsVibration(): boolean {
         return typeof this.api?.vibrateShort === 'function';
     }
@@ -343,10 +356,20 @@ export class WeChatPlatform implements Platform {
     }
 
     private readonly handleShow = (): void => {
+        if (this.imagePickerLifecycleInterrupted) {
+            this.imagePickerLifecycleInterrupted = false;
+            return;
+        }
+
         this.events.publish('show', undefined);
     };
 
     private readonly handleHide = (): void => {
+        if (this.imagePickerActive || this.imagePickerLifecycleInterrupted) {
+            this.imagePickerLifecycleInterrupted = true;
+            return;
+        }
+
         this.events.publish('hide', undefined);
     };
 

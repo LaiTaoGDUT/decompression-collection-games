@@ -88,8 +88,7 @@ export class WebPlatform implements Platform {
     }
 
     dispose(): void {
-        this.activeImagePicker?.cancel();
-        this.activeImagePicker = undefined;
+        this.cancelLocalImagePicker();
 
         if (this.initialized && typeof document !== 'undefined') {
             document.removeEventListener(
@@ -187,6 +186,11 @@ export class WebPlatform implements Platform {
                 settle(null);
             }
         });
+    }
+
+    cancelLocalImagePicker(): void {
+        this.activeImagePicker?.cancel();
+        this.activeImagePicker = undefined;
     }
 
     supportsVibration(): boolean {

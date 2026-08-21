@@ -115,9 +115,8 @@ const CROP_PREVIEW_MAX_SIZE = 560;
 const CROP_PREVIEW_MIN_SIZE = 240;
 const SETUP_BACK_ICON_SIZE = 68;
 const SETUP_TITLE_FONT_SIZE = 42;
-const SETUP_HINT_FONT_SIZE = 24;
 const CROP_TITLE_FONT_SIZE = 42;
-const CROP_HINT_FONT_SIZE = 24;
+const CROP_HINT_FONT_SIZE = 26;
 const SETUP_PREVIEW_MAX_SIZE = 320;
 const SETUP_COMPACT_PREVIEW_MAX_SIZE = 240;
 const SETUP_SIZE_BUTTON_FONT_SIZE = 30;
@@ -385,6 +384,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         // 先把状态切到 disposed，令所有晚到的异步回调进入清理分支，
         // 再等待它们结束，避免回调和 Bundle release 并发操作同一份纹理。
         this.state = 'disposed';
+        this.context?.services.platform.cancelLocalImagePicker();
         this.imageLoadToken += 1;
         this.visualLoadToken += 1;
         this.uiActionPending = true;
@@ -703,7 +703,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             SETUP_BACK_ICON_SIZE,
             () => this.requestLobbyFromSetup(),
         );
-        this.createLabel(
+        const setupTitle = this.createLabel(
             root,
             'Title',
             '木框拼图',
@@ -714,17 +714,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             460,
             64,
         );
-        this.createLabel(
-            root,
-            'SetupHint',
-            '选一张照片，再挑一个拼图节奏',
-            0,
-            metrics.titleY,
-            SETUP_HINT_FONT_SIZE,
-            colorWithAlpha(COLORS.paperLight, 210),
-            560,
-            40,
-        );
+        setupTitle.isBold = true;
 
         // 选择页直接落在木桌背景上，保留图片框和按钮层级，去掉整块浅色底板。
         const content = new Node('SetupContent');
@@ -842,10 +832,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.inputLocked = true;
         // 必须先在当前触摸回调中启动微信原生选择器，再销毁页面节点。
         const platform = this.context.services.platform;
+        const selectionPromise = platform.pickLocalImage();
         this.destroyDynamicView();
         let selection: LocalImageSelection | null = null;
         try {
-            selection = await platform.pickLocalImage();
+            selection = await selectionPromise;
         } catch (error: unknown) {
             // 平台选图接口偶发抛错时也要回到可重试的选择页，不能让
             // picking-image 状态和已销毁的动态节点一起卡住入口。
@@ -1217,7 +1208,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         root.setParent(this.node);
         this.dynamicNode = root;
         const metrics = this.layout;
-        this.createLabel(
+        const cropTitle = this.createLabel(
             root,
             'CropTitle',
             '选择图片',
@@ -1228,6 +1219,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             680,
             68,
         );
+        cropTitle.isBold = true;
         this.createLabel(
             root,
             'CropBody',

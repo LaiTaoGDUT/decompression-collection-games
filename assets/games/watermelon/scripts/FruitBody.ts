@@ -43,26 +43,40 @@ export class FruitBody extends Component {
     private bubbleFrame?: SpriteFrame;
     private idleFrameIndex = 0;
     private frameMode: 'idle' | 'fall' = 'idle';
-    private hasPhysicalContact = false;
+    /** 只保留当前仍在接触的碰撞体，不能用“曾经接触过”的布尔值代替。 */
+    private readonly activeContacts = new Set<Collider2D>();
     private lowSpeedSeconds = 0;
     private collisionHandler?: (self: FruitBody, other: FruitBody) => void;
 
     protected onLoad(): void {
         this.applyConfig();
-        this.node.getComponent(CircleCollider2D)?.on(
+        const collider = this.node.getComponent(CircleCollider2D);
+        collider?.on(
             Contact2DType.BEGIN_CONTACT,
             this.handleContact,
+            this,
+        );
+        collider?.on(
+            Contact2DType.END_CONTACT,
+            this.handleEndContact,
             this,
         );
     }
 
     protected onDestroy(): void {
         this.stopVisualAnimations();
-        this.node.getComponent(CircleCollider2D)?.off(
+        const collider = this.node.getComponent(CircleCollider2D);
+        collider?.off(
             Contact2DType.BEGIN_CONTACT,
             this.handleContact,
             this,
         );
+        collider?.off(
+            Contact2DType.END_CONTACT,
+            this.handleEndContact,
+            this,
+        );
+        this.activeContacts.clear();
         this.collisionHandler = undefined;
     }
 
@@ -75,7 +89,9 @@ export class FruitBody extends Component {
 
     /** Preserve landing inertia, then eliminate the solver's permanent micro-roll. */
     private updateNaturalSettle(deltaTime: number): void {
-        if (!this.hasPhysicalContact || this.mergeLocked) {
+        this.removeInvalidContacts();
+        if (this.activeContacts.size === 0 || this.mergeLocked) {
+            this.lowSpeedSeconds = 0;
             return;
         }
 
@@ -105,6 +121,14 @@ export class FruitBody extends Component {
         rigidBody.angularVelocity = 0;
         rigidBody.sleep();
         this.lowSpeedSeconds = 0;
+    }
+
+    private removeInvalidContacts(): void {
+        for (const contact of this.activeContacts) {
+            if (!contact.isValid || !contact.node?.isValid) {
+                this.activeContacts.delete(contact);
+            }
+        }
     }
 
     get isMergeLocked(): boolean {
@@ -230,7 +254,7 @@ export class FruitBody extends Component {
     }
 
     playDropAnimation(): void {
-        this.hasPhysicalContact = false;
+        this.activeContacts.clear();
         this.lowSpeedSeconds = 0;
         this.frameMode = 'fall';
         this.stopFrameAnimation();
@@ -376,7 +400,7 @@ export class FruitBody extends Component {
             return;
         }
 
-        this.hasPhysicalContact = true;
+        this.activeContacts.add(otherCollider);
 
         // The falling frame describes the airborne state, so any first
         // physical contact (floor, wall or another cat) ends it.
@@ -388,6 +412,16 @@ export class FruitBody extends Component {
 
         if (other) {
             this.collisionHandler?.(this, other);
+        }
+    };
+
+    private readonly handleEndContact = (
+        _selfCollider: Collider2D,
+        otherCollider: Collider2D,
+    ): void => {
+        this.activeContacts.delete(otherCollider);
+        if (this.activeContacts.size === 0) {
+            this.lowSpeedSeconds = 0;
         }
     };
 }

@@ -7,6 +7,7 @@ import {
     Graphics,
     HorizontalTextAlignment,
     Label,
+    LabelOutline,
     Mask,
     Node,
     Sprite,
@@ -281,7 +282,7 @@ export class GameCardView extends Component {
         }
         const actionLabel = action.getChildByName('ActionLabel')?.getComponent(Label);
         if (actionLabel) {
-            this.configureTextShadow(actionLabel);
+            this.configurePlainText(actionLabel);
         }
 
         let decor = this.node.getChildByName('CardDecor');
@@ -408,11 +409,23 @@ export class GameCardView extends Component {
         label.enableWrapText = false;
     }
 
+    private configurePlainText(label: Label): void {
+        label.enableShadow = false;
+        const outline = label.node.getComponent(LabelOutline);
+        if (outline) {
+            outline.enabled = false;
+        }
+    }
+
     private configureTextShadow(label: Label): void {
         label.enableShadow = true;
         label.shadowColor = COLORS.textShadow;
         label.shadowOffset = new Vec2(2, -3);
         label.shadowBlur = 1;
+        const outline = label.node.getComponent(LabelOutline);
+        if (outline) {
+            outline.enabled = false;
+        }
     }
 
     private raiseCardContent(): void {

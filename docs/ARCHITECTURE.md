@@ -311,6 +311,7 @@ export interface Platform {
   onShow(callback: () => void): Unsubscribe;
   onHide(callback: () => void): Unsubscribe;
   pickLocalImage(): Promise<LocalImageSelection | null>;
+  cancelLocalImagePicker(): void;
 }
 
 export interface LocalImageSelection {
@@ -328,7 +329,9 @@ export interface LocalImageSelection {
 
 `wx.*` 调用只能存在于 `WeChatPlatform` 或明确的平台服务实现中。
 
-`pickLocalImage()` 是业务层唯一的本地图片入口。Web 使用浏览器文件选择；微信使用相册选择并在平台层兼容不同基础库的图片选择 API。平台只返回本地临时引用和可选元信息，不提供上传能力；图片的解码、裁切、压缩和棋盘采样在客户端完成。调用方必须在重新选择、退出、应用销毁和 Bundle 释放前调用 `release()`，不得把图片路径、文件名、Object URL、图片字节或图片哈希写入统计、广告、远程配置或跨会话存档。
+`pickLocalImage()` 是业务层唯一的本地图片入口，`cancelLocalImagePicker()` 用于入口销毁或离开小游戏时终止仍在等待的原生选择请求；没有请求时必须安全无副作用。Web 使用浏览器文件选择；微信使用相册选择并在平台层兼容不同基础库的图片选择 API。平台只返回本地临时引用和可选元信息，不提供上传能力；图片的解码、裁切、压缩和棋盘采样在客户端完成。调用方必须在重新选择、退出、应用销毁和 Bundle 释放前调用 `release()`，不得把图片路径、文件名、Object URL、图片字节或图片哈希写入统计、广告、远程配置或跨会话存档。
+
+选图会短暂打开平台原生 UI，微信可能在此期间派发一对 `hide/show` 回调。`WeChatPlatform` 必须将这对仅由图片选择器产生的回调与游戏暂停状态隔离，避免运行层在选图时进入 `paused`；该处理放在平台层而不是小游戏中，以保持 `wx.*` 和平台生命周期判断的边界。若未来平台 SDK 改变回调顺序，仍以当前图片选择 generation 和幂等取消为准。替代方案是让每个小游戏自行识别平台回调，但会造成重复实现和退出时无法统一取消；当前方案对现有 Web/微信实现均向后兼容，回滚时可移除取消接口及对应平台隔离逻辑，不影响存档、Session 或 Bundle 边界。
 
 `DeviceProfile` 至少包含性能档位、像素比，以及平台能提供时的内存和性能基准信息。浏览器实现必须允许注入设备档位，以便稳定复现低、中、高画质路径。
 
@@ -341,6 +344,8 @@ export interface LocalImageSelection {
 ### AudioService
 
 负责背景音乐、音效、音量、开关、前后台暂停与音频实例复用。
+
+`BundleAudioBank` 支持 `optionalCues` 作为分阶段导入音频的注册入口：可选音频缺失时跳过该 Cue，不得阻断同一 Bundle 中已存在的音乐和必需音效；资源补齐后按相同 Cue 注册并播放。
 
 ### StorageService
 

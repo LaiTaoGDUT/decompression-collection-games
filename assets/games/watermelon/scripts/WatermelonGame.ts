@@ -261,6 +261,9 @@ export class WatermelonGame extends Component implements MiniGame {
                 continue: 'visual/audio/w1-continue-v1',
                 record: 'visual/audio/w1-record-v1',
             },
+            optionalCues: {
+                milestone: 'visual/audio/w1-milestone-v1',
+            },
         }, context.services.audio, context.services.feedback);
         void this.audioBank.initialize().catch((error: unknown) => {
             console.error('[WatermelonGame] Audio initialization failed.', error);
