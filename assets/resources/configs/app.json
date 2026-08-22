@@ -44,6 +44,6 @@
   "development": {
     "debugLogs": false,
     "mockAds": false,
-    "showDevelopmentGames": false
+    "showDevelopmentGames": true
   }
 }
