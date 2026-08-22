@@ -112,6 +112,10 @@ interface WeChatPlatformEvents {
     readonly hide: void;
 }
 
+// 某些客户端会在原生相册回调前后错开派发生命周期事件；保留一个很短的
+// 保护窗口，避免回调刚结束就被误判成小游戏真正切后台，进而打开暂停层。
+const IMAGE_PICKER_LIFECYCLE_GRACE_MS = 1000;
+
 export interface WeChatPlatformOptions {
     /** 用于测试时注入微信 API 模拟对象。正式环境无需传入。 */
     readonly api?: WeChatApi;
@@ -137,6 +141,8 @@ export class WeChatPlatform implements Platform {
     private imagePickerGeneration = 0;
     private cancelImagePicker?: () => void;
     private imagePickerActive = false;
+    private imagePickerResultSettled = false;
+    private imagePickerActivityResetTimer?: ReturnType<typeof setTimeout>;
     /** 原生相册会触发一对 hide/show；这对回调不应改变小游戏运行状态。 */
     private imagePickerLifecycleInterrupted = false;
 
@@ -223,9 +229,12 @@ export class WeChatPlatform implements Platform {
             return null;
         }
 
-        this.cancelImagePicker?.();
+        // 重新选图前先完整取消并清空上一轮请求，不能只调用回调取消函数，
+        // 否则上一轮的生命周期标记可能残留到下一次原生相册返回。
+        this.cancelLocalImagePicker();
         const generation = ++this.imagePickerGeneration;
         this.imagePickerActive = true;
+        this.imagePickerResultSettled = false;
         const isCurrent = (): boolean => this.initialized
             && this.api === api
             && this.imagePickerGeneration === generation;
@@ -260,16 +269,37 @@ export class WeChatPlatform implements Platform {
                     this.cancelImagePicker = undefined;
                 }
                 if (this.imagePickerGeneration === generation) {
-                    this.imagePickerActive = false;
+                    this.imagePickerResultSettled = true;
+                    this.deferImagePickerActivityReset(generation);
                 }
                 resolve(isCurrent() ? selection : null);
             };
             const cancel = (): void => finish(null);
             this.cancelImagePicker = cancel;
 
+            const chooseMedia = (): void => {
+                if (typeof api.chooseMedia !== 'function'
+                    || (!this.chooseMediaSupported && typeof api.chooseImage === 'function')) {
+                    finish(null);
+                    return;
+                }
+
+                try {
+                    api.chooseMedia({
+                        count: 1,
+                        mediaType: ['image'],
+                        sourceType: ['album'],
+                        success: (result) => finish(normalize(result.tempFiles?.[0])),
+                        fail: () => finish(null),
+                    });
+                } catch (_error: unknown) {
+                    finish(null);
+                }
+            };
+
             const chooseImage = (): void => {
                 if (typeof api.chooseImage !== 'function') {
-                    finish(null);
+                    chooseMedia();
                     return;
                 }
 
@@ -282,48 +312,29 @@ export class WeChatPlatform implements Platform {
                             result.tempFiles?.[0],
                             result.tempFilePaths?.[0],
                         )),
-                        fail: () => finish(null),
-                    });
-                } catch (_error: unknown) {
-                    finish(null);
-                }
-            };
-
-            try {
-                // chooseMedia 从基础库 2.23.0 才可用；低版本即使暴露了同名
-                // 方法，也可能只静默失败。优先使用兼容性更好的 chooseImage。
-                if (typeof api.chooseMedia === 'function'
-                    && (this.chooseMediaSupported || typeof api.chooseImage !== 'function')) {
-                    api.chooseMedia({
-                        count: 1,
-                        mediaType: ['image'],
-                        sourceType: ['album'],
-                        success: (result) => finish(normalize(result.tempFiles?.[0])),
                         fail: (error) => {
                             const message = error?.errMsg?.toLowerCase() ?? '';
-                            if (typeof api.chooseImage === 'function'
-                                && (message.includes('not support')
-                                    || message.includes('unsupported')
-                                    || message.includes('not implemented'))) {
-                                chooseImage();
+                            if (typeof api.chooseMedia === 'function'
+                                && this.chooseMediaSupported
+                                && this.isUnsupportedImagePickerError(message)) {
+                                chooseMedia();
                                 return;
                             }
 
                             finish(null);
                         },
                     });
-                    return;
+                } catch (_error: unknown) {
+                    chooseMedia();
                 }
+            };
 
+            try {
+                // 这里只需要图片，优先使用重复调用行为更直接的 chooseImage；
+                // 不可用时再回退到基础库 2.23.0+ 的 chooseMedia。
                 chooseImage();
             } catch (_error: unknown) {
-                // 某些旧基础库会保留 chooseMedia 属性，但调用时直接抛错；
-                // 这种情况仍应继续尝试 chooseImage，而不是让用户停在空白页。
-                if (typeof api.chooseImage === 'function') {
-                    chooseImage();
-                } else {
-                    finish(null);
-                }
+                finish(null);
             }
         });
     }
@@ -331,6 +342,12 @@ export class WeChatPlatform implements Platform {
     cancelLocalImagePicker(): void {
         this.imagePickerGeneration += 1;
         this.imagePickerActive = false;
+        this.imagePickerResultSettled = false;
+        if (this.imagePickerActivityResetTimer !== undefined) {
+            clearTimeout(this.imagePickerActivityResetTimer);
+            this.imagePickerActivityResetTimer = undefined;
+        }
+        this.imagePickerLifecycleInterrupted = false;
         this.cancelImagePicker?.();
         this.cancelImagePicker = undefined;
     }
@@ -358,6 +375,16 @@ export class WeChatPlatform implements Platform {
     private readonly handleShow = (): void => {
         if (this.imagePickerLifecycleInterrupted) {
             this.imagePickerLifecycleInterrupted = false;
+            if (this.imagePickerResultSettled) {
+                this.imagePickerActive = false;
+            }
+            return;
+        }
+
+        // 有些客户端只回调 onShow、不回调 onHide；请求已完成时也要消费
+        // 这次原生页面返回，不能把它当成小游戏重新前台并触发全局状态流转。
+        if (this.imagePickerActive && this.imagePickerResultSettled) {
+            this.imagePickerActive = false;
             return;
         }
 
@@ -372,6 +399,29 @@ export class WeChatPlatform implements Platform {
 
         this.events.publish('hide', undefined);
     };
+
+    private readonly deferImagePickerActivityReset = (generation: number): void => {
+        if (this.imagePickerActivityResetTimer !== undefined) {
+            clearTimeout(this.imagePickerActivityResetTimer);
+        }
+
+        this.imagePickerActivityResetTimer = setTimeout(() => {
+            this.imagePickerActivityResetTimer = undefined;
+            if (this.imagePickerGeneration !== generation) {
+                return;
+            }
+
+            this.imagePickerActive = false;
+            this.imagePickerResultSettled = false;
+            this.imagePickerLifecycleInterrupted = false;
+        }, IMAGE_PICKER_LIFECYCLE_GRACE_MS);
+    };
+
+    private isUnsupportedImagePickerError(message: string): boolean {
+        return message.includes('not support')
+            || message.includes('unsupported')
+            || message.includes('not implemented');
+    }
 
     private resolveApi(): WeChatApi {
         if (this.providedApi) {

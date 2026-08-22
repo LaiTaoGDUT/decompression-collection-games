@@ -3,7 +3,7 @@ import { sys } from 'cc';
 export const USER_DATA_SCHEMA_VERSION = 2;
 export const DEFAULT_STORAGE_KEY = 'decompression-collection.user-data';
 export const MIGRATION_BACKUP_SUFFIX = '.migration-backup';
-export const DEFAULT_STORAGE_WRITE_THROTTLE_MS = 1000;
+export const DEFAULT_STORAGE_WRITE_THROTTLE_MS = 3000;
 
 export interface UserSettings {
     readonly musicEnabled: boolean;

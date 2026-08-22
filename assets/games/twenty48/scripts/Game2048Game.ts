@@ -66,8 +66,9 @@ const { ccclass } = _decorator;
 const TILE_SLIDE_DURATION = 0.1;
 const TILE_SETTLE_DURATION = 0.06;
 const MERGE_CELEBRATION_DELAY = 0.55;
-// 在现有合成特效基础上再整体放大 30%。
-const HIGH_MERGE_EFFECT_SCALE = 1.12 * 1.3;
+// 在现有合成特效基础上再放大一点，并让大数字反馈多停留一瞬间。
+const HIGH_MERGE_EFFECT_SCALE = 1.12 * 1.4;
+const HIGH_MERGE_EFFECT_DURATION_SCALE = 1.15;
 const GAME_2048_DATA_VERSION = 4;
 const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
 const GAME_2048_TITLE_ASSET_PATH = 'visual/title/t48-user-title-v1/texture';
@@ -1465,7 +1466,7 @@ export class Game2048Game extends Component implements MiniGame {
         flash.setScale(0.84 * HIGH_MERGE_EFFECT_SCALE, 0.84 * HIGH_MERGE_EFFECT_SCALE, 1);
         tween(flash)
             .to(
-                0.11 + level * 0.01 + tier * 0.012,
+                (0.11 + level * 0.01 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE,
                 {
                     scale: new Vec3(
                         (1.04 + level * 0.015 + tier * 0.025) * eliteBoost * HIGH_MERGE_EFFECT_SCALE,
@@ -1477,7 +1478,10 @@ export class Game2048Game extends Component implements MiniGame {
             )
             .start();
         tween(flashOpacity)
-            .to(0.12 + level * 0.012 + tier * 0.012, { opacity: 0 })
+            .to(
+                (0.12 + level * 0.012 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE,
+                { opacity: 0 },
+            )
             .call(() => this.destroyNodeWithTweens(flash))
             .start();
 
@@ -1506,7 +1510,8 @@ export class Game2048Game extends Component implements MiniGame {
                 graphics.stroke();
             }
             const startScale = (0.82 + ringIndex * 0.04) * HIGH_MERGE_EFFECT_SCALE;
-            const duration = 0.13 + level * 0.015 + ringIndex * 0.01 + tier * 0.012;
+            const duration = (0.13 + level * 0.015 + ringIndex * 0.01 + tier * 0.012)
+                * HIGH_MERGE_EFFECT_DURATION_SCALE;
             const endScale = (1.03 + level * 0.03 + ringIndex * 0.025 + tier * 0.02)
                 * eliteBoost * HIGH_MERGE_EFFECT_SCALE;
             ring.setScale(startScale, startScale, 1);
@@ -1552,7 +1557,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.stroke();
         core.setScale(0.72 * HIGH_MERGE_EFFECT_SCALE, 0.72 * HIGH_MERGE_EFFECT_SCALE, 1);
         tween(core)
-            .to(0.12 + tier * 0.02, {
+            .to((0.12 + tier * 0.02) * HIGH_MERGE_EFFECT_DURATION_SCALE, {
                 scale: new Vec3(
                     (1.02 + tier * 0.025) * HIGH_MERGE_EFFECT_SCALE,
                     (1.02 + tier * 0.025) * HIGH_MERGE_EFFECT_SCALE,
@@ -1561,7 +1566,7 @@ export class Game2048Game extends Component implements MiniGame {
             }, { easing: 'backOut' })
             .start();
         tween(opacity)
-            .to(0.15 + tier * 0.02, { opacity: 0 })
+            .to((0.15 + tier * 0.02) * HIGH_MERGE_EFFECT_DURATION_SCALE, { opacity: 0 })
             .call(() => this.destroyNodeWithTweens(core))
             .start();
     }

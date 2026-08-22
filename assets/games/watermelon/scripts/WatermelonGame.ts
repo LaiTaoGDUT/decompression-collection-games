@@ -11,6 +11,8 @@ import {
     ERigidBody2DType,
     EventTouch,
     Graphics,
+    input,
+    Input,
     instantiate,
     JsonAsset,
     Label,
@@ -93,7 +95,20 @@ type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
 
 const NEXT_CAT_PREVIEW_SIZE = 56;
 const CAT_DROP_TOP_GAP = 8;
-const ROUND_SAVE_INTERVAL_SECONDS = 0.25;
+const ROUND_SAVE_INTERVAL_SECONDS = 1;
+const MERGE_SCORE_FONT_SIZE = 34;
+const MERGE_CHAIN_SCORE_FONT_SIZE = 42;
+const MERGE_SCORE_LINE_HEIGHT = 44;
+const MERGE_CHAIN_SCORE_LINE_HEIGHT = 54;
+const MERGE_INSTRUCTION_FONT_SIZE = 26;
+const MERGE_CHAIN_INSTRUCTION_FONT_SIZE = 30;
+const MERGE_INSTRUCTION_LINE_HEIGHT = 36;
+const MERGE_CHAIN_INSTRUCTION_LINE_HEIGHT = 40;
+const CONTINUE_CLEAR_POP_SECONDS = 0.1;
+const CONTINUE_CLEAR_SHRINK_SECONDS = 0.24;
+const CONTINUE_CLEAR_FADE_DELAY_SECONDS = 0.06;
+const CONTINUE_CLEAR_FADE_SECONDS = 0.26;
+const CONTINUE_CLEAR_STAGGER_SECONDS = 0.035;
 
 interface SavedFruit {
     readonly level: number;
@@ -189,6 +204,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private continueCompleted = false;
     private terminalActionPending = false;
     private readonly effectNodes = new Set<Node>();
+    private readonly removingFruitNodes = new Set<Node>();
     private audioBank?: BundleAudioBank;
     private overlayView?: WatermelonOverlayView;
     private completedResultModel?: MiniGameResultModel;
@@ -272,6 +288,11 @@ export class WatermelonGame extends Component implements MiniGame {
         container.on(Node.EventType.TOUCH_MOVE, this.handleTouchMove, this);
         container.on(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
         container.on(Node.EventType.TOUCH_CANCEL, this.handleTouchCancel, this);
+        // Node touch events may stop being dispatched after the finger leaves
+        // the board. Keep the terminal events on the global input dispatcher
+        // so releasing outside the board still commits the current drop.
+        input.on(Input.EventType.TOUCH_END, this.handleTouchEnd, this);
+        input.on(Input.EventType.TOUCH_CANCEL, this.handleTouchCancel, this);
         this.node.getChildByName('PauseButton')?.on(
             Button.EventType.CLICK,
             this.handlePause,
@@ -404,6 +425,8 @@ export class WatermelonGame extends Component implements MiniGame {
         this.fruitContainer?.off(Node.EventType.TOUCH_MOVE, this.handleTouchMove, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_CANCEL, this.handleTouchCancel, this);
+        input.off(Input.EventType.TOUCH_END, this.handleTouchEnd, this);
+        input.off(Input.EventType.TOUCH_CANCEL, this.handleTouchCancel, this);
         this.node.getChildByName('PauseButton')?.off(
             Button.EventType.CLICK,
             this.handlePause,
@@ -623,6 +646,8 @@ export class WatermelonGame extends Component implements MiniGame {
 
         for (const child of [...container.children]) {
             if (child.getComponent(FruitBody)) {
+                this.effectNodes.delete(child);
+                this.removingFruitNodes.delete(child);
                 child.removeFromParent();
                 child.destroy();
             }
@@ -868,6 +893,8 @@ export class WatermelonGame extends Component implements MiniGame {
         }
         this.context?.services.feedback.play('fold');
 
+        // Spawn from the geometric center of the two source cats. The larger
+        // result is then clamped to the board bounds by spawnFruit().
         const rawX = (first.node.position.x + second.node.position.x) / 2;
         const boardWidth = this.fruitContainer?.getComponent(UITransform)
             ?.contentSize.width ?? WATERMELON_BOARD_WIDTH;
@@ -1038,6 +1065,12 @@ export class WatermelonGame extends Component implements MiniGame {
                 continue;
             }
 
+            // Cats that are playing the continue-clear animation stay out of
+            // the physics world until the animation destroys them.
+            if (this.removingFruitNodes.has(child)) {
+                continue;
+            }
+
             fruit.unlockAfterCancelledMerge();
             const rigidBody = child.getComponent(RigidBody2D);
             if (rigidBody) {
@@ -1067,8 +1100,107 @@ export class WatermelonGame extends Component implements MiniGame {
             ))];
         }
 
-        targets.forEach((item) => item.node.destroy());
+        targets.forEach((item, index) => {
+            this.playContinueClearAnimation(item.node, item.body, index);
+        });
         return targets.length;
+    }
+
+    private playContinueClearAnimation(
+        node: Node,
+        fruit: FruitBody,
+        index: number,
+    ): void {
+        if (!node.isValid || !fruit.lockForMerge()) {
+            return;
+        }
+
+        fruit.stopVisualAnimations();
+        this.removingFruitNodes.add(node);
+        this.effectNodes.add(node);
+
+        const opacity = node.getComponent(UIOpacity) ?? node.addComponent(UIOpacity);
+        const startScale = node.scale;
+        const startAngle = node.angle;
+        const startOpacity = opacity.opacity;
+        const delay = index * CONTINUE_CLEAR_STAGGER_SECONDS;
+        const popScale = new Vec3(
+            startScale.x * 1.08,
+            startScale.y * 1.08,
+            startScale.z,
+        );
+        const endScale = new Vec3(
+            startScale.x * 0.08,
+            startScale.y * 0.08,
+            startScale.z,
+        );
+
+        // Keep the actual cat visible for the first beat, then let it fold
+        // into a soft point instead of vanishing on the same frame.
+        tween(node)
+            .delay(delay)
+            .to(CONTINUE_CLEAR_POP_SECONDS, {
+                scale: popScale,
+                angle: startAngle + (index % 2 === 0 ? 9 : -9),
+            }, { easing: 'quadOut' })
+            .to(CONTINUE_CLEAR_SHRINK_SECONDS, {
+                scale: endScale,
+                angle: startAngle + (index % 2 === 0 ? 18 : -18),
+            }, { easing: 'backIn' })
+            .call(() => this.releaseEffectNode(node))
+            .start();
+
+        tween(opacity)
+            .delay(delay + CONTINUE_CLEAR_FADE_DELAY_SECONDS)
+            .to(CONTINUE_CLEAR_FADE_SECONDS, { opacity: 0 }, { easing: 'quadIn' })
+            .start();
+
+        if (this.context?.services.deviceTier !== 'low') {
+            this.spawnContinueClearRing(node, index, delay, startOpacity);
+        }
+    }
+
+    private spawnContinueClearRing(
+        source: Node,
+        index: number,
+        delay: number,
+        sourceOpacity: number,
+    ): void {
+        const container = this.fruitContainer;
+        if (!container || !source.isValid) {
+            return;
+        }
+
+        const ring = new Node('ContinueClearRingFx');
+        ring.layer = container.layer;
+        ring.setParent(container);
+        ring.setPosition(source.position);
+        ring.addComponent(UITransform).setContentSize(28, 28);
+        const opacity = ring.addComponent(UIOpacity);
+        opacity.opacity = Math.min(255, Math.max(0, sourceOpacity));
+        const graphics = ring.addComponent(Graphics);
+        graphics.strokeColor = catUiColor('butter', 230);
+        graphics.lineWidth = 4;
+        graphics.circle(0, 0, 10);
+        graphics.stroke();
+        ring.setScale(0.45, 0.45, 1);
+        this.effectNodes.add(ring);
+
+        tween(ring)
+            .delay(delay)
+            .to(0.16, {
+                scale: new Vec3(1.45, 1.45, 1),
+                angle: index % 2 === 0 ? 8 : -8,
+            }, { easing: 'quadOut' })
+            .to(0.18, {
+                scale: new Vec3(2.2, 2.2, 1),
+            }, { easing: 'quadIn' })
+            .call(() => this.releaseEffectNode(ring))
+            .start();
+        tween(opacity)
+            .delay(delay + 0.04)
+            .to(0.3, { opacity: 0 }, { easing: 'quadIn' })
+            .start();
     }
 
     private async requestContinue(): Promise<void> {
@@ -1394,8 +1526,8 @@ export class WatermelonGame extends Component implements MiniGame {
         scoreNode.layer = container.layer;
         scoreNode.setParent(container);
         scoreNode.setPosition(x, y + 28);
-        const scoreWidth = event.isChain ? 270 : 180;
-        const scoreHeight = event.isChain ? 72 : 54;
+        const scoreWidth = event.isChain ? 292 : 190;
+        const scoreHeight = event.isChain ? 78 : 60;
         scoreNode.addComponent(UITransform).setContentSize(scoreWidth, scoreHeight);
         const opacity = scoreNode.addComponent(UIOpacity);
         const labelNode = new Node('ScoreLabel');
@@ -1404,14 +1536,17 @@ export class WatermelonGame extends Component implements MiniGame {
         labelNode.addComponent(UITransform).setContentSize(scoreWidth - 20, scoreHeight - 8);
         const label = labelNode.addComponent(Label);
         label.string = event.isChain ? `连锁×${event.chainDepth}  +${event.points}` : `+${event.points}`;
-        label.fontSize = event.isChain ? 38 : 29;
-        label.lineHeight = event.isChain ? 50 : 38;
-        label.isBold = event.isChain;
-        label.color = event.isChain
-            ? catUiColor('peachDark')
-            : event.isMilestone
-            ? catUiColor('danger')
-            : catUiColor('ink');
+        label.fontSize = event.isChain
+            ? MERGE_CHAIN_SCORE_FONT_SIZE
+            : MERGE_SCORE_FONT_SIZE;
+        label.lineHeight = event.isChain
+            ? MERGE_CHAIN_SCORE_LINE_HEIGHT
+            : MERGE_SCORE_LINE_HEIGHT;
+        label.isBold = true;
+        label.color = catUiColor('peachDark');
+        label.enableOutline = true;
+        label.outlineColor = catUiColor('ink', 235);
+        label.outlineWidth = event.isChain ? 3 : 2;
         label.horizontalAlign = 1;
         label.verticalAlign = 1;
         this.effectNodes.add(scoreNode);
@@ -1474,9 +1609,12 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private releaseEffectNode(node: Node): void {
         if (!this.effectNodes.delete(node)) return;
+        this.removingFruitNodes.delete(node);
         Tween.stopAllByTarget(node);
-        const opacity = node.getComponent(UIOpacity);
-        if (opacity) Tween.stopAllByTarget(opacity);
+        if (node.isValid) {
+            const opacity = node.getComponent(UIOpacity);
+            if (opacity) Tween.stopAllByTarget(opacity);
+        }
         if (node.isValid) node.destroy();
     }
 
@@ -1754,12 +1892,15 @@ export class WatermelonGame extends Component implements MiniGame {
             : event.isChain
                 ? `连锁 ×${event.chainDepth}  +${event.points}`
                 : `合成 +${event.points}`;
-        label.fontSize = event.isChain ? 28 : 23;
-        label.lineHeight = event.isChain ? 38 : 33;
-        label.isBold = event.isChain;
-        label.color = event.isChain
-            ? catUiColor('peachDark')
-            : catUiColor('ink', 230);
+        label.fontSize = event.isChain
+            ? MERGE_CHAIN_INSTRUCTION_FONT_SIZE
+            : MERGE_INSTRUCTION_FONT_SIZE;
+        label.lineHeight = event.isChain
+            ? MERGE_CHAIN_INSTRUCTION_LINE_HEIGHT
+            : MERGE_INSTRUCTION_LINE_HEIGHT;
+        label.isBold = true;
+        // Keep merge feedback in the same coral token as the floating score.
+        label.color = catUiColor('peachDark');
         const generation = this.operationGeneration;
         this.scheduleOnce(() => {
             if (this.isGenerationCurrent(generation)

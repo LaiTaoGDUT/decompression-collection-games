@@ -257,6 +257,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private readonly pendingAssetLoads = new Set<Promise<unknown>>();
     private disposePromise?: Promise<void>;
     private uiActionPending = false;
+    /**
+     * Cocos 在触摸事件后可能补发一组合成 mouse 事件。页面重建时，
+     * mouseup 可能命中新页面中同一位置的按钮，造成“取消”后立即开始。
+     */
+    private syntheticMouseEventsBlockedUntil = 0;
     private restartToSetupAfterRuntimeRestart = false;
     private cropPreviewNode?: Node;
     private cropPreviewSprite?: Sprite;
@@ -797,18 +802,30 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             )
             : defaultSourceY;
         this.createButton(content, 'PresetButton', '随机一张拼图', -sourceOffset, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.wood, () => {
-            this.selectedPresetIndex = this.getRandomPresetIndex();
-            this.imageLoadToken += 1;
-            this.releaseImageResources();
+            const nextPresetIndex = this.getRandomPresetIndex();
+            const nextPresetAssetPath = SLIDING_PUZZLE_PRESET_ASSET_PATHS[nextPresetIndex];
+            const keepsCurrentImage = this.selectedConfig.imageSource === 'preset'
+                && this.selectedConfig.presetAssetPath === nextPresetAssetPath
+                && this.imageTexture !== undefined;
+            this.selectedPresetIndex = nextPresetIndex;
+            if (!keepsCurrentImage) {
+                this.imageLoadToken += 1;
+                // 先销毁仍在渲染旧图片的动态节点，再释放它使用的图片帧和纹理。
+                // 不能让旧 Sprite 在当前点击事件结束后的渲染帧里继续提交。
+                this.destroyDynamicView();
+                this.releaseImageResources();
+            }
             this.selectedConfig = Object.freeze({
                 boardSize: this.selectedSize,
                 imageSource: 'preset',
-                presetAssetPath: SLIDING_PUZZLE_PRESET_ASSET_PATHS[this.selectedPresetIndex],
+                presetAssetPath: nextPresetAssetPath,
             });
             this.cropController.cancel();
             this.context?.services.feedback.play('uiButton');
             this.showSetup();
-            void this.trackAssetLoad(this.loadPresetImage(true));
+            if (!keepsCurrentImage) {
+                void this.trackAssetLoad(this.loadPresetImage(true));
+            }
         }, compact ? SETUP_COMPACT_SOURCE_BUTTON_FONT_SIZE : SETUP_SOURCE_BUTTON_FONT_SIZE);
         this.createButton(content, 'ImageButton', '从相册选择', sourceOffset, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.teal, () => {
             void this.pickLocalImage();
@@ -1061,6 +1078,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private releaseImageResources(): void {
+        // Sprite 必须先解除对图片帧的引用，再销毁帧/纹理。随机换图时这个
+        // 方法会在当前点击事件里执行；如果先 destroy 帧，Cocos 可能在同一
+        // 渲染帧继续提交旧 Sprite，Batcher2D 就会从 null 纹理读取 hash。
+        this.clearSpriteFrameReferences(this.dynamicNode);
+        this.clearSpriteFrameReferences(this.overlayNode);
         this.destroyTileFrames();
         this.destroyTransientFrames();
         const imageAsset = this.imageAsset;
@@ -1072,6 +1094,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         if (ownsTexture) {
             texture?.destroy();
+        } else if (texture) {
+            // 预置图来自 Bundle.load，必须平衡对应的资源引用；本地图片
+            // 纹理由本组件拥有，上面的 destroy 分支负责释放。
+            this.releaseBundleTexture(texture);
         }
         if (imageAsset) {
             try {
@@ -2583,18 +2609,35 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         button.on(Node.EventType.TOUCH_START, press, this);
         button.on(Node.EventType.TOUCH_CANCEL, () => {
             touchEndedAt = Date.now();
+            this.syntheticMouseEventsBlockedUntil = Math.max(
+                this.syntheticMouseEventsBlockedUntil,
+                touchEndedAt + 500,
+            );
             release();
         }, this);
         button.on(Node.EventType.TOUCH_END, () => {
             touchEndedAt = Date.now();
+            this.syntheticMouseEventsBlockedUntil = Math.max(
+                this.syntheticMouseEventsBlockedUntil,
+                touchEndedAt + 500,
+            );
             release();
             onClick();
         }, this);
         // 浏览器/桌面预览有时只派发鼠标事件；补上同一套交互，且短时间内
-        // 忽略触摸后跟随的合成 mouseup，避免一次点击触发两次业务操作。
-        button.on(Node.EventType.MOUSE_DOWN, press, this);
+        // 忽略触摸后跟随的合成 mouse 事件，避免页面重建后新按钮被同一次
+        // 点击命中（例如裁剪页“取消”后直接触发“开始拼图”）。
+        button.on(Node.EventType.MOUSE_DOWN, () => {
+            if (Date.now() < this.syntheticMouseEventsBlockedUntil) {
+                return;
+            }
+            press();
+        }, this);
         button.on(Node.EventType.MOUSE_UP, () => {
-            if (Date.now() - touchEndedAt < 500) {
+            const now = Date.now();
+            if (now < this.syntheticMouseEventsBlockedUntil
+                || now - touchEndedAt < 500) {
+                release();
                 return;
             }
             release();
@@ -2809,15 +2852,20 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.resetCropGestureState();
         this.timerLabel = undefined;
         this.movesLabel = undefined;
-        if (this.dynamicNode?.isValid) {
-            this.dynamicNode.destroy();
-        }
+        const dynamicNode = this.dynamicNode;
         this.dynamicNode = undefined;
+        if (dynamicNode?.isValid) {
+            // Cocos 的 destroy 会延迟到帧末执行；先停用节点，避免本帧的
+            // Batcher2D 仍提交已经准备释放的 Sprite/纹理。
+            dynamicNode.active = false;
+            dynamicNode.destroy();
+        }
     }
 
     private destroyOverlay(): void {
         if (this.overlayNode?.isValid) {
             this.clearSpriteFrameReferences(this.overlayNode);
+            this.overlayNode.active = false;
             this.overlayNode.destroy();
         }
         this.overlayNode = undefined;

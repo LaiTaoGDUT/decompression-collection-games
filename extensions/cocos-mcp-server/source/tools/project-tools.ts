@@ -11,14 +11,14 @@ export class ProjectTools implements ToolExecutor {
                     properties: {
                         action: {
                             type: 'string',
-                            enum: ['run', 'build', 'get_info', 'get_settings'],
-                            description: 'Project operation: "run" = start preview/testing (requires platform) | "build" = prepare for deployment (requires buildPlatform) | "get_info" = project metadata and paths | "get_settings" = configuration by category (requires category)'
+                            enum: ['run', 'reload', 'build', 'get_info', 'get_settings'],
+                            description: 'Project operation: "run" = start or reuse preview/testing (requires platform) | "reload" = refresh an existing browser/simulator preview without opening a new tab | "build" = prepare for deployment (requires buildPlatform) | "get_info" = project metadata and paths | "get_settings" = configuration by category (requires category)'
                         },
-                        // For run action
+                        // For run/reload actions
                         platform: {
                             type: 'string',
                             enum: ['browser', 'simulator', 'preview'],
-                            description: 'Preview platform (run action). "browser" = start Cocos browser preview directly, "simulator" = device simulation, "preview" = editor Game View preview. Browser preview is equivalent to clicking the top toolbar Run button with Browser selected.',
+                            description: 'Preview platform (run/reload action). "browser" = start or reuse Cocos browser preview, "simulator" = device simulation, "preview" = editor Game View preview. Browser preview is equivalent to clicking the top toolbar Run button with Browser selected.',
                             default: 'browser'
                         },
                         // For build action
@@ -79,6 +79,8 @@ export class ProjectTools implements ToolExecutor {
         switch (action) {
             case 'run':
                 return await this.runProject(args.platform);
+            case 'reload':
+                return await this.reloadPreview(args.platform);
             case 'build':
                 return await this.buildProject({ platform: args.buildPlatform, debug: args.debug });
             case 'get_info':
@@ -136,24 +138,83 @@ export class ProjectTools implements ToolExecutor {
             // the actual Cocos preview server and opens/reuses the browser.
             await Editor.Profile.setConfig('preview', 'preview.current.platform', platform, 'local');
             Editor.Message.send('preview', 'change-platform', platform);
-            await Editor.Message.request('preview', 'open-terminal', undefined);
 
-            let previewUrl: string | undefined;
-            try {
-                previewUrl = await Editor.Message.request('preview', 'query-preview-url');
-            } catch {
-                // The preview has already been started; URL lookup is optional
-                // because older Creator builds may not expose this response.
+            // query-preview-url is the least invasive way to detect whether the
+            // preview service is already available. Calling open-terminal every
+            // time starts/reuses the service but also asks Creator to open a new
+            // browser tab, so only call it when no URL is available yet.
+            let previewUrl = await this.queryPreviewUrl();
+            const reused = Boolean(previewUrl);
+            if (!reused) {
+                await Editor.Message.request('preview', 'open-terminal', undefined);
+                previewUrl = await this.queryPreviewUrl();
             }
 
             return {
                 success: true,
                 message: platform === 'browser'
-                    ? '✅ Cocos browser preview started (equivalent to the top toolbar Run button)'
-                    : '✅ Cocos simulator preview started',
+                    ? reused
+                        ? '✅ Existing Cocos browser preview service reused (no new tab opened)'
+                        : '✅ Cocos browser preview started (equivalent to the top toolbar Run button)'
+                    : reused
+                        ? '✅ Existing Cocos simulator preview service reused'
+                        : '✅ Cocos simulator preview started',
                 data: {
                     platform,
+                    reused,
                     ...(previewUrl ? { previewUrl } : {})
+                }
+            };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
+
+    private async queryPreviewUrl(): Promise<string | undefined> {
+        try {
+            const previewUrl = await Editor.Message.request('preview', 'query-preview-url');
+            return typeof previewUrl === 'string' && previewUrl.trim().length > 0
+                ? previewUrl
+                : undefined;
+        } catch {
+            // Older Creator versions may not expose query-preview-url or may
+            // reject it while the preview service is not running.
+            return undefined;
+        }
+    }
+
+    private async reloadPreview(platform: string = 'browser'): Promise<ToolResponse> {
+        const supportedPlatforms = ['browser', 'simulator'];
+
+        if (!supportedPlatforms.includes(platform)) {
+            return {
+                success: false,
+                error: `Reload is only supported for browser or simulator previews. Received: ${platform}`
+            };
+        }
+
+        try {
+            const previewUrl = await this.queryPreviewUrl();
+            if (!previewUrl) {
+                return {
+                    success: false,
+                    error: 'No active Cocos preview service was found. Call project_manage with action "run" first.'
+                };
+            }
+
+            // reload-terminal refreshes existing preview pages and does not
+            // launch another browser tab.
+            Editor.Message.send('preview', 'reload-terminal');
+
+            return {
+                success: true,
+                message: platform === 'browser'
+                    ? '✅ Existing Cocos browser preview reloaded without opening a new tab'
+                    : '✅ Existing Cocos simulator preview reloaded',
+                data: {
+                    platform,
+                    previewUrl,
+                    reused: true
                 }
             };
         } catch (err: any) {

@@ -349,7 +349,7 @@ export interface LocalImageSelection {
 
 ### StorageService
 
-负责默认值、版本迁移、异常恢复、游戏数据隔离和底层持久化。小游戏的每次逻辑操作都必须立即提交最新根快照到内存并触发保存；公共服务只对 `localStorage.setItem` 做单一根快照的 1000ms throttle，连续操作不会无限推迟写入。暂停、微信 hide、结算、退出、重开、Bundle 释放前和应用销毁都必须调用同步 `flush()`，绕过节流写入最新快照。序列化在逻辑提交点完成，延迟队列只保存最新 revision；写入失败保留 dirty 快照并由后续写入或 flush 重试。连续物理状态仍可由小游戏额外使用约 250ms 节流。
+负责默认值、版本迁移、异常恢复、游戏数据隔离和底层持久化。小游戏的每次逻辑操作都必须立即提交最新根快照到内存并触发保存；公共服务只对 `localStorage.setItem` 做单一根快照的 3000ms throttle，连续操作不会无限推迟写入。暂停、微信 hide、结算、退出、重开、Bundle 释放前和应用销毁都必须调用同步 `flush()`，绕过节流写入最新快照。序列化在逻辑提交点完成，延迟队列只保存最新 revision；写入失败保留 dirty 快照并由后续写入或 flush 重试。连续物理状态由小游戏按自身容错需求配置额外快照间隔；西瓜游戏当前为约 1s。
 
 ### NavigationService
 

@@ -21,12 +21,11 @@ import {
 
 const { ccclass, property } = _decorator;
 const DANGER_SPAWN_GRACE_SECONDS = 0.7;
-// Cocos 2D velocities are expressed in physics-world units. The previous
-// 0.05 linear / 0.08 angular limits were below the solver's normal resting
-// jitter, so a body could keep creeping forever without becoming eligible.
-const SETTLE_LINEAR_SPEED_SQUARED = 0.1024;
-const SETTLE_ANGULAR_SPEED = 0.65;
-const SETTLE_DURATION_SECONDS = 0.65;
+// Disabled while the baseline cat physics is being tuned. Keep these values
+// explicit so the settle fallback can be re-enabled without changing its flow.
+const SETTLE_LINEAR_SPEED_SQUARED = 0;
+const SETTLE_ANGULAR_SPEED = 0;
+const SETTLE_DURATION_SECONDS = 0;
 
 /** 单只圆滚滚猫咪的等级、圆形碰撞边界与内部动画。 */
 @ccclass('FruitBody')
@@ -89,6 +88,13 @@ export class FruitBody extends Component {
 
     /** Preserve landing inertia, then eliminate the solver's permanent micro-roll. */
     private updateNaturalSettle(deltaTime: number): void {
+        if (SETTLE_LINEAR_SPEED_SQUARED <= 0
+            || SETTLE_ANGULAR_SPEED <= 0
+            || SETTLE_DURATION_SECONDS <= 0) {
+            this.lowSpeedSeconds = 0;
+            return;
+        }
+
         this.removeInvalidContacts();
         if (this.activeContacts.size === 0 || this.mergeLocked) {
             this.lowSpeedSeconds = 0;

@@ -26,7 +26,6 @@ Before writing prompts, inspect only the files needed for the request. Prefer th
 - `docs/ARCHITECTURE.md` for runtime and Bundle boundaries.
 - `docs/VISUAL_STYLE_GUIDE.md` and the current per-game visual/audio specification for the active theme.
 - `docs/CONTENT_PRODUCTION_PLAN.md` for current production requirements.
-- `docs/ASSET_LEDGER.md` for ownership, route, provenance, and status fields.
 - Current files under the relevant `assets/**/visual/audio/` directory and the audio service when integration details matter.
 
 Do not copy an older or conflicting direction merely because it appears in a historical document. If the project contains multiple names or revisions, state the assumption and follow the most recent confirmed specification.
