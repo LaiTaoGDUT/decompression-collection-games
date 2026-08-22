@@ -140,8 +140,9 @@ export const SLIDING_PUZZLE_BOARD_ASSET_PATH =
     'visual/boards/sliding-puzzle-board-v1/texture';
 
 const SLIDING_PUZZLE_PRESET_ASSET_PATHS: readonly string[] = Object.freeze([
-    // 当前仓库已实际交付的预置图；后续 V01～V06 进入 Bundle 后只需在这里登记。
-    'visual/presets/preset-07-cats-cover-v1/texture',
+    // 当前仓库已实际交付的预置图；后续新增图片进入 Bundle 后只需在这里登记。
+    'visual/presets/preset-08-bedroom-night-v1/texture',
+    'visual/presets/preset-09-newspaper-v1/texture',
 ]);
 
 export const SLIDING_PUZZLE_POPUP_BACKGROUND_ASSET_PATH =

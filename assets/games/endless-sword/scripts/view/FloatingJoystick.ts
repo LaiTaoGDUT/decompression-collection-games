@@ -16,11 +16,12 @@ const KNOB_FILL = new Color(100, 214, 180, 170);
  * 浮动虚拟摇杆（策划案 §6）：在游戏区按下处生成摇杆中心，
  * 拖动矢量决定移动方向与速度，松手停止。
  * 触摸捕获层位于世界之上、HUD 之下；开始页与暂停层的输入拦截会自然屏蔽它。
+ * 默认隐藏摇杆视觉（config.joystick.showVisuals = false）：玩家可操控但看不到摇杆。
  */
 export class FloatingJoystick {
     private readonly catcher: Node;
-    private readonly baseNode: Node;
-    private readonly knobNode: Node;
+    private readonly baseNode?: Node;
+    private readonly knobNode?: Node;
     private activeTouchId: number | null = null;
     private centerX = 0;
     private centerY = 0;
@@ -39,25 +40,24 @@ export class FloatingJoystick {
         this.catcher.on(Node.EventType.TOUCH_END, this.handleEnd, this);
         this.catcher.on(Node.EventType.TOUCH_CANCEL, this.handleEnd, this);
 
-        this.baseNode = this.createCircle('JoystickBase', ENDLESS_SWORD_CONFIG.joystick.radius, BASE_RING, BASE_EDGE);
-        parent.addChild(this.baseNode);
-        this.knobNode = this.createCircle('JoystickKnob', 28, KNOB_FILL, undefined);
-        parent.addChild(this.knobNode);
+        if (ENDLESS_SWORD_CONFIG.joystick.showVisuals) {
+            this.baseNode = this.createCircle('JoystickBase', ENDLESS_SWORD_CONFIG.joystick.radius, BASE_RING, BASE_EDGE);
+            parent.addChild(this.baseNode);
+            this.knobNode = this.createCircle('JoystickKnob', 28, KNOB_FILL, undefined);
+            parent.addChild(this.knobNode);
+        }
     }
 
     getMoveInput(): MoveInput {
-        const { deadZone, radius } = ENDLESS_SWORD_CONFIG.joystick;
+        const deadZone = ENDLESS_SWORD_CONFIG.joystick.deadZone;
         const dx = this.offsetX;
         const dy = this.offsetY;
         const length = Math.sqrt(dx * dx + dy * dy);
         if (this.activeTouchId === null || length < deadZone) {
             return { dirX: 0, dirY: 0, magnitude: 0 };
         }
-        return {
-            dirX: dx / length,
-            dirY: dy / length,
-            magnitude: Math.min(length, radius) / radius,
-        };
+        // 统一移速（2026-08-22 修订）：超过死区即满速，不随拖动距离变化。
+        return { dirX: dx / length, dirY: dy / length, magnitude: 1 };
     }
 
     /** 暂停、重开、退出时丢弃未结束的触摸，避免恢复后带着残留位移。 */
@@ -65,8 +65,12 @@ export class FloatingJoystick {
         this.activeTouchId = null;
         this.offsetX = 0;
         this.offsetY = 0;
-        this.baseNode.active = false;
-        this.knobNode.active = false;
+        if (this.baseNode) {
+            this.baseNode.active = false;
+        }
+        if (this.knobNode) {
+            this.knobNode.active = false;
+        }
     }
 
     dispose(): void {
@@ -74,10 +78,10 @@ export class FloatingJoystick {
         if (this.catcher.isValid) {
             this.catcher.destroy();
         }
-        if (this.baseNode.isValid) {
+        if (this.baseNode && this.baseNode.isValid) {
             this.baseNode.destroy();
         }
-        if (this.knobNode.isValid) {
+        if (this.knobNode && this.knobNode.isValid) {
             this.knobNode.destroy();
         }
     }
@@ -120,10 +124,12 @@ export class FloatingJoystick {
         this.centerY = point.y;
         this.offsetX = 0;
         this.offsetY = 0;
-        this.baseNode.setPosition(point.x, point.y, 0);
-        this.knobNode.setPosition(point.x, point.y, 0);
-        this.baseNode.active = true;
-        this.knobNode.active = true;
+        if (this.baseNode && this.knobNode) {
+            this.baseNode.setPosition(point.x, point.y, 0);
+            this.knobNode.setPosition(point.x, point.y, 0);
+            this.baseNode.active = true;
+            this.knobNode.active = true;
+        }
     }
 
     private handleMove(event: EventTouch): void {
@@ -138,7 +144,9 @@ export class FloatingJoystick {
         const scale = length > radius ? radius / length : 1;
         this.offsetX = dx * scale;
         this.offsetY = dy * scale;
-        this.knobNode.setPosition(this.centerX + this.offsetX, this.centerY + this.offsetY, 0);
+        if (this.knobNode) {
+            this.knobNode.setPosition(this.centerX + this.offsetX, this.centerY + this.offsetY, 0);
+        }
     }
 
     private handleEnd(event: EventTouch): void {

@@ -1,5 +1,6 @@
 import {
     _decorator,
+    assetManager,
     BlockInputEvents,
     Color,
     Component,
@@ -7,6 +8,7 @@ import {
     Label,
     Layers,
     Node,
+    Texture2D,
     UITransform,
     view,
 } from 'cc';
@@ -77,12 +79,29 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             ENDLESS_SWORD_CONFIG.loop.maxCatchUpSteps,
             (dt) => this.stepLogic(dt),
         );
-        this.buildWorld();
+        this.buildWorld(await this.loadPlayerTexture());
         this.joystick = new FloatingJoystick(this.node);
         this.buildHud();
         this.buildStartOverlay();
         this.installQaBridge();
         this.runState = 'ready';
+    }
+
+    /** 加载玩家序列帧纹理；失败时回退几何占位（可选资源）。 */
+    private async loadPlayerTexture(): Promise<Texture2D | undefined> {
+        return new Promise<Texture2D | undefined>((resolve) => {
+            assetManager.loadBundle('game-endless-sword', (bundleError, bundle) => {
+                if (bundleError || !bundle) {
+                    resolve(undefined);
+                    return;
+                }
+                bundle.load(
+                    ENDLESS_SWORD_CONFIG.playerSprite.texturePath,
+                    Texture2D,
+                    (loadError, asset) => resolve(loadError ? undefined : asset),
+                );
+            });
+        });
     }
 
     begin(): void {
@@ -117,7 +136,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.world?.update(0, 0);
         this.joystick?.resetInput();
         this.loop?.reset();
-        this.renderFrame(0);
+        this.renderFrame(0, 0);
         this.enterPlaying();
     }
 
@@ -149,7 +168,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             return;
         }
         const alpha = this.loop ? this.loop.tick(deltaTime) : 0;
-        this.renderFrame(alpha);
+        this.renderFrame(alpha, deltaTime);
     }
 
     private stepLogic(dt: number): void {
@@ -161,9 +180,15 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.world?.update(this.model.player.x, this.model.player.y);
     }
 
-    private renderFrame(alpha: number): void {
+    private renderFrame(alpha: number, frameSeconds: number): void {
         const renderPos = this.model.lerpPlayer(alpha);
         this.playerView?.setWorldPosition(renderPos.x, renderPos.y);
+        this.playerView?.setMotion(
+            this.model.player.moveDirX,
+            this.model.player.moveDirY,
+            this.model.player.moveMagnitude,
+        );
+        this.playerView?.tickAnimation(frameSeconds);
         this.cameraRig?.follow(renderPos.x, renderPos.y);
         if (this.survivalLabel) {
             this.survivalLabel.string = formatSurvivalTime(this.model.gameplayElapsedTime);
@@ -172,7 +197,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
 
     // ---- 世界与输入 ----
 
-    private buildWorld(): void {
+    private buildWorld(playerTexture?: Texture2D): void {
         const worldRoot = new Node('World');
         worldRoot.layer = Layers.Enum.UI_2D;
         this.node.addChild(worldRoot);
@@ -182,7 +207,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.world.setSeed(this.model.runSeed);
         this.world.update(0, 0);
 
-        this.playerView = new PlayerView(worldRoot);
+        this.playerView = new PlayerView(worldRoot, playerTexture);
         this.cameraRig = new CameraRig(worldRoot);
         this.playerView.setWorldPosition(0, 0);
     }

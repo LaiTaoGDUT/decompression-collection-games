@@ -51,9 +51,7 @@ interface WeChatLaunchOptions {
 }
 
 interface WeChatMediaFile {
-    /** chooseMedia 返回 tempFilePath，chooseImage 的 tempFiles 返回 path。 */
     readonly tempFilePath?: string;
-    readonly path?: string;
     readonly fileType?: string;
     readonly size?: number;
 }
@@ -62,24 +60,11 @@ interface WeChatChooseMediaResult {
     readonly tempFiles?: readonly WeChatMediaFile[];
 }
 
-interface WeChatChooseImageResult {
-    readonly tempFilePaths?: readonly string[];
-    readonly tempFiles?: readonly WeChatMediaFile[];
-}
-
 interface WeChatChooseMediaOptions {
     readonly count: number;
     readonly mediaType: readonly ['image'];
     readonly sourceType: readonly ['album'];
     readonly success?: (result: WeChatChooseMediaResult) => void;
-    readonly fail?: (error?: WeChatApiError) => void;
-}
-
-interface WeChatChooseImageOptions {
-    readonly count: number;
-    readonly sizeType?: readonly ('original' | 'compressed')[];
-    readonly sourceType: readonly ['album'];
-    readonly success?: (result: WeChatChooseImageResult) => void;
     readonly fail?: (error?: WeChatApiError) => void;
 }
 
@@ -98,7 +83,6 @@ interface WeChatApi {
         withShareTicket: boolean;
     }): void;
     chooseMedia?(options: WeChatChooseMediaOptions): void;
-    chooseImage?(options: WeChatChooseImageOptions): void;
     onShow(callback: () => void): void;
     onHide(callback: () => void): void;
     offShow?(callback: () => void): void;
@@ -225,7 +209,7 @@ export class WeChatPlatform implements Platform {
 
     async pickLocalImage(): Promise<LocalImageSelection | null> {
         const api = this.api;
-        if (!api || (!api.chooseMedia && !api.chooseImage)) {
+        if (!api || typeof api.chooseMedia !== 'function') {
             return null;
         }
 
@@ -238,11 +222,8 @@ export class WeChatPlatform implements Platform {
         const isCurrent = (): boolean => this.initialized
             && this.api === api
             && this.imagePickerGeneration === generation;
-        const normalize = (
-            file: WeChatMediaFile | undefined,
-            fallbackPath?: string,
-        ): LocalImageSelection | null => {
-            const uri = file?.tempFilePath ?? file?.path ?? fallbackPath;
+        const normalize = (file: WeChatMediaFile | undefined): LocalImageSelection | null => {
+            const uri = file?.tempFilePath;
             if (!uri || !isCurrent()) {
                 return null;
             }
@@ -277,62 +258,30 @@ export class WeChatPlatform implements Platform {
             const cancel = (): void => finish(null);
             this.cancelImagePicker = cancel;
 
-            const chooseMedia = (): void => {
-                if (typeof api.chooseMedia !== 'function'
-                    || (!this.chooseMediaSupported && typeof api.chooseImage === 'function')) {
-                    finish(null);
-                    return;
-                }
-
-                try {
-                    api.chooseMedia({
-                        count: 1,
-                        mediaType: ['image'],
-                        sourceType: ['album'],
-                        success: (result) => finish(normalize(result.tempFiles?.[0])),
-                        fail: () => finish(null),
-                    });
-                } catch (_error: unknown) {
-                    finish(null);
-                }
-            };
-
-            const chooseImage = (): void => {
-                if (typeof api.chooseImage !== 'function') {
-                    chooseMedia();
-                    return;
-                }
-
-                try {
-                    api.chooseImage({
-                        count: 1,
-                        sizeType: ['original'],
-                        sourceType: ['album'],
-                        success: (result) => finish(normalize(
-                            result.tempFiles?.[0],
-                            result.tempFilePaths?.[0],
-                        )),
-                        fail: (error) => {
-                            const message = error?.errMsg?.toLowerCase() ?? '';
-                            if (typeof api.chooseMedia === 'function'
-                                && this.chooseMediaSupported
-                                && this.isUnsupportedImagePickerError(message)) {
-                                chooseMedia();
-                                return;
-                            }
-
-                            finish(null);
-                        },
-                    });
-                } catch (_error: unknown) {
-                    chooseMedia();
-                }
-            };
+            // 只使用仍在维护的 wx.chooseMedia；wx.chooseImage 自基础库 2.21.0
+            // 起停止维护，部分客户端上首次成功后二次调用静默失效，不做回退。
+            // 低于 2.23 的基础库可能暴露同名方法却静默无回调，直接判失败，
+            // 让游戏层回到可重试的选择页，而不是停在空白等待。
+            if (!this.chooseMediaSupported) {
+                finish(null);
+                return;
+            }
 
             try {
-                // 这里只需要图片，优先使用重复调用行为更直接的 chooseImage；
-                // 不可用时再回退到基础库 2.23.0+ 的 chooseMedia。
-                chooseImage();
+                api.chooseMedia({
+                    count: 1,
+                    mediaType: ['image'],
+                    sourceType: ['album'],
+                    success: (result) => finish(normalize(result.tempFiles?.[0])),
+                    fail: (error) => {
+                        const errMsg = error?.errMsg;
+                        if (!errMsg?.toLowerCase().includes('cancel')) {
+                            console.warn('[WeChatPlatform] wx.chooseMedia failed.', errMsg);
+                        }
+
+                        finish(null);
+                    },
+                });
             } catch (_error: unknown) {
                 finish(null);
             }
@@ -416,12 +365,6 @@ export class WeChatPlatform implements Platform {
             this.imagePickerLifecycleInterrupted = false;
         }, IMAGE_PICKER_LIFECYCLE_GRACE_MS);
     };
-
-    private isUnsupportedImagePickerError(message: string): boolean {
-        return message.includes('not support')
-            || message.includes('unsupported')
-            || message.includes('not implemented');
-    }
 
     private resolveApi(): WeChatApi {
         if (this.providedApi) {

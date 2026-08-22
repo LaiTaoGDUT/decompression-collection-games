@@ -180,7 +180,7 @@ export interface Platform {
 实现约束：
 
 - `WebPlatform` 使用隐藏的 `<input type="file" accept="image/png,image/jpeg">`，取消选择返回 `null`；成功读取后创建的 Object URL 必须在 `release()` 或游戏销毁时释放。
-- `WeChatPlatform` 首选 `wx.chooseMedia({ mediaType: ['image'], sourceType: ['album'] })`；对低版本基础库提供 `wx.chooseImage` 兼容回退；不传相机来源。
+- `WeChatPlatform` 只使用 `wx.chooseMedia({ mediaType: ['image'], sourceType: ['album'] })`；基础库低于 2.23 或接口不可用时直接判失败并回到可重试的选择页，不回退已停止维护、二次调用会静默失效的 `wx.chooseImage`；不传相机来源。
 - 选择器只返回本地临时引用和元信息，不提供上传方法，不把图片字节交给统计、广告或远程配置服务。
 - MIME、扩展名和大小在平台返回后再次校验；超过 10 MB、非 PNG/JPG 或解码失败必须可重试且不污染上一张有效图片。
 - 图片解码、裁切、缩放、压缩和棋盘采样全部在客户端完成；结果事件不记录原始文件名、临时路径、Object URL 或图片哈希。
