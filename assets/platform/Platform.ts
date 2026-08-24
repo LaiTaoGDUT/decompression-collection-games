@@ -7,6 +7,12 @@ import type {
     Unsubscribe,
 } from '../core/types/CommonTypes';
 
+export interface AccelerometerSample {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+}
+
 /**
  * 业务层允许使用的平台能力边界。
  * 具体平台 SDK 类型和全局变量不得越过该接口进入业务层。
@@ -26,6 +32,10 @@ export interface Platform {
     cancelLocalImagePicker(): void;
     supportsVibration(): boolean;
     vibrate(type: 'light' | 'medium' | 'heavy'): void;
+    supportsAccelerometer(): boolean;
+    startAccelerometer(): void;
+    stopAccelerometer(): void;
+    onAccelerometerChange(callback: (sample: AccelerometerSample) => void): Unsubscribe;
     showShareMenu(): void;
     onShow(callback: () => void): Unsubscribe;
     onHide(callback: () => void): Unsubscribe;

@@ -30,8 +30,22 @@ export interface DesktopCleanupItemSnapshot {
     readonly x: number;
     readonly y: number;
     readonly angle: number;
+    readonly velocityX: number;
+    readonly velocityY: number;
+    readonly angularVelocity: number;
+    /** 伪 3D 抬升量；只影响显示层级和轻微的透视缩放。 */
+    readonly elevation: number;
     readonly active: boolean;
+    /** 近似表示当前是否露出；不作为点选的硬门槛。 */
     readonly free: boolean;
+}
+
+export interface DesktopCleanupShakeInput {
+    /** 颠锅方向，使用桌面归一化坐标。 */
+    readonly x: number;
+    readonly y: number;
+    /** 颠锅强度，建议范围 0.5–2。 */
+    readonly strength: number;
 }
 
 export interface DesktopCleanupSlotSnapshot {
@@ -90,6 +104,10 @@ interface MutableItem {
     x: number;
     y: number;
     angle: number;
+    velocityX: number;
+    velocityY: number;
+    angularVelocity: number;
+    elevation: number;
     active: boolean;
     free: boolean;
 }
@@ -109,6 +127,31 @@ const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
 const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;
 const STACK_X_LIMIT = 0.36;
 const STACK_Y_LIMIT = 0.36;
+const PHYSICS_MIN_X = -0.45;
+const PHYSICS_MAX_X = 0.45;
+const PHYSICS_MIN_Y = -0.45;
+const PHYSICS_MAX_Y = 0.45;
+const PHYSICS_ITEM_RADIUS = 0.125;
+const PHYSICS_MAX_SPEED = 0.72;
+const PHYSICS_MAX_ANGULAR_SPEED = 120;
+const PHYSICS_MAX_ELEVATION = 0.30;
+const PHYSICS_SETTLE_SPEED = 0.006;
+const PHYSICS_DEPTH_COLLISION_RANGE = 0.35;
+const PHYSICS_COVER_RADIUS = PHYSICS_ITEM_RADIUS * 0.72;
+const PHYSICS_EPSILON = 0.0001;
+
+function renderDepth(item: Pick<DesktopCleanupItemSnapshot, 'layer' | 'elevation'>): number {
+    return item.layer + item.elevation * 4;
+}
+
+export function compareDesktopCleanupItems(
+    left: Pick<DesktopCleanupItemSnapshot, 'id' | 'layer' | 'elevation'>,
+    right: Pick<DesktopCleanupItemSnapshot, 'id' | 'layer' | 'elevation'>,
+): number {
+    return renderDepth(left) - renderDepth(right)
+        || left.layer - right.layer
+        || left.id.localeCompare(right.id);
+}
 
 function clamp(value: number, minimum: number, maximum: number): number {
     return Math.min(maximum, Math.max(minimum, value));
@@ -208,6 +251,10 @@ export function generateDesktopCleanupItems(): readonly DesktopCleanupItemSnapsh
                 type,
                 layer,
                 ...positions[layer * ITEMS_PER_LAYER + index],
+                velocityX: 0,
+                velocityY: 0,
+                angularVelocity: 0,
+                elevation: 0,
                 active: true,
                 free: false,
             }));
@@ -331,6 +378,7 @@ export class DesktopCleanupModel {
             magnet: config.freeUsesPerTool,
             shuffle: config.freeUsesPerTool,
         };
+        this.refreshExposure();
     }
 
     get phase(): DesktopCleanupPhase {
@@ -364,13 +412,48 @@ export class DesktopCleanupModel {
         });
     }
 
-    tick(deltaMs: number): void {
+    tick(deltaMs: number): boolean {
         if (this.currentPhase !== 'playing'
             || this.pendingSelections.size > 0
             || !Number.isFinite(deltaMs)
-            || deltaMs <= 0) return;
+            || deltaMs <= 0) return false;
+        const physicsChanged = this.stepPhysics(Math.min(deltaMs, 50) / 1000);
         this.timeLeftMs = Math.max(0, this.timeLeftMs - deltaMs);
         if (this.timeLeftMs <= 0) this.fail('timeout');
+        return physicsChanged;
+    }
+
+    applyShake(input: DesktopCleanupShakeInput): boolean {
+        if (this.currentPhase !== 'playing'
+            || !Number.isFinite(input.x)
+            || !Number.isFinite(input.y)
+            || !Number.isFinite(input.strength)) return false;
+        const directionLength = Math.hypot(input.x, input.y);
+        if (directionLength <= PHYSICS_EPSILON) return false;
+        const directionX = input.x / directionLength;
+        const directionY = input.y / directionLength;
+        const strength = clamp(input.strength, 0.35, 2.2);
+        const impulse = this.config.shakeImpulse * strength;
+        this.items.forEach((item) => {
+            if (!item.active) return;
+            // 露出的物件更容易被颠起；被压住的物件仍会获得一部分桌面传导
+            // 的冲量，等上层滑开后就能自然露出来。
+            const mobility = item.free ? 1 : 0.24;
+            item.velocityX = clamp(item.velocityX + directionX * impulse * mobility, -PHYSICS_MAX_SPEED, PHYSICS_MAX_SPEED);
+            item.velocityY = clamp(item.velocityY + directionY * impulse * mobility, -PHYSICS_MAX_SPEED, PHYSICS_MAX_SPEED);
+            const spinDirection = directionX * (item.layer % 2 === 0 ? 1 : -1) + directionY;
+            item.angularVelocity = clamp(
+                item.angularVelocity + spinDirection * 48 * strength * mobility,
+                -PHYSICS_MAX_ANGULAR_SPEED,
+                PHYSICS_MAX_ANGULAR_SPEED,
+            );
+            item.elevation = clamp(
+                item.elevation + (0.035 + 0.025 * mobility) * strength,
+                0,
+                PHYSICS_MAX_ELEVATION,
+            );
+        });
+        return true;
     }
 
     selectItem(itemId: string): DesktopCleanupActionResult {
@@ -384,6 +467,10 @@ export class DesktopCleanupModel {
 
         item.active = false;
         item.free = false;
+        item.velocityX = 0;
+        item.velocityY = 0;
+        item.angularVelocity = 0;
+        item.elevation = 0;
         const slot: MutableSlot = {
             itemId: item.id,
             type: item.type,
@@ -403,6 +490,7 @@ export class DesktopCleanupModel {
             ...(triple ? { triple } : {}),
         });
         if (selection.triple) this.pendingSelections.set(selection.token, selection);
+        this.refreshExposure();
         return Object.freeze({
             accepted: true,
             selection,
@@ -525,7 +613,12 @@ export class DesktopCleanupModel {
                 item.x = position.x;
                 item.y = position.y;
                 item.angle = position.angle;
+                item.velocityX = 0;
+                item.velocityY = 0;
+                item.angularVelocity = 0;
+                item.elevation = 0;
             });
+            this.refreshExposure();
             return undefined;
         }
         return this.completeBestGroup();
@@ -539,15 +632,27 @@ export class DesktopCleanupModel {
         this.slots = this.slots.filter((slot) => !recentIds.has(slot.itemId));
         this.revision += 1;
         const random = createRandom();
+        const topLayer = Math.max(
+            LAYER_COUNT - 1,
+            ...[...this.items.values()]
+                .filter((item) => item.active && !recentIds.has(item.id))
+                .map((item) => item.layer),
+        );
         recent.forEach((slot, index) => {
             const item = this.items.get(slot.itemId);
             if (!item) return;
             item.active = true;
             item.free = true;
+            item.layer = topLayer + index + 1;
+            item.velocityX = 0;
+            item.velocityY = 0;
+            item.angularVelocity = 0;
+            item.elevation = 0.08;
             item.x = (index - (recent.length - 1) / 2) * 0.085 + (random() - 0.5) * 0.025;
             item.y = 0.08 + (random() - 0.5) * 0.05;
             item.angle = Math.round(-28 + random() * 56);
         });
+        this.refreshExposure();
     }
 
     private findCompletableType(): DesktopCleanupItemType | undefined {
@@ -583,9 +688,111 @@ export class DesktopCleanupModel {
             .forEach((item) => {
                 item.active = false;
                 item.free = false;
+                item.velocityX = 0;
+                item.velocityY = 0;
+                item.angularVelocity = 0;
+                item.elevation = 0;
             });
         this.currentScore += this.config.pointsPerTriple;
+        this.refreshExposure();
         return type;
+    }
+
+    private stepPhysics(deltaSeconds: number): boolean {
+        const active = [...this.items.values()].filter((item) => item.active);
+        if (active.length === 0) return false;
+        let changed = false;
+        active.forEach((item) => {
+            const speed = Math.hypot(item.velocityX, item.velocityY);
+            const angularSpeed = Math.abs(item.angularVelocity);
+            const moving = speed > PHYSICS_SETTLE_SPEED || angularSpeed > 0.5 || item.elevation > PHYSICS_EPSILON;
+            if (!moving) return;
+            changed = true;
+            item.x += item.velocityX * deltaSeconds;
+            item.y += item.velocityY * deltaSeconds;
+            item.angle += item.angularVelocity * deltaSeconds;
+            this.resolveBoundary(item);
+
+            const linearDamping = Math.exp(-this.config.physicsDamping * deltaSeconds);
+            const angularDamping = Math.exp(-this.config.physicsAngularDamping * deltaSeconds);
+            item.velocityX *= linearDamping;
+            item.velocityY *= linearDamping;
+            item.angularVelocity *= angularDamping;
+            item.elevation = Math.max(0, item.elevation - deltaSeconds * 0.34);
+            if (Math.hypot(item.velocityX, item.velocityY) < PHYSICS_SETTLE_SPEED) {
+                item.velocityX = 0;
+                item.velocityY = 0;
+            }
+            if (Math.abs(item.angularVelocity) < 0.5) item.angularVelocity = 0;
+        });
+
+        for (let leftIndex = 0; leftIndex < active.length; leftIndex += 1) {
+            const left = active[leftIndex];
+            if (!left) continue;
+            for (let rightIndex = leftIndex + 1; rightIndex < active.length; rightIndex += 1) {
+                const right = active[rightIndex];
+                if (!right || Math.abs(left.layer - right.layer) > PHYSICS_DEPTH_COLLISION_RANGE) continue;
+                const dx = right.x - left.x;
+                const dy = right.y - left.y;
+                const distance = Math.hypot(dx, dy);
+                const minimumDistance = PHYSICS_ITEM_RADIUS * 2;
+                if (distance >= minimumDistance) continue;
+                const safeDistance = Math.max(distance, PHYSICS_EPSILON);
+                const normalX = distance > PHYSICS_EPSILON ? dx / safeDistance : 1;
+                const normalY = distance > PHYSICS_EPSILON ? dy / safeDistance : 0;
+                const overlap = minimumDistance - safeDistance;
+                const leftMobility = left.free ? 1 : 0.2;
+                const rightMobility = right.free ? 1 : 0.2;
+                const mobilityTotal = leftMobility + rightMobility;
+                left.x -= normalX * overlap * leftMobility / mobilityTotal;
+                left.y -= normalY * overlap * leftMobility / mobilityTotal;
+                right.x += normalX * overlap * rightMobility / mobilityTotal;
+                right.y += normalY * overlap * rightMobility / mobilityTotal;
+                const relativeVelocity = (right.velocityX - left.velocityX) * normalX
+                    + (right.velocityY - left.velocityY) * normalY;
+                if (relativeVelocity < 0) {
+                    const bounce = 1 + this.config.physicsBounce;
+                    const impulse = -relativeVelocity * bounce / mobilityTotal;
+                    left.velocityX -= normalX * impulse * leftMobility;
+                    left.velocityY -= normalY * impulse * leftMobility;
+                    right.velocityX += normalX * impulse * rightMobility;
+                    right.velocityY += normalY * impulse * rightMobility;
+                }
+                changed = true;
+            }
+        }
+        if (changed) this.refreshExposure();
+        return changed;
+    }
+
+    private resolveBoundary(item: MutableItem): void {
+        if (item.x < PHYSICS_MIN_X + PHYSICS_ITEM_RADIUS) {
+            item.x = PHYSICS_MIN_X + PHYSICS_ITEM_RADIUS;
+            item.velocityX = Math.abs(item.velocityX) * this.config.physicsBounce;
+        } else if (item.x > PHYSICS_MAX_X - PHYSICS_ITEM_RADIUS) {
+            item.x = PHYSICS_MAX_X - PHYSICS_ITEM_RADIUS;
+            item.velocityX = -Math.abs(item.velocityX) * this.config.physicsBounce;
+        }
+        if (item.y < PHYSICS_MIN_Y + PHYSICS_ITEM_RADIUS) {
+            item.y = PHYSICS_MIN_Y + PHYSICS_ITEM_RADIUS;
+            item.velocityY = Math.abs(item.velocityY) * this.config.physicsBounce;
+        } else if (item.y > PHYSICS_MAX_Y - PHYSICS_ITEM_RADIUS) {
+            item.y = PHYSICS_MAX_Y - PHYSICS_ITEM_RADIUS;
+            item.velocityY = -Math.abs(item.velocityY) * this.config.physicsBounce;
+        }
+    }
+
+    private refreshExposure(): void {
+        const active = [...this.items.values()]
+            .filter((item) => item.active)
+            .sort((left, right) => compareDesktopCleanupItems(left, right));
+        active.forEach((item, index) => {
+            item.free = !active.some((candidate, candidateIndex) => {
+                if (candidateIndex <= index) return false;
+                const distance = Math.hypot(candidate.x - item.x, candidate.y - item.y);
+                return distance < PHYSICS_COVER_RADIUS;
+            });
+        });
     }
 
     private findSlotTriple(type: DesktopCleanupItemType): DesktopCleanupTripleMatch | undefined {

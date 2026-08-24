@@ -9,7 +9,7 @@ import type {
     SafeArea,
     Unsubscribe,
 } from '../core/types/CommonTypes';
-import type { Platform } from './Platform';
+import type { AccelerometerSample, Platform } from './Platform';
 
 interface WeChatSafeArea {
     readonly left: number;
@@ -72,6 +72,16 @@ interface WeChatApiError {
     readonly errMsg?: string;
 }
 
+interface WeChatAccelerometerChangeResult {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+}
+
+interface WeChatAccelerometerOptions {
+    readonly interval?: 'game' | 'ui' | 'normal';
+}
+
 interface WeChatApi {
     getSystemInfoSync(): WeChatSystemInfo;
     getMenuButtonBoundingClientRect?(): WeChatMenuButtonRect;
@@ -79,6 +89,10 @@ interface WeChatApi {
     vibrateShort?(options: {
         type: 'light' | 'medium' | 'heavy';
     }): void;
+    startAccelerometer?(options?: WeChatAccelerometerOptions): void;
+    stopAccelerometer?(): void;
+    onAccelerometerChange?(callback: (result: WeChatAccelerometerChangeResult) => void): void;
+    offAccelerometerChange?(callback: (result: WeChatAccelerometerChangeResult) => void): void;
     showShareMenu?(options: {
         withShareTicket: boolean;
     }): void;
@@ -129,6 +143,8 @@ export class WeChatPlatform implements Platform {
     private imagePickerActivityResetTimer?: ReturnType<typeof setTimeout>;
     /** 原生相册会触发一对 hide/show；这对回调不应改变小游戏运行状态。 */
     private imagePickerLifecycleInterrupted = false;
+    private accelerometerStarted = false;
+    private readonly accelerometerListeners = new Set<(sample: AccelerometerSample) => void>();
 
     constructor(options: WeChatPlatformOptions = {}) {
         if ((options.designWidth ?? 750) <= 0) {
@@ -157,14 +173,18 @@ export class WeChatPlatform implements Platform {
         this.api = api;
         api.onShow(this.handleShow);
         api.onHide(this.handleHide);
+        api.onAccelerometerChange?.(this.handleAccelerometerChange);
         this.initialized = true;
     }
 
     dispose(): void {
         this.cancelLocalImagePicker();
+        this.stopAccelerometer();
+        this.api?.offAccelerometerChange?.(this.handleAccelerometerChange);
         this.api?.offShow?.(this.handleShow);
         this.api?.offHide?.(this.handleHide);
         this.events.clear();
+        this.accelerometerListeners.clear();
         this.api = undefined;
         this.safeArea = undefined;
         this.layoutInfo = undefined;
@@ -309,6 +329,37 @@ export class WeChatPlatform implements Platform {
         this.api?.vibrateShort?.({ type });
     }
 
+    supportsAccelerometer(): boolean {
+        return typeof this.api?.startAccelerometer === 'function'
+            && typeof this.api?.onAccelerometerChange === 'function';
+    }
+
+    startAccelerometer(): void {
+        if (!this.supportsAccelerometer() || this.accelerometerStarted) return;
+        try {
+            this.api?.startAccelerometer?.({ interval: 'game' });
+            this.accelerometerStarted = true;
+        } catch (error: unknown) {
+            console.warn('[WeChatPlatform] Failed to start accelerometer.', error);
+        }
+    }
+
+    stopAccelerometer(): void {
+        if (!this.accelerometerStarted) return;
+        try {
+            this.api?.stopAccelerometer?.();
+        } catch (error: unknown) {
+            console.warn('[WeChatPlatform] Failed to stop accelerometer.', error);
+        } finally {
+            this.accelerometerStarted = false;
+        }
+    }
+
+    onAccelerometerChange(callback: (sample: AccelerometerSample) => void): Unsubscribe {
+        this.accelerometerListeners.add(callback);
+        return () => this.accelerometerListeners.delete(callback);
+    }
+
     showShareMenu(): void {
         this.api?.showShareMenu?.({ withShareTicket: true });
     }
@@ -347,6 +398,18 @@ export class WeChatPlatform implements Platform {
         }
 
         this.events.publish('hide', undefined);
+    };
+
+    private readonly handleAccelerometerChange = (sample: WeChatAccelerometerChangeResult): void => {
+        if (!Number.isFinite(sample.x) || !Number.isFinite(sample.y) || !Number.isFinite(sample.z)) {
+            return;
+        }
+        const normalized: AccelerometerSample = Object.freeze({
+            x: sample.x,
+            y: sample.y,
+            z: sample.z,
+        });
+        this.accelerometerListeners.forEach((listener) => listener(normalized));
     };
 
     private readonly deferImagePickerActivityReset = (generation: number): void => {

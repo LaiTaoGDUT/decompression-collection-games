@@ -8,7 +8,7 @@ import type {
     SafeArea,
     Unsubscribe,
 } from '../core/types/CommonTypes';
-import type { Platform } from './Platform';
+import type { AccelerometerSample, Platform } from './Platform';
 
 interface WebPlatformEvents {
     readonly show: void;
@@ -199,6 +199,22 @@ export class WebPlatform implements Platform {
 
     vibrate(_type: 'light' | 'medium' | 'heavy'): void {
         // 浏览器预览不模拟设备振动。
+    }
+
+    supportsAccelerometer(): boolean {
+        return false;
+    }
+
+    startAccelerometer(): void {
+        // 浏览器预览使用桌面触摸/鼠标滑动模拟颠锅。
+    }
+
+    stopAccelerometer(): void {
+        // 浏览器预览没有原生加速度计。
+    }
+
+    onAccelerometerChange(_callback: (sample: AccelerometerSample) => void): () => void {
+        return () => {};
     }
 
     showShareMenu(): void {
