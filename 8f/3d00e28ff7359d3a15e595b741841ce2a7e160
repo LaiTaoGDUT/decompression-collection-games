@@ -1,0 +1,35 @@
+assets/games/catch/scripts/DesktopCleanupGame.ts
+  s_036563589f9776::t_41a269b8db939e 54,3146-3147
+  s_036563589f9776::t_df211ca3163711 514,1385-1386,2374,2382
+docs/DESKTOP_CLEANUP_PLAN.md
+  s_036563589f9776::t_de2da0a653e465 5
+  s_036563589f9776::t_df211ca3163711 6,9
+assets/games/catch/scripts/DesktopCleanupModel.ts
+  s_036563589f9776::t_41a269b8db939e 131,154-156
+  s_036563589f9776::t_f92eecf2fc5418 153
+  s_036563589f9776::t_fd23e2d3ad71aa 130,132-135,145-152,157-160,230-231,233-235,314-318,794-796,798-799,802-803,805-806
+docs/DESKTOP_CLEANUP_VISUAL_SPEC.md
+  s_036563589f9776::t_df211ca3163711 61
+docs/ARCHITECTURE.md
+  s_036563589f9776::t_df211ca3163711 573,577
+  s_036563589f9776::t_de2da0a653e465 569
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8f3d00e28ff7359d3a15e595b741841ce2a7e160",
+  "prompts": {},
+  "logical_commit_id": "8f3d00e28ff7359d3a15e595b741841ce2a7e160",
+  "sessions": {
+    "s_036563589f9776": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0337b-b2fa-7572-9c24-62d98618778e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 96,
+      "total_deletions": 138
+    }
+  }
+}
