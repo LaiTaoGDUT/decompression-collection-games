@@ -1,0 +1,464 @@
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_498e26cedcb885::t_5ef970ea5a3ab5 53,55-57,223,264,461-462,1495-1499,1501-1502
+  s_498e26cedcb885::t_0334fcb7221691 54,1500,1503-1519
+assets/games/endless-sword/scripts/core/CombatModels.ts
+  s_b0ced71ad6722d::t_9b0f633a82a194 5-12,37-39,53-55
+assets/games/catch/scripts/DesktopCleanupModel.ts
+  s_5abbb7a0cadc80::t_8fc186a1c45ef5 378-380
+  s_036563589f9776::t_b2968a277f8421 110,161-163
+  s_036563589f9776::t_3072670734475e 106,109,134-143,229-230
+  s_036563589f9776::t_c5b945e7515d89 117-118
+  s_5abbb7a0cadc80::t_63cc0514fc8781 71-73,405,409-417
+  s_5abbb7a0cadc80::t_061e70652a1ce0 70,74-75,80,313,363,381,424-425,427,443,460,474,592-598,613,622,626-627
+  s_036563589f9776::t_6ac4e6388627f6 188-189,285,288-290,294,322,518,541
+  s_036563589f9776::t_0a8e8e6b2e774d 111,164
+  s_5abbb7a0cadc80::t_f3c0c21893a6d7 369
+  s_3f201d9fad2d91::t_f7fafdd35386d7 68,311,361,493-498
+  s_036563589f9776::t_3a281d4a9a9a2c 517,540
+  s_5abbb7a0cadc80::t_9ec0d7271bda12 623-625
+  s_036563589f9776::t_eee7630ab976a2 158-160,167-168,170-171
+assets/lobby/scripts/GameCardView.ts
+  s_663bbb7db4658b::t_8a2e29a2ffd4bc 390
+  s_663bbb7db4658b::t_0ae4ecbb17bfc4 386-387
+assets/games/endless-sword/scenes/EndlessSword.scene
+  s_b0ced71ad6722d::t_a6c5b187945427 171-186
+tools/merge-endless-sword-vfx.py
+  s_5c93e574e76b71::t_27ccc99cfcb577 1-75
+assets/games/endless-sword/scripts/view/SkillView.ts.meta
+  s_b0ced71ad6722d::t_e6eb6944e631ff 5
+  s_b0ced71ad6722d::t_50d8a60db509b0 2-4
+  s_b0ced71ad6722d::t_05fade58c41125 6-8
+  s_b0ced71ad6722d::t_3e6b9a2f52f0ac 1,9
+assets/games/endless-sword/visual/vfx.meta
+  s_b0ced71ad6722d::t_0baa0cb5209aac 5
+  s_b0ced71ad6722d::t_884f495068862c 2-4
+  s_b0ced71ad6722d::t_70250c5588402d 6-8
+  s_b0ced71ad6722d::t_8062e22d3b3a68 1,9
+assets/games/endless-sword/scripts/view/SkillView.ts
+  s_b0ced71ad6722d::t_cb51211115d1bb 1-36,44-66,69-224
+  s_b0ced71ad6722d::t_9030e215bd53ca 37-43,67-68
+tools/endless-sword-core/verify.ts
+  s_b0ced71ad6722d::t_9b993b385c89bb 4-8,12,161-210,216
+docs/ENDLESS_SWORD_PLAN.md
+  s_b0ced71ad6722d::t_67f3cc82ef2960 246
+  s_b0ced71ad6722d::t_2c8a3f7ffc67c8 14,245
+tools/generate-desktop-cleanup-hit-polygons.py
+  s_036563589f9776::t_0957ca2c10fb96 232,238,328
+  s_036563589f9776::t_732839e7539dab 1-20,22-231,233-237,239-327,329-335
+  s_036563589f9776::t_c210801bbdf280 21
+assets/services/feedback/FeedbackService.ts
+  s_036563589f9776::t_556a134b98f762 70
+docs/DESKTOP_CLEANUP_VISUAL_SPEC.md
+  s_036563589f9776::t_8452a6112bc424 29
+  s_036563589f9776::t_b8df5394cd8797 39
+  s_036563589f9776::t_98e006d6fb91c3 47
+assets/games/endless-sword/visual/vfx/vfx-atlas-v1.png.meta
+  s_b0ced71ad6722d::t_b932fc9431e04c 1-42
+assets/games/endless-sword/scripts/systems/CollisionSystem.ts
+  s_b0ced71ad6722d::t_0c36827abe6cbf 10,27,33-39,55-83,166,191-201,203-205
+assets/games/catch/configs/gameplay.json
+  s_036563589f9776::t_2af9d850dd150d 10
+assets/games/endless-sword/scripts/systems/ProjectileSystem.ts
+  s_b0ced71ad6722d::t_dd5e014d7b0688 2-6,36,44-45,59-60,125-126,140-141,148-150,154-162
+assets/games/endless-sword/visual/projectiles/projectiles-atlas-v1.png.meta
+  s_b0ced71ad6722d::t_b932fc9431e04c 1-42
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_498e26cedcb885::t_c5032f6a4eb590 367,478-479,1488
+  s_498e26cedcb885::t_ca60e6b655536d 1976,2238,2251-2254,2256-2258,2260-2261
+  s_498e26cedcb885::t_41c9121cfc8ee3 38-39,41-42,102,356
+  s_498e26cedcb885::t_0334fcb7221691 40,2250,2255,2259,2262-2279
+assets/shared/ui/RewardedVideoIcon.ts
+  s_498e26cedcb885::t_0334fcb7221691 4,64-108
+  s_498e26cedcb885::t_8dbe94bcde0c1c 1-3,5-63,109
+assets/games/catch/scripts/DesktopCleanupGame.ts
+  s_5abbb7a0cadc80::t_6cebe00fed4587 1639-1640
+  s_5abbb7a0cadc80::t_30342b24616845 1179-1183,1203-1207,1209-1210,1212-1214,1216-1218,1221,1241-1243,1251-1254
+  s_13804ed8aac515::t_0bd5a7e35bdc79 687,707-713,726-727,729-730
+  s_3f201d9fad2d91::t_f214e535be8806 546,644,2531
+  s_036563589f9776::t_fe4eefe200a362 182,314
+  s_3f201d9fad2d91::t_6d08bfebb1f85a 2077,2079,2103,2120,2201
+  s_5abbb7a0cadc80::t_c9c770be182004 564-565
+  s_5abbb7a0cadc80::t_b5fab40eb725fa 468-469,1153-1163,1165-1178,1184-1187,1189-1193,1202,1211,1215,1219-1220,1222-1234,1236,1238-1239,1256,1377,1379,1383-1386,1461-1463,1560,1868-1887,1902,1904-1906,1908-1913
+  s_5abbb7a0cadc80::t_9706eca6a28adf 1333-1339
+  s_036563589f9776::t_840bcfaf6c3e0a 315-327,329-330,669
+  s_5abbb7a0cadc80::t_60c7c0c4e08c31 1716-1717,1734,1738,1832-1833,1837-1838,1843-1845,1848-1849,1852
+  s_5abbb7a0cadc80::t_c1d6f5630daef0 2457-2461
+  s_5abbb7a0cadc80::t_feed775dc11823 1895,1899,1901,1916
+  s_5abbb7a0cadc80::t_f0b884ebd93bc0 1708,1745,1755,1858-1859,1922-1924,1926-1927
+  s_036563589f9776::t_682b24b336fa99 486
+  s_3f201d9fad2d91::t_2f22324cc2a497 1808
+  s_036563589f9776::t_a9a1cf8ba4d29c 2475-2489,2491,2496-2501,2503
+  s_13804ed8aac515::t_5e2123d03799e6 2663
+  s_3f201d9fad2d91::t_8308439c5fc01e 1058,1683
+  s_5abbb7a0cadc80::t_bd437957649630 1646
+  s_13804ed8aac515::t_f853b672dae9b8 819,1465,1654,2473,2879,2885-2887,2912,2939-2940,2998-3002
+  s_3f201d9fad2d91::t_434fdfa90ce9e5 6-7,2507,2511-2516
+  s_3f201d9fad2d91::t_0443aa9bbcfe6e 1756
+  s_5abbb7a0cadc80::t_bae9958c8b03dd 1240,1244-1250,1255
+  s_036563589f9776::t_65136263870e60 166,173-177
+  s_5abbb7a0cadc80::t_4b1adc0e28fbfc 1406-1408,1410-1417,1419-1426,1431-1438,1442-1456
+  s_5abbb7a0cadc80::t_588c234a60c04a 1774
+  s_5abbb7a0cadc80::t_4184cf7b915bba 1625
+  s_5abbb7a0cadc80::t_b7e3c5086b5e14 1267-1271,1273-1274,1289,1291,1294-1296,1305
+  s_5abbb7a0cadc80::t_cf4e8d02f7d7cb 1376,1380-1382,1387-1388
+  s_5abbb7a0cadc80::t_4f8803fa5fb2a3 164,408-412,466
+  s_3f201d9fad2d91::t_aaad41955a9107 1057,1068,2249
+  s_3f201d9fad2d91::t_f3f9f3881de35f 1743,1790-1792,1794-1797,1800,1802,1805-1807,1825-1826,1855-1856,1918-1919,1928-1929,1986-1989
+  s_13804ed8aac515::t_90390b9a033701 2916-2919
+  s_445d90f339ebf0::t_9a06e5cd5631e3 2402-2403,2405-2427
+  s_036563589f9776::t_1b4781f185a48f 161-163,167-172,178-179,181,313
+  s_5abbb7a0cadc80::t_b89020bcd39835 1518,1561
+  s_445d90f339ebf0::t_01624936c83351 2358,2361-2377
+  s_036563589f9776::t_37031df90d9ab0 2492-2495
+  s_3f201d9fad2d91::t_94f669a608cd6e 1684-1686,1697-1699,1759,1761-1762,1775-1777
+  s_036563589f9776::t_bcbb6171e21ac6 331
+  s_3f201d9fad2d91::t_adc9de1fcae594 1707
+  s_498e26cedcb885::t_f6ea77ba23def6 2690,2881,2905-2908,2910,2914-2915
+  s_498e26cedcb885::t_0334fcb7221691 44,1670,2909,2913,2920-2931,2933-2936
+  s_5abbb7a0cadc80::t_de9bbd305453ff 1667,1921,1943-1945,1951-1952,1957-1961,1968-1973
+  s_5abbb7a0cadc80::t_e3bf8eefd55282 1555-1558
+  s_5abbb7a0cadc80::t_021fc815585572 1519-1522,2534
+  s_036563589f9776::t_65753156bafb36 1391-1395,1397,1405,1409
+  s_13804ed8aac515::t_7af264cbdf66ec 120-124
+  s_984e50e6b4d78e::t_07ce3569ca060e 475-481
+  s_3f201d9fad2d91::t_723d0232e08f05 3160-3161
+  s_3f201d9fad2d91::t_b51a21214da093 1687-1696,1700-1706,1718-1733,1735-1737,1739-1742,1744,1746,1748-1754,1760,1763,1778-1786,1789,1793,1798,1801,1803-1804,1821,1827-1831,1834-1836,1839-1840,1850-1851,1853,1857,1861,1920
+  s_036563589f9776::t_b2968a277f8421 3057-3058
+  s_3f201d9fad2d91::t_3039b2e6755fe8 1059,1061-1062,1064-1067,1069
+  s_13804ed8aac515::t_706c536355fc4c 2080
+  s_5abbb7a0cadc80::t_fe4892aa457820 2526-2528,2530,2533
+  s_13804ed8aac515::t_9f1b6faf425114 580,2602,2651,2674-2677,2903-2904,2911,2932
+  s_5abbb7a0cadc80::t_9ee1fd274d11bd 470
+  s_445d90f339ebf0::t_a3ffc30e3ab05a 1323-1331
+  s_445d90f339ebf0::t_1f8e717e4e8093 2434-2438
+  s_3f201d9fad2d91::t_35200cada4e34e 2298-2299
+  s_13804ed8aac515::t_51359274f3e9ee 126,714-725,963,967-972,2637
+  s_13804ed8aac515::t_c641c67b90405f 2662
+  s_13804ed8aac515::t_24c541b2909ae4 2664-2668,2670-2671
+  s_3f201d9fad2d91::t_b86a9859c33a2e 392-394,396-401
+  s_445d90f339ebf0::t_38a317fd603c13 1264-1266,1282
+  s_3f201d9fad2d91::t_093e0d541b24d4 1671-1682
+  s_5abbb7a0cadc80::t_a351310355fa6f 1551-1554
+  s_5abbb7a0cadc80::t_f977af19f9831a 1418,1427-1430
+  s_5abbb7a0cadc80::t_9d2e5439862434 1564-1566
+  s_13804ed8aac515::t_35664a606a3a67 180
+  s_5abbb7a0cadc80::t_5c394f0dbe8f80 402-404,464-465
+  s_036563589f9776::t_e4d233bae7ba90 387-389,515,548,649,815
+  s_5abbb7a0cadc80::t_136ba455468e27 1948-1950,1953-1956
+  s_3f201d9fad2d91::t_0289f3edd16c00 467,3157-3158,3165
+  s_036563589f9776::t_6d48071ba69f63 1286
+  s_036563589f9776::t_1de05a4dd01dd9 2284-2285,2289-2291,2293,2300-2301,2304-2313,2322,2333,2344,2346-2347,2349-2350,2355-2357,2359,2378-2391,2400,2432-2433,2440-2444,2446,2450,2469
+  s_445d90f339ebf0::t_d4bb67f7907ddb 2351-2354,2392-2399
+  s_036563589f9776::t_d433a48063c6ac 183
+  s_5abbb7a0cadc80::t_263a139a6b762f 1892-1894
+  s_498e26cedcb885::t_8aca4a85dbe498 559-560
+  s_5abbb7a0cadc80::t_ec1174f3d2220d 1641-1645,1648-1653,1903,1907,1914-1915
+  s_445d90f339ebf0::t_77963bddeb9540 2360
+  s_5abbb7a0cadc80::t_41e332ea5dd5d9 566
+  s_5abbb7a0cadc80::t_8b3003ff7fe49a 1237,1862-1865,1896-1898,1900
+  s_5abbb7a0cadc80::t_543fa884809455 1930-1934,1942,1984-1985
+  s_5abbb7a0cadc80::t_f2a9053d7b875b 80,1585,1587-1588,1602,1609,1611-1612,1614-1615,1767-1773
+  s_3f201d9fad2d91::t_1749779fb2cfc5 385-386,390-391
+  s_3f201d9fad2d91::t_79ed198a219c98 2282
+  s_445d90f339ebf0::t_8af183f086aed8 2348
+  s_13804ed8aac515::t_3fec3f57a0ebed 455,557-558,1322,2897,2941-2995,2997,3162-3163
+  s_5abbb7a0cadc80::t_4f0b9fcdb9dd89 809-813,3079-3080
+  s_498e26cedcb885::t_d09327c3baa731 43,45-47,376,471,492
+  s_036563589f9776::t_df84e6c8f2f2ae 184-312
+  s_5abbb7a0cadc80::t_c649fa60f6686d 1458-1459,1467-1476,1479-1481,1483-1486,1488,1764-1766,1935-1941,1947
+  s_036563589f9776::t_bf259c93088866 2490
+  s_5abbb7a0cadc80::t_a0cb3796f2f476 3072,3078,3081-3082
+  s_5abbb7a0cadc80::t_6ae602331622db 1559,1629,1974-1983
+  s_13804ed8aac515::t_15ee0ba6f4757b 91-94,108-111,114-119,125
+  s_5abbb7a0cadc80::t_504d47ea1b79f0 434,759,804,808,814,816-818
+  s_5abbb7a0cadc80::t_e6985e0d77bd6d 2321,2325-2332,2334-2338,2340
+  s_5abbb7a0cadc80::t_806188da4b6fc3 2283,2292,2297,2316-2320,2343
+  s_5abbb7a0cadc80::t_11bb31fb3573dd 1235,1860,1925
+  s_036563589f9776::t_da2342b9c0f712 2468,2504,2509-2510,2522
+  s_5abbb7a0cadc80::t_72f073a771856e 1544,1547-1550,1568,1581,1583-1584,1586,1591-1601,1603-1608,1610,1613,1616-1618,1620-1624,1627,1630-1638
+  s_036563589f9776::t_fe83c65d3099e8 2561
+  s_5abbb7a0cadc80::t_cded7412ab8cc3 1525
+  s_445d90f339ebf0::t_14874c4ba4f3da 1275-1279,1283-1285,1332
+  s_5abbb7a0cadc80::t_ca5f115de06bda 1164,1188,1272
+  s_5abbb7a0cadc80::t_369bb9a4218fa4 1208,1280-1281,1287-1288,1290,1293,1378,1545-1546
+  s_5abbb7a0cadc80::t_1202a1ff723f67 413-414,441,1194-1201,1439-1441,1477-1478,1482
+  s_5abbb7a0cadc80::t_cc6b6ca1bbfa55 440,547,645,757-758
+  s_5abbb7a0cadc80::t_dc28dd46613b1c 1535-1540,1567,1569-1570,1709-1713,1866-1867,1888-1891,1917,1962-1967
+  h_293365c3a5ebee 2078
+  s_036563589f9776::t_3072670734475e 1799,3045
+  s_5abbb7a0cadc80::t_88de0cf10b39f7 1531-1534
+  s_5abbb7a0cadc80::t_dcff41619c8e50 1460,1464,1715
+  s_3f201d9fad2d91::t_e2403f39704012 395
+  s_5abbb7a0cadc80::t_a3e46acc11a2bd 545,643
+  s_5abbb7a0cadc80::t_9f96529439d914 1946,2532
+  s_036563589f9776::t_600a7dc99b71e2 2339
+  s_13804ed8aac515::t_66e4786d62ef77 2605-2610,2613-2636,2638-2650,2653-2661,2669,2678,2685-2686,2688,2694
+  s_036563589f9776::t_0ee61d921a6cac 160
+  s_984e50e6b4d78e::t_9f01718696b675 474
+  s_13804ed8aac515::t_c2991224e6c949 820
+  s_5abbb7a0cadc80::t_5a83c12d08766b 1647
+  s_13804ed8aac515::t_100b5635828e13 1655
+  s_13804ed8aac515::t_5154913975438c 3003
+  s_13804ed8aac515::t_7ba7acc57c712d 165,1466,2474
+docs/DESKTOP_CLEANUP_PLAN.md
+  s_036563589f9776::t_b8df5394cd8797 6
+  s_036563589f9776::t_3a281d4a9a9a2c 4
+  s_036563589f9776::t_7ab6209e8d645e 3
+  s_3f201d9fad2d91::t_05c5c59a80813b 9
+tools/normalize-boss-sprite-sheet.py
+  s_969fa35bce4b8f::t_5c84eadd4dfa46 26-28,302,337,342,346,354,376
+  s_969fa35bce4b8f::t_81ee5d115c88d8 14-15,149-158,160-177,180-182,185,187-190,192-202,204-222,226-255,257-280,290-301,303-306,317,320-331,333-336,338-339,370-375,377-379
+  s_969fa35bce4b8f::t_1ce6172c46d23e 159,223-225,281-289
+  s_969fa35bce4b8f::t_4c9bc30d9e00fc 307-316,318-319,332
+  s_969fa35bce4b8f::t_540deeae1dc85b 340-341,343-345,347-353,355-358
+  s_969fa35bce4b8f::t_64c2dea71cd1e0 1-13,16-25,30-148,178-179,183-184,186,191,203,256,359-369,380-436
+  s_969fa35bce4b8f::t_854277eb6479a2 29
+tools/split-endless-sword-vfx.py
+  s_5c93e574e76b71::t_80037d18bcec39 163-164,167,169,187-188
+  s_5c93e574e76b71::t_296c65e6acfa58 1-3,10-14,16-23,28-44,46-58,279-291,295,313-316,330-356
+  s_5c93e574e76b71::t_1a3e2352595cc1 4-9,15,24-27,45,59-86,88-121,123-156,158-159,189-196,199-215,220-226,228-230,233-278,292-294,296-297,304-305,307-311,317-325,328-329
+  s_5c93e574e76b71::t_faf71acad53a25 197,216-219,231-232,326
+  s_5c93e574e76b71::t_22d5cf01275641 160-162,165-166,168,170-186,198,227,298-303,327
+  s_5c93e574e76b71::t_39a5d2b23f0b06 87,122,157,306,312
+assets/games/endless-sword/scripts/view/WorldBackground.ts
+  s_b0ced71ad6722d::t_60b451abb3f1a7 1-12,32,37,43-49,55-61,88-93,95,97,101
+assets/games/endless-sword/visual/skills/active-skill-icons-v1.png.meta
+  s_b0ced71ad6722d::t_b932fc9431e04c 1-42
+assets/games/endless-sword/visual/tiles.meta
+  s_b0ced71ad6722d::t_0baa0cb5209aac 5
+  s_b0ced71ad6722d::t_c38e500829e139 2-4
+  s_b0ced71ad6722d::t_bf561b9610bffc 6-8
+  s_b0ced71ad6722d::t_b1a5779a1abf83 1,9
+assets/games/endless-sword/scripts/systems/SkillSystem.ts.meta
+  s_b0ced71ad6722d::t_e6eb6944e631ff 5
+  s_b0ced71ad6722d::t_c69fc8b8c16fa7 2-4
+  s_b0ced71ad6722d::t_136e7e91071205 6-8
+  s_b0ced71ad6722d::t_1e6a757c4a135f 1,9
+package.json
+  s_036563589f9776::t_6cb88d9b496909 8
+docs/DESKTOP_CLEANUP_AUDIO_PROMPTS.md
+  s_3f201d9fad2d91::t_f5bfba40dd9a73 279,295
+  s_036563589f9776::t_3072670734475e 306,324
+  s_3f201d9fad2d91::t_ad7ea6be643b20 167
+assets/games/endless-sword/scripts/view/ProjectileView.ts
+  s_b0ced71ad6722d::t_9030e215bd53ca 43-50,63-64
+  s_b0ced71ad6722d::t_6e4d4a0ec3affb 1-17,22,24,27,30-42,51-52,56,58,62,65-66,72-76,79-81,84,104,109-117,133-137,140,142,152-176,179-183,199-201
+assets/games/endless-sword/scripts/config/SkillConfig.ts.meta
+  s_b0ced71ad6722d::t_e6eb6944e631ff 5
+assets/games/endless-sword/scripts/EndlessSwordGame.ts
+  s_b0ced71ad6722d::t_c6c082bd386f38 150
+  s_b0ced71ad6722d::t_049a9f3c912189 368-371,385-390
+  s_b0ced71ad6722d::t_62929705808347 9-12,14,16,28-32,38,45,53
+  s_b0ced71ad6722d::t_c279fe1600be3d 304-307,311,313,345-348
+  s_b0ced71ad6722d::t_90efb84f577059 423,425-448,450
+  s_b0ced71ad6722d::t_17466796d953ff 560,600-601,617-629
+  s_b0ced71ad6722d::t_a376c2ab667c62 817-820,829
+  s_b0ced71ad6722d::t_13560d7cd38dd2 71,92-104,113,122,131-133
+  s_b0ced71ad6722d::t_0ce215a18e0005 702-714
+  s_b0ced71ad6722d::t_36a826eedf700f 517-518,523-559
+  s_b0ced71ad6722d::t_08d721f91080ef 231-232,237,248-251,256,264-271
+  s_b0ced71ad6722d::t_b4ccaab8eebf48 852-863
+  s_b0ced71ad6722d::t_fbd1e379debe79 457,461
+  s_b0ced71ad6722d::t_e2c4453b61b806 751-764
+  s_b0ced71ad6722d::t_bffef93f68849a 301-303
+  s_b0ced71ad6722d::t_7c833a3a343f65 424
+  s_b0ced71ad6722d::t_d92c60d7f627a0 516
+  s_b0ced71ad6722d::t_193df655ed5d26 561
+  s_b0ced71ad6722d::t_3c9c99bcd949e3 300
+tools/endless-sword-core/tsconfig.json
+  s_b0ced71ad6722d::t_9a4856f73dcccf 15,23
+assets/games/catch/scenes/DesktopCleanup.scene
+  s_984e50e6b4d78e::t_07ce3569ca060e 125,177
+  s_984e50e6b4d78e::t_84b36e12243f10 313
+assets/resources/configs/games.json
+  h_293365c3a5ebee 30,76-77
+assets/games/endless-sword/scripts/config/SkillConfig.ts
+  s_b0ced71ad6722d::t_75189c9a25000d 1-234
+assets/lobby/prefabs/cards/GameCard.prefab
+  s_663bbb7db4658b::t_0ae4ecbb17bfc4 320-321
+assets/games/endless-sword/visual/tiles/endless-sword-ground-v1.png.meta
+  s_b0ced71ad6722d::t_b932fc9431e04c 2-3,5,7-8,10-41
+assets/games/endless-sword/visual/projectiles.meta
+  s_b0ced71ad6722d::t_0baa0cb5209aac 5
+docs/ARCHITECTURE.md
+  s_036563589f9776::t_98e006d6fb91c3 559
+  s_036563589f9776::t_7ab6209e8d645e 557
+  s_5abbb7a0cadc80::t_87e8779e907d01 563
+  s_3f201d9fad2d91::t_f5bfba40dd9a73 569
+  h_293365c3a5ebee 409
+  s_036563589f9776::t_69beb65357f3b9 561
+tools/normalize-endless-sword-utility-sheets.py
+  s_cfa1bbb15f389e::t_c5dce8875048ea 329-330
+  s_cfa1bbb15f389e::t_81cb0f162b34b0 202-231,235-238,323-326,459-460
+  s_cfa1bbb15f389e::t_fff70dee43afbe 413,425,437
+  s_cfa1bbb15f389e::t_4ceab30ce323ae 457-458
+  s_cfa1bbb15f389e::t_11be72ede29944 13,38,60-88,90-162
+  s_cfa1bbb15f389e::t_0c11ea9f0c6751 45,89,201,302
+  s_cfa1bbb15f389e::t_25a204db4f5bd3 1-12,14-37,39-44,46-59,163-200,232-234,239-301,303-322,327-328,331-343,345-366,368-378,380-412,414-424,426-436,438-456,461-467
+  s_cfa1bbb15f389e::t_c462b9232e88a7 344,367,379
+assets/games/endless-sword/scripts/systems/SkillSystem.ts
+  s_b0ced71ad6722d::t_0be99e58772dac 9
+  s_b0ced71ad6722d::t_2ff9e2ba4f26d2 2-8,10-20,23-29,32-100,102-131,133,136-137,140-142,144-156,160-179,182-235,237-350,352-366,368-372,376-378,382-388,393-398,400-401,403-406,408
+assets/games/catch/visual/ui/desktop-cleanup-popup-button-coral-v1.png.meta
+  s_13804ed8aac515::t_ac5547083dabec 1-42
+assets/games/catch/visual/ui/desktop-cleanup-popup-button-paper-v1.png.meta
+  s_13804ed8aac515::t_0d84d9af71ec4f 1-42
+assets/games/catch/visual/ui/desktop-cleanup-popup-button-teal-v1.png.meta
+  s_13804ed8aac515::t_88aaa85cc02b8b 1-42
+assets/games/catch/visual/ui/desktop-cleanup-popup-panel-v1.png.meta
+  s_13804ed8aac515::t_603fdddb3f2ad9 1-42
+assets/games/endless-sword/visual/bosses.meta
+  s_969fa35bce4b8f::t_725edd233a8f98 5
+assets/resources/ui.meta
+  s_246d7357dd0f36::t_be7a06b6e285a6 1-9
+assets/resources/ui/rewarded-video-icon-v1.png.meta
+  s_246d7357dd0f36::t_3e49ca5209ef81 2-3,5-35,37-40
+assets/shared/ui/RewardedVideoIcon.ts.meta
+  s_246d7357dd0f36::t_608bcbd4f5c6c2 1-9
+assets/games/endless-sword/visual/skills.meta
+  h_293365c3a5ebee 5
+settings/v2/packages/builder.json
+  h_293365c3a5ebee 46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7a856e1edbc4104054a6f95b47dbec6d58fbc1d0",
+  "prompts": {},
+  "logical_commit_id": "7a856e1edbc4104054a6f95b47dbec6d58fbc1d0",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_036563589f9776": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0337b-b2fa-7572-9c24-62d98618778e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 862,
+      "total_deletions": 347
+    },
+    "s_13804ed8aac515": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0339c-4558-7c70-8be2-f94a22b2072d",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 235,
+      "total_deletions": 74
+    },
+    "s_246d7357dd0f36": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03218-1eb3-7321-aef8-69e2429ea376",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_3f201d9fad2d91": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a031ed-190e-7730-b5f7-0f36a44a467b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 604,
+      "total_deletions": 690
+    },
+    "s_445d90f339ebf0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a033bf-fa6a-7ba3-8d37-e3bdedcac943",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 90,
+      "total_deletions": 7
+    },
+    "s_498e26cedcb885": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0320e-f766-7813-b51e-14e4f9911256",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 260,
+      "total_deletions": 37
+    },
+    "s_5abbb7a0cadc80": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a032ac-8db8-7841-b8a6-4d8cb4444843",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 986,
+      "total_deletions": 441
+    },
+    "s_5c93e574e76b71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a032bd-7947-7591-8535-25889359da4f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 550,
+      "total_deletions": 90
+    },
+    "s_663bbb7db4658b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0337b-5735-7451-b163-6727e8ac978a",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 8,
+      "total_deletions": 7
+    },
+    "s_969fa35bce4b8f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03292-6979-7790-9ad1-0ca2dddf5b04",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 527,
+      "total_deletions": 301
+    },
+    "s_984e50e6b4d78e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a033cf-cc19-7852-8072-4226964b717b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 12,
+      "total_deletions": 12
+    },
+    "s_b0ced71ad6722d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03386-964f-7a42-a6be-a6970584ec21",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 1675,
+      "total_deletions": 146
+    },
+    "s_cfa1bbb15f389e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03342-4035-7e63-ae52-154e1289b53f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 499,
+      "total_deletions": 13
+    }
+  }
+}
