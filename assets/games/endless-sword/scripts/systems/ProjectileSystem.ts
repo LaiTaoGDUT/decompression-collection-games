@@ -1,5 +1,9 @@
 import { ENDLESS_SWORD_CONFIG } from '../config/GameConfig';
-import type { ProjectileModel, ProjectileOwner } from '../core/CombatModels';
+import type {
+    ProjectileModel,
+    ProjectileOwner,
+    ProjectileVisual,
+} from '../core/CombatModels';
 import { ObjectPool, type ObjectPoolStats } from '../core/ObjectPool';
 
 /** 玩家与敌方投射物共用固定容量基础池；T1.6 技能系统直接复用 spawn。 */
@@ -29,6 +33,7 @@ export class ProjectileSystem {
         width: number = ENDLESS_SWORD_CONFIG.combat.enemyArrowWidth,
         height: number = ENDLESS_SWORD_CONFIG.combat.enemyArrowHeight,
         remainingHits: number = 1,
+        options: ProjectileSpawnOptions = {},
     ): ProjectileModel | undefined {
         const projectile = this.pool.acquire();
         if (!projectile) {
@@ -36,6 +41,8 @@ export class ProjectileSystem {
         }
         projectile.generation += 1;
         projectile.owner = owner;
+        projectile.visual = options.visual ?? (owner === 'enemy' ? 'enemy-arrow' : 'sword-blue');
+        projectile.skillId = options.skillId ?? '';
         projectile.active = true;
         projectile.expired = false;
         projectile.x = x;
@@ -49,6 +56,8 @@ export class ProjectileSystem {
         projectile.height = height;
         projectile.remainingHits = remainingHits;
         projectile.lifetimeRemaining = lifetimeSeconds;
+        projectile.impactRadius = options.impactRadius ?? 0;
+        projectile.impactDamage = options.impactDamage ?? 0;
         return projectile;
     }
 
@@ -113,6 +122,8 @@ function createProjectileModel(poolIndex: number): ProjectileModel {
         poolIndex,
         generation: 0,
         owner: 'enemy',
+        visual: 'enemy-arrow',
+        skillId: '',
         active: false,
         expired: false,
         x: 0,
@@ -126,13 +137,27 @@ function createProjectileModel(poolIndex: number): ProjectileModel {
         height: 0,
         remainingHits: 0,
         lifetimeRemaining: 0,
+        impactRadius: 0,
+        impactDamage: 0,
     };
 }
 
 function resetProjectileModel(projectile: ProjectileModel): void {
     projectile.active = false;
     projectile.expired = false;
+    projectile.owner = 'enemy';
+    projectile.visual = 'enemy-arrow';
+    projectile.skillId = '';
     projectile.damage = 0;
     projectile.remainingHits = 0;
     projectile.lifetimeRemaining = 0;
+    projectile.impactRadius = 0;
+    projectile.impactDamage = 0;
+}
+
+export interface ProjectileSpawnOptions {
+    readonly visual?: ProjectileVisual;
+    readonly skillId?: string;
+    readonly impactRadius?: number;
+    readonly impactDamage?: number;
 }

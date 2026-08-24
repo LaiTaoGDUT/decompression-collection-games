@@ -1,9 +1,15 @@
 import { ObjectPool } from '../../assets/games/endless-sword/scripts/core/ObjectPool';
 import { RunModel } from '../../assets/games/endless-sword/scripts/core/RunModel';
 import { SpatialHashGrid } from '../../assets/games/endless-sword/scripts/core/SpatialHashGrid';
+import {
+    ACTIVE_SKILL_IDS,
+    getActiveSkillConfig,
+    getSkillLevelConfig,
+} from '../../assets/games/endless-sword/scripts/config/SkillConfig';
 import { CollisionSystem } from '../../assets/games/endless-sword/scripts/systems/CollisionSystem';
 import { EnemySystem } from '../../assets/games/endless-sword/scripts/systems/EnemySystem';
 import { ProjectileSystem } from '../../assets/games/endless-sword/scripts/systems/ProjectileSystem';
+import { SkillSystem } from '../../assets/games/endless-sword/scripts/systems/SkillSystem';
 import { XpOrbSystem } from '../../assets/games/endless-sword/scripts/systems/XpOrbSystem';
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -152,11 +158,62 @@ function verifyPlayerDamageDoesNotDisplace(): void {
         'Enemy projectile damage must never displace the player.');
 }
 
+function verifyP0SkillConfigAndExecution(): void {
+    assert(ACTIVE_SKILL_IDS.length === 4, 'P0 must expose exactly four active skills.');
+    assert(getActiveSkillConfig('fly-sword').levels.length === 5,
+        'Fly sword must keep five configured levels.');
+    assert(getSkillLevelConfig('fly-sword', 1).damage === 24,
+        'Fly sword Lv1 damage must come from SkillConfig.');
+    assert(getSkillLevelConfig('sword-array', 1).orbitRadius === 130,
+        'Sword array Lv1 radius must come from SkillConfig.');
+    assert(getSkillLevelConfig('thunder-talisman', 1).cooldownSeconds === 1.4,
+        'Thunder talisman Lv1 cooldown must come from SkillConfig.');
+    assert(getSkillLevelConfig('fire-art', 1).explosionRadius === 90,
+        'Fire art Lv1 explosion radius must come from SkillConfig.');
+
+    const run = new RunModel();
+    run.reset(7);
+    const enemies = new EnemySystem(4);
+    const projectiles = new ProjectileSystem(8);
+    const collision = new CollisionSystem();
+    const skills = new SkillSystem();
+    assert(enemies.spawn('demon-rat', 120, 0), 'Skill execution setup must spawn an enemy.');
+    skills.step(
+        1 / 30,
+        run.player,
+        enemies,
+        projectiles,
+        collision,
+        () => undefined,
+        () => undefined,
+    );
+    assert(projectiles.stats.active === 1,
+        'Fly sword starter skill must acquire one fixed projectile slot.');
+
+    skills.setSkillLevel('sword-array', 1);
+    skills.setSkillLevel('thunder-talisman', 1);
+    skills.setSkillLevel('fire-art', 1);
+    skills.step(
+        1 / 30,
+        run.player,
+        enemies,
+        projectiles,
+        collision,
+        () => undefined,
+        () => undefined,
+    );
+    assert(skills.getActiveSkillIds().length === 4,
+        'QA/upgrade skill grants must activate all four P0 skills.');
+    assert(skills.getOrbitBlades().some((blade) => blade.active),
+        'Sword array must expose active orbit blade render state.');
+}
+
 verifySpatialHashCellBoundaries();
 verifyFixedObjectPool();
 verifyCollisionSettlementAndRecycling();
 verifyCrossbowAndXpPools();
 verifyPlayerDamageDoesNotDisplace();
+verifyP0SkillConfigAndExecution();
 
 // Keep output stable for CI and agent verification.
 console.log('endless-sword core verification passed');

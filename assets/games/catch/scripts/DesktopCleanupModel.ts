@@ -65,13 +65,19 @@ export interface DesktopCleanupSnapshot {
     readonly boostAdAttempted: boolean;
     readonly continueAdAttempted: boolean;
     readonly continued: boolean;
+    readonly continuedWithTime: boolean;
     readonly layoutRevision: number;
-    readonly pendingSelection?: DesktopCleanupPendingSelection;
+    /**
+     * Only triples waiting for their merge commit live here. Ordinary pickup
+     * animation ownership belongs to the view and never gates logical slot
+     * occupancy, so a lost visual cannot leave a model reservation behind.
+     */
+    readonly pendingSelections: readonly DesktopCleanupPendingSelection[];
 }
 
 export interface DesktopCleanupActionResult {
     readonly accepted: boolean;
-    readonly reason?: 'state' | 'missing' | 'empty' | 'needs-ad' | 'unavailable' | 'busy' | 'stale';
+    readonly reason?: 'state' | 'missing' | 'empty' | 'needs-ad' | 'unavailable' | 'busy' | 'full' | 'stale';
     readonly triple?: DesktopCleanupItemType;
     readonly selection?: DesktopCleanupPendingSelection;
     readonly phase: DesktopCleanupPhase;
@@ -97,44 +103,19 @@ interface MutableSlot {
 const COMMON_TYPES = DESKTOP_CLEANUP_ITEM_TYPES.slice(0, 10);
 const RARE_TYPES = DESKTOP_CLEANUP_ITEM_TYPES.slice(10, 13);
 const TARGET_TYPE: DesktopCleanupItemType = 'lucky-badge';
-const LAYER_COUNT = 12;
+const LAYER_COUNT = 24;
 const GROUPS_PER_LAYER = 2;
 const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
-const STACK_X_LIMIT = 0.23;
-const STACK_Y_LIMIT = 0.23;
-export const DESKTOP_CLEANUP_RUMMAGE_POSITION_LIMIT = 0.38;
-export const DESKTOP_CLEANUP_RUMMAGE_LAYER_WEIGHTS = Object.freeze([1, 0.58, 0.30, 0.14] as const);
-const STACK_ANCHORS: readonly Readonly<{ x: number; y: number }>[] = Object.freeze([
-    Object.freeze({ x: -0.17, y: 0.13 }),
-    Object.freeze({ x: 0, y: 0.19 }),
-    Object.freeze({ x: 0.17, y: 0.12 }),
-    Object.freeze({ x: -0.18, y: -0.09 }),
-    Object.freeze({ x: 0, y: -0.18 }),
-    Object.freeze({ x: 0.18, y: -0.08 }),
-]);
+const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;
+const STACK_X_LIMIT = 0.36;
+const STACK_Y_LIMIT = 0.36;
 
 function clamp(value: number, minimum: number, maximum: number): number {
     return Math.min(maximum, Math.max(minimum, value));
 }
 
-function hashText(value: string): number {
-    let hash = 2166136261;
-    for (let index = 0; index < value.length; index += 1) {
-        hash ^= value.charCodeAt(index);
-        hash = Math.imul(hash, 16777619);
-    }
-    return hash >>> 0;
-}
-
-function createRandom(seed: number): () => number {
-    let state = seed >>> 0;
-    return (): number => {
-        state += 0x6D2B79F5;
-        let value = state;
-        value = Math.imul(value ^ (value >>> 15), value | 1);
-        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-    };
+function createRandom(): () => number {
+    return (): number => Math.random();
 }
 
 function shuffle<T>(items: readonly T[], random: () => number): T[] {
@@ -150,8 +131,16 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
 
 function tripletCatalog(): DesktopCleanupItemType[] {
     const catalog: DesktopCleanupItemType[] = [];
-    COMMON_TYPES.forEach((type) => catalog.push(type, type));
-    RARE_TYPES.forEach((type) => catalog.push(type));
+    // Double the original ordinary-item groups while keeping the three
+    // lucky badges as the single target triplet. The extra ordinary group
+    // keeps the 24-layer layout at exactly two complete triplets per layer.
+    COMMON_TYPES.forEach((type) => {
+        for (let count = 0; count < 4; count += 1) catalog.push(type);
+    });
+    RARE_TYPES.forEach((type, index) => {
+        const groupCount = index === 0 ? 3 : 2;
+        for (let count = 0; count < groupCount; count += 1) catalog.push(type);
+    });
     return catalog;
 }
 
@@ -166,15 +155,20 @@ function stackedPositions(
     const positions: { x: number; y: number; angle: number }[] = [];
     const layerCount = Math.ceil(Math.max(0, itemCount) / ITEMS_PER_LAYER);
     for (let layer = 0; layer < layerCount; layer += 1) {
-        const anchors = shuffle(STACK_ANCHORS, random);
-        const waveX = Math.sin((layer + 1) * 1.71) * 0.018;
-        const waveY = Math.cos((layer + 1) * 1.37) * 0.016;
+        // Every layer gets its own irregular cloud. There are deliberately
+        // no reusable anchors or sinusoidal waves: those create a visible
+        // ring/flower silhouette even when the item order is shuffled.
+        const layerOffsetX = (random() - 0.5) * 0.12;
+        const layerOffsetY = (random() - 0.5) * 0.12;
+        const layerSpreadX = 0.26 + random() * 0.10;
+        const layerSpreadY = 0.28 + random() * 0.08;
         const count = Math.min(ITEMS_PER_LAYER, itemCount - positions.length);
         for (let index = 0; index < count; index += 1) {
-            const anchor = anchors[index];
+            const spreadX = layerSpreadX * (0.82 + random() * 0.18);
+            const spreadY = layerSpreadY * (0.82 + random() * 0.18);
             positions.push(Object.freeze({
-                x: clamp(anchor.x + waveX + (random() - 0.5) * 0.045, -STACK_X_LIMIT, STACK_X_LIMIT),
-                y: clamp(anchor.y + waveY + (random() - 0.5) * 0.045, -STACK_Y_LIMIT, STACK_Y_LIMIT),
+                x: clamp(layerOffsetX + (random() * 2 - 1) * spreadX, -STACK_X_LIMIT, STACK_X_LIMIT),
+                y: clamp(layerOffsetY + (random() * 2 - 1) * spreadY, -STACK_Y_LIMIT, STACK_Y_LIMIT),
                 angle: Math.round(-38 + random() * 76),
             }));
         }
@@ -191,11 +185,8 @@ export function desktopCleanupDateKey(date = new Date()): string {
     return `${year}-${month}-${day}`;
 }
 
-export function generateDesktopCleanupItems(
-    dateKey: string,
-    salt = DEFAULT_DESKTOP_CLEANUP_CONFIG.dailySeedSalt,
-): readonly DesktopCleanupItemSnapshot[] {
-    const random = createRandom(hashText(`${dateKey}|${salt}`));
+export function generateDesktopCleanupItems(): readonly DesktopCleanupItemSnapshot[] {
+    const random = createRandom();
     const ordinary = shuffle(tripletCatalog(), random);
     const positions = stackedPositions(random);
     const layerGroups: DesktopCleanupItemType[][] = Array.from(
@@ -235,8 +226,8 @@ export function verifyDesktopCleanupLayout(
     items: readonly DesktopCleanupItemSnapshot[],
 ): DesktopCleanupLayoutVerification {
     const errors: string[] = [];
-    if (items.length !== LAYER_COUNT * ITEMS_PER_LAYER) {
-        errors.push(`expected 72 items, received ${items.length}`);
+    if (items.length !== TOTAL_ITEM_COUNT) {
+        errors.push(`expected ${TOTAL_ITEM_COUNT} items, received ${items.length}`);
     }
     const ids = new Set<string>();
     const positionKeys = new Set<string>();
@@ -291,20 +282,16 @@ export function verifyDesktopCleanupLayout(
 }
 
 export function runDesktopCleanupLayoutSelfCheck(
-    days = 365,
-    salt = DEFAULT_DESKTOP_CLEANUP_CONFIG.dailySeedSalt,
+    samples = 365,
 ): DesktopCleanupLayoutVerification {
     const errors: string[] = [];
-    const start = new Date(2026, 0, 1);
-    for (let index = 0; index < days; index += 1) {
-        const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index);
-        const key = desktopCleanupDateKey(date);
-        const result = verifyDesktopCleanupLayout(generateDesktopCleanupItems(key, salt));
-        if (!result.valid) result.errors.forEach((error) => errors.push(`${key}: ${error}`));
+    for (let index = 0; index < samples; index += 1) {
+        const result = verifyDesktopCleanupLayout(generateDesktopCleanupItems());
+        if (!result.valid) result.errors.forEach((error) => errors.push(`sample ${index}: ${error}`));
     }
     return Object.freeze({
         valid: errors.length === 0,
-        itemCount: days * LAYER_COUNT * ITEMS_PER_LAYER,
+        itemCount: samples * TOTAL_ITEM_COUNT,
         errors: Object.freeze(errors),
     });
 }
@@ -321,8 +308,9 @@ export class DesktopCleanupModel {
     private boostAttempted = false;
     private continueAttempted = false;
     private usedContinue = false;
+    private continuedWithTime = false;
     private pendingBoostTool?: DesktopCleanupTool;
-    private pendingSelection?: DesktopCleanupPendingSelection;
+    private readonly pendingSelections = new Map<number, DesktopCleanupPendingSelection>();
     private selectionToken = 0;
     private readonly charges: Record<DesktopCleanupTool, number>;
     private readonly initialBadgeCount = 3;
@@ -331,7 +319,7 @@ export class DesktopCleanupModel {
         readonly dateKey: string,
         readonly config: DesktopCleanupGameplayConfig = DEFAULT_DESKTOP_CLEANUP_CONFIG,
     ) {
-        const generated = generateDesktopCleanupItems(dateKey, config.dailySeedSalt);
+        const generated = generateDesktopCleanupItems();
         const verification = verifyDesktopCleanupLayout(generated);
         if (!verification.valid) {
             throw new Error(`Invalid desktop cleanup layout: ${verification.errors.join('; ')}`);
@@ -370,14 +358,15 @@ export class DesktopCleanupModel {
             boostAdAttempted: this.boostAttempted,
             continueAdAttempted: this.continueAttempted,
             continued: this.usedContinue,
+            continuedWithTime: this.continuedWithTime,
             layoutRevision: this.revision,
-            ...(this.pendingSelection ? { pendingSelection: this.pendingSelection } : {}),
+            pendingSelections: Object.freeze([...this.pendingSelections.values()]),
         });
     }
 
     tick(deltaMs: number): void {
         if (this.currentPhase !== 'playing'
-            || this.pendingSelection
+            || this.pendingSelections.size > 0
             || !Number.isFinite(deltaMs)
             || deltaMs <= 0) return;
         this.timeLeftMs = Math.max(0, this.timeLeftMs - deltaMs);
@@ -386,7 +375,10 @@ export class DesktopCleanupModel {
 
     selectItem(itemId: string): DesktopCleanupActionResult {
         if (this.currentPhase !== 'playing') return this.reject('state');
-        if (this.pendingSelection) return this.reject('busy');
+        // Pending merge items occupy their cells until the merge presentation
+        // completes, unless a new pickup explicitly releases that active merge
+        // first. Do not let a pickup overrun the tray while those cells wait.
+        if (this.slots.length >= this.config.slotCapacity) return this.reject('full');
         const item = this.items.get(itemId);
         if (!item || !item.active) return this.reject('missing');
 
@@ -410,7 +402,7 @@ export class DesktopCleanupModel {
             insertionIndex,
             ...(triple ? { triple } : {}),
         });
-        this.pendingSelection = selection;
+        if (selection.triple) this.pendingSelections.set(selection.token, selection);
         return Object.freeze({
             accepted: true,
             selection,
@@ -418,12 +410,21 @@ export class DesktopCleanupModel {
         });
     }
 
+    finalizeSelectionBatch(): DesktopCleanupActionResult {
+        if (this.currentPhase !== 'playing') return this.reject('state');
+        this.finishOrFail();
+        return Object.freeze({
+            accepted: true,
+            phase: this.currentPhase,
+        });
+    }
+
     settleSelection(token: number): DesktopCleanupActionResult {
         if (this.currentPhase !== 'playing') return this.reject('state');
-        const pending = this.pendingSelection;
-        if (!pending || pending.token !== token) return this.reject('stale');
+        const pending = this.pendingSelections.get(token);
+        if (!pending) return this.reject('stale');
 
-        this.pendingSelection = undefined;
+        this.pendingSelections.delete(token);
         if (pending.triple) {
             const ids = new Set(pending.triple.itemIds);
             this.slots = this.slots.filter((slot) => !ids.has(slot.itemId));
@@ -439,7 +440,7 @@ export class DesktopCleanupModel {
 
     useTool(tool: DesktopCleanupTool): DesktopCleanupActionResult {
         if (this.currentPhase !== 'playing') return this.reject('state');
-        if (this.pendingSelection) return this.reject('busy');
+        if (this.pendingSelections.size > 0) return this.reject('busy');
         if (this.charges[tool] <= 0) {
             return this.reject(this.boostAttempted ? 'unavailable' : 'needs-ad');
         }
@@ -456,7 +457,7 @@ export class DesktopCleanupModel {
 
     beginBoostAd(tool: DesktopCleanupTool): boolean {
         if (this.currentPhase !== 'playing'
-            || this.pendingSelection
+            || this.pendingSelections.size > 0
             || this.boostAttempted
             || this.charges[tool] > 0
             || !this.canApplyTool(tool)) {
@@ -470,7 +471,7 @@ export class DesktopCleanupModel {
     resolveBoostAd(completed: boolean): DesktopCleanupActionResult {
         const tool = this.pendingBoostTool;
         this.pendingBoostTool = undefined;
-        if (this.pendingSelection) return this.reject('busy');
+        if (this.pendingSelections.size > 0) return this.reject('busy');
         if (!completed || !tool || this.currentPhase !== 'playing') return this.reject('unavailable');
         const triple = this.applyTool(tool);
         this.finishOrFail();
@@ -489,53 +490,16 @@ export class DesktopCleanupModel {
 
     resolveContinueAd(completed: boolean): boolean {
         if (!completed || this.currentPhase !== 'failed') return false;
-        if (this.currentFailure === 'slots') this.returnRecentSlots(3);
-        this.timeLeftMs += this.config.continueSeconds * 1000;
+        if (this.currentFailure === 'slots') {
+            this.returnRecentSlots(3);
+        } else {
+            this.timeLeftMs += this.config.continueSeconds * 1000;
+            this.continuedWithTime = true;
+        }
         this.currentFailure = undefined;
         this.currentPhase = 'playing';
         this.usedContinue = true;
         return true;
-    }
-
-    commitRummage(deltaXNormalized: number, deltaYNormalized: number): boolean {
-        if (this.currentPhase !== 'playing'
-            || this.pendingSelection
-            || !Number.isFinite(deltaXNormalized)
-            || !Number.isFinite(deltaYNormalized)
-            || (deltaXNormalized === 0 && deltaYNormalized === 0)) return false;
-
-        const activeItems = [...this.items.values()].filter((item) => item.active);
-        const topLayers = [...new Set(activeItems.filter((item) => !item.free).map((item) => item.layer))]
-            .sort((left, right) => right - left)
-            .slice(0, DESKTOP_CLEANUP_RUMMAGE_LAYER_WEIGHTS.length);
-        if (activeItems.length === 0) return false;
-
-        let changed = false;
-        activeItems.forEach((item) => {
-            const depth = item.free ? 0 : topLayers.indexOf(item.layer);
-            if (depth < 0 || depth >= DESKTOP_CLEANUP_RUMMAGE_LAYER_WEIGHTS.length) return;
-            const weight = DESKTOP_CLEANUP_RUMMAGE_LAYER_WEIGHTS[depth];
-            const nextX = clamp(
-                item.x + deltaXNormalized * weight,
-                -DESKTOP_CLEANUP_RUMMAGE_POSITION_LIMIT,
-                DESKTOP_CLEANUP_RUMMAGE_POSITION_LIMIT,
-            );
-            const nextY = clamp(
-                item.y + deltaYNormalized * weight,
-                -DESKTOP_CLEANUP_RUMMAGE_POSITION_LIMIT,
-                DESKTOP_CLEANUP_RUMMAGE_POSITION_LIMIT,
-            );
-            if (nextX === item.x && nextY === item.y) return;
-            item.x = nextX;
-            item.y = nextY;
-            changed = true;
-        });
-        if (changed) this.revision += 1;
-        return changed;
-    }
-
-    rummage(deltaXNormalized = 0, deltaYNormalized = 0): boolean {
-        return this.commitRummage(deltaXNormalized, deltaYNormalized);
     }
 
     private canApplyTool(tool: DesktopCleanupTool): boolean {
@@ -550,7 +514,8 @@ export class DesktopCleanupModel {
             return undefined;
         }
         if (tool === 'shuffle') {
-            const random = createRandom(hashText(`${this.dateKey}|shuffle|${++this.revision}`));
+            this.revision += 1;
+            const random = createRandom();
             const active = shuffle([...this.items.values()].filter((item) => item.active), random);
             const positions = stackedPositions(random, active.length);
             active.forEach((item, index) => {
@@ -572,7 +537,8 @@ export class DesktopCleanupModel {
             .slice(0, maximum);
         const recentIds = new Set(recent.map((slot) => slot.itemId));
         this.slots = this.slots.filter((slot) => !recentIds.has(slot.itemId));
-        const random = createRandom(hashText(`${this.dateKey}|return|${++this.revision}`));
+        this.revision += 1;
+        const random = createRandom();
         recent.forEach((slot, index) => {
             const item = this.items.get(slot.itemId);
             if (!item) return;
@@ -623,7 +589,13 @@ export class DesktopCleanupModel {
     }
 
     private findSlotTriple(type: DesktopCleanupItemType): DesktopCleanupTripleMatch | undefined {
-        const matches = this.slots.filter((slot) => slot.type === type);
+        const pendingMatchItemIds = new Set<string>();
+        this.pendingSelections.forEach((selection) => {
+            selection.triple?.itemIds.forEach((itemId) => pendingMatchItemIds.add(itemId));
+        });
+        const matches = this.slots.filter((slot) => (
+            slot.type === type && !pendingMatchItemIds.has(slot.itemId)
+        ));
         if (matches.length < 3) return undefined;
         const itemIds: readonly [string, string, string] = Object.freeze([
             matches[0].itemId,
@@ -638,7 +610,7 @@ export class DesktopCleanupModel {
 
     private finishOrFail(): void {
         const active = [...this.items.values()].some((item) => item.active);
-        if (!active && this.slots.length === 0) {
+        if (!active && this.slots.length === 0 && this.pendingSelections.size === 0) {
             const unused = (['return', 'magnet', 'shuffle'] as DesktopCleanupTool[])
                 .filter((tool) => this.charges[tool] > 0).length;
             this.currentScore += Math.floor(this.timeLeftMs / 1000) * this.config.remainingSecondBonus;
@@ -648,7 +620,12 @@ export class DesktopCleanupModel {
             this.currentFailure = undefined;
             return;
         }
-        if (this.slots.length >= this.config.slotCapacity) this.fail('slots');
+        // A full tray is terminal only when no queued triple can still release
+        // three cells. The view calls finalizeSelectionBatch after the current
+        // pickup animation batch reaches its presentation checkpoint.
+        if (this.slots.length >= this.config.slotCapacity && this.pendingSelections.size === 0) {
+            this.fail('slots');
+        }
     }
 
     private fail(reason: DesktopCleanupFailureReason): void {

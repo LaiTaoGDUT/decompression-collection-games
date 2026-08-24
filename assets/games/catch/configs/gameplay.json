@@ -7,6 +7,5 @@
   "remainingSecondBonus": 10,
   "unusedToolBonus": 200,
   "noContinueBonus": 500,
-  "freeUsesPerTool": 1,
-  "dailySeedSalt": "desktop-cleanup-v2-compact-stack"
+  "freeUsesPerTool": 1
 }

@@ -12,6 +12,7 @@
   "files": [
     "../../assets/games/endless-sword/scripts/config/GameConfig.ts",
     "../../assets/games/endless-sword/scripts/config/EnemyConfig.ts",
+    "../../assets/games/endless-sword/scripts/config/SkillConfig.ts",
     "../../assets/games/endless-sword/scripts/core/CombatModels.ts",
     "../../assets/games/endless-sword/scripts/core/ObjectPool.ts",
     "../../assets/games/endless-sword/scripts/core/RunModel.ts",
@@ -19,6 +20,7 @@
     "../../assets/games/endless-sword/scripts/systems/CollisionSystem.ts",
     "../../assets/games/endless-sword/scripts/systems/EnemySystem.ts",
     "../../assets/games/endless-sword/scripts/systems/ProjectileSystem.ts",
+    "../../assets/games/endless-sword/scripts/systems/SkillSystem.ts",
     "../../assets/games/endless-sword/scripts/systems/XpOrbSystem.ts",
     "./verify.ts"
   ]

@@ -50,6 +50,11 @@ import type {
     StorageService,
 } from '../../../services/storage/StorageService';
 import {
+    attachRewardedVideoIcon,
+    layoutRewardedVideoIconBeforeLabel,
+    loadRewardedVideoIcon,
+} from '../../../shared/ui/RewardedVideoIcon';
+import {
     CAT_TOKEN_VISIBLE_DIAMETER_RATIO,
     FRUIT_LEVELS,
     configureFruitCatalog,
@@ -215,6 +220,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private roundSaveElapsed = 0;
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
+    private rewardedVideoIconFrame?: SpriteFrame;
 
     /** 固定种子回归入口；生产默认始终使用平台随机源。 */
     setRandomSourceForTesting(source: () => number): void {
@@ -255,6 +261,7 @@ export class WatermelonGame extends Component implements MiniGame {
                 this.loadFruitSpriteFrames(),
                 this.loadBubbleFrame(),
             ]);
+            this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
         } catch (error) {
             console.error('[WatermelonGame] Required gameplay assets failed to load.', error);
             this.destroyFruitSpriteFrames();
@@ -451,6 +458,8 @@ export class WatermelonGame extends Component implements MiniGame {
         this.prefabs = [];
         await this.releaseFruitSpriteFramesAfterDraw();
         this.destroyBubbleFrame();
+        this.rewardedVideoIconFrame?.destroy();
+        this.rewardedVideoIconFrame = undefined;
         this.context = undefined;
         this.saveData = undefined;
         this.fruitContainer = undefined;
@@ -1483,7 +1492,31 @@ export class WatermelonGame extends Component implements MiniGame {
         button.duration = 0.08;
         node.on(Button.EventType.CLICK, handler, this);
 
-        const label = this.createOverlayLabel(node, 'Text', text, 0, 0, 26);
+        const label = this.createOverlayLabel(
+            node,
+            'Text',
+            text,
+            0,
+            0,
+            26,
+        );
+        if (name === 'ContinueButton') {
+            const icon = attachRewardedVideoIcon(
+                node,
+                this.rewardedVideoIconFrame,
+                0,
+                0,
+                34,
+            );
+            layoutRewardedVideoIconBeforeLabel(
+                icon,
+                label,
+                text,
+                26,
+                34,
+                buttonWidth,
+            );
+        }
         label.color = labelColor;
     }
 

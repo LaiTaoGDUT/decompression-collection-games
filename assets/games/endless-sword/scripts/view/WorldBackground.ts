@@ -1,4 +1,15 @@
-import { Color, Graphics, Node } from 'cc';
+import {
+    Color,
+    Graphics,
+    Node,
+    Sprite,
+    SpriteFrame,
+    Texture2D,
+    UITransform,
+    Vec2,
+    Rect,
+    Size,
+} from 'cc';
 import { ENDLESS_SWORD_CONFIG } from '../config/GameConfig';
 import { SeededRandom } from '../core/SeededRandom';
 
@@ -18,22 +29,36 @@ export class WorldBackground {
     private readonly tileSize: number;
     private readonly halfGrid: number;
     private readonly tiles: Node[] = [];
+    private readonly textureFrame?: SpriteFrame;
     private centerTileX = Number.NaN;
     private centerTileY = Number.NaN;
     private worldSeed = 0;
 
-    constructor(parent: Node) {
+    constructor(parent: Node, texture?: Texture2D) {
         this.tileSize = ENDLESS_SWORD_CONFIG.world.tileSize;
         this.halfGrid = Math.floor(ENDLESS_SWORD_CONFIG.world.tileGrid / 2);
         if (ENDLESS_SWORD_CONFIG.world.tileGrid < 1 || ENDLESS_SWORD_CONFIG.world.tileGrid % 2 === 0) {
             throw new Error('World tile grid must be a positive odd number.');
+        }
+        if (texture) {
+            this.textureFrame = new SpriteFrame();
+            this.textureFrame.texture = texture;
+            this.textureFrame.rect = new Rect(0, 0, texture.width, texture.height);
+            this.textureFrame.originalSize = new Size(texture.width, texture.height);
+            this.textureFrame.offset = new Vec2(0, 0);
         }
         const count = ENDLESS_SWORD_CONFIG.world.tileGrid * ENDLESS_SWORD_CONFIG.world.tileGrid;
         for (let i = 0; i < count; i += 1) {
             const tile = new Node('Tile');
             tile.layer = parent.layer;
             parent.addChild(tile);
-            tile.addComponent(Graphics);
+            tile.addComponent(UITransform).setContentSize(this.tileSize, this.tileSize);
+            const sprite = tile.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.spriteFrame = this.textureFrame ?? null;
+            sprite.enabled = Boolean(this.textureFrame);
+            const graphics = tile.addComponent(Graphics);
+            graphics.enabled = !this.textureFrame;
             this.tiles.push(tile);
         }
     }
@@ -63,10 +88,17 @@ export class WorldBackground {
         }
     }
 
+    destroy(): void {
+        if (this.textureFrame?.isValid) {
+            this.textureFrame.destroy();
+        }
+        this.tiles.length = 0;
+    }
+
     private drawTile(tile: Node, tileX: number, tileY: number): void {
         tile.setPosition(tileX * this.tileSize, tileY * this.tileSize, 0);
         const graphics = tile.getComponent(Graphics);
-        if (!graphics) {
+        if (!graphics || this.textureFrame) {
             return;
         }
         graphics.clear();

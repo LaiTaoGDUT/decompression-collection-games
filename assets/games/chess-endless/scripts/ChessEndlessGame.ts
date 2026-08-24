@@ -35,6 +35,11 @@ import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
+import {
+    attachRewardedVideoIcon,
+    layoutRewardedVideoIconBeforeLabel,
+    loadRewardedVideoIcon,
+} from '../../../shared/ui/RewardedVideoIcon';
 import { ChessEndlessLayout } from './ChessEndlessLayout';
 import {
     chessEndlessModalContentRect,
@@ -94,6 +99,7 @@ interface OverlayAction {
     readonly tone: 'jade' | 'cinnabar' | 'paper';
     readonly action: () => void | Promise<void>;
     readonly enabled?: boolean;
+    readonly adIcon?: boolean;
 }
 
 interface OverlayState {
@@ -347,6 +353,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
     private reviveAdPending = false;
+    private rewardedVideoIconFrame?: SpriteFrame;
 
     async initialize(context: MiniGameContext<ChessEndlessServices>): Promise<void> {
         if (this.lifecycle !== 'idle') throw new Error(`Cannot initialize ChessEndlessGame from ${this.lifecycle}.`);
@@ -357,6 +364,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.layout.setPlatformLayout(context.services.platform.getLayoutInfo());
         this.layout.setLayoutChangeHandler(this.handleLayoutChange);
         await Promise.all([this.loadTextures(), this.loadAudio()]);
+        this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
         this.buildInterface();
         this.scheduleOnce(() => {
             if (this.lifecycle === 'disposed') return;
@@ -467,6 +475,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.context?.services.audio.stopMusic();
         this.frames.forEach((frame) => frame.destroy());
         this.frames.clear();
+        this.rewardedVideoIconFrame?.destroy();
+        this.rewardedVideoIconFrame = undefined;
         this.clips.clear();
         this.clearChildren(this.node);
         this.removeQaBridge();
@@ -1475,7 +1485,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             '棋局未尽',
             `当前得分 ${snapshot.score}\n复活将回到致死行动前，并自动释放十字斩`,
             [
-                { label: '▶ 看视频复活', tone: 'cinnabar', action: () => this.handleRevive(), enabled: this.model.canRevive },
+                { label: '看视频复活', tone: 'cinnabar', action: () => this.handleRevive(), enabled: this.model.canRevive, adIcon: true },
                 { label: '结束本局', tone: 'paper', action: () => this.finishRound() },
             ],
             'revive',
@@ -1963,6 +1973,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 buttonHeight,
                 action.tone,
                 action.action,
+                action.adIcon === true,
             );
             button.interactable = action.enabled !== false;
             if (!button.interactable) button.node.getComponent(UIOpacity)!.opacity = 100;
@@ -2224,6 +2235,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         height: number,
         tone: OverlayAction['tone'],
         action: OverlayAction['action'],
+        showAdIcon = false,
     ): Button {
         const node = this.createNode(parent, name, x, y, width, height);
         const graphics = node.addComponent(Graphics);
@@ -2235,7 +2247,36 @@ export class ChessEndlessGame extends Component implements MiniGame {
         graphics.roundRect(-width / 2, -height / 2, width, height, 7);
         graphics.fill();
         graphics.stroke();
-        this.createLabel(node, 'Label', text, 0, 0, 24, textColor, width - 28, height - 8);
+        const iconSize = Math.min(36, height - 18);
+        this.createLabel(
+            node,
+            'Label',
+            text,
+            0,
+            0,
+            24,
+            textColor,
+            width - 28,
+            height - 8,
+        );
+        const label = node.getChildByName('Label')?.getComponent(Label);
+        if (showAdIcon && label) {
+            const icon = attachRewardedVideoIcon(
+                node,
+                this.rewardedVideoIconFrame,
+                0,
+                0,
+                iconSize,
+            );
+            layoutRewardedVideoIconBeforeLabel(
+                icon,
+                label,
+                text,
+                24,
+                iconSize,
+                width,
+            );
+        }
         const opacity = node.addComponent(UIOpacity);
         const button = node.addComponent(Button);
         node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {

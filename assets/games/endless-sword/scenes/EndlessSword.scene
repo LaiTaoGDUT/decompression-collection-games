@@ -168,6 +168,22 @@
       "__uuid__": "b90af5ea-612a-4e3e-b069-922500118199@6c48a",
       "__expectedType__": "cc.Texture2D"
     },
+    "skillIconTexture": {
+      "__uuid__": "7f80ca20-e4ed-4119-93ba-41efb7fc1b73@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "projectileTexture": {
+      "__uuid__": "65f8e4e0-a554-438c-8225-f608f3f95a91@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "vfxTexture": {
+      "__uuid__": "39cc8b01-5131-4e14-a31f-ee69336459ff@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "groundTileTexture": {
+      "__uuid__": "cc72102f-59c4-4990-abaf-67a727bfec85@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
     "_id": "0D3zyPmybjuVp8kX+hgpKY"
   },
   {

@@ -8,7 +8,6 @@ export interface DesktopCleanupGameplayConfig {
     readonly unusedToolBonus: number;
     readonly noContinueBonus: number;
     readonly freeUsesPerTool: number;
-    readonly dailySeedSalt: string;
 }
 
 export const DEFAULT_DESKTOP_CLEANUP_CONFIG: DesktopCleanupGameplayConfig = Object.freeze({
@@ -21,7 +20,6 @@ export const DEFAULT_DESKTOP_CLEANUP_CONFIG: DesktopCleanupGameplayConfig = Obje
     unusedToolBonus: 200,
     noContinueBonus: 500,
     freeUsesPerTool: 1,
-    dailySeedSalt: 'desktop-cleanup-v2-compact-stack',
 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -52,9 +50,6 @@ export function parseDesktopCleanupGameplayConfig(
         return DEFAULT_DESKTOP_CLEANUP_CONFIG;
     }
 
-    const salt = typeof value.dailySeedSalt === 'string'
-        ? value.dailySeedSalt.trim()
-        : '';
     return Object.freeze({
         schemaVersion: 1,
         timeLimitSeconds: readPositiveInteger(value, 'timeLimitSeconds', 180, 900),
@@ -65,6 +60,5 @@ export function parseDesktopCleanupGameplayConfig(
         unusedToolBonus: readPositiveInteger(value, 'unusedToolBonus', 200, 10000),
         noContinueBonus: readPositiveInteger(value, 'noContinueBonus', 500, 10000),
         freeUsesPerTool: readPositiveInteger(value, 'freeUsesPerTool', 1, 3),
-        dailySeedSalt: salt || DEFAULT_DESKTOP_CLEANUP_CONFIG.dailySeedSalt,
     });
 }

@@ -5,7 +5,6 @@ const path = require('path');
 const maxMainPackageBytes = 4 * 1024 * 1024;
 const buildRoot = path.resolve(__dirname, '..', 'build');
 const expectedSubpackages = [
-    'game-blocks3d',
     'game-chess-endless',
     'game-2048',
     'game-watermelon',

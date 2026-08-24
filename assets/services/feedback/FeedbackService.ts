@@ -67,7 +67,7 @@ export class FeedbackService {
 
         if (cue === 'drop' || cue === 'uiButton' || cue === 'toggle') {
             this.platform.vibrate('light');
-        } else if (cue === 'merge' || cue === 'fold' || cue === 'chain') {
+        } else if (cue === 'merge' || cue === 'fold' || cue === 'chain' || cue === 'danger') {
             this.platform.vibrate('medium');
         } else if (cue === 'milestone'
             || cue === 'failure'

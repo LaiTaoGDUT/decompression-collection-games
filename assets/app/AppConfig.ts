@@ -146,7 +146,6 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             watermelon: { enabled: true },
             'chess-endless': { enabled: true },
             game2048: { enabled: false },
-            blocks3d: { enabled: false },
             'sliding-puzzle': { enabled: false },
             catch: { enabled: true },
             'endless-sword': { enabled: false },

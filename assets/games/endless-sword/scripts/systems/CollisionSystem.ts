@@ -7,6 +7,7 @@ import type { EnemySystem } from './EnemySystem';
 import type { ProjectileSystem } from './ProjectileSystem';
 
 export type EnemyKilledHandler = (enemy: EnemyModel) => void;
+export type ProjectileImpactHandler = (projectile: ProjectileModel) => void;
 
 /** T1.4 逻辑碰撞：空间哈希候选筛选、敌人分离、接触/投射物伤害。 */
 export class CollisionSystem {
@@ -23,12 +24,19 @@ export class CollisionSystem {
         enemies: EnemySystem,
         projectiles: ProjectileSystem,
         onEnemyKilled: EnemyKilledHandler,
+        onProjectileImpact?: ProjectileImpactHandler,
     ): void {
         this.rebuildEnemyGrid(enemies);
         this.resolveEnemySeparation(enemies);
         this.rebuildEnemyGrid(enemies);
         this.resolveEnemyContact(player);
-        this.resolveProjectiles(player, enemies, projectiles, onEnemyKilled);
+        this.resolveProjectiles(
+            player,
+            enemies,
+            projectiles,
+            onEnemyKilled,
+            onProjectileImpact,
+        );
     }
 
     damageEnemy(
@@ -42,6 +50,35 @@ export class CollisionSystem {
             onEnemyKilled(enemy);
         }
         return killed;
+    }
+
+    /**
+     * 对指定半径内的敌人做一次逻辑伤害结算。
+     * 范围技能不直接操作节点，先在这里固化 HP/击杀/掉落，再由上层播放 VFX。
+     */
+    damageEnemiesInRadius(
+        enemies: EnemySystem,
+        x: number,
+        y: number,
+        radius: number,
+        damage: number,
+        onEnemyKilled: EnemyKilledHandler,
+    ): number {
+        if (radius <= 0 || damage <= 0) {
+            return 0;
+        }
+        const radiusSquared = radius * radius;
+        let hitCount = 0;
+        enemies.forEachAlive((enemy) => {
+            const dx = enemy.x - x;
+            const dy = enemy.y - y;
+            if (dx * dx + dy * dy > radiusSquared) {
+                return;
+            }
+            hitCount += 1;
+            this.damageEnemy(enemies, enemy, damage, onEnemyKilled);
+        });
+        return hitCount;
     }
 
     clear(): void {
@@ -126,6 +163,7 @@ export class CollisionSystem {
         enemies: EnemySystem,
         projectiles: ProjectileSystem,
         onEnemyKilled: EnemyKilledHandler,
+        onProjectileImpact?: ProjectileImpactHandler,
     ): void {
         getPlayerWorldBounds(player, this.queryBounds);
         projectiles.forEachActive((projectile) => {
@@ -150,11 +188,21 @@ export class CollisionSystem {
                 if (!aabbOverlaps(this.otherBounds, this.enemyBounds)) {
                     continue;
                 }
-                this.damageEnemy(enemies, enemy, projectile.damage, onEnemyKilled);
-                projectiles.consumeHit(projectile);
-                if (projectile.expired) {
-                    break;
+                if (projectile.impactRadius > 0 && projectile.impactDamage > 0) {
+                    this.damageEnemiesInRadius(
+                        enemies,
+                        projectile.x,
+                        projectile.y,
+                        projectile.impactRadius,
+                        projectile.impactDamage,
+                        onEnemyKilled,
+                    );
+                } else {
+                    this.damageEnemy(enemies, enemy, projectile.damage, onEnemyKilled);
                 }
+                onProjectileImpact?.(projectile);
+                projectiles.consumeHit(projectile);
+                break;
             }
         });
     }

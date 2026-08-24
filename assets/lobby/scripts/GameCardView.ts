@@ -383,10 +383,11 @@ export class GameCardView extends Component {
         transform?.setAnchorPoint(anchorX, 0.5);
 
         if (name === 'NameLabel') {
-            label.fontSize = this.mode === 'coming-soon' ? 27 : 28;
-            label.lineHeight = 38;
+            label.fontSize = this.mode === 'coming-soon' ? 30 : 32;
+            label.lineHeight = 42;
             label.color = Color.WHITE;
             label.horizontalAlign = HorizontalTextAlignment.CENTER;
+            label.isBold = false;
         } else if (name === 'DescriptionLabel') {
             label.fontSize = this.mode === 'coming-soon' ? 18 : 16;
             label.lineHeight = 22;

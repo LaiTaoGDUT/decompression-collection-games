@@ -6,8 +6,14 @@ import {
     Graphics,
     Label,
     Node,
+    Rect,
+    Size,
+    Sprite,
+    SpriteFrame,
     Texture2D,
+    UIOpacity,
     UITransform,
+    Vec2,
     view,
 } from 'cc';
 import { DEV } from 'cc/env';
@@ -19,18 +25,24 @@ import {
 } from '../../../shared/ui/PlatformSafeLayout';
 import { ENDLESS_SWORD_CONFIG } from './config/GameConfig';
 import {
+    ACTIVE_SKILL_IDS,
+    getActiveSkillConfig,
+    isActiveSkillId,
+} from './config/SkillConfig';
+import {
     ENEMY_TYPES,
     T1_ENEMY_SHOWCASE,
     getEnemyConfig,
     type EnemyType,
 } from './config/EnemyConfig';
-import type { EnemyModel } from './core/CombatModels';
+import type { EnemyModel, ProjectileModel } from './core/CombatModels';
 import { GameLoop } from './core/GameLoop';
 import { RunModel } from './core/RunModel';
 import { CollisionSystem } from './systems/CollisionSystem';
 import { EnemySystem } from './systems/EnemySystem';
 import { PlayerSystem } from './systems/PlayerSystem';
 import { ProjectileSystem } from './systems/ProjectileSystem';
+import { SkillSystem, type SkillEffectEvent } from './systems/SkillSystem';
 import { XpOrbSystem } from './systems/XpOrbSystem';
 import type { EndlessSwordRunState, EndlessSwordServices } from './EndlessSwordTypes';
 import { CameraRig } from './view/CameraRig';
@@ -38,6 +50,7 @@ import { EnemyView } from './view/EnemyView';
 import { FloatingJoystick } from './view/FloatingJoystick';
 import { PlayerView } from './view/PlayerView';
 import { ProjectileView } from './view/ProjectileView';
+import { SkillView } from './view/SkillView';
 import { WorldBackground } from './view/WorldBackground';
 import { XpOrbView } from './view/XpOrbView';
 
@@ -55,7 +68,7 @@ const SW1_COLORS = Object.freeze({
 /**
  * 《无尽剑域》入口组件。
  * M1 当前进度：30Hz 固定步循环 + 无限地图 + 移动 + T1.4/T1.5 碰撞、对象池与四敌；
- * 玩家技能、升级和正式结算视图按开发计划 M1 后续任务接入。
+ * T1.6 已接入四个 P0 主动技能、配置驱动投射物与技能 VFX。
  */
 @ccclass('EndlessSwordGame')
 export class EndlessSwordGame extends Component implements MiniGame<EndlessSwordServices> {
@@ -77,6 +90,18 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     @property(Texture2D)
     private crossbowPuppetTexture: Texture2D | null = null;
 
+    @property(Texture2D)
+    private skillIconTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private projectileTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private vfxTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private groundTileTexture: Texture2D | null = null;
+
     private context?: MiniGameContext<EndlessSwordServices>;
     private runState: EndlessSwordRunState = 'idle';
 
@@ -85,6 +110,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     private playerSystem?: PlayerSystem;
     private enemySystem?: EnemySystem;
     private projectileSystem?: ProjectileSystem;
+    private skillSystem?: SkillSystem;
     private xpOrbSystem?: XpOrbSystem;
     private collisionSystem?: CollisionSystem;
 
@@ -93,6 +119,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     private playerView?: PlayerView;
     private enemyView?: EnemyView;
     private projectileView?: ProjectileView;
+    private skillView?: SkillView;
     private xpOrbView?: XpOrbView;
     private cameraRig?: CameraRig;
     private joystick?: FloatingJoystick;
@@ -101,6 +128,9 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     private survivalLabel?: Label;
     private pauseButton?: Node;
     private finishButton?: Node;
+    private skillIconRoot?: Node;
+    private readonly skillIconNodes: Node[] = [];
+    private readonly skillIconFrames: SpriteFrame[] = [];
     private resizeListening = false;
     private lastReportedScore = Number.NaN;
     private nextScoreReportTime = 0;
@@ -117,6 +147,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.playerSystem = new PlayerSystem(this.model);
         this.enemySystem = new EnemySystem();
         this.projectileSystem = new ProjectileSystem();
+        this.skillSystem = new SkillSystem();
         this.xpOrbSystem = new XpOrbSystem();
         this.collisionSystem = new CollisionSystem();
         this.loop = new GameLoop(
@@ -197,10 +228,13 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.enemyView = undefined;
         this.projectileView?.destroy();
         this.projectileView = undefined;
+        this.skillView?.destroy();
+        this.skillView = undefined;
         this.xpOrbView?.destroy();
         this.xpOrbView = undefined;
         this.playerView?.destroy();
         this.playerView = undefined;
+        this.world?.destroy();
         this.destroyNode(this.worldRoot);
         this.worldRoot = undefined;
         this.world = undefined;
@@ -211,10 +245,15 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.ghostFlameTexture = null;
         this.rottingCorpseTexture = null;
         this.crossbowPuppetTexture = null;
+        this.skillIconTexture = null;
+        this.projectileTexture = null;
+        this.vfxTexture = null;
+        this.groundTileTexture = null;
         this.loop = undefined;
         this.playerSystem = undefined;
         this.enemySystem = undefined;
         this.projectileSystem = undefined;
+        this.skillSystem = undefined;
         this.xpOrbSystem = undefined;
         this.collisionSystem = undefined;
         this.destroyNode(this.hudRoot);
@@ -222,6 +261,14 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.survivalLabel = undefined;
         this.pauseButton = undefined;
         this.finishButton = undefined;
+        this.skillIconRoot = undefined;
+        for (const frame of this.skillIconFrames) {
+            if (frame.isValid) {
+                frame.destroy();
+            }
+        }
+        this.skillIconFrames.length = 0;
+        this.skillIconNodes.length = 0;
         this.context = undefined;
     }
 
@@ -254,6 +301,16 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 this.enemySystem,
                 this.projectileSystem,
                 this.handleEnemyKilled,
+                this.handleProjectileImpact,
+            );
+            this.skillSystem?.step(
+                dt,
+                this.model.player,
+                this.enemySystem,
+                this.projectileSystem,
+                this.collisionSystem,
+                this.handleEnemyKilled,
+                this.emitSkillEffect,
             );
             this.enemySystem.flushRetired((enemy) => this.enemyView?.hide(enemy.poolIndex));
             this.projectileSystem.flushExpired(
@@ -285,6 +342,10 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         if (this.projectileView && this.projectileSystem) {
             this.projectileView.sync(this.projectileSystem, alpha);
         }
+        if (this.skillView && this.skillSystem) {
+            this.skillView.sync(this.skillSystem, frameSeconds);
+        }
+        this.updateSkillHud();
         this.cameraRig?.follow(renderPos.x, renderPos.y);
         if (this.survivalLabel) {
             this.survivalLabel.string = `${formatSurvivalTime(this.model.gameplayElapsedTime)}`
@@ -304,7 +365,10 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.node.addChild(worldRoot);
         this.worldRoot = worldRoot;
 
-        this.world = new WorldBackground(worldRoot);
+        this.world = new WorldBackground(
+            worldRoot,
+            this.groundTileTexture ?? undefined,
+        );
         this.world.setSeed(this.model.runSeed);
         this.world.update(0, 0);
 
@@ -318,6 +382,12 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.projectileView = new ProjectileView(
             worldRoot,
             ENDLESS_SWORD_CONFIG.pools.projectiles,
+            this.projectileTexture ?? undefined,
+        );
+        this.skillView = new SkillView(
+            worldRoot,
+            this.vfxTexture ?? undefined,
+            this.projectileTexture ?? undefined,
         );
         this.playerView = new PlayerView(worldRoot, playerTexture);
         this.cameraRig = new CameraRig(worldRoot);
@@ -352,15 +422,43 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.xpOrbSystem?.spawn(enemy.x, enemy.y, config.xp);
     };
 
+    private readonly handleProjectileImpact = (projectile: ProjectileModel): void => {
+        if (projectile.skillId === 'fly-sword') {
+            this.emitSkillEffect({
+                vfx: 'hit-spark',
+                x: projectile.x,
+                y: projectile.y,
+                scale: 0.34,
+                durationSeconds: 0.1,
+            });
+            return;
+        }
+        if (projectile.skillId === 'fire-art') {
+            this.emitSkillEffect({
+                vfx: 'fire-explode',
+                x: projectile.x,
+                y: projectile.y,
+                scale: Math.max(0.55, projectile.impactRadius / 120),
+                durationSeconds: 0.18,
+            });
+        }
+    };
+
+    private readonly emitSkillEffect = (event: SkillEffectEvent): void => {
+        this.skillView?.emit(event);
+    };
+
     private clearCombatWorld(): void {
         this.enemySystem?.clear((enemy) => this.enemyView?.hide(enemy.poolIndex));
         this.projectileSystem?.clear(
             (projectile) => this.projectileView?.hide(projectile.poolIndex),
         );
         this.xpOrbSystem?.clear((orb) => this.xpOrbView?.hide(orb.poolIndex));
+        this.skillSystem?.clear();
         this.collisionSystem?.clear();
         this.enemyView?.resetAll();
         this.projectileView?.resetAll();
+        this.skillView?.resetAll();
         this.xpOrbView?.resetAll();
     }
 
@@ -416,8 +514,49 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         finishButton.active = DEV;
         this.finishButton = finishButton;
 
+        this.buildSkillIcons(hud);
+
         hud.active = false;
         this.hudRoot = hud;
+    }
+
+    private buildSkillIcons(hud: Node): void {
+        const texture = this.skillIconTexture;
+        if (!texture) {
+            return;
+        }
+        const root = new Node('SkillIcons');
+        root.layer = hud.layer;
+        root.addComponent(UITransform).setContentSize(72, 4 * 68);
+        hud.addChild(root);
+        this.skillIconRoot = root;
+
+        for (const id of ACTIVE_SKILL_IDS) {
+            const definition = getActiveSkillConfig(id);
+            const icon = new Node(`SkillIcon-${id}`);
+            icon.layer = root.layer;
+            icon.addComponent(UITransform).setContentSize(60, 60);
+            const sprite = icon.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            const frame = createAtlasFrame(texture, definition.iconRect);
+            sprite.spriteFrame = frame;
+            this.skillIconFrames.push(frame);
+            const opacity = icon.addComponent(UIOpacity);
+            opacity.opacity = id === 'fly-sword' ? 255 : 88;
+            root.addChild(icon);
+            this.skillIconNodes.push(icon);
+        }
+    }
+
+    private updateSkillHud(): void {
+        if (!this.skillSystem || this.skillIconNodes.length !== ACTIVE_SKILL_IDS.length) {
+            return;
+        }
+        ACTIVE_SKILL_IDS.forEach((id, index) => {
+            const node = this.skillIconNodes[index];
+            const opacity = node.getComponent(UIOpacity);
+            opacity && (opacity.opacity = this.skillSystem?.getSkillLevel(id) ? 255 : 70);
+        });
     }
 
     private createTextButton(
@@ -458,6 +597,8 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     private startNewRun(): void {
         this.clearCombatWorld();
         this.model.reset(Date.now() >>> 0);
+        this.skillSystem?.reset();
+        this.applySkillQaPreset();
         this.world?.setSeed(this.model.runSeed);
         this.world?.update(0, 0);
         this.joystick?.setEnabled(true);
@@ -473,6 +614,19 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             this.hudRoot.active = true;
         }
         this.runState = 'playing';
+    }
+
+    private applySkillQaPreset(): void {
+        if (!DEV || typeof location === 'undefined' || !this.skillSystem) {
+            return;
+        }
+        const preset = new URLSearchParams(location.search).get('swordQa');
+        if (preset !== 'skills' && preset !== 'fullSkills') {
+            return;
+        }
+        for (const id of ACTIVE_SKILL_IDS) {
+            this.skillSystem.setSkillLevel(id, 1);
+        }
     }
 
     private finishRun(reason = 'dev-finish'): void {
@@ -545,6 +699,19 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             },
         );
         this.pauseButton?.setPosition(pausePosition.x, pausePosition.y, 0);
+        if (this.skillIconRoot) {
+            this.skillIconRoot.setPosition(
+                pausePosition.x,
+                pausePosition.y
+                    - ENDLESS_SWORD_CONFIG.ui.pauseButtonSize / 2
+                    - ENDLESS_SWORD_CONFIG.ui.safeGap
+                    - 34,
+                0,
+            );
+            this.skillIconNodes.forEach((node, index) => {
+                node.setPosition(0, -index * 68, 0);
+            });
+        }
         this.finishButton?.setPosition(
             -visibleSize.width / 2 + ENDLESS_SWORD_CONFIG.ui.devFinishButtonLeftInset,
             safeBounds.bottomY
@@ -581,6 +748,20 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 }
             },
             finish: (): void => this.finishRun(),
+            giveSkill: (id: string, level = 1): boolean => {
+                if (!isActiveSkillId(id) || !this.skillSystem) {
+                    return false;
+                }
+                this.skillSystem.setSkillLevel(id, level);
+                return true;
+            },
+            setSkillLevel: (id: string, level: number): boolean => {
+                if (!isActiveSkillId(id) || !this.skillSystem) {
+                    return false;
+                }
+                this.skillSystem.setSkillLevel(id, level);
+                return true;
+            },
             spawnEnemy: (type: EnemyType, x?: number, y?: number): number => {
                 if (!isEnemyType(type)) {
                     return -1;
@@ -633,6 +814,10 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     }
 
     private createSnapshot(): unknown {
+        const skills: Record<string, number> = {};
+        for (const id of ACTIVE_SKILL_IDS) {
+            skills[id] = this.skillSystem?.getSkillLevel(id) ?? 0;
+        }
         return Object.freeze({
             state: this.runState,
             runSeed: this.model.runSeed,
@@ -641,6 +826,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             combatScore: this.model.combatScore,
             totalScore: this.model.totalScore,
             kills: this.model.kills,
+            skills: Object.freeze(skills),
             player: Object.freeze({
                 x: this.model.player.x,
                 y: this.model.player.y,
@@ -663,6 +849,18 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
 function isEnemyType(value: unknown): value is EnemyType {
     return typeof value === 'string'
         && (ENEMY_TYPES as readonly string[]).indexOf(value) >= 0;
+}
+
+function createAtlasFrame(
+    texture: Texture2D,
+    rect: Readonly<{ x: number; y: number; width: number; height: number }>,
+): SpriteFrame {
+    const frame = new SpriteFrame();
+    frame.texture = texture;
+    frame.rect = new Rect(rect.x, rect.y, rect.width, rect.height);
+    frame.originalSize = new Size(rect.width, rect.height);
+    frame.offset = new Vec2(0, 0);
+    return frame;
 }
 
 function formatSurvivalTime(seconds: number): string {
