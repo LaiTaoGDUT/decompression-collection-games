@@ -5,5 +5,13 @@
   "uuid": "b7633f3e-5e5c-4e3e-820f-b467b42e7406",
   "files": [],
   "subMetas": {},
-  "userData": {}
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-catch",
+    "isSubpackage": true,
+    "isRemoteBundle": {},
+    "priority": 1,
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L",
+    "isBundle": true
+  }
 }

@@ -117,6 +117,30 @@
       ]
     },
     {
+      "id": "catch",
+      "version": "0.1.0",
+      "name": "桌面大清理",
+      "description": "在软陶工作台中翻找物件，三件归位，限时找回幸运徽章。",
+      "bundle": "game-catch",
+      "scene": "scenes/DesktopCleanup",
+      "entryComponent": "DesktopCleanupGame",
+      "icon": "visual/icons/catch/desktop-cleanup-icon-v1/texture",
+      "cover": "visual/covers/catch/desktop-cleanup-cover-v1/texture",
+      "orientation": "portrait",
+      "renderMode": "2d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "visibility": "development",
+      "preload": [],
+      "tags": [
+        "match-3",
+        "hidden-object",
+        "daily",
+        "relaxing"
+      ]
+    },
+    {
       "id": "endless-sword",
       "version": "0.1.0",
       "name": "无尽剑域",
@@ -124,8 +148,8 @@
       "bundle": "game-endless-sword",
       "scene": "scenes/EndlessSword",
       "entryComponent": "EndlessSwordGame",
-      "icon": "visual/icons/endless-sword/endless-sword-icon-v1/texture",
-      "cover": "visual/covers/endless-sword/endless-sword-cover-v1/texture",
+      "icon": "visual/branding/lobby-cn-title-logo-v3/texture",
+      "cover": "visual/backgrounds/lobby-arcade-warm-rays-v3/texture",
       "orientation": "portrait",
       "renderMode": "2d",
       "minimumDeviceTier": "low",

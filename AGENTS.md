@@ -2,6 +2,10 @@
 
 本文件是仓库内所有编码代理的执行规范。完整依据见 `docs/ARCHITECTURE.md`、`docs/IMPLEMENTATION_PLAN.md`、`docs/CONTENT_PRODUCTION_PLAN.md`、`docs/VISUAL_STYLE_GUIDE.md` 与 `docs/PLAYTEST_ACCEPTANCE_TEMPLATE.md`；若规则冲突，以用户当前要求和 `docs/ARCHITECTURE.md` 的已确认架构基线为准。
 
+## 代码改动铁律
+
+做根因修复，用正确的逻辑覆盖错误而不是打补丁
+
 ## 项目基线
 
 - 引擎固定为 Cocos Creator 3.8.8，目标平台为微信小游戏；浏览器预览只作为开发和自动化验证环境。

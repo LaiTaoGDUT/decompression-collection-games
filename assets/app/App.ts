@@ -15,6 +15,7 @@ import { AppStateMachine } from '../core/state/AppStateMachine';
 import type { Unsubscribe } from '../core/types/CommonTypes';
 import type { Platform } from '../platform/Platform';
 import { WebPlatform } from '../platform/WebPlatform';
+import { WeChatRewardedAdProvider } from '../platform/WeChatAdProvider';
 import { WeChatPlatform } from '../platform/WeChatPlatform';
 import { GameRegistry } from '../runtime/GameRegistry';
 import { GameLoader } from '../runtime/GameLoader';
@@ -26,8 +27,11 @@ import {
     ConsoleAnalyticsTransport,
 } from '../services/analytics/AnalyticsService';
 import {
+    AD_PLACEMENTS,
     AdService,
     MockRewardedAdProvider,
+    RewardedAdRouter,
+    type RewardedAdProvider,
 } from '../services/ads/AdService';
 import { ConfigService } from '../services/config/ConfigService';
 import { FeedbackService } from '../services/feedback/FeedbackService';
@@ -171,10 +175,6 @@ export class App extends Component {
             }),
             new ConsoleAnalyticsTransport(),
         );
-        const adService = new AdService(
-            stateMachine,
-            new MockRewardedAdProvider(),
-        );
         const gameLoader = new GameLoader();
 
         container.register(APP_STATE_MACHINE_SERVICE, stateMachine);
@@ -186,7 +186,6 @@ export class App extends Component {
         container.register(STORAGE_SERVICE, storageService);
         container.register(AUDIO_SERVICE, audioService);
         container.register(ANALYTICS_SERVICE, analyticsService);
-        container.register(AD_SERVICE, adService);
         container.register(FEEDBACK_SERVICE, feedbackService);
     }
 
@@ -216,6 +215,10 @@ export class App extends Component {
 
         if (this.container?.has(STORAGE_SERVICE)) {
             this.container.get(STORAGE_SERVICE).dispose();
+        }
+
+        if (this.container?.has(AD_SERVICE)) {
+            this.container.get(AD_SERVICE).dispose();
         }
 
         if (this.container?.has(PLATFORM_SERVICE)) {
@@ -249,10 +252,6 @@ export class App extends Component {
             () => platform.initialize(),
         );
 
-        // WeChat device information is unavailable until its platform adapter
-        // has initialized. Construct the runtime only after that boundary.
-        this.registerGameRuntime();
-
         await this.runStartupStage('storage', async () => {
             this.services.get(STORAGE_SERVICE).load();
         });
@@ -276,6 +275,11 @@ export class App extends Component {
             return;
         }
 
+        // 广告 provider 依赖已经归一化的本地配置；Runtime 则依赖完整的
+        // AdService，因此二者都在平台和配置完成后创建。
+        this.registerAdService();
+        this.registerGameRuntime();
+
         await this.runStartupStage('game-catalog', async () => {
             const manifests = await configService.loadGameManifests();
             gameRegistry.load(manifests);
@@ -297,6 +301,74 @@ export class App extends Component {
             // WeChat downloads and launches the lobby subpackage.
             () => this.services.get(GAME_RUNTIME_SERVICE).enterLobby(true),
         );
+    }
+
+    private registerAdService(): void {
+        const services = this.services;
+        if (services.has(AD_SERVICE)) return;
+
+        const platform = services.get(PLATFORM_SERVICE);
+        const config = services.get(CONFIG_SERVICE).config;
+        const wechatAds = config.ads.wechat;
+        const useRealWeChatAds = platform.id === 'wechat'
+            && !config.development.mockAds;
+        const mockRewarded = new MockRewardedAdProvider();
+        const rewardedRoutes = Object.freeze([
+            Object.freeze({
+                gameId: 'watermelon',
+                placement: AD_PLACEMENTS.watermelonRevive,
+                adUnitId: wechatAds.watermelonReviveRewarded.adUnitId,
+                logName: 'Watermelon revive',
+            }),
+            Object.freeze({
+                gameId: 'chess-endless',
+                placement: AD_PLACEMENTS.chessEndlessRevive,
+                adUnitId: wechatAds.chessEndlessReviveRewarded.adUnitId,
+                logName: 'Chess Endless revive',
+            }),
+            Object.freeze({
+                gameId: 'catch',
+                placement: AD_PLACEMENTS.desktopCleanupRewarded,
+                adUnitId: wechatAds.desktopCleanupRewarded.adUnitId,
+                logName: 'Desktop cleanup',
+            }),
+        ]);
+        const gameAdEnablement: Record<string, boolean> = {};
+        Object.keys(config.ads.games).forEach((gameId) => {
+            gameAdEnablement[gameId] = false;
+        });
+        const providers: Record<string, RewardedAdProvider> = {};
+        rewardedRoutes.forEach((route) => {
+            const configuredEnabled = config.ads.games[route.gameId]?.enabled === true;
+            gameAdEnablement[route.gameId] = configuredEnabled
+                && (!useRealWeChatAds || Boolean(route.adUnitId.trim()));
+            providers[route.placement] = useRealWeChatAds
+                ? new WeChatRewardedAdProvider({
+                    placement: route.placement,
+                    adUnitId: route.adUnitId,
+                })
+                : mockRewarded;
+        });
+        const rewardedProvider = new RewardedAdRouter(providers);
+        const adService = new AdService(
+            services.get(APP_STATE_MACHINE_SERVICE),
+            rewardedProvider,
+            services.get(ANALYTICS_SERVICE),
+            Object.freeze(gameAdEnablement),
+        );
+        services.register(AD_SERVICE, adService);
+
+        if (!useRealWeChatAds) return;
+
+        rewardedRoutes.forEach((route) => {
+            if (!adService.isEnabledForGame(route.gameId)) return;
+            void adService.preloadRewarded({
+                placement: route.placement,
+                gameId: route.gameId,
+            }).catch((error: unknown) => {
+                console.warn(`[App] ${route.logName} rewarded ad preload failed.`, error);
+            });
+        });
     }
 
     private registerGameRuntime(): void {

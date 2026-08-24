@@ -12,6 +12,7 @@ export interface PlayerModel {
     facingX: number;
     facingY: number;
     hp: number;
+    invincibilityRemaining: number;
 }
 
 /**
@@ -21,11 +22,15 @@ export interface PlayerModel {
 export class RunModel {
     runSeed = 0;
     gameplayElapsedTime = 0;
+    combatScore = 0;
+    kills = 0;
     readonly player: PlayerModel = createPlayer();
 
     reset(seed: number): void {
         this.runSeed = seed;
         this.gameplayElapsedTime = 0;
+        this.combatScore = 0;
+        this.kills = 0;
         const player = this.player;
         player.x = 0;
         player.y = 0;
@@ -37,6 +42,7 @@ export class RunModel {
         player.facingX = 0;
         player.facingY = -1;
         player.hp = ENDLESS_SWORD_CONFIG.player.maxHp;
+        player.invincibilityRemaining = 0;
     }
 
     /** 每个逻辑步开始前记录上一帧位置，供渲染插值。 */
@@ -58,6 +64,10 @@ export class RunModel {
     get survivalScore(): number {
         return Math.floor(this.gameplayElapsedTime * ENDLESS_SWORD_CONFIG.survivalScorePerSecond);
     }
+
+    get totalScore(): number {
+        return this.survivalScore + this.combatScore;
+    }
 }
 
 function createPlayer(): PlayerModel {
@@ -72,5 +82,6 @@ function createPlayer(): PlayerModel {
         facingX: 0,
         facingY: -1,
         hp: ENDLESS_SWORD_CONFIG.player.maxHp,
+        invincibilityRemaining: 0,
     };
 }

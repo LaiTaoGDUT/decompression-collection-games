@@ -45,18 +45,20 @@ export const DEFAULT_WATERMELON_GAMEPLAY_CONFIG: WatermelonGameplayConfig = deep
     wallFriction: 0.42,
     wallRestitution: 0.02,
     mergeScores: [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66],
+    // Mass now grows faster than circular area, making higher-level cats
+    // progressively denser so they can dislodge smaller cats beneath them.
     fruits: [
         { radius: 26.88, mass: 1, friction: 0.32, restitution: 0.08 },
-        { radius: 33.6, mass: 1.6, friction: 0.32, restitution: 0.08 },
-        { radius: 42.56, mass: 2.4, friction: 0.32, restitution: 0.08 },
-        { radius: 51.52, mass: 3.6, friction: 0.32, restitution: 0.08 },
-        { radius: 62.72, mass: 5.2, friction: 0.32, restitution: 0.08 },
-        { radius: 76.16, mass: 7.4, friction: 0.32, restitution: 0.08 },
-        { radius: 91.84, mass: 10.5, friction: 0.32, restitution: 0.08 },
-        { radius: 109.76, mass: 15, friction: 0.32, restitution: 0.08 },
-        { radius: 129.92, mass: 21, friction: 0.32, restitution: 0.08 },
-        { radius: 152.32, mass: 30, friction: 0.32, restitution: 0.08 },
-        { radius: 176.96, mass: 42, friction: 0.32, restitution: 0.08 },
+        { radius: 33.6, mass: 1.8, friction: 0.32, restitution: 0.08 },
+        { radius: 42.56, mass: 3, friction: 0.32, restitution: 0.08 },
+        { radius: 51.52, mass: 4.9, friction: 0.32, restitution: 0.08 },
+        { radius: 62.72, mass: 7.7, friction: 0.32, restitution: 0.08 },
+        { radius: 76.16, mass: 11.8, friction: 0.32, restitution: 0.08 },
+        { radius: 91.84, mass: 18, friction: 0.32, restitution: 0.08 },
+        { radius: 109.76, mass: 27.6, friction: 0.32, restitution: 0.08 },
+        { radius: 129.92, mass: 41.2, friction: 0.32, restitution: 0.08 },
+        { radius: 152.32, mass: 62.4, friction: 0.32, restitution: 0.08 },
+        { radius: 176.96, mass: 92.4, friction: 0.32, restitution: 0.08 },
     ],
 });
 

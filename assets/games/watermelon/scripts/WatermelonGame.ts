@@ -39,7 +39,10 @@ import type {
 import type { DevicePerformanceTier, GameResult } from '../../../core/types/CommonTypes';
 import type { Platform } from '../../../platform/Platform';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
-import type { AdService } from '../../../services/ads/AdService';
+import {
+    AD_PLACEMENTS,
+    type AdService,
+} from '../../../services/ads/AdService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type {
@@ -1001,7 +1004,9 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context.services.feedback.play('failure');
         this.context.services.audio.pauseMusic();
 
-        if (this.continueRule.canOffer && this.context.services.ads) {
+        const ads = this.context.services.ads;
+        if (this.continueRule.canOffer
+            && ads?.isEnabledForGame(this.context.gameId)) {
             this.showContinueOverlay();
         } else {
             this.finalizeFrozenRound('overflow');
@@ -1205,17 +1210,27 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private async requestContinue(): Promise<void> {
         const generation = this.operationGeneration;
-        const ads = this.context?.services.ads;
+        const context = this.context;
+        const ads = context?.services.ads;
 
-        if (!ads || !this.continueRule.beginRequest()) {
+        if (!context || !ads) {
             return;
         }
+        if (!ads.isEnabledForGame(context.gameId)) {
+            this.finalizeFrozenRound('ads_disabled');
+            return;
+        }
+        if (!this.continueRule.beginRequest()) return;
 
         this.setContinueOverlayBusy(true, '正在播放视频…');
         this.context?.services.feedback.play('uiButton');
 
         try {
-            const result = await ads.showRewarded();
+            const result = await ads.showRewarded({
+                placement: AD_PLACEMENTS.watermelonRevive,
+                gameId: context.gameId,
+                sessionId: context.sessionId,
+            });
             if (!this.isGenerationCurrent(generation)) return;
             const resolution = this.continueRule.resolve(result.outcome);
 
@@ -1544,9 +1559,6 @@ export class WatermelonGame extends Component implements MiniGame {
             : MERGE_SCORE_LINE_HEIGHT;
         label.isBold = true;
         label.color = catUiColor('peachDark');
-        label.enableOutline = true;
-        label.outlineColor = catUiColor('ink', 235);
-        label.outlineWidth = event.isChain ? 3 : 2;
         label.horizontalAlign = 1;
         label.verticalAlign = 1;
         this.effectNodes.add(scoreNode);

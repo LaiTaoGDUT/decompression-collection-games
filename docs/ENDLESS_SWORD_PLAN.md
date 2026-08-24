@@ -11,7 +11,7 @@
 
 ## 0. 当前进度
 
-t1.3 完成
+t1.5 完成
 
 ## 1. 目标与范围
 
@@ -35,7 +35,7 @@ t1.3 完成
 | 玄境 | 全部 11+8 项 Lv5 后开启（预期 35～50 分钟），无限叠加成长 |
 | 灾厄 | 15:00 起每 **2 分钟**一档，约 73:00 全 V 层，约 75:00 起终末劫 |
 | 数值边界 | 普通/精英吃 §54 时间倍率（精英另吃魔化）；Boss 只用 §47/§48 自身公式 |
-| 广告 | 仅"每局一次复活"，走 `AdService.showRewarded()`，成功/跳过/失败三态都要处理 |
+| 广告 | 仅"每局一次复活"；先检查 `AdService.isEnabledForGame(gameId)`，再以专属 placement、`gameId`、`sessionId` 调用 `showRewarded(request)`，成功/跳过/失败三态都要处理 |
 | 局外 | 无永久养成；存档只存最高纪录 + 设置 + 新手标记 |
 | 可见性 | M0～M3 `visibility: "development"`，M4 起评估切 `public` |
 | 视觉 | 独立风格单元（动漫国风仙侠 + 高饱和特效 + 深色战场），先写 VISUAL_SPEC 再产正式素材，禁止复用其他游戏皮肤 |
@@ -74,8 +74,8 @@ t1.3 完成
   "bundle": "game-endless-sword",
   "scene": "scenes/EndlessSword",
   "entryComponent": "EndlessSwordGame",
-  "icon": "visual/icons/endless-sword/icon",
-  "cover": "visual/covers/endless-sword/cover",
+  "icon": "visual/branding/lobby-cn-title-logo-v3/texture",
+  "cover": "visual/backgrounds/lobby-arcade-warm-rays-v3/texture",
   "orientation": "portrait",
   "renderMode": "2d",
   "minimumDeviceTier": "low",
@@ -87,6 +87,7 @@ t1.3 完成
 ```
 
 3. 大厅封面与图标是"大厅展示副本"，放 `assets/lobby/visual/covers/endless-sword/`、`assets/lobby/visual/icons/endless-sword/`（lobby Bundle 内）。M0～M3 期间允许开发占位图。
+   当前 `games.json` 使用 `lobby-cn-title-logo-v3` 与 `lobby-arcade-warm-rays-v3` 作为开发期占位；M4 前必须替换为无尽剑域专属展示副本，并补齐来源/许可记录。
 4. 场景加入 bundle 后构建器自动收集，无需改 `profiles`。
 
 ### 4.2 目录结构
@@ -184,13 +185,13 @@ assets/games/endless-sword/
 | 需求 | API | 说明 |
 | --- | --- | --- |
 | BGM/音效 | `context.services.audio.playMusic / playEffect / pauseMusic / resumeMusic / stopMusic` | 游戏内再做一层 AudioManager 封装做限流与音色映射；BGM01 常驻、Boss 存活切 BGM02 |
-| 激励视频复活 | `context.services.ads.showRewarded(): Promise<AdResult>` | `outcome === 'completed'` 才复活；`skipped/failed` 保持死亡界面；每局只调用一次成功复活 |
+| 激励视频复活 | `context.services.ads.showRewarded({ placement, gameId, sessionId }): Promise<AdResult>` | 全局游戏开关开启时才展示入口；`outcome === 'completed'` 才复活，`skipped/failed` 保持死亡界面；每局只调用一次成功复活 |
 | 存档 | `context.services.storage.getGameData('endless-sword') / writeGameData(...) / flush()` | 只在结算与退出时写；见 4.8 |
 | 暂停/退出/重开 | `context.requestPause() / requestExit(result) / requestRestart(result) / requestLobby(result)` | 游戏内永远走 Context，不碰场景切换 |
 | 右上暂停按钮 | `PlatformSafeLayout.calculateTopRightControlPosition(...)`（assets/shared/ui） | 强制使用，禁止写死坐标 |
 | 统计 | 无需直接调用 | `requestExit` 结算自动触发 `trackGameEnd`；extra 字段即埋点载荷 |
 
-`EndlessSwordServices` 泛型收窄为 `{ audio, storage, ads, feedback }`（App.ts 注入集合的子集）。
+`EndlessSwordServices` 泛型收窄为 `{ audio, feedback, platform, storage, ads }`（App.ts 注入集合的子集）。
 
 ### 4.8 存档设计
 
@@ -212,7 +213,7 @@ interface EndlessSwordSaveCustom {
 
 ### 4.9 Debug Bridge 与可测性（策划案 §120）
 
-- `globalThis.__ENDLESS_SWORD_QA__`（DEV + 浏览器环境才安装，dispose 时删除，模式参照 chess-endless）：冻结对象暴露策划案 §120 全部命令（`start/pause/resume/restart/killPlayer/setHp/addXp/levelUp/setTime/spawnEnemy/spawnElite/spawnBoss/killAllEnemies/giveSkill/setSkillLevel/givePassive/evolveSkill/spawnTianjiOrb/triggerDisaster/setSeed`）+ `snapshot()`（RunModel 关键量、池借还计数、visibleSize）。
+- `globalThis.__ENDLESS_SWORD_QA__`（DEV + 浏览器环境才安装，dispose 时删除，模式参照 chess-endless）：当前骨架冻结暴露 `start/finish` 与 `snapshot()`；策划案 §120 的完整命令集（`pause/resume/restart/killPlayer/setHp/addXp/levelUp/setTime/spawnEnemy/spawnElite/spawnBoss/killAllEnemies/giveSkill/setSkillLevel/givePassive/evolveSkill/spawnTianjiOrb/triggerDisaster/setSeed`）随对应系统接入后逐步补齐。
 - URL 场景注入：`?swordQa=disaster30|bossRush|fullSkills|noRevive|lowHp` 等预置状态，供浏览器自动化回归。
 - 数值验收工具化：`setTime` 快进 + `snapshot` 读数，用于核对 §128～§132 曲线目标，不靠人工挂机。
 
@@ -236,9 +237,11 @@ interface EndlessSwordSaveCustom {
 | T0.1 | 写 `docs/ENDLESS_SWORD_VISUAL_SPEC.md`：主题名、设计关键词、色板（§84）、字体层级、控件造型、图标/动效/声音方向、**禁止方向**（禁复用其他游戏皮肤） | 评审通过并冻结；正式素材生成前完成 |
 | T0.2 | 建 `assets/games/endless-sword/` + folder meta + `scenes/EndlessSword.scene`（Canvas 绑相机、Layer 隔离）+ `EndlessSwordGame.ts` 空实现（七生命周期方法 + showPauseMenu/showResultView 占位） | 场景验证断言相机引用可解析为 `cc.Camera` |
 | T0.3 | `games.json` 注册（development）+ 大厅占位封面/图标 | `tools/verify-game-bundles.js` 通过；大厅可见（dev）入口卡 |
-| T0.4 | 打通最小开发占位 UI：开始页、HUD 骨架、暂停/结算先用 shared 回退视图验证链路 | 大厅进入 → begin → 暂停 → 重开 → 退出 → 二次进入，10 次循环无报错、无节点残留（QA snapshot 池计数归零） |
+| T0.4 | 打通最小开发占位 UI：入场 HUD 骨架、暂停/结算先用 shared 回退视图验证链路；`begin()` 由 Runtime 统一驱动 | 大厅进入 → begin → 暂停 → 重开 → 退出 → 二次进入，10 次循环无报错、无节点残留（QA snapshot 池计数归零） |
 
 每个任务完成门槛：`tsc` 无编译错误、`git diff --check` 通过；涉及界面后按 AGENTS 走 Cocos MCP `refresh` + 浏览器预览自查（下同，不再重复）。
+
+T1.4/T1.5 落地说明（2026-08-23）：空间哈希 cell 固定为 128；Enemy/Projectile/XP 分别在 `initialize()` 预热 160/160/80 个逻辑槽位及对应视图节点，运行中池耗尽时丢弃生成请求，不扩容。首批四敌纹理由场景序列化引用并随 Bundle 生命周期释放；死亡帧先完成 HP、击杀分与 XP 结算，再在原敌人池槽播放 0.22 秒通用死亡表现后归还。T1.8 接入正式 `SpawnSystem` 前，开局仅生成四敌验证编队。
 
 ### M1 P0 核心可玩（7 工日）——证明"割草好玩"
 
@@ -246,7 +249,7 @@ interface EndlessSwordSaveCustom {
 | --- | --- | --- |
 | T1.1 | `GameLoop`（30Hz 固定步）+ `RunModel` + `gameplayElapsedTime` | 暂停/恢复/切后台时间不漂移 |
 | T1.2 | `WorldBackground` 3×3 Tile + `CameraRig` 跟随 | 任意方向跑 10 分钟无接缝、节点数恒定 9 |
-| T1.3 | `FloatingJoystick`（§6 参数）+ PlayerSystem 移动 | 死区/线性加速/松手停表现正确 |
+| T1.3 | `FloatingJoystick`（§6 参数）+ PlayerSystem 移动 | 死区/越过死区后统一移速/松手停表现正确 |
 | T1.4 | `SpatialHashGrid` + CollisionSystem + 伤害结算（先结算后动画，§99） | 单测：cell 边界命中正确 |
 | T1.5 | 对象池基础版（Enemy/Projectile/XP）+ 妖鼠/鬼火/腐尸/魔弩四敌（含魔弩走位射击） | 敌人 AI/死亡/回收全程无 new Node |
 | T1.6 | 飞剑 + 周天剑阵/天雷符/离火诀（P0 四技能）与 SkillConfig 数据驱动框架 | 技能参数全部来自配置 |

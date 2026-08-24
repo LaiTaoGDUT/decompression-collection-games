@@ -32,7 +32,7 @@
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": { "__id__": 1 },
-    "_children": [{ "__id__": 3 }, { "__id__": 4 }],
+    "_children": [{ "__id__": 3 }, { "__id__": 4 }, { "__id__": 21 }],
     "_active": true,
     "_components": [{ "__id__": 5 }, { "__id__": 6 }, { "__id__": 7 }],
     "_prefab": null,
@@ -147,6 +147,27 @@
     "node": { "__id__": 3 },
     "_enabled": true,
     "__prefab": null,
+    "worldCamera": { "__id__": 23 },
+    "playerTexture": {
+      "__uuid__": "e4a8f321-9361-477c-96ce-5a4f76b6f8ee@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "demonRatTexture": {
+      "__uuid__": "e8808f1a-9a77-4d9f-8d64-c3abd3e08e85@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "ghostFlameTexture": {
+      "__uuid__": "85583a50-f4d8-4108-91d8-45145a8ac22c@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "rottingCorpseTexture": {
+      "__uuid__": "ed98a58f-28d6-4af2-bdf9-6b03ec2d1f27@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "crossbowPuppetTexture": {
+      "__uuid__": "b90af5ea-612a-4e3e-b069-922500118199@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
     "_id": "0D3zyPmybjuVp8kX+hgpKY"
   },
   {
@@ -177,7 +198,7 @@
     "_color": { "__type__": "cc.Color", "r": 21, "g": 37, "b": 33, "a": 255 },
     "_depth": 1,
     "_stencil": 0,
-    "_clearFlags": 7,
+    "_clearFlags": 6,
     "_rect": { "__type__": "cc.Rect", "x": 0, "y": 0, "width": 1, "height": 1 },
     "_aperture": 19,
     "_shutter": 7,
@@ -283,5 +304,65 @@
   {
     "__type__": "cc.PostSettingsInfo",
     "_toneMappingType": 0
+  },
+  {
+    "__type__": "cc.Node",
+    "_name": "WorldCamera",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "_parent": { "__id__": 2 },
+    "_children": [],
+    "_active": true,
+    "_components": [{ "__id__": 22 }, { "__id__": 23 }],
+    "_prefab": null,
+    "_lpos": { "__type__": "cc.Vec3", "x": 0, "y": 0, "z": 1000 },
+    "_lrot": { "__type__": "cc.Quat", "x": 0, "y": 0, "z": 0, "w": 1 },
+    "_lscale": { "__type__": "cc.Vec3", "x": 1, "y": 1, "z": 1 },
+    "_mobility": 0,
+    "_layer": 1073741824,
+    "_euler": { "__type__": "cc.Vec3", "x": 0, "y": 0, "z": 0 },
+    "_id": "9H8F6kC4pIt0aQ2bN5gLrS"
+  },
+  {
+    "__type__": "cc.UITransform",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": { "__id__": 21 },
+    "_enabled": true,
+    "_contentSize": { "__type__": "cc.Size", "width": 100, "height": 100 },
+    "_anchorPoint": { "__type__": "cc.Vec2", "x": 0.5, "y": 0.5 },
+    "_id": "LDw3v5nM8Qf1Ps7cR0tKxY"
+  },
+  {
+    "__type__": "cc.Camera",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": { "__id__": 21 },
+    "_enabled": true,
+    "_projection": 0,
+    "_priority": -1,
+    "_fov": 45,
+    "_fovAxis": 0,
+    "_orthoHeight": 667,
+    "_near": 0.1,
+    "_far": 2000,
+    "_color": { "__type__": "cc.Color", "r": 21, "g": 37, "b": 33, "a": 255 },
+    "_depth": 1,
+    "_stencil": 0,
+    "_clearFlags": 7,
+    "_rect": { "__type__": "cc.Rect", "x": 0, "y": 0, "width": 1, "height": 1 },
+    "_aperture": 19,
+    "_shutter": 7,
+    "_iso": 0,
+    "_screenScale": 1,
+    "_visibility": 1073741824,
+    "_targetTexture": null,
+    "_postProcess": null,
+    "_usePostProcess": false,
+    "_cameraType": -1,
+    "_trackingType": 0,
+    "_id": "Cw2Qj9Zr4Vs6Bm1Nt8Hx0A"
   }
 ]

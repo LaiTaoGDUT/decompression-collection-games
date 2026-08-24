@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "timeLimitSeconds": 180,
+  "continueSeconds": 60,
+  "slotCapacity": 7,
+  "pointsPerTriple": 100,
+  "remainingSecondBonus": 10,
+  "unusedToolBonus": 200,
+  "noContinueBonus": 500,
+  "freeUsesPerTool": 1,
+  "dailySeedSalt": "desktop-cleanup-v2-compact-stack"
+}

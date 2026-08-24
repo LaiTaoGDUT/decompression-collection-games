@@ -34,6 +34,26 @@ export interface DevelopmentConfig {
     readonly showDevelopmentGames: boolean;
 }
 
+export interface AdPlacementConfig {
+    readonly adUnitId: string;
+}
+
+export interface GameAdFeatureConfig {
+    readonly enabled: boolean;
+}
+
+export interface WeChatAdConfig {
+    readonly watermelonReviveRewarded: AdPlacementConfig;
+    readonly chessEndlessReviveRewarded: AdPlacementConfig;
+    readonly desktopCleanupRewarded: AdPlacementConfig;
+}
+
+export interface AdsConfig {
+    /** 以 GameManifest.id 为键；未列出的游戏默认不启用广告。 */
+    readonly games: Readonly<Record<string, GameAdFeatureConfig>>;
+    readonly wechat: WeChatAdConfig;
+}
+
 export interface AppConfig {
     readonly schemaVersion: number;
     readonly appVersion: string;
@@ -42,6 +62,7 @@ export interface AppConfig {
     readonly renderLayers: RenderLayerConfig;
     readonly qualityProfiles: Readonly<Record<QualityLevel, QualityProfileConfig>>;
     readonly timeouts: TimeoutConfig;
+    readonly ads: AdsConfig;
     readonly development: DevelopmentConfig;
 }
 
@@ -78,7 +99,7 @@ function normalizeValue<T>(fallback: T, value: unknown): T {
 }
 
 const APP_CONFIG_DEFAULTS: AppConfig = {
-    schemaVersion: 1,
+    schemaVersion: 3,
     appVersion: '0.1.0',
     defaultLanguage: 'zh-CN',
     designResolution: {
@@ -119,6 +140,28 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
         bundleLoadMs: 60000,
         sceneLoadMs: 15000,
         gameInitializationMs: 10000,
+    },
+    ads: {
+        games: {
+            watermelon: { enabled: true },
+            'chess-endless': { enabled: true },
+            game2048: { enabled: false },
+            blocks3d: { enabled: false },
+            'sliding-puzzle': { enabled: false },
+            catch: { enabled: true },
+            'endless-sword': { enabled: false },
+        },
+        wechat: {
+            watermelonReviveRewarded: {
+                adUnitId: '',
+            },
+            chessEndlessReviveRewarded: {
+                adUnitId: '',
+            },
+            desktopCleanupRewarded: {
+                adUnitId: '',
+            },
+        },
     },
     development: {
         debugLogs: false,

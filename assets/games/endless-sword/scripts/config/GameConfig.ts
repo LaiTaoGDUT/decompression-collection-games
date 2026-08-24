@@ -10,7 +10,6 @@ export const ENDLESS_SWORD_CONFIG = Object.freeze({
     }),
     /** 玩家序列帧（策划案 §86：4×4，行序 向下/向左/向右/向上，每行 4 帧）。 */
     playerSprite: Object.freeze({
-        texturePath: 'visual/player/cultivator-v1/texture',
         frameWidth: 256,
         frameHeight: 256,
         rowCount: 4,
@@ -31,6 +30,8 @@ export const ENDLESS_SWORD_CONFIG = Object.freeze({
         hitboxWidth: 60,
         hitboxHeight: 120,
     }),
+    /** 玩家与普通怪物共用的地面阴影颜色，避免同场景阴影色调分裂。 */
+    groundShadowColor: Object.freeze({ red: 8, green: 14, blue: 12, alpha: 110 }),
     joystick: Object.freeze({
         radius: 88,
         deadZone: 12,
@@ -41,10 +42,34 @@ export const ENDLESS_SWORD_CONFIG = Object.freeze({
         tileSize: 1024,
         tileGrid: 3,
     }),
+    collision: Object.freeze({
+        gridCellSize: 128,
+        enemySeparationStrength: 0.35,
+    }),
+    pools: Object.freeze({
+        enemies: 160,
+        projectiles: 160,
+        xpOrbs: 80,
+    }),
+    combat: Object.freeze({
+        enemyDeathSeconds: 0.22,
+        hitFlashSeconds: 0.06,
+        enemyArrowWidth: 28,
+        enemyArrowHeight: 10,
+    }),
+    ui: Object.freeze({
+        pauseButtonSize: 72,
+        survivalLabelHeight: 48,
+        safeGap: 16,
+        devFinishButtonWidth: 260,
+        devFinishButtonHeight: 72,
+        devFinishButtonLeftInset: 170,
+    }),
     loop: Object.freeze({
         logicHz: 30,
         maxFrameSeconds: 0.25,
         maxCatchUpSteps: 8,
+        scoreReportIntervalSeconds: 0.25,
     }),
     /** 策划案 §71：生存分每秒 +10。 */
     survivalScorePerSecond: 10,

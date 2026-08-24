@@ -1,0 +1,28 @@
+# The bundled Cocos MCP 1.5.4 server uses a legacy HTTP request/response
+# transport. Disable the global Streamable HTTP entry for this project and
+# expose it through the protocol-compatible STDIO bridge instead.
+
+[mcp_servers.cocos-creator-stdio]
+command = "powershell.exe"
+args = [
+    "-NoLogo",
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "tools/cocos-mcp-stdio-bridge.ps1",
+]
+cwd = "C:\\Users\\laitao\\hello-pressure\\decompression-collection-games"
+startup_timeout_sec = 20
+tool_timeout_sec = 180
+enabled = true
+
+[mcp_servers.cocos-creator-stdio.env]
+COCOS_MCP_HTTP_URL = "http://127.0.0.1:3001/mcp"
+
+[mcp_servers.cocos-creator-stdio.tools.assetAdvanced_asset_system]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.assetAdvanced_asset_manage]
+approval_mode = "approve"

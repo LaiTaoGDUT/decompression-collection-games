@@ -1,4 +1,4 @@
-import { Color, Graphics, Layers, Node } from 'cc';
+import { Color, Graphics, Node } from 'cc';
 import { ENDLESS_SWORD_CONFIG } from '../config/GameConfig';
 import { SeededRandom } from '../core/SeededRandom';
 
@@ -25,10 +25,13 @@ export class WorldBackground {
     constructor(parent: Node) {
         this.tileSize = ENDLESS_SWORD_CONFIG.world.tileSize;
         this.halfGrid = Math.floor(ENDLESS_SWORD_CONFIG.world.tileGrid / 2);
+        if (ENDLESS_SWORD_CONFIG.world.tileGrid < 1 || ENDLESS_SWORD_CONFIG.world.tileGrid % 2 === 0) {
+            throw new Error('World tile grid must be a positive odd number.');
+        }
         const count = ENDLESS_SWORD_CONFIG.world.tileGrid * ENDLESS_SWORD_CONFIG.world.tileGrid;
         for (let i = 0; i < count; i += 1) {
             const tile = new Node('Tile');
-            tile.layer = Layers.Enum.UI_2D;
+            tile.layer = parent.layer;
             parent.addChild(tile);
             tile.addComponent(Graphics);
             this.tiles.push(tile);
@@ -42,8 +45,10 @@ export class WorldBackground {
     }
 
     update(playerX: number, playerY: number): void {
-        const cx = Math.floor(playerX / this.tileSize);
-        const cy = Math.floor(playerY / this.tileSize);
+        // Tile 以中心坐标放置，因此按最近中心重排。使用 floor 会在负方向
+        // 刚越过原点时提前换格，在高屏设备上立即露出网格外区域。
+        const cx = Math.round(playerX / this.tileSize);
+        const cy = Math.round(playerY / this.tileSize);
         if (cx === this.centerTileX && cy === this.centerTileY) {
             return;
         }

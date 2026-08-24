@@ -1,12 +1,6 @@
-import { Color, EventTouch, Graphics, Layers, Node, UITransform, view } from 'cc';
+import { Color, EventTouch, Graphics, Node, UITransform, view } from 'cc';
 import { ENDLESS_SWORD_CONFIG } from '../config/GameConfig';
-
-/** 摇杆输出：方向为单位向量，magnitude 为 0～1 的速度比例（策划案 §6.2）。 */
-export interface MoveInput {
-    dirX: number;
-    dirY: number;
-    magnitude: number;
-}
+import type { MoveInput } from '../EndlessSwordTypes';
 
 const BASE_RING = new Color(16, 24, 23, 110);
 const BASE_EDGE = new Color(100, 214, 180, 150);
@@ -15,7 +9,8 @@ const KNOB_FILL = new Color(100, 214, 180, 170);
 /**
  * 浮动虚拟摇杆（策划案 §6）：在游戏区按下处生成摇杆中心，
  * 拖动矢量决定移动方向与速度，松手停止。
- * 触摸捕获层位于世界之上、HUD 之下；开始页与暂停层的输入拦截会自然屏蔽它。
+ * 触摸捕获层位于世界之上、HUD 之下；加载/暂停层的输入拦截会自然屏蔽它，
+ * 入口组件同时在生命周期切换时显式启停捕获。
  * 默认隐藏摇杆视觉（config.joystick.showVisuals = false）：玩家可操控但看不到摇杆。
  */
 export class FloatingJoystick {
@@ -27,12 +22,13 @@ export class FloatingJoystick {
     private centerY = 0;
     private offsetX = 0;
     private offsetY = 0;
+    private enabled = true;
 
     constructor(parent: Node) {
         const visibleSize = view.getVisibleSize();
 
         this.catcher = new Node('TouchCatcher');
-        this.catcher.layer = Layers.Enum.UI_2D;
+        this.catcher.layer = parent.layer;
         parent.addChild(this.catcher);
         this.catcher.addComponent(UITransform).setContentSize(visibleSize.width, visibleSize.height);
         this.catcher.on(Node.EventType.TOUCH_START, this.handleStart, this);
@@ -53,7 +49,7 @@ export class FloatingJoystick {
         const dx = this.offsetX;
         const dy = this.offsetY;
         const length = Math.sqrt(dx * dx + dy * dy);
-        if (this.activeTouchId === null || length < deadZone) {
+        if (!this.enabled || this.activeTouchId === null || length < deadZone) {
             return { dirX: 0, dirY: 0, magnitude: 0 };
         }
         // 统一移速（2026-08-22 修订）：超过死区即满速，不随拖动距离变化。
@@ -65,17 +61,25 @@ export class FloatingJoystick {
         this.activeTouchId = null;
         this.offsetX = 0;
         this.offsetY = 0;
-        if (this.baseNode) {
+        if (this.baseNode?.isValid) {
             this.baseNode.active = false;
         }
-        if (this.knobNode) {
+        if (this.knobNode?.isValid) {
             this.knobNode.active = false;
         }
     }
 
+    setEnabled(enabled: boolean): void {
+        this.enabled = enabled;
+        if (!enabled) {
+            this.resetInput();
+        }
+    }
+
     dispose(): void {
-        this.catcher.targetOff(this);
+        this.setEnabled(false);
         if (this.catcher.isValid) {
+            this.catcher.targetOff(this);
             this.catcher.destroy();
         }
         if (this.baseNode && this.baseNode.isValid) {
@@ -86,9 +90,13 @@ export class FloatingJoystick {
         }
     }
 
+    resize(width: number, height: number): void {
+        this.catcher.getComponent(UITransform)?.setContentSize(width, height);
+    }
+
     private createCircle(name: string, radius: number, fill: Color, edge?: Color): Node {
         const node = new Node(name);
-        node.layer = Layers.Enum.UI_2D;
+        node.layer = this.catcher.layer;
         node.addComponent(UITransform).setContentSize(radius * 2, radius * 2);
         const g = node.addComponent(Graphics);
         if (edge) {
@@ -115,7 +123,7 @@ export class FloatingJoystick {
     }
 
     private handleStart(event: EventTouch): void {
-        if (this.activeTouchId !== null) {
+        if (!this.enabled || this.activeTouchId !== null) {
             return;
         }
         this.activeTouchId = event.getID();
@@ -133,7 +141,7 @@ export class FloatingJoystick {
     }
 
     private handleMove(event: EventTouch): void {
-        if (event.getID() !== this.activeTouchId) {
+        if (!this.enabled || event.getID() !== this.activeTouchId) {
             return;
         }
         const point = this.toCanvasSpace(event);
@@ -150,7 +158,7 @@ export class FloatingJoystick {
     }
 
     private handleEnd(event: EventTouch): void {
-        if (event.getID() !== this.activeTouchId) {
+        if (!this.enabled || event.getID() !== this.activeTouchId) {
             return;
         }
         this.resetInput();

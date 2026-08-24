@@ -31,7 +31,7 @@ import type {
     MiniGamePauseModel,
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
-import type { AdService } from '../../../services/ads/AdService';
+import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
@@ -260,7 +260,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             '· 增援的棋种和倒计时会提前公开。每批普通增援至少 2 枚；清空棋盘时下一批立即落场。',
             '· 连续用正常走車吃子会提高连斩倍率；走到空格会重置连斩，道具击杀不计入连斩。',
             '· 斩杀将军可得高分；背包未满时会获得一次道具奖励选择。',
-            '· 每局只有一次广告复活机会。复活会回到致死行动前并自动释放十字斩。',
+            '· 当前版本开启广告时，每局最多一次视频复活机会。复活会回到致死行动前并自动释放十字斩。',
         ].join('\n'),
     }),
     Object.freeze({
@@ -346,6 +346,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private resumableRound?: ResumableChessRound;
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
+    private reviveAdPending = false;
 
     async initialize(context: MiniGameContext<ChessEndlessServices>): Promise<void> {
         if (this.lifecycle !== 'idle') throw new Error(`Cannot initialize ChessEndlessGame from ${this.lifecycle}.`);
@@ -371,6 +372,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (this.lifecycle !== 'ready') throw new Error(`Cannot begin ChessEndlessGame from ${this.lifecycle}.`);
         this.operationGeneration += 1;
         this.savedProgressDiscarded = false;
+        this.reviveAdPending = false;
         this.lifecycle = 'playing';
         this.selectedItem = undefined;
         this.pressureMode = false;
@@ -397,7 +399,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.context?.reportScore(0);
         this.renderAll();
         if (qaScenario === 'reward') void this.showRewardChestSequence();
-        if (qaScenario === 'noRevive') void this.performEnemyTurn();
+        if (qaScenario === 'revive' || qaScenario === 'noRevive') void this.performEnemyTurn();
         this.persistProgress(false);
         console.info('[ChessEndless] ready');
     }
@@ -426,6 +428,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (context) this.context = context;
         this.operationGeneration += 1;
         this.savedProgressDiscarded = false;
+        this.reviveAdPending = false;
         this.destroyAllOverlays();
         this.lifecycle = 'playing';
         this.inputLocked = false;
@@ -440,7 +443,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.playMusic('musicNormal');
         this.renderAll();
         if (qaScenario === 'reward') void this.showRewardChestSequence();
-        if (qaScenario === 'noRevive') void this.performEnemyTurn();
+        if (qaScenario === 'revive' || qaScenario === 'noRevive') void this.performEnemyTurn();
         this.persistProgress(false);
     }
 
@@ -458,6 +461,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.persistProgress(false);
         }
         this.lifecycle = 'disposed';
+        this.reviveAdPending = false;
         Tween.stopAll();
         this.destroyAllOverlays();
         this.context?.services.audio.stopMusic();
@@ -1456,7 +1460,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private showDeathOverlay(): void {
         this.inputLocked = true;
-        if (!this.model.canRevive) {
+        const context = this.context;
+        const ads = context?.services.ads;
+        if (!this.model.canRevive
+            || !context
+            || !ads?.isEnabledForGame(context.gameId)) {
             this.finishRound();
             return;
         }
@@ -1475,32 +1483,56 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async handleRevive(): Promise<void> {
-        if (!this.model.canRevive) return;
-        const generation = this.operationGeneration;
-        const adResult = await this.context?.services.ads?.showRewarded();
-        if (!this.isOperationCurrent(generation)) return;
-        if (adResult && adResult.outcome !== 'completed') {
-            this.setHint('视频未完整播放，暂未复活');
+        if (!this.model.canRevive || this.reviveAdPending) return;
+        const context = this.context;
+        const ads = context?.services.ads;
+        if (!context || !ads || !ads.isEnabledForGame(context.gameId)) {
+            this.finishRound();
             return;
         }
-        this.destroyOverlay(this.deathOverlay);
-        this.deathOverlay = undefined;
-        this.playSound('revive');
-        const result = this.model.revive();
-        this.persistProgress(false);
-        this.renderAll();
-        const revivePoint = this.boardPoint(this.model.snapshot.playerPosition);
-        this.spawnParticle('lightParticle', revivePoint.x, revivePoint.y, 120, 0);
-        await this.showCrossSlash(result.kills, result.scoreDelta);
-        if (!this.isOperationCurrent(generation)) return;
-        this.renderAll();
-        if (this.model.snapshot.phase === 'reward') {
-            await this.showRewardChestSequence();
+
+        const generation = this.operationGeneration;
+        this.reviveAdPending = true;
+        this.deathOverlay?.buttons.forEach((button) => {
+            button.interactable = false;
+        });
+        try {
+            const adResult = await ads.showRewarded({
+                placement: AD_PLACEMENTS.chessEndlessRevive,
+                gameId: context.gameId,
+                sessionId: context.sessionId,
+            });
             if (!this.isOperationCurrent(generation)) return;
-        } else {
-            this.inputLocked = false;
-            this.selectedPlayer = true;
+            if (adResult.outcome !== 'completed') {
+                this.setHint('视频未完整播放，暂未复活');
+                return;
+            }
+            this.destroyOverlay(this.deathOverlay);
+            this.deathOverlay = undefined;
+            this.playSound('revive');
+            const result = this.model.revive();
+            this.persistProgress(false);
             this.renderAll();
+            const revivePoint = this.boardPoint(this.model.snapshot.playerPosition);
+            this.spawnParticle('lightParticle', revivePoint.x, revivePoint.y, 120, 0);
+            await this.showCrossSlash(result.kills, result.scoreDelta);
+            if (!this.isOperationCurrent(generation)) return;
+            this.renderAll();
+            if (this.model.snapshot.phase === 'reward') {
+                await this.showRewardChestSequence();
+                if (!this.isOperationCurrent(generation)) return;
+            } else {
+                this.inputLocked = false;
+                this.selectedPlayer = true;
+                this.renderAll();
+            }
+        } finally {
+            this.reviveAdPending = false;
+            if (this.isOperationCurrent(generation) && this.deathOverlay?.root.isValid) {
+                this.deathOverlay.buttons.forEach((button) => {
+                    button.interactable = true;
+                });
+            }
         }
     }
 
@@ -2763,14 +2795,14 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 inventory: Object.freeze({ crossSlash: 2, freeze: 2, delay: 2, banish: 2, teleport: 2 }),
                 nextPieceId: 2,
             });
-        } else if (scenario === 'noRevive') {
+        } else if (scenario === 'revive' || scenario === 'noRevive') {
             this.model.loadForTesting({
                 playerPosition: position(4, 4),
                 enemies: Object.freeze([
                     { id: 1, type: 'rook', position: position(4, 0), frozenTurns: 0, isNewlySpawned: false },
                 ]),
                 phase: 'enemy',
-                reviveUsed: true,
+                reviveUsed: scenario === 'noRevive',
                 reinforcementTimer: 99,
                 nextPieceId: 2,
             });

@@ -1,7 +1,6 @@
 import {
     Color,
     Graphics,
-    Layers,
     Node,
     Rect,
     Size,
@@ -22,7 +21,7 @@ const ROW_UP = 3;
 /**
  * 玩家视图：正式序列帧行走动画（策划案 §86），资源缺失时回退几何占位。
  * 帧网格由代码从整张 Texture 切出（每帧 256×256），按移动方向选行、
- * 4 帧循环；停止时显示该方向第一帧。
+ * 4 帧循环；停止时显示该方向第二帧（并拢姿态）。
  */
 export class PlayerView {
     readonly node: Node;
@@ -34,18 +33,24 @@ export class PlayerView {
 
     constructor(parent: Node, texture?: Texture2D) {
         const node = new Node('Player');
-        node.layer = Layers.Enum.UI_2D;
+        node.layer = parent.layer;
         parent.addChild(node);
         this.node = node;
 
         // 脚底椭圆阴影：先加入、排在角色图之前，保证渲染在身体下层。
         const shadow = new Node('Shadow');
-        shadow.layer = Layers.Enum.UI_2D;
+        shadow.layer = node.layer;
         node.addChild(shadow);
         const shadowConfig = ENDLESS_SWORD_CONFIG.playerSprite;
         shadow.setPosition(0, shadowConfig.shadowOffsetY, 0);
         const shadowGraphics = shadow.addComponent(Graphics);
-        shadowGraphics.fillColor = new Color(8, 14, 12, 110);
+        const shadowColor = ENDLESS_SWORD_CONFIG.groundShadowColor;
+        shadowGraphics.fillColor = new Color(
+            shadowColor.red,
+            shadowColor.green,
+            shadowColor.blue,
+            shadowColor.alpha,
+        );
         shadowGraphics.ellipse(
             0,
             0,
@@ -57,7 +62,7 @@ export class PlayerView {
         if (texture) {
             this.frames = buildFrames(texture);
             const body = new Node('Body');
-            body.layer = Layers.Enum.UI_2D;
+            body.layer = node.layer;
             node.addChild(body);
             const config = ENDLESS_SWORD_CONFIG.playerSprite;
             body.addComponent(UITransform).setContentSize(config.displaySize, config.displaySize);
@@ -100,6 +105,17 @@ export class PlayerView {
     }
 
     destroy(): void {
+        if (this.sprite?.isValid) {
+            this.sprite.spriteFrame = null;
+        }
+        for (const row of this.frames) {
+            for (const frame of row) {
+                if (frame.isValid) {
+                    frame.destroy();
+                }
+            }
+        }
+        this.frames.length = 0;
         if (this.node.isValid) {
             this.node.destroy();
         }
