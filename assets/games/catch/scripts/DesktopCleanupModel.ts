@@ -127,10 +127,12 @@ const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
 const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;
 const STACK_X_LIMIT = 0.36;
 const STACK_Y_LIMIT = 0.36;
-const PHYSICS_MIN_X = -0.45;
-const PHYSICS_MAX_X = 0.45;
-const PHYSICS_MIN_Y = -0.45;
-const PHYSICS_MAX_Y = 0.45;
+/** PileRoot uses this factor when mapping normalized model coordinates to pixels. */
+export const DESKTOP_CLEANUP_STACK_RENDER_SCALE = 0.96;
+/** Conservative normalized half-size for the enlarged square item nodes. */
+const STACK_ITEM_HALF_EXTENT = 0.15;
+/** Keep rotated corners inside the visible playmat, not just inside PileRoot. */
+const STACK_CONTAINER_MARGIN = 0.04;
 const PHYSICS_ITEM_RADIUS = 0.125;
 const PHYSICS_MAX_SPEED = 0.72;
 const PHYSICS_MAX_ANGULAR_SPEED = 120;
@@ -139,6 +141,22 @@ const PHYSICS_SETTLE_SPEED = 0.006;
 const PHYSICS_DEPTH_COLLISION_RANGE = 0.35;
 const PHYSICS_COVER_RADIUS = PHYSICS_ITEM_RADIUS * 0.72;
 const PHYSICS_EPSILON = 0.0001;
+
+function visibleCenterLimit(angle: number): number {
+    const radians = angle * Math.PI / 180;
+    const rotatedHalfExtent = STACK_ITEM_HALF_EXTENT
+        * (Math.abs(Math.cos(radians)) + Math.abs(Math.sin(radians)));
+    return Math.max(
+        0.12,
+        Math.min(
+            STACK_X_LIMIT,
+            STACK_Y_LIMIT,
+            0.5 / DESKTOP_CLEANUP_STACK_RENDER_SCALE
+                - rotatedHalfExtent
+                - STACK_CONTAINER_MARGIN,
+        ),
+    );
+}
 
 function renderDepth(item: Pick<DesktopCleanupItemSnapshot, 'layer' | 'elevation'>): number {
     return item.layer + item.elevation * 4;
@@ -209,10 +227,12 @@ function stackedPositions(
         for (let index = 0; index < count; index += 1) {
             const spreadX = layerSpreadX * (0.82 + random() * 0.18);
             const spreadY = layerSpreadY * (0.82 + random() * 0.18);
+            const angle = Math.round(-38 + random() * 76);
+            const centerLimit = visibleCenterLimit(angle);
             positions.push(Object.freeze({
-                x: clamp(layerOffsetX + (random() * 2 - 1) * spreadX, -STACK_X_LIMIT, STACK_X_LIMIT),
-                y: clamp(layerOffsetY + (random() * 2 - 1) * spreadY, -STACK_Y_LIMIT, STACK_Y_LIMIT),
-                angle: Math.round(-38 + random() * 76),
+                x: clamp(layerOffsetX + (random() * 2 - 1) * spreadX, -centerLimit, centerLimit),
+                y: clamp(layerOffsetY + (random() * 2 - 1) * spreadY, -centerLimit, centerLimit),
+                angle,
             }));
         }
     }
@@ -291,6 +311,11 @@ export function verifyDesktopCleanupLayout(
         layerTotals.set(key, (layerTotals.get(key) ?? 0) + 1);
         if (item.layer < 0 || item.layer >= LAYER_COUNT) {
             errors.push(`invalid layer ${item.layer}`);
+        }
+        const centerLimit = visibleCenterLimit(item.angle);
+        if (Math.abs(item.x) > centerLimit + PHYSICS_EPSILON
+            || Math.abs(item.y) > centerLimit + PHYSICS_EPSILON) {
+            errors.push(`item ${item.id} exceeds rotated playmat bounds`);
         }
     });
     totals.forEach((count, type) => {
@@ -766,18 +791,19 @@ export class DesktopCleanupModel {
     }
 
     private resolveBoundary(item: MutableItem): void {
-        if (item.x < PHYSICS_MIN_X + PHYSICS_ITEM_RADIUS) {
-            item.x = PHYSICS_MIN_X + PHYSICS_ITEM_RADIUS;
+        const centerLimit = visibleCenterLimit(item.angle);
+        if (item.x < -centerLimit) {
+            item.x = -centerLimit;
             item.velocityX = Math.abs(item.velocityX) * this.config.physicsBounce;
-        } else if (item.x > PHYSICS_MAX_X - PHYSICS_ITEM_RADIUS) {
-            item.x = PHYSICS_MAX_X - PHYSICS_ITEM_RADIUS;
+        } else if (item.x > centerLimit) {
+            item.x = centerLimit;
             item.velocityX = -Math.abs(item.velocityX) * this.config.physicsBounce;
         }
-        if (item.y < PHYSICS_MIN_Y + PHYSICS_ITEM_RADIUS) {
-            item.y = PHYSICS_MIN_Y + PHYSICS_ITEM_RADIUS;
+        if (item.y < -centerLimit) {
+            item.y = -centerLimit;
             item.velocityY = Math.abs(item.velocityY) * this.config.physicsBounce;
-        } else if (item.y > PHYSICS_MAX_Y - PHYSICS_ITEM_RADIUS) {
-            item.y = PHYSICS_MAX_Y - PHYSICS_ITEM_RADIUS;
+        } else if (item.y > centerLimit) {
+            item.y = centerLimit;
             item.velocityY = -Math.abs(item.velocityY) * this.config.physicsBounce;
         }
     }

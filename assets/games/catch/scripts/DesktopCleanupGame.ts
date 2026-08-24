@@ -51,6 +51,7 @@ import {
 } from './DesktopCleanupConfig';
 import {
     DESKTOP_CLEANUP_ITEM_TYPES,
+    DESKTOP_CLEANUP_STACK_RENDER_SCALE,
     DesktopCleanupModel,
     compareDesktopCleanupItems,
     desktopCleanupDateKey,
@@ -80,7 +81,6 @@ const BACKGROUND_PATH = 'visual/backgrounds/desktop-cleanup-backdrop-v2/texture'
 const PLAYMAT_PATH = 'visual/backgrounds/desktop-cleanup-playmat-v2/texture';
 const ITEM_ATLAS_PATH = 'visual/items/desktop-cleanup-items-atlas-v2/texture';
 const PICKUP_ANIMATION_WATCHDOG_SECONDS = 0.82;
-const SHAKE_GESTURE_MIN_DISTANCE = 72;
 const ACCELEROMETER_SHAKE_THRESHOLD = 0.18;
 const ACCELEROMETER_SHAKE_COOLDOWN_MS = 110;
 const THEME_TEXTURE_PATHS = Object.freeze({
@@ -394,13 +394,6 @@ interface PendingPileTap {
     readonly node?: Node;
 }
 
-interface BoardTouchTrace {
-    readonly touchId: number;
-    readonly start: Vec2;
-    last: Vec2;
-    shakeTriggered: boolean;
-}
-
 interface DesktopCleanupMatchAnimation {
     readonly selection: DesktopCleanupPendingSelection;
     readonly generation: number;
@@ -480,9 +473,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private rendering = false;
     private renderQueued = false;
     private readonly pendingPileTaps = new Map<number, PendingPileTap>();
-    private readonly boardTouchTraces = new Map<number, BoardTouchTrace>();
-    private readonly renderedItemFree = new Map<string, boolean>();
-    private readonly revealPulseStartedAt = new Map<string, number>();
     private stopAccelerometer?: () => void;
     private lastAccelerometerSample?: AccelerometerSample;
     private lastAccelerometerShakeAt = 0;
@@ -521,7 +511,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     protected update(deltaTime: number): void {
         if (this.state !== 'playing' || !this.model) return;
         const physicsChanged = this.model.tick(Math.max(0, deltaTime) * 1000);
-        if (physicsChanged || this.revealPulseStartedAt.size > 0) this.syncPileTransforms();
+        if (physicsChanged) this.syncPileTransforms();
         const second = Math.max(0, Math.ceil(this.model.remainingMs / 1000));
         if (second > 0 && second <= 30 && this.lastHudSecond > 30) {
             this.context?.services.feedback.play('danger');
@@ -588,9 +578,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.pileItemNodes.clear();
         this.slotItemNodes.clear();
         this.slotMoveTokens.clear();
-        this.boardTouchTraces.clear();
-        this.renderedItemFree.clear();
-        this.revealPulseStartedAt.clear();
         this.lastAccelerometerSample = undefined;
         this.pickupRoot = undefined;
         this.itemAtlasTexture = undefined;
@@ -660,8 +647,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.inputLocked = false;
         this.lastHudSecond = -1;
         this.lastReportedScore = 0;
-        this.renderedItemFree.clear();
-        this.revealPulseStartedAt.clear();
         this.lastAccelerometerSample = undefined;
         this.context?.reportScore(0);
         this.state = 'playing';
@@ -1334,9 +1319,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             .filter((item) => item.active)
             .sort(compareDesktopCleanupItems);
         active.forEach((item) => {
-            const wasFree = this.renderedItemFree.get(item.id);
-            if (wasFree === false && item.free) this.startRevealPulse(item.id);
-            this.renderedItemFree.set(item.id, item.free);
             const existing = this.pileItemNodes.get(item.id);
             if (existing?.isValid && existing.parent === pile) {
                 this.updatePileItemTransform(existing, item);
@@ -1388,14 +1370,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const active = snapshot.items
             .filter((item) => item.active)
             .sort(compareDesktopCleanupItems);
-        const activeIds = new Set(active.map((item) => item.id));
-        this.revealPulseStartedAt.forEach((_startedAt, itemId) => {
-            if (!activeIds.has(itemId)) this.revealPulseStartedAt.delete(itemId);
-        });
         active.forEach((item, index) => {
-            const wasFree = this.renderedItemFree.get(item.id);
-            if (wasFree === false && item.free) this.startRevealPulse(item.id);
-            this.renderedItemFree.set(item.id, item.free);
             const node = this.pileItemNodes.get(item.id);
             if (!node?.isValid || node.parent !== pile) return;
             this.updatePileItemTransform(node, item);
@@ -1405,33 +1380,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private updatePileItemTransform(node: Node, item: DesktopCleanupItemSnapshot): void {
-        const pulse = this.revealPulseVisual(item.id);
         const baseScale = 1 + item.elevation * 0.14;
         node.setPosition(this.pilePosition(item, this.layout!));
-        node.angle = item.angle + pulse.angle;
-        node.setScale(baseScale * pulse.scaleX, baseScale, 1);
-    }
-
-    private startRevealPulse(itemId: string): void {
-        this.revealPulseStartedAt.set(itemId, Date.now());
-    }
-
-    private revealPulseVisual(itemId: string): { readonly scaleX: number; readonly angle: number } {
-        const startedAt = this.revealPulseStartedAt.get(itemId);
-        if (startedAt === undefined) return { scaleX: 1, angle: 0 };
-        const progress = Math.min(1, Math.max(0, (Date.now() - startedAt) / 260));
-        if (progress >= 1) {
-            this.revealPulseStartedAt.delete(itemId);
-            return { scaleX: 1, angle: 0 };
-        }
-        const phase = progress < 0.5 ? progress * 2 : (progress - 0.5) * 2;
-        const scaleX = progress < 0.5
-            ? 1 - phase * 0.88
-            : 0.12 + phase * 0.88;
-        return {
-            scaleX,
-            angle: Math.sin(progress * Math.PI) * 6,
-        };
+        node.angle = item.angle;
+        node.setScale(baseScale, baseScale, 1);
     }
 
     private drawItem(
@@ -2418,61 +2370,23 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private readonly handleBoardTouchStart = (event: EventTouch): void => {
         if (this.state !== 'playing' || this.inputLocked || !this.model) return;
         const touchId = event.getID();
-        const location = event.getLocation();
-        this.boardTouchTraces.set(touchId, {
-            touchId,
-            start: location.clone(),
-            last: location.clone(),
-            shakeTriggered: false,
-        });
         this.pendingPileTaps.set(touchId, { touchId });
-        this.updatePendingPileTap(touchId, location, event.windowId);
+        this.updatePendingPileTap(touchId, event.getLocation(), event.windowId);
     };
 
     private readonly handleBoardTouchMove = (event: EventTouch): void => {
         if (this.state !== 'playing' || this.inputLocked || !this.model) {
             this.clearPendingPileTap(event.getID());
-            this.boardTouchTraces.delete(event.getID());
             return;
         }
-        const touchId = event.getID();
-        const location = event.getLocation();
-        const trace = this.boardTouchTraces.get(touchId);
-        if (trace) {
-            const stepX = location.x - trace.last.x;
-            const stepY = location.y - trace.last.y;
-            trace.last = location.clone();
-            const totalDistance = Math.hypot(
-                location.x - trace.start.x,
-                location.y - trace.start.y,
-            );
-            const threshold = SHAKE_GESTURE_MIN_DISTANCE * (this.layout?.scale ?? 1);
-            if (!trace.shakeTriggered && totalDistance >= threshold) {
-                trace.shakeTriggered = true;
-                this.applyShakeFromGesture(
-                    touchId,
-                    Math.abs(stepX) + Math.abs(stepY) > 0.5
-                        ? new Vec2(stepX, stepY)
-                        : new Vec2(location.x - trace.start.x, location.y - trace.start.y),
-                    totalDistance,
-                );
-            }
-            if (trace.shakeTriggered) return;
-        }
-        this.updatePendingPileTap(touchId, location, event.windowId);
+        this.updatePendingPileTap(event.getID(), event.getLocation(), event.windowId);
     };
 
     private readonly handleBoardTouchEnd = (event: EventTouch): void => {
         const touchId = event.getID();
-        const trace = this.boardTouchTraces.get(touchId);
-        this.boardTouchTraces.delete(touchId);
         if (this.state !== 'playing'
             || this.inputLocked
             || !this.model) {
-            this.clearPendingPileTap(touchId);
-            return;
-        }
-        if (trace?.shakeTriggered) {
             this.clearPendingPileTap(touchId);
             return;
         }
@@ -2516,25 +2430,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     };
 
     private readonly handleBoardTouchCancel = (event: EventTouch): void => {
-        this.boardTouchTraces.delete(event.getID());
         this.clearPendingPileTap(event.getID());
     };
-
-    private applyShakeFromGesture(touchId: number, delta: Vec2, distance: number): void {
-        const model = this.model;
-        const metrics = this.layout;
-        if (!model || !metrics) return;
-        const length = Math.hypot(delta.x, delta.y);
-        if (length <= 0.5) return;
-        const shake: DesktopCleanupShakeInput = {
-            x: delta.x / Math.max(1, metrics.boardWidth),
-            y: delta.y / Math.max(1, metrics.boardHeight),
-            strength: Math.min(1.8, Math.max(0.7, distance / Math.max(1, metrics.boardWidth * 0.24))),
-        };
-        if (!model.applyShake(shake)) return;
-        this.clearPendingPileTap(touchId);
-        this.context?.services.feedback.vibrate('light');
-    }
 
     private updatePendingPileTap(touchId: number, screenLocation: Vec2, windowId: number): void {
         this.rebindPendingPileTapNodes();
@@ -2634,7 +2531,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     private clearPendingPileTaps(): void {
         [...this.pendingPileTaps.keys()].forEach((touchId) => this.clearPendingPileTap(touchId));
-        this.boardTouchTraces.clear();
     }
 
     private findPileItemAt(
@@ -3247,8 +3143,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     private pilePosition(item: Pick<DesktopCleanupItemSnapshot, 'x' | 'y'>, metrics: DesktopCleanupLayoutMetrics): Vec3 {
         return new Vec3(
-            item.x * metrics.boardWidth * 0.96,
-            item.y * metrics.boardHeight * 0.96,
+            item.x * metrics.boardWidth * DESKTOP_CLEANUP_STACK_RENDER_SCALE,
+            item.y * metrics.boardHeight * DESKTOP_CLEANUP_STACK_RENDER_SCALE,
             0,
         );
     }
