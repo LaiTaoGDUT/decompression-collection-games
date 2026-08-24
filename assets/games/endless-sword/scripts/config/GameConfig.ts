@@ -46,6 +46,17 @@ export const ENDLESS_SWORD_CONFIG = Object.freeze({
         gridCellSize: 128,
         enemySeparationStrength: 0.35,
     }),
+    experience: Object.freeze({
+        pickupRadius: 56,
+        magnetRadius: 176,
+        magnetSpeed: 520,
+        xpMergeRadius: 180,
+        xpLevelThresholds: Object.freeze({
+            small: 4,
+            medium: 12,
+            large: 30,
+        }),
+    }),
     pools: Object.freeze({
         enemies: 160,
         projectiles: 160,
@@ -60,6 +71,12 @@ export const ENDLESS_SWORD_CONFIG = Object.freeze({
     ui: Object.freeze({
         pauseButtonSize: 72,
         survivalLabelHeight: 48,
+        hpBarWidth: 310,
+        hpBarHeight: 34,
+        xpBarWidth: 430,
+        xpBarHeight: 24,
+        levelLabelHeight: 28,
+        scoreLabelHeight: 28,
         safeGap: 16,
         devFinishButtonWidth: 260,
         devFinishButtonHeight: 72,

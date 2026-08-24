@@ -152,7 +152,10 @@ export class CollisionSystem {
             if (!aabbOverlaps(this.queryBounds, this.enemyBounds)) {
                 continue;
             }
-            if (this.damagePlayer(player, getEnemyConfig(enemy.type).contactDamage)) {
+            if (this.damagePlayer(
+                player,
+                getEnemyConfig(enemy.type).contactDamage * enemy.damageMultiplier,
+            )) {
                 return;
             }
         }

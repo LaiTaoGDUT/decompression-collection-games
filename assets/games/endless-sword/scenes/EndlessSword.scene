@@ -184,6 +184,30 @@
       "__uuid__": "cc72102f-59c4-4990-abaf-67a727bfec85@6c48a",
       "__expectedType__": "cc.Texture2D"
     },
+    "passiveIconTexture": {
+      "__uuid__": "b678125d-6990-47d6-be10-c90ec5182f04@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "pickupTexture": {
+      "__uuid__": "b7c6cf69-9701-4e53-91ee-a88d401de99c@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "panelTexture": {
+      "__uuid__": "c2c229a2-f7ff-468d-96e8-851c9a198f55@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "cardTexture": {
+      "__uuid__": "8c8f171c-c956-404b-9fbe-b8390a97f9df@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "buttonTexture": {
+      "__uuid__": "988bb0d2-3739-44a5-8d90-18c9079059fc@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
+    "hpXpTexture": {
+      "__uuid__": "a7308446-1a68-42b9-902f-c2e70436e499@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
     "_id": "0D3zyPmybjuVp8kX+hgpKY"
   },
   {

@@ -44,7 +44,7 @@
 
 - 当前 `desktop-cleanup-desk-v1.jpg` 因将奶油色桌板烘焙进全屏背景，只能作为开发参考，不得进入候选构建。正式版本必须提供“无桌板的胡桃木全屏背景”和“独立 1:1 奶油色桌板”两张资源。
 - 顶部 HUD、七格收纳槽和三张道具卡所需的徽标、按钮、倒计时底板、槽体、卡片底板、道具图标、问号徽章及次数徽章，必须作为 `game-catch` 自有正式透明纹理随 Bundle 管理；确认效果图只用于派生与验收，不得将整张界面截图直接切片充当运行时 UI。
-- `desktop-cleanup-items-atlas-v1.png` 可作为物件身份和材质参考；正式候选图集必须替换其中过长、过细或轮廓过于复杂的物件，并同时维护与最终 SpriteFrame 一致的归一化多边形命中形状。图集仍按固定单元管理，物件不得跨格，空白格必须保持全透明。图集更新后可运行 `python3 tools/generate-desktop-cleanup-hit-polygons.py`，按 Alpha 阈值离线重建 `DesktopCleanupGame.ts` 的生成区间。
+- `desktop-cleanup-items-atlas-v2.png` 是当前正式物件图集和旧物件冻结基线；历史 v1 图集及已删除的旧组件源目录都不是后续重建的必要输入。新增物件必须提供独立透明源图，登记到 `tools/build-desktop-cleanup-v2-assets.py` 的 `NEW_ITEM_SOURCES` 后再进入图集，并同时维护与最终 SpriteFrame 一致的归一化多边形命中形状。图集仍按固定单元管理，物件不得跨格，空白格必须保持全透明。图集更新后可运行 `python3 tools/generate-desktop-cleanup-hit-polygons.py`，按 Alpha 阈值离线重建 `DesktopCleanupGame.ts` 的生成区间。
 - 三消必须提供本游戏独立的透明烟雾序列帧纹理；烟雾以暖奶油色软陶云团为主，可带少量珊瑚、青绿和芥末色颗粒，不得复用其他游戏特效。
 
 ### 大厅 Bundle

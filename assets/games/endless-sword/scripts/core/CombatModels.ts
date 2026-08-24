@@ -23,6 +23,9 @@ export interface EnemyModel {
     facingX: number;
     hp: number;
     maxHp: number;
+    hpMultiplier: number;
+    damageMultiplier: number;
+    speedMultiplier: number;
     attackCooldown: number;
     strafeSign: number;
     deathElapsed: number;
@@ -62,4 +65,5 @@ export interface XpOrbModel {
     x: number;
     y: number;
     value: number;
+    tier: 1 | 2 | 3 | 4;
 }

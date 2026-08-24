@@ -27,6 +27,11 @@ export interface GameManifest {
     readonly icon: string;
     readonly cover: string;
 
+    /**
+     * 游戏加载页使用的资源路径；省略时沿用大厅封面，显式为 null 时不展示封面。
+     */
+    readonly loadingCover?: string | null;
+
     readonly orientation: 'portrait' | 'landscape';
     readonly renderMode: '2d' | '3d';
     readonly minimumDeviceTier: DevicePerformanceTier;

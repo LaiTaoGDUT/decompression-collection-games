@@ -103,6 +103,7 @@
       "entryComponent": "DesktopCleanupGame",
       "icon": "visual/icons/catch/desktop-cleanup-icon-v1/texture",
       "cover": "visual/covers/catch/desktop-cleanup-cover-v1/texture",
+      "loadingCover": null,
       "orientation": "portrait",
       "renderMode": "2d",
       "minimumDeviceTier": "low",
@@ -132,7 +133,7 @@
       "minimumDeviceTier": "low",
       "minAppVersion": "0.1.0",
       "enabled": true,
-      "visibility": "development",
+      "visibility": "public",
       "preload": [],
       "tags": [
         "action",

@@ -210,10 +210,14 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.setProgress(Math.min(0.08, Math.max(0.03, model.progress)), false);
         this.unschedule(this.advanceFakeProgress);
         this.schedule(this.advanceFakeProgress, 0.06);
+        const coverFrame = this.node.getChildByName('LoadingCoverFrame');
+        if (coverFrame && this.variant === 'game' && !model.cover) {
+            coverFrame.active = false;
+        }
         if (this.variant === 'lobby') {
             this.loadStartupArtwork();
         } else {
-            this.loadCover(model.cover);
+            this.loadCover(model.cover ?? undefined);
         }
     }
 

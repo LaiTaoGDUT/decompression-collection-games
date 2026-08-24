@@ -19,7 +19,9 @@ export class PlayerSystem {
             player.facingX = input.dirX;
             player.facingY = input.dirY;
         }
-        const speed = ENDLESS_SWORD_CONFIG.player.moveSpeed * input.magnitude;
+        const speed = ENDLESS_SWORD_CONFIG.player.moveSpeed
+            * this.model.moveSpeedMultiplier
+            * input.magnitude;
         player.x += input.dirX * speed * dt;
         player.y += input.dirY * speed * dt;
     }

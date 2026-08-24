@@ -31,6 +31,13 @@ export interface OrbitBladeState {
 
 export type SkillEffectHandler = (event: SkillEffectEvent) => void;
 
+export interface SkillRuntimeModifiers {
+    readonly damageMultiplier?: number;
+    readonly cooldownMultiplier?: number;
+    readonly rangeMultiplier?: number;
+    readonly projectileSpeedMultiplier?: number;
+}
+
 /**
  * P0 主动技能执行器。只读写逻辑模型和系统，不持有 Cocos 节点。
  * 投射物技能走 ProjectileSystem，范围/环绕技能在这里请求 CollisionSystem 结算。
@@ -114,6 +121,7 @@ export class SkillSystem {
         collision: CollisionSystem,
         onEnemyKilled: (enemy: EnemyModel) => void,
         emitEffect: SkillEffectHandler,
+        modifiers: SkillRuntimeModifiers = {},
     ): void {
         this.tickCooldowns(dt);
         this.tickOrbitHitCooldowns(dt);
@@ -128,6 +136,7 @@ export class SkillSystem {
                 onEnemyKilled,
                 emitEffect,
                 orbitLevel,
+                modifiers,
             );
         } else {
             this.resetOrbitBlades();
@@ -149,10 +158,14 @@ export class SkillSystem {
                 collision,
                 onEnemyKilled,
                 emitEffect,
+                modifiers,
             );
             if (didFire) {
                 const config = getSkillLevelConfig(id, this.getSkillLevel(id));
-                this.cooldowns.set(id, config.cooldownSeconds);
+                this.cooldowns.set(
+                    id,
+                    config.cooldownSeconds * (modifiers.cooldownMultiplier ?? 1),
+                );
             }
         }
     }
@@ -165,6 +178,7 @@ export class SkillSystem {
         collision: CollisionSystem,
         onEnemyKilled: (enemy: EnemyModel) => void,
         emitEffect: SkillEffectHandler,
+        modifiers: SkillRuntimeModifiers,
     ): boolean {
         const definition = getActiveSkillConfig(id);
         const config = getSkillLevelConfig(id, this.getSkillLevel(id));
@@ -176,10 +190,14 @@ export class SkillSystem {
                 onEnemyKilled,
                 emitEffect,
                 config,
+                modifiers,
             );
         }
 
-        const target = this.findNearestEnemy(enemies, player.x, player.y, config.range);
+        const range = config.range * (modifiers.rangeMultiplier ?? 1);
+        const projectileSpeedMultiplier = modifiers.projectileSpeedMultiplier ?? 1;
+        const damageMultiplier = modifiers.damageMultiplier ?? 1;
+        const target = this.findNearestEnemy(enemies, player.x, player.y, range);
         if (!target) {
             return false;
         }
@@ -191,9 +209,9 @@ export class SkillSystem {
                 player.y,
                 direction.x,
                 direction.y,
-                config.projectileSpeed ?? 520,
+                (config.projectileSpeed ?? 520) * projectileSpeedMultiplier,
                 0,
-                config.range / (config.projectileSpeed ?? 520),
+                range / ((config.projectileSpeed ?? 520) * projectileSpeedMultiplier),
                 config.projectileWidth ?? 54,
                 config.projectileHeight ?? 54,
                 1,
@@ -201,7 +219,7 @@ export class SkillSystem {
                     visual: definition.projectileVisual,
                     skillId: id,
                     impactRadius: config.explosionRadius ?? 0,
-                    impactDamage: config.damage,
+                    impactDamage: config.damage * damageMultiplier,
                 },
             );
             return Boolean(projectile);
@@ -219,9 +237,9 @@ export class SkillSystem {
                 player.y + perpendicularY * offset,
                 direction.x,
                 direction.y,
-                config.projectileSpeed ?? 900,
-                config.damage,
-                config.range / (config.projectileSpeed ?? 900),
+                (config.projectileSpeed ?? 900) * projectileSpeedMultiplier,
+                config.damage * damageMultiplier,
+                range / ((config.projectileSpeed ?? 900) * projectileSpeedMultiplier),
                 config.projectileWidth ?? 88,
                 config.projectileHeight ?? 34,
                 1 + (config.penetration ?? 0),
@@ -244,15 +262,26 @@ export class SkillSystem {
         onEnemyKilled: (enemy: EnemyModel) => void,
         emitEffect: SkillEffectHandler,
         config: ReturnType<typeof getSkillLevelConfig>,
+        modifiers: SkillRuntimeModifiers,
     ): boolean {
-        this.collectNearestEnemies(enemies, player.x, player.y, config.range);
+        this.collectNearestEnemies(
+            enemies,
+            player.x,
+            player.y,
+            config.range * (modifiers.rangeMultiplier ?? 1),
+        );
         if (this.targetBuffer.length === 0) {
             return false;
         }
         const count = Math.min(config.quantity, this.targetBuffer.length);
         for (let index = 0; index < count; index += 1) {
             const target = this.targetBuffer[index];
-            collision.damageEnemy(enemies, target, config.damage, onEnemyKilled);
+            collision.damageEnemy(
+                enemies,
+                target,
+                config.damage * (modifiers.damageMultiplier ?? 1),
+                onEnemyKilled,
+            );
             emitEffect({
                 vfx: 'lightning',
                 x: target.x,
@@ -295,9 +324,12 @@ export class SkillSystem {
         onEnemyKilled: (enemy: EnemyModel) => void,
         emitEffect: SkillEffectHandler,
         level: number,
+        modifiers: SkillRuntimeModifiers,
     ): void {
         const config = getSkillLevelConfig('sword-array', level);
-        const hitRadius = Math.max(28, (config.projectileWidth ?? 76) * 0.42);
+        const rangeMultiplier = modifiers.rangeMultiplier ?? 1;
+        const hitRadius = Math.max(28, (config.projectileWidth ?? 76) * 0.42 * rangeMultiplier);
+        const damage = config.damage * (modifiers.damageMultiplier ?? 1);
         const hitRadiusSquared = hitRadius * hitRadius;
         for (const blade of this.orbitBlades) {
             if (!blade.active) {
@@ -317,7 +349,7 @@ export class SkillSystem {
                     key,
                     config.orbitHitIntervalSeconds ?? 0.55,
                 );
-                collision.damageEnemy(enemies, enemy, config.damage, onEnemyKilled);
+                collision.damageEnemy(enemies, enemy, damage, onEnemyKilled);
                 emitEffect({
                     vfx: 'sword-slash',
                     x: blade.x,

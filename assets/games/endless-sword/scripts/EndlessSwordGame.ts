@@ -28,10 +28,14 @@ import {
     ACTIVE_SKILL_IDS,
     getActiveSkillConfig,
     isActiveSkillId,
+    type ActiveSkillId,
 } from './config/SkillConfig';
 import {
+    PASSIVE_SKILL_IDS,
+    type PassiveSkillId,
+} from './config/PassiveSkillConfig';
+import {
     ENEMY_TYPES,
-    T1_ENEMY_SHOWCASE,
     getEnemyConfig,
     type EnemyType,
 } from './config/EnemyConfig';
@@ -43,7 +47,9 @@ import { EnemySystem } from './systems/EnemySystem';
 import { PlayerSystem } from './systems/PlayerSystem';
 import { ProjectileSystem } from './systems/ProjectileSystem';
 import { SkillSystem, type SkillEffectEvent } from './systems/SkillSystem';
+import { SpawnSystem } from './systems/SpawnSystem';
 import { XpOrbSystem } from './systems/XpOrbSystem';
+import { UpgradeSystem, type UpgradeOption } from './systems/UpgradeSystem';
 import type { EndlessSwordRunState, EndlessSwordServices } from './EndlessSwordTypes';
 import { CameraRig } from './view/CameraRig';
 import { EnemyView } from './view/EnemyView';
@@ -53,6 +59,7 @@ import { ProjectileView } from './view/ProjectileView';
 import { SkillView } from './view/SkillView';
 import { WorldBackground } from './view/WorldBackground';
 import { XpOrbView } from './view/XpOrbView';
+import { UpgradeOverlay } from './ui/UpgradeOverlay';
 
 const { ccclass, property } = _decorator;
 
@@ -67,8 +74,8 @@ const SW1_COLORS = Object.freeze({
 
 /**
  * 《无尽剑域》入口组件。
- * M1 当前进度：30Hz 固定步循环 + 无限地图 + 移动 + T1.4/T1.5 碰撞、对象池与四敌；
- * T1.6 已接入四个 P0 主动技能、配置驱动投射物与技能 VFX。
+ * M1 当前进度：30Hz 固定步循环 + 无限地图 + 移动 + 碰撞、对象池、四敌、
+ * 四个 P0 主动技能，以及 T1.7 XP / 等级 / 三选一升级面板。
  */
 @ccclass('EndlessSwordGame')
 export class EndlessSwordGame extends Component implements MiniGame<EndlessSwordServices> {
@@ -102,15 +109,35 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
     @property(Texture2D)
     private groundTileTexture: Texture2D | null = null;
 
+    @property(Texture2D)
+    private passiveIconTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private pickupTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private panelTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private cardTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private buttonTexture: Texture2D | null = null;
+
+    @property(Texture2D)
+    private hpXpTexture: Texture2D | null = null;
+
     private context?: MiniGameContext<EndlessSwordServices>;
     private runState: EndlessSwordRunState = 'idle';
 
     private readonly model = new RunModel();
+    private readonly upgradeSystem = new UpgradeSystem();
     private loop?: GameLoop;
     private playerSystem?: PlayerSystem;
     private enemySystem?: EnemySystem;
     private projectileSystem?: ProjectileSystem;
     private skillSystem?: SkillSystem;
+    private spawnSystem?: SpawnSystem;
     private xpOrbSystem?: XpOrbSystem;
     private collisionSystem?: CollisionSystem;
 
@@ -126,11 +153,21 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
 
     private hudRoot?: Node;
     private survivalLabel?: Label;
+    private levelLabel?: Label;
+    private scoreLabel?: Label;
+    private hpBarFill?: Sprite;
+    private xpBarFill?: Sprite;
+    private hpBarRoot?: Node;
+    private xpBarRoot?: Node;
     private pauseButton?: Node;
     private finishButton?: Node;
     private skillIconRoot?: Node;
     private readonly skillIconNodes: Node[] = [];
     private readonly skillIconFrames: SpriteFrame[] = [];
+    private readonly hudSpriteFrames: SpriteFrame[] = [];
+    private upgradeOverlay?: UpgradeOverlay;
+    private pendingLevelUps = 0;
+    private upgradeOptions: UpgradeOption[] = [];
     private resizeListening = false;
     private lastReportedScore = Number.NaN;
     private nextScoreReportTime = 0;
@@ -148,6 +185,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.enemySystem = new EnemySystem();
         this.projectileSystem = new ProjectileSystem();
         this.skillSystem = new SkillSystem();
+        this.spawnSystem = new SpawnSystem();
         this.xpOrbSystem = new XpOrbSystem();
         this.collisionSystem = new CollisionSystem();
         this.loop = new GameLoop(
@@ -160,6 +198,19 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.joystick = new FloatingJoystick(this.node);
         this.joystick.setEnabled(false);
         this.buildHud();
+        this.upgradeOverlay = new UpgradeOverlay(
+            this.node,
+            {
+                panel: this.panelTexture ?? undefined,
+                card: this.cardTexture ?? undefined,
+                activeIcons: this.skillIconTexture ?? undefined,
+                passiveIcons: this.passiveIconTexture ?? undefined,
+                buttons: this.buttonTexture ?? undefined,
+            },
+            this.handleUpgradeSelected,
+            this.handleUpgradeRefresh,
+        );
+        this.upgradeOverlay.setVisible(false);
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.resizeListening = true;
         this.applyLayout();
@@ -249,25 +300,48 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.projectileTexture = null;
         this.vfxTexture = null;
         this.groundTileTexture = null;
+        this.passiveIconTexture = null;
+        this.pickupTexture = null;
+        this.panelTexture = null;
+        this.cardTexture = null;
+        this.buttonTexture = null;
+        this.hpXpTexture = null;
         this.loop = undefined;
         this.playerSystem = undefined;
         this.enemySystem = undefined;
         this.projectileSystem = undefined;
         this.skillSystem = undefined;
+        this.spawnSystem = undefined;
         this.xpOrbSystem = undefined;
         this.collisionSystem = undefined;
         this.destroyNode(this.hudRoot);
         this.hudRoot = undefined;
         this.survivalLabel = undefined;
+        this.levelLabel = undefined;
+        this.scoreLabel = undefined;
         this.pauseButton = undefined;
         this.finishButton = undefined;
         this.skillIconRoot = undefined;
+        this.upgradeOverlay?.destroy();
+        this.upgradeOverlay = undefined;
+        this.upgradeOptions.length = 0;
+        this.pendingLevelUps = 0;
+        this.hpBarFill = undefined;
+        this.xpBarFill = undefined;
+        this.hpBarRoot = undefined;
+        this.xpBarRoot = undefined;
         for (const frame of this.skillIconFrames) {
             if (frame.isValid) {
                 frame.destroy();
             }
         }
         this.skillIconFrames.length = 0;
+        for (const frame of this.hudSpriteFrames) {
+            if (frame.isValid) {
+                frame.destroy();
+            }
+        }
+        this.hudSpriteFrames.length = 0;
         this.skillIconNodes.length = 0;
         this.context = undefined;
     }
@@ -287,6 +361,17 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.model.gameplayElapsedTime += dt;
         if (this.playerSystem && this.joystick) {
             this.playerSystem.step(this.joystick.getMoveInput(), dt);
+        }
+        if (this.spawnSystem && this.enemySystem) {
+            const visibleSize = view.getVisibleSize();
+            this.spawnSystem.step(
+                dt,
+                this.model.gameplayElapsedTime,
+                this.model.player.x,
+                this.model.player.y,
+                visibleSize,
+                this.enemySystem,
+            );
         }
         this.enemySystem?.step(
             dt,
@@ -311,14 +396,33 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 this.collisionSystem,
                 this.handleEnemyKilled,
                 this.emitSkillEffect,
+                {
+                    damageMultiplier: this.model.damageMultiplier,
+                    cooldownMultiplier: this.model.cooldownMultiplier,
+                    rangeMultiplier: this.model.rangeMultiplier,
+                    projectileSpeedMultiplier: 1,
+                },
             );
             this.enemySystem.flushRetired((enemy) => this.enemyView?.hide(enemy.poolIndex));
             this.projectileSystem.flushExpired(
                 (projectile) => this.projectileView?.hide(projectile.poolIndex),
             );
         }
+        this.xpOrbSystem?.step(
+            dt,
+            this.model.player.x,
+            this.model.player.y,
+            ENDLESS_SWORD_CONFIG.experience.pickupRadius,
+            ENDLESS_SWORD_CONFIG.experience.magnetRadius,
+            ENDLESS_SWORD_CONFIG.experience.magnetSpeed,
+            this.handleExperienceCollected,
+            (orb) => this.xpOrbView?.hide(orb.poolIndex),
+        );
         this.world?.update(this.model.player.x, this.model.player.y);
         this.reportCurrentScore();
+        if (this.runState === 'playing' && this.pendingLevelUps > 0) {
+            this.openNextUpgrade();
+        }
         if (this.model.player.hp <= 0) {
             this.finishRun('defeated');
         }
@@ -349,7 +453,22 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.cameraRig?.follow(renderPos.x, renderPos.y);
         if (this.survivalLabel) {
             this.survivalLabel.string = `${formatSurvivalTime(this.model.gameplayElapsedTime)}`
-                + `  HP ${Math.ceil(this.model.player.hp)}`;
+                + `  ${this.getRealmName()}`;
+        }
+        if (this.levelLabel) {
+            this.levelLabel.string = `Lv ${this.model.level}`;
+        }
+        if (this.scoreLabel) {
+            this.scoreLabel.string = `SCORE ${this.model.totalScore}`;
+        }
+        if (this.hpBarFill) {
+            this.hpBarFill.fillRange = Math.max(
+                0,
+                Math.min(1, this.model.player.hp / ENDLESS_SWORD_CONFIG.player.maxHp),
+            );
+        }
+        if (this.xpBarFill) {
+            this.xpBarFill.fillRange = this.model.xpProgress;
         }
     }
 
@@ -372,7 +491,11 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.world.setSeed(this.model.runSeed);
         this.world.update(0, 0);
 
-        this.xpOrbView = new XpOrbView(worldRoot, ENDLESS_SWORD_CONFIG.pools.xpOrbs);
+        this.xpOrbView = new XpOrbView(
+            worldRoot,
+            ENDLESS_SWORD_CONFIG.pools.xpOrbs,
+            this.pickupTexture ?? undefined,
+        );
         this.enemyView = new EnemyView(worldRoot, ENDLESS_SWORD_CONFIG.pools.enemies, {
             'demon-rat': this.demonRatTexture ?? undefined,
             'ghost-flame': this.ghostFlameTexture ?? undefined,
@@ -422,6 +545,89 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.xpOrbSystem?.spawn(enemy.x, enemy.y, config.xp);
     };
 
+    private readonly handleExperienceCollected = (value: number): void => {
+        const levelUps = this.model.addExperience(value);
+        if (levelUps > 0) {
+            this.pendingLevelUps += levelUps;
+        }
+    };
+
+    private readonly handleUpgradeSelected = (option: UpgradeOption): void => {
+        if (this.runState !== 'levelup') {
+            return;
+        }
+        if (option.kind === 'active-skill' && option.targetId && isActiveSkillId(option.targetId)) {
+            this.skillSystem?.setSkillLevel(option.targetId, option.nextLevel);
+        } else if (option.kind === 'passive-skill' && option.targetId) {
+            const id = option.targetId as PassiveSkillId;
+            if (PASSIVE_SKILL_IDS.indexOf(id) >= 0) {
+                this.model.passiveLevels[id] = option.nextLevel;
+            }
+        } else if (option.kind === 'spring') {
+            this.model.player.hp = Math.min(
+                ENDLESS_SWORD_CONFIG.player.maxHp,
+                this.model.player.hp + ENDLESS_SWORD_CONFIG.player.maxHp * 0.35,
+            );
+        }
+
+        if (this.pendingLevelUps > 0) {
+            this.openNextUpgrade();
+            return;
+        }
+        this.upgradeOptions.length = 0;
+        this.upgradeOverlay?.setVisible(false);
+        this.runState = 'playing';
+        this.joystick?.setEnabled(true);
+    };
+
+    private readonly handleUpgradeRefresh = (): void => {
+        if (this.runState !== 'levelup') {
+            return;
+        }
+        const options = this.upgradeSystem.refresh(this.getUpgradeBuildState());
+        if (!options) {
+            return;
+        }
+        this.upgradeOptions = options;
+        this.upgradeOverlay?.setOptions(
+            options,
+            this.upgradeSystem.remainingRefreshes,
+        );
+    };
+
+    private openNextUpgrade(): void {
+        if (this.pendingLevelUps <= 0) {
+            return;
+        }
+        this.pendingLevelUps -= 1;
+        this.runState = 'levelup';
+        this.joystick?.setEnabled(false);
+        this.upgradeOptions = this.upgradeSystem.createOptions(this.getUpgradeBuildState());
+        this.upgradeOverlay?.setOptions(
+            this.upgradeOptions,
+            this.upgradeSystem.remainingRefreshes,
+        );
+        this.upgradeOverlay?.setVisible(true);
+    }
+
+    private getUpgradeBuildState(): {
+        readonly activeLevels: Readonly<Record<ActiveSkillId, number>>;
+        readonly passiveLevels: Readonly<Record<PassiveSkillId, number>>;
+        readonly hp: number;
+        readonly maxHp: number;
+    } {
+        const activeLevels = {} as Record<ActiveSkillId, number>;
+        for (const id of ACTIVE_SKILL_IDS) {
+            activeLevels[id] = this.skillSystem?.getSkillLevel(id) ?? 0;
+        }
+        return {
+            activeLevels,
+            passiveLevels: this.model.passiveLevels,
+            hp: this.model.player.hp,
+            maxHp: ENDLESS_SWORD_CONFIG.player.maxHp,
+        };
+    }
+
     private readonly handleProjectileImpact = (projectile: ProjectileModel): void => {
         if (projectile.skillId === 'fly-sword') {
             this.emitSkillEffect({
@@ -462,7 +668,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.xpOrbView?.resetAll();
     }
 
-    // ---- 开发占位 UI ----
+    // ---- 游戏 HUD 与升级 UI ----
 
     private buildHud(): void {
         const visibleSize = view.getVisibleSize();
@@ -472,7 +678,6 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         hud.addComponent(UITransform).setContentSize(visibleSize.width, visibleSize.height);
         this.node.addChild(hud);
 
-        // 顶部中央生存时间。占位布局；正式 HUD 随 M1 的 Layout 模块落地。
         const survivalNode = new Node('SurvivalTime');
         survivalNode.layer = hud.layer;
         hud.addChild(survivalNode);
@@ -485,6 +690,48 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.survivalLabel.fontSize = 38;
         this.survivalLabel.lineHeight = ENDLESS_SWORD_CONFIG.ui.survivalLabelHeight;
         this.survivalLabel.color = SW1_COLORS.gold;
+
+        const levelNode = new Node('Level');
+        levelNode.layer = hud.layer;
+        levelNode.addComponent(UITransform).setContentSize(160, ENDLESS_SWORD_CONFIG.ui.levelLabelHeight);
+        hud.addChild(levelNode);
+        this.levelLabel = levelNode.addComponent(Label);
+        this.levelLabel.string = 'Lv 1';
+        this.levelLabel.fontSize = 22;
+        this.levelLabel.lineHeight = ENDLESS_SWORD_CONFIG.ui.levelLabelHeight;
+        this.levelLabel.color = SW1_COLORS.gold;
+
+        const scoreNode = new Node('Score');
+        scoreNode.layer = hud.layer;
+        scoreNode.addComponent(UITransform).setContentSize(220, ENDLESS_SWORD_CONFIG.ui.scoreLabelHeight);
+        hud.addChild(scoreNode);
+        this.scoreLabel = scoreNode.addComponent(Label);
+        this.scoreLabel.string = 'SCORE 0';
+        this.scoreLabel.fontSize = 18;
+        this.scoreLabel.lineHeight = ENDLESS_SWORD_CONFIG.ui.scoreLabelHeight;
+        this.scoreLabel.color = SW1_COLORS.gold;
+
+        const hpBar = this.createStatusBar(
+            hud,
+            'HpBar',
+            ENDLESS_SWORD_CONFIG.ui.hpBarWidth,
+            ENDLESS_SWORD_CONFIG.ui.hpBarHeight,
+            { x: 0, y: 0, width: 1024, height: 256 },
+            { x: 0, y: 256, width: 1024, height: 256 },
+        );
+        this.hpBarRoot = hpBar.root;
+        this.hpBarFill = hpBar.fill;
+
+        const xpBar = this.createStatusBar(
+            hud,
+            'XpBar',
+            ENDLESS_SWORD_CONFIG.ui.xpBarWidth,
+            ENDLESS_SWORD_CONFIG.ui.xpBarHeight,
+            { x: 0, y: 512, width: 1024, height: 256 },
+            { x: 0, y: 768, width: 1024, height: 256 },
+        );
+        this.xpBarRoot = xpBar.root;
+        this.xpBarFill = xpBar.fill;
 
         const pauseButton = this.createTextButton(
             'PauseButton',
@@ -499,7 +746,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         hud.addChild(pauseButton);
         this.pauseButton = pauseButton;
 
-        // 开发期按钮：验证结算链路，正式死亡接入后移除。
+        // 开发期按钮：保留用于快速验证结算链路，正式构建不显示。
         const finishButton = this.createTextButton(
             'DevFinishButton',
             '结束本局（测试）',
@@ -518,6 +765,51 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
 
         hud.active = false;
         this.hudRoot = hud;
+    }
+
+    private createStatusBar(
+        parent: Node,
+        name: string,
+        width: number,
+        height: number,
+        backgroundRect: Readonly<{ x: number; y: number; width: number; height: number }>,
+        fillRect: Readonly<{ x: number; y: number; width: number; height: number }>,
+    ): { root: Node; fill: Sprite } {
+        const root = new Node(name);
+        root.layer = parent.layer;
+        root.addComponent(UITransform).setContentSize(width, height);
+        parent.addChild(root);
+        if (!this.hpXpTexture) {
+            const graphics = root.addComponent(Graphics);
+            graphics.fillColor = SW1_COLORS.panel;
+            graphics.roundRect(-width / 2, -height / 2, width, height, height / 2);
+            graphics.fill();
+            return { root, fill: root.addComponent(Sprite) };
+        }
+
+        const background = new Node('Background');
+        background.layer = root.layer;
+        background.addComponent(UITransform).setContentSize(width, height);
+        const backgroundSprite = background.addComponent(Sprite);
+        backgroundSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        backgroundSprite.spriteFrame = createAtlasFrame(this.hpXpTexture, backgroundRect);
+        this.hudSpriteFrames.push(backgroundSprite.spriteFrame);
+        root.addChild(background);
+
+        const fillNode = new Node('Fill');
+        fillNode.layer = root.layer;
+        const fillTransform = fillNode.addComponent(UITransform);
+        fillTransform.setContentSize(width, height);
+        const fill = fillNode.addComponent(Sprite);
+        fill.sizeMode = Sprite.SizeMode.CUSTOM;
+        fill.spriteFrame = createAtlasFrame(this.hpXpTexture, fillRect);
+        fill.type = Sprite.Type.FILLED;
+        fill.fillType = Sprite.FillType.HORIZONTAL;
+        fill.fillStart = 0;
+        fill.fillRange = 1;
+        this.hudSpriteFrames.push(fill.spriteFrame);
+        root.addChild(fillNode);
+        return { root, fill };
     }
 
     private buildSkillIcons(hud: Node): void {
@@ -598,14 +890,16 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
         this.clearCombatWorld();
         this.model.reset(Date.now() >>> 0);
         this.skillSystem?.reset();
+        this.spawnSystem?.reset(this.model.runSeed);
+        this.upgradeSystem.reset(this.model.runSeed);
+        this.upgradeOptions.length = 0;
+        this.pendingLevelUps = 0;
+        this.upgradeOverlay?.setVisible(false);
         this.applySkillQaPreset();
         this.world?.setSeed(this.model.runSeed);
         this.world?.update(0, 0);
         this.joystick?.setEnabled(true);
         this.loop?.reset();
-        for (const spawn of T1_ENEMY_SHOWCASE) {
-            this.enemySystem?.spawn(spawn.type, spawn.x, spawn.y);
-        }
         this.renderFrame(0, 0);
         this.lastReportedScore = Number.NaN;
         this.nextScoreReportTime = ENDLESS_SWORD_CONFIG.loop.scoreReportIntervalSeconds;
@@ -686,6 +980,31 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 - ENDLESS_SWORD_CONFIG.ui.safeGap,
             0,
         );
+        const hudTop = safeBounds.topY - ENDLESS_SWORD_CONFIG.ui.safeGap;
+        this.hpBarRoot?.setPosition(
+            0,
+            hudTop - ENDLESS_SWORD_CONFIG.ui.survivalLabelHeight
+                - ENDLESS_SWORD_CONFIG.ui.hpBarHeight / 2,
+            0,
+        );
+        this.xpBarRoot?.setPosition(
+            0,
+            hudTop - ENDLESS_SWORD_CONFIG.ui.survivalLabelHeight
+                - ENDLESS_SWORD_CONFIG.ui.hpBarHeight
+                - ENDLESS_SWORD_CONFIG.ui.xpBarHeight / 2
+                - 8,
+            0,
+        );
+        this.levelLabel?.node.setPosition(
+            -visibleSize.width / 2 + 74,
+            this.xpBarRoot?.position.y ?? 0,
+            0,
+        );
+        this.scoreLabel?.node.setPosition(
+            visibleSize.width / 2 - 116,
+            this.xpBarRoot?.position.y ?? 0,
+            0,
+        );
         const pausePosition = calculateTopRightControlPosition(
             visibleSize.width,
             visibleSize.height,
@@ -719,6 +1038,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 + ENDLESS_SWORD_CONFIG.ui.safeGap,
             0,
         );
+        this.upgradeOverlay?.resize(visibleSize.width, visibleSize.height);
     }
 
     private readonly handleCanvasResize = (): void => {
@@ -726,6 +1046,10 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             this.applyLayout();
         }
     };
+
+    private getRealmName(): string {
+        return '炼气';
+    }
 
     private destroyNode(target: Node | undefined): void {
         if (target && target.isValid) {
@@ -761,6 +1085,30 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 }
                 this.skillSystem.setSkillLevel(id, level);
                 return true;
+            },
+            givePassive: (id: string, level = 1): boolean => {
+                if (PASSIVE_SKILL_IDS.indexOf(id as PassiveSkillId) < 0) {
+                    return false;
+                }
+                this.model.passiveLevels[id as PassiveSkillId] = Math.max(
+                    0,
+                    Math.min(5, Math.floor(level)),
+                );
+                return true;
+            },
+            addXp: (value: number): number => {
+                const before = this.model.level;
+                this.handleExperienceCollected(value);
+                if (this.runState === 'playing' && this.pendingLevelUps > 0) {
+                    this.openNextUpgrade();
+                }
+                return this.model.level - before;
+            },
+            levelUp: (): void => {
+                this.handleExperienceCollected(this.model.xpToNext);
+                if (this.runState === 'playing' && this.pendingLevelUps > 0) {
+                    this.openNextUpgrade();
+                }
             },
             spawnEnemy: (type: EnemyType, x?: number, y?: number): number => {
                 if (!isEnemyType(type)) {
@@ -826,6 +1174,10 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
             combatScore: this.model.combatScore,
             totalScore: this.model.totalScore,
             kills: this.model.kills,
+            level: this.model.level,
+            xp: this.model.xp,
+            xpToNext: this.model.xpToNext,
+            passives: Object.freeze({ ...this.model.passiveLevels }),
             skills: Object.freeze(skills),
             player: Object.freeze({
                 x: this.model.player.x,
@@ -838,6 +1190,7 @@ export class EndlessSwordGame extends Component implements MiniGame<EndlessSword
                 projectiles: this.projectileSystem?.stats,
                 xpOrbs: this.xpOrbSystem?.stats,
             }),
+            spawn: this.spawnSystem?.stats,
             collision: Object.freeze({
                 occupiedEnemyCells: this.collisionSystem?.occupiedCellCount ?? 0,
             }),

@@ -2,16 +2,16 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "e82b72fd-4335-4159-bee3-0a1bcb5172da",
+  "uuid": "b678125d-6990-47d6-be10-c90ec5182f04",
   "files": [
-    ".jpg",
-    ".json"
+    ".json",
+    ".png"
   ],
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "e82b72fd-4335-4159-bee3-0a1bcb5172da@6c48a",
-      "displayName": "desktop-cleanup-desk-v1",
+      "uuid": "b678125d-6990-47d6-be10-c90ec5182f04@6c48a",
+      "displayName": "passive-skill-icons-v1",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "e82b72fd-4335-4159-bee3-0a1bcb5172da",
+        "imageUuidOrDatabaseUri": "b678125d-6990-47d6-be10-c90ec5182f04",
         "visible": false
       },
       "ver": "1.0.22",
@@ -36,7 +36,7 @@
   "userData": {
     "type": "texture",
     "fixAlphaTransparencyArtifacts": false,
-    "hasAlpha": false,
-    "redirect": "e82b72fd-4335-4159-bee3-0a1bcb5172da@6c48a"
+    "hasAlpha": true,
+    "redirect": "b678125d-6990-47d6-be10-c90ec5182f04@6c48a"
   }
 }

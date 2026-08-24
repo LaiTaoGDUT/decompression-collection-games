@@ -13,6 +13,18 @@ export type EnemyProjectileEmitter = (
     lifetimeSeconds: number,
 ) => void;
 
+export interface EnemySpawnScaling {
+    readonly hpMultiplier?: number;
+    readonly damageMultiplier?: number;
+    readonly speedMultiplier?: number;
+}
+
+const DEFAULT_SPAWN_SCALING: Required<EnemySpawnScaling> = Object.freeze({
+    hpMultiplier: 1,
+    damageMultiplier: 1,
+    speedMultiplier: 1,
+});
+
 /** 纯逻辑敌人系统；不持有 Cocos 节点或纹理。 */
 export class EnemySystem {
     private readonly pool: ObjectPool<EnemyModel>;
@@ -28,7 +40,12 @@ export class EnemySystem {
         this.retireQueue = new Array<EnemyModel>(capacity);
     }
 
-    spawn(type: EnemyType, x: number, y: number): EnemyModel | undefined {
+    spawn(
+        type: EnemyType,
+        x: number,
+        y: number,
+        scaling: EnemySpawnScaling = DEFAULT_SPAWN_SCALING,
+    ): EnemyModel | undefined {
         const enemy = this.pool.acquire();
         if (!enemy) {
             return undefined;
@@ -42,8 +59,11 @@ export class EnemySystem {
         enemy.prevX = x;
         enemy.prevY = y;
         enemy.facingX = 1;
-        enemy.hp = config.maxHp;
-        enemy.maxHp = config.maxHp;
+        enemy.hpMultiplier = normalizeMultiplier(scaling.hpMultiplier);
+        enemy.damageMultiplier = normalizeMultiplier(scaling.damageMultiplier);
+        enemy.speedMultiplier = normalizeMultiplier(scaling.speedMultiplier);
+        enemy.hp = config.maxHp * enemy.hpMultiplier;
+        enemy.maxHp = enemy.hp;
         enemy.attackCooldown = config.ranged
             ? config.ranged.attackIntervalSeconds * 0.5
             : 0;
@@ -107,13 +127,13 @@ export class EnemySystem {
                         towardX,
                         towardY,
                         config.ranged.projectileSpeed,
-                        config.ranged.projectileDamage,
+                        config.ranged.projectileDamage * enemy.damageMultiplier,
                         config.ranged.projectileLifetimeSeconds,
                     );
                 }
             }
 
-            const stepDistance = config.moveSpeed * speedScale * dt;
+            const stepDistance = config.moveSpeed * enemy.speedMultiplier * speedScale * dt;
             enemy.x += moveX * stepDistance;
             enemy.y += moveY * stepDistance;
             if (Math.abs(moveX) > 0.001) {
@@ -194,6 +214,9 @@ function createEnemyModel(poolIndex: number): EnemyModel {
         facingX: 1,
         hp: 0,
         maxHp: 0,
+        hpMultiplier: 1,
+        damageMultiplier: 1,
+        speedMultiplier: 1,
         attackCooldown: 0,
         strafeSign: 1,
         deathElapsed: 0,
@@ -206,7 +229,14 @@ function resetEnemyModel(enemy: EnemyModel): void {
     enemy.state = 'inactive';
     enemy.hp = 0;
     enemy.maxHp = 0;
+    enemy.hpMultiplier = 1;
+    enemy.damageMultiplier = 1;
+    enemy.speedMultiplier = 1;
     enemy.attackCooldown = 0;
     enemy.deathElapsed = 0;
     enemy.hitFlashRemaining = 0;
+}
+
+function normalizeMultiplier(value: number | undefined): number {
+    return Number.isFinite(value) ? Math.max(0, value as number) : 1;
 }

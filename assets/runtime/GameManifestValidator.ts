@@ -162,6 +162,25 @@ function readResourcePath(
     return value;
 }
 
+function readOptionalResourcePath(
+    source: UnknownRecord,
+    key: string,
+    field: string,
+    errors: ManifestValidationError[],
+): string | null | undefined {
+    const value = source[key];
+    if (value === undefined || value === null) return value;
+    if (typeof value !== 'string' || value.trim().length === 0) {
+        addError(errors, field, 'must be null or a non-empty string');
+        return undefined;
+    }
+    if (!isResourcePath(value)) {
+        addError(errors, field, 'must be a relative Bundle resource path');
+        return undefined;
+    }
+    return value;
+}
+
 function validateManifestEntry(value: unknown, index: number): ManifestEntryResult {
     const errors: ManifestValidationError[] = [];
     const prefix = `games[${index}]`;
@@ -190,6 +209,12 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
     );
     const icon = readResourcePath(value, 'icon', `${prefix}.icon`, errors);
     const cover = readResourcePath(value, 'cover', `${prefix}.cover`, errors);
+    const loadingCover = readOptionalResourcePath(
+        value,
+        'loadingCover',
+        `${prefix}.loadingCover`,
+        errors,
+    );
     const orientation = readEnum(
         value,
         'orientation',
@@ -268,6 +293,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         entryComponent: entryComponent!,
         icon: icon!,
         cover: cover!,
+        loadingCover,
         orientation: orientation!,
         renderMode: renderMode!,
         minimumDeviceTier: minimumDeviceTier!,

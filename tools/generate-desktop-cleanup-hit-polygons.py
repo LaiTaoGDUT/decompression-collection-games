@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Sequence
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageFilter
 except ImportError as error:  # pragma: no cover - this is an offline tool guard.
     raise SystemExit('需要 Pillow：请先安装 Pillow 后再运行此脚本。') from error
 
@@ -44,6 +44,12 @@ DEFAULT_ITEM_NAMES = (
     'spiral-notebook',
     'clear-ruler',
     'lucky-badge',
+    'teal-wireless-mouse',
+    'cream-alarm-clock',
+    'coral-candle-jar',
+    'mustard-glasses-case',
+    'mint-compact-mirror',
+    'purple-mini-speaker',
 )
 BEGIN_MARKER = '// BEGIN GENERATED DESKTOP CLEANUP HIT POLYGONS'
 END_MARKER = '// END GENERATED DESKTOP CLEANUP HIT POLYGONS'
@@ -147,6 +153,24 @@ def boundary_loops(component: set[int], cell_width: int, cell_height: int) -> li
     return loops
 
 
+def close_boundary_gaps(
+    component: set[int],
+    cell_width: int,
+    cell_height: int,
+) -> set[int]:
+    """Close one-pixel diagonal gaps from anti-aliased generated edges."""
+    mask = Image.new('L', (cell_width, cell_height), 0)
+    pixels = mask.load()
+    for index in component:
+        pixels[index % cell_width, index // cell_width] = 255
+    mask = mask.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.MinFilter(3))
+    return {
+        index
+        for index, value in enumerate(mask.getdata())
+        if value >= 128
+    }
+
+
 def polygon_area(points: Sequence[Point]) -> float:
     return 0.5 * sum(
         left_x * right_y - right_x * left_y
@@ -210,7 +234,14 @@ def extract_polygon(
         cell_height,
         threshold,
     )
-    loops = boundary_loops(component, cell_width, cell_height)
+    try:
+        loops = boundary_loops(component, cell_width, cell_height)
+    except ValueError:
+        # Generated sprites can contain a one-pixel diagonal contact at a
+        # rounded edge. Close that raster seam before tracing the outline;
+        # the correction is below the runtime hitmask resolution.
+        component = close_boundary_gaps(component, cell_width, cell_height)
+        loops = boundary_loops(component, cell_width, cell_height)
     outer = max(loops, key=lambda loop: abs(polygon_area(loop)))
     simplified = simplify_open_polygon(outer, epsilon)[:-1]
     if len(simplified) < 3:
@@ -235,9 +266,7 @@ def render_generated_block(
 ) -> str:
     lines = [
         BEGIN_MARKER,
-        f'const ITEM_ATLAS_CELL_SIZE = {cell_size};',
-        f'// Generated from atlas Alpha >= {threshold}; RDP epsilon: {epsilon:g} source px.',
-        'const ITEM_HIT_POLYGONS: Readonly<Record<DesktopCleanupItemType, ItemHitPolygonShape>> = Object.freeze({',
+        f'// Generated from {cell_size}px cells; atlas Alpha >= {threshold}; RDP epsilon: {epsilon:g} source px.',
     ]
     for name, points in polygons:
         lines.extend(format_polygon(name, points))
@@ -267,10 +296,10 @@ def resolve_path(path: Path) -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--input', type=Path, default=DEFAULT_INPUT, help='4×4 RGBA 物品图集。')
+    parser.add_argument('--input', type=Path, default=DEFAULT_INPUT, help='4 列 RGBA 物品图集。')
     parser.add_argument('--target', type=Path, default=DEFAULT_TARGET, help='写入生成区间的 TypeScript 文件。')
     parser.add_argument('--columns', type=int, default=4, help='图集列数，默认 4。')
-    parser.add_argument('--rows', type=int, default=4, help='图集行数，默认 4。')
+    parser.add_argument('--rows', type=int, default=5, help='图集行数，默认 5。')
     parser.add_argument('--alpha-threshold', type=int, default=176, help='主体 Alpha 阈值，默认 176。')
     parser.add_argument('--epsilon', type=float, default=1.2, help='RDP 简化误差，单位为源图像素，默认 1.2。')
     parser.add_argument(

@@ -10,7 +10,12 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "art_sources" / "桌面大清理" / "v2-components"
 VISUAL = ROOT / "assets" / "games" / "catch" / "visual"
-OLD_ATLAS = VISUAL / "items" / "desktop-cleanup-items-atlas-v1.png"
+# The current runtime atlas is the frozen baseline for items that do not have
+# a standalone source image. This keeps future rebuilds independent of the
+# historical v1 atlas while still allowing new items to be supplied as their
+# own transparent PNGs.
+BASE_ATLAS = VISUAL / "items" / "desktop-cleanup-items-atlas-v2.png"
+BASE_ATLAS_COLUMNS = 4
 
 ITEM_TYPES = (
     "blue-pen",
@@ -27,15 +32,45 @@ ITEM_TYPES = (
     "spiral-notebook",
     "clear-ruler",
     "lucky-badge",
+    "teal-wireless-mouse",
+    "cream-alarm-clock",
+    "coral-candle-jar",
+    "mustard-glasses-case",
+    "mint-compact-mirror",
+    "purple-mini-speaker",
 )
 
-NEW_ITEM_SOURCES = {
-    "blue-pen": "item-blue-marker-v2.png",
-    "red-pencil": "item-red-pencil-stub-v2.png",
-    "binder-clip": "item-binder-clip-v2.png",
-    "orange-tape": "item-orange-tape-v2.png",
-    "teal-usb": "item-teal-usb-v2.png",
-    "clear-ruler": "item-set-square-v2.png",
+# Keep the cell order of the baseline atlas stable. New item types must have
+# an entry in NEW_ITEM_SOURCES instead of being inserted into this tuple.
+BASE_ATLAS_ITEM_TYPES = (
+    "blue-pen",
+    "red-pencil",
+    "yellow-eraser",
+    "mint-notes",
+    "binder-clip",
+    "orange-tape",
+    "teal-usb",
+    "cream-earbuds",
+    "coral-keycap",
+    "purple-stress-ball",
+    "round-coaster",
+    "spiral-notebook",
+    "clear-ruler",
+    "lucky-badge",
+    "teal-wireless-mouse",
+    "cream-alarm-clock",
+    "coral-candle-jar",
+    "mustard-glasses-case",
+    "mint-compact-mirror",
+    "purple-mini-speaker",
+)
+
+# Existing items are copied directly from BASE_ATLAS. When a new item is
+# added, register its standalone transparent source here and append its type
+# to ITEM_TYPES; no source image is needed for any existing item.
+NEW_ITEM_SOURCES: dict[str, Path] = {
+    # Example:
+    # "new-item": ROOT / "art_sources" / "桌面大清理" / "v5-components" / "item-new-v5.png",
 }
 
 RESAMPLE = Image.Resampling.LANCZOS
@@ -110,16 +145,23 @@ def fit_rgba(
     return canvas
 
 
-def source_item(item_type: str, old_atlas: Image.Image) -> Image.Image:
-    new_name = NEW_ITEM_SOURCES.get(item_type)
-    if new_name:
-        return Image.open(SOURCE / new_name).convert("RGBA")
-    index = ITEM_TYPES.index(item_type)
-    cell_width = old_atlas.width // 4
-    cell_height = old_atlas.height // 4
-    column = index % 4
-    row = index // 4
-    return old_atlas.crop((
+def source_item(item_type: str, base_atlas: Image.Image) -> Image.Image:
+    new_source = NEW_ITEM_SOURCES.get(item_type)
+    if new_source:
+        return Image.open(new_source).convert("RGBA")
+    try:
+        index = BASE_ATLAS_ITEM_TYPES.index(item_type)
+    except ValueError as error:
+        raise ValueError(
+            f"No standalone source registered for new item {item_type!r}; "
+            "add it to NEW_ITEM_SOURCES before rebuilding the atlas."
+        ) from error
+    base_atlas_rows = (len(BASE_ATLAS_ITEM_TYPES) + BASE_ATLAS_COLUMNS - 1) // BASE_ATLAS_COLUMNS
+    cell_width = base_atlas.width // BASE_ATLAS_COLUMNS
+    cell_height = base_atlas.height // base_atlas_rows
+    column = index % BASE_ATLAS_COLUMNS
+    row = index // BASE_ATLAS_COLUMNS
+    return base_atlas.crop((
         column * cell_width,
         row * cell_height,
         (column + 1) * cell_width,
@@ -153,12 +195,20 @@ def mask_rows(cell: Image.Image, grid_size: int = 96, threshold: int = 176) -> l
 def build_items() -> None:
     destination = VISUAL / "items"
     destination.mkdir(parents=True, exist_ok=True)
-    old_atlas = Image.open(OLD_ATLAS).convert("RGBA")
+    base_atlas = Image.open(BASE_ATLAS).convert("RGBA")
     cell_size = 384
-    atlas = Image.new("RGBA", (cell_size * 4, cell_size * 4), (0, 0, 0, 0))
+    rows = (len(ITEM_TYPES) + 3) // 4
+    atlas = Image.new("RGBA", (cell_size * 4, cell_size * rows), (0, 0, 0, 0))
     masks: dict[str, dict[str, object]] = {}
     for index, item_type in enumerate(ITEM_TYPES):
-        cell = fit_rgba(source_item(item_type, old_atlas), (cell_size, cell_size), (26, 26))
+        source = source_item(item_type, base_atlas)
+        # Cells inherited from the v2 baseline are already normalized. Copy
+        # them directly so repeated rebuilds do not resample old pixels.
+        cell = source if item_type not in NEW_ITEM_SOURCES else fit_rgba(
+            source,
+            (cell_size, cell_size),
+            (26, 26),
+        )
         atlas.alpha_composite(cell, ((index % 4) * cell_size, (index // 4) * cell_size))
         masks[item_type] = {"rows": mask_rows(cell)}
     atlas.save(destination / "desktop-cleanup-items-atlas-v2.png", optimize=True)
@@ -177,7 +227,12 @@ def build_items() -> None:
 def build_backgrounds() -> None:
     destination = VISUAL / "backgrounds"
     destination.mkdir(parents=True, exist_ok=True)
-    backdrop = Image.open(SOURCE / "backdrop-wood-v2.png").convert("RGB")
+    backdrop_source = SOURCE / "backdrop-wood-v2.png"
+    playmat_source = SOURCE / "playmat-v2.png"
+    if not backdrop_source.is_file() or not playmat_source.is_file():
+        print("Skipping legacy background rebuild: source images are not present.")
+        return
+    backdrop = Image.open(backdrop_source).convert("RGB")
     backdrop.resize((750, 1334), RESAMPLE).save(
         destination / "desktop-cleanup-backdrop-v2.jpg",
         quality=88,
@@ -185,7 +240,7 @@ def build_backgrounds() -> None:
         progressive=True,
     )
     playmat = fit_rgba(
-        Image.open(SOURCE / "playmat-v2.png"),
+        Image.open(playmat_source),
         (1024, 1024),
         (28, 28),
         clean_largest=True,
@@ -206,6 +261,9 @@ def build_ui() -> None:
         "desktop-cleanup-tool-magnet-v2.png": ("tool-magnet-v2.png", (384, 384), (8, 8)),
         "desktop-cleanup-tool-shuffle-v2.png": ("tool-shuffle-v2.png", (384, 384), (8, 8)),
     }
+    if not all((SOURCE / source_name).is_file() for source_name, _, _ in jobs.values()):
+        print("Skipping legacy UI rebuild: source images are not present.")
+        return
     for output_name, (source_name, size, padding) in jobs.items():
         rendered = fit_rgba(Image.open(SOURCE / source_name), size, padding, clean_largest=True)
         rendered.save(destination / output_name, optimize=True)
@@ -214,7 +272,11 @@ def build_ui() -> None:
 def build_vfx() -> None:
     destination = VISUAL / "vfx"
     destination.mkdir(parents=True, exist_ok=True)
-    smoke = fit_rgba(Image.open(SOURCE / "match-smoke-v1.png"), (512, 512), (18, 18))
+    smoke_source = SOURCE / "match-smoke-v1.png"
+    if not smoke_source.is_file():
+        print("Skipping legacy VFX rebuild: source image is not present.")
+        return
+    smoke = fit_rgba(Image.open(smoke_source), (512, 512), (18, 18))
     smoke.save(destination / "desktop-cleanup-match-smoke-v1.png", optimize=True)
 
 

@@ -130,18 +130,6 @@ export const ENEMY_CONFIGS: Readonly<Record<EnemyType, EnemyConfig>> = Object.fr
     }),
 });
 
-/** T1.8 数据驱动刷怪系统接入前，用于验证四种 AI/碰撞/回收的首批编队。 */
-export const T1_ENEMY_SHOWCASE: ReadonlyArray<Readonly<{
-    type: EnemyType;
-    x: number;
-    y: number;
-}>> = Object.freeze([
-    Object.freeze({ type: 'demon-rat', x: -240, y: 180 }),
-    Object.freeze({ type: 'ghost-flame', x: 230, y: 150 }),
-    Object.freeze({ type: 'rotting-corpse', x: -250, y: -250 }),
-    Object.freeze({ type: 'crossbow-puppet', x: 80, y: 350 }),
-]);
-
 export function getEnemyConfig(type: EnemyType): EnemyConfig {
     return ENEMY_CONFIGS[type];
 }

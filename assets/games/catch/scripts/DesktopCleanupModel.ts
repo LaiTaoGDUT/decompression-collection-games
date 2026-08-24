@@ -16,12 +16,57 @@ export const DESKTOP_CLEANUP_ITEM_TYPES = Object.freeze([
     'spiral-notebook',
     'clear-ruler',
     'lucky-badge',
+    'teal-wireless-mouse',
+    'cream-alarm-clock',
+    'coral-candle-jar',
+    'mustard-glasses-case',
+    'mint-compact-mirror',
+    'purple-mini-speaker',
 ] as const);
 
 export type DesktopCleanupItemType = typeof DESKTOP_CLEANUP_ITEM_TYPES[number];
 export type DesktopCleanupTool = 'return' | 'magnet' | 'shuffle';
 export type DesktopCleanupPhase = 'playing' | 'failed' | 'won';
 export type DesktopCleanupFailureReason = 'slots' | 'timeout';
+
+/**
+ * Per-prop presentation scale, relative to the former 192px square.
+ * Keeping this beside the model lets spawning, physics, and rendering share
+ * the same footprint instead of treating a larger prop as a visual-only change.
+ */
+export const DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS: Readonly<Record<DesktopCleanupItemType, number>> = Object.freeze({
+    'blue-pen': 1.00,
+    'red-pencil': 1.00,
+    'yellow-eraser': 1.00,
+    'mint-notes': 1.00,
+    'binder-clip': 1.00,
+    'orange-tape': 1.00,
+    'teal-usb': 1.00,
+    'cream-earbuds': 1.00,
+    'coral-keycap': 1.00,
+    'purple-stress-ball': 1.00,
+    'round-coaster': 1.10,
+    'spiral-notebook': 1.20,
+    'clear-ruler': 1.18,
+    'lucky-badge': 1.00,
+    'teal-wireless-mouse': 1.12,
+    'cream-alarm-clock': 1.30,
+    'coral-candle-jar': 1.22,
+    'mustard-glasses-case': 1.08,
+    'mint-compact-mirror': 1.14,
+    'purple-mini-speaker': 1.24,
+});
+
+// Use the existing item-type tuple instead of Object.values, which is not in
+// the older lib targeted by Cocos' TypeScript pipeline.
+const MAX_ITEM_SIZE_MULTIPLIER = DESKTOP_CLEANUP_ITEM_TYPES.reduce(
+    (maximum, type) => Math.max(maximum, DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS[type]),
+    0,
+);
+
+function itemSizeMultiplier(type?: DesktopCleanupItemType): number {
+    return type ? DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS[type] : MAX_ITEM_SIZE_MULTIPLIER;
+}
 
 export interface DesktopCleanupItemSnapshot {
     readonly id: string;
@@ -118,9 +163,8 @@ interface MutableSlot {
     order: number;
 }
 
-const COMMON_TYPES = DESKTOP_CLEANUP_ITEM_TYPES.slice(0, 10);
-const RARE_TYPES = DESKTOP_CLEANUP_ITEM_TYPES.slice(10, 13);
 const TARGET_TYPE: DesktopCleanupItemType = 'lucky-badge';
+const ORDINARY_TYPES = DESKTOP_CLEANUP_ITEM_TYPES.filter((type) => type !== TARGET_TYPE);
 const LAYER_COUNT = 24;
 const GROUPS_PER_LAYER = 2;
 const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
@@ -129,22 +173,31 @@ const STACK_X_LIMIT = 0.36;
 const STACK_Y_LIMIT = 0.36;
 /** PileRoot uses this factor when mapping normalized model coordinates to pixels. */
 export const DESKTOP_CLEANUP_STACK_RENDER_SCALE = 0.96;
-/** Conservative normalized half-size for the enlarged square item nodes. */
-const STACK_ITEM_HALF_EXTENT = 0.15;
+/** Base normalized half-size; type multipliers are applied by visibleCenterLimit. */
+const STACK_ITEM_BASE_HALF_EXTENT = 0.15;
 /** Keep rotated corners inside the visible playmat, not just inside PileRoot. */
 const STACK_CONTAINER_MARGIN = 0.04;
 const PHYSICS_ITEM_RADIUS = 0.125;
 const PHYSICS_MAX_SPEED = 0.72;
 const PHYSICS_MAX_ANGULAR_SPEED = 120;
 const PHYSICS_MAX_ELEVATION = 0.30;
+const PHYSICS_ITEM_SCALE_PER_ELEVATION = 0.14;
 const PHYSICS_SETTLE_SPEED = 0.006;
 const PHYSICS_DEPTH_COLLISION_RANGE = 0.35;
 const PHYSICS_COVER_RADIUS = PHYSICS_ITEM_RADIUS * 0.72;
 const PHYSICS_EPSILON = 0.0001;
 
-function visibleCenterLimit(angle: number): number {
+function visibleCenterLimit(
+    angle: number,
+    elevation = 0,
+    type?: DesktopCleanupItemType,
+): number {
     const radians = angle * Math.PI / 180;
-    const rotatedHalfExtent = STACK_ITEM_HALF_EXTENT
+    const renderScale = itemSizeMultiplier(type) * (
+        1 + clamp(elevation, 0, PHYSICS_MAX_ELEVATION)
+        * PHYSICS_ITEM_SCALE_PER_ELEVATION
+    );
+    const rotatedHalfExtent = STACK_ITEM_BASE_HALF_EXTENT * renderScale
         * (Math.abs(Math.cos(radians)) + Math.abs(Math.sin(radians)));
     return Math.max(
         0.12,
@@ -190,16 +243,22 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
     return result;
 }
 
+function physicsItemRadius(type: DesktopCleanupItemType): number {
+    return PHYSICS_ITEM_RADIUS * itemSizeMultiplier(type);
+}
+
+function desktopCleanupPositionKey(x: number, y: number): string {
+    return `${x.toFixed(4)}:${y.toFixed(4)}`;
+}
+
 function tripletCatalog(): DesktopCleanupItemType[] {
     const catalog: DesktopCleanupItemType[] = [];
-    // Double the original ordinary-item groups while keeping the three
-    // lucky badges as the single target triplet. The extra ordinary group
-    // keeps the 24-layer layout at exactly two complete triplets per layer.
-    COMMON_TYPES.forEach((type) => {
-        for (let count = 0; count < 4; count += 1) catalog.push(type);
-    });
-    RARE_TYPES.forEach((type, index) => {
-        const groupCount = index === 0 ? 3 : 2;
+    // Keep the original 24-layer / 144-item board while spreading the
+    // ordinary groups across all 19 non-target types. Nine types get three
+    // groups and the remaining ten get two, so every new prop appears in
+    // complete matchable triplets without crowding out the target triplet.
+    ORDINARY_TYPES.forEach((type, index) => {
+        const groupCount = index < 9 ? 3 : 2;
         for (let count = 0; count < groupCount; count += 1) catalog.push(type);
     });
     return catalog;
@@ -221,19 +280,46 @@ function stackedPositions(
         // ring/flower silhouette even when the item order is shuffled.
         const layerOffsetX = (random() - 0.5) * 0.12;
         const layerOffsetY = (random() - 0.5) * 0.12;
-        const layerSpreadX = 0.26 + random() * 0.10;
-        const layerSpreadY = 0.28 + random() * 0.08;
+        // Fill the playmat with one broad irregular cloud per layer. The
+        // final rotated-item bound below still owns the hard edge; these
+        // larger spreads only make reaching that safe edge common enough that
+        // a freshly spawned pile does not collapse into the center.
+        const layerSpreadX = 0.34 + random() * 0.08;
+        const layerSpreadY = 0.36 + random() * 0.08;
+        const layerPositionKeys = new Set<string>();
         const count = Math.min(ITEMS_PER_LAYER, itemCount - positions.length);
         for (let index = 0; index < count; index += 1) {
-            const spreadX = layerSpreadX * (0.82 + random() * 0.18);
-            const spreadY = layerSpreadY * (0.82 + random() * 0.18);
+            const spreadX = layerSpreadX * (0.88 + random() * 0.12);
+            const spreadY = layerSpreadY * (0.88 + random() * 0.12);
             const angle = Math.round(-38 + random() * 76);
             const centerLimit = visibleCenterLimit(angle);
-            positions.push(Object.freeze({
-                x: clamp(layerOffsetX + (random() * 2 - 1) * spreadX, -centerLimit, centerLimit),
-                y: clamp(layerOffsetY + (random() * 2 - 1) * spreadY, -centerLimit, centerLimit),
-                angle,
-            }));
+            let x = 0;
+            let y = 0;
+            let key = '';
+            for (let attempt = 0; attempt < 32; attempt += 1) {
+                x = clamp(layerOffsetX + (random() * 2 - 1) * spreadX, -centerLimit, centerLimit);
+                y = clamp(layerOffsetY + (random() * 2 - 1) * spreadY, -centerLimit, centerLimit);
+                key = desktopCleanupPositionKey(x, y);
+                if (!layerPositionKeys.has(key)) break;
+            }
+            if (layerPositionKeys.has(key)) {
+                // Broad edge-biased spreads can quantize several clamped
+                // points to the same four-decimal coordinate. Use a sparse
+                // fallback only for that rare collision, keeping the normal
+                // layout fully random and asymmetric.
+                const fallbackStart = (index * 17) % 81;
+                for (let offset = 0; offset < 81; offset += 1) {
+                    const candidate = (fallbackStart + offset) % 81;
+                    const column = candidate % 9;
+                    const row = Math.floor(candidate / 9);
+                    x = -centerLimit + centerLimit * 2 * (column + 0.5) / 9;
+                    y = -centerLimit + centerLimit * 2 * (row + 0.5) / 9;
+                    key = desktopCleanupPositionKey(x, y);
+                    if (!layerPositionKeys.has(key)) break;
+                }
+            }
+            layerPositionKeys.add(key);
+            positions.push(Object.freeze({ x, y, angle }));
         }
     }
     return Object.freeze(positions);
@@ -312,7 +398,7 @@ export function verifyDesktopCleanupLayout(
         if (item.layer < 0 || item.layer >= LAYER_COUNT) {
             errors.push(`invalid layer ${item.layer}`);
         }
-        const centerLimit = visibleCenterLimit(item.angle);
+        const centerLimit = visibleCenterLimit(item.angle, item.elevation, item.type);
         if (Math.abs(item.x) > centerLimit + PHYSICS_EPSILON
             || Math.abs(item.y) > centerLimit + PHYSICS_EPSILON) {
             errors.push(`item ${item.id} exceeds rotated playmat bounds`);
@@ -382,6 +468,7 @@ export class DesktopCleanupModel {
     private usedContinue = false;
     private continuedWithTime = false;
     private pendingBoostTool?: DesktopCleanupTool;
+    private continueAdPending = false;
     private readonly pendingSelections = new Map<number, DesktopCleanupPendingSelection>();
     private selectionToken = 0;
     private readonly charges: Record<DesktopCleanupTool, number>;
@@ -572,11 +659,11 @@ export class DesktopCleanupModel {
         if (this.currentPhase !== 'playing'
             || this.pendingSelections.size > 0
             || this.boostAttempted
+            || this.pendingBoostTool !== undefined
             || this.charges[tool] > 0
             || !this.canApplyTool(tool)) {
             return false;
         }
-        this.boostAttempted = true;
         this.pendingBoostTool = tool;
         return true;
     }
@@ -587,6 +674,7 @@ export class DesktopCleanupModel {
         if (this.pendingSelections.size > 0) return this.reject('busy');
         if (!completed || !tool || this.currentPhase !== 'playing') return this.reject('unavailable');
         const triple = this.applyTool(tool);
+        this.boostAttempted = true;
         this.finishOrFail();
         return Object.freeze({
             accepted: true,
@@ -596,12 +684,14 @@ export class DesktopCleanupModel {
     }
 
     beginContinueAd(): boolean {
-        if (this.currentPhase !== 'failed' || this.continueAttempted) return false;
-        this.continueAttempted = true;
+        if (this.currentPhase !== 'failed' || this.continueAttempted || this.continueAdPending) return false;
+        this.continueAdPending = true;
         return true;
     }
 
     resolveContinueAd(completed: boolean): boolean {
+        if (!this.continueAdPending) return false;
+        this.continueAdPending = false;
         if (!completed || this.currentPhase !== 'failed') return false;
         if (this.currentFailure === 'slots') {
             this.returnRecentSlots(3);
@@ -611,6 +701,7 @@ export class DesktopCleanupModel {
         }
         this.currentFailure = undefined;
         this.currentPhase = 'playing';
+        this.continueAttempted = true;
         this.usedContinue = true;
         return true;
     }
@@ -727,11 +818,13 @@ export class DesktopCleanupModel {
         const active = [...this.items.values()].filter((item) => item.active);
         if (active.length === 0) return false;
         let changed = false;
+        const movingItems = new Set<MutableItem>();
         active.forEach((item) => {
             const speed = Math.hypot(item.velocityX, item.velocityY);
             const angularSpeed = Math.abs(item.angularVelocity);
             const moving = speed > PHYSICS_SETTLE_SPEED || angularSpeed > 0.5 || item.elevation > PHYSICS_EPSILON;
             if (!moving) return;
+            movingItems.add(item);
             changed = true;
             item.x += item.velocityX * deltaSeconds;
             item.y += item.velocityY * deltaSeconds;
@@ -756,11 +849,12 @@ export class DesktopCleanupModel {
             if (!left) continue;
             for (let rightIndex = leftIndex + 1; rightIndex < active.length; rightIndex += 1) {
                 const right = active[rightIndex];
-                if (!right || Math.abs(left.layer - right.layer) > PHYSICS_DEPTH_COLLISION_RANGE) continue;
+                if (!right || (!movingItems.has(left) && !movingItems.has(right))) continue;
+                if (Math.abs(left.layer - right.layer) > PHYSICS_DEPTH_COLLISION_RANGE) continue;
                 const dx = right.x - left.x;
                 const dy = right.y - left.y;
                 const distance = Math.hypot(dx, dy);
-                const minimumDistance = PHYSICS_ITEM_RADIUS * 2;
+                const minimumDistance = physicsItemRadius(left.type) + physicsItemRadius(right.type);
                 if (distance >= minimumDistance) continue;
                 const safeDistance = Math.max(distance, PHYSICS_EPSILON);
                 const normalX = distance > PHYSICS_EPSILON ? dx / safeDistance : 1;
@@ -786,12 +880,19 @@ export class DesktopCleanupModel {
                 changed = true;
             }
         }
-        if (changed) this.refreshExposure();
+        if (changed) {
+            // Pair separation can move either participant, including a
+            // settled item pushed by a moving one. Reapply the same rotated
+            // bounds after all pairs have been resolved so collision order
+            // can never leak an item through the playmat edge.
+            active.forEach((item) => this.resolveBoundary(item));
+            this.refreshExposure();
+        }
         return changed;
     }
 
     private resolveBoundary(item: MutableItem): void {
-        const centerLimit = visibleCenterLimit(item.angle);
+        const centerLimit = visibleCenterLimit(item.angle, item.elevation, item.type);
         if (item.x < -centerLimit) {
             item.x = -centerLimit;
             item.velocityX = Math.abs(item.velocityX) * this.config.physicsBounce;
@@ -816,7 +917,10 @@ export class DesktopCleanupModel {
             item.free = !active.some((candidate, candidateIndex) => {
                 if (candidateIndex <= index) return false;
                 const distance = Math.hypot(candidate.x - item.x, candidate.y - item.y);
-                return distance < PHYSICS_COVER_RADIUS;
+                const coverageScale = (
+                    itemSizeMultiplier(item.type) + itemSizeMultiplier(candidate.type)
+                ) / 2;
+                return distance < PHYSICS_COVER_RADIUS * coverageScale;
             });
         });
     }

@@ -51,6 +51,7 @@ import {
 } from './DesktopCleanupConfig';
 import {
     DESKTOP_CLEANUP_ITEM_TYPES,
+    DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS,
     DESKTOP_CLEANUP_STACK_RENDER_SCALE,
     DesktopCleanupModel,
     compareDesktopCleanupItems,
@@ -81,6 +82,16 @@ const BACKGROUND_PATH = 'visual/backgrounds/desktop-cleanup-backdrop-v2/texture'
 const PLAYMAT_PATH = 'visual/backgrounds/desktop-cleanup-playmat-v2/texture';
 const ITEM_ATLAS_PATH = 'visual/items/desktop-cleanup-items-atlas-v2/texture';
 const PICKUP_ANIMATION_WATCHDOG_SECONDS = 0.82;
+const MATCH_SMOKE_INITIAL_SCALE = 0.24;
+const MATCH_SMOKE_PEAK_SCALE = 0.96;
+const MATCH_SMOKE_FINAL_SCALE = 1.14;
+const PILE_BIRTH_RADIAL_BAND_SIZE = 0.08;
+const PILE_BIRTH_RADIAL_BAND_DELAY_SECONDS = 0.065;
+const PILE_BIRTH_ITEM_STAGGER_SECONDS = 0.006;
+const PILE_BIRTH_ITEM_DURATION_SECONDS = 0.22;
+const PILE_BIRTH_START_SCALE = 0.68;
+const PILE_BIRTH_START_CENTER_RATIO = 0;
+const PILE_BIRTH_START_ANGLE = 8;
 const ACCELEROMETER_SHAKE_THRESHOLD = 0.18;
 const ACCELEROMETER_SHAKE_COOLDOWN_MS = 110;
 const THEME_TEXTURE_PATHS = Object.freeze({
@@ -124,9 +135,9 @@ const POPUP_BUTTON_FRAME_RECTS: Readonly<Partial<Record<ThemeFrameKey, Readonly<
 }>>>> = Object.freeze({
     // Tight alpha crop (threshold 8) removes transparent padding that would
     // otherwise make equal-size sliced buttons render at different sizes.
-    popupButtonTeal: Object.freeze({ x: 85, y: 128, width: 1916, height: 490 }),
-    popupButtonCoral: Object.freeze({ x: 147, y: 131, width: 1878, height: 451 }),
-    popupButtonPaper: Object.freeze({ x: 108, y: 80, width: 1956, height: 543 }),
+    popupButtonTeal: Object.freeze({ x: 20, y: 30, width: 459, height: 118 }),
+    popupButtonCoral: Object.freeze({ x: 33, y: 30, width: 433, height: 105 }),
+    popupButtonPaper: Object.freeze({ x: 24, y: 18, width: 452, height: 126 }),
 });
 const POPUP_BUTTON_HORIZONTAL_INSET_RATIO = 0.2;
 const ITEM_LABELS: Readonly<Record<DesktopCleanupItemType, string>> = Object.freeze({
@@ -144,6 +155,12 @@ const ITEM_LABELS: Readonly<Record<DesktopCleanupItemType, string>> = Object.fre
     'spiral-notebook': '线圈本',
     'clear-ruler': '直尺',
     'lucky-badge': '★',
+    'teal-wireless-mouse': '无线鼠标',
+    'cream-alarm-clock': '小闹钟',
+    'coral-candle-jar': '香薰蜡烛',
+    'mustard-glasses-case': '眼镜盒',
+    'mint-compact-mirror': '便携小镜',
+    'purple-mini-speaker': '迷你音箱',
 });
 
 const ITEM_COLORS: Readonly<Record<DesktopCleanupItemType, Color>> = Object.freeze({
@@ -161,6 +178,12 @@ const ITEM_COLORS: Readonly<Record<DesktopCleanupItemType, Color>> = Object.free
     'spiral-notebook': new Color(95, 124, 155, 255),
     'clear-ruler': new Color(141, 200, 201, 255),
     'lucky-badge': new Color(241, 184, 50, 255),
+    'teal-wireless-mouse': new Color(38, 183, 190, 255),
+    'cream-alarm-clock': new Color(246, 231, 194, 255),
+    'coral-candle-jar': new Color(239, 103, 91, 255),
+    'mustard-glasses-case': new Color(232, 174, 31, 255),
+    'mint-compact-mirror': new Color(124, 212, 181, 255),
+    'purple-mini-speaker': new Color(143, 79, 211, 255),
 });
 
 interface ItemHitPolygonPoint {
@@ -185,7 +208,7 @@ function defineHitPolygon(points: readonly ItemHitPolygonVertex[]): ItemHitPolyg
 const ITEM_ATLAS_CELL_SIZE = 384;
 const ITEM_HIT_POLYGONS: Readonly<Record<DesktopCleanupItemType, ItemHitPolygonShape>> = Object.freeze({
 // BEGIN GENERATED DESKTOP CLEANUP HIT POLYGONS
-// Generated from atlas Alpha >= 176; RDP epsilon: 1.2 source px.
+// Generated from 384px cells; atlas Alpha >= 176; RDP epsilon: 1.2 source px.
     'blue-pen': Object.freeze({ outer: defineHitPolygon([
         [183, 252], [176, 264], [174, 264], [168, 273], [156, 284], [154, 290], [142, 303], [137, 305],
         [129, 304], [126, 308], [104, 323], [97, 323], [87, 334], [76, 339], [68, 338], [65, 335],
@@ -266,18 +289,19 @@ const ITEM_HIT_POLYGONS: Readonly<Record<DesktopCleanupItemType, ItemHitPolygonS
         [294, 207], [285, 224], [280, 229], [276, 243], [263, 261], [257, 278],
     ]) }),
     'coral-keycap': Object.freeze({ outer: defineHitPolygon([
-        [121, 268], [100, 260], [95, 256], [73, 246], [67, 238], [66, 225], [70, 214], [72, 213],
-        [72, 210], [96, 164], [111, 146], [117, 135], [125, 127], [141, 103], [154, 89], [154, 87],
-        [168, 79], [185, 80], [263, 115], [278, 134], [284, 148], [286, 149], [296, 168], [297, 185],
-        [293, 196], [288, 200], [280, 217], [267, 234], [263, 246], [251, 258], [244, 275], [234, 285],
-        [229, 296], [216, 303], [201, 303], [185, 298], [171, 290], [164, 288], [161, 285], [150, 282],
+        [169, 79], [181, 79], [191, 82], [201, 88], [209, 90], [219, 96], [263, 115], [278, 134],
+        [297, 171], [297, 185], [295, 192], [286, 203], [275, 225], [267, 234], [263, 246], [251, 258],
+        [244, 275], [234, 285], [229, 296], [221, 301], [211, 304], [201, 303], [185, 298], [171, 290],
+        [164, 288], [161, 285], [150, 282], [142, 277], [130, 273], [127, 270], [100, 260], [95, 256],
+        [73, 246], [66, 235], [67, 221], [96, 164], [111, 146], [117, 135], [125, 127], [141, 103],
+        [154, 89], [154, 87],
     ]) }),
     'purple-stress-ball': Object.freeze({ outer: defineHitPolygon([
-        [223, 288], [195, 290], [185, 287], [178, 287], [141, 269], [122, 252], [109, 234], [99, 211],
-        [95, 191], [96, 162], [103, 138], [110, 123], [126, 101], [141, 87], [170, 70], [192, 63],
-        [213, 60], [231, 61], [249, 65], [267, 73], [286, 87], [300, 103], [307, 114], [318, 141],
-        [322, 163], [321, 184], [317, 204], [302, 238], [298, 240], [287, 255], [283, 256], [267, 271],
-        [246, 282], [243, 282], [242, 284], [229, 288],
+        [130, 97], [141, 87], [170, 70], [192, 63], [213, 60], [231, 61], [249, 65], [267, 73],
+        [286, 87], [300, 103], [307, 114], [318, 141], [322, 163], [321, 184], [316, 207], [307, 225],
+        [305, 234], [293, 246], [291, 251], [277, 261], [270, 269], [246, 282], [243, 282], [242, 284],
+        [229, 288], [202, 290], [178, 287], [161, 280], [141, 269], [128, 256], [126, 256], [113, 240],
+        [102, 220], [96, 198], [95, 171], [97, 157], [105, 133], [117, 112],
     ]) }),
     'round-coaster': Object.freeze({ outer: defineHitPolygon([
         [204, 293], [187, 294], [153, 290], [118, 273], [103, 259], [101, 259], [101, 257], [96, 253],
@@ -314,6 +338,60 @@ const ITEM_HIT_POLYGONS: Readonly<Record<DesktopCleanupItemType, ItemHitPolygonS
         [109, 114], [109, 105], [118, 99], [125, 87], [139, 74], [158, 61], [174, 54], [192, 49],
         [212, 48], [218, 43], [226, 43], [232, 50], [254, 56], [274, 67], [295, 87], [308, 107],
         [316, 130], [319, 149], [317, 176], [310, 200], [302, 215], [296, 220], [292, 232],
+    ]) }),
+    'teal-wireless-mouse': Object.freeze({ outer: defineHitPolygon([
+        [223, 288], [220, 294], [211, 297], [197, 308], [170, 315], [142, 316], [106, 309], [70, 294],
+        [63, 288], [56, 285], [41, 270], [30, 247], [27, 225], [28, 201], [38, 178], [64, 142],
+        [94, 110], [96, 110], [119, 89], [149, 70], [176, 59], [208, 53], [230, 53], [256, 58],
+        [280, 68], [298, 80], [312, 94], [322, 110], [330, 134], [332, 151], [331, 175], [326, 193],
+        [319, 205], [319, 208], [310, 216], [308, 222], [302, 225], [294, 234], [287, 237], [283, 243],
+        [274, 248], [269, 255], [260, 259], [255, 265], [238, 277], [232, 284],
+    ]) }),
+    'cream-alarm-clock': Object.freeze({ outer: defineHitPolygon([
+        [52, 159], [54, 146], [65, 120], [76, 105], [82, 100], [82, 98], [106, 77], [106, 75],
+        [101, 73], [95, 65], [94, 51], [99, 40], [107, 32], [119, 27], [127, 26], [141, 29],
+        [149, 34], [154, 41], [156, 45], [156, 56], [173, 53], [189, 53], [211, 56], [234, 62],
+        [238, 56], [246, 51], [252, 49], [267, 49], [282, 56], [290, 65], [293, 72], [293, 88],
+        [291, 92], [301, 101], [311, 115], [320, 137], [324, 154], [326, 175], [325, 203], [321, 226],
+        [314, 247], [301, 268], [274, 292], [270, 293], [264, 297], [262, 301], [254, 303], [250, 307],
+        [249, 314], [251, 324], [249, 337], [238, 344], [225, 344], [218, 342], [212, 336], [208, 328],
+        [208, 320], [205, 318], [165, 317], [152, 311], [122, 302], [114, 303], [108, 306], [95, 307],
+        [87, 305], [80, 300], [75, 291], [75, 281], [80, 272], [65, 255], [57, 239], [51, 218],
+        [49, 179],
+    ]) }),
+    'coral-candle-jar': Object.freeze({ outer: defineHitPolygon([
+        [32, 101], [32, 98], [42, 80], [63, 60], [87, 46], [130, 32], [158, 28], [194, 28],
+        [218, 31], [254, 41], [283, 56], [304, 76], [311, 89], [316, 111], [314, 238], [309, 258],
+        [298, 282], [276, 305], [264, 310], [257, 317], [227, 328], [220, 329], [218, 331], [192, 335],
+        [152, 335], [128, 331], [98, 321], [71, 306], [45, 280], [33, 258], [30, 247], [28, 231],
+        [28, 115], [30, 103],
+    ]) }),
+    'mustard-glasses-case': Object.freeze({ outer: defineHitPolygon([
+        [223, 59], [248, 50], [282, 50], [300, 55], [313, 61], [332, 76], [343, 93], [346, 102],
+        [349, 124], [348, 152], [341, 174], [333, 189], [323, 200], [314, 205], [309, 212], [301, 215],
+        [295, 223], [287, 226], [275, 236], [267, 239], [262, 245], [249, 250], [241, 258], [235, 260],
+        [223, 270], [210, 275], [202, 283], [191, 287], [186, 292], [172, 298], [163, 305], [130, 314],
+        [108, 315], [90, 312], [85, 309], [74, 307], [54, 295], [40, 281], [35, 273], [30, 261],
+        [27, 247], [28, 206], [32, 193], [40, 179], [62, 158], [94, 136], [98, 135], [113, 124],
+        [117, 123], [137, 109], [143, 107], [147, 103], [151, 102], [158, 96], [164, 94], [199, 71],
+    ]) }),
+    'mint-compact-mirror': Object.freeze({ outer: defineHitPolygon([
+        [92, 232], [103, 220], [103, 215], [100, 212], [94, 198], [90, 180], [90, 155], [95, 132],
+        [107, 105], [110, 103], [115, 93], [129, 78], [129, 76], [148, 58], [167, 45], [183, 37],
+        [199, 31], [218, 27], [244, 27], [263, 31], [273, 35], [287, 44], [298, 55], [311, 77],
+        [315, 90], [317, 103], [316, 128], [311, 149], [299, 175], [289, 188], [286, 196], [278, 202],
+        [273, 212], [265, 215], [260, 223], [254, 225], [249, 231], [243, 233], [240, 237], [230, 240],
+        [225, 246], [189, 256], [163, 256], [153, 262], [144, 263], [140, 278], [131, 292], [127, 306],
+        [120, 313], [117, 321], [113, 323], [104, 334], [95, 337], [89, 342], [68, 342], [51, 334],
+        [44, 327], [38, 316], [37, 296], [45, 277], [54, 268], [54, 266],
+    ]) }),
+    'purple-mini-speaker': Object.freeze({ outer: defineHitPolygon([
+        [163, 292], [156, 291], [142, 285], [133, 284], [110, 275], [94, 272], [61, 258], [40, 238],
+        [29, 215], [27, 204], [26, 155], [27, 140], [30, 129], [37, 117], [75, 79], [77, 79],
+        [90, 65], [108, 56], [134, 56], [289, 100], [305, 109], [317, 121], [325, 135], [328, 145],
+        [330, 157], [330, 217], [326, 233], [313, 256], [306, 261], [303, 268], [295, 274], [293, 279],
+        [287, 283], [277, 295], [273, 296], [265, 305], [256, 309], [247, 311], [228, 311], [203, 306],
+        [184, 298], [167, 295],
     ]) }),
 });
 // END GENERATED DESKTOP CLEANUP HIT POLYGONS
@@ -419,6 +497,21 @@ interface DesktopCleanupSlotMove {
     readonly node: Node;
 }
 
+interface DesktopCleanupPileBirthEntry {
+    readonly node: Node;
+    readonly position: Vec3;
+    readonly angle: number;
+    readonly scale: number;
+    readonly delay: number;
+}
+
+interface DesktopCleanupPileBirthAnimation {
+    readonly token: number;
+    readonly generation: number;
+    readonly entries: readonly DesktopCleanupPileBirthEntry[];
+    readonly finish: () => void;
+}
+
 @ccclass('DesktopCleanupGame')
 export class DesktopCleanupGame extends Component implements MiniGame<DesktopCleanupServices> {
     private state: GameState = 'idle';
@@ -457,6 +550,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private resultModel?: MiniGameResultModel;
     private backgroundFrame?: SpriteFrame;
     private readonly themeFrames = new Map<ThemeFrameKey, SpriteFrame>();
+    private presentationOpacity?: UIOpacity;
     private readonly popupButtonFrames = new Set<SpriteFrame>();
     private itemAtlasTexture?: Texture2D;
     private itemFrames = new Map<DesktopCleanupItemType, SpriteFrame>();
@@ -466,6 +560,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private adBusy = false;
     private terminalPending = false;
     private operationGeneration = 0;
+    private pileBirthAnimationPending = false;
+    private pileBirthToken = 0;
+    private pileBirthAnimation?: DesktopCleanupPileBirthAnimation;
     private readonly pickupAnimations = new Map<number, DesktopCleanupPickupAnimation>();
     private readonly matchAnimations = new Map<number, DesktopCleanupMatchAnimation>();
     private readonly pendingMatchSelections = new Map<number, DesktopCleanupPendingMatch>();
@@ -481,9 +578,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private lastReportedScore?: number;
 
     protected onLoad(): void {
-        // The scene is intentionally only a bootstrap container. Remove any
-        // legacy serialized children before Cocos can render the first frame;
-        // the current interface is built by initialize().
+        // The scene is intentionally only a bootstrap container. Hide the
+        // root immediately so neither stale serialized nodes nor procedural
+        // fallback graphics can flash while the formal theme loads.
+        this.setPresentationVisible(false);
         this.node.children.slice().forEach((child) => this.destroyNode(child));
     }
 
@@ -494,12 +592,16 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const selfCheck = runDesktopCleanupLayoutSelfCheck(365);
         if (!selfCheck.valid) throw new Error(`Desktop cleanup self-check failed: ${selfCheck.errors.join('; ')}`);
         this.save = readDesktopCleanupSave(context.services.storage);
+        // Resolve the formal visual set before creating any gameplay nodes.
+        // A missing theme must fail through the runtime's recoverable load
+        // error path instead of exposing an obsolete procedural interface.
+        await this.loadThemeAssets();
         this.buildInterface();
         this.registerGlobalInput();
         this.stopAccelerometer = context.services.platform.onAccelerometerChange(this.handleAccelerometerChange);
-        await this.loadThemeAssets();
         this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
         this.applyThemeAssets();
+        this.setPresentationVisible(true);
         this.state = 'ready';
     }
 
@@ -509,7 +611,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     protected update(deltaTime: number): void {
-        if (this.state !== 'playing' || !this.model) return;
+        if (this.state !== 'playing' || this.inputLocked || !this.model) return;
         const physicsChanged = this.model.tick(Math.max(0, deltaTime) * 1000);
         if (physicsChanged) this.syncPileTransforms();
         const second = Math.max(0, Math.ceil(this.model.remainingMs / 1000));
@@ -553,7 +655,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     async dispose(): Promise<void> {
         if (this.state === 'disposed') return;
+        this.setPresentationVisible(false);
         this.operationGeneration += 1;
+        this.pileBirthAnimationPending = false;
+        this.cancelPileBirthAnimation();
         this.cancelPickupAnimations();
         this.cancelMatchAnimation();
         this.cancelSlotMoves();
@@ -644,22 +749,27 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.save = Object.freeze({ ...this.save, playCount: this.save.playCount + 1 });
         this.persistSave();
         this.terminalPending = false;
-        this.inputLocked = false;
+        this.inputLocked = true;
+        this.pileBirthAnimationPending = true;
         this.lastHudSecond = -1;
         this.lastReportedScore = 0;
         this.lastAccelerometerSample = undefined;
         this.context?.reportScore(0);
         this.state = 'playing';
-        this.startDeviceMotion();
+        this.stopDeviceMotion();
         this.renderAll();
         this.setHint('');
         if (this.save.rulesSeenVersion < DESKTOP_CLEANUP_RULES_VERSION) {
             this.showRules(true);
+        } else {
+            this.playPileBirthAnimation();
         }
     }
 
     private resetOperations(): void {
         this.operationGeneration += 1;
+        this.pileBirthAnimationPending = false;
+        this.cancelPileBirthAnimation();
         this.cancelPickupAnimations();
         this.cancelMatchAnimation();
         this.cancelSlotMoves();
@@ -694,6 +804,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 [key, await this.loadTexture(THEME_TEXTURE_PATHS[key])] as const
             ))),
         ]);
+        if (!background || !atlas || themeTextures.some(([, texture]) => !texture)) {
+            throw new Error('Desktop cleanup formal theme assets are incomplete.');
+        }
         if (this.state === 'disposed' || !this.node.isValid) return;
         if (background) {
             this.backgroundFrame?.destroy();
@@ -708,6 +821,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             const frame = this.createThemeFrame(key, texture);
             this.themeFrames.set(key, frame);
         });
+    }
+
+    private setPresentationVisible(visible: boolean): void {
+        const opacity = this.presentationOpacity
+            ?? this.node.getComponent(UIOpacity)
+            ?? this.node.addComponent(UIOpacity);
+        this.presentationOpacity = opacity;
+        opacity.opacity = visible ? 255 : 0;
     }
 
     private loadTexture(path: string): Promise<Texture2D | undefined> {
@@ -755,11 +876,13 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.itemFrames.forEach((frame) => frame.destroy());
         this.itemFrames.clear();
         this.itemAtlasTexture = texture;
-        const cellWidth = Math.floor(texture.width / 4);
-        const cellHeight = Math.floor(texture.height / 4);
+        const columns = 4;
+        const rows = Math.ceil(DESKTOP_CLEANUP_ITEM_TYPES.length / columns);
+        const cellWidth = Math.floor(texture.width / columns);
+        const cellHeight = Math.floor(texture.height / rows);
         DESKTOP_CLEANUP_ITEM_TYPES.forEach((type, index) => {
-            const column = index % 4;
-            const row = Math.floor(index / 4);
+            const column = index % columns;
+            const row = Math.floor(index / columns);
             const frame = new SpriteFrame();
             frame.texture = texture;
             frame.rect = new Rect(
@@ -1322,6 +1445,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             const existing = this.pileItemNodes.get(item.id);
             if (existing?.isValid && existing.parent === pile) {
                 this.updatePileItemTransform(existing, item);
+                if (this.pileBirthAnimationPending) this.preparePileBirthItem(existing, item);
                 return;
             }
             const size = this.itemDisplaySize(item.type, metrics.scale);
@@ -1340,6 +1464,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             opacity.opacity = 255;
             this.drawItem(node, item, size.width, size.height);
             this.updatePileItemTransform(node, item);
+            if (this.pileBirthAnimationPending) this.preparePileBirthItem(node, item);
             this.pileItemNodes.set(item.id, node);
         });
         // Preserved touch candidates keep their node instance across a
@@ -1358,6 +1483,169 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.pickupAnimations.forEach((animation) => {
             if (animation.node.isValid && animation.node.parent === pile) {
                 animation.node.setSiblingIndex(pile.children.length - 1);
+            }
+        });
+    }
+
+    private preparePileBirthItem(node: Node, item: DesktopCleanupItemSnapshot): void {
+        const metrics = this.layout;
+        if (!metrics || !node.isValid) return;
+        const target = this.pilePosition(item, metrics);
+        const targetScale = 1 + item.elevation * 0.14;
+        const popAngle = item.layer % 2 === 0 ? -PILE_BIRTH_START_ANGLE : PILE_BIRTH_START_ANGLE;
+        node.setPosition(
+            target.x * PILE_BIRTH_START_CENTER_RATIO,
+            target.y * PILE_BIRTH_START_CENTER_RATIO,
+            target.z,
+        );
+        node.angle = item.angle + popAngle;
+        node.setScale(
+            targetScale * PILE_BIRTH_START_SCALE,
+            targetScale * PILE_BIRTH_START_SCALE,
+            1,
+        );
+        const opacity = node.getComponent(UIOpacity) ?? node.addComponent(UIOpacity);
+        opacity.opacity = 0;
+    }
+
+    private playPileBirthAnimation(): void {
+        const snapshot = this.model?.snapshot;
+        const metrics = this.layout;
+        const pile = this.pileRoot;
+        this.pileBirthAnimationPending = false;
+        if (!snapshot || !metrics || !pile?.isValid) {
+            this.inputLocked = false;
+            if (this.state === 'playing') {
+                this.startDeviceMotion();
+                this.refreshTools();
+            }
+            return;
+        }
+
+        this.cancelPileBirthAnimation();
+        this.clearPendingPileTaps();
+        this.stopDeviceMotion();
+        this.inputLocked = true;
+        this.refreshTools();
+
+        const activeItems = snapshot.items.filter((item) => item.active);
+        const radialDistances = new Map(
+            activeItems.map((item) => [item.id, Math.hypot(item.x, item.y)] as const),
+        );
+        const animationItems = activeItems.slice().sort((left, right) => (
+            (radialDistances.get(left.id) ?? 0) - (radialDistances.get(right.id) ?? 0)
+            || compareDesktopCleanupItems(left, right)
+        ));
+        const radialBandItemCounts = new Map<number, number>();
+        const entries: DesktopCleanupPileBirthEntry[] = [];
+        animationItems.forEach((item) => {
+            const node = this.pileItemNodes.get(item.id);
+            if (!node?.isValid || node.parent !== pile) return;
+            const target = this.pilePosition(item, metrics);
+            const targetScale = 1 + item.elevation * 0.14;
+            const radialBand = Math.floor(
+                (radialDistances.get(item.id) ?? 0) / PILE_BIRTH_RADIAL_BAND_SIZE,
+            );
+            const itemIndex = radialBandItemCounts.get(radialBand) ?? 0;
+            radialBandItemCounts.set(radialBand, itemIndex + 1);
+            const delay = radialBand * PILE_BIRTH_RADIAL_BAND_DELAY_SECONDS
+                + itemIndex * PILE_BIRTH_ITEM_STAGGER_SECONDS;
+            this.preparePileBirthItem(node, item);
+            entries.push({
+                node,
+                position: target,
+                angle: item.angle,
+                scale: targetScale,
+                delay,
+            });
+        });
+
+        if (entries.length === 0) {
+            this.inputLocked = false;
+            if (this.state === 'playing') {
+                this.startDeviceMotion();
+                this.refreshTools();
+            }
+            return;
+        }
+
+        const token = ++this.pileBirthToken;
+        let animation: DesktopCleanupPileBirthAnimation;
+        const finish = (): void => this.finishPileBirthAnimation(animation);
+        animation = {
+            token,
+            generation: this.operationGeneration,
+            entries,
+            finish,
+        };
+        this.pileBirthAnimation = animation;
+        entries.forEach((entry) => {
+            Tween.stopAllByTarget(entry.node);
+            tween(entry.node)
+                .delay(entry.delay)
+                .to(
+                    PILE_BIRTH_ITEM_DURATION_SECONDS,
+                    {
+                        position: entry.position.clone(),
+                        scale: new Vec3(entry.scale, entry.scale, 1),
+                        angle: entry.angle,
+                    },
+                    { easing: 'backOut' },
+                )
+                .start();
+            const opacity = entry.node.getComponent(UIOpacity);
+            if (!opacity) return;
+            Tween.stopAllByTarget(opacity);
+            tween(opacity)
+                .delay(entry.delay)
+                .to(0.08, { opacity: 255 }, { easing: 'quadOut' })
+                .start();
+        });
+        const lastDelay = Math.max(...entries.map((entry) => entry.delay));
+        this.scheduleOnce(
+            finish,
+            lastDelay + PILE_BIRTH_ITEM_DURATION_SECONDS + 0.02,
+        );
+    }
+
+    private finishPileBirthAnimation(animation: DesktopCleanupPileBirthAnimation): void {
+        if (this.pileBirthAnimation !== animation || !this.isCurrent(animation.generation)) return;
+        this.unschedule(animation.finish);
+        this.pileBirthAnimation = undefined;
+        animation.entries.forEach((entry) => {
+            if (!entry.node.isValid) return;
+            Tween.stopAllByTarget(entry.node);
+            entry.node.setPosition(entry.position);
+            entry.node.setScale(entry.scale, entry.scale, 1);
+            entry.node.angle = entry.angle;
+            const opacity = entry.node.getComponent(UIOpacity);
+            if (opacity) {
+                Tween.stopAllByTarget(opacity);
+                opacity.opacity = 255;
+            }
+        });
+        if (this.state !== 'playing') return;
+        this.inputLocked = false;
+        this.startDeviceMotion();
+        this.refreshTools();
+        this.syncTerminalPhase();
+    }
+
+    private cancelPileBirthAnimation(): void {
+        const animation = this.pileBirthAnimation;
+        if (!animation) return;
+        this.unschedule(animation.finish);
+        this.pileBirthAnimation = undefined;
+        animation.entries.forEach((entry) => {
+            if (!entry.node.isValid) return;
+            Tween.stopAllByTarget(entry.node);
+            entry.node.setPosition(entry.position);
+            entry.node.setScale(entry.scale, entry.scale, 1);
+            entry.node.angle = entry.angle;
+            const opacity = entry.node.getComponent(UIOpacity);
+            if (opacity) {
+                Tween.stopAllByTarget(opacity);
+                opacity.opacity = 255;
             }
         });
     }
@@ -1555,12 +1843,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const snapshot = this.model?.snapshot;
         if (!snapshot) return;
         const adsEnabled = this.isAdsEnabled();
+        const controlsEnabled = this.state === 'playing' && !this.inputLocked && !this.adBusy;
+        if (this.pauseButton) this.pauseButton.interactable = controlsEnabled;
+        if (this.helpButton) this.helpButton.interactable = controlsEnabled;
         this.toolButtons.forEach((button, tool) => {
             const charge = snapshot.toolCharges[tool];
             const count = button.node.getChildByName('Count')?.getComponent(Label);
             if (count) count.string = `${charge}`;
-            button.interactable = this.state === 'playing'
-                && !this.adBusy
+            button.interactable = controlsEnabled
                 && snapshot.pendingSelections.length === 0
                 && this.pickupAnimations.size === 0
                 && this.pendingMatchSelections.size === 0
@@ -1851,7 +2141,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             extent,
             extent,
         );
-        smoke.setScale(0.28, 0.28, 1);
+        smoke.setScale(MATCH_SMOKE_INITIAL_SCALE, MATCH_SMOKE_INITIAL_SCALE, 1);
         const smokeOpacity = smoke.addComponent(UIOpacity);
         smokeOpacity.opacity = 0;
         const smokeFrame = this.themeFrames.get('smoke');
@@ -1891,8 +2181,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             .to(0.11, { opacity: 0 }, { easing: 'quadIn' })
             .start();
         tween(smoke)
-            .to(0.03, { scale: new Vec3(1.08, 1.08, 1), angle: -5 }, { easing: 'backOut' })
-            .to(0.11, { scale: new Vec3(1.28, 1.28, 1), angle: 8 }, { easing: 'quadOut' })
+            .to(0.03, { scale: new Vec3(MATCH_SMOKE_PEAK_SCALE, MATCH_SMOKE_PEAK_SCALE, 1), angle: -5 }, { easing: 'backOut' })
+            .to(0.11, { scale: new Vec3(MATCH_SMOKE_FINAL_SCALE, MATCH_SMOKE_FINAL_SCALE, 1), angle: 8 }, { easing: 'quadOut' })
             .start();
         tween(animation.root)
             .delay(0.18)
@@ -2052,8 +2342,27 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             return;
         }
         this.context?.services.feedback.play(result.triple ? 'merge' : 'fold');
+        this.presentToolResult(tool);
+    }
+
+    private presentToolResult(tool: DesktopCleanupTool, showHint = true): void {
+        const isStorm = tool === 'shuffle';
+        if (isStorm) {
+            this.inputLocked = true;
+            this.stopDeviceMotion();
+        } else {
+            this.inputLocked = false;
+            this.startDeviceMotion();
+        }
         this.renderAll();
-        this.setHint(tool === 'return' ? '最近物件已放回堆顶' : tool === 'shuffle' ? '剩余文具已经重新叠好' : '磁吸盒凑齐了一组');
+        if (showHint) {
+            this.setHint(tool === 'return'
+                ? '最近物件已放回堆顶'
+                : isStorm
+                    ? '剩余物件已经重新叠好'
+                    : '磁吸盒凑齐了一组');
+        }
+        if (isStorm) this.playPileBirthAnimation();
         this.syncTerminalPhase();
     }
 
@@ -2070,6 +2379,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.state = 'paused';
         this.setHint('正在播放视频…');
         this.refreshTools();
+        let actionAccepted = false;
         try {
             const result = await context.services.ads.showRewarded({
                 placement: AD_PLACEMENTS.desktopCleanupRewarded,
@@ -2079,23 +2389,28 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             if (!this.isCurrent(generation)) return;
             const action = model.resolveBoostAd(result.outcome === 'completed');
             if (action.accepted) {
+                actionAccepted = true;
                 this.context?.services.feedback.play(action.triple ? 'merge' : 'continue');
-                this.setHint('视频完成，工具已生效');
+                this.setHint('');
             } else {
-                this.setHint('视频未完整播放，本局不再补充工具');
+                this.setHint('失败，请重试');
             }
         } catch (error: unknown) {
             if (!this.isCurrent(generation)) return;
             model.resolveBoostAd(false);
             console.warn('[DesktopCleanupGame] Rewarded tool ad failed.', error);
-            this.setHint('视频暂不可用，本局不再补充工具');
+            this.setHint('失败，请重试');
         } finally {
             if (this.isCurrent(generation)) {
                 this.adBusy = false;
-                this.inputLocked = false;
                 this.state = 'playing';
-                this.renderAll();
-                this.syncTerminalPhase();
+                if (actionAccepted) this.presentToolResult(tool, false);
+                else {
+                    this.inputLocked = false;
+                    this.startDeviceMotion();
+                    this.renderAll();
+                    this.syncTerminalPhase();
+                }
             }
         }
     }
@@ -2165,17 +2480,17 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 this.inputLocked = false;
                 this.startDeviceMotion();
                 this.context?.services.feedback.play('continue');
-                this.setHint(failureReason === 'slots' ? '视频完成，已清出 3 格！' : '加时成功，继续整理！');
+                this.setHint('');
                 this.renderAll();
             } else {
-                this.setHint('视频未完整播放，无法续玩');
+                this.setHint('失败，请重试');
                 this.showFailure();
             }
         } catch (error: unknown) {
             if (!this.isCurrent(generation)) return;
             model.resolveContinueAd(false);
             console.warn('[DesktopCleanupGame] Continue ad failed.', error);
-            this.setHint('视频暂不可用，无法续玩');
+            this.setHint('失败，请重试');
             this.showFailure();
         } finally {
             if (this.isCurrent(generation)) this.adBusy = false;
@@ -2263,7 +2578,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.state = 'tool-help';
         this.inputLocked = true;
         const adRule = this.isAdsEnabled()
-            ? '三种道具都用完免费次数后，本局总共还能看 1 次视频补充任意一种。'
+            ? '三种道具都用完免费次数后，本局可看视频补充任意一种；视频失败可继续尝试，完整播放成功后不再补充。'
             : '当前环境不提供视频补充次数。';
         this.destroyOverlay(this.toolHelpOverlay);
         this.toolHelpOverlay = this.buildOverlay(
@@ -2297,7 +2612,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.rulesOverlay = this.buildOverlay(
             'DesktopRulesOverlay',
             firstTime ? '今天也来清清桌面' : '整理规则',
-            '点击物件露出的部分，把它放入 7 格收纳槽\n同类三件会自动收好，清掉上层会露出更深的文具\n在 180 秒内清空桌面并找回 3 枚幸运徽章',
+            '点击物件露出的部分，把它放入 7 格收纳槽\n同类三件会自动收好，清掉上层会露出更深的物件\n在 180 秒内清空桌面并找回 3 枚幸运徽章',
             [
                 { name: 'StartButton', label: firstTime ? '开始整理' : '知道了', tone: 'teal', action: () => this.closeRules(firstTime) },
             ],
@@ -2313,6 +2628,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             this.persistSave();
         }
         this.state = 'playing';
+        if (this.pileBirthAnimationPending) {
+            this.playPileBirthAnimation();
+            return;
+        }
         this.inputLocked = false;
         this.startDeviceMotion();
         this.refreshTools();
@@ -2614,6 +2933,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private settlePendingImmediately(): void {
         const model = this.model;
         const pending = model?.snapshot.pendingSelections ?? [];
+        this.cancelPileBirthAnimation();
         if (!model && this.pickupAnimations.size === 0 && this.matchAnimations.size === 0) return;
         this.operationGeneration += 1;
         this.cancelPickupAnimations();
@@ -3131,7 +3451,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private itemDisplaySize(type: DesktopCleanupItemType, scale: number): Size {
-        const extent = type === 'lucky-badge' ? 184 * scale : 192 * scale;
+        const extent = 192 * DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS[type] * scale;
         return new Size(extent, extent);
     }
 

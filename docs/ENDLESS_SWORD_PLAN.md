@@ -11,7 +11,7 @@
 
 ## 0. 当前进度
 
-t1.6 完成（代码、P0 素材接入与核心验证；Cocos MCP 预览待连接恢复后补验）
+t1.8 完成（XP / 升级 / 刷怪导演与前 5 分钟难度成长；后续继续 T1.9 精英与 Boss）
 
 ## 1. 目标与范围
 
@@ -37,7 +37,7 @@ t1.6 完成（代码、P0 素材接入与核心验证；Cocos MCP 预览待连�
 | 数值边界 | 普通/精英吃 §54 时间倍率（精英另吃魔化）；Boss 只用 §47/§48 自身公式 |
 | 广告 | 仅"每局一次复活"；先检查 `AdService.isEnabledForGame(gameId)`，再以专属 placement、`gameId`、`sessionId` 调用 `showRewarded(request)`，成功/跳过/失败三态都要处理 |
 | 局外 | 无永久养成；存档只存最高纪录 + 设置 + 新手标记 |
-| 可见性 | M0～M3 `visibility: "development"`，M4 起评估切 `public` |
+| 可见性 | 当前按用户要求提前切为 `visibility: "public"`；后续仍需完成发布验收 |
 | 视觉 | 独立风格单元（动漫国风仙侠 + 高饱和特效 + 深色战场），先写 VISUAL_SPEC 再产正式素材，禁止复用其他游戏皮肤 |
 
 ## 3. 里程碑总览
@@ -244,6 +244,10 @@ interface EndlessSwordSaveCustom {
 T1.4/T1.5 落地说明（2026-08-23）：空间哈希 cell 固定为 128；Enemy/Projectile/XP 分别在 `initialize()` 预热 160/160/80 个逻辑槽位及对应视图节点，运行中池耗尽时丢弃生成请求，不扩容。首批四敌纹理由场景序列化引用并随 Bundle 生命周期释放；死亡帧先完成 HP、击杀分与 XP 结算，再在原敌人池槽播放 0.22 秒通用死亡表现后归还。T1.8 接入正式 `SpawnSystem` 前，开局仅生成四敌验证编队。
 
 T1.6 落地说明（2026-08-24）：新增 `SkillConfig` 与 `SkillSystem`，四个 P0 主动技能统一消费 Lv1～Lv5 配置；飞剑/离火火球接入固定投射物池，周天剑阵接入固定环绕剑槽，天雷符与火球爆炸通过 `CollisionSystem` 结算范围伤害。新增技能图标、投射物、VFX 图集与 1024×1024 地面 Tile 的 Bundle 资源引用；普通局仍按策划案只给飞剑，`?swordQa=skills` / `giveSkill` 用于 P0 表现回归。背景源图从 1254×1254 归一化为 1024×1024，原始素材保留在 `art_sources`。
+
+T1.7 落地说明（2026-08-25）：`RunModel` 接入策划案 XP 曲线（`floor(18 + 8 * level + 0.65 * level²)`）与连续升级排队；`XpOrbSystem` 固定 80 槽位，满池时在 180 范围内合并最近 XP，拾取范围内自动吸附结算，`XpOrbView` 使用四级 `pickups-spritesheet-v1`。新增 `PassiveSkillConfig`（剑心诀/御风诀/灵识诀/法域诀）与纯逻辑 `UpgradeSystem`，按 §34 权重生成主动技能、心法、灵泉三选一，保留每局两次刷新。`UpgradeOverlay` 使用无尽剑域自有卡牌/面板/按钮/技能/心法素材，升级期间停住局内逻辑，连续升级按队列逐次选择；心法效果已作用于移速、技能伤害、冷却和范围。新增 `hp-xp-bars-spritesheet-v1` 与 `passive-skill-icons-v1` 等 Bundle 资源，原始素材继续保留在 `art_sources`。
+
+T1.8 落地说明（2026-08-25）：新增 `DifficultyConfig` 与纯逻辑 `SpawnSystem`，按 §54 时间成长、§55 刷怪速率和 §56 的 P0 四敌构成驱动普通敌人生成；生成点始终位于运行时可视区域外环，随机序列由局内 seed 驱动。`EnemyModel` 保存每只敌人的 HP/伤害/速度倍率，接触伤害、魔弩投射物和移动速度统一消费倍率。普通敌人达到 160 个固定池上限时清空刷怪欠账；5 分钟后暂沿用已交付四敌构成，待 M2 其余五种敌人接入后再替换完整权重表。
 
 ### M1 P0 核心可玩（7 工日）——证明"割草好玩"
 

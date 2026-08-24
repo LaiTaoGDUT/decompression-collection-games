@@ -31,7 +31,7 @@ export interface SceneDirector {
 export interface LoadingModel {
     readonly variant?: 'game' | 'lobby';
     readonly gameName?: string;
-    readonly cover?: string;
+    readonly cover?: string | null;
     readonly message: string;
     readonly progress: number;
 }
@@ -439,7 +439,9 @@ export class GameRuntime {
     private async performEnter(manifest: GameManifest): Promise<void> {
         this.loading?.show({
             gameName: manifest.name,
-            cover: manifest.cover,
+            cover: manifest.loadingCover === undefined
+                ? manifest.cover
+                : manifest.loadingCover,
             message: '即将进入游戏',
             progress: 0.04,
         });
