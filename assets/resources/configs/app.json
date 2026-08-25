@@ -57,9 +57,6 @@
       },
       "catch": {
         "enabled": true
-      },
-      "endless-sword": {
-        "enabled": false
       }
     },
     "wechat": {

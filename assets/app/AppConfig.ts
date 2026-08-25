@@ -148,7 +148,6 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             game2048: { enabled: false },
             'sliding-puzzle': { enabled: false },
             catch: { enabled: true },
-            'endless-sword': { enabled: false },
         },
         wechat: {
             watermelonReviveRewarded: {

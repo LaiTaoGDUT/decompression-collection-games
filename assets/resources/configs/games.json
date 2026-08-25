@@ -117,29 +117,6 @@
         "daily",
         "relaxing"
       ]
-    },
-    {
-      "id": "endless-sword",
-      "version": "0.1.0",
-      "name": "无尽剑域",
-      "description": "单手御剑，无尽割草。构筑流派，挑战天劫重数。",
-      "bundle": "game-endless-sword",
-      "scene": "scenes/EndlessSword",
-      "entryComponent": "EndlessSwordGame",
-      "icon": "visual/branding/lobby-cn-title-logo-v3/texture",
-      "cover": "visual/backgrounds/lobby-arcade-warm-rays-v3/texture",
-      "orientation": "portrait",
-      "renderMode": "2d",
-      "minimumDeviceTier": "low",
-      "minAppVersion": "0.1.0",
-      "enabled": true,
-      "visibility": "public",
-      "preload": [],
-      "tags": [
-        "action",
-        "roguelike",
-        "endless"
-      ]
     }
   ]
 }
