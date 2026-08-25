@@ -1,0 +1,283 @@
+docs/DESKTOP_CLEANUP_PLAN.md
+  s_b433ecca03fb69::t_8231de95144803 12-13
+  s_da7802cd7116d6::t_a3a914a5d3e9cc 4
+  h_293365c3a5ebee 5
+.codex/config.toml
+  s_92effbd38cb011::t_f5f65088d33f10 2-5,8-9
+docs/DESKTOP_CLEANUP_AUDIO_PROMPTS.md
+  s_b433ecca03fb69::t_8231de95144803 142,144,160
+assets/games/catch/scripts/DesktopCleanupTheme.ts
+  s_da7802cd7116d6::t_4154ec22c5a0f1 31,149-150
+  s_da7802cd7116d6::t_74e05fb9cc4807 143-144
+  s_da7802cd7116d6::t_571df9c500669c 28-30
+  s_da7802cd7116d6::t_5605fc710ce602 32-34,140-142
+  s_da7802cd7116d6::t_4b7807be47a292 145-148
+  s_da7802cd7116d6::t_9586c99ec2687d 151-153
+  s_199c69a0f9b54e::t_c839dda4692330 1-27,35-139,154-172
+tools/cocos-mcp-platform-bridge.js
+  s_92effbd38cb011::t_f5f65088d33f10 1-263
+assets/runtime/GameManifestValidator.ts
+  s_42e9b88ad068a2::t_5f9a33d4d659db 172-173
+docs/DESKTOP_CLEANUP_COVER_PROVENANCE.md
+  s_850109b7b5d481::t_92f927b964d347 1-29
+AGENTS.md
+  h_293365c3a5ebee 9-13
+docs/DESKTOP_CLEANUP_TOY_CABINET_PROVENANCE.md
+  s_da7802cd7116d6::t_c800495ed394f8 9-23
+  s_da7802cd7116d6::t_a3a914a5d3e9cc 5
+  s_da7802cd7116d6::t_6a303103ec88b2 6-8
+  s_da7802cd7116d6::t_686461f243670a 2-4
+  s_199c69a0f9b54e::t_2aac4a554bb94e 1
+assets/games/catch/scripts/DesktopCleanupModel.ts
+  s_9bf71a8ccd7b76::t_61384bcb7d8bfd 436-443,446-447
+  s_b433ecca03fb69::t_2fe02b823258d8 86-90,92,120,149
+  s_b433ecca03fb69::t_13d1f2fa77a7be 777-780,820,831-847,850-855
+  s_9bf71a8ccd7b76::t_2258ced2c0b907 33-34,84,250,253,256-257,270-274,276-285,287-291,293
+  s_b433ecca03fb69::t_e45634fb5a796f 683,713
+  s_b433ecca03fb69::t_f5fd4f208eae47 147-148,150-152,678,682,684,707,712,714,753,755,760-761,775
+  s_b433ecca03fb69::t_c0c1bb300ff7a7 121,725-726,728-729,731,740-744,783,790,793-794,798,801
+  s_9bf71a8ccd7b76::t_99bc5386b56740 153-156,163,171,317-318
+  s_9bf71a8ccd7b76::t_a57eb1c982c903 160-162
+  s_9bf71a8ccd7b76::t_1e638532a51658 376
+  s_9bf71a8ccd7b76::t_cd817a0fb1a13c 30-32
+  s_9bf71a8ccd7b76::t_129bd9b110bb42 35-37
+  s_9bf71a8ccd7b76::t_19445627edbd92 251-252
+  s_9bf71a8ccd7b76::t_dbf7d1e1a9d07a 254-255
+  s_9bf71a8ccd7b76::t_bdd3ce45b7f6c8 258-260,267-269
+  s_9bf71a8ccd7b76::t_4603b40cf646e9 275
+  s_9bf71a8ccd7b76::t_e473cd95a2e93c 286
+  s_9bf71a8ccd7b76::t_a37172703f1351 448
+  s_199c69a0f9b54e::t_f3a2de936c8c54 3-18,24-25,27-29,38-40,85,186,189,239-243,261-266,299,325,367-369,371-372,402,405-407,422,469,473,478,502,507,509-511,534,542-543,552,749,808,811,828,859,898-899,937,955,963,991
+docs/ARCHITECTURE.md
+  s_da7802cd7116d6::t_a3a914a5d3e9cc 223-224
+  s_da7802cd7116d6::t_fd839923294ced 220-222
+  s_da7802cd7116d6::t_7c578e38951a30 225-227
+  s_199c69a0f9b54e::t_9b14c29ef0f14c 7,218-219
+docs/DESKTOP_CLEANUP_TITLE_EMBLEM_PROVENANCE.md
+  s_850109b7b5d481::t_ad461189d0eced 1-30
+assets/games/catch/scripts/DesktopCleanupGame.ts
+  s_b433ecca03fb69::t_8b566decfe7669 873,1855,2886-2887,2893,2910-2919,2921-2922,3356
+  s_aa85759799f7bf::t_6337ec8bcfb15d 589-596
+  s_b433ecca03fb69::t_2a7d610123628e 579,1853,2808,2905-2908
+  s_b433ecca03fb69::t_c3e0c850208fa3 2757-2758,2760
+  s_b433ecca03fb69::t_cfca6af96fba50 2209
+  s_b433ecca03fb69::t_42b11dbe6d954d 542,583,879,1885,1899,1907-1910,1926,2566,2574-2578,2612,2635,2909
+  s_b433ecca03fb69::t_9e22a832ed19b1 2850
+  s_b433ecca03fb69::t_4153caf7f65560 59,545
+  s_b433ecca03fb69::t_4960d88bdf51e7 576,1857-1884,1886-1898,1900-1906,1911-1925,1927-1970
+  s_b433ecca03fb69::t_3d48bac76eb77b 2791-2795,2810-2817
+  s_b433ecca03fb69::t_ea837c7d9fe371 2709-2713
+  s_b433ecca03fb69::t_53bcca28a7bc0b 2735-2738,2740,2742
+  s_b433ecca03fb69::t_414d422df4e5d2 3370
+  s_b433ecca03fb69::t_abeb0bdc4b71a0 2189,2199-2200,2202,2215-2233
+  h_293365c3a5ebee 3040
+  s_b433ecca03fb69::t_234d53aea57a14 93-95,381,387,475-483,486,543-544
+  s_b433ecca03fb69::t_7178276a056e4b 580,842,1751-1752,1854,1971-2057,2060-2066,2068-2079,2081-2094,2099-2101,2103,2108-2130,2132-2135,2138
+  s_b433ecca03fb69::t_5ee2976d433cb2 671,792
+  s_b433ecca03fb69::t_8f2b1f04048396 96,2058-2059,2080,2095-2098,2102,2104-2107,2755-2756,2759,2761
+  s_aa85759799f7bf::t_3bc38d1e387736 2191-2198,2201,2203
+  s_aa85759799f7bf::t_c258e53af12b77 607-617,755,757-760,773,775,778,781,1341,1343,1345,1347,1349,1351,1356
+  s_b433ecca03fb69::t_a893e4c1db5dde 1477,1757,2727-2732,2739,2743-2746,2764
+  s_b433ecca03fb69::t_0e6b8db435792a 2780,2790
+  s_b433ecca03fb69::t_1fe0dd64468a59 573-575
+  s_b433ecca03fb69::t_8315a27644ed07 577-578
+  s_b433ecca03fb69::t_76c5555036aceb 581-582
+  s_b433ecca03fb69::t_cea0da1fe7b3e9 839-841
+  s_b433ecca03fb69::t_900877042de08e 843
+  s_b433ecca03fb69::t_220d3051ea4378 874-878
+  s_b433ecca03fb69::t_1db5bc96cc2bea 880-881
+  s_b433ecca03fb69::t_813a3cd3d96c19 1475-1476
+  s_b433ecca03fb69::t_e12642a221427b 1748-1750
+  s_b433ecca03fb69::t_30c7bbb2a92af8 1753-1756
+  s_b433ecca03fb69::t_b4ec85e533f0e6 1856
+  s_b433ecca03fb69::t_8826e9be0d5e6b 2131
+  s_b433ecca03fb69::t_fdce697984e25f 2636
+  s_b433ecca03fb69::t_0861fba96beb4f 3357-3359
+  s_199c69a0f9b54e::t_8bb424e8a5f32a 67-73,172,493,529,570-572,697,818,820-822,827-829,914-915,918,1164,1184,1193,1202,1458,1468,1742-1743,1747,1767,2645,2665,2679,2685,3277,3289,3316,3342,3884
+assets/shared/components/ErrorView.ts
+  s_3f7381f7268537::t_e6532d21d60525 44,49,56-58,234-239
+  s_3f7381f7268537::t_d1049c2b5732ed 13,141-144,146-150,152
+tools/build-desktop-cleanup-toy-cabinet-assets.py
+  s_da7802cd7116d6::t_a2a47ea4f31579 1,3-13,18-41,48-51,55-56,61-64,67,69,71-75,77,81-83,86,88-154,156,166-167,170-171,174,177,180-184,187-189,191-193,196-198
+  s_da7802cd7116d6::t_a204e45a915cde 14,16-17,159-160
+  s_da7802cd7116d6::t_fdebbe8a4056b9 2
+  s_da7802cd7116d6::t_69f21cabe5105c 15
+  s_da7802cd7116d6::t_2b721fa8de77ba 42-47
+  s_da7802cd7116d6::t_ab0edf05d7bcbd 52-54
+  s_da7802cd7116d6::t_2e69291cee04f9 57-60
+  s_da7802cd7116d6::t_e61634085de331 65-66
+  s_da7802cd7116d6::t_f70b46f9a5b651 68
+  s_da7802cd7116d6::t_26adf741b77b34 70
+  s_da7802cd7116d6::t_35b5c906adbd17 76
+  s_da7802cd7116d6::t_41f2af4ed49c37 78-80
+  s_da7802cd7116d6::t_ccd36db4f871cf 84-85
+  s_da7802cd7116d6::t_942690f519f5b4 87
+  s_da7802cd7116d6::t_7ff9c9ed666d15 155
+  s_da7802cd7116d6::t_24542f8505b0ae 157-158
+  s_da7802cd7116d6::t_3fa97602129bab 161-165
+  s_da7802cd7116d6::t_c8914a3df306d3 168-169
+  s_da7802cd7116d6::t_1b11a498e78b72 172-173
+  s_da7802cd7116d6::t_040da84e09e8af 175-176
+  s_da7802cd7116d6::t_039e63e69e9f9b 178-179
+  s_da7802cd7116d6::t_fb7b09ee8759fd 185-186
+  s_da7802cd7116d6::t_cc6a79b7b24260 190
+  s_da7802cd7116d6::t_441c21420f865d 194-195
+  s_da7802cd7116d6::t_aefcf7b1168549 199
+assets/games/chess-endless/scripts/ChessEndlessModel.ts
+  s_42e9b88ad068a2::t_bd38c216304c92 6,8-15,1196-1202
+  s_42e9b88ad068a2::t_237c13a71078de 7,1204-1207
+assets/games/catch/configs/gameplay.json
+  s_da7802cd7116d6::t_8f104a54b4e41c 3
+assets/games/catch/scripts/DesktopCleanupConfig.ts
+  s_da7802cd7116d6::t_8db14e9a1d32b9 1-6,9-10,27,88
+assets/games/catch/scripts/DesktopCleanupTheme.ts.meta
+  s_da7802cd7116d6::t_faef1e014976da 1-9
+tools/generate-desktop-cleanup-hit-polygons.py
+  s_da7802cd7116d6::t_5e1ff18ba7154a 12-13
+assets/lobby/visual/covers/catch/desktop-cleanup-cover-v1.png.meta
+  h_293365c3a5ebee 5,7-8,13,25,40
+extensions/cocos-mcp-server/dist/main.js
+  h_293365c3a5ebee 216
+extensions/cocos-mcp-server/dist/mcp-server.js
+  h_293365c3a5ebee 437
+extensions/cocos-mcp-server/dist/panels/default/index.js
+  h_293365c3a5ebee 445
+extensions/cocos-mcp-server/dist/panels/tool-manager/index.js
+  h_293365c3a5ebee 511
+extensions/cocos-mcp-server/dist/scene.js
+  h_293365c3a5ebee 428
+extensions/cocos-mcp-server/dist/settings.js
+  h_293365c3a5ebee 83
+extensions/cocos-mcp-server/dist/tools/asset-advanced-tools.js
+  h_293365c3a5ebee 1074
+extensions/cocos-mcp-server/dist/tools/broadcast-tools.js
+  h_293365c3a5ebee 237
+extensions/cocos-mcp-server/dist/tools/component-tools.js
+  h_293365c3a5ebee 2453
+extensions/cocos-mcp-server/dist/tools/node-tools.js
+  h_293365c3a5ebee 1818
+extensions/cocos-mcp-server/dist/tools/prefab-tools.js
+  h_293365c3a5ebee 3469
+extensions/cocos-mcp-server/dist/tools/preferences-tools.js
+  h_293365c3a5ebee 647
+extensions/cocos-mcp-server/dist/tools/project-tools.js
+  h_293365c3a5ebee 338
+extensions/cocos-mcp-server/dist/tools/reference-image-tools.js
+  h_293365c3a5ebee 471
+extensions/cocos-mcp-server/dist/tools/scene-tools.js
+  h_293365c3a5ebee 784
+extensions/cocos-mcp-server/dist/tools/scene-view-tools.js
+  h_293365c3a5ebee 577
+extensions/cocos-mcp-server/dist/tools/server-tools.js
+  h_293365c3a5ebee 238
+extensions/cocos-mcp-server/dist/tools/tool-manager.js
+  h_293365c3a5ebee 382
+extensions/cocos-mcp-server/dist/tools/validation-tools.js
+  h_293365c3a5ebee 232
+extensions/cocos-mcp-server/dist/types/index.js
+  h_293365c3a5ebee 3
+extensions/cocos-mcp-server/dist/utils/json-utils.js
+  h_293365c3a5ebee 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "68725e69771c45d4b52567dea491f40dc9364cf7",
+  "prompts": {},
+  "logical_commit_id": "68725e69771c45d4b52567dea491f40dc9364cf7",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_199c69a0f9b54e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03883-ca55-7390-a2d3-83f7a550843e",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_3f7381f7268537": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a038aa-f8c2-72e2-b1e8-c4800489e84e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 26,
+      "total_deletions": 9
+    },
+    "s_42e9b88ad068a2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a036f3-9bf9-7fd0-9b17-d598106c5f25",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 24,
+      "total_deletions": 6
+    },
+    "s_850109b7b5d481": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0385c-9bc3-7ae0-b6e8-9f7d78439040",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 102,
+      "total_deletions": 43
+    },
+    "s_92effbd38cb011": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a036c7-858b-7573-ba4c-fca6b3212066",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 269,
+      "total_deletions": 13
+    },
+    "s_9bf71a8ccd7b76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0383c-7a80-7e33-8bad-2c6907c19b7e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 73,
+      "total_deletions": 51
+    },
+    "s_aa85759799f7bf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03881-ea02-7133-bbb3-b1cca55c6c5c",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 54,
+      "total_deletions": 22
+    },
+    "s_b433ecca03fb69": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03711-a064-7052-8b6a-c8006c0012f8",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 515,
+      "total_deletions": 101
+    },
+    "s_da7802cd7116d6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03864-7196-78d1-a5c3-2b6a31e78c1e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 453,
+      "total_deletions": 339
+    }
+  }
+}
