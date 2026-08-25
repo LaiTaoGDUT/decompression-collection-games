@@ -6,6 +6,11 @@
 
 做根因修复，用正确的逻辑覆盖错误而不是打补丁
 
+## 微信小游戏编译兼容
+
+- Cocos Creator 3.8.8 的微信小游戏转换器不能可靠处理 `Map`/`Set` 迭代器的展开语法；`[...map.values()]`、`[...map.keys()]`、`[...map.entries()]` 和 `[...set]` 可能被转换成包含迭代器本身的数组，运行时再读取元素字段会出现 `undefined`，常见表现为 `Cannot read properties of undefined (reading 'isValid')`。
+- 所有会进入微信小游戏构建的 `assets` 代码禁止对 `Map`/`Set` 迭代器使用展开语法。统一使用 `Array.from(map.values())`、`Array.from(map.keys())`、`Array.from(map.entries())`、`Array.from(set)` 或显式遍历；数组展开不属于本条限制。
+
 ## 项目基线
 
 - 引擎固定为 Cocos Creator 3.8.8，目标平台为微信小游戏；浏览器预览只作为开发和自动化验证环境。

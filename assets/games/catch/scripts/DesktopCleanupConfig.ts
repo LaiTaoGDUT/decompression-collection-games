@@ -1,5 +1,13 @@
+import {
+    DEFAULT_DESKTOP_CLEANUP_THEME_SELECTION,
+    parseDesktopCleanupThemeSelection,
+    type DesktopCleanupThemeSelection,
+} from './DesktopCleanupTheme';
+
 export interface DesktopCleanupGameplayConfig {
     readonly schemaVersion: 1;
+    /** random = 每次开始新局重新抽取主题；固定 ID 仅用于调试或定向活动。 */
+    readonly themeId: DesktopCleanupThemeSelection;
     readonly timeLimitSeconds: number;
     readonly continueSeconds: number;
     readonly slotCapacity: number;
@@ -16,6 +24,7 @@ export interface DesktopCleanupGameplayConfig {
 
 export const DEFAULT_DESKTOP_CLEANUP_CONFIG: DesktopCleanupGameplayConfig = Object.freeze({
     schemaVersion: 1,
+    themeId: DEFAULT_DESKTOP_CLEANUP_THEME_SELECTION,
     timeLimitSeconds: 180,
     continueSeconds: 60,
     slotCapacity: 7,
@@ -76,6 +85,7 @@ export function parseDesktopCleanupGameplayConfig(
 
     return Object.freeze({
         schemaVersion: 1,
+        themeId: parseDesktopCleanupThemeSelection(value.themeId),
         timeLimitSeconds: readPositiveInteger(value, 'timeLimitSeconds', 180, 900),
         continueSeconds: readPositiveInteger(value, 'continueSeconds', 60, 300),
         slotCapacity: readPositiveInteger(value, 'slotCapacity', 7, 12),

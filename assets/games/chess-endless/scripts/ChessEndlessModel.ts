@@ -3,6 +3,16 @@ export const BOARD_ROWS = 10;
 export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 16;
 
 /**
+ * 开局前两批增援提前入场，避免玩家在只有初始五枚敌棋的状态下空走太久。
+ * 后续低压到中压区间也各收紧约 1 回合；高压末段保留原节奏，避免增援过密。
+ */
+const OPENING_REINFORCEMENT_PACING = Object.freeze({
+    waves: 2,
+    minimumTurns: 3,
+    maximumTurns: 4,
+});
+
+/**
  * 将军保护使用固定评分，不随隐藏难度递增。
  *
  * 普通棋脱离玩家车的直接威胁时会获得 `600 + 棋子价值 × 3`；
@@ -1183,11 +1193,18 @@ export class ChessEndlessModel {
     }
 
     private reinforcementInterval(): number {
+        if (this.state.normalReinforcementCount < OPENING_REINFORCEMENT_PACING.waves) {
+            return this.rng.integer(
+                OPENING_REINFORCEMENT_PACING.minimumTurns,
+                OPENING_REINFORCEMENT_PACING.maximumTurns,
+            );
+        }
+
         const difficulty = this.state.difficultyLevel;
-        if (difficulty <= 2) return this.rng.integer(5, 6);
-        if (difficulty <= 5) return 5;
-        if (difficulty <= 8) return this.rng.integer(4, 5);
-        if (difficulty <= 12) return 4;
+        if (difficulty <= 2) return this.rng.integer(4, 5);
+        if (difficulty <= 5) return 4;
+        if (difficulty <= 8) return this.rng.integer(3, 4);
+        if (difficulty <= 12) return 3;
         return this.rng.integer(3, 4);
     }
 

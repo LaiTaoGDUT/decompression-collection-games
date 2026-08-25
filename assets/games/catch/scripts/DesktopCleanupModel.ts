@@ -1,71 +1,43 @@
 import type { DesktopCleanupGameplayConfig } from './DesktopCleanupConfig';
 import { DEFAULT_DESKTOP_CLEANUP_CONFIG } from './DesktopCleanupConfig';
+import {
+    getDesktopCleanupTheme,
+    selectDesktopCleanupTheme,
+    type DesktopCleanupItemType,
+    type DesktopCleanupThemeDefinition,
+} from './DesktopCleanupTheme';
 
-export const DESKTOP_CLEANUP_ITEM_TYPES = Object.freeze([
-    'blue-pen',
-    'red-pencil',
-    'yellow-eraser',
-    'mint-notes',
-    'binder-clip',
-    'orange-tape',
-    'teal-usb',
-    'cream-earbuds',
-    'coral-keycap',
-    'purple-stress-ball',
-    'round-coaster',
-    'spiral-notebook',
-    'clear-ruler',
-    'lucky-badge',
-    'teal-wireless-mouse',
-    'cream-alarm-clock',
-    'coral-candle-jar',
-    'mustard-glasses-case',
-    'mint-compact-mirror',
-    'purple-mini-speaker',
-] as const);
-
-export type DesktopCleanupItemType = typeof DESKTOP_CLEANUP_ITEM_TYPES[number];
+export {
+    DESKTOP_CLEANUP_ITEM_TYPES,
+    getDesktopCleanupTheme,
+    selectDesktopCleanupTheme,
+} from './DesktopCleanupTheme';
+export type {
+    DesktopCleanupItemType,
+    DesktopCleanupThemeDefinition,
+} from './DesktopCleanupTheme';
 export type DesktopCleanupTool = 'return' | 'magnet' | 'shuffle';
 export type DesktopCleanupPhase = 'playing' | 'failed' | 'won';
 export type DesktopCleanupFailureReason = 'slots' | 'timeout';
 
 /**
- * Per-prop presentation scale, relative to the former 192px square.
- * Keeping this beside the model lets spawning, physics, and rendering share
- * the same footprint instead of treating a larger prop as a visual-only change.
+ * Legacy export kept for callers that still need the default theme's scales.
+ * Runtime layout and physics always use the active theme definition below.
  */
-export const DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS: Readonly<Record<DesktopCleanupItemType, number>> = Object.freeze({
-    'blue-pen': 1.00,
-    'red-pencil': 1.00,
-    'yellow-eraser': 1.00,
-    'mint-notes': 1.00,
-    'binder-clip': 1.00,
-    'orange-tape': 1.00,
-    'teal-usb': 1.00,
-    'cream-earbuds': 1.00,
-    'coral-keycap': 1.00,
-    'purple-stress-ball': 1.00,
-    'round-coaster': 1.10,
-    'spiral-notebook': 1.20,
-    'clear-ruler': 1.18,
-    'lucky-badge': 1.00,
-    'teal-wireless-mouse': 1.12,
-    'cream-alarm-clock': 1.30,
-    'coral-candle-jar': 1.22,
-    'mustard-glasses-case': 1.08,
-    'mint-compact-mirror': 1.14,
-    'purple-mini-speaker': 1.24,
-});
+export const DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS = getDesktopCleanupTheme().itemSizeMultipliers;
 
-// Use the existing item-type tuple instead of Object.values, which is not in
-// the older lib targeted by Cocos' TypeScript pipeline.
-const MAX_ITEM_SIZE_MULTIPLIER = DESKTOP_CLEANUP_ITEM_TYPES.reduce(
-    (maximum, type) => Math.max(maximum, DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS[type]),
-    0,
-);
+function maxItemSizeMultiplier(theme: DesktopCleanupThemeDefinition): number {
+    return theme.itemTypes.reduce(
+        (maximum, type) => Math.max(maximum, theme.itemSizeMultipliers[type] ?? 1),
+        0,
+    );
+}
 
-function itemSizeMultiplier(type?: DesktopCleanupItemType): number {
-    return type ? DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS[type] : MAX_ITEM_SIZE_MULTIPLIER;
+function itemSizeMultiplier(
+    type: DesktopCleanupItemType | undefined,
+    theme: DesktopCleanupThemeDefinition,
+): number {
+    return type ? (theme.itemSizeMultipliers[type] ?? 1) : maxItemSizeMultiplier(theme);
 }
 
 export interface DesktopCleanupItemSnapshot {
@@ -111,6 +83,13 @@ export interface DesktopCleanupPendingSelection {
     readonly triple?: DesktopCleanupTripleMatch;
 }
 
+export interface DesktopCleanupMagnetEffect {
+    readonly type: DesktopCleanupItemType;
+    readonly itemIds: readonly [string, string, string];
+    readonly slotItemIds: readonly string[];
+    readonly boardItemIds: readonly string[];
+}
+
 export interface DesktopCleanupSnapshot {
     readonly phase: DesktopCleanupPhase;
     readonly failureReason?: DesktopCleanupFailureReason;
@@ -138,6 +117,8 @@ export interface DesktopCleanupActionResult {
     readonly accepted: boolean;
     readonly reason?: 'state' | 'missing' | 'empty' | 'needs-ad' | 'unavailable' | 'busy' | 'full' | 'stale';
     readonly triple?: DesktopCleanupItemType;
+    readonly magnet?: DesktopCleanupMagnetEffect;
+    readonly removedItemIds?: readonly string[];
     readonly selection?: DesktopCleanupPendingSelection;
     readonly phase: DesktopCleanupPhase;
 }
@@ -163,12 +144,23 @@ interface MutableSlot {
     order: number;
 }
 
-const TARGET_TYPE: DesktopCleanupItemType = 'lucky-badge';
-const ORDINARY_TYPES = DESKTOP_CLEANUP_ITEM_TYPES.filter((type) => type !== TARGET_TYPE);
-const LAYER_COUNT = 24;
+interface DesktopCleanupToolEffect {
+    readonly triple?: DesktopCleanupItemType;
+    readonly magnet?: DesktopCleanupMagnetEffect;
+    readonly removedItemIds?: readonly string[];
+}
+
+// Keep the visible pile footprint unchanged while using 28 depth layers.
+// Six items per layer gives a 168-item board without making the playmat too
+// dense to read.
+const LAYER_COUNT = 28;
 const GROUPS_PER_LAYER = 2;
 const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
 const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;
+// Each logical triplet is deliberately split across three different depth
+// bands. The offsets are applied through a shuffled layer permutation so the
+// pattern is not visible in the rendered pile.
+const TRIPLET_LAYER_OFFSETS = Object.freeze([0, 7, 14]);
 const STACK_X_LIMIT = 0.36;
 const STACK_Y_LIMIT = 0.36;
 /** PileRoot uses this factor when mapping normalized model coordinates to pixels. */
@@ -176,7 +168,7 @@ export const DESKTOP_CLEANUP_STACK_RENDER_SCALE = 0.96;
 /** Base normalized half-size; type multipliers are applied by visibleCenterLimit. */
 const STACK_ITEM_BASE_HALF_EXTENT = 0.15;
 /** Keep rotated corners inside the visible playmat, not just inside PileRoot. */
-const STACK_CONTAINER_MARGIN = 0.04;
+const STACK_CONTAINER_MARGIN = 0.02;
 const PHYSICS_ITEM_RADIUS = 0.125;
 const PHYSICS_MAX_SPEED = 0.72;
 const PHYSICS_MAX_ANGULAR_SPEED = 120;
@@ -191,9 +183,10 @@ function visibleCenterLimit(
     angle: number,
     elevation = 0,
     type?: DesktopCleanupItemType,
+    theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
 ): number {
     const radians = angle * Math.PI / 180;
-    const renderScale = itemSizeMultiplier(type) * (
+    const renderScale = itemSizeMultiplier(type, theme) * (
         1 + clamp(elevation, 0, PHYSICS_MAX_ELEVATION)
         * PHYSICS_ITEM_SCALE_PER_ELEVATION
     );
@@ -243,30 +236,67 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
     return result;
 }
 
-function physicsItemRadius(type: DesktopCleanupItemType): number {
-    return PHYSICS_ITEM_RADIUS * itemSizeMultiplier(type);
+function physicsItemRadius(
+    type: DesktopCleanupItemType,
+    theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
+): number {
+    return PHYSICS_ITEM_RADIUS * itemSizeMultiplier(type, theme);
 }
 
 function desktopCleanupPositionKey(x: number, y: number): string {
     return `${x.toFixed(4)}:${y.toFixed(4)}`;
 }
 
-function tripletCatalog(): DesktopCleanupItemType[] {
-    const catalog: DesktopCleanupItemType[] = [];
-    // Keep the original 24-layer / 144-item board while spreading the
-    // ordinary groups across all 19 non-target types. Nine types get three
-    // groups and the remaining ten get two, so every new prop appears in
-    // complete matchable triplets without crowding out the target triplet.
-    ORDINARY_TYPES.forEach((type, index) => {
-        const groupCount = index < 9 ? 3 : 2;
-        for (let count = 0; count < groupCount; count += 1) catalog.push(type);
+function tripletCatalog(
+    theme: DesktopCleanupThemeDefinition,
+    random: () => number,
+): readonly DesktopCleanupItemType[] {
+    const ordinaryTypes = shuffle(
+        theme.itemTypes.filter((type) => type !== theme.targetType),
+        random,
+    );
+    if (ordinaryTypes.length === 0) {
+        throw new Error(`Theme ${theme.id} needs at least one ordinary item type.`);
+    }
+    const catalog: DesktopCleanupItemType[] = [theme.targetType];
+    // Keep the target as one dedicated triplet. The remaining logical groups
+    // cycle through the active theme's ordinary catalog, so a theme can have
+    // any number of ordinary item types while the board still has the same
+    // fixed number of complete three-item groups.
+    const ordinaryGroupCount = LAYER_COUNT * GROUPS_PER_LAYER - 1;
+    for (let index = 0; index < ordinaryGroupCount; index += 1) {
+        const type = ordinaryTypes[index % ordinaryTypes.length];
+        if (type !== undefined) catalog.push(type);
+    }
+    return Object.freeze(catalog);
+}
+
+function distributeTripletsAcrossLayers(
+    theme: DesktopCleanupThemeDefinition,
+    random: () => number,
+): readonly (readonly DesktopCleanupItemType[])[] {
+    const layerOrder = shuffle(
+        Array.from({ length: LAYER_COUNT }, (_value, index) => index),
+        random,
+    );
+    const layerItems: DesktopCleanupItemType[][] = Array.from(
+        { length: LAYER_COUNT },
+        () => [],
+    );
+    tripletCatalog(theme, random).forEach((type, groupIndex) => {
+        const baseLayer = groupIndex % LAYER_COUNT;
+        TRIPLET_LAYER_OFFSETS.forEach((offset) => {
+            const layer = layerOrder[(baseLayer + offset) % LAYER_COUNT];
+            if (layer !== undefined) layerItems[layer].push(type);
+        });
     });
-    return catalog;
+    return Object.freeze(layerItems.map((items) => Object.freeze(items)));
 }
 
 function stackedPositions(
     random: () => number,
     itemCount = LAYER_COUNT * ITEMS_PER_LAYER,
+    theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
 ): readonly {
     readonly x: number;
     readonly y: number;
@@ -284,15 +314,15 @@ function stackedPositions(
         // final rotated-item bound below still owns the hard edge; these
         // larger spreads only make reaching that safe edge common enough that
         // a freshly spawned pile does not collapse into the center.
-        const layerSpreadX = 0.34 + random() * 0.08;
-        const layerSpreadY = 0.36 + random() * 0.08;
+        const layerSpreadX = 0.37 + random() * 0.09;
+        const layerSpreadY = 0.39 + random() * 0.09;
         const layerPositionKeys = new Set<string>();
         const count = Math.min(ITEMS_PER_LAYER, itemCount - positions.length);
         for (let index = 0; index < count; index += 1) {
             const spreadX = layerSpreadX * (0.88 + random() * 0.12);
             const spreadY = layerSpreadY * (0.88 + random() * 0.12);
             const angle = Math.round(-38 + random() * 76);
-            const centerLimit = visibleCenterLimit(angle);
+            const centerLimit = visibleCenterLimit(angle, 0, undefined, theme);
             let x = 0;
             let y = 0;
             let key = '';
@@ -334,24 +364,16 @@ export function desktopCleanupDateKey(date = new Date()): string {
     return `${year}-${month}-${day}`;
 }
 
-export function generateDesktopCleanupItems(): readonly DesktopCleanupItemSnapshot[] {
+export function generateDesktopCleanupItems(
+    theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
+): readonly DesktopCleanupItemSnapshot[] {
     const random = createRandom();
-    const ordinary = shuffle(tripletCatalog(), random);
-    const positions = stackedPositions(random);
-    const layerGroups: DesktopCleanupItemType[][] = Array.from(
-        { length: LAYER_COUNT },
-        () => [],
-    );
-    layerGroups[0].push(TARGET_TYPE, ...ordinary.splice(0, GROUPS_PER_LAYER - 1));
-    for (let layer = 1; layer < LAYER_COUNT; layer += 1) {
-        layerGroups[layer].push(...ordinary.splice(0, GROUPS_PER_LAYER));
-    }
+    const layerItems = distributeTripletsAcrossLayers(theme, random);
+    const positions = stackedPositions(random, LAYER_COUNT * ITEMS_PER_LAYER, theme);
 
     const items: DesktopCleanupItemSnapshot[] = [];
     for (let layer = 0; layer < LAYER_COUNT; layer += 1) {
-        const types: DesktopCleanupItemType[] = [];
-        layerGroups[layer].forEach((type) => types.push(type, type, type));
-        shuffle(types, random).forEach((type, index) => {
+        shuffle(layerItems[layer] ?? [], random).forEach((type, index) => {
             items.push(Object.freeze({
                 id: `desk-${layer}-${index}-${type}`,
                 type,
@@ -377,15 +399,16 @@ export interface DesktopCleanupLayoutVerification {
 
 export function verifyDesktopCleanupLayout(
     items: readonly DesktopCleanupItemSnapshot[],
+    theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
 ): DesktopCleanupLayoutVerification {
     const errors: string[] = [];
-    if (items.length !== TOTAL_ITEM_COUNT) {
-        errors.push(`expected ${TOTAL_ITEM_COUNT} items, received ${items.length}`);
+    const totalItemCount = LAYER_COUNT * ITEMS_PER_LAYER;
+    if (items.length !== totalItemCount) {
+        errors.push(`expected ${totalItemCount} items, received ${items.length}`);
     }
     const ids = new Set<string>();
     const positionKeys = new Set<string>();
     const totals = new Map<DesktopCleanupItemType, number>();
-    const layerTotals = new Map<string, number>();
     items.forEach((item) => {
         if (ids.has(item.id)) errors.push(`duplicate item id ${item.id}`);
         ids.add(item.id);
@@ -393,12 +416,10 @@ export function verifyDesktopCleanupLayout(
         if (positionKeys.has(positionKey)) errors.push(`duplicate position inside layer ${positionKey}`);
         positionKeys.add(positionKey);
         totals.set(item.type, (totals.get(item.type) ?? 0) + 1);
-        const key = `${item.layer}:${item.type}`;
-        layerTotals.set(key, (layerTotals.get(key) ?? 0) + 1);
         if (item.layer < 0 || item.layer >= LAYER_COUNT) {
             errors.push(`invalid layer ${item.layer}`);
         }
-        const centerLimit = visibleCenterLimit(item.angle, item.elevation, item.type);
+        const centerLimit = visibleCenterLimit(item.angle, item.elevation, item.type, theme);
         if (Math.abs(item.x) > centerLimit + PHYSICS_EPSILON
             || Math.abs(item.y) > centerLimit + PHYSICS_EPSILON) {
             errors.push(`item ${item.id} exceeds rotated playmat bounds`);
@@ -412,15 +433,19 @@ export function verifyDesktopCleanupLayout(
         if (layerItems.length !== ITEMS_PER_LAYER) {
             errors.push(`layer ${layer} contains ${layerItems.length} items`);
         }
-        const types = new Set(layerItems.map((item) => item.type));
-        types.forEach((type) => {
-            const count = layerTotals.get(`${layer}:${type}`) ?? 0;
-            if (count % 3 !== 0) errors.push(`layer ${layer} has incomplete ${type} group`);
+        const layerTypeTotals = new Map<DesktopCleanupItemType, number>();
+        layerItems.forEach((item) => {
+            layerTypeTotals.set(item.type, (layerTypeTotals.get(item.type) ?? 0) + 1);
+        });
+        layerTypeTotals.forEach((count, type) => {
+            if (count >= 3) {
+                errors.push(`layer ${layer} exposes an immediate ${type} triple`);
+            }
         });
     }
-    const target = items.filter((item) => item.type === TARGET_TYPE);
-    if (target.length !== 3 || target.some((item) => item.layer !== 0)) {
-        errors.push('lucky badges must be one triplet in the deepest layer');
+    const target = items.filter((item) => item.type === theme.targetType);
+    if (target.length !== 3 || new Set(target.map((item) => item.layer)).size !== 3) {
+        errors.push(`${theme.targetType} must be one triplet split across three layers`);
     }
     const xValues = items.map((item) => item.x);
     const yValues = items.map((item) => item.y);
@@ -441,15 +466,16 @@ export function verifyDesktopCleanupLayout(
 
 export function runDesktopCleanupLayoutSelfCheck(
     samples = 365,
+    theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
 ): DesktopCleanupLayoutVerification {
     const errors: string[] = [];
     for (let index = 0; index < samples; index += 1) {
-        const result = verifyDesktopCleanupLayout(generateDesktopCleanupItems());
+        const result = verifyDesktopCleanupLayout(generateDesktopCleanupItems(theme), theme);
         if (!result.valid) result.errors.forEach((error) => errors.push(`sample ${index}: ${error}`));
     }
     return Object.freeze({
         valid: errors.length === 0,
-        itemCount: samples * TOTAL_ITEM_COUNT,
+        itemCount: samples * LAYER_COUNT * ITEMS_PER_LAYER,
         errors: Object.freeze(errors),
     });
 }
@@ -473,13 +499,16 @@ export class DesktopCleanupModel {
     private selectionToken = 0;
     private readonly charges: Record<DesktopCleanupTool, number>;
     private readonly initialBadgeCount = 3;
+    readonly theme: DesktopCleanupThemeDefinition;
 
     constructor(
         readonly dateKey: string,
         readonly config: DesktopCleanupGameplayConfig = DEFAULT_DESKTOP_CLEANUP_CONFIG,
+        theme: DesktopCleanupThemeDefinition = selectDesktopCleanupTheme(config.themeId),
     ) {
-        const generated = generateDesktopCleanupItems();
-        const verification = verifyDesktopCleanupLayout(generated);
+        this.theme = theme;
+        const generated = generateDesktopCleanupItems(theme);
+        const verification = verifyDesktopCleanupLayout(generated, theme);
         if (!verification.valid) {
             throw new Error(`Invalid desktop cleanup layout: ${verification.errors.join('; ')}`);
         }
@@ -502,7 +531,7 @@ export class DesktopCleanupModel {
     }
 
     get snapshot(): DesktopCleanupSnapshot {
-        const items = [...this.items.values()].map((item) => Object.freeze({ ...item }));
+        const items = Array.from(this.items.values()).map((item) => Object.freeze({ ...item }));
         return Object.freeze({
             phase: this.currentPhase,
             ...(this.currentFailure ? { failureReason: this.currentFailure } : {}),
@@ -510,8 +539,8 @@ export class DesktopCleanupModel {
             score: this.currentScore,
             itemsRemaining: items.filter((item) => item.active).length,
             collectedBadges: this.initialBadgeCount - items.filter(
-                (item) => item.active && item.type === TARGET_TYPE,
-            ).length - this.slots.filter((slot) => slot.type === TARGET_TYPE).length,
+                (item) => item.active && item.type === this.theme.targetType,
+            ).length - this.slots.filter((slot) => slot.type === this.theme.targetType).length,
             items: Object.freeze(items),
             slots: Object.freeze(this.slots.map((slot) => Object.freeze({ ...slot }))),
             toolCharges: Object.freeze({ ...this.charges }),
@@ -520,7 +549,7 @@ export class DesktopCleanupModel {
             continued: this.usedContinue,
             continuedWithTime: this.continuedWithTime,
             layoutRevision: this.revision,
-            pendingSelections: Object.freeze([...this.pendingSelections.values()]),
+            pendingSelections: Object.freeze(Array.from(this.pendingSelections.values())),
         });
     }
 
@@ -646,11 +675,13 @@ export class DesktopCleanupModel {
         }
         if (!this.canApplyTool(tool)) return this.reject('empty');
         this.charges[tool] -= 1;
-        const triple = this.applyTool(tool);
+        const effect = this.applyTool(tool);
         this.finishOrFail();
         return Object.freeze({
             accepted: true,
-            ...(triple ? { triple } : {}),
+            ...(effect.triple ? { triple: effect.triple } : {}),
+            ...(effect.magnet ? { magnet: effect.magnet } : {}),
+            ...(effect.removedItemIds ? { removedItemIds: effect.removedItemIds } : {}),
             phase: this.currentPhase,
         });
     }
@@ -673,12 +704,14 @@ export class DesktopCleanupModel {
         this.pendingBoostTool = undefined;
         if (this.pendingSelections.size > 0) return this.reject('busy');
         if (!completed || !tool || this.currentPhase !== 'playing') return this.reject('unavailable');
-        const triple = this.applyTool(tool);
+        const effect = this.applyTool(tool);
         this.boostAttempted = true;
         this.finishOrFail();
         return Object.freeze({
             accepted: true,
-            ...(triple ? { triple } : {}),
+            ...(effect.triple ? { triple: effect.triple } : {}),
+            ...(effect.magnet ? { magnet: effect.magnet } : {}),
+            ...(effect.removedItemIds ? { removedItemIds: effect.removedItemIds } : {}),
             phase: this.currentPhase,
         });
     }
@@ -689,12 +722,13 @@ export class DesktopCleanupModel {
         return true;
     }
 
-    resolveContinueAd(completed: boolean): boolean {
-        if (!this.continueAdPending) return false;
+    resolveContinueAd(completed: boolean): DesktopCleanupActionResult {
+        if (!this.continueAdPending) return this.reject('stale');
         this.continueAdPending = false;
-        if (!completed || this.currentPhase !== 'failed') return false;
+        if (!completed || this.currentPhase !== 'failed') return this.reject('unavailable');
+        let removedItemIds: readonly string[] | undefined;
         if (this.currentFailure === 'slots') {
-            this.returnRecentSlots(3);
+            removedItemIds = this.removeRecentSlots(3);
         } else {
             this.timeLeftMs += this.config.continueSeconds * 1000;
             this.continuedWithTime = true;
@@ -703,25 +737,28 @@ export class DesktopCleanupModel {
         this.currentPhase = 'playing';
         this.continueAttempted = true;
         this.usedContinue = true;
-        return true;
+        return Object.freeze({
+            accepted: true,
+            ...(removedItemIds ? { removedItemIds } : {}),
+            phase: this.currentPhase,
+        });
     }
 
     private canApplyTool(tool: DesktopCleanupTool): boolean {
         if (tool === 'return') return this.slots.length > 0;
-        if (tool === 'shuffle') return [...this.items.values()].some((item) => item.active);
+        if (tool === 'shuffle') return Array.from(this.items.values()).some((item) => item.active);
         return this.findCompletableType() !== undefined;
     }
 
-    private applyTool(tool: DesktopCleanupTool): DesktopCleanupItemType | undefined {
+    private applyTool(tool: DesktopCleanupTool): DesktopCleanupToolEffect {
         if (tool === 'return') {
-            this.returnRecentSlots(3);
-            return undefined;
+            return Object.freeze({ removedItemIds: this.removeRecentSlots(3) });
         }
         if (tool === 'shuffle') {
             this.revision += 1;
             const random = createRandom();
-            const active = shuffle([...this.items.values()].filter((item) => item.active), random);
-            const positions = stackedPositions(random, active.length);
+            const active = shuffle(Array.from(this.items.values()).filter((item) => item.active), random);
+            const positions = stackedPositions(random, active.length, this.theme);
             active.forEach((item, index) => {
                 item.free = false;
                 item.layer = Math.floor(index / ITEMS_PER_LAYER);
@@ -735,50 +772,43 @@ export class DesktopCleanupModel {
                 item.elevation = 0;
             });
             this.refreshExposure();
-            return undefined;
+            return Object.freeze({});
         }
-        return this.completeBestGroup();
+        const magnet = this.completeBestGroup();
+        return magnet
+            ? Object.freeze({ triple: magnet.type, magnet })
+            : Object.freeze({});
     }
 
-    private returnRecentSlots(maximum: number): void {
+    private removeRecentSlots(maximum: number): readonly string[] {
         const recent = [...this.slots]
             .sort((left, right) => right.order - left.order)
             .slice(0, maximum);
         const recentIds = new Set(recent.map((slot) => slot.itemId));
         this.slots = this.slots.filter((slot) => !recentIds.has(slot.itemId));
         this.revision += 1;
-        const random = createRandom();
-        const topLayer = Math.max(
-            LAYER_COUNT - 1,
-            ...[...this.items.values()]
-                .filter((item) => item.active && !recentIds.has(item.id))
-                .map((item) => item.layer),
-        );
-        recent.forEach((slot, index) => {
+        recent.forEach((slot) => {
             const item = this.items.get(slot.itemId);
             if (!item) return;
-            item.active = true;
-            item.free = true;
-            item.layer = topLayer + index + 1;
+            item.active = false;
+            item.free = false;
             item.velocityX = 0;
             item.velocityY = 0;
             item.angularVelocity = 0;
-            item.elevation = 0.08;
-            item.x = (index - (recent.length - 1) / 2) * 0.085 + (random() - 0.5) * 0.025;
-            item.y = 0.08 + (random() - 0.5) * 0.05;
-            item.angle = Math.round(-28 + random() * 56);
+            item.elevation = 0;
         });
         this.refreshExposure();
+        return Object.freeze(recent.map((slot) => slot.itemId));
     }
 
     private findCompletableType(): DesktopCleanupItemType | undefined {
         const slotCounts = new Map<DesktopCleanupItemType, number>();
         this.slots.forEach((slot) => slotCounts.set(slot.type, (slotCounts.get(slot.type) ?? 0) + 1));
         const availableCounts = new Map<DesktopCleanupItemType, number>();
-        [...this.items.values()].filter((item) => item.active).forEach((item) => {
+        Array.from(this.items.values()).filter((item) => item.active).forEach((item) => {
             availableCounts.set(item.type, (availableCounts.get(item.type) ?? 0) + 1);
         });
-        const candidates = DESKTOP_CLEANUP_ITEM_TYPES.filter((type) => (
+        const candidates = this.theme.itemTypes.filter((type) => (
             (slotCounts.get(type) ?? 0) + (availableCounts.get(type) ?? 0) >= 3
         ));
         return candidates.sort((left, right) => (
@@ -787,35 +817,46 @@ export class DesktopCleanupModel {
         ))[0];
     }
 
-    private completeBestGroup(): DesktopCleanupItemType | undefined {
+    private completeBestGroup(): DesktopCleanupMagnetEffect | undefined {
         const type = this.findCompletableType();
         if (!type) return undefined;
         const slotMatches = this.slots
             .filter((slot) => slot.type === type)
             .sort((left, right) => right.order - left.order)
             .slice(0, 3);
-        const selectedIds = new Set(slotMatches.map((slot) => slot.itemId));
-        this.slots = this.slots.filter((slot) => !selectedIds.has(slot.itemId));
         const needed = 3 - slotMatches.length;
-        [...this.items.values()]
+        const boardMatches = Array.from(this.items.values())
             .filter((item) => item.active && item.type === type)
             .sort((left, right) => Number(right.free) - Number(left.free) || right.layer - left.layer)
-            .slice(0, needed)
-            .forEach((item) => {
-                item.active = false;
-                item.free = false;
-                item.velocityX = 0;
-                item.velocityY = 0;
-                item.angularVelocity = 0;
-                item.elevation = 0;
-            });
+            .slice(0, needed);
+        const slotItemIds = Object.freeze(slotMatches.map((slot) => slot.itemId));
+        const boardItemIds = Object.freeze(boardMatches.map((item) => item.id));
+        const itemIds = Object.freeze([
+            ...slotItemIds,
+            ...boardItemIds,
+        ]) as readonly [string, string, string];
+        const selectedIds = new Set(itemIds);
+        this.slots = this.slots.filter((slot) => !selectedIds.has(slot.itemId));
+        boardMatches.forEach((item) => {
+            item.active = false;
+            item.free = false;
+            item.velocityX = 0;
+            item.velocityY = 0;
+            item.angularVelocity = 0;
+            item.elevation = 0;
+        });
         this.currentScore += this.config.pointsPerTriple;
         this.refreshExposure();
-        return type;
+        return Object.freeze({
+            type,
+            itemIds,
+            slotItemIds,
+            boardItemIds,
+        });
     }
 
     private stepPhysics(deltaSeconds: number): boolean {
-        const active = [...this.items.values()].filter((item) => item.active);
+        const active = Array.from(this.items.values()).filter((item) => item.active);
         if (active.length === 0) return false;
         let changed = false;
         const movingItems = new Set<MutableItem>();
@@ -854,7 +895,8 @@ export class DesktopCleanupModel {
                 const dx = right.x - left.x;
                 const dy = right.y - left.y;
                 const distance = Math.hypot(dx, dy);
-                const minimumDistance = physicsItemRadius(left.type) + physicsItemRadius(right.type);
+                const minimumDistance = physicsItemRadius(left.type, this.theme)
+                    + physicsItemRadius(right.type, this.theme);
                 if (distance >= minimumDistance) continue;
                 const safeDistance = Math.max(distance, PHYSICS_EPSILON);
                 const normalX = distance > PHYSICS_EPSILON ? dx / safeDistance : 1;
@@ -892,7 +934,7 @@ export class DesktopCleanupModel {
     }
 
     private resolveBoundary(item: MutableItem): void {
-        const centerLimit = visibleCenterLimit(item.angle, item.elevation, item.type);
+        const centerLimit = visibleCenterLimit(item.angle, item.elevation, item.type, this.theme);
         if (item.x < -centerLimit) {
             item.x = -centerLimit;
             item.velocityX = Math.abs(item.velocityX) * this.config.physicsBounce;
@@ -910,7 +952,7 @@ export class DesktopCleanupModel {
     }
 
     private refreshExposure(): void {
-        const active = [...this.items.values()]
+        const active = Array.from(this.items.values())
             .filter((item) => item.active)
             .sort((left, right) => compareDesktopCleanupItems(left, right));
         active.forEach((item, index) => {
@@ -918,7 +960,7 @@ export class DesktopCleanupModel {
                 if (candidateIndex <= index) return false;
                 const distance = Math.hypot(candidate.x - item.x, candidate.y - item.y);
                 const coverageScale = (
-                    itemSizeMultiplier(item.type) + itemSizeMultiplier(candidate.type)
+                    itemSizeMultiplier(item.type, this.theme) + itemSizeMultiplier(candidate.type, this.theme)
                 ) / 2;
                 return distance < PHYSICS_COVER_RADIUS * coverageScale;
             });
@@ -946,7 +988,7 @@ export class DesktopCleanupModel {
     }
 
     private finishOrFail(): void {
-        const active = [...this.items.values()].some((item) => item.active);
+        const active = Array.from(this.items.values()).some((item) => item.active);
         if (!active && this.slots.length === 0 && this.pendingSelections.size === 0) {
             const unused = (['return', 'magnet', 'shuffle'] as DesktopCleanupTool[])
                 .filter((tool) => this.charges[tool] > 0).length;

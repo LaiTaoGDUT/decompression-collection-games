@@ -10,6 +10,7 @@ import {
     Node,
     UITransform,
     VerticalTextAlignment,
+    view,
     Widget,
 } from 'cc';
 import type {
@@ -40,16 +41,21 @@ export class ErrorView extends Component implements GameErrorPresenter {
         }
         this.ensureStructure();
         this.bindActions();
+        view.on('canvas-resize', this.handleCanvasResize, this);
         this.hide();
     }
 
     protected onDestroy(): void {
+        view.off('canvas-resize', this.handleCanvasResize, this);
         this.retryButton?.node.off(Button.EventType.CLICK, this.handleRetry, this);
         this.lobbyButton?.node.off(Button.EventType.CLICK, this.handleLobby, this);
     }
 
     show(model: GameErrorModel): void {
         this.model = model;
+        this.node.active = true;
+        this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
+        this.node.getComponent(Widget)?.updateAlignment();
         this.ensureStructure();
         this.bindActions();
         this.layoutAndDraw();
@@ -60,8 +66,6 @@ export class ErrorView extends Component implements GameErrorPresenter {
         this.retryButton!.node.active = Boolean(model.retry);
         this.lobbyButton!.node.active = Boolean(model.returnToLobby);
         this.setBusy(false);
-        this.node.active = true;
-        this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
     }
 
     hide(): void {
@@ -134,11 +138,18 @@ export class ErrorView extends Component implements GameErrorPresenter {
 
     private layoutAndDraw(): void {
         const size = this.node.getComponent(UITransform)?.contentSize;
-        const width = Math.max(750, size?.width ?? 750);
-        const height = Math.max(1334, size?.height ?? 1334);
-        const panelWidth = Math.min(594, width - 72);
+        const visibleSize = view.getVisibleSize();
+        const width = Math.max(1, visibleSize.width || size?.width || 750);
+        const height = Math.max(1, visibleSize.height || size?.height || 1334);
+        const panelWidth = Math.min(594, Math.max(1, width - 72));
         const panelHeight = 520;
+
+        // ErrorLayer is persistent across scene switches. Keep its UI space
+        // and the backdrop in the current camera's visible coordinate system;
+        // the scene-authored 100x100 placeholder is not a reliable viewport.
+        this.node.getComponent(UITransform)?.setContentSize(width, height);
         const backdrop = this.graphics('ErrorBackdrop');
+        backdrop.node.setPosition(0, 0);
         backdrop.node.getComponent(UITransform)?.setContentSize(width, height);
         backdrop.clear();
         backdrop.fillColor = new Color(22, 25, 35, 148);
@@ -220,6 +231,12 @@ export class ErrorView extends Component implements GameErrorPresenter {
         if (!graphics) throw new Error(`ErrorView is missing ${name}.`);
         return graphics;
     }
+
+    private readonly handleCanvasResize = (): void => {
+        if (this.node.active) {
+            this.layoutAndDraw();
+        }
+    };
 
     private readonly handleRetry = (): void => {
         void this.runAction(this.model?.retry, 'retry');

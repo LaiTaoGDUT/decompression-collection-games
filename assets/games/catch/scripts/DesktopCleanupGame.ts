@@ -50,20 +50,26 @@ import {
     type DesktopCleanupGameplayConfig,
 } from './DesktopCleanupConfig';
 import {
-    DESKTOP_CLEANUP_ITEM_TYPES,
-    DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS,
     DESKTOP_CLEANUP_STACK_RENDER_SCALE,
     DesktopCleanupModel,
     compareDesktopCleanupItems,
     desktopCleanupDateKey,
     runDesktopCleanupLayoutSelfCheck,
     type DesktopCleanupActionResult,
+    type DesktopCleanupMagnetEffect,
     type DesktopCleanupItemSnapshot,
     type DesktopCleanupItemType,
     type DesktopCleanupPendingSelection,
     type DesktopCleanupShakeInput,
     type DesktopCleanupTool,
 } from './DesktopCleanupModel';
+import {
+    DEFAULT_DESKTOP_CLEANUP_THEME_ID,
+    DESKTOP_CLEANUP_THEME_IDS,
+    getDesktopCleanupTheme,
+    selectDesktopCleanupTheme,
+    type DesktopCleanupThemeDefinition,
+} from './DesktopCleanupTheme';
 import {
     readDesktopCleanupLayout,
     type DesktopCleanupLayoutMetrics,
@@ -80,11 +86,14 @@ const { ccclass } = _decorator;
 const BUNDLE = 'game-catch';
 const BACKGROUND_PATH = 'visual/backgrounds/desktop-cleanup-backdrop-v2/texture';
 const PLAYMAT_PATH = 'visual/backgrounds/desktop-cleanup-playmat-v2/texture';
-const ITEM_ATLAS_PATH = 'visual/items/desktop-cleanup-items-atlas-v2/texture';
 const PICKUP_ANIMATION_WATCHDOG_SECONDS = 0.82;
 const MATCH_SMOKE_INITIAL_SCALE = 0.24;
 const MATCH_SMOKE_PEAK_SCALE = 0.96;
 const MATCH_SMOKE_FINAL_SCALE = 1.14;
+const SLOT_CLEAR_ITEM_STAGGER_SECONDS = 0.055;
+const SLOT_CLEAR_ITEM_DURATION_SECONDS = 0.28;
+const SLOT_CLEAR_EFFECT_DURATION_SECONDS = 0.22;
+const SLOT_CLEAR_EFFECT_SIZE = 156;
 const PILE_BIRTH_RADIAL_BAND_SIZE = 0.08;
 const PILE_BIRTH_RADIAL_BAND_DELAY_SECONDS = 0.065;
 const PILE_BIRTH_ITEM_STAGGER_SECONDS = 0.006;
@@ -140,52 +149,6 @@ const POPUP_BUTTON_FRAME_RECTS: Readonly<Partial<Record<ThemeFrameKey, Readonly<
     popupButtonPaper: Object.freeze({ x: 24, y: 18, width: 452, height: 126 }),
 });
 const POPUP_BUTTON_HORIZONTAL_INSET_RATIO = 0.2;
-const ITEM_LABELS: Readonly<Record<DesktopCleanupItemType, string>> = Object.freeze({
-    'blue-pen': '蓝笔',
-    'red-pencil': '铅笔',
-    'yellow-eraser': '橡皮',
-    'mint-notes': '便签',
-    'binder-clip': '夹子',
-    'orange-tape': '胶带',
-    'teal-usb': 'U盘',
-    'cream-earbuds': '耳机',
-    'coral-keycap': '键帽',
-    'purple-stress-ball': '软球',
-    'round-coaster': '杯垫',
-    'spiral-notebook': '线圈本',
-    'clear-ruler': '直尺',
-    'lucky-badge': '★',
-    'teal-wireless-mouse': '无线鼠标',
-    'cream-alarm-clock': '小闹钟',
-    'coral-candle-jar': '香薰蜡烛',
-    'mustard-glasses-case': '眼镜盒',
-    'mint-compact-mirror': '便携小镜',
-    'purple-mini-speaker': '迷你音箱',
-});
-
-const ITEM_COLORS: Readonly<Record<DesktopCleanupItemType, Color>> = Object.freeze({
-    'blue-pen': new Color(76, 139, 194, 255),
-    'red-pencil': new Color(222, 103, 89, 255),
-    'yellow-eraser': new Color(238, 190, 77, 255),
-    'mint-notes': new Color(111, 191, 167, 255),
-    'binder-clip': new Color(54, 65, 84, 255),
-    'orange-tape': new Color(229, 136, 71, 255),
-    'teal-usb': new Color(67, 160, 164, 255),
-    'cream-earbuds': new Color(240, 223, 187, 255),
-    'coral-keycap': new Color(229, 119, 114, 255),
-    'purple-stress-ball': new Color(151, 115, 174, 255),
-    'round-coaster': new Color(167, 116, 77, 255),
-    'spiral-notebook': new Color(95, 124, 155, 255),
-    'clear-ruler': new Color(141, 200, 201, 255),
-    'lucky-badge': new Color(241, 184, 50, 255),
-    'teal-wireless-mouse': new Color(38, 183, 190, 255),
-    'cream-alarm-clock': new Color(246, 231, 194, 255),
-    'coral-candle-jar': new Color(239, 103, 91, 255),
-    'mustard-glasses-case': new Color(232, 174, 31, 255),
-    'mint-compact-mirror': new Color(124, 212, 181, 255),
-    'purple-mini-speaker': new Color(143, 79, 211, 255),
-});
-
 interface ItemHitPolygonPoint {
     readonly x: number;
     readonly y: number;
@@ -206,7 +169,7 @@ function defineHitPolygon(points: readonly ItemHitPolygonVertex[]): ItemHitPolyg
 }
 
 const ITEM_ATLAS_CELL_SIZE = 384;
-const ITEM_HIT_POLYGONS: Readonly<Record<DesktopCleanupItemType, ItemHitPolygonShape>> = Object.freeze({
+const ITEM_HIT_POLYGONS: Readonly<Record<string, ItemHitPolygonShape>> = Object.freeze({
 // BEGIN GENERATED DESKTOP CLEANUP HIT POLYGONS
 // Generated from 384px cells; atlas Alpha >= 176; RDP epsilon: 1.2 source px.
     'blue-pen': Object.freeze({ outer: defineHitPolygon([
@@ -415,13 +378,13 @@ function isPointInsideHitShape(point: ItemHitPolygonPoint, shape: ItemHitPolygon
 }
 
 const TOOL_TITLES: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze({
-    return: '归位夹',
+    return: '清除夹',
     magnet: '磁吸盒',
     shuffle: '桌面风暴',
 });
 
 const TOOL_DESCRIPTIONS: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze({
-    return: '把收纳槽中最近放入的最多 3 件物品送回桌面，适合在槽位快满时腾出空间。',
+    return: '从收纳槽中清除最近放入的最多 3 件物品，适合在槽位快满时直接腾出空间。',
     magnet: '自动寻找最容易凑齐的一类物品，并直接完成一组三件收纳。',
     shuffle: '将桌面上仍未收纳的物品重新压叠成一座紧凑物件堆，并改变露出顺序。',
 });
@@ -512,12 +475,22 @@ interface DesktopCleanupPileBirthAnimation {
     readonly finish: () => void;
 }
 
+interface DesktopCleanupSlotClearAnimation {
+    readonly token: number;
+    readonly generation: number;
+    readonly root: Node;
+    readonly itemNodes: readonly Node[];
+    readonly effectNodes: readonly Node[];
+    readonly finish: () => void;
+}
+
 @ccclass('DesktopCleanupGame')
 export class DesktopCleanupGame extends Component implements MiniGame<DesktopCleanupServices> {
     private state: GameState = 'idle';
     private stateBeforePause: GameState = 'playing';
     private context?: MiniGameContext<DesktopCleanupServices>;
     private config: DesktopCleanupGameplayConfig = DEFAULT_DESKTOP_CLEANUP_CONFIG;
+    private theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme();
     private model?: DesktopCleanupModel;
     private save: DesktopCleanupSave = Object.freeze({
         playCount: 0,
@@ -553,6 +526,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private presentationOpacity?: UIOpacity;
     private readonly popupButtonFrames = new Set<SpriteFrame>();
     private itemAtlasTexture?: Texture2D;
+    private readonly itemAtlasTextures = new Map<DesktopCleanupThemeDefinition['id'], Texture2D>();
     private itemFrames = new Map<DesktopCleanupItemType, SpriteFrame>();
     private resizeListening = false;
     private inputLocked = false;
@@ -565,6 +539,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private pileBirthAnimation?: DesktopCleanupPileBirthAnimation;
     private readonly pickupAnimations = new Map<number, DesktopCleanupPickupAnimation>();
     private readonly matchAnimations = new Map<number, DesktopCleanupMatchAnimation>();
+    private readonly magnetAnimationTokens = new Set<number>();
+    private readonly slotClearAnimations = new Map<number, DesktopCleanupSlotClearAnimation>();
+    private slotClearToken = 0;
+    private magnetAnimationToken = 0;
     private readonly pendingMatchSelections = new Map<number, DesktopCleanupPendingMatch>();
     private readonly destroyedNodes = new WeakSet<Node>();
     private rendering = false;
@@ -589,17 +567,36 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state !== 'idle') throw new Error(`Cannot initialize DesktopCleanupGame from ${this.state}.`);
         this.context = context;
         this.config = await this.loadGameplayConfig();
-        const selfCheck = runDesktopCleanupLayoutSelfCheck(365);
-        if (!selfCheck.valid) throw new Error(`Desktop cleanup self-check failed: ${selfCheck.errors.join('; ')}`);
+        this.theme = getDesktopCleanupTheme(DEFAULT_DESKTOP_CLEANUP_THEME_ID);
+        const selfCheckErrors: string[] = [];
+        DESKTOP_CLEANUP_THEME_IDS.forEach((themeId) => {
+            const selfCheck = runDesktopCleanupLayoutSelfCheck(
+                365,
+                getDesktopCleanupTheme(themeId),
+            );
+            if (!selfCheck.valid) {
+                selfCheck.errors.forEach((error) => selfCheckErrors.push(`${themeId}: ${error}`));
+            }
+        });
+        if (selfCheckErrors.length > 0) {
+            throw new Error(`Desktop cleanup self-check failed: ${selfCheckErrors.join('; ')}`);
+        }
         this.save = readDesktopCleanupSave(context.services.storage);
         // Resolve the formal visual set before creating any gameplay nodes.
         // A missing theme must fail through the runtime's recoverable load
         // error path instead of exposing an obsolete procedural interface.
         await this.loadThemeAssets();
+        // The tool cards only need the shared rewarded-ad frame when this
+        // platform has a configured ad route. In particular, the WeChat
+        // development build has no ad unit configured, so loading and
+        // attaching this cross-bundle Sprite would only add an unnecessary
+        // native render object to the first game frame.
+        if (this.isAdsEnabled()) {
+            this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
+        }
         this.buildInterface();
         this.registerGlobalInput();
         this.stopAccelerometer = context.services.platform.onAccelerometerChange(this.handleAccelerometerChange);
-        this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
         this.applyThemeAssets();
         this.setPresentationVisible(true);
         this.state = 'ready';
@@ -607,7 +604,17 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     begin(): void {
         if (this.state !== 'ready') throw new Error(`Cannot begin DesktopCleanupGame from ${this.state}.`);
-        this.startRound();
+        try {
+            console.info('[DesktopCleanupGame] begin.enter');
+            this.startRound();
+            console.info('[DesktopCleanupGame] begin.done');
+        } catch (error: unknown) {
+            const detail = error instanceof Error
+                ? `${error.name}: ${error.message}\n${error.stack ?? ''}`
+                : String(error);
+            console.error(`[DesktopCleanupGame] begin.failed\n${detail}`);
+            throw error;
+        }
     }
 
     protected update(deltaTime: number): void {
@@ -661,6 +668,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.cancelPileBirthAnimation();
         this.cancelPickupAnimations();
         this.cancelMatchAnimation();
+        this.cancelSlotClearAnimations();
         this.cancelSlotMoves();
         this.clearPendingPileTaps();
         this.stopDeviceMotion();
@@ -686,6 +694,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.lastAccelerometerSample = undefined;
         this.pickupRoot = undefined;
         this.itemAtlasTexture = undefined;
+        this.itemAtlasTextures.clear();
         this.model = undefined;
         this.context = undefined;
         this.lastReportedScore = undefined;
@@ -743,8 +752,12 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private startRound(): void {
+        console.info('[DesktopCleanupGame] begin.model');
         const key = desktopCleanupDateKey();
-        this.model = new DesktopCleanupModel(key, this.config);
+        this.theme = selectDesktopCleanupTheme(this.config.themeId);
+        this.activateItemThemeAssets();
+        console.info(`[DesktopCleanupGame] begin.theme ${this.theme.id}`);
+        this.model = new DesktopCleanupModel(key, this.config, this.theme);
         this.roundStartedAt = Date.now();
         this.save = Object.freeze({ ...this.save, playCount: this.save.playCount + 1 });
         this.persistSave();
@@ -757,11 +770,15 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.context?.reportScore(0);
         this.state = 'playing';
         this.stopDeviceMotion();
+        console.info('[DesktopCleanupGame] begin.render.before');
         this.renderAll();
+        console.info('[DesktopCleanupGame] begin.render.after');
         this.setHint('');
         if (this.save.rulesSeenVersion < DESKTOP_CLEANUP_RULES_VERSION) {
+            console.info('[DesktopCleanupGame] begin.rules');
             this.showRules(true);
         } else {
+            console.info('[DesktopCleanupGame] begin.birth');
             this.playPileBirthAnimation();
         }
     }
@@ -772,6 +789,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.cancelPileBirthAnimation();
         this.cancelPickupAnimations();
         this.cancelMatchAnimation();
+        this.cancelSlotClearAnimations();
         this.cancelSlotMoves();
         this.adBusy = false;
         this.terminalPending = false;
@@ -797,14 +815,18 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private async loadThemeAssets(): Promise<void> {
-        const [background, atlas, themeTextures] = await Promise.all([
+        const [background, themeAtlases, themeTextures] = await Promise.all([
             this.loadTexture(BACKGROUND_PATH),
-            this.loadTexture(ITEM_ATLAS_PATH),
+            Promise.all(DESKTOP_CLEANUP_THEME_IDS.map(async (themeId) => (
+                [themeId, await this.loadTexture(getDesktopCleanupTheme(themeId).itemAtlasPath)] as const
+            ))),
             Promise.all(THEME_FRAME_KEYS.map(async (key) => (
                 [key, await this.loadTexture(THEME_TEXTURE_PATHS[key])] as const
             ))),
         ]);
-        if (!background || !atlas || themeTextures.some(([, texture]) => !texture)) {
+        if (!background
+            || themeAtlases.some(([, texture]) => !texture)
+            || themeTextures.some(([, texture]) => !texture)) {
             throw new Error('Desktop cleanup formal theme assets are incomplete.');
         }
         if (this.state === 'disposed' || !this.node.isValid) return;
@@ -814,7 +836,11 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             frame.texture = background;
             this.backgroundFrame = frame;
         }
-        if (atlas) this.sliceItemAtlas(atlas);
+        this.itemAtlasTextures.clear();
+        themeAtlases.forEach(([themeId, texture]) => {
+            if (texture) this.itemAtlasTextures.set(themeId, texture);
+        });
+        this.activateItemThemeAssets();
         themeTextures.forEach(([key, texture]) => {
             if (!texture) return;
             this.themeFrames.get(key)?.destroy();
@@ -844,6 +870,15 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 resolve(texture);
             });
         });
+    }
+
+    private activateItemThemeAssets(): void {
+        const atlas = this.itemAtlasTextures.get(this.theme.id);
+        if (!atlas) {
+            throw new Error(`Desktop cleanup theme atlas unavailable: ${this.theme.id}`);
+        }
+        this.sliceItemAtlas(atlas);
+        this.applyHeaderLogo();
     }
 
     private createThemeFrame(key: ThemeFrameKey, texture: Texture2D): SpriteFrame {
@@ -876,11 +911,11 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.itemFrames.forEach((frame) => frame.destroy());
         this.itemFrames.clear();
         this.itemAtlasTexture = texture;
-        const columns = 4;
-        const rows = Math.ceil(DESKTOP_CLEANUP_ITEM_TYPES.length / columns);
+        const columns = this.theme.itemAtlasColumns;
+        const rows = this.theme.itemAtlasRows;
         const cellWidth = Math.floor(texture.width / columns);
         const cellHeight = Math.floor(texture.height / rows);
-        DESKTOP_CLEANUP_ITEM_TYPES.forEach((type, index) => {
+        this.theme.itemTypes.forEach((type, index) => {
             const column = index % columns;
             const row = Math.floor(index / columns);
             const frame = new SpriteFrame();
@@ -1126,6 +1161,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         }
         if (this.itemFrames.size === 0) return;
         root.children.slice().forEach((child) => this.destroyNode(child));
+        const logoTypes = this.theme.logoItemTypes;
         const addArtwork = (
             name: string,
             type: DesktopCleanupItemType,
@@ -1145,7 +1181,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         };
         addArtwork(
             'LogoNotes',
-            'mint-notes',
+            logoTypes[0],
             -42 * metrics.scale,
             -4 * metrics.scale,
             66 * metrics.scale,
@@ -1154,7 +1190,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         );
         addArtwork(
             'LogoBadge',
-            'lucky-badge',
+            logoTypes[1],
             43 * metrics.scale,
             1 * metrics.scale,
             62 * metrics.scale,
@@ -1163,7 +1199,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         );
         addArtwork(
             'LogoPencil',
-            'red-pencil',
+            logoTypes[2],
             4 * metrics.scale,
             -1 * metrics.scale,
             86 * metrics.scale,
@@ -1302,15 +1338,22 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         try {
             do {
                 this.renderQueued = false;
+                console.info('[DesktopCleanupGame] render.repair');
                 const repaired = this.repairPresentationState();
+                console.info('[DesktopCleanupGame] render.pile');
                 this.renderPile();
+                console.info('[DesktopCleanupGame] render.slots');
                 this.renderSlots();
+                console.info('[DesktopCleanupGame] render.pickups');
                 this.promotePickupAnimations();
+                console.info('[DesktopCleanupGame] render.hud');
                 this.refreshHud();
+                console.info('[DesktopCleanupGame] render.tools');
                 this.refreshTools();
                 // Match startup can settle another pending selection and ask
                 // for a render again. Keep that mutation outside the current
                 // slot snapshot, then render the resulting state once more.
+                console.info('[DesktopCleanupGame] render.matches');
                 this.startReadyMatchAnimations();
                 if (repaired) this.syncTerminalPhase();
             } while (this.renderQueued);
@@ -1412,7 +1455,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         // Rebuild only settled pile items so a model refresh does not destroy
         // the in-flight nodes and their tweens.
         const pickupNodes = new Set(
-            [...this.pickupAnimations.values()]
+            Array.from(this.pickupAnimations.values())
                 .filter((animation) => animation.node.isValid && animation.node.parent === pile)
                 .map((animation) => animation.node),
         );
@@ -1422,14 +1465,16 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         // finger is still held; prefer the current node from the ID map so
         // the candidate cannot fall through to the item underneath.
         const pendingTapNodes = new Set(
-            [...this.pendingPileTaps.values()]
+            Array.from(this.pendingPileTaps.values())
                 .filter((tap) => !tap.itemId || activeItemIds.has(tap.itemId))
                 .map((tap) => tap.itemId
                     ? (this.pileItemNodes.get(tap.itemId) ?? tap.node)
                     : tap.node)
                 .filter((node): node is Node => Boolean(node?.isValid && node.parent === pile)),
         );
-        const preservedNodes = new Set([...pickupNodes, ...pendingTapNodes]);
+        const preservedNodes = new Set(
+            Array.from(pickupNodes).concat(Array.from(pendingTapNodes)),
+        );
         pile.children.slice().forEach((child) => {
             if (!preservedNodes.has(child)) this.destroyNode(child);
         });
@@ -1694,11 +1739,22 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             return;
         }
         const body = node.addComponent(Graphics);
-        const source = ITEM_COLORS[item.type];
+        const [red, green, blue] = this.theme.itemColors[item.type] ?? [128, 128, 128];
+        const source = new Color(red, green, blue, 255);
         body.fillColor = source;
         body.roundRect(-width * 0.44, -height * 0.40, width * 0.88, height * 0.80, Math.min(22, height * 0.24));
         body.fill();
-        const label = this.createLabel(node, 'FallbackLabel', ITEM_LABELS[item.type], 0, 0, Math.min(24, height * 0.25), COLORS.white, width * 0.78, height * 0.54);
+        const label = this.createLabel(
+            node,
+            'FallbackLabel',
+            this.theme.itemLabels[item.type] ?? item.type,
+            0,
+            0,
+            Math.min(24, height * 0.25),
+            COLORS.white,
+            width * 0.78,
+            height * 0.54,
+        );
         label.isBold = true;
     }
 
@@ -1708,7 +1764,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const metrics = this.layout;
         if (!root || !snapshot || !metrics) return;
         const pickupItemIds = new Set(
-            [...this.pickupAnimations.values()]
+            Array.from(this.pickupAnimations.values())
                 .filter((animation) => animation.node.isValid)
                 .map((animation) => animation.selection.selectedItemId),
         );
@@ -1798,6 +1854,288 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         });
     }
 
+    private startMagnetAnimation(effect: DesktopCleanupMagnetEffect): boolean {
+        const slotRoot = this.slotRoot;
+        if (!slotRoot?.isValid || effect.itemIds.length !== 3) return false;
+        const boardItemIds = new Set(effect.boardItemIds);
+        const slotItemIds = new Set(effect.slotItemIds);
+        const sourceNodes = effect.itemIds.map((itemId) => {
+            if (boardItemIds.has(itemId)) {
+                const node = this.pileItemNodes.get(itemId) ?? this.pileRoot?.getChildByName(`Item-${itemId}`);
+                return node?.isValid && node.parent === this.pileRoot ? node : undefined;
+            }
+            if (slotItemIds.has(itemId)) {
+                const node = this.slotItemNodes.get(itemId) ?? slotRoot.getChildByName(`SlotItem-${itemId}`);
+                return node?.isValid && node.parent === slotRoot ? node : undefined;
+            }
+            return undefined;
+        });
+        if (sourceNodes.some((node): node is undefined => !node)) return false;
+        const nodes = sourceNodes as Node[];
+        const rootTransform = slotRoot.getComponent(UITransform);
+        const animationRoot = this.createNode(
+            slotRoot,
+            `MagnetAnimation-${this.magnetAnimationToken + 1}`,
+            0,
+            0,
+            rootTransform?.contentSize.width ?? 1,
+            rootTransform?.contentSize.height ?? 1,
+        );
+        animationRoot.setSiblingIndex(slotRoot.children.length - 1);
+        const animationRootTransform = animationRoot.getComponent(UITransform);
+
+        const token = -(++this.magnetAnimationToken);
+        const selection: DesktopCleanupPendingSelection = Object.freeze({
+            token,
+            selectedItemId: effect.boardItemIds[0] ?? effect.slotItemIds[0] ?? effect.itemIds[0],
+            insertionIndex: 0,
+            triple: Object.freeze({
+                type: effect.type,
+                itemIds: effect.itemIds,
+            }),
+        });
+        nodes.forEach((node, index) => {
+            const itemId = effect.itemIds[index];
+            const worldPosition = node.worldPosition.clone();
+            this.pileItemNodes.delete(itemId);
+            this.slotItemNodes.delete(itemId);
+            this.slotMoveTokens.delete(itemId);
+            Tween.stopAllByTarget(node);
+            const opacity = node.getComponent(UIOpacity);
+            if (opacity) Tween.stopAllByTarget(opacity);
+            node.removeFromParent();
+            node.setParent(animationRoot);
+            node.setPosition(
+                animationRootTransform?.convertToNodeSpaceAR(worldPosition) ?? worldPosition,
+            );
+            node.name = `MagnetAnimationItem-${itemId}`;
+            node.setScale(1, 1, 1);
+            node.angle = 0;
+            this.setMatchNodeOpacity(node, 255);
+        });
+
+        const animation: DesktopCleanupMatchAnimation = {
+            selection,
+            generation: this.operationGeneration,
+            root: animationRoot,
+            leftNode: nodes[0],
+            middleNode: nodes[1],
+            rightNode: nodes[2],
+        };
+        this.matchAnimations.set(token, animation);
+        this.magnetAnimationTokens.add(token);
+        const scale = this.layout?.scale ?? 1;
+        const center = this.slotTargetInParent(
+            animationRoot,
+            Math.floor(this.config.slotCapacity / 2),
+        );
+        const gatherDuration = 0.28;
+        nodes.forEach((node, index) => {
+            const itemId = effect.itemIds[index];
+            const isBoardItem = boardItemIds.has(itemId);
+            const start = node.position.clone();
+            const arc = new Vec3(
+                (start.x + center.x) / 2,
+                Math.max(start.y, center.y) + (isBoardItem ? 70 : 24) * scale,
+                0,
+            );
+            const liftDuration = isBoardItem ? 0.12 : 0.06;
+            tween(node)
+                .to(liftDuration, {
+                    position: arc,
+                    scale: new Vec3(isBoardItem ? 0.86 : 1.06, isBoardItem ? 0.86 : 1.06, 1),
+                    angle: index % 2 === 0 ? -6 : 6,
+                }, { easing: 'quadOut' })
+                .to(gatherDuration - liftDuration, {
+                    position: center.clone(),
+                    scale: new Vec3(isBoardItem ? 0.56 : 0.88, isBoardItem ? 0.56 : 0.88, 1),
+                    angle: 0,
+                }, { easing: 'quadInOut' })
+                .start();
+        });
+
+        const beginBurst = (): void => {
+            if (this.matchAnimations.get(token) !== animation) return;
+            this.beginMatchBurst(animation, center);
+        };
+        tween(animationRoot)
+            .delay(gatherDuration + 0.04)
+            .call(beginBurst)
+            .start();
+        this.scheduleOnce(() => {
+            if (this.matchAnimations.get(token) === animation) this.finishMatchAnimation(animation);
+        }, gatherDuration + 0.04 + 0.65);
+        return true;
+    }
+
+    private startSlotClearAnimation(itemIds: readonly string[]): boolean {
+        const root = this.slotRoot;
+        if (!root?.isValid || itemIds.length === 0) return false;
+        const rootTransform = root.getComponent(UITransform);
+        const animationRoot = this.createNode(
+            root,
+            `SlotClearAnimation-${this.slotClearToken + 1}`,
+            0,
+            0,
+            rootTransform?.contentSize.width ?? 1,
+            rootTransform?.contentSize.height ?? 1,
+        );
+        animationRoot.setSiblingIndex(root.children.length - 1);
+
+        const itemNodes: Node[] = [];
+        const effectNodes: Node[] = [];
+        itemIds.forEach((itemId, index) => {
+            let node = this.slotItemNodes.get(itemId);
+            if (!node?.isValid || node.parent !== root) {
+                const existing = root.getChildByName(`SlotItem-${itemId}`);
+                node = existing?.isValid ? existing : undefined;
+            }
+            if (!node?.isValid || node.parent !== root) return;
+
+            const position = node.position.clone();
+            this.slotItemNodes.delete(itemId);
+            this.slotMoveTokens.delete(itemId);
+            Tween.stopAllByTarget(node);
+            node.removeFromParent();
+            node.setParent(animationRoot);
+            node.name = `ClearingSlotItem-${itemId}`;
+            node.setPosition(position);
+            node.setScale(1, 1, 1);
+            node.angle = 0;
+            this.setMatchNodeOpacity(node, 255);
+            itemNodes.push(node);
+            effectNodes.push(this.createSlotClearEffect(animationRoot, position, index));
+        });
+
+        if (itemNodes.length === 0) {
+            this.destroyNode(animationRoot);
+            return false;
+        }
+
+        const token = ++this.slotClearToken;
+        let animation: DesktopCleanupSlotClearAnimation;
+        const finish = (): void => this.finishSlotClearAnimation(animation);
+        animation = {
+            token,
+            generation: this.operationGeneration,
+            root: animationRoot,
+            itemNodes: Object.freeze(itemNodes.slice()),
+            effectNodes: Object.freeze(effectNodes.slice()),
+            finish,
+        };
+        this.slotClearAnimations.set(token, animation);
+
+        const scale = this.layout?.scale ?? 1;
+        itemNodes.forEach((node, index) => {
+            const delay = index * SLOT_CLEAR_ITEM_STAGGER_SECONDS;
+            const start = node.position.clone();
+            tween(node)
+                .delay(delay)
+                .to(0.08, {
+                    position: new Vec3(start.x, start.y + 8 * scale, start.z),
+                    scale: new Vec3(1.12, 1.12, 1),
+                    angle: index % 2 === 0 ? -5 : 5,
+                }, { easing: 'backOut' })
+                .to(SLOT_CLEAR_ITEM_DURATION_SECONDS - 0.08, {
+                    position: new Vec3(start.x, start.y + 30 * scale, start.z),
+                    scale: new Vec3(0.22, 0.22, 1),
+                    angle: index % 2 === 0 ? 14 : -14,
+                }, { easing: 'quadIn' })
+                .start();
+            const opacity = node.getComponent(UIOpacity);
+            if (opacity) {
+                tween(opacity)
+                    .delay(delay + 0.06)
+                    .to(SLOT_CLEAR_ITEM_DURATION_SECONDS - 0.06, { opacity: 0 }, { easing: 'quadIn' })
+                    .start();
+            }
+        });
+        effectNodes.forEach((node, index) => {
+            const delay = index * SLOT_CLEAR_ITEM_STAGGER_SECONDS;
+            const opacity = node.getComponent(UIOpacity);
+            tween(node)
+                .delay(delay)
+                .to(0.06, { scale: new Vec3(1.16, 1.16, 1), angle: index % 2 === 0 ? -8 : 8 }, { easing: 'backOut' })
+                .to(SLOT_CLEAR_EFFECT_DURATION_SECONDS - 0.06, { scale: new Vec3(0.58, 0.58, 1) }, { easing: 'quadIn' })
+                .start();
+            if (opacity) {
+                tween(opacity)
+                    .delay(delay)
+                    .to(0.04, { opacity: 255 }, { easing: 'quadOut' })
+                    .to(SLOT_CLEAR_EFFECT_DURATION_SECONDS - 0.04, { opacity: 0 }, { easing: 'quadIn' })
+                    .start();
+            }
+        });
+
+        const lastDelay = (itemNodes.length - 1) * SLOT_CLEAR_ITEM_STAGGER_SECONDS;
+        this.scheduleOnce(
+            finish,
+            lastDelay + Math.max(SLOT_CLEAR_ITEM_DURATION_SECONDS, SLOT_CLEAR_EFFECT_DURATION_SECONDS) + 0.04,
+        );
+        return true;
+    }
+
+    private createSlotClearEffect(parent: Node, position: Vec3, index: number): Node {
+        const scale = this.layout?.scale ?? 1;
+        const size = SLOT_CLEAR_EFFECT_SIZE * scale;
+        const effect = this.createNode(
+            parent,
+            `ClearBurst-${index}`,
+            position.x,
+            position.y,
+            size,
+            size,
+        );
+        effect.setScale(0.2, 0.2, 1);
+        const opacity = effect.addComponent(UIOpacity);
+        opacity.opacity = 0;
+        const graphics = effect.addComponent(Graphics);
+        graphics.fillColor = new Color(232, 180, 69, 255);
+        [
+            [-35, -13, 9],
+            [32, -18, 8],
+            [-23, 29, 7],
+            [25, 31, 8],
+        ].forEach(([x, y, radius]) => graphics.circle(x * scale, y * scale, radius * scale));
+        graphics.fill();
+        graphics.strokeColor = new Color(235, 119, 100, 255);
+        graphics.lineWidth = Math.max(2, 5 * scale);
+        [
+            [-56, 0, -36, 0],
+            [56, 0, 36, 0],
+            [0, -56, 0, -36],
+            [0, 56, 0, 36],
+        ].forEach(([fromX, fromY, toX, toY]) => {
+            graphics.moveTo(fromX * scale, fromY * scale);
+            graphics.lineTo(toX * scale, toY * scale);
+        });
+        graphics.stroke();
+        return effect;
+    }
+
+    private finishSlotClearAnimation(animation: DesktopCleanupSlotClearAnimation): void {
+        if (this.slotClearAnimations.get(animation.token) !== animation) return;
+        this.unschedule(animation.finish);
+        this.slotClearAnimations.delete(animation.token);
+        if (animation.root.isValid) this.destroyNode(animation.root);
+        if (!this.isCurrent(animation.generation)) return;
+        if (this.state !== 'playing') return;
+        this.renderAll();
+        this.inputLocked = false;
+        this.startDeviceMotion();
+        this.refreshTools();
+        this.syncTerminalPhase();
+    }
+
+    private cancelSlotClearAnimations(): void {
+        const animations = Array.from(this.slotClearAnimations.values());
+        this.slotClearAnimations.clear();
+        animations.forEach((animation) => {
+            this.unschedule(animation.finish);
+            if (animation.root.isValid) this.destroyNode(animation.root);
+        });
+    }
+
     private animateSlotItemTo(node: Node, target: Vec3, itemId: string): void {
         if (!node.isValid || node.parent !== this.slotRoot) return;
         const current = node.position;
@@ -1848,18 +2186,51 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.helpButton) this.helpButton.interactable = controlsEnabled;
         this.toolButtons.forEach((button, tool) => {
             const charge = snapshot.toolCharges[tool];
+            const needsAd = adsEnabled && charge <= 0 && !snapshot.boostAdAttempted;
             const count = button.node.getChildByName('Count')?.getComponent(Label);
-            if (count) count.string = `${charge}`;
+            // Do not create the rewarded-ad node while the free charge is
+            // still visible. WeChat's first frame can run this refresh before
+            // the card's render components have completed their native-side
+            // setup; lazy creation keeps the normal free-use path free of
+            // unnecessary cross-bundle Sprite work.
+            const adIcon = needsAd
+                ? this.ensureToolAdCountIcon(button.node)
+                : button.node.getChildByName('AdCountIcon') ?? undefined;
+            if (count) {
+                count.string = `${charge}`;
+                count.node.active = !needsAd || !adIcon?.isValid;
+            }
+            if (adIcon?.isValid) adIcon.active = needsAd;
             button.interactable = controlsEnabled
                 && snapshot.pendingSelections.length === 0
                 && this.pickupAnimations.size === 0
                 && this.pendingMatchSelections.size === 0
                 && this.matchAnimations.size === 0
+                && this.slotClearAnimations.size === 0
                 && this.slotMoveTokens.size === 0
                 && (charge > 0 || (adsEnabled && !snapshot.boostAdAttempted));
             const opacity = button.node.getComponent(UIOpacity);
             if (opacity) opacity.opacity = 255;
         });
+    }
+
+    private ensureToolAdCountIcon(card: Node): Node | undefined {
+        const existing = card.getChildByName('AdCountIcon');
+        if (existing?.isValid) return existing;
+        const frame = this.rewardedVideoIconFrame;
+        const scale = this.layout?.scale ?? 1;
+        if (!frame) return undefined;
+        const icon = attachRewardedVideoIcon(
+            card,
+            frame,
+            48 * scale,
+            -48 * scale,
+            30 * scale,
+        );
+        if (!icon) return undefined;
+        icon.name = 'AdCountIcon';
+        icon.active = false;
+        return icon;
     }
 
     private handleItemTap(itemId: string, node: Node): void {
@@ -2192,6 +2563,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     private finishMatchAnimation(animation: DesktopCleanupMatchAnimation): void {
         if (this.matchAnimations.get(animation.selection.token) !== animation) return;
+        const isMagnetAnimation = this.magnetAnimationTokens.delete(animation.selection.token);
         this.matchAnimations.delete(animation.selection.token);
         animation.selection.triple?.itemIds.forEach((itemId) => this.slotMoveTokens.delete(itemId));
         if (animation.root.isValid) this.destroyNode(animation.root);
@@ -2199,6 +2571,11 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         // pickup released it early this is a render-only reconciliation;
         // otherwise animation completion commits it here.
         this.releaseMatchSelection(animation);
+        if (isMagnetAnimation && this.isCurrent(animation.generation) && this.state === 'playing') {
+            this.inputLocked = false;
+            this.startDeviceMotion();
+            this.refreshTools();
+        }
     }
 
     private releaseMatchSelection(
@@ -2232,7 +2609,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             const pendingTokens = new Set(
                 this.model?.snapshot.pendingSelections.map((selection) => selection.token) ?? [],
             );
-            const active = [...this.matchAnimations.values()]
+            const active = Array.from(this.matchAnimations.values())
                 .filter((animation) => pendingTokens.has(animation.selection.token));
             if (active.length === 0) break;
             let releasedThisPass = false;
@@ -2255,7 +2632,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     private cancelMatchAnimation(): void {
         this.pendingMatchSelections.clear();
-        const animations = [...this.matchAnimations.values()];
+        this.magnetAnimationTokens.clear();
+        const animations = Array.from(this.matchAnimations.values());
         this.matchAnimations.clear();
         animations.forEach((animation) => {
             animation.selection.triple?.itemIds.forEach((itemId) => this.slotMoveTokens.delete(itemId));
@@ -2264,7 +2642,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private cancelPickupAnimations(): void {
-        const animations = [...this.pickupAnimations.values()];
+        const animations = Array.from(this.pickupAnimations.values());
         this.pickupAnimations.clear();
         animations.forEach((animation) => {
             if (animation.node.isValid) this.destroyNode(animation.node);
@@ -2284,7 +2662,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const pendingTokens = new Set(
             this.model.snapshot.pendingSelections.map((selection) => selection.token),
         );
-        [...this.pendingMatchSelections.values()].forEach((pending) => {
+        Array.from(this.pendingMatchSelections.values()).forEach((pending) => {
             if (!this.isCurrent(pending.generation)) return;
             if (!pendingTokens.has(pending.selection.token)) {
                 this.pendingMatchSelections.delete(pending.selection.token);
@@ -2298,13 +2676,13 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private hasConcurrentPickup(selectionToken: number): boolean {
-        return [...this.pickupAnimations.values()].some(
+        return Array.from(this.pickupAnimations.values()).some(
             (animation) => animation.selection.token !== selectionToken,
         );
     }
 
     private isPickupInFlight(itemId: string): boolean {
-        return [...this.pickupAnimations.values()].some(
+        return Array.from(this.pickupAnimations.values()).some(
             (animation) => animation.selection.selectedItemId === itemId,
         );
     }
@@ -2328,6 +2706,11 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private async handleTool(tool: DesktopCleanupTool): Promise<void> {
         if (this.state !== 'playing' || this.inputLocked || this.adBusy || !this.model) return;
         const result = this.model.useTool(tool);
+        // Reflect the charge transition immediately. In particular, the
+        // first free use changes the next action from a free press to a
+        // rewarded-ad press, so the count badge must switch in this same
+        // interaction before any longer tool animation starts.
+        this.refreshTools();
         if (result.reason === 'needs-ad') {
             if (!this.isAdsEnabled()) {
                 this.setHint('本局工具次数已用完');
@@ -2341,13 +2724,26 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             this.setHint(result.reason === 'empty' ? '当前还用不上这个工具' : '本局工具次数已用完');
             return;
         }
-        this.context?.services.feedback.play(result.triple ? 'merge' : 'fold');
-        this.presentToolResult(tool);
+        this.context?.services.feedback.play(
+            tool === 'magnet' && result.magnet
+                ? 'drop'
+                : result.triple ? 'merge' : 'fold',
+        );
+        this.presentToolResult(tool, true, result.removedItemIds ?? [], result.magnet);
     }
 
-    private presentToolResult(tool: DesktopCleanupTool, showHint = true): void {
+    private presentToolResult(
+        tool: DesktopCleanupTool,
+        showHint = true,
+        removedItemIds: readonly string[] = [],
+        magnetEffect?: DesktopCleanupMagnetEffect,
+    ): void {
         const isStorm = tool === 'shuffle';
-        if (isStorm) {
+        const clearStarted = removedItemIds.length > 0 && this.startSlotClearAnimation(removedItemIds);
+        const magnetStarted = tool === 'magnet'
+            && Boolean(magnetEffect)
+            && this.startMagnetAnimation(magnetEffect!);
+        if (isStorm || clearStarted || magnetStarted) {
             this.inputLocked = true;
             this.stopDeviceMotion();
         } else {
@@ -2356,14 +2752,16 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         }
         this.renderAll();
         if (showHint) {
-            this.setHint(tool === 'return'
-                ? '最近物件已放回堆顶'
-                : isStorm
-                    ? '剩余物件已经重新叠好'
-                    : '磁吸盒凑齐了一组');
+            if (tool === 'return') {
+                this.setHint('');
+            } else if (tool === 'shuffle') {
+                this.setHint('');
+            } else {
+                this.setHint('磁吸盒凑齐了一组');
+            }
         }
         if (isStorm) this.playPileBirthAnimation();
-        this.syncTerminalPhase();
+        if (!clearStarted && !magnetStarted && !isStorm) this.syncTerminalPhase();
     }
 
     private async requestBoostAd(tool: DesktopCleanupTool): Promise<void> {
@@ -2379,7 +2777,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.state = 'paused';
         this.setHint('正在播放视频…');
         this.refreshTools();
-        let actionAccepted = false;
+        let acceptedAction: DesktopCleanupActionResult | undefined;
         try {
             const result = await context.services.ads.showRewarded({
                 placement: AD_PLACEMENTS.desktopCleanupRewarded,
@@ -2389,8 +2787,12 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             if (!this.isCurrent(generation)) return;
             const action = model.resolveBoostAd(result.outcome === 'completed');
             if (action.accepted) {
-                actionAccepted = true;
-                this.context?.services.feedback.play(action.triple ? 'merge' : 'continue');
+                acceptedAction = action;
+                this.context?.services.feedback.play(
+                    tool === 'magnet' && action.magnet
+                        ? 'drop'
+                        : action.triple ? 'merge' : 'continue',
+                );
                 this.setHint('');
             } else {
                 this.setHint('失败，请重试');
@@ -2403,8 +2805,16 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         } finally {
             if (this.isCurrent(generation)) {
                 this.adBusy = false;
+                this.refreshTools();
                 this.state = 'playing';
-                if (actionAccepted) this.presentToolResult(tool, false);
+                if (acceptedAction) {
+                    this.presentToolResult(
+                        tool,
+                        false,
+                        acceptedAction.removedItemIds ?? [],
+                        acceptedAction.magnet,
+                    );
+                }
                 else {
                     this.inputLocked = false;
                     this.startDeviceMotion();
@@ -2437,7 +2847,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const actions: OverlayAction[] = [];
         if (this.isAdsEnabled() && !snapshot.continueAdAttempted) {
             const label = snapshot.failureReason === 'slots'
-                ? '看广告继续'
+                ? '看广告清除 3 格'
                 : `加时 ${this.config.continueSeconds} 秒继续`;
             actions.push({ name: 'ContinueButton', label, tone: 'teal', action: () => this.requestContinueAd(), adIcon: true });
         }
@@ -2473,15 +2883,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 sessionId: context.sessionId,
             });
             if (!this.isCurrent(generation)) return;
-            if (model.resolveContinueAd(result.outcome === 'completed')) {
+            const action = model.resolveContinueAd(result.outcome === 'completed');
+            if (action.accepted) {
                 this.destroyOverlay(this.failureOverlay);
                 this.failureOverlay = undefined;
                 this.state = 'playing';
-                this.inputLocked = false;
-                this.startDeviceMotion();
                 this.context?.services.feedback.play('continue');
                 this.setHint('');
-                this.renderAll();
+                this.presentContinueResult(action.removedItemIds ?? []);
             } else {
                 this.setHint('失败，请重试');
                 this.showFailure();
@@ -2493,8 +2902,24 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             this.setHint('失败，请重试');
             this.showFailure();
         } finally {
-            if (this.isCurrent(generation)) this.adBusy = false;
+            if (this.isCurrent(generation)) {
+                this.adBusy = false;
+                this.refreshTools();
+            }
         }
+    }
+
+    private presentContinueResult(removedItemIds: readonly string[]): void {
+        const clearStarted = removedItemIds.length > 0 && this.startSlotClearAnimation(removedItemIds);
+        if (clearStarted) {
+            this.inputLocked = true;
+            this.stopDeviceMotion();
+        } else {
+            this.inputLocked = false;
+            this.startDeviceMotion();
+        }
+        this.renderAll();
+        if (!clearStarted) this.syncTerminalPhase();
     }
 
     private restartFromFailure(): void {
@@ -2612,7 +3037,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.rulesOverlay = this.buildOverlay(
             'DesktopRulesOverlay',
             firstTime ? '今天也来清清桌面' : '整理规则',
-            '点击物件露出的部分，把它放入 7 格收纳槽\n同类三件会自动收好，清掉上层会露出更深的物件\n在 180 秒内清空桌面并找回 3 枚幸运徽章',
+            '点击物件露出的部分，把它放入 7 格收纳槽\n同类三件会自动收好，清掉上层会露出更深的物件\n在 180 秒内清空桌面',
             [
                 { name: 'StartButton', label: firstTime ? '开始整理' : '知道了', tone: 'teal', action: () => this.closeRules(firstTime) },
             ],
@@ -2849,7 +3274,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private clearPendingPileTaps(): void {
-        [...this.pendingPileTaps.keys()].forEach((touchId) => this.clearPendingPileTap(touchId));
+        Array.from(this.pendingPileTaps.keys()).forEach((touchId) => this.clearPendingPileTap(touchId));
     }
 
     private findPileItemAt(
@@ -2861,7 +3286,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const activeItems = new Map(
             snapshot.items.filter((item) => item.active).map((item) => [item.id, item] as const),
         );
-        const ordered = [...this.pileItemNodes.entries()]
+        const ordered = Array.from(this.pileItemNodes.entries())
             .filter(([itemId, node]) => (
                 activeItems.has(itemId)
                 && node.isValid
@@ -2888,7 +3313,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         }
         if (existing?.isValid) return;
         const transform = node.getComponent(UITransform);
-        const shape = ITEM_HIT_POLYGONS[type];
+        const shape = this.itemHitShape(type);
         if (!transform || !shape || shape.outer.length === 0) return;
         const width = Math.max(1, transform.contentSize.width);
         const height = Math.max(1, transform.contentSize.height);
@@ -2914,7 +3339,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         type: DesktopCleanupItemType,
         screenLocation: Vec2,
     ): boolean {
-        const shape = ITEM_HIT_POLYGONS[type];
+        const shape = this.itemHitShape(type);
         if (!shape) return false;
         const scene = this.node.scene;
         const canvasCamera = scene?.getComponentInChildren(Canvas)?.cameraComponent;
@@ -2930,6 +3355,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         return isPointInsideHitShape({ x: u, y: v }, shape);
     }
 
+    private itemHitShape(type: DesktopCleanupItemType): ItemHitPolygonShape | undefined {
+        return ITEM_HIT_POLYGONS[type];
+    }
+
     private settlePendingImmediately(): void {
         const model = this.model;
         const pending = model?.snapshot.pendingSelections ?? [];
@@ -2938,6 +3367,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.operationGeneration += 1;
         this.cancelPickupAnimations();
         this.cancelMatchAnimation();
+        this.cancelSlotClearAnimations();
         this.cancelSlotMoves();
         pending.forEach((selection) => model?.settleSelection(selection.token));
         model?.finalizeSelectionBatch();
@@ -3451,7 +3881,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private itemDisplaySize(type: DesktopCleanupItemType, scale: number): Size {
-        const extent = 192 * DESKTOP_CLEANUP_ITEM_SIZE_MULTIPLIERS[type] * scale;
+        const extent = 192 * (this.theme.itemSizeMultipliers[type] ?? 1) * scale;
         return new Size(extent, extent);
     }
 

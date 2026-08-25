@@ -169,7 +169,8 @@ function readOptionalResourcePath(
     errors: ManifestValidationError[],
 ): string | null | undefined {
     const value = source[key];
-    if (value === undefined || value === null) return value;
+    if (value === undefined) return undefined;
+    if (value === null) return null;
     if (typeof value !== 'string' || value.trim().length === 0) {
         addError(errors, field, 'must be null or a non-empty string');
         return undefined;

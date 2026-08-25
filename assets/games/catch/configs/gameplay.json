@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "themeId": "random",
   "timeLimitSeconds": 180,
   "continueSeconds": 60,
   "slotCapacity": 7,

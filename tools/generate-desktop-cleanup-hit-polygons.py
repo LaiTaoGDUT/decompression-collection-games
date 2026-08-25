@@ -9,8 +9,8 @@
     python3 tools/generate-desktop-cleanup-hit-polygons.py
 
 更新图集后可以指定输入图；如果调整了图集中的物品顺序，用 --names 按从左到右、
-从上到下的顺序传入名称。新增物品时还要同步更新 DesktopCleanupModel.ts 中的
-DESKTOP_CLEANUP_ITEM_TYPES。
+从上到下的顺序传入名称。新增物品时还要同步更新当前主题的
+DesktopCleanupTheme.ts 物品目录。
 """
 
 from __future__ import annotations
