@@ -150,10 +150,10 @@ interface DesktopCleanupToolEffect {
     readonly removedItemIds?: readonly string[];
 }
 
-// Keep the visible pile footprint unchanged while using 28 depth layers.
-// Six items per layer gives a 168-item board without making the playmat too
+// Keep the visible pile footprint unchanged while using 27 depth layers.
+// Six items per layer gives a 162-item board without making the playmat too
 // dense to read.
-const LAYER_COUNT = 28;
+const LAYER_COUNT = 27;
 const GROUPS_PER_LAYER = 2;
 const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
 const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;
@@ -161,14 +161,20 @@ const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;
 // bands. The offsets are applied through a shuffled layer permutation so the
 // pattern is not visible in the rendered pile.
 const TRIPLET_LAYER_OFFSETS = Object.freeze([0, 7, 14]);
-const STACK_X_LIMIT = 0.36;
-const STACK_Y_LIMIT = 0.36;
+// Let the item cloud use almost the whole square playmat instead of stopping
+// noticeably short of its visible edge. The rotated-item bound below remains
+// the final guard for each individual item.
+const STACK_X_LIMIT = 0.44;
+const STACK_Y_LIMIT = 0.44;
 /** PileRoot uses this factor when mapping normalized model coordinates to pixels. */
 export const DESKTOP_CLEANUP_STACK_RENDER_SCALE = 0.96;
 /** Base normalized half-size; type multipliers are applied by visibleCenterLimit. */
 const STACK_ITEM_BASE_HALF_EXTENT = 0.15;
-/** Keep rotated corners inside the visible playmat, not just inside PileRoot. */
-const STACK_CONTAINER_MARGIN = 0.02;
+/**
+ * Allow the item footprint to reach the playmat edge, with only a tiny
+ * overscan so the pile does not look inset from the panel artwork.
+ */
+const STACK_EDGE_OVERSCAN = 0.02;
 const PHYSICS_ITEM_RADIUS = 0.125;
 const PHYSICS_MAX_SPEED = 0.72;
 const PHYSICS_MAX_ANGULAR_SPEED = 120;
@@ -178,6 +184,14 @@ const PHYSICS_SETTLE_SPEED = 0.006;
 const PHYSICS_DEPTH_COLLISION_RANGE = 0.35;
 const PHYSICS_COVER_RADIUS = PHYSICS_ITEM_RADIUS * 0.72;
 const PHYSICS_EPSILON = 0.0001;
+const PHYSICS_SHAKE_LAYER_ATTENUATION = 0.72;
+const PHYSICS_SHAKE_COVERED_MOBILITY = 0.72;
+const PHYSICS_SHAKE_STATIC_IMPULSE = 0.012;
+const PHYSICS_SHAKE_ANGULAR_IMPULSE = 24;
+const PHYSICS_SHAKE_ELEVATION_IMPULSE = 0.03;
+// The initial cloud is random and may clamp against the playmat edge. Extra
+// sweeps let each six-item layer settle before the first shake can wake it.
+const INITIAL_POSITION_RELAXATION_PASSES = 256;
 
 function visibleCenterLimit(
     angle: number,
@@ -199,7 +213,7 @@ function visibleCenterLimit(
             STACK_Y_LIMIT,
             0.5 / DESKTOP_CLEANUP_STACK_RENDER_SCALE
                 - rotatedHalfExtent
-                - STACK_CONTAINER_MARGIN,
+                + STACK_EDGE_OVERSCAN,
         ),
     );
 }
@@ -293,16 +307,18 @@ function distributeTripletsAcrossLayers(
     return Object.freeze(layerItems.map((items) => Object.freeze(items)));
 }
 
+interface DesktopCleanupGeneratedPosition {
+    x: number;
+    y: number;
+    angle: number;
+}
+
 function stackedPositions(
     random: () => number,
     itemCount = LAYER_COUNT * ITEMS_PER_LAYER,
     theme: DesktopCleanupThemeDefinition = getDesktopCleanupTheme(),
-): readonly {
-    readonly x: number;
-    readonly y: number;
-    readonly angle: number;
-}[] {
-    const positions: { x: number; y: number; angle: number }[] = [];
+): readonly DesktopCleanupGeneratedPosition[] {
+    const positions: DesktopCleanupGeneratedPosition[] = [];
     const layerCount = Math.ceil(Math.max(0, itemCount) / ITEMS_PER_LAYER);
     for (let layer = 0; layer < layerCount; layer += 1) {
         // Every layer gets its own irregular cloud. There are deliberately
@@ -355,6 +371,65 @@ function stackedPositions(
     return Object.freeze(positions);
 }
 
+function clampGeneratedPosition(
+    position: DesktopCleanupGeneratedPosition,
+    type: DesktopCleanupItemType,
+    theme: DesktopCleanupThemeDefinition,
+): void {
+    const centerLimit = visibleCenterLimit(position.angle, 0, type, theme);
+    position.x = clamp(position.x, -centerLimit, centerLimit);
+    position.y = clamp(position.y, -centerLimit, centerLimit);
+}
+
+function relaxInitialLayerPositions(
+    positions: readonly DesktopCleanupGeneratedPosition[],
+    layerItems: readonly (readonly DesktopCleanupItemType[])[],
+    theme: DesktopCleanupThemeDefinition,
+): readonly DesktopCleanupGeneratedPosition[] {
+    // Only same-layer items participate in runtime collision resolution. The
+    // overlap between different layers is intentional and creates the pile.
+    const relaxed = positions.map((position) => ({ ...position }));
+    for (let pass = 0; pass < INITIAL_POSITION_RELAXATION_PASSES; pass += 1) {
+        let changed = false;
+        for (let layer = 0; layer < layerItems.length; layer += 1) {
+            const types = layerItems[layer] ?? [];
+            const layerStart = layer * ITEMS_PER_LAYER;
+            const layerEnd = Math.min(layerStart + types.length, relaxed.length);
+            for (let leftIndex = layerStart; leftIndex < layerEnd; leftIndex += 1) {
+                const left = relaxed[leftIndex];
+                const leftType = types[leftIndex - layerStart];
+                if (!left || !leftType) continue;
+                for (let rightIndex = leftIndex + 1; rightIndex < layerEnd; rightIndex += 1) {
+                    const right = relaxed[rightIndex];
+                    const rightType = types[rightIndex - layerStart];
+                    if (!right || !rightType) continue;
+                    const dx = right.x - left.x;
+                    const dy = right.y - left.y;
+                    const distance = Math.hypot(dx, dy);
+                    const minimumDistance = physicsItemRadius(leftType, theme)
+                        + physicsItemRadius(rightType, theme);
+                    if (distance >= minimumDistance) continue;
+
+                    const safeDistance = Math.max(distance, PHYSICS_EPSILON);
+                    const fallbackDirection = (leftIndex + rightIndex) % 2 === 0 ? 1 : -1;
+                    const normalX = distance > PHYSICS_EPSILON ? dx / safeDistance : fallbackDirection;
+                    const normalY = distance > PHYSICS_EPSILON ? dy / safeDistance : 0;
+                    const correction = (minimumDistance - safeDistance) * 0.5;
+                    left.x -= normalX * correction;
+                    left.y -= normalY * correction;
+                    right.x += normalX * correction;
+                    right.y += normalY * correction;
+                    clampGeneratedPosition(left, leftType, theme);
+                    clampGeneratedPosition(right, rightType, theme);
+                    changed = true;
+                }
+            }
+        }
+        if (!changed) break;
+    }
+    return Object.freeze(relaxed.map((position) => Object.freeze({ ...position })));
+}
+
 export function desktopCleanupDateKey(date = new Date()): string {
     const year = date.getFullYear();
     const monthValue = date.getMonth() + 1;
@@ -369,11 +444,16 @@ export function generateDesktopCleanupItems(
 ): readonly DesktopCleanupItemSnapshot[] {
     const random = createRandom();
     const layerItems = distributeTripletsAcrossLayers(theme, random);
-    const positions = stackedPositions(random, LAYER_COUNT * ITEMS_PER_LAYER, theme);
+    const shuffledLayerItems = layerItems.map((items) => shuffle(items, random));
+    const positions = relaxInitialLayerPositions(
+        stackedPositions(random, LAYER_COUNT * ITEMS_PER_LAYER, theme),
+        shuffledLayerItems,
+        theme,
+    );
 
     const items: DesktopCleanupItemSnapshot[] = [];
     for (let layer = 0; layer < LAYER_COUNT; layer += 1) {
-        shuffle(layerItems[layer] ?? [], random).forEach((type, index) => {
+        (shuffledLayerItems[layer] ?? []).forEach((type, index) => {
             items.push(Object.freeze({
                 id: `desk-${layer}-${index}-${type}`,
                 type,
@@ -530,6 +610,10 @@ export class DesktopCleanupModel {
         return this.timeLeftMs;
     }
 
+    isItemActive(itemId: string): boolean {
+        return this.items.get(itemId)?.active === true;
+    }
+
     get snapshot(): DesktopCleanupSnapshot {
         const items = Array.from(this.items.values()).map((item) => Object.freeze({ ...item }));
         return Object.freeze({
@@ -573,23 +657,45 @@ export class DesktopCleanupModel {
         if (directionLength <= PHYSICS_EPSILON) return false;
         const directionX = input.x / directionLength;
         const directionY = input.y / directionLength;
-        const strength = clamp(input.strength, 0.35, 2.2);
+        const strength = clamp(input.strength, 0.7, 1.25);
         const impulse = this.config.shakeImpulse * strength;
-        this.items.forEach((item) => {
-            if (!item.active) return;
-            // 露出的物件更容易被颠起；被压住的物件仍会获得一部分桌面传导
-            // 的冲量，等上层滑开后就能自然露出来。
-            const mobility = item.free ? 1 : 0.24;
-            item.velocityX = clamp(item.velocityX + directionX * impulse * mobility, -PHYSICS_MAX_SPEED, PHYSICS_MAX_SPEED);
-            item.velocityY = clamp(item.velocityY + directionY * impulse * mobility, -PHYSICS_MAX_SPEED, PHYSICS_MAX_SPEED);
+        const active = Array.from(this.items.values()).filter((item) => item.active);
+        const frontLayer = active.reduce(
+            (highest, item) => Math.max(highest, item.layer),
+            0,
+        );
+        active.forEach((item) => {
+            // 堆叠越深，受到的桌面冲量越弱；已经露出的低层物件仍保留少量
+            // 响应，被覆盖物件再叠加一层“堆压”衰减。这样不是只开关 free，
+            // 也不会让整堆物件以相同速度一起滑走。
+            const depth = Math.max(0, frontLayer - item.layer);
+            const layerRatio = Math.min(1, depth / Math.max(frontLayer, 1));
+            const layerMobility = 1 - layerRatio * PHYSICS_SHAKE_LAYER_ATTENUATION;
+            const mobility = layerMobility * (
+                item.free ? 1 : PHYSICS_SHAKE_COVERED_MOBILITY
+            );
+            const itemImpulse = impulse * mobility;
+            // 很小的传导被静摩擦吸收，只保留极轻微抬升/旋转反馈。
+            if (itemImpulse >= PHYSICS_SHAKE_STATIC_IMPULSE) {
+                item.velocityX = clamp(
+                    item.velocityX + directionX * itemImpulse,
+                    -PHYSICS_MAX_SPEED,
+                    PHYSICS_MAX_SPEED,
+                );
+                item.velocityY = clamp(
+                    item.velocityY + directionY * itemImpulse,
+                    -PHYSICS_MAX_SPEED,
+                    PHYSICS_MAX_SPEED,
+                );
+            }
             const spinDirection = directionX * (item.layer % 2 === 0 ? 1 : -1) + directionY;
             item.angularVelocity = clamp(
-                item.angularVelocity + spinDirection * 48 * strength * mobility,
+                item.angularVelocity + spinDirection * PHYSICS_SHAKE_ANGULAR_IMPULSE * strength * mobility,
                 -PHYSICS_MAX_ANGULAR_SPEED,
                 PHYSICS_MAX_ANGULAR_SPEED,
             );
             item.elevation = clamp(
-                item.elevation + (0.035 + 0.025 * mobility) * strength,
+                item.elevation + PHYSICS_SHAKE_ELEVATION_IMPULSE * strength * mobility,
                 0,
                 PHYSICS_MAX_ELEVATION,
             );

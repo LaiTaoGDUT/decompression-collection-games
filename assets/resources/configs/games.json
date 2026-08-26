@@ -103,7 +103,6 @@
       "entryComponent": "DesktopCleanupGame",
       "icon": "visual/icons/catch/desktop-cleanup-icon-v1/texture",
       "cover": "visual/covers/catch/desktop-cleanup-cover-v1/texture",
-      "loadingCover": null,
       "orientation": "portrait",
       "renderMode": "2d",
       "minimumDeviceTier": "low",

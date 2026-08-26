@@ -49,7 +49,7 @@ export interface WeChatAdConfig {
 }
 
 export interface AdsConfig {
-    /** 以 GameManifest.id 为键；未列出的游戏默认不启用广告。 */
+    /** 以 GameManifest.id 为键；关闭时隐藏广告入口，开启时允许进入广告流程。 */
     readonly games: Readonly<Record<string, GameAdFeatureConfig>>;
     readonly wechat: WeChatAdConfig;
 }

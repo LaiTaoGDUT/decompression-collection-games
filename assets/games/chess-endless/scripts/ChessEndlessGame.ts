@@ -1474,7 +1474,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const ads = context?.services.ads;
         if (!this.model.canRevive
             || !context
-            || !ads?.isEnabledForGame(context.gameId)) {
+            || (ads && !ads.isEnabledForGame(context.gameId))) {
             this.finishRound();
             return;
         }
@@ -1496,7 +1496,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (!this.model.canRevive || this.reviveAdPending) return;
         const context = this.context;
         const ads = context?.services.ads;
-        if (!context || !ads || !ads.isEnabledForGame(context.gameId)) {
+        if (!context
+            || (ads && !ads.isEnabledForGame(context.gameId))) {
             this.finishRound();
             return;
         }
@@ -1507,11 +1508,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
             button.interactable = false;
         });
         try {
-            const adResult = await ads.showRewarded({
-                placement: AD_PLACEMENTS.chessEndlessRevive,
-                gameId: context.gameId,
-                sessionId: context.sessionId,
-            });
+            const adResult = ads
+                ? await ads.showRewarded({
+                    placement: AD_PLACEMENTS.chessEndlessRevive,
+                    gameId: context.gameId,
+                    sessionId: context.sessionId,
+                })
+                : { outcome: 'completed' as const };
             if (!this.isOperationCurrent(generation)) return;
             if (adResult.outcome !== 'completed') {
                 this.setHint('视频未完整播放，暂未复活');

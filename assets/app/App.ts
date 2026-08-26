@@ -340,8 +340,7 @@ export class App extends Component {
         const providers: Record<string, RewardedAdProvider> = {};
         rewardedRoutes.forEach((route) => {
             const configuredEnabled = config.ads.games[route.gameId]?.enabled === true;
-            gameAdEnablement[route.gameId] = configuredEnabled
-                && (!useRealWeChatAds || Boolean(route.adUnitId.trim()));
+            gameAdEnablement[route.gameId] = configuredEnabled;
             providers[route.placement] = useRealWeChatAds
                 ? new WeChatRewardedAdProvider({
                     placement: route.placement,

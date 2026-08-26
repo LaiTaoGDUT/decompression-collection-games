@@ -23,6 +23,8 @@ export interface AdRequest {
 export type RewardedAdRequest = AdRequest;
 
 export interface RewardedAdProvider {
+    /** 返回当前请求是否有可实际展示的广告配置。 */
+    isConfigured?(request: RewardedAdRequest): boolean;
     preload?(request: RewardedAdRequest): Promise<void>;
     show(request: RewardedAdRequest): Promise<AdResult>;
     dispose?(): void;
@@ -54,6 +56,10 @@ function failedRewarded(error: string): AdResult {
     return Object.freeze({ outcome: 'failed', error });
 }
 
+function completedRewarded(): AdResult {
+    return Object.freeze({ outcome: 'completed' });
+}
+
 /** 可由开发菜单或测试直接配置下一次结果的模拟广告。 */
 export class MockRewardedAdProvider implements RewardedAdProvider {
     private nextResult: AdResult = Object.freeze({ outcome: 'completed' });
@@ -82,6 +88,12 @@ export class RewardedAdRouter implements RewardedAdProvider {
             if (!normalized) throw new Error('Rewarded ad route placement must not be empty.');
             this.providers.set(normalized, entries[placement]);
         });
+    }
+
+    isConfigured(request: RewardedAdRequest): boolean {
+        const provider = this.providers.get(request.placement);
+        return Boolean(provider)
+            && (provider?.isConfigured?.(request) ?? true);
     }
 
     async preload(request: RewardedAdRequest): Promise<void> {
@@ -134,10 +146,15 @@ export class AdService {
         return this.gameEnablement[normalized] === true;
     }
 
+    private isRewardedConfigured(request: RewardedAdRequest): boolean {
+        return this.rewardedProvider.isConfigured?.(request) ?? true;
+    }
+
     async preloadRewarded(request: RewardedAdRequest): Promise<void> {
         if (this.disposed) return;
         const normalized = normalizeRequest(request);
-        if (!this.isEnabledForGame(normalized.gameId)) return;
+        if (!this.isEnabledForGame(normalized.gameId)
+            || !this.isRewardedConfigured(normalized)) return;
         await this.rewardedProvider.preload?.(normalized);
     }
 
@@ -151,6 +168,13 @@ export class AdService {
             return Promise.resolve(failedRewarded(
                 `Ads are disabled for game "${normalized.gameId}".`,
             ));
+        }
+        if (!this.isRewardedConfigured(normalized)) {
+            // The game must still expose its ad opportunity when no real ad
+            // has been configured. Treat the click as a completed reward and
+            // let the game continue through its normal success path without
+            // touching the platform provider or the app pause state.
+            return Promise.resolve(completedRewarded());
         }
         const key = requestKey(normalized);
 

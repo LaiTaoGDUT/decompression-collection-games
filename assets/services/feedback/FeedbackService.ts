@@ -18,6 +18,11 @@ export type FeedbackCue =
     | 'continue'
     | 'record';
 
+export interface FeedbackPlayOptions {
+    /** 保留音效，仅在当前反馈上关闭平台振动。 */
+    readonly vibrate?: boolean;
+}
+
 /** 小游戏反馈公共边界：玩法不直接调用音频实例或平台振动 API。 */
 export class FeedbackService {
     private readonly sounds = new Map<FeedbackCue, readonly AudioClip[]>();
@@ -46,7 +51,7 @@ export class FeedbackService {
         this.lastPlayedAt.delete(cue);
     }
 
-    play(cue: FeedbackCue): void {
+    play(cue: FeedbackCue, options: FeedbackPlayOptions = {}): void {
         const now = this.now();
         if (cue === 'collision' && now - (this.lastPlayedAt.get(cue) ?? -Infinity) < 80) {
             return;
@@ -61,7 +66,7 @@ export class FeedbackService {
             this.sequence.set(cue, index + 1);
         }
 
-        if (!this.storage.snapshot.settings.vibrationEnabled) {
+        if (options.vibrate === false || !this.storage.snapshot.settings.vibrationEnabled) {
             return;
         }
 

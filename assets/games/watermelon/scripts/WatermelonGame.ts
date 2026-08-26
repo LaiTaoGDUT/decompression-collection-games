@@ -1015,7 +1015,7 @@ export class WatermelonGame extends Component implements MiniGame {
 
         const ads = this.context.services.ads;
         if (this.continueRule.canOffer
-            && ads?.isEnabledForGame(this.context.gameId)) {
+            && (!ads || ads.isEnabledForGame(this.context.gameId))) {
             this.showContinueOverlay();
         } else {
             this.finalizeFrozenRound('overflow');
@@ -1222,10 +1222,10 @@ export class WatermelonGame extends Component implements MiniGame {
         const context = this.context;
         const ads = context?.services.ads;
 
-        if (!context || !ads) {
+        if (!context) {
             return;
         }
-        if (!ads.isEnabledForGame(context.gameId)) {
+        if (ads && !ads.isEnabledForGame(context.gameId)) {
             this.finalizeFrozenRound('ads_disabled');
             return;
         }
@@ -1235,11 +1235,13 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context?.services.feedback.play('uiButton');
 
         try {
-            const result = await ads.showRewarded({
-                placement: AD_PLACEMENTS.watermelonRevive,
-                gameId: context.gameId,
-                sessionId: context.sessionId,
-            });
+            const result = ads
+                ? await ads.showRewarded({
+                    placement: AD_PLACEMENTS.watermelonRevive,
+                    gameId: context.gameId,
+                    sessionId: context.sessionId,
+                })
+                : { outcome: 'completed' as const };
             if (!this.isGenerationCurrent(generation)) return;
             const resolution = this.continueRule.resolve(result.outcome);
 

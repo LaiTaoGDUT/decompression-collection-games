@@ -82,6 +82,11 @@ abstract class WeChatAdPlacement {
         }
         return wx;
     }
+
+    isConfigured(request: RewardedAdRequest): boolean {
+        return request.placement === this.placement
+            && Boolean(this.adUnitId);
+    }
 }
 
 /** 微信激励视频实例复用；show 失败时按官方推荐显式 load 后重试一次。 */
