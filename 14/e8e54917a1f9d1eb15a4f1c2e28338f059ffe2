@@ -1,0 +1,244 @@
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_adcf83e57be1e2::t_8ef31a5ef60c27 1499,1511-1517
+  s_adcf83e57be1e2::t_efdce4d7457512 1500
+  s_90d07da442b9d6::t_f52ce2a090f8ca 1477
+docs/DOODLE_JUMP_GAMEPLAY_SPEC.md
+  s_7306f91aa5d991::t_3cd3e3a4e7d4bf 1-4,7-8,12,14-33,35-49,51-73,75,77,80-81,85-89,91,93-97,103,106-110,127-131,135-157,159-174,177-179,186-190,192-201,203,208,210-222,224-239,242-252,255-257,259-312,315-323,326-338,344-345,347-350,352-356,358-378,380-465,467-556,560,562-563,565-567,569,577,579-595,604-672,676-678,680-821,823-832,834,836-845,847,849-860,862-874,876-885,887,889-895,897,899-918,920-933,935-948,950-952,961-963,965-967,979-1011,1013-1060,1062-1105,1108-1114,1116,1120-1131,1133-1140,1142-1155,1159-1167,1173-1176,1182-1184,1191-1195,1200,1203-1213,1215,1217-1219,1221,1246-1251,1259,1261-1263,1265-1276,1278-1287,1289-1316,1341-1428,1430-1450,1456-1531,1533-1563,1565-1566,1568-1573,1576-1577
+  s_89f0d2f8edd708::t_226c360348ea47 1156
+  s_7306f91aa5d991::t_38bab771e500a6 325
+  s_89f0d2f8edd708::t_417aa5cafbb1b0 1567
+  s_7306f91aa5d991::t_ba0f12200fcaf8 240
+  s_7306f91aa5d991::t_32bd5989660d12 5-6
+  s_7306f91aa5d991::t_6abaf821f9a5cd 9-11
+  s_7306f91aa5d991::t_43c883f8b9cacd 13
+  s_7306f91aa5d991::t_56867453240312 34
+  s_7306f91aa5d991::t_16c86f04406cae 50
+  s_7306f91aa5d991::t_525cf4ab49441a 74
+  s_7306f91aa5d991::t_017704a0709ae6 76
+  s_7306f91aa5d991::t_309e9e78d07d9e 78-79
+  s_7306f91aa5d991::t_a8d1b07cf5d96e 82-84
+  s_7306f91aa5d991::t_89af28353a3b5b 90
+  s_7306f91aa5d991::t_85826ad9ec0f9d 92
+  s_7306f91aa5d991::t_ebf95db74a3cc8 98-102
+  s_7306f91aa5d991::t_8b48b18f352df1 104-105
+  s_7306f91aa5d991::t_d3bffb0852a817 111-113,124-126
+  s_7306f91aa5d991::t_e92acc817e1d5d 132-134
+  s_7306f91aa5d991::t_014c4e15353d4c 158
+  s_7306f91aa5d991::t_0a226859debb8c 175-176
+  s_7306f91aa5d991::t_dfe147209189e4 180-185
+  s_7306f91aa5d991::t_9b5d1b45b2758c 191
+  s_7306f91aa5d991::t_720af46f04a9b8 202
+  s_7306f91aa5d991::t_51f0e92f63ec86 204-207
+  s_7306f91aa5d991::t_045af6bfac28de 209
+  s_7306f91aa5d991::t_63ac60781f81a2 223
+  s_7306f91aa5d991::t_7aae99e031cb90 241
+  s_7306f91aa5d991::t_b0171e6aa66aa7 253-254
+  s_7306f91aa5d991::t_05a9469bd955fb 258
+  s_7306f91aa5d991::t_f4fc5cc4fc4bca 313-314
+  s_7306f91aa5d991::t_c3d206dfc04539 324
+  s_7306f91aa5d991::t_a6506d610c976c 339-343
+  s_7306f91aa5d991::t_e449cb8687ce54 346
+  s_7306f91aa5d991::t_93d43cd9d2f10b 351
+  s_7306f91aa5d991::t_4cc39c5af5cf72 357
+  s_7306f91aa5d991::t_8821011f2bb50d 379
+  s_7306f91aa5d991::t_06329ba04d9463 466
+  s_7306f91aa5d991::t_c7fe1673834fdf 557-559
+  s_7306f91aa5d991::t_3b4177c6d3a334 561
+  s_7306f91aa5d991::t_857c78ea41038f 564
+  s_7306f91aa5d991::t_2d1c0e585ef765 568
+  s_7306f91aa5d991::t_d8a7f5240995cc 570-572,574-576
+  s_7306f91aa5d991::t_f8e31a77d80fb2 578
+  s_7306f91aa5d991::t_38f37b8784e475 596-598,601-603
+  s_7306f91aa5d991::t_c9e355e2762c55 673-675
+  s_7306f91aa5d991::t_8cd44e4d110116 679
+  s_7306f91aa5d991::t_ed32729a44746c 822
+  s_7306f91aa5d991::t_fa7c2177f9d2b6 833
+  s_7306f91aa5d991::t_2697959a81d539 835
+  s_7306f91aa5d991::t_7febad248f2638 846
+  s_7306f91aa5d991::t_dee54d33f3006c 848
+  s_7306f91aa5d991::t_da7a225a97b0a9 861
+  s_7306f91aa5d991::t_07d3e9a1df00e9 875
+  s_7306f91aa5d991::t_a3bd9865a4baab 886
+  s_7306f91aa5d991::t_412910c398d7dc 888
+  s_7306f91aa5d991::t_f9c1712319f33b 896
+  s_7306f91aa5d991::t_4643bdb70b9de4 898
+  s_7306f91aa5d991::t_6ecd55207e19e6 919
+  s_7306f91aa5d991::t_862e180d5386eb 934
+  s_7306f91aa5d991::t_24ff390e5027ca 949
+  s_7306f91aa5d991::t_b78c1f1f9e7a68 953-955,958-960
+  s_7306f91aa5d991::t_985102d7e0fea7 964
+  s_7306f91aa5d991::t_9e864634c7f9a3 968-970,976-978
+  s_7306f91aa5d991::t_a83af01f42daec 1012
+  s_7306f91aa5d991::t_de93c812618095 1061
+  s_7306f91aa5d991::t_7aeb2d3939b009 1106-1107
+  s_7306f91aa5d991::t_aa90f9b3ccb069 1115
+  s_7306f91aa5d991::t_8a783f26aaace8 1117-1119
+  s_7306f91aa5d991::t_4de8f465b276e2 1132
+  s_7306f91aa5d991::t_4d37beb1866b8d 1141
+  s_7306f91aa5d991::t_647e8560e0c182 1168-1172
+  s_7306f91aa5d991::t_f797b3db41158a 1177-1181
+  s_7306f91aa5d991::t_13ae2809d3eb16 1185-1190
+  s_7306f91aa5d991::t_c2a8b94fccfbb5 1196-1199
+  s_7306f91aa5d991::t_273da04b0c53f5 1201-1202
+  s_7306f91aa5d991::t_1bd641843bd4ec 1214
+  s_7306f91aa5d991::t_80612e98a44ba7 1216
+  s_7306f91aa5d991::t_f85d3cfdde953b 1220
+  s_7306f91aa5d991::t_b7413f50339f42 1222-1224,1243-1245
+  s_7306f91aa5d991::t_c8a016af1105a8 1252-1254,1256-1258
+  s_7306f91aa5d991::t_9c884c2f35dc96 1260
+  s_7306f91aa5d991::t_fb400ee557ece1 1264
+  s_7306f91aa5d991::t_27457b46d9923d 1277
+  s_7306f91aa5d991::t_f4a5d845e9b6d0 1288
+  s_7306f91aa5d991::t_3756783913571a 1317-1319,1338-1340
+  s_7306f91aa5d991::t_ed70b51e934988 1429
+  s_7306f91aa5d991::t_e38cf53d5bcd50 1451-1455
+  s_7306f91aa5d991::t_07c3eac54de010 1532
+  s_7306f91aa5d991::t_7e44738ebdf2f2 1564
+  s_7306f91aa5d991::t_3f15327e1e123b 1574-1575
+  s_89f0d2f8edd708::t_04f3471e3af6c0 114-123,573,599-600,956-957,971-975,1157-1158,1225-1242,1255,1320-1337
+docs/ARCHITECTURE.md
+  s_acb0f2a964be49::t_dd68b903097ecb 581,587
+  s_89f0d2f8edd708::t_1b57f262f5a43c 371-376,395,439,579,596-611
+  s_acb0f2a964be49::t_9fff6c6d7261dc 585
+assets/services/ads/AdService.ts
+  s_adcf83e57be1e2::t_2be4f4201b6103 26-27,91,93-96,98,147-149,172
+  s_adcf83e57be1e2::t_3cfe1def986906 59-62,173-177
+  s_adcf83e57be1e2::t_f4b5ddd78b1535 92
+  s_adcf83e57be1e2::t_fb8243e9857255 150
+  s_adcf83e57be1e2::t_26f4e0a727001f 171
+  s_adcf83e57be1e2::t_d31fa46b0aa581 156-157
+assets/games/catch/scripts/DesktopCleanupGame.ts
+  s_acb0f2a964be49::t_3e1e10d6f0893d 3098,3104-3115,3117-3118,3125-3145,3147-3186,3188-3193,3197-3199,3201,3404-3405,3425,3448,3451,3461,3484
+  s_acb0f2a964be49::t_bdedce666a9147 105-108,110,113-116,573-578
+  s_3ce4ff25cc191b::t_87659ece90b9e5 63,529,699,702,704,942-943,955,986-993,1356-1362,1364-1365,1369,1384,1391,1447,1458,1465-1484,1486-1490,1492,1495-1496,1517,1527-1529,1716,1723-1728,1731-1745,1747,1787,2186,2204,2292,2302-2306,2361,2553,2679,2683,2752,3321,3328-3329,3335,3372-3380,3382,3384-3385,3459-3460,3465
+  s_acb0f2a964be49::t_bae34e24ecb4c5 112
+  s_acb0f2a964be49::t_c2f28a444b9445 109
+  s_acb0f2a964be49::t_a9edf3f3fc12c0 111
+  s_3ce4ff25cc191b::t_22b10c477184ae 2749-2751
+  s_acb0f2a964be49::t_2490183857b0ce 3202-3203
+  s_acb0f2a964be49::t_201c251ccb601f 3401-3403
+  s_acb0f2a964be49::t_92e6e7174dfc18 3406-3407
+  s_acb0f2a964be49::t_8095079fa4d98d 3422-3424
+  s_acb0f2a964be49::t_b832b9f8c41821 3426-3427
+  s_acb0f2a964be49::t_5958a21f3ff4f3 3445-3447
+  s_acb0f2a964be49::t_c0405ea6d243f9 3449-3450
+  s_acb0f2a964be49::t_0c3b456dd4a682 3485-3486
+  s_acb0f2a964be49::t_4e2f04169fbb96 89-90,465-470,521,566,630,2747-2748,2776,2808-2813,3024-3025,3392-3398,3400,3410-3412,3415,3418-3421,3429,3442,3444,3452-3458,3462-3464,3466-3483
+assets/platform/WeChatAdProvider.ts
+  s_adcf83e57be1e2::t_8327b4199be34d 85-86,88-89
+  s_adcf83e57be1e2::t_d299ffaed4a0a5 87
+assets/games/catch/scripts/DesktopCleanupModel.ts
+  s_3ce4ff25cc191b::t_87659ece90b9e5 613-614,616
+  s_acb0f2a964be49::t_4261c917e9e9ad 660,693
+  s_acb0f2a964be49::t_dd68b903097ecb 153-154,156
+  s_acb0f2a964be49::t_5ba60facfdb9ea 189,191,426,662-671,674-690,698
+  s_acb0f2a964be49::t_a9edf3f3fc12c0 190
+  s_acb0f2a964be49::t_562930fa50c574 187-188,672-673
+  s_acb0f2a964be49::t_3d99463a56b2f9 192-194
+  s_acb0f2a964be49::t_7a72387b8bbc34 423-425
+  s_acb0f2a964be49::t_fd9d37e99b2627 427-429
+  s_3ce4ff25cc191b::t_9885ac2db02f45 611-612
+  s_acb0f2a964be49::t_27bcf78d345ce1 164-168,173-177,216,310-315,320-321,372-422,430,447-452,456
+assets/games/catch/configs/gameplay.json
+  s_acb0f2a964be49::t_bae34e24ecb4c5 12
+  s_acb0f2a964be49::t_a9edf3f3fc12c0 13-15
+docs/DESKTOP_CLEANUP_PLAN.md
+  s_acb0f2a964be49::t_9fff6c6d7261dc 7
+  s_acb0f2a964be49::t_dd68b903097ecb 5-6
+  s_acb0f2a964be49::t_03a3125ee8188f 9
+docs/DESKTOP_CLEANUP_VISUAL_SPEC.md
+  s_acb0f2a964be49::t_dd68b903097ecb 29
+  s_acb0f2a964be49::t_37e1795a5c76c7 61
+  s_acb0f2a964be49::t_659be138c0024b 39,59
+assets/games/catch/scripts/DesktopCleanupConfig.ts
+  s_acb0f2a964be49::t_a9edf3f3fc12c0 37-39,98-100
+  s_acb0f2a964be49::t_bae34e24ecb4c5 36,97
+docs/DOODLE_JUMP_VISUAL_STYLE_PROVENANCE.md
+  s_89f0d2f8edd708::t_5c60bec2615458 5-6,11-26
+  s_89f0d2f8edd708::t_8874af26a6cb71 2-4
+  s_89f0d2f8edd708::t_6e0bebcd3454a6 7-10
+  s_89f0d2f8edd708::t_9e570709d21348 27-29
+  s_89f0d2f8edd708::t_930d773aa7974a 1
+docs/DESKTOP_CLEANUP_AUDIO_PROMPTS.md
+  s_acb0f2a964be49::t_dd68b903097ecb 306,324
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_adcf83e57be1e2::t_44e1302c271097 1225,1228,1238-1244
+  s_adcf83e57be1e2::t_f644d23d3dedd0 1018
+assets/app/App.ts
+  s_adcf83e57be1e2::t_f822898f49ec2f 343
+assets/app/AppConfig.ts
+  s_90d07da442b9d6::t_b467cb1c0e4978 52
+assets/services/feedback/FeedbackService.ts
+  s_acb0f2a964be49::t_547a67dbf345fb 21-25,54,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "14e8e54917a1f9d1eb15a4f1c2e28338f059ffe2",
+  "prompts": {},
+  "logical_commit_id": "14e8e54917a1f9d1eb15a4f1c2e28338f059ffe2",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_3ce4ff25cc191b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03c4d-a861-72a3-86ba-3a7efee1b373",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 98,
+      "total_deletions": 98
+    },
+    "s_7306f91aa5d991": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a038de-f523-70d0-b23d-7ac19964e922",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 1401
+    },
+    "s_89f0d2f8edd708": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03bd9-d842-7aa1-9432-c2197418425d",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 42,
+      "total_deletions": 6
+    },
+    "s_90d07da442b9d6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03c0f-cf1e-7e00-9121-69bb4d408534",
+        "model": "unknown"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_acb0f2a964be49": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03bdb-4485-7b23-8537-82186d347437",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 214,
+      "total_deletions": 96
+    },
+    "s_adcf83e57be1e2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03903-bea7-7292-86fe-3c499d4318fe",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 60,
+      "total_deletions": 60
+    }
+  }
+}
