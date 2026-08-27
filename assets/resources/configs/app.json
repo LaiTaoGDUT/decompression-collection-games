@@ -57,6 +57,9 @@
       },
       "catch": {
         "enabled": true
+      },
+      "catch-3d": {
+        "enabled": true
       }
     },
     "wechat": {

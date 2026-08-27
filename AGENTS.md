@@ -1,7 +1,5 @@
 # AGENTS.md
 
-本文件是仓库内所有编码代理的执行规范。完整依据见 `docs/ARCHITECTURE.md`、`docs/IMPLEMENTATION_PLAN.md`、`docs/CONTENT_PRODUCTION_PLAN.md`、`docs/VISUAL_STYLE_GUIDE.md` 与 `docs/PLAYTEST_ACCEPTANCE_TEMPLATE.md`；若规则冲突，以用户当前要求和 `docs/ARCHITECTURE.md` 的已确认架构基线为准。
-
 ## 代码改动铁律
 
 做根因修复，用正确的逻辑覆盖错误而不是打补丁
@@ -65,7 +63,7 @@
 
 - 根存档和各游戏数据都必须携带版本。单个小游戏只能读写自己的数据命名空间，禁止因游戏隐藏、回滚或字段不识别而清空用户根存档。
 - 存档结构变化必须提供逐级 `vN → vN+1` 迁移。迁移成功并通过当前结构校验后才能覆盖主存档；失败时先备份原始字符串，再恢复安全默认值。
-- 修改核心协议、状态机、Bundle 边界、数据结构或存档语义前，先更新 `docs/ARCHITECTURE.md`，记录原因、替代方案、兼容影响、迁移和回滚方式。未记录的临时绕过不得进入正式实现。
+- 修改核心协议、状态机、Bundle 边界、数据结构或存档语义前，先更新 `docs/common/ARCHITECTURE.md`，记录原因、替代方案、兼容影响、迁移和回滚方式。未记录的临时绕过不得进入正式实现。
 
 ## 改动验证
 

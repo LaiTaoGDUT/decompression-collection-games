@@ -5,8 +5,8 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "generate:desktop-cleanup-hit-polygons": "python3 tools/generate-desktop-cleanup-hit-polygons.py",
     "verify:game-bundles": "node tools/verify-game-bundles.js",
+    "verify:desktop-cleanup-3d": "node tools/verify-desktop-cleanup-3d-assets.js",
     "verify:wechat-package-size": "node tools/verify-wechat-package-size.js"
   },
   "devDependencies": {
