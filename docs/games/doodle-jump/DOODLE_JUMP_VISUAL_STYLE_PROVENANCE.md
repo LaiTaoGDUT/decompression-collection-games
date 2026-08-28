@@ -8,18 +8,6 @@
 - 原始输出：`/Users/laitao/.codex/generated_images/01a03bd9-d842-7aa1-9432-c2197418425d/exec-57c87b9c-7e51-4c2f-aea2-185ebcd86b78.png`
 - 当前交付：复制到 `art_sources/涂鸦跃层/flat-paper-ui-reference-v1.png`，作为已确认视觉基线。
 
-## 首批游戏素材总览板（v1，偏离版本）
-
-- 资产：`art_sources/涂鸦跃层/game-asset-overview-v1.png`
-- 用途：统一确认主角、纸飞机、平台、怪物、危险物和道具的比例、轮廓与配色；仅作为素材方向板，不直接作为运行时图集或整屏界面。
-- 生成方式：内置 `image_gen` 生成，未使用外部素材或参考图。
-- 生成日期：2026-08-26
-- 生成输出：`exec-a1aefef1-b3e4-4f04-b425-c5d32b2595c6`
-- 原始输出：`/Users/laitao/.codex/generated_images/01a03bd9-d842-7aa1-9432-c2197418425d/exec-a1aefef1-b3e4-4f04-b425-c5d32b2595c6.png`
-- 当前交付：复制到 `art_sources/涂鸦跃层/game-asset-overview-v1.png`。
-
-v1 实际呈现为粗白描边、灰色渐变背景和三行贴纸图鉴布局，与已确认的稿纸参考风格不一致，因此不作为当前素材方向。
-
 ## 首批游戏素材总览板（v2，当前修正版）
 
 - 资产：`art_sources/涂鸦跃层/game-asset-overview-v2.png`

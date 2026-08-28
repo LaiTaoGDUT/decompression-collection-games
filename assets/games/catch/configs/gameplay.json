@@ -9,8 +9,8 @@
   "unusedToolBonus": 200,
   "noContinueBonus": 500,
   "freeUsesPerTool": 1,
-  "shakeImpulse": 0.28,
-  "physicsDamping": 7,
-  "physicsAngularDamping": 7.5,
-  "physicsBounce": 0.2
+  "shakeImpulse": 0.42,
+  "physicsDamping": 5.4,
+  "physicsAngularDamping": 6.2,
+  "physicsBounce": 0.42
 }

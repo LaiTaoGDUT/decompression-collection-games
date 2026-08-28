@@ -332,12 +332,6 @@ export class App extends Component {
                 adUnitId: wechatAds.desktopCleanupRewarded.adUnitId,
                 logName: 'Desktop cleanup',
             }),
-            Object.freeze({
-                gameId: 'catch-3d',
-                placement: AD_PLACEMENTS.desktopCleanupRewarded,
-                adUnitId: wechatAds.desktopCleanupRewarded.adUnitId,
-                logName: 'Desktop cleanup 3D',
-            }),
         ]);
         const gameAdEnablement: Record<string, boolean> = {};
         Object.keys(config.ads.games).forEach((gameId) => {

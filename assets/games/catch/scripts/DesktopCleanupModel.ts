@@ -176,7 +176,7 @@ const STACK_ITEM_BASE_HALF_EXTENT = 0.15;
  */
 const STACK_EDGE_OVERSCAN = 0.02;
 const PHYSICS_ITEM_RADIUS = 0.125;
-const PHYSICS_MAX_SPEED = 0.72;
+const PHYSICS_MAX_SPEED = 0.90;
 const PHYSICS_MAX_ANGULAR_SPEED = 120;
 const PHYSICS_MAX_ELEVATION = 0.30;
 const PHYSICS_ITEM_SCALE_PER_ELEVATION = 0.14;
@@ -657,7 +657,7 @@ export class DesktopCleanupModel {
         if (directionLength <= PHYSICS_EPSILON) return false;
         const directionX = input.x / directionLength;
         const directionY = input.y / directionLength;
-        const strength = clamp(input.strength, 0.7, 1.25);
+        const strength = clamp(input.strength, 0.7, 2);
         const impulse = this.config.shakeImpulse * strength;
         const active = Array.from(this.items.values()).filter((item) => item.active);
         const frontLayer = active.reduce(
@@ -893,10 +893,20 @@ export class DesktopCleanupModel {
         const recentIds = new Set(recent.map((slot) => slot.itemId));
         this.slots = this.slots.filter((slot) => !recentIds.has(slot.itemId));
         this.revision += 1;
-        recent.forEach((slot) => {
+        const activeItems = Array.from(this.items.values()).filter((item) => item.active);
+        const frontLayer = activeItems.reduce(
+            (highest, item) => Math.max(highest, item.layer),
+            -1,
+        );
+        // These items were only parked in the tray temporarily. Return them
+        // to the desktop at their original positions, but promote them above
+        // the current pile so the tool cannot return an item underneath the
+        // pieces that were already exposed after it was picked up.
+        recent.slice().reverse().forEach((slot, index) => {
             const item = this.items.get(slot.itemId);
             if (!item) return;
-            item.active = false;
+            item.active = true;
+            item.layer = frontLayer + index + 1;
             item.free = false;
             item.velocityX = 0;
             item.velocityY = 0;

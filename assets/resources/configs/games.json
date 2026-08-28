@@ -116,31 +116,6 @@
         "daily",
         "relaxing"
       ]
-    },
-    {
-      "id": "catch-3d",
-      "version": "0.1.0",
-      "name": "桌面大清理 3D",
-      "description": "在软陶工作台中翻找真实 3D 物件，三件归位，限时找回幸运徽章。",
-      "bundle": "game-catch-3d",
-      "scene": "scenes/DesktopCleanup",
-      "entryComponent": "DesktopCleanupGame3D",
-      "icon": "visual/icons/catch/desktop-cleanup-icon-v1/texture",
-      "cover": "visual/covers/catch/desktop-cleanup-cover-v1/texture",
-      "orientation": "portrait",
-      "renderMode": "3d",
-      "minimumDeviceTier": "low",
-      "minAppVersion": "0.1.0",
-      "enabled": true,
-      "visibility": "development",
-      "preload": [],
-      "tags": [
-        "match-3",
-        "hidden-object",
-        "daily",
-        "relaxing",
-        "3d"
-      ]
     }
   ]
 }

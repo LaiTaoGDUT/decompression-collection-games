@@ -33,10 +33,10 @@ export const DEFAULT_DESKTOP_CLEANUP_CONFIG: DesktopCleanupGameplayConfig = Obje
     unusedToolBonus: 200,
     noContinueBonus: 500,
     freeUsesPerTool: 1,
-    shakeImpulse: 0.28,
-    physicsDamping: 7,
-    physicsAngularDamping: 7.5,
-    physicsBounce: 0.2,
+    shakeImpulse: 0.42,
+    physicsDamping: 5.4,
+    physicsAngularDamping: 6.2,
+    physicsBounce: 0.42,
 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -94,9 +94,9 @@ export function parseDesktopCleanupGameplayConfig(
         unusedToolBonus: readPositiveInteger(value, 'unusedToolBonus', 200, 10000),
         noContinueBonus: readPositiveInteger(value, 'noContinueBonus', 500, 10000),
         freeUsesPerTool: readPositiveInteger(value, 'freeUsesPerTool', 1, 3),
-        shakeImpulse: readPositiveNumber(value, 'shakeImpulse', 0.28, 3),
-        physicsDamping: readPositiveNumber(value, 'physicsDamping', 7, 20),
-        physicsAngularDamping: readPositiveNumber(value, 'physicsAngularDamping', 7.5, 20),
-        physicsBounce: readPositiveNumber(value, 'physicsBounce', 0.2, 1),
+        shakeImpulse: readPositiveNumber(value, 'shakeImpulse', 0.42, 3),
+        physicsDamping: readPositiveNumber(value, 'physicsDamping', 5.4, 20),
+        physicsAngularDamping: readPositiveNumber(value, 'physicsAngularDamping', 6.2, 20),
+        physicsBounce: readPositiveNumber(value, 'physicsBounce', 0.42, 1),
     });
 }

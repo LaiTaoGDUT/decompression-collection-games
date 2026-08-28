@@ -103,17 +103,18 @@ const PILE_BIRTH_START_SCALE = 0.68;
 const PILE_BIRTH_START_CENTER_RATIO = 0;
 const PILE_BIRTH_START_ANGLE = 8;
 // 加速度计读数包含重力分量。先用慢速基线滤掉姿态变化，再把短时间内的
-// 有效运动量累计到阈值，避免轻轻倾斜手机就触发一次颠锅。
+// 有效运动量累计到较高阈值；达到阈值的第一笔有效冲击即可触发颠锅。
 const ACCELEROMETER_GRAVITY_SMOOTHING = 0.88;
 const ACCELEROMETER_SHAKE_DEADZONE = 0.1;
-const ACCELEROMETER_SHAKE_TRIGGER = 0.5;
+const ACCELEROMETER_SHAKE_TRIGGER = 0.65;
 const ACCELEROMETER_SHAKE_WINDOW_MS = 280;
 const ACCELEROMETER_SHAKE_COOLDOWN_MS = 240;
-const ACCELEROMETER_SHAKE_MIN_SAMPLES = 3;
 const ACCELEROMETER_SHAKE_ENERGY_DECAY = 0.82;
 const ACCELEROMETER_SHAKE_DIRECTION_DECAY = 0.45;
 const ACCELEROMETER_SHAKE_MIN_STRENGTH = 0.72;
-const ACCELEROMETER_SHAKE_MAX_STRENGTH = 1.25;
+const ACCELEROMETER_SHAKE_MAX_STRENGTH = 2;
+const ACCELEROMETER_SHAKE_ENERGY_CAP_MULTIPLIER = 3;
+const ACCELEROMETER_SHAKE_STRENGTH_GAIN = 0.65;
 const THEME_TEXTURE_PATHS = Object.freeze({
     playmat: PLAYMAT_PATH,
     help: 'visual/ui/desktop-cleanup-hud-help-v2/texture',
@@ -395,7 +396,7 @@ const TOOL_TITLES: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze(
 });
 
 const TOOL_DESCRIPTIONS: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze({
-    return: '从收纳槽中清除最近放入的最多 3 件物品，适合在槽位快满时直接腾出空间。',
+    return: '把收纳槽中最近放入的最多 3 件物品退回桌面，适合在槽位快满时直接腾出空间。',
     magnet: '自动寻找最容易凑齐的一类物品，并直接完成一组三件收纳。',
     shuffle: '将桌面上仍未收纳的物品重新压叠成一座紧凑物件堆，并改变露出顺序。',
 });
@@ -496,6 +497,7 @@ interface DesktopCleanupSlotClearAnimation {
     readonly token: number;
     readonly generation: number;
     readonly root: Node;
+    readonly itemIds: readonly string[];
     readonly itemNodes: readonly Node[];
     readonly effectNodes: readonly Node[];
     readonly finish: () => void;
@@ -574,7 +576,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private accelerometerShakeEnergy = 0;
     private accelerometerShakeDirectionX = 0;
     private accelerometerShakeDirectionY = 0;
-    private accelerometerShakeSampleCount = 0;
     private lastAccelerometerMotionAt = 0;
     private lastAccelerometerShakeAt = 0;
     private rewardedVideoIconFrame?: SpriteFrame;
@@ -1459,8 +1460,12 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const pile = this.pileRoot;
         const metrics = this.layout;
         if (!pile || !snapshot || !metrics) return;
+        const returningItemIds = new Set<string>();
+        this.slotClearAnimations.forEach((animation) => {
+            animation.itemIds.forEach((itemId) => returningItemIds.add(itemId));
+        });
         const active = snapshot.items
-            .filter((item) => item.active)
+            .filter((item) => item.active && !returningItemIds.has(item.id))
             .sort(compareDesktopCleanupItems);
         const activeItemIds = new Set(active.map((item) => item.id));
 
@@ -2006,7 +2011,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             rootTransform?.contentSize.height ?? 1,
         );
         animationRoot.setSiblingIndex(root.children.length - 1);
+        const animationRootTransform = animationRoot.getComponent(UITransform);
+        const pileTransform = this.pileRoot?.getComponent(UITransform);
+        const metrics = this.layout;
+        const snapshotItems = this.model?.snapshot.items ?? [];
 
+        const returnedItemIds: string[] = [];
+        const returnTargets: Vec3[] = [];
+        const returnAngles: number[] = [];
         const itemNodes: Node[] = [];
         const effectNodes: Node[] = [];
         itemIds.forEach((itemId, index) => {
@@ -2018,6 +2030,16 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             if (!node?.isValid || node.parent !== root) return;
 
             const position = node.position.clone();
+            const item = snapshotItems.find((candidate) => candidate.id === itemId);
+            const targetWorld = item && metrics && pileTransform
+                ? pileTransform.convertToWorldSpaceAR(this.pilePosition(item, metrics))
+                : undefined;
+            const target = targetWorld && animationRootTransform
+                ? animationRootTransform.convertToNodeSpaceAR(targetWorld)
+                : position.clone();
+            if (item && metrics) {
+                this.syncPileItemVisual(node, item, metrics.scale);
+            }
             this.slotItemNodes.delete(itemId);
             this.slotMoveTokens.delete(itemId);
             Tween.stopAllByTarget(node);
@@ -2028,6 +2050,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             node.setScale(1, 1, 1);
             node.angle = 0;
             this.setMatchNodeOpacity(node, 255);
+            returnedItemIds.push(itemId);
+            returnTargets.push(target);
+            returnAngles.push(item?.angle ?? 0);
             itemNodes.push(node);
             effectNodes.push(this.createSlotClearEffect(animationRoot, position, index));
         });
@@ -2044,6 +2069,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             token,
             generation: this.operationGeneration,
             root: animationRoot,
+            itemIds: Object.freeze(returnedItemIds.slice()),
             itemNodes: Object.freeze(itemNodes.slice()),
             effectNodes: Object.freeze(effectNodes.slice()),
             finish,
@@ -2054,26 +2080,25 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         itemNodes.forEach((node, index) => {
             const delay = index * SLOT_CLEAR_ITEM_STAGGER_SECONDS;
             const start = node.position.clone();
+            const target = returnTargets[index] ?? start;
+            const arc = new Vec3(
+                (start.x + target.x) / 2,
+                Math.max(start.y, target.y) + 38 * scale,
+                0,
+            );
             tween(node)
                 .delay(delay)
                 .to(0.08, {
-                    position: new Vec3(start.x, start.y + 8 * scale, start.z),
+                    position: arc,
                     scale: new Vec3(1.12, 1.12, 1),
                     angle: index % 2 === 0 ? -5 : 5,
                 }, { easing: 'backOut' })
                 .to(SLOT_CLEAR_ITEM_DURATION_SECONDS - 0.08, {
-                    position: new Vec3(start.x, start.y + 30 * scale, start.z),
-                    scale: new Vec3(0.22, 0.22, 1),
-                    angle: index % 2 === 0 ? 14 : -14,
-                }, { easing: 'quadIn' })
+                    position: target,
+                    scale: new Vec3(1, 1, 1),
+                    angle: returnAngles[index] ?? 0,
+                }, { easing: 'quadInOut' })
                 .start();
-            const opacity = node.getComponent(UIOpacity);
-            if (opacity) {
-                tween(opacity)
-                    .delay(delay + 0.06)
-                    .to(SLOT_CLEAR_ITEM_DURATION_SECONDS - 0.06, { opacity: 0 }, { easing: 'quadIn' })
-                    .start();
-            }
         });
         effectNodes.forEach((node, index) => {
             const delay = index * SLOT_CLEAR_ITEM_STAGGER_SECONDS;
@@ -3108,7 +3133,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.accelerometerShakeEnergy = 0;
         this.accelerometerShakeDirectionX = 0;
         this.accelerometerShakeDirectionY = 0;
-        this.accelerometerShakeSampleCount = 0;
         this.lastAccelerometerMotionAt = 0;
     }
 
@@ -3162,7 +3186,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
         this.lastAccelerometerMotionAt = now;
         this.accelerometerShakeEnergy = Math.min(
-            ACCELEROMETER_SHAKE_TRIGGER * 2,
+            ACCELEROMETER_SHAKE_TRIGGER * ACCELEROMETER_SHAKE_ENERGY_CAP_MULTIPLIER,
             this.accelerometerShakeEnergy * ACCELEROMETER_SHAKE_ENERGY_DECAY
                 + magnitude - ACCELEROMETER_SHAKE_DEADZONE,
         );
@@ -3170,10 +3194,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             * ACCELEROMETER_SHAKE_DIRECTION_DECAY + motionX;
         this.accelerometerShakeDirectionY = this.accelerometerShakeDirectionY
             * ACCELEROMETER_SHAKE_DIRECTION_DECAY + motionY;
-        this.accelerometerShakeSampleCount += 1;
-
-        if (this.accelerometerShakeSampleCount < ACCELEROMETER_SHAKE_MIN_SAMPLES
-            || this.accelerometerShakeEnergy < ACCELEROMETER_SHAKE_TRIGGER) return;
+        // Do not require a fixed number of samples: a single hard movement
+        // should be enough once the accumulated impulse crosses the threshold.
+        if (this.accelerometerShakeEnergy < ACCELEROMETER_SHAKE_TRIGGER) return;
 
         const directionLength = Math.hypot(
             this.accelerometerShakeDirectionX,
@@ -3189,7 +3212,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             ACCELEROMETER_SHAKE_MAX_STRENGTH,
             ACCELEROMETER_SHAKE_MIN_STRENGTH
                 + (this.accelerometerShakeEnergy - ACCELEROMETER_SHAKE_TRIGGER)
-                / ACCELEROMETER_SHAKE_TRIGGER * 0.53,
+                / ACCELEROMETER_SHAKE_TRIGGER * ACCELEROMETER_SHAKE_STRENGTH_GAIN,
         );
         const shake: DesktopCleanupShakeInput = {
             // 微信加速度计的 x/y 轴与竖屏桌面方向相反/相同的设备存在差异，
