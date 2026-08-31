@@ -25,7 +25,7 @@
 
 - `tools/process-doodle-jump-visuals.py` 负责 Alpha 紧边、角色/怪物帧归一、平台图片阴影和背景无缝派生。
 - `tools/configure-doodle-jump-textures.mjs` 在 Cocos 完成导入后统一设置线性采样、关闭 mipmap；透明 Sprite 使用 Clamp-to-edge 和 Alpha 边缘修复，无缝背景保留 Repeat。
-- 本游戏通过 Cocos `DynamicAtlasManager` 运行时合图，图集尺寸为 1024；low/medium/high 分别最多使用 2/3/4 张，最大入图帧为 180/256/384 px。大背景和超限面板不进入动态图集。
+- 本游戏保留 Cocos `DynamicAtlasManager` 运行时预算，图集尺寸为 1024；low/medium/high 分别最多使用 2/3/4 张，最大入图帧为 180/256/384 px。由 Bundle `Texture2D` 动态包装的正式 SpriteFrame 不进入动态图集，避免微信真机在 ImageAsset 原生数据回收后重新读取纹理尺寸；大背景和超限面板同样不进入动态图集。
 - 动态图集的全局参数在进入游戏时备份，`dispose()` 时恢复，不影响大厅或其他小游戏。
 - 微信最终纹理压缩由构建档案统一决定；纸张纹理和线稿优先保留线性清晰度，不对透明细线使用破坏性强压缩。
 

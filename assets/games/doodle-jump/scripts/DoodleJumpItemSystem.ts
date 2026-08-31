@@ -7,11 +7,6 @@ import type { DoodleJumpRandomStreams } from './DoodleJumpRandom';
 
 export type DoodleJumpFlightPower = 'jetpack' | 'propeller-hat' | 'rocket';
 export type DoodleJumpLandingPower = 'spring' | 'trampoline';
-export type DoodleJumpShieldBlockReason =
-    | 'monster-contact'
-    | 'ufo-abduction'
-    | 'black-hole'
-    | 'bear-trap';
 
 export interface DoodleJumpItemPlatform {
     readonly id: string;
@@ -46,6 +41,8 @@ export interface DoodleJumpItemStatusSnapshot {
     readonly flightPower?: DoodleJumpFlightPower;
     readonly flightRemainingSeconds: number;
     readonly shieldRemainingSeconds: number;
+    readonly trampolineJumpActive: boolean;
+    readonly trampolineJumpProgress: number;
     readonly headStartRemainingSeconds: number;
     readonly itemPickupCount: number;
     readonly usedHeadStart: boolean;
@@ -59,9 +56,8 @@ export interface DoodleJumpItemPhysics {
 }
 
 export interface DoodleJumpItemEvent {
-    readonly type: 'pickup' | 'power-start' | 'power-end' | 'landing-boost' | 'shield-block';
+    readonly type: 'pickup' | 'power-start' | 'power-end' | 'landing-boost';
     readonly itemType?: DoodleJumpItemType | 'head-start';
-    readonly blockReason?: DoodleJumpShieldBlockReason;
     readonly x: number;
     readonly y: number;
 }
@@ -95,6 +91,9 @@ export class DoodleJumpItemSystem {
     private flightPower?: DoodleJumpFlightPower;
     private flightRemainingSeconds = 0;
     private shieldRemainingSeconds = 0;
+    private trampolineJumpActive = false;
+    private trampolineJumpElapsedSeconds = 0;
+    private trampolineJumpDurationSeconds = 0;
     private headStartRemainingSeconds = 0;
     private itemPickupCount = 0;
     private usedHeadStart = false;
@@ -113,6 +112,9 @@ export class DoodleJumpItemSystem {
         this.flightPower = undefined;
         this.flightRemainingSeconds = 0;
         this.shieldRemainingSeconds = 0;
+        this.trampolineJumpActive = false;
+        this.trampolineJumpElapsedSeconds = 0;
+        this.trampolineJumpDurationSeconds = 0;
         this.headStartRemainingSeconds = 0;
         this.itemPickupCount = 0;
         this.usedHeadStart = false;
@@ -144,6 +146,7 @@ export class DoodleJumpItemSystem {
             }
         }
         this.shieldRemainingSeconds = Math.max(0, this.shieldRemainingSeconds - delta);
+        if (this.trampolineJumpActive) this.trampolineJumpElapsedSeconds += delta;
         this.headStartRemainingSeconds = Math.max(0, this.headStartRemainingSeconds - delta);
     }
 
@@ -219,6 +222,9 @@ export class DoodleJumpItemSystem {
 
     consumeLandingPower(x: number, y: number): number | undefined {
         const power = this.landingPower;
+        this.trampolineJumpActive = false;
+        this.trampolineJumpElapsedSeconds = 0;
+        this.trampolineJumpDurationSeconds = 0;
         if (!power) return undefined;
         this.landingPower = undefined;
         this.events.push(Object.freeze({
@@ -227,13 +233,29 @@ export class DoodleJumpItemSystem {
             x,
             y,
         }));
-        return power === 'trampoline'
-            ? this.config.items.trampoline.bounceVelocity
-            : this.config.items.spring.bounceVelocity;
+        if (power === 'trampoline') {
+            const bounceVelocity = this.config.items.trampoline.bounceVelocity;
+            const gravityMagnitude = Math.max(1, Math.abs(this.config.player.gravity));
+            const nextMainRouteHeight = this.config.generation.verticalStep
+                * this.config.generation.mainRouteStepCount;
+            const descendingSpeedAtNextRoute = Math.sqrt(Math.max(
+                0,
+                bounceVelocity * bounceVelocity
+                    - 2 * gravityMagnitude * nextMainRouteHeight,
+            ));
+            this.trampolineJumpActive = true;
+            // Complete both visual turns by the earliest normal next-route
+            // landing. Lower inserted platforms are reached later on descent.
+            this.trampolineJumpDurationSeconds = (bounceVelocity + descendingSpeedAtNextRoute)
+                / gravityMagnitude;
+            return bounceVelocity;
+        }
+        return this.config.items.spring.bounceVelocity;
     }
 
     activateHeadStart(): void {
         if (this.usedHeadStart) return;
+        this.cancelTrampolineJump();
         this.flightPower = undefined;
         this.flightRemainingSeconds = 0;
         this.headStartRemainingSeconds = this.config.items.headStart.durationSeconds;
@@ -258,17 +280,14 @@ export class DoodleJumpItemSystem {
         return this.flightPower !== undefined && this.flightRemainingSeconds > 0;
     }
 
-    consumeShield(reason: DoodleJumpShieldBlockReason, x: number, y: number): boolean {
-        if (!this.hasShield()) return false;
-        this.shieldRemainingSeconds = 0;
-        this.events.push(Object.freeze({
-            type: 'shield-block',
-            itemType: 'shield',
-            blockReason: reason,
-            x,
-            y,
-        }));
-        return true;
+    hasTrampolineInvincibility(): boolean {
+        return this.trampolineJumpActive;
+    }
+
+    cancelTrampolineJump(): void {
+        this.trampolineJumpActive = false;
+        this.trampolineJumpElapsedSeconds = 0;
+        this.trampolineJumpDurationSeconds = 0;
     }
 
     drainEvents(): readonly DoodleJumpItemEvent[] {
@@ -294,6 +313,14 @@ export class DoodleJumpItemSystem {
             flightPower: this.flightPower,
             flightRemainingSeconds: this.flightRemainingSeconds,
             shieldRemainingSeconds: this.shieldRemainingSeconds,
+            trampolineJumpActive: this.trampolineJumpActive,
+            trampolineJumpProgress: this.trampolineJumpActive
+                ? Math.min(
+                    1,
+                    this.trampolineJumpElapsedSeconds
+                        / Math.max(0.001, this.trampolineJumpDurationSeconds),
+                )
+                : 0,
             headStartRemainingSeconds: this.headStartRemainingSeconds,
             itemPickupCount: this.itemPickupCount,
             usedHeadStart: this.usedHeadStart,
@@ -344,6 +371,7 @@ export class DoodleJumpItemSystem {
     }
 
     private activateFlight(type: DoodleJumpFlightPower): void {
+        this.cancelTrampolineJump();
         this.headStartRemainingSeconds = 0;
         this.flightPower = type;
         this.flightRemainingSeconds = type === 'jetpack'

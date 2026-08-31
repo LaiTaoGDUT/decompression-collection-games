@@ -126,7 +126,6 @@ const TEXTURE_PATHS = Object.freeze({
     itemRocket: 'visual/items/pickup-rocket/texture',
     itemShield: 'visual/items/pickup-shield/texture',
     itemPickupSparkles: 'visual/effects/item-pickup-sparkles/texture',
-    shieldBlockImpact: 'visual/effects/shield-block-impact/texture',
     playerFallDrag: 'visual/effects/player-fall-drag-streaks/texture',
     playerScreenWrap: 'visual/effects/player-screen-wrap-afterimages/texture',
     jetpackFlames: 'visual/effects/jetpack-flames/texture',
@@ -186,7 +185,6 @@ const TEXTURE_PATHS = Object.freeze({
     hudSensorErrorBar: 'visual/ui/hud/sensor-error-bar/texture',
     hudRetryButton: 'visual/ui/hud/retry-button/texture',
     hudBackButton: 'visual/ui/hud/back-button/texture',
-    hudShareButton: 'visual/ui/hud/share-button/texture',
     hudPlayAgainButton: 'visual/ui/hud/play-again-button/texture',
     panelLoading: 'visual/ui/panels/loading-panel/texture',
     panelSensorCalibration: 'visual/ui/panels/sensor-calibration-panel/texture',
@@ -245,11 +243,11 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
             '可拾取道具带有常驻纸片星芒。主角碰到道具即可获得，纸飞机穿过道具不会触发拾取。',
             '',
             '· 弹簧：保存到下一次有效落地，使该次反弹明显升高。',
-            '· 蹦床：同样在下一次有效落地触发，弹跳高度高于弹簧；蹦床会覆盖尚未使用的弹簧。',
+            '· 蹦床：同样在下一次有效落地触发，弹跳高度高于弹簧；蹦床会覆盖尚未使用的弹簧，起跳后主角翻滚两圈且在该次跳跃期间无敌。',
             '· 喷气背包：短时间保持向上飞行并穿过平台。',
             '· 竹蜻蜓：持续向上飞行，但仍保留平台碰撞。',
             '· 火箭：短时间高速向上冲刺并穿过平台。',
-            '· 护盾：抵挡一次怪物、UFO、黑洞核心或捕兽夹，不能抵挡掉出屏幕。',
+            '· 护盾：在持续时间内免疫怪物、UFO、黑洞核心和捕兽夹，不会因碰到一次危险就消失，但不能抵挡掉出屏幕。',
             '· 喷气背包、竹蜻蜓或火箭激活期间，三种飞行拾取物都不会被拾取、续时或替换；当前飞行结束后才能再次拾取。',
             '· 飞行道具激活期间角色免疫怪物和危险物，但掉出屏幕仍会失败。',
         ].join('\n'),
@@ -257,7 +255,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
     Object.freeze({
         title: '敌人与危险',
         body: [
-            '怪物可以用纸飞机攻击，也可以从上方向下踩踏。碰到怪物身体会失败，护盾或飞行无敌生效时除外。',
+            '怪物可以用纸飞机攻击，也可以从上方向下踩踏。碰到怪物身体会失败，护盾、蹦床跳跃或飞行无敌生效时除外。',
             '',
             '· 小怪：体型较小、生命较低，会站在平台上活动。',
             '· 大怪：体型和碰撞范围更大，需要更多次命中。',
@@ -265,7 +263,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
             '· UFO：先锁定角色，再用光束吸附；未及时击破会把角色带走。',
             '· 黑洞：外圈持续把角色拉向中心，进入核心后会被旋转吸入。',
             '· 捕兽夹：固定在平台上方，从上方踩中后触发失败。',
-            '· 护盾抵挡危险后会立即消耗；喷气背包、竹蜻蜓和火箭激活期间不会被上述敌人或危险物击败。',
+            '· 护盾、蹦床跳跃、喷气背包、竹蜻蜓和火箭生效期间，不会被上述敌人或危险物击败。',
             '· 所有怪物和危险物都在屏幕上方生成，再随世界自然进入画面。',
         ].join('\n'),
     }),
@@ -773,14 +771,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.createButton(overlay, '再来一局', 0, 5, 300, 82, () => {
             void model.restart();
         }, 'primary', 'hudPlayAgainButton');
-        if (this.context?.services.platform.id === 'wechat') {
-            this.createButton(overlay, '分享成绩', 0, -95, 300, 82, () => {
-                this.context?.services.platform.showShareMenu();
-                this.updatePresentationState('已打开微信分享入口');
-            }, 'secondary', 'hudShareButton');
-        }
-        const lobbyY = this.context?.services.platform.id === 'wechat' ? -195 : -105;
-        this.createButton(overlay, '返回大厅', 0, lobbyY, 300, 82, () => {
+        this.createButton(overlay, '返回大厅', 0, -105, 300, 82, () => {
             this.trackExitOnce('result-lobby');
             void model.returnToLobby();
         }, 'secondary', 'hudBackButton');
@@ -2815,9 +2806,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                     itemType: event.itemType,
                     heightMeters: this.calculateHeightMeters(event.y),
                 });
-            } else if (event.type === 'shield-block') {
-                context?.services.feedback.play('collision');
-                this.startItemEffect('shieldBlockImpact', event.x, event.y, 0.48);
             } else if (event.type === 'landing-boost') {
                 this.startItemEffect(
                     event.itemType === 'trampoline' ? 'trampolineRebound' : 'springRebound',
@@ -2858,8 +2846,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.itemEffectRemaining = duration;
         effect.active = true;
         effect.getComponent(Sprite)!.spriteFrame = frame;
-        const width = (key === 'shieldBlockImpact' ? 176
-            : key === 'trampolineRebound' ? 216
+        const width = (key === 'trampolineRebound' ? 216
                 : key === 'springRebound' ? 196
                     : 144)
             * this.visualQualityProfile().effectScale;
@@ -3165,6 +3152,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private createRuntimeSpriteFrame(key: TextureKey, texture: Texture2D): SpriteFrame {
         const frame = new SpriteFrame();
         frame.texture = texture;
+        // These frames wrap bundle Texture2D assets at runtime. On WeChat,
+        // the image native data may be reclaimed after upload while the GPU
+        // texture remains valid. Dynamic-atlas packing reads texture.width
+        // again and crashes on the reclaimed native data, especially when
+        // switching to the landing frame. Keep runtime frames out of the
+        // dynamic atlas so rendering uses the already-uploaded texture.
+        frame.packable = false;
         // Runtime-created frames do not infer the source dimensions in Cocos
         // Creator 3.8. CUSTOM sprites need both values or they render at zero area.
         frame.rect = new Rect(0, 0, texture.width, texture.height);
@@ -3514,9 +3508,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 ? this.textureFrames.playerPropellerHat
                 : itemStatus?.flightPower === 'rocket'
                     ? this.textureFrames.playerRocket
-                    : this.landingPoseRemaining > 0
-                        ? this.textureFrames.playerLanding
-                        : this.textureFrames.playerJumping;
+                    : itemStatus?.trampolineJumpActive
+                        ? this.textureFrames.playerJumping
+                        : this.landingPoseRemaining > 0
+                            ? this.textureFrames.playerLanding
+                            : this.textureFrames.playerJumping;
         if (!frame) return;
         const visualHeight = 126;
         const visualWidth = visualHeight
@@ -3526,6 +3522,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.applySpriteVisual(this.playerNode, frame);
         const visual = this.playerNode.getChildByName('SpriteVisual');
         visual?.setScale(this.playerFacing, 1, 1);
+        visual?.setRotationFromEuler(
+            0,
+            0,
+            itemStatus?.trampolineJumpActive
+                ? -720 * itemStatus.trampolineJumpProgress
+                : 0,
+        );
         visual?.setPosition(
             0,
             visualHeight / 2 - this.config.player.collisionHeight / 2 - 4,
@@ -3763,7 +3766,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             candidate.id === snapshot.lastLandedPlatformId
         ));
         if (platform && this.context) {
-            this.context.services.feedback.play('drop');
+            this.context.services.feedback.play('drop', { vibrate: false });
             this.context.services.analytics.track('doodle_jump_platform_land', {
                 sessionId: this.context.sessionId,
                 platformType: platform.type,

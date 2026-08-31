@@ -50,12 +50,6 @@ export interface DoodleJumpHazardResolution {
     readonly accelerationY: number;
     readonly fatalReason?: DoodleJumpHazardFailureReason;
     readonly fatalHazardId?: string;
-    readonly shieldBlockReason?: DoodleJumpHazardFailureReason;
-    readonly shieldBlockHazardId?: string;
-    readonly shieldFocusX?: number;
-    readonly shieldFocusY?: number;
-    readonly responseVelocityX?: number;
-    readonly responseVelocityY?: number;
     readonly focusX?: number;
     readonly focusY?: number;
 }
@@ -150,6 +144,7 @@ export class DoodleJumpHazardSystem {
     private elapsedSeconds = 0;
     private ufoInterruptCount = 0;
     private score = 0;
+    private lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
 
     constructor(
         private readonly config: DoodleJumpGameplayConfig,
@@ -164,6 +159,7 @@ export class DoodleJumpHazardSystem {
         this.elapsedSeconds = 0;
         this.ufoInterruptCount = 0;
         this.score = 0;
+        this.lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
     }
 
     syncWorld(
@@ -200,7 +196,6 @@ export class DoodleJumpHazardSystem {
         previousFootY: number,
         playerWidth: number,
         playerHeight: number,
-        shieldAvailable = false,
         playerInvincible = false,
     ): DoodleJumpHazardResolution {
         const delta = Math.max(0, deltaSeconds);
@@ -215,16 +210,6 @@ export class DoodleJumpHazardSystem {
         }
         let accelerationX = 0;
         let accelerationY = 0;
-        let shieldRemaining = shieldAvailable;
-        let shieldBlockReason: DoodleJumpHazardFailureReason | undefined;
-        let shieldBlockHazardId: string | undefined;
-        let responseVelocityX: number | undefined;
-        let responseVelocityY: number | undefined;
-        let shieldFocusX: number | undefined;
-        let shieldFocusY: number | undefined;
-        let focusX: number | undefined;
-        let focusY: number | undefined;
-
         const ufos = this.hazards.filter((hazard): hazard is MutableUfo => hazard.type === 'ufo')
             .sort((left, right) => left.id.localeCompare(right.id));
         for (let index = 0; index < ufos.length; index += 1) {
@@ -253,18 +238,6 @@ export class DoodleJumpHazardSystem {
                 );
                 continue;
             }
-            if (shieldRemaining) {
-                shieldRemaining = false;
-                shieldBlockReason = 'ufo-abduction';
-                shieldBlockHazardId = ufo.id;
-                shieldFocusX = ufo.x;
-                shieldFocusY = ufo.y;
-                ufo.lockSeconds = 0;
-                ufo.abductionSeconds = 0;
-                ufo.leaveSeconds = 0;
-                ufo.pausedUntil = this.elapsedSeconds + this.config.hazards.ufo.hitPauseSeconds;
-                continue;
-            }
             const directionX = ufo.x - playerX;
             const directionY = ufo.y - playerY;
             const distance = Math.max(0.0001, Math.sqrt(directionX * directionX + directionY * directionY));
@@ -278,12 +251,6 @@ export class DoodleJumpHazardSystem {
                     accelerationY,
                     fatalReason: 'ufo-abduction',
                     fatalHazardId: ufo.id,
-                    shieldBlockReason,
-                    shieldBlockHazardId,
-                    responseVelocityX,
-                    responseVelocityY,
-                    shieldFocusX,
-                    shieldFocusY,
                     focusX: ufo.x,
                     focusY: ufo.y,
                 });
@@ -301,34 +268,12 @@ export class DoodleJumpHazardSystem {
             const distance = Math.sqrt(directionX * directionX + directionY * directionY);
             if (distance > this.config.hazards.blackHole.outerRadius) continue;
             if (distance <= this.config.hazards.blackHole.coreRadius) {
-                if (shieldRemaining) {
-                    shieldRemaining = false;
-                    shieldBlockReason = 'black-hole';
-                    shieldBlockHazardId = blackHole.id;
-                    shieldFocusX = blackHole.x;
-                    shieldFocusY = blackHole.y;
-                    const awayX = playerX - blackHole.x;
-                    const awayY = playerY - blackHole.y;
-                    const awayDistance = Math.max(0.0001, Math.sqrt(awayX * awayX + awayY * awayY));
-                    responseVelocityX = awayX / awayDistance * 360;
-                    responseVelocityY = awayY / awayDistance * 360;
-                    const corePull = this.config.hazards.blackHole.maximumPullAcceleration;
-                    accelerationX += directionX / Math.max(0.0001, distance) * corePull;
-                    accelerationY += directionY / Math.max(0.0001, distance) * corePull;
-                    continue;
-                }
                 blackHole.triggered = true;
                 return Object.freeze({
                     accelerationX,
                     accelerationY,
                     fatalReason: 'black-hole',
                     fatalHazardId: blackHole.id,
-                    shieldBlockReason,
-                    shieldBlockHazardId,
-                    responseVelocityX,
-                    responseVelocityY,
-                    shieldFocusX,
-                    shieldFocusY,
                     focusX: blackHole.x,
                     focusY: blackHole.y,
                 });
@@ -367,26 +312,11 @@ export class DoodleJumpHazardSystem {
                     x: trap.x,
                     y: trap.y,
                 }));
-                if (shieldRemaining) {
-                    shieldRemaining = false;
-                    shieldBlockReason = 'bear-trap';
-                    shieldBlockHazardId = trap.id;
-                    responseVelocityY = 420;
-                    shieldFocusX = trap.x;
-                    shieldFocusY = trap.y;
-                    continue;
-                }
                 return Object.freeze({
                     accelerationX,
                     accelerationY,
                     fatalReason: 'bear-trap',
                     fatalHazardId: trap.id,
-                    shieldBlockReason,
-                    shieldBlockHazardId,
-                    responseVelocityX,
-                    responseVelocityY,
-                    shieldFocusX,
-                    shieldFocusY,
                     focusX: trap.x,
                     focusY: trap.y,
                 });
@@ -395,14 +325,6 @@ export class DoodleJumpHazardSystem {
         return Object.freeze({
             accelerationX,
             accelerationY,
-            shieldBlockReason,
-            shieldBlockHazardId,
-            responseVelocityX,
-            responseVelocityY,
-            shieldFocusX,
-            shieldFocusY,
-            focusX,
-            focusY,
         });
     }
 
@@ -554,10 +476,24 @@ export class DoodleJumpHazardSystem {
                 this.evaluatedPlatformIds.add(platform.id);
                 continue;
             }
+            const activeLimit = Math.min(
+                this.config.hazards.maximumActive,
+                heightMeters < this.config.hazards.twoActiveHeightMeters ? 1
+                    : 2,
+            );
+            if (this.hazards.length >= activeLimit) continue;
             this.evaluatedPlatformIds.add(platform.id);
             if (!platform.collisionEnabled || platform.consumed) continue;
             if (platform.id === 'P0' || platform.id === 'P1' || platform.id === 'P2') continue;
-            if (this.randomStreams.next('enemy') >= this.config.hazards.spawnChancePerPlatform) {
+            const difficulty = this.hazardDifficultyProgress(heightMeters);
+            const spawnChance = this.config.hazards.spawnChanceAtUnlock
+                + (this.config.hazards.spawnChancePerPlatform
+                    - this.config.hazards.spawnChanceAtUnlock) * difficulty;
+            const minimumSeparation = this.config.hazards.minimumVerticalSeparationAtUnlock
+                + (this.config.hazards.minimumVerticalSeparation
+                    - this.config.hazards.minimumVerticalSeparationAtUnlock) * difficulty;
+            if (platform.y - this.lastSpawnAnchorY < minimumSeparation) continue;
+            if (this.randomStreams.next('enemy') >= spawnChance) {
                 continue;
             }
             const type = this.pickHazardType(heightMeters);
@@ -574,10 +510,17 @@ export class DoodleJumpHazardSystem {
                 : undefined;
             if (!hazard) continue;
             if (this.hazards.some((candidate) => (
-                Math.abs(candidate.y - hazard.y) < this.config.hazards.minimumVerticalSeparation
+                Math.abs(candidate.y - hazard.y) < minimumSeparation
             ))) continue;
             this.hazards.push(hazard);
+            this.lastSpawnAnchorY = platform.y;
         }
+    }
+
+    private hazardDifficultyProgress(heightMeters: number): number {
+        const start = this.config.hazards.ufo.unlockHeightMeters;
+        const end = this.config.hazards.difficultyCapHeightMeters;
+        return Math.max(0, Math.min(1, (heightMeters - start) / Math.max(1, end - start)));
     }
 
     private pickHazardType(heightMeters: number): DoodleJumpHazardType | undefined {

@@ -114,10 +114,15 @@ export interface DoodleJumpGameplayConfig {
     >>;
     readonly enemies: Readonly<{
         enabled: boolean;
+        spawnChanceAtUnlock: number;
         spawnChancePerPlatform: number;
+        difficultyCapHeightMeters: number;
         maximumActive: number;
+        twoActiveHeightMeters: number;
+        threeActiveHeightMeters: number;
         recycleBelow: number;
         spawnAboveScreenMargin: number;
+        minimumVerticalSeparationAtUnlock: number;
         minimumVerticalSeparation: number;
         hitFlashSeconds: number;
         stompBonus: number;
@@ -128,9 +133,14 @@ export interface DoodleJumpGameplayConfig {
     readonly hazards: Readonly<{
         enabled: boolean;
         typeOverride: DoodleJumpHazardType | 'auto';
+        spawnChanceAtUnlock: number;
         spawnChancePerPlatform: number;
+        difficultyCapHeightMeters: number;
+        maximumActive: number;
+        twoActiveHeightMeters: number;
         recycleBelow: number;
         spawnAboveScreenMargin: number;
+        minimumVerticalSeparationAtUnlock: number;
         minimumVerticalSeparation: number;
         ufo: Readonly<{
             unlockHeightMeters: number;
@@ -546,6 +556,41 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     if (maximumActiveEnemies > 3) {
         throw new Error('enemies.maximumActive must not exceed the three-enemy budget.');
     }
+    const enemySpawnChanceAtUnlock = unitRatio(
+        enemies.spawnChanceAtUnlock,
+        'enemies.spawnChanceAtUnlock',
+    );
+    const enemySpawnChanceCap = unitRatio(
+        enemies.spawnChancePerPlatform,
+        'enemies.spawnChancePerPlatform',
+    );
+    const enemyDifficultyCapHeight = positiveNumber(
+        enemies.difficultyCapHeightMeters,
+        'enemies.difficultyCapHeightMeters',
+    );
+    const enemyTwoActiveHeight = positiveNumber(
+        enemies.twoActiveHeightMeters,
+        'enemies.twoActiveHeightMeters',
+    );
+    const enemyThreeActiveHeight = positiveNumber(
+        enemies.threeActiveHeightMeters,
+        'enemies.threeActiveHeightMeters',
+    );
+    const enemyInitialSeparation = positiveNumber(
+        enemies.minimumVerticalSeparationAtUnlock,
+        'enemies.minimumVerticalSeparationAtUnlock',
+    );
+    const enemyFinalSeparation = positiveNumber(
+        enemies.minimumVerticalSeparation,
+        'enemies.minimumVerticalSeparation',
+    );
+    if (enemySpawnChanceAtUnlock > enemySpawnChanceCap
+        || enemyDifficultyCapHeight <= smallEnemy.unlockHeightMeters
+        || enemyTwoActiveHeight >= enemyThreeActiveHeight
+        || enemyThreeActiveHeight > enemyDifficultyCapHeight
+        || enemyInitialSeparation < enemyFinalSeparation) {
+        throw new Error('Enemy difficulty curve must rise gradually and stop at its configured cap.');
+    }
     const ufoUnlockHeight = nonNegativeInteger(
         ufo.unlockHeightMeters,
         'hazards.ufo.unlockHeightMeters',
@@ -576,6 +621,41 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         || blackHoleMaximumActive > 2
         || bearTrapMaximumActive > 2) {
         throw new Error('Each hazard type maximumActive must not exceed 2.');
+    }
+    const maximumActiveHazards = positiveInteger(
+        hazards.maximumActive,
+        'hazards.maximumActive',
+    );
+    const hazardSpawnChanceAtUnlock = unitRatio(
+        hazards.spawnChanceAtUnlock,
+        'hazards.spawnChanceAtUnlock',
+    );
+    const hazardSpawnChanceCap = unitRatio(
+        hazards.spawnChancePerPlatform,
+        'hazards.spawnChancePerPlatform',
+    );
+    const hazardDifficultyCapHeight = positiveNumber(
+        hazards.difficultyCapHeightMeters,
+        'hazards.difficultyCapHeightMeters',
+    );
+    const hazardTwoActiveHeight = positiveNumber(
+        hazards.twoActiveHeightMeters,
+        'hazards.twoActiveHeightMeters',
+    );
+    const hazardInitialSeparation = positiveNumber(
+        hazards.minimumVerticalSeparationAtUnlock,
+        'hazards.minimumVerticalSeparationAtUnlock',
+    );
+    const hazardFinalSeparation = positiveNumber(
+        hazards.minimumVerticalSeparation,
+        'hazards.minimumVerticalSeparation',
+    );
+    if (maximumActiveHazards > 2
+        || hazardSpawnChanceAtUnlock > hazardSpawnChanceCap
+        || hazardDifficultyCapHeight <= ufoUnlockHeight
+        || hazardTwoActiveHeight > hazardDifficultyCapHeight
+        || hazardInitialSeparation < hazardFinalSeparation) {
+        throw new Error('Hazard difficulty curve must rise gradually and stop at its configured cap.');
     }
     const ufoSpawnMinimum = positiveNumber(
         ufo.spawnMinimumAbovePlayer,
@@ -716,20 +796,19 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         }),
         enemies: Object.freeze({
             enabled: booleanValue(enemies.enabled, 'enemies.enabled'),
-            spawnChancePerPlatform: unitRatio(
-                enemies.spawnChancePerPlatform,
-                'enemies.spawnChancePerPlatform',
-            ),
+            spawnChanceAtUnlock: enemySpawnChanceAtUnlock,
+            spawnChancePerPlatform: enemySpawnChanceCap,
+            difficultyCapHeightMeters: enemyDifficultyCapHeight,
             maximumActive: maximumActiveEnemies,
+            twoActiveHeightMeters: enemyTwoActiveHeight,
+            threeActiveHeightMeters: enemyThreeActiveHeight,
             recycleBelow: positiveNumber(enemies.recycleBelow, 'enemies.recycleBelow'),
             spawnAboveScreenMargin: positiveNumber(
                 enemies.spawnAboveScreenMargin,
                 'enemies.spawnAboveScreenMargin',
             ),
-            minimumVerticalSeparation: positiveNumber(
-                enemies.minimumVerticalSeparation,
-                'enemies.minimumVerticalSeparation',
-            ),
+            minimumVerticalSeparationAtUnlock: enemyInitialSeparation,
+            minimumVerticalSeparation: enemyFinalSeparation,
             hitFlashSeconds: positiveNumber(enemies.hitFlashSeconds, 'enemies.hitFlashSeconds'),
             stompBonus: positiveInteger(enemies.stompBonus, 'enemies.stompBonus'),
             small: smallEnemy,
@@ -739,19 +818,18 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         hazards: Object.freeze({
             enabled: booleanValue(hazards.enabled, 'hazards.enabled'),
             typeOverride: hazardTypeOverride,
-            spawnChancePerPlatform: unitRatio(
-                hazards.spawnChancePerPlatform,
-                'hazards.spawnChancePerPlatform',
-            ),
+            spawnChanceAtUnlock: hazardSpawnChanceAtUnlock,
+            spawnChancePerPlatform: hazardSpawnChanceCap,
+            difficultyCapHeightMeters: hazardDifficultyCapHeight,
+            maximumActive: maximumActiveHazards,
+            twoActiveHeightMeters: hazardTwoActiveHeight,
             recycleBelow: positiveNumber(hazards.recycleBelow, 'hazards.recycleBelow'),
             spawnAboveScreenMargin: positiveNumber(
                 hazards.spawnAboveScreenMargin,
                 'hazards.spawnAboveScreenMargin',
             ),
-            minimumVerticalSeparation: positiveNumber(
-                hazards.minimumVerticalSeparation,
-                'hazards.minimumVerticalSeparation',
-            ),
+            minimumVerticalSeparationAtUnlock: hazardInitialSeparation,
+            minimumVerticalSeparation: hazardFinalSeparation,
             ufo: Object.freeze({
                 unlockHeightMeters: ufoUnlockHeight,
                 maximumActive: ufoMaximumActive,

@@ -124,6 +124,7 @@ export class DoodleJumpCombatSystem {
     private largeMonsterKills = 0;
     private hoverMonsterKills = 0;
     private score = 0;
+    private lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
 
     constructor(
         private readonly config: DoodleJumpGameplayConfig,
@@ -143,6 +144,7 @@ export class DoodleJumpCombatSystem {
         this.largeMonsterKills = 0;
         this.hoverMonsterKills = 0;
         this.score = 0;
+        this.lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
     }
 
     syncWorld(
@@ -344,9 +346,12 @@ export class DoodleJumpCombatSystem {
                 this.evaluatedPlatformIds.add(platform.id);
                 continue;
             }
-            const activeLimit = platformMeters < 150 ? 1
-                : platformMeters < 260 ? 2
-                    : this.config.enemies.maximumActive;
+            const activeLimit = Math.min(
+                this.config.enemies.maximumActive,
+                platformMeters < this.config.enemies.twoActiveHeightMeters ? 1
+                    : platformMeters < this.config.enemies.threeActiveHeightMeters ? 2
+                        : 3,
+            );
             // Platforms waiting above the current camera remain eligible after an
             // older enemy recycles; do not consume their deterministic spawn roll
             // merely because the active budget is temporarily full.
@@ -354,7 +359,15 @@ export class DoodleJumpCombatSystem {
             this.evaluatedPlatformIds.add(platform.id);
             if (!platform.collisionEnabled || platform.consumed) continue;
             if (platform.id === 'P0' || platform.id === 'P1' || platform.id === 'P2') continue;
-            if (this.randomStreams.next('enemy') >= this.config.enemies.spawnChancePerPlatform) {
+            const difficulty = this.enemyDifficultyProgress(platformMeters);
+            const spawnChance = this.config.enemies.spawnChanceAtUnlock
+                + (this.config.enemies.spawnChancePerPlatform
+                    - this.config.enemies.spawnChanceAtUnlock) * difficulty;
+            const minimumSeparation = this.config.enemies.minimumVerticalSeparationAtUnlock
+                + (this.config.enemies.minimumVerticalSeparation
+                    - this.config.enemies.minimumVerticalSeparationAtUnlock) * difficulty;
+            if (platform.y - this.lastSpawnAnchorY < minimumSeparation) continue;
+            if (this.randomStreams.next('enemy') >= spawnChance) {
                 continue;
             }
             const type = this.pickEnemyType(platformMeters);
@@ -363,10 +376,17 @@ export class DoodleJumpCombatSystem {
             if (!enemy) continue;
             if (this.enemies.some((candidate) => (
                 Math.abs(candidate.y - enemy.y)
-                    < this.config.enemies.minimumVerticalSeparation
+                    < minimumSeparation
             ))) continue;
             this.enemies.push(enemy);
+            this.lastSpawnAnchorY = platform.y;
         }
+    }
+
+    private enemyDifficultyProgress(heightMeters: number): number {
+        const start = this.config.enemies.small.unlockHeightMeters;
+        const end = this.config.enemies.difficultyCapHeightMeters;
+        return Math.max(0, Math.min(1, (heightMeters - start) / Math.max(1, end - start)));
     }
 
     private pickEnemyType(heightMeters: number): DoodleJumpEnemyType | undefined {
@@ -395,6 +415,7 @@ export class DoodleJumpCombatSystem {
         platform: DoodleJumpCombatPlatform,
     ): MutableEnemy | undefined {
         const settings = this.config.enemies[type];
+        if (platform.type === 'moving' || platform.type === 'shifting') return undefined;
         if (type !== 'hover'
             && (platform.type === 'breakable'
                 || platform.type === 'disappearing'

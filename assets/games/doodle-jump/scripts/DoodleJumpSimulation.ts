@@ -408,6 +408,7 @@ export class DoodleJumpSimulation {
         this.velocityX = 0;
         this.velocityY = this.config.resurrection.launchVelocity;
         this.accumulator = 0;
+        this.items.cancelTrampolineJump();
         this.lastLandedPlatformId = target.config.id;
         this.maxAbsoluteWorldY = Math.max(this.maxAbsoluteWorldY, this.playerY);
         this.fatalReason = undefined;
@@ -567,7 +568,9 @@ export class DoodleJumpSimulation {
                 + player.collisionHeight / 2;
             this.velocityY = player.bounceVelocity;
         }
-        const flightInvincible = this.items.hasFlightInvincibility();
+        const playerInvincible = this.items.hasFlightInvincibility()
+            || this.items.hasTrampolineInvincibility()
+            || this.items.hasShield();
         const hazardResult = this.hazards.resolvePlayer(
             delta,
             this.playerX,
@@ -575,25 +578,10 @@ export class DoodleJumpSimulation {
             previousFootY,
             player.collisionWidth,
             player.collisionHeight,
-            this.items.hasShield(),
-            flightInvincible,
+            playerInvincible,
         );
         this.velocityX += hazardResult.accelerationX * delta;
         this.velocityY += hazardResult.accelerationY * delta;
-        if (hazardResult.shieldBlockReason) {
-            this.items.consumeShield(
-                hazardResult.shieldBlockReason,
-                hazardResult.shieldFocusX ?? this.playerX,
-                hazardResult.shieldFocusY ?? this.playerY,
-            );
-            this.monsterContactGraceRemaining = 0.32;
-            if (hazardResult.responseVelocityX !== undefined) {
-                this.velocityX = hazardResult.responseVelocityX;
-            }
-            if (hazardResult.responseVelocityY !== undefined) {
-                this.velocityY = hazardResult.responseVelocityY;
-            }
-        }
         if (hazardResult.fatalReason) {
             this.fatalReason = hazardResult.fatalReason;
             this.fatalFocusX = hazardResult.focusX;
@@ -601,28 +589,10 @@ export class DoodleJumpSimulation {
             return;
         }
         if (combatResult.outcome === 'contact'
-            && !flightInvincible
+            && !playerInvincible
             && this.monsterContactGraceRemaining <= 0) {
-            if (this.items.consumeShield('monster-contact', this.playerX, this.playerY)) {
-                const enemy = this.combat.getSnapshots().find((candidate) => (
-                    candidate.id === combatResult.enemyId
-                ));
-                const away = enemy
-                    ? this.playerX >= enemy.x ? 1 : -1
-                    : this.randomStreams.next('item') < 0.5 ? -1 : 1;
-                if (enemy) {
-                    this.playerX = enemy.x + away
-                        * (enemy.width / 2 + player.collisionWidth / 2 + 6);
-                    if (this.playerX < player.wrapLeft) this.playerX += player.wrapDistance;
-                    if (this.playerX > player.wrapRight) this.playerX -= player.wrapDistance;
-                }
-                this.velocityX = away * 520;
-                this.velocityY = Math.max(this.velocityY, 220);
-                this.monsterContactGraceRemaining = 0.32;
-            } else {
-                this.fatalReason = 'monster-contact';
-                return;
-            }
+            this.fatalReason = 'monster-contact';
+            return;
         }
         this.maxAbsoluteWorldY = Math.max(this.maxAbsoluteWorldY, this.playerY);
         const targetScreenY = visibleHeight * this.config.camera.targetHeightRatio;
@@ -923,8 +893,8 @@ export class DoodleJumpSimulation {
         const roll = this.nextPlatformRandom();
         const desiredCount = override !== 'auto'
             ? 1
-            : roll < 0.22 ? 0
-                : roll < 0.57 ? 1
+            : roll < 0.16 ? 0
+                : roll < 0.52 ? 1
                     : roll < 0.84 ? 2
                         : 3;
         const insertedCount = Math.min(maximumCount, desiredCount);
@@ -1131,8 +1101,8 @@ export class DoodleJumpSimulation {
             && recentAnchors.every((platform) => platform.config.type !== 'normal')) {
             return 'normal';
         }
-        const movingChance = 0.16 + difficulty * 0.2;
-        const shiftingChance = heightMeters < 170 ? 0 : 0.07 + difficulty * 0.09;
+        const movingChance = 0.14 + difficulty * 0.19;
+        const shiftingChance = heightMeters < 170 ? 0 : 0.06 + difficulty * 0.08;
         const roll = this.nextPlatformRandom();
         if (roll < shiftingChance) return 'shifting';
         if (roll < shiftingChance + movingChance) return 'moving';
@@ -1150,7 +1120,7 @@ export class DoodleJumpSimulation {
             'shifting',
             'exploding',
         ];
-        const weights: readonly number[] = [0.3, 0.18, 0.14, 0.13, 0.14, 0.11];
+        const weights: readonly number[] = [0.34, 0.17, 0.13, 0.12, 0.13, 0.11];
         let roll = this.nextPlatformRandom();
         for (let index = 0; index < weights.length; index += 1) {
             roll -= weights[index];
