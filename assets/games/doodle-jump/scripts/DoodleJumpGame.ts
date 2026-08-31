@@ -10,8 +10,10 @@ import {
     Graphics,
     JsonAsset,
     Label,
+    Mask,
     Node,
     Rect,
+    ScrollView,
     Sprite,
     SpriteFrame,
     Size,
@@ -193,6 +195,7 @@ const TEXTURE_PATHS = Object.freeze({
     panelSensorError: 'visual/ui/panels/sensor-error-panel/texture',
     panelRevive: 'visual/ui/panels/revive-confirmation-panel/texture',
     panelResults: 'visual/ui/panels/results-panel/texture',
+    panelRules: 'visual/ui/panels/rules-panel/texture',
     panelMissingResource: 'visual/ui/panels/missing-resource-panel/texture',
     tutorialSensorTilt: 'visual/ui/tutorial/sensor-tilt/texture',
     tutorialPaperPlane: 'visual/ui/tutorial/paper-plane-shot/texture',
@@ -208,6 +211,68 @@ const TEXTURE_PATHS = Object.freeze({
 
 type TextureKey = keyof typeof TEXTURE_PATHS;
 
+const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.freeze([
+    Object.freeze({
+        title: '玩法规则',
+        body: [
+            '目标：控制主角不断向上攀登，获得更高的高度和分数。',
+            '',
+            '· 主角会自动连续跳跃，不能手动起跳。手机左右倾斜控制横向移动；角色越过屏幕左右边缘会从另一侧出现。',
+            '· 点击任意方向发射纸飞机，按住可持续发射。纸飞机可攻击怪物，但不能破坏平台、道具或危险物。',
+            '· 镜头只随最高进度向上移动。高度每增加 1 米获得 10 分，击败怪物和中断 UFO 还会获得额外分数。',
+            '· 没踩到下一块平台并掉出屏幕、碰到怪物、被 UFO 带走、进入黑洞核心或踩中捕兽夹都会失败。',
+            '· 开启复活功能后，第一次失败可免费复活，第二次失败可通过激励广告复活；未配置广告位时第二次复活直接成功。',
+            '· 暂停、弹窗和切到后台时，角色、敌人、道具计时和世界运动都会暂停。',
+        ].join('\n'),
+    }),
+    Object.freeze({
+        title: '平台规则',
+        body: [
+            '平台只在主角下降时承接角色；上升过程中会从平台下方穿过。角色至少要有四分之一身体宽度落在平台上才算踩中。',
+            '',
+            '· 普通平台：固定不动，落地后正常反弹。',
+            '· 移动平台：按自己的速度、方向和相位左右移动。',
+            '· 断裂平台：从上方踩中后立即断成两半，不产生反弹。',
+            '· 消失平台：第一次踩中会正常反弹，随后淡出并永久失去碰撞。',
+            '· 变位平台：在三个位置之间移动，移动过程中仍可承接角色。',
+            '· 爆炸平台：踩中后正常反弹，并开始 1.5 秒倒计时；爆炸后平台消失，但爆炸本身不会伤害角色。',
+            '· 主路始终保证普通跳跃可以到达；一次性平台只作为两块主路平台之间的额外落脚点。',
+        ].join('\n'),
+    }),
+    Object.freeze({
+        title: '道具规则',
+        body: [
+            '可拾取道具带有常驻纸片星芒。主角碰到道具即可获得，纸飞机穿过道具不会触发拾取。',
+            '',
+            '· 弹簧：保存到下一次有效落地，使该次反弹明显升高。',
+            '· 蹦床：同样在下一次有效落地触发，弹跳高度高于弹簧；蹦床会覆盖尚未使用的弹簧。',
+            '· 喷气背包：短时间保持向上飞行并穿过平台。',
+            '· 竹蜻蜓：持续向上飞行，但仍保留平台碰撞。',
+            '· 火箭：短时间高速向上冲刺并穿过平台。',
+            '· 护盾：抵挡一次怪物、UFO、黑洞核心或捕兽夹，不能抵挡掉出屏幕。',
+            '· 喷气背包、竹蜻蜓或火箭激活期间，三种飞行拾取物都不会被拾取、续时或替换；当前飞行结束后才能再次拾取。',
+            '· 飞行道具激活期间角色免疫怪物和危险物，但掉出屏幕仍会失败。',
+        ].join('\n'),
+    }),
+    Object.freeze({
+        title: '敌人与危险',
+        body: [
+            '怪物可以用纸飞机攻击，也可以从上方向下踩踏。碰到怪物身体会失败，护盾或飞行无敌生效时除外。',
+            '',
+            '· 小怪：体型较小、生命较低，会站在平台上活动。',
+            '· 大怪：体型和碰撞范围更大，需要更多次命中。',
+            '· 悬浮怪：漂浮在平台上方，不能通过踩踏击败。',
+            '· UFO：先锁定角色，再用光束吸附；未及时击破会把角色带走。',
+            '· 黑洞：外圈持续把角色拉向中心，进入核心后会被旋转吸入。',
+            '· 捕兽夹：固定在平台上方，从上方踩中后触发失败。',
+            '· 护盾抵挡危险后会立即消耗；喷气背包、竹蜻蜓和火箭激活期间不会被上述敌人或危险物击败。',
+            '· 所有怪物和危险物都在屏幕上方生成，再随世界自然进入画面。',
+        ].join('\n'),
+    }),
+]);
+
+const RULES_PANEL_HEIGHT = Math.round(590 * 4 / 3);
+
 const BACKGROUND_THEME_BOUNDARIES = Object.freeze({
     sky: 114 + 250 * 100,
     cloud: 114 + 600 * 100,
@@ -222,6 +287,7 @@ const SLICED_TEXTURE_KEYS: readonly TextureKey[] = Object.freeze([
     'panelSensorError',
     'panelRevive',
     'panelResults',
+    'panelRules',
     'panelMissingResource',
 ]);
 
@@ -381,6 +447,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private tutorialActive = false;
     private tutorialStep = 0;
     private tutorialOpenedFromHud = false;
+    private rulesOverlayActive = false;
+    private rulesPageIndex = 0;
     private headStartPromptActive = false;
     private sensorCalibrationVisible = false;
     private missingResourceActive = false;
@@ -403,6 +471,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private failureAnimationReason: DoodleJumpFailureReason = 'fall';
     private failureFocusWorldX = 0;
     private failureFocusWorldY = 0;
+    private failureFocusHazardNode?: Node;
     private failureHazardEffectNode?: Node;
     private playerFacing: -1 | 1 = 1;
     private previousRenderedPlayerX?: number;
@@ -547,6 +616,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.failureAnimationReason = 'fall';
         this.failureFocusWorldX = 0;
         this.failureFocusWorldY = 0;
+        this.failureFocusHazardNode = undefined;
         if (this.failureHazardEffectNode?.isValid) this.failureHazardEffectNode.active = false;
         this.playerContactEffectRemaining = 0;
         if (this.playerContactEffectNode?.isValid) this.playerContactEffectNode.active = false;
@@ -564,6 +634,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.tutorialActive = false;
         this.tutorialStep = 0;
         this.tutorialOpenedFromHud = false;
+        this.rulesOverlayActive = false;
+        this.rulesPageIndex = 0;
         this.headStartPromptActive = false;
         this.sensorCalibrationVisible = false;
         this.missingResourceActive = false;
@@ -639,6 +711,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     showPauseMenu(model: MiniGamePauseModel): void {
         this.cancelAttack(true);
         this.activePauseModel = model;
+        if (this.rulesOverlayActive) {
+            this.destroyPauseOverlay();
+            this.showRulesPage();
+            return;
+        }
         if (this.tutorialOpenedFromHud && this.tutorialActive) {
             this.destroyPauseOverlay();
             this.showTutorialStep();
@@ -667,6 +744,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     hidePauseMenu(): void {
         this.activePauseModel = undefined;
         this.destroyPauseOverlay();
+        if (this.rulesOverlayActive) {
+            this.rulesOverlayActive = false;
+            this.destroyOverlay();
+        }
     }
 
     showResultView(model: MiniGameResultModel): void {
@@ -884,6 +965,153 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.context?.requestPause();
     }
 
+    private openRulesFromHud(): void {
+        if (this.stateMachine.state !== 'Playing') return;
+        this.rulesOverlayActive = true;
+        this.rulesPageIndex = 0;
+        this.context?.requestPause();
+    }
+
+    private showRulesPage(animatePanel = true): void {
+        if (!this.rulesOverlayActive || this.stateMachine.state !== 'Paused') return;
+        const page = RULE_PAGES[this.rulesPageIndex];
+        if (!page) return;
+        this.destroyOverlay();
+        const panel = this.createOverlay(
+            'RulesOverlay',
+            page.title,
+            '',
+            'panelRules',
+            'flow',
+            animatePanel,
+            RULES_PANEL_HEIGHT,
+        );
+        const panelWidth = panel.getComponent(UITransform)?.contentSize.width ?? 520;
+        const panelHeight = panel.getComponent(UITransform)?.contentSize.height
+            ?? RULES_PANEL_HEIGHT;
+        this.createLabel(
+            panel,
+            'RulesPager',
+            `${this.rulesPageIndex + 1} / ${RULE_PAGES.length}  ·  上下滑动查看  ·  左右滑动翻页`,
+            0,
+            panelHeight / 2 - 138,
+            18,
+            COLORS.muted,
+            panelWidth - 100,
+            32,
+        );
+
+        const viewportWidth = panelWidth - 82;
+        const viewportHeight = panelHeight - 297;
+        const viewport = new Node('RulesScrollViewport');
+        viewport.layer = this.node.layer;
+        viewport.setParent(panel);
+        viewport.setPosition(0, -18, 0);
+        viewport.addComponent(UITransform).setContentSize(viewportWidth, viewportHeight);
+        const mask = viewport.addComponent(Mask);
+        mask.type = Mask.Type.GRAPHICS_RECT;
+
+        const fontSize = 24;
+        const lineHeight = 38;
+        const bodyTextWidth = viewportWidth - 38;
+        const bodyHeight = this.estimateRulesTextHeight(
+            page.body,
+            fontSize,
+            lineHeight,
+            bodyTextWidth,
+            viewportHeight + 20,
+        );
+        const body = new Node('RulesScrollBody');
+        body.layer = this.node.layer;
+        body.setParent(viewport);
+        body.addComponent(UITransform).setContentSize(viewportWidth - 20, bodyHeight);
+        body.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
+        body.setPosition(0, viewportHeight / 2, 0);
+        const label = this.createLabel(
+            body,
+            'RulesBody',
+            page.body,
+            0,
+            -14,
+            fontSize,
+            COLORS.ink,
+            bodyTextWidth,
+            bodyHeight - 28,
+        );
+        label.horizontalAlign = 0;
+        label.verticalAlign = 0;
+        label.overflow = Label.Overflow.CLAMP;
+        label.lineHeight = lineHeight;
+        label.node.getComponent(UITransform)?.setAnchorPoint(0.5, 1);
+        label.node.setPosition(0, -14, 0);
+
+        const scrollView = viewport.addComponent(ScrollView);
+        scrollView.content = body;
+        scrollView.horizontal = false;
+        scrollView.vertical = true;
+        scrollView.inertia = true;
+        scrollView.brake = 0.75;
+        scrollView.elastic = true;
+        scrollView.cancelInnerEvents = true;
+
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        panel.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
+            const point = event.getUILocation();
+            swipeStartX = point.x;
+            swipeStartY = point.y;
+        }, this, true);
+        panel.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
+            const point = event.getUILocation();
+            const deltaX = point.x - swipeStartX;
+            const deltaY = point.y - swipeStartY;
+            if (Math.abs(deltaX) > 76 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
+                this.changeRulesPage(deltaX < 0 ? 1 : -1);
+            }
+        }, this, true);
+
+        const footerY = -panelHeight / 2 + 69;
+        this.createButton(panel, '‹ 上一页', -170, footerY, 140, 62, () => {
+            this.changeRulesPage(-1);
+        }, 'secondary');
+        this.createButton(panel, '关闭', 0, footerY, 140, 62, () => {
+            this.closeRulesOverlay();
+        }, 'primary');
+        this.createButton(panel, '下一页 ›', 170, footerY, 140, 62, () => {
+            this.changeRulesPage(1);
+        }, 'secondary');
+    }
+
+    private changeRulesPage(delta: -1 | 1): void {
+        if (!this.rulesOverlayActive) return;
+        this.rulesPageIndex = (
+            this.rulesPageIndex + delta + RULE_PAGES.length
+        ) % RULE_PAGES.length;
+        this.showRulesPage(false);
+    }
+
+    private closeRulesOverlay(): void {
+        if (!this.rulesOverlayActive) return;
+        this.rulesOverlayActive = false;
+        this.destroyOverlay();
+        const pauseModel = this.activePauseModel;
+        if (pauseModel) void pauseModel.resume();
+    }
+
+    private estimateRulesTextHeight(
+        text: string,
+        fontSize: number,
+        lineHeight: number,
+        width: number,
+        minimumHeight: number,
+    ): number {
+        const charactersPerLine = Math.max(8, Math.floor(width / Math.max(1, fontSize)));
+        const lineCount = text.split('\n').reduce((total, paragraph) => (
+            total + Math.max(1, Math.ceil(paragraph.length / charactersPerLine))
+        ), 0);
+        return Math.max(minimumHeight, lineCount * lineHeight + 36);
+    }
+
     private availableHeadStartCount(): number {
         return Math.max(0, this.saveBaseline?.headStartCount ?? 0)
             + Math.max(0, this.debugHeadStartRemaining);
@@ -1052,6 +1280,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.failureDropVelocityY = Math.min(snapshot?.velocityY ?? 0, -360);
         this.failureFocusWorldX = snapshot?.fatalFocusX ?? this.failureDropWorldX;
         this.failureFocusWorldY = snapshot?.fatalFocusY ?? this.failureDropWorldY;
+        this.failureFocusHazardNode = undefined;
+        if (reason === 'black-hole' && snapshot) {
+            const focusIndex = snapshot.hazards.findIndex((hazard) => (
+                hazard.type === 'black-hole'
+                && Math.abs(hazard.x - this.failureFocusWorldX) < 0.01
+                && Math.abs(hazard.y - this.failureFocusWorldY) < 0.01
+            ));
+            if (focusIndex >= 0) this.failureFocusHazardNode = this.hazardNodes[focusIndex];
+        }
         this.startHazardFailureEffect(reason);
     }
 
@@ -1081,16 +1318,26 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             if (playerOpacity) playerOpacity.opacity = Math.max(0, Math.round(255 * (1 - progress)));
             animationFinished = progress >= 1;
         } else if (this.failureAnimationReason === 'black-hole') {
-            const progress = Math.min(1, this.failureDropElapsed / 0.58);
-            const eased = progress * progress;
-            this.failureDropWorldX = this.failureStartWorldX
-                + (this.failureFocusWorldX - this.failureStartWorldX) * eased;
-            this.failureDropWorldY = this.failureStartWorldY
-                + (this.failureFocusWorldY - this.failureStartWorldY) * eased;
-            const scale = Math.max(0.06, 1 - eased * 0.94);
+            const progress = Math.min(1, this.failureDropElapsed / 0.9);
+            const radialProgress = 1 - Math.pow(1 - progress, 2.2);
+            const remainingRadius = 1 - radialProgress;
+            const startOffsetX = this.failureStartWorldX - this.failureFocusWorldX;
+            const startOffsetY = this.failureStartWorldY - this.failureFocusWorldY;
+            const spiralAngle = progress * Math.PI * 1.15;
+            const cosine = Math.cos(spiralAngle);
+            const sine = Math.sin(spiralAngle);
+            this.failureDropWorldX = this.failureFocusWorldX
+                + (startOffsetX * cosine - startOffsetY * sine) * remainingRadius;
+            this.failureDropWorldY = this.failureFocusWorldY
+                + (startOffsetX * sine + startOffsetY * cosine) * remainingRadius;
+            const shrinkProgress = Math.max(0, (progress - 0.08) / 0.92);
+            const scale = Math.max(0.025, 1 - shrinkProgress * 0.975);
             this.playerNode?.setScale(scale, scale, 1);
-            this.playerNode?.setRotationFromEuler(0, 0, progress * 210);
-            if (playerOpacity) playerOpacity.opacity = Math.max(0, Math.round(255 * (1 - progress * 0.9)));
+            this.playerNode?.setRotationFromEuler(0, 0, progress * 390);
+            const fadeProgress = Math.max(0, (progress - 0.72) / 0.28);
+            if (playerOpacity) {
+                playerOpacity.opacity = Math.max(0, Math.round(255 * (1 - fadeProgress)));
+            }
             animationFinished = progress >= 1;
         } else {
             const trapHold = this.failureAnimationReason === 'bear-trap' ? 0.24 : 0;
@@ -1108,6 +1355,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.playerNode?.isValid && this.worldRoot?.isValid) {
             this.playerNode.setSiblingIndex(Math.max(0, this.worldRoot.children.length - 1));
         }
+        if (this.failureAnimationReason === 'black-hole'
+            && this.failureFocusHazardNode?.isValid
+            && this.worldRoot?.isValid) {
+            // The black-hole ring and core must cover the shrinking player at
+            // the end of the spiral so the character visibly enters the hole.
+            this.failureFocusHazardNode.setSiblingIndex(
+                Math.max(0, this.worldRoot.children.length - 1),
+            );
+        }
         const playerTopY = this.failureDropWorldY + this.config.player.collisionHeight / 2;
         const fullyBelowScreen = playerTopY < cameraBottomY - 8;
         if (animationFinished
@@ -1121,6 +1377,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!this.failureDropActive || this.stateMachine.state !== 'Failing') return;
         this.failureDropActive = false;
         this.failureDelayPending = false;
+        this.failureFocusHazardNode = undefined;
         if (this.failureHazardEffectNode?.isValid) this.failureHazardEffectNode.active = false;
         const failure = this.pendingFailure;
         if (!failure) return;
@@ -1722,7 +1979,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             safe.topY - 46,
             72,
             72,
-            () => this.openTutorialFromHud(),
+            () => this.openRulesFromHud(),
             'secondary',
             'hudRulesButton',
         );
@@ -2913,13 +3170,20 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         frame.rect = new Rect(0, 0, texture.width, texture.height);
         frame.originalSize = new Size(texture.width, texture.height);
         if (SLICED_TEXTURE_KEYS.indexOf(key) >= 0) {
-            const inset = Math.max(8, Math.min(42, Math.floor(
-                Math.min(texture.width, texture.height) * 0.18,
-            )));
-            frame.insetLeft = inset;
-            frame.insetRight = inset;
-            frame.insetTop = inset;
-            frame.insetBottom = inset;
+            if (key === 'panelRules') {
+                frame.insetLeft = Math.min(104, texture.width - 1);
+                frame.insetRight = Math.min(64, texture.width - frame.insetLeft - 1);
+                frame.insetTop = Math.min(160, texture.height - 1);
+                frame.insetBottom = Math.min(96, texture.height - frame.insetTop - 1);
+            } else {
+                const inset = Math.max(8, Math.min(42, Math.floor(
+                    Math.min(texture.width, texture.height) * 0.18,
+                )));
+                frame.insetLeft = inset;
+                frame.insetRight = inset;
+                frame.insetTop = inset;
+                frame.insetBottom = inset;
+            }
             this.slicedFrames.add(frame);
         }
         this.ownedFrames.push(frame);
@@ -3717,6 +3981,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         message: string,
         panelKey: TextureKey = 'panelReady',
         layer: 'flow' | 'pause' = 'flow',
+        animatePanel = true,
+        panelHeight = 590,
     ): Node {
         const targetRoot = layer === 'pause' ? this.pauseOverlayRoot : this.flowOverlayRoot;
         if (!targetRoot) throw new Error(`${layer} overlay root is unavailable.`);
@@ -3725,7 +3991,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const layout = this.context?.services.platform.getLayoutInfo();
         const safe = calculateVerticalSafeBounds(visible.height, layout, 18);
         const availableHeight = Math.max(1, safe.topY - safe.bottomY - 32);
-        const panelHeight = 590;
         const panelScale = Math.min(1, availableHeight / panelHeight);
         const backdrop = this.createGraphicsNode(
             targetRoot,
@@ -3745,7 +4010,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         );
         panel.setPosition(0, (safe.topY + safe.bottomY) / 2, 0);
         panel.setScale(panelScale, panelScale, 1);
-        if (this.visualQualityProfile().uiMotion) {
+        if (animatePanel && this.visualQualityProfile().uiMotion) {
             panel.setScale(panelScale * 0.94, panelScale * 0.94, 1);
             const panelOpacity = panel.addComponent(UIOpacity);
             panelOpacity.opacity = 0;
@@ -3755,13 +4020,14 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             tween(panelOpacity).to(0.12, { opacity: 255 }).start();
         }
         const width = panel.getComponent(UITransform)!.contentSize.width;
+        const halfPanelHeight = panelHeight / 2;
         const graphics = panel.getComponent(Graphics)!;
         graphics.fillColor = COLORS.paperOverlay;
-        graphics.roundRect(-width / 2, -295, width, 590, 32);
+        graphics.roundRect(-width / 2, -halfPanelHeight, width, panelHeight, 32);
         graphics.fill();
         graphics.strokeColor = COLORS.ink;
         graphics.lineWidth = 5;
-        graphics.roundRect(-width / 2, -295, width, 590, 32);
+        graphics.roundRect(-width / 2, -halfPanelHeight, width, panelHeight, 32);
         graphics.stroke();
         const panelFrame = this.textureFrames[panelKey];
         if (panelFrame) {
@@ -3769,7 +4035,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             sprite.node.setSiblingIndex(0);
         }
         if (title.length > 0) {
-            this.createLabel(panel, 'Title', title, 0, 205, 38, COLORS.ink, width - 90, 64);
+            this.createLabel(
+                panel,
+                'Title',
+                title,
+                0,
+                halfPanelHeight - 90,
+                38,
+                COLORS.ink,
+                width - 90,
+                64,
+            );
         }
         if (message.length > 0) {
             const messageLabel = this.createLabel(
@@ -3777,7 +4053,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 'Message',
                 message,
                 0,
-                137,
+                halfPanelHeight - 158,
                 22,
                 COLORS.muted,
                 width - 90,
@@ -4028,6 +4304,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.wrapEffectRemaining = 0;
         this.playerContactEffectNode = undefined;
         this.failureHazardEffectNode = undefined;
+        this.failureFocusHazardNode = undefined;
         this.playerContactEffectRemaining = 0;
         this.landingDebrisRoot = undefined;
         this.landingDebrisVisuals = [];
