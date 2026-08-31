@@ -57,6 +57,9 @@
       },
       "catch": {
         "enabled": true
+      },
+      "doodle-jump": {
+        "enabled": true
       }
     },
     "wechat": {
@@ -68,12 +71,15 @@
       },
       "desktopCleanupRewarded": {
         "adUnitId": ""
+      },
+      "doodleJumpReviveRewarded": {
+        "adUnitId": ""
       }
     }
   },
   "development": {
     "debugLogs": false,
     "mockAds": false,
-    "showDevelopmentGames": false
+    "showDevelopmentGames": true
   }
 }

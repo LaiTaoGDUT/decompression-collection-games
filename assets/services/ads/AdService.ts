@@ -5,6 +5,7 @@ export const AD_PLACEMENTS = Object.freeze({
     watermelonRevive: 'watermelon-revive',
     chessEndlessRevive: 'chess-endless-revive',
     desktopCleanupRewarded: 'desktop-cleanup-rewarded',
+    doodleJumpRevive: 'doodle-jump-revive',
 } as const);
 
 export type AdOutcome = 'completed' | 'skipped' | 'failed';

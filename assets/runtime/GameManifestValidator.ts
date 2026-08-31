@@ -159,7 +159,7 @@ function readResourcePath(
         return undefined;
     }
 
-    return value;
+    return value as string;
 }
 
 function readOptionalResourcePath(

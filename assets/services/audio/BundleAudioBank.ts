@@ -10,12 +10,16 @@ type AudioBundle = ReturnType<typeof assetManager.getBundle> extends infer T
 export interface BundleAudioBankConfig {
     readonly bundle: string;
     readonly music?: string;
+    /** Future music may be registered before the clip is shipped. */
+    readonly optionalMusic?: string;
     readonly cues: Readonly<Partial<Record<FeedbackCue, AudioCuePath>>>;
     /**
      * Optional cues can be staged before the corresponding asset is imported.
      * A missing optional clip does not invalidate the rest of the audio bank.
      */
     readonly optionalCues?: Readonly<Partial<Record<FeedbackCue, AudioCuePath>>>;
+    /** Defaults to true. Games with intentionally deferred audio may disable optional warnings. */
+    readonly logOptionalFailures?: boolean;
 }
 
 /** 一个场景/Bundle 持有的音乐与 Cue 注册；dispose 后不再保留 AudioClip 引用。 */
@@ -37,6 +41,14 @@ export class BundleAudioBank {
             const music = await this.loadClip(bundle, this.config.music);
             if (this.disposed) return;
             this.audio.playMusic(music);
+        } else if (this.config.optionalMusic) {
+            try {
+                const music = await this.loadClip(bundle, this.config.optionalMusic);
+                if (this.disposed) return;
+                this.audio.playMusic(music);
+            } catch (error: unknown) {
+                this.logOptionalFailure([this.config.optionalMusic], error);
+            }
         }
 
         for (const cue of Object.keys(this.config.cues) as FeedbackCue[]) {
@@ -75,11 +87,16 @@ export class BundleAudioBank {
             this.registered.push(cue);
         } catch (error: unknown) {
             if (!optional) throw error;
-            console.warn(
-                `[BundleAudioBank] Optional audio unavailable: ${this.config.bundle}/${paths.join(', ')}`,
-                error,
-            );
+            this.logOptionalFailure(paths, error);
         }
+    }
+
+    private logOptionalFailure(paths: readonly string[], error: unknown): void {
+        if (this.config.logOptionalFailures === false) return;
+        console.warn(
+            `[BundleAudioBank] Optional audio unavailable: ${this.config.bundle}/${paths.join(', ')}`,
+            error,
+        );
     }
 
     private loadClip(bundle: AudioBundle, assetPath: string): Promise<AudioClip> {

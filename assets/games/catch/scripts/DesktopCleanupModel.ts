@@ -57,14 +57,6 @@ export interface DesktopCleanupItemSnapshot {
     readonly free: boolean;
 }
 
-export interface DesktopCleanupShakeInput {
-    /** 颠锅方向，使用桌面归一化坐标。 */
-    readonly x: number;
-    readonly y: number;
-    /** 颠锅强度，建议范围 0.5–2。 */
-    readonly strength: number;
-}
-
 export interface DesktopCleanupSlotSnapshot {
     readonly itemId: string;
     readonly type: DesktopCleanupItemType;
@@ -176,21 +168,14 @@ const STACK_ITEM_BASE_HALF_EXTENT = 0.15;
  */
 const STACK_EDGE_OVERSCAN = 0.02;
 const PHYSICS_ITEM_RADIUS = 0.125;
-const PHYSICS_MAX_SPEED = 0.90;
-const PHYSICS_MAX_ANGULAR_SPEED = 120;
 const PHYSICS_MAX_ELEVATION = 0.30;
 const PHYSICS_ITEM_SCALE_PER_ELEVATION = 0.14;
 const PHYSICS_SETTLE_SPEED = 0.006;
 const PHYSICS_DEPTH_COLLISION_RANGE = 0.35;
 const PHYSICS_COVER_RADIUS = PHYSICS_ITEM_RADIUS * 0.72;
 const PHYSICS_EPSILON = 0.0001;
-const PHYSICS_SHAKE_LAYER_ATTENUATION = 0.72;
-const PHYSICS_SHAKE_COVERED_MOBILITY = 0.72;
-const PHYSICS_SHAKE_STATIC_IMPULSE = 0.012;
-const PHYSICS_SHAKE_ANGULAR_IMPULSE = 24;
-const PHYSICS_SHAKE_ELEVATION_IMPULSE = 0.03;
 // The initial cloud is random and may clamp against the playmat edge. Extra
-// sweeps let each six-item layer settle before the first shake can wake it.
+// sweeps keep each six-item layer clear before the round starts.
 const INITIAL_POSITION_RELAXATION_PASSES = 256;
 
 function visibleCenterLimit(
@@ -646,61 +631,6 @@ export class DesktopCleanupModel {
         this.timeLeftMs = Math.max(0, this.timeLeftMs - deltaMs);
         if (this.timeLeftMs <= 0) this.fail('timeout');
         return physicsChanged;
-    }
-
-    applyShake(input: DesktopCleanupShakeInput): boolean {
-        if (this.currentPhase !== 'playing'
-            || !Number.isFinite(input.x)
-            || !Number.isFinite(input.y)
-            || !Number.isFinite(input.strength)) return false;
-        const directionLength = Math.hypot(input.x, input.y);
-        if (directionLength <= PHYSICS_EPSILON) return false;
-        const directionX = input.x / directionLength;
-        const directionY = input.y / directionLength;
-        const strength = clamp(input.strength, 0.7, 2);
-        const impulse = this.config.shakeImpulse * strength;
-        const active = Array.from(this.items.values()).filter((item) => item.active);
-        const frontLayer = active.reduce(
-            (highest, item) => Math.max(highest, item.layer),
-            0,
-        );
-        active.forEach((item) => {
-            // 堆叠越深，受到的桌面冲量越弱；已经露出的低层物件仍保留少量
-            // 响应，被覆盖物件再叠加一层“堆压”衰减。这样不是只开关 free，
-            // 也不会让整堆物件以相同速度一起滑走。
-            const depth = Math.max(0, frontLayer - item.layer);
-            const layerRatio = Math.min(1, depth / Math.max(frontLayer, 1));
-            const layerMobility = 1 - layerRatio * PHYSICS_SHAKE_LAYER_ATTENUATION;
-            const mobility = layerMobility * (
-                item.free ? 1 : PHYSICS_SHAKE_COVERED_MOBILITY
-            );
-            const itemImpulse = impulse * mobility;
-            // 很小的传导被静摩擦吸收，只保留极轻微抬升/旋转反馈。
-            if (itemImpulse >= PHYSICS_SHAKE_STATIC_IMPULSE) {
-                item.velocityX = clamp(
-                    item.velocityX + directionX * itemImpulse,
-                    -PHYSICS_MAX_SPEED,
-                    PHYSICS_MAX_SPEED,
-                );
-                item.velocityY = clamp(
-                    item.velocityY + directionY * itemImpulse,
-                    -PHYSICS_MAX_SPEED,
-                    PHYSICS_MAX_SPEED,
-                );
-            }
-            const spinDirection = directionX * (item.layer % 2 === 0 ? 1 : -1) + directionY;
-            item.angularVelocity = clamp(
-                item.angularVelocity + spinDirection * PHYSICS_SHAKE_ANGULAR_IMPULSE * strength * mobility,
-                -PHYSICS_MAX_ANGULAR_SPEED,
-                PHYSICS_MAX_ANGULAR_SPEED,
-            );
-            item.elevation = clamp(
-                item.elevation + PHYSICS_SHAKE_ELEVATION_IMPULSE * strength * mobility,
-                0,
-                PHYSICS_MAX_ELEVATION,
-            );
-        });
-        return true;
     }
 
     selectItem(itemId: string): DesktopCleanupActionResult {

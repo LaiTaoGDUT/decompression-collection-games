@@ -116,6 +116,30 @@
         "daily",
         "relaxing"
       ]
+    },
+    {
+      "id": "doodle-jump",
+      "version": "0.1.0",
+      "name": "涂鸦跃层",
+      "description": "倾斜手机在纸片平台间不断向上跳跃，并用纸飞机清理障碍。",
+      "bundle": "game-doodle-jump",
+      "scene": "scenes/DoodleJump",
+      "entryComponent": "DoodleJumpGame",
+      "icon": "visual/icons/doodle-jump/game-icon/texture",
+      "cover": "visual/covers/doodle-jump/lobby-cover/texture",
+      "orientation": "portrait",
+      "renderMode": "2d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "visibility": "development",
+      "preload": [],
+      "tags": [
+        "endless",
+        "action",
+        "tilt",
+        "relaxing"
+      ]
     }
   ]
 }

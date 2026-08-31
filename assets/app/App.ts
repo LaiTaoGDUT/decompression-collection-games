@@ -332,10 +332,18 @@ export class App extends Component {
                 adUnitId: wechatAds.desktopCleanupRewarded.adUnitId,
                 logName: 'Desktop cleanup',
             }),
+            Object.freeze({
+                gameId: 'doodle-jump',
+                placement: AD_PLACEMENTS.doodleJumpRevive,
+                adUnitId: wechatAds.doodleJumpReviveRewarded.adUnitId,
+                logName: 'Doodle Jump revive',
+            }),
         ]);
         const gameAdEnablement: Record<string, boolean> = {};
         Object.keys(config.ads.games).forEach((gameId) => {
-            gameAdEnablement[gameId] = false;
+            // Availability is owned by the per-game feature switch, not by
+            // whether this game has a dedicated provider row.
+            gameAdEnablement[gameId] = config.ads.games[gameId]?.enabled === true;
         });
         const providers: Record<string, RewardedAdProvider> = {};
         rewardedRoutes.forEach((route) => {

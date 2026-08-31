@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "442a1717-7bee-490a-b20e-a9dd1c60f0ff",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-doodle-jump",
+    "isSubpackage": true,
+    "isRemoteBundle": {},
+    "priority": 1,
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L",
+    "isBundle": true
+  }
+}

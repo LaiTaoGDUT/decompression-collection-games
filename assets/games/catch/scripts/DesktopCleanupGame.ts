@@ -37,7 +37,7 @@ import type {
 } from '../../../runtime/MiniGame';
 import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
-import type { AccelerometerSample, Platform } from '../../../platform/Platform';
+import type { Platform } from '../../../platform/Platform';
 import type { StorageService } from '../../../services/storage/StorageService';
 import {
     attachRewardedVideoIcon,
@@ -59,7 +59,6 @@ import {
     type DesktopCleanupItemSnapshot,
     type DesktopCleanupItemType,
     type DesktopCleanupPendingSelection,
-    type DesktopCleanupShakeInput,
     type DesktopCleanupSnapshot,
     type DesktopCleanupTool,
 } from './DesktopCleanupModel';
@@ -102,19 +101,6 @@ const PILE_BIRTH_ITEM_DURATION_SECONDS = 0.22;
 const PILE_BIRTH_START_SCALE = 0.68;
 const PILE_BIRTH_START_CENTER_RATIO = 0;
 const PILE_BIRTH_START_ANGLE = 8;
-// 加速度计读数包含重力分量。先用慢速基线滤掉姿态变化，再把短时间内的
-// 有效运动量累计到较高阈值；达到阈值的第一笔有效冲击即可触发颠锅。
-const ACCELEROMETER_GRAVITY_SMOOTHING = 0.88;
-const ACCELEROMETER_SHAKE_DEADZONE = 0.1;
-const ACCELEROMETER_SHAKE_TRIGGER = 0.65;
-const ACCELEROMETER_SHAKE_WINDOW_MS = 280;
-const ACCELEROMETER_SHAKE_COOLDOWN_MS = 240;
-const ACCELEROMETER_SHAKE_ENERGY_DECAY = 0.82;
-const ACCELEROMETER_SHAKE_DIRECTION_DECAY = 0.45;
-const ACCELEROMETER_SHAKE_MIN_STRENGTH = 0.72;
-const ACCELEROMETER_SHAKE_MAX_STRENGTH = 2;
-const ACCELEROMETER_SHAKE_ENERGY_CAP_MULTIPLIER = 3;
-const ACCELEROMETER_SHAKE_STRENGTH_GAIN = 0.65;
 const THEME_TEXTURE_PATHS = Object.freeze({
     playmat: PLAYMAT_PATH,
     help: 'visual/ui/desktop-cleanup-hud-help-v2/texture',
@@ -570,14 +556,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private rendering = false;
     private renderQueued = false;
     private readonly pendingPileTaps = new Map<number, PendingPileTap>();
-    private stopAccelerometer?: () => void;
-    private lastAccelerometerSample?: AccelerometerSample;
-    private accelerometerGravity?: AccelerometerSample;
-    private accelerometerShakeEnergy = 0;
-    private accelerometerShakeDirectionX = 0;
-    private accelerometerShakeDirectionY = 0;
-    private lastAccelerometerMotionAt = 0;
-    private lastAccelerometerShakeAt = 0;
     private rewardedVideoIconFrame?: SpriteFrame;
     private lastHudSecond = -1;
     private lastReportedScore?: number;
@@ -605,7 +583,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         }
         this.buildInterface();
         this.registerGlobalInput();
-        this.stopAccelerometer = context.services.platform.onAccelerometerChange(this.handleAccelerometerChange);
         this.applyThemeAssets();
         this.setPresentationVisible(true);
         this.state = 'ready';
@@ -641,7 +618,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state === 'disposed' || this.state === 'idle' || this.state === 'ready') return;
         this.clearPendingPileTaps();
         this.settlePendingImmediately();
-        this.stopDeviceMotion();
         if (this.state !== 'paused') this.stateBeforePause = this.state;
         this.state = 'paused';
         this.inputLocked = true;
@@ -651,7 +627,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state !== 'paused') return;
         this.state = this.stateBeforePause === 'paused' ? 'playing' : this.stateBeforePause;
         this.inputLocked = this.state !== 'playing';
-        if (this.state === 'playing') this.startDeviceMotion();
     }
 
     async restart(context?: MiniGameContext<DesktopCleanupServices>): Promise<void> {
@@ -679,9 +654,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.cancelSlotClearAnimations();
         this.cancelSlotMoves();
         this.clearPendingPileTaps();
-        this.stopDeviceMotion();
-        this.stopAccelerometer?.();
-        this.stopAccelerometer = undefined;
         this.unregisterGlobalInput();
         this.unscheduleAllCallbacks();
         this.destroyAllOverlays();
@@ -701,7 +673,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.slotItemNodes.clear();
         this.slotMoveTokens.clear();
         this.selectionHighlights.clear();
-        this.lastAccelerometerSample = undefined;
         this.selectionRoot = undefined;
         this.pickupRoot = undefined;
         this.itemAtlasTexture = undefined;
@@ -713,7 +684,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     showPauseMenu(model: MiniGamePauseModel): void {
-        this.stopDeviceMotion();
         this.pauseModel = model;
         this.destroyOverlay(this.pauseOverlay);
         this.pauseOverlay = this.buildOverlay(
@@ -736,7 +706,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     showResultView(model: MiniGameResultModel): void {
         this.resultModel = model;
-        this.stopDeviceMotion();
         this.state = 'completed';
         this.inputLocked = true;
         const extra = model.result.extra ?? {};
@@ -775,10 +744,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.pileBirthAnimationPending = true;
         this.lastHudSecond = -1;
         this.lastReportedScore = 0;
-        this.lastAccelerometerSample = undefined;
         this.context?.reportScore(0);
         this.state = 'playing';
-        this.stopDeviceMotion();
         this.renderAll();
         this.setHint('');
         if (this.save.rulesSeenVersion < DESKTOP_CLEANUP_RULES_VERSION) {
@@ -800,7 +767,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.terminalPending = false;
         this.inputLocked = false;
         this.clearPendingPileTaps();
-        this.stopDeviceMotion();
         this.unscheduleAllCallbacks();
     }
 
@@ -1572,7 +1538,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (!snapshot || !metrics || !pile?.isValid) {
             this.inputLocked = false;
             if (this.state === 'playing') {
-                this.startDeviceMotion();
                 this.refreshTools();
             }
             return;
@@ -1580,7 +1545,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
         this.cancelPileBirthAnimation();
         this.clearPendingPileTaps();
-        this.stopDeviceMotion();
         this.inputLocked = true;
         this.refreshTools();
 
@@ -1619,7 +1583,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (entries.length === 0) {
             this.inputLocked = false;
             if (this.state === 'playing') {
-                this.startDeviceMotion();
                 this.refreshTools();
             }
             return;
@@ -1682,7 +1645,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         });
         if (this.state !== 'playing') return;
         this.inputLocked = false;
-        this.startDeviceMotion();
         this.refreshTools();
         this.syncTerminalPhase();
     }
@@ -2172,7 +2134,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state !== 'playing') return;
         this.renderAll();
         this.inputLocked = false;
-        this.startDeviceMotion();
         this.refreshTools();
         this.syncTerminalPhase();
     }
@@ -2618,7 +2579,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.releaseMatchSelection(animation);
         if (isMagnetAnimation && this.isCurrent(animation.generation) && this.state === 'playing') {
             this.inputLocked = false;
-            this.startDeviceMotion();
             this.refreshTools();
         }
     }
@@ -2791,10 +2751,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             && this.startMagnetAnimation(magnetEffect!);
         if (isStorm || clearStarted || magnetStarted) {
             this.inputLocked = true;
-            this.stopDeviceMotion();
         } else {
             this.inputLocked = false;
-            this.startDeviceMotion();
         }
         this.renderAll();
         if (showHint) {
@@ -2860,7 +2818,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 }
                 else {
                     this.inputLocked = false;
-                    this.startDeviceMotion();
                     this.renderAll();
                     this.syncTerminalPhase();
                 }
@@ -2883,15 +2840,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private showFailure(): void {
         const snapshot = this.model?.snapshot;
         if (!snapshot) return;
-        this.stopDeviceMotion();
         const reason = snapshot.failureReason === 'timeout'
             ? '时间到了，桌面还没清空'
             : '收纳槽已经放满了';
         const actions: OverlayAction[] = [];
         if (this.isAdsEnabled() && !snapshot.continueAdAttempted) {
             const label = snapshot.failureReason === 'slots'
-                ? '看广告清除 3 格'
-                : `加时 ${this.config.continueSeconds} 秒继续`;
+                ? '清除 3 格'
+                : `加时 ${this.config.continueSeconds} 秒`;
             actions.push({ name: 'ContinueButton', label, tone: 'teal', action: () => this.requestContinueAd(), adIcon: true });
         }
         actions.push(
@@ -2956,10 +2912,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const clearStarted = removedItemIds.length > 0 && this.startSlotClearAnimation(removedItemIds);
         if (clearStarted) {
             this.inputLocked = true;
-            this.stopDeviceMotion();
         } else {
             this.inputLocked = false;
-            this.startDeviceMotion();
         }
         this.renderAll();
         if (!clearStarted) this.syncTerminalPhase();
@@ -3041,7 +2995,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private showToolHelp(tool: DesktopCleanupTool): void {
         if (this.state !== 'playing' || this.inputLocked) return;
         this.context?.services.feedback.play('uiButton');
-        this.stopDeviceMotion();
         this.activeToolHelp = tool;
         this.state = 'tool-help';
         this.inputLocked = true;
@@ -3066,13 +3019,11 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.activeToolHelp = undefined;
         this.state = 'playing';
         this.inputLocked = false;
-        this.startDeviceMotion();
         this.refreshTools();
     }
 
     private showRules(firstTime: boolean): void {
         if (this.state !== 'playing' && this.state !== 'ready') return;
-        this.stopDeviceMotion();
         this.rulesFirstTime = firstTime;
         this.state = 'rules';
         this.inputLocked = true;
@@ -3101,7 +3052,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             return;
         }
         this.inputLocked = false;
-        this.startDeviceMotion();
         this.refreshTools();
     }
 
@@ -3115,115 +3065,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state !== 'playing' || this.inputLocked) return;
         this.context?.services.feedback.play('uiButton');
         this.showRules(false);
-    };
-
-    private startDeviceMotion(): void {
-        const platform = this.context?.services.platform;
-        if (!platform?.supportsAccelerometer()) return;
-        this.resetAccelerometerTracking();
-        platform.startAccelerometer();
-    }
-
-    private stopDeviceMotion(): void {
-        this.context?.services.platform.stopAccelerometer();
-        this.resetAccelerometerTracking();
-    }
-
-    private resetAccelerometerShakeBurst(): void {
-        this.accelerometerShakeEnergy = 0;
-        this.accelerometerShakeDirectionX = 0;
-        this.accelerometerShakeDirectionY = 0;
-        this.lastAccelerometerMotionAt = 0;
-    }
-
-    private resetAccelerometerTracking(): void {
-        this.lastAccelerometerSample = undefined;
-        this.accelerometerGravity = undefined;
-        this.resetAccelerometerShakeBurst();
-        this.lastAccelerometerShakeAt = 0;
-    }
-
-    private readonly handleAccelerometerChange = (sample: AccelerometerSample): void => {
-        const previous = this.lastAccelerometerSample;
-        this.lastAccelerometerSample = sample;
-        if (this.state !== 'playing' || this.inputLocked || !this.model) return;
-        if (!previous) {
-            this.accelerometerGravity = sample;
-            return;
-        }
-
-        const previousGravity = this.accelerometerGravity ?? previous;
-        const gravitySmoothing = ACCELEROMETER_GRAVITY_SMOOTHING;
-        const gravity: AccelerometerSample = {
-            x: previousGravity.x * gravitySmoothing + sample.x * (1 - gravitySmoothing),
-            y: previousGravity.y * gravitySmoothing + sample.y * (1 - gravitySmoothing),
-            z: previousGravity.z * gravitySmoothing + sample.z * (1 - gravitySmoothing),
-        };
-        this.accelerometerGravity = gravity;
-
-        // 高通后的读数代表短促运动，z 轴参与判断是否真的在摇晃，但只用
-        // x/y 决定桌面上的推动方向，避免把手机前后抖动变成随机横向移动。
-        const motionX = sample.x - gravity.x;
-        const motionY = sample.y - gravity.y;
-        const motionZ = sample.z - gravity.z;
-        const magnitude = Math.hypot(motionX, motionY, motionZ);
-        const now = Date.now();
-        if (now - this.lastAccelerometerShakeAt < ACCELEROMETER_SHAKE_COOLDOWN_MS) {
-            // 一次颠锅只产生一个离散冲量；冷却期间不继续积累，避免持续晃动
-            // 变成高频连发，把物品推得像漂移一样。
-            this.resetAccelerometerShakeBurst();
-            return;
-        }
-        if (now - this.lastAccelerometerMotionAt > ACCELEROMETER_SHAKE_WINDOW_MS) {
-            this.resetAccelerometerShakeBurst();
-        }
-        if (magnitude <= ACCELEROMETER_SHAKE_DEADZONE) {
-            this.accelerometerShakeEnergy *= ACCELEROMETER_SHAKE_ENERGY_DECAY;
-            this.accelerometerShakeDirectionX *= ACCELEROMETER_SHAKE_DIRECTION_DECAY;
-            this.accelerometerShakeDirectionY *= ACCELEROMETER_SHAKE_DIRECTION_DECAY;
-            return;
-        }
-
-        this.lastAccelerometerMotionAt = now;
-        this.accelerometerShakeEnergy = Math.min(
-            ACCELEROMETER_SHAKE_TRIGGER * ACCELEROMETER_SHAKE_ENERGY_CAP_MULTIPLIER,
-            this.accelerometerShakeEnergy * ACCELEROMETER_SHAKE_ENERGY_DECAY
-                + magnitude - ACCELEROMETER_SHAKE_DEADZONE,
-        );
-        this.accelerometerShakeDirectionX = this.accelerometerShakeDirectionX
-            * ACCELEROMETER_SHAKE_DIRECTION_DECAY + motionX;
-        this.accelerometerShakeDirectionY = this.accelerometerShakeDirectionY
-            * ACCELEROMETER_SHAKE_DIRECTION_DECAY + motionY;
-        // Do not require a fixed number of samples: a single hard movement
-        // should be enough once the accumulated impulse crosses the threshold.
-        if (this.accelerometerShakeEnergy < ACCELEROMETER_SHAKE_TRIGGER) return;
-
-        const directionLength = Math.hypot(
-            this.accelerometerShakeDirectionX,
-            this.accelerometerShakeDirectionY,
-        );
-        if (directionLength <= 0.000001) {
-            this.resetAccelerometerShakeBurst();
-            return;
-        }
-
-        this.lastAccelerometerShakeAt = now;
-        const strength = Math.min(
-            ACCELEROMETER_SHAKE_MAX_STRENGTH,
-            ACCELEROMETER_SHAKE_MIN_STRENGTH
-                + (this.accelerometerShakeEnergy - ACCELEROMETER_SHAKE_TRIGGER)
-                / ACCELEROMETER_SHAKE_TRIGGER * ACCELEROMETER_SHAKE_STRENGTH_GAIN,
-        );
-        const shake: DesktopCleanupShakeInput = {
-            // 微信加速度计的 x/y 轴与竖屏桌面方向相反/相同的设备存在差异，
-            // 只取变化量并使用相反的 x 方向，保证“向右晃”能把物品向右推。
-            x: -this.accelerometerShakeDirectionX,
-            y: this.accelerometerShakeDirectionY,
-            strength,
-        };
-        this.resetAccelerometerShakeBurst();
-        // 设备摇晃只改变物品运动，不提供额外触感反馈。
-        this.model.applyShake(shake);
     };
 
     private readonly handleBoardTouchStart = (event: EventTouch): void => {

@@ -366,17 +366,25 @@ export interface LocalImageSelection {
 
 负责背景音乐、音效、音量、开关、前后台暂停与音频实例复用。
 
-`BundleAudioBank` 支持 `optionalCues` 作为分阶段导入音频的注册入口：可选音频缺失时跳过该 Cue，不得阻断同一 Bundle 中已存在的音乐和必需音效；资源补齐后按相同 Cue 注册并播放。
+`BundleAudioBank` 支持 `optionalMusic` 和 `optionalCues` 作为分阶段导入音频的注册入口：可选音频缺失时跳过该 BGM/Cue，不得阻断同一 Bundle 中已存在的音乐、必需音效或游戏加载；资源补齐后按相同路径注册并播放。`logOptionalFailures=false` 只用于产品已明确延后交付全部音频的游戏，不能用来吞掉必需音频错误。新字段全部可选，旧游戏无需迁移；回滚时删除本游戏的可选路径即可，不影响存档或 Session。
 
 ### FeedbackService
 
-负责统一播放反馈音效并按用户设置触发平台振动。`play(cue, options?)` 的可选参数只允许控制当前反馈是否振动；默认值保持现有行为，传入 `{ vibrate: false }` 时仍播放音效但不调用平台振动。桌面大清理的摇晃移动不触发反馈，物品拾取和三消合成使用该静音触感选项，其他游戏及失败、胜利、按钮等反馈不受影响。
+负责统一播放反馈音效并按用户设置触发平台振动。`play(cue, options?)` 的可选参数只允许控制当前反馈是否振动；默认值保持现有行为，传入 `{ vibrate: false }` 时仍播放音效但不调用平台振动。桌面大清理的物品拾取和三消合成使用该静音触感选项，其他游戏及失败、胜利、按钮等反馈不受影响。
 
-这样可以在不改变公共音效语义的情况下满足不同玩法对触感强度的要求；替代方案是修改 `drop`/`merge` 的全局振动映射，会误伤其他小游戏，或由游戏直接调用平台 API，违反公共服务边界。该参数为可选且不涉及存档迁移，旧调用保持兼容；回滚时移除对应选项和桌面大清理的显式摇晃振动调用即可恢复原行为。
+这样可以在不改变公共音效语义的情况下满足不同玩法对触感强度的要求；替代方案是修改 `drop`/`merge` 的全局振动映射，会误伤其他小游戏，或由游戏直接调用平台 API，违反公共服务边界。该参数为可选且不涉及存档迁移，旧调用保持兼容。
 
 ### StorageService
 
 负责默认值、版本迁移、异常恢复、游戏数据隔离和底层持久化。小游戏的每次逻辑操作都必须立即提交最新根快照到内存并触发保存；公共服务只对 `localStorage.setItem` 做单一根快照的 3000ms throttle，连续操作不会无限推迟写入。暂停、微信 hide、结算、退出、重开、Bundle 释放前和应用销毁都必须调用同步 `flush()`，绕过节流写入最新快照。序列化在逻辑提交点完成，延迟队列只保存最新 revision；写入失败保留 dirty 快照并由后续写入或 flush 重试。连续物理状态由小游戏按自身容错需求配置额外快照间隔；西瓜游戏当前为约 1s。
+
+小游戏自己的 `custom.gameDataVersion` 迁移若失败，必须先调用
+`backupGameDataMigrationFailure(gameId, reason)`。该操作把迁移前的完整根快照写入独立的
+`*.migration-backup.<gameId>` 键，再允许小游戏在自己的命名空间使用安全默认值；它不修改当前
+内存快照、不删除旧游戏键，也不允许小游戏取得底层 `StorageProvider`。这样既能满足单游戏迁移
+失败的可恢复性，又不会把游戏级 schema 逻辑上移到公共服务。替代方案是在小游戏直接访问
+`localStorage`，会绕过命名空间与平台边界，因此禁止采用。回滚此能力只需停止游戏侧调用，备份键
+可保留，不影响现有根存档读取。
 
 ### NavigationService
 
@@ -472,7 +480,7 @@ Canvas
 | `game-2048` | 霓虹 2048 的场景、规则、主题 UI 与音频 | 独立游戏分包 |
 | `game-sliding-puzzle` | 滑块拼图的场景、规则、图片处理、主题 UI 与音频 | 独立游戏分包 |
 | `game-switch` | 开关游戏全部内容 | 独立游戏分包 |
-| `game-catch` | 《桌面大清理》原始 2D 兼容版本的场景、规则、旧图集与软陶主题 UI | 独立游戏分包 |
+| `game-catch` | 《桌面大清理》的场景、规则、软陶桌面主题 UI 与后续独立音频 | 独立游戏分包 |
 
 资源规则：
 
@@ -578,11 +586,12 @@ ad_result
 
 本次规划整改选择复用现有公共协议，不新增全局服务或修改 `Platform.startAccelerometer(): void` 的返回契约。游戏通过 `supportsAccelerometer/startAccelerometer/stopAccelerometer/onAccelerometerChange` 建立传感器会话，以首个有效样本和 1500ms 超时判定成功；触摸输入、可复现生成器、失败/复活状态机和纸片视图均属于游戏 Bundle 内部。若未来要加入 Web `DeviceMotion` 或把传感器启动改成 Promise，必须先扩展 `Platform`、同步 WeChat/Web 实现、补充兼容测试和回滚说明，不能在小游戏里直接调用 `wx.*`。
 
-游戏通过现有 `MiniGameContext.services` 使用 `platform`、`audio`、`feedback`、`storage`、`analytics`、`ads` 和 `deviceTier`。`InputService`、`SaveService`、`AppStateService` 不属于当前容器，`AssetService` 由运行层负责 Bundle 加载和释放，因此本游戏不在 Context 中虚构这些服务。暂停、前后台、广告和退出继续经过 `MiniGameContext` 与应用状态机。
+游戏通过现有 `MiniGameContext.services` 使用 `platform`、`audio`、`feedback`、`storage`、`analytics`、`ads` 和 `deviceTier`。`InputService`、`SaveService`、`AppStateService` 不属于当前容器，`AssetService` 由运行层负责 Bundle 加载和释放，因此本游戏不在 Context 中虚构这些服务。暂停、前后台、广告和退出继续经过 `MiniGameContext` 与应用状态机。复活不使用持久库存，由 `ads.games.doodle-jump.enabled` 作为本游戏唯一复活功能开关：开关开启时，每局第一次失败可免费复活，第二次失败通过独立语义广告位 `doodle-jump-revive` 请求激励视频，第三次失败直接结算；开关关闭时所有失败均直接结算。第二次复活只有已配置真实广告且返回 `completed` 时才视为看完广告；中途关闭或失败不消耗第二次机会。没有配置广告位或路由时沿用 `AdService` 的 `completed` 降级语义，不触碰平台广告 API，直接复活成功。应用配置需要为 `doodle-jump` 提供独立复活开关和可选微信广告位，禁止借用其他游戏 placement。
 
-玩法状态在游戏内部显式包含 `Failing` 和 `Resurrecting`，失败快照只保存在内存；v2.5 不实现跨会话 `activeRound` 恢复。存档使用现有 `GameSaveData`：公共 `playCount/highScore/lastPlayedAt` 分别承载总局数、最高分和最后游玩时间，`custom.gameDataVersion = 2` 承载高度、击杀、射击统计、传感器设置和兼容道具库存。旧规划别名 `doodleJump` 只允许迁移到 `doodle-jump`，未知 `custom` 字段保留，迁移失败不得重置根存档；所有关键结算、退出和 Bundle 释放前调用同步 `StorageService.flush()`。
+玩法状态在游戏内部显式包含 `Failing` 和 `Resurrecting`，失败快照只保存在内存；v2.5 不实现跨会话 `activeRound` 恢复。存档使用现有 `GameSaveData`：公共 `playCount/highScore/lastPlayedAt` 分别承载总局数、最高分和最后游玩时间，`custom.gameDataVersion = 2` 承载高度、击杀、射击统计、传感器设置、独立的 `tutorialCompleted` 引导完成标记和起步助推兼容库存，不保存复活库存或跨局复活次数。`tutorialCompleted` 只在完整看完首次引导后写为 true，不以 `playCount` 推断。旧规划别名 `doodleJump` 只允许迁移到 `doodle-jump`，未知 `custom` 字段保留，历史规划中若已出现 `resurrectCount` 只能作为不再读取的未知兼容字段原样保留；迁移失败不得重置根存档，所有关键结算、退出和 Bundle 释放前调用同步 `StorageService.flush()`。复活点只向上寻找：先检查失败相机当前可见玩法区内的安全平台，没有时保持物理与危险更新暂停，让复活流程驱动相机和生成器向上搜索；越过已预生成范围仍没有候选时，生成无危险附着的 Normal 安全平台作为确定性终止条件。该过程不回退高度、分数或生成游标，也不允许向下放置角色。
 
 视觉方向冻结为“纸片跃层·平面涂鸦”：纯 2D 正交、正面纸片、铅笔轮廓和彩笔平涂；参考图的窄白色纸边和柔和偏移落影作为透明素材自身的预烘焙浮纸效果保留，不实现纸张厚度、透视、法线、景深、硬边投影或 3D 材质。主角正式资源交付一张固定自然站立待机姿势基础 Sprite，以及 Rocket、Jetpack、Propeller Hat 各自独立的完整“主角＋道具”组合 Sprite；Shield 改为独立透明 Shield Overlay，运行时作为玩家视觉根节点的覆盖子节点叠加到基础图或任一飞行道具组合图上。Rocket 与 Jetpack 的静态道具本体都背在主角背部，Propeller Hat 位于头顶；所有主角图和组合图复用同一上半身造型、自然站立基础姿势、脚底基线、锚点、尺寸和碰撞盒，Shield Overlay 复用玩家中心和局部挂载基准，不改变碰撞盒。基础图和组合图都只允许自然站立姿势，不制作跳跃、下落、射击、受击、失败、复活或朝向动作帧；无道具时使用基础图，使用 Rocket、Jetpack 或 Propeller Hat 时切换对应完整组合图，使用 Shield 时保留当前主角图并叠加 Shield Overlay。角色、平台、怪物、危险物、道具和纸片 HUD 的落影优先随透明图片预烘焙，需要独立动画时才拆成同 Bundle 的透明 Shadow Sprite，禁止运行时统一生成 DropShadow 或实时 3D 阴影；Rocket/Jetpack 的火焰、喷气、纸屑和拖尾，Propeller Hat 的气流与旋转线，Shield 的护盾脉冲仍使用独立特效资源，不能烘焙进基础图、组合图或 Shield Overlay。纸飞机、轨迹、失败和复活表现也使用独立特效资源。纸飞机是攻击物的原创视觉替代，点击单发与长按连发共用 120ms 全局射击冷却；弹簧/蹦床的悬浮拾取与下一次落地触发、UFO/黑洞/护盾等精确数值也标记为本项目自定义，不宣称复刻原版隐藏实现。
+正式图片优先从 `art_sources/涂鸦跃层` 审核、切分并导入；若实现所需图片在该目录缺失，可按冻结视觉规范直接生成补齐，生成结果必须登记来源、用途、尺寸、锚点和碰撞参考后才能进入 `game-doodle-jump` Bundle。正式音乐和音效由产品后续补充，本轮实现只建立独立 Cue、可选资源注册、暂停/恢复和释放接口；音频文件缺失不得阻断加载、玩法、结算或本轮完成验收，也不得临时复用其他游戏音频。
 本轮视觉资产边界调整的原因是 Shield 可与 Rocket、Jetpack 或 Propeller Hat 并行生效；改用独立 Shield Overlay 后无需为每种叠加状态制作额外的“主角＋护盾”组合图。该调整不改变玩法状态、碰撞规则、存档结构、Bundle 边界或回滚方式；替代的 Shield 完整组合图方案不再采用。
 
 实现前置约束包括：world units 与米数固定按 `100:1` 换算；普通平台可达性使用固定步长求解器而不是只比较中心点；生成器使用可复现随机流、候选重试和 Normal 安全兜底；连续点击/长按射击不能被对象池软目标转化为玩法上限；性能必须记录 P50/P95 帧耗时、Draw Call、纹理峰值和重复进出泄漏。若首版延期或回滚，只需隐藏/移除 `doodle-jump` Manifest，保留其独立命名空间和已确认视觉来源，不得清除其他游戏或根存档。

@@ -406,12 +406,13 @@ export class LobbyEntry extends Component {
             return;
         }
 
-        const view = this.cardViews.get(manifest.id);
-        view?.setLoading();
+        const ownerNode = this.node;
+        const cardView = this.cardViews.get(manifest.id);
+        cardView?.setLoading();
         void this.enterRequestLock.run(() => request(manifest)).then(
             (started) => {
-                if (!started && this.node.isValid) {
-                    view?.setIdle();
+                if (!started && ownerNode.isValid) {
+                    cardView?.setIdle();
                 }
             },
             (error: unknown) => {
@@ -419,8 +420,8 @@ export class LobbyEntry extends Component {
                     `[LobbyEntry] Enter request failed: ${manifest.id}.`,
                     error,
                 );
-                if (this.node.isValid) {
-                    view?.setEnterFailed();
+                if (ownerNode.isValid) {
+                    cardView?.setEnterFailed();
                 }
             },
         );

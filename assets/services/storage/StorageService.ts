@@ -342,6 +342,28 @@ export class StorageService {
         return this.persistenceError;
     }
 
+    /**
+     * 游戏自身 schema 迁移失败时保存迁移前的完整根快照。
+     * 该操作不修改当前内存数据，也不向小游戏暴露底层 provider。
+     */
+    backupGameDataMigrationFailure(gameId: string, reason: string): void {
+        this.ensureActive();
+        const normalizedId = normalizeGameId(gameId);
+        const normalizedReason = reason.trim() || 'Unknown game-data migration failure.';
+        try {
+            this.provider.setItem(
+                `${this.storageKey}${MIGRATION_BACKUP_SUFFIX}.${normalizedId}`,
+                JSON.stringify({
+                    gameId: normalizedId,
+                    reason: normalizedReason,
+                    rawData: this.serialize(this.snapshot),
+                }),
+            );
+        } catch (cause: unknown) {
+            throw new StorageMigrationError(undefined, cause);
+        }
+    }
+
     writeGameData(gameId: string, gameData: GameSaveData): UserData {
         const normalizedId = normalizeGameId(gameId);
 
