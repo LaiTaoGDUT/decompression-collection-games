@@ -15,6 +15,14 @@ export interface DoodleJumpCombatPlatform {
     readonly consumed: boolean;
 }
 
+export interface DoodleJumpCombatOccupiedBody {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+    readonly anchorPlatformId?: string;
+}
+
 export interface DoodleJumpEnemySnapshot {
     readonly id: string;
     readonly type: DoodleJumpEnemyType;
@@ -152,6 +160,7 @@ export class DoodleJumpCombatSystem {
         platforms: readonly DoodleJumpCombatPlatform[],
         cameraBottomY: number,
         cameraTopY: number,
+        occupiedBodies: readonly DoodleJumpCombatOccupiedBody[] = [],
     ): void {
         this.elapsedSeconds = elapsedSeconds;
         const platformById = new Map<string, DoodleJumpCombatPlatform>();
@@ -159,7 +168,7 @@ export class DoodleJumpCombatSystem {
         this.updateEnemyPositions(platformById);
         this.recycleEnemies(cameraBottomY);
         this.purgeEvaluatedPlatforms(platformById);
-        this.evaluateNewPlatforms(platforms, cameraBottomY, cameraTopY);
+        this.evaluateNewPlatforms(platforms, cameraBottomY, cameraTopY, occupiedBodies);
     }
 
     resolvePlayerCollision(
@@ -321,6 +330,7 @@ export class DoodleJumpCombatSystem {
         platforms: readonly DoodleJumpCombatPlatform[],
         cameraBottomY: number,
         cameraTopY: number,
+        occupiedBodies: readonly DoodleJumpCombatOccupiedBody[],
     ): void {
         if (!this.config.enemies.enabled) return;
         const ordered = platforms.slice().sort((left, right) => (
@@ -372,7 +382,7 @@ export class DoodleJumpCombatSystem {
             }
             const type = this.pickEnemyType(platformMeters);
             if (!type) continue;
-            const enemy = this.createEnemy(type, platform);
+            const enemy = this.createEnemy(type, platform, occupiedBodies);
             if (!enemy) continue;
             if (this.enemies.some((candidate) => (
                 Math.abs(candidate.y - enemy.y)
@@ -413,6 +423,7 @@ export class DoodleJumpCombatSystem {
     private createEnemy(
         type: DoodleJumpEnemyType,
         platform: DoodleJumpCombatPlatform,
+        occupiedBodies: readonly DoodleJumpCombatOccupiedBody[],
     ): MutableEnemy | undefined {
         const settings = this.config.enemies[type];
         if (platform.type === 'moving' || platform.type === 'shifting') return undefined;
@@ -446,6 +457,11 @@ export class DoodleJumpCombatSystem {
         };
         this.nextEnemyId += 1;
         this.positionEnemy(enemy, platform);
+        if (occupiedBodies.some((body) => (
+            body.anchorPlatformId === platform.id
+            || (Math.abs(body.x - enemy.x) <= body.width / 2 + enemy.width / 2 + 12
+                && Math.abs(body.y - enemy.y) <= body.height / 2 + enemy.height / 2 + 12)
+        ))) return undefined;
         return enemy;
     }
 

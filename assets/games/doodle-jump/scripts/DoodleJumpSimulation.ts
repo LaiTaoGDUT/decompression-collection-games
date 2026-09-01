@@ -11,6 +11,7 @@ import {
 import {
     DoodleJumpCombatSystem,
     type DoodleJumpCombatEvent,
+    type DoodleJumpCombatOccupiedBody,
     type DoodleJumpCombatPlatform,
     type DoodleJumpCombatStats,
     type DoodleJumpEnemySnapshot,
@@ -224,6 +225,7 @@ export class DoodleJumpSimulation {
             this.getCombatPlatforms(),
             this.cameraBottomY,
             this.cameraBottomY + this.config.design.height,
+            this.getCombatOccupiedBodies(),
         );
         this.hazards.syncWorld(
             0,
@@ -493,6 +495,7 @@ export class DoodleJumpSimulation {
             this.getCombatPlatforms(),
             this.cameraBottomY,
             this.cameraBottomY + visibleHeight,
+            this.getCombatOccupiedBodies(),
         );
         this.hazards.syncWorld(
             delta,
@@ -604,6 +607,7 @@ export class DoodleJumpSimulation {
             this.getCombatPlatforms(),
             this.cameraBottomY,
             this.cameraBottomY + visibleHeight,
+            this.getCombatOccupiedBodies(),
         );
         this.hazards.syncWorld(
             0,
@@ -1224,6 +1228,19 @@ export class DoodleJumpSimulation {
             anchorPlatformId: enemy.anchorPlatformId,
         })));
         this.items.getOccupiedBodies().forEach((item) => occupied.push(item));
+        return Object.freeze(occupied);
+    }
+
+    private getCombatOccupiedBodies(): readonly DoodleJumpCombatOccupiedBody[] {
+        const occupied: DoodleJumpCombatOccupiedBody[] = [];
+        this.items.getOccupiedBodies().forEach((item) => occupied.push(item));
+        this.hazards.getSnapshots().forEach((hazard) => occupied.push(Object.freeze({
+            x: hazard.x,
+            y: hazard.y,
+            width: hazard.width,
+            height: hazard.height,
+            anchorPlatformId: hazard.anchorPlatformId,
+        })));
         return Object.freeze(occupied);
     }
 

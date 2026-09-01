@@ -284,14 +284,10 @@ export function buildDoodleJumpRunSave(
         save: Object.freeze({
             ...baseline,
             playCount: baseline.playCount + 1,
-            highScore: history.completed ? Math.max(baseline.highScore, score) : baseline.highScore,
+            highScore: Math.max(baseline.highScore, score),
             lastPlayedAt: playedAt,
-            bestHeightMeters: history.completed
-                ? Math.max(baseline.bestHeightMeters, height)
-                : baseline.bestHeightMeters,
-            bestKillCount: history.completed
-                ? Math.max(baseline.bestKillCount, kills)
-                : baseline.bestKillCount,
+            bestHeightMeters: Math.max(baseline.bestHeightMeters, height),
+            bestKillCount: Math.max(baseline.bestKillCount, kills),
             totalShots: baseline.totalShots + shots,
             totalKills: baseline.totalKills + kills,
         }),

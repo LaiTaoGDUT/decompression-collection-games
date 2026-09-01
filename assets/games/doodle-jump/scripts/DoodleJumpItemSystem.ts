@@ -236,18 +236,11 @@ export class DoodleJumpItemSystem {
         if (power === 'trampoline') {
             const bounceVelocity = this.config.items.trampoline.bounceVelocity;
             const gravityMagnitude = Math.max(1, Math.abs(this.config.player.gravity));
-            const nextMainRouteHeight = this.config.generation.verticalStep
-                * this.config.generation.mainRouteStepCount;
-            const descendingSpeedAtNextRoute = Math.sqrt(Math.max(
-                0,
-                bounceVelocity * bounceVelocity
-                    - 2 * gravityMagnitude * nextMainRouteHeight,
-            ));
             this.trampolineJumpActive = true;
-            // Complete both visual turns by the earliest normal next-route
-            // landing. Lower inserted platforms are reached later on descent.
-            this.trampolineJumpDurationSeconds = (bounceVelocity + descendingSpeedAtNextRoute)
-                / gravityMagnitude;
+            // Complete both visual turns exactly at the ballistic apex. The
+            // fixed-step velocity crosses from positive to non-positive in the
+            // same step that this elapsed duration reaches one.
+            this.trampolineJumpDurationSeconds = bounceVelocity / gravityMagnitude;
             return bounceVelocity;
         }
         return this.config.items.spring.bounceVelocity;

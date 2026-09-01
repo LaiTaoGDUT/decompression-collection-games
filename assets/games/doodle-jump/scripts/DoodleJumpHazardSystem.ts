@@ -472,7 +472,7 @@ export class DoodleJumpHazardSystem {
                 continue;
             }
             const heightMeters = Math.max(0, (platform.y - this.startWorldY()) / 100);
-            if (heightMeters < this.config.hazards.ufo.unlockHeightMeters) {
+            if (heightMeters < this.earliestUnlockHeightMeters()) {
                 this.evaluatedPlatformIds.add(platform.id);
                 continue;
             }
@@ -518,7 +518,7 @@ export class DoodleJumpHazardSystem {
     }
 
     private hazardDifficultyProgress(heightMeters: number): number {
-        const start = this.config.hazards.ufo.unlockHeightMeters;
+        const start = this.earliestUnlockHeightMeters();
         const end = this.config.hazards.difficultyCapHeightMeters;
         return Math.max(0, Math.min(1, (heightMeters - start) / Math.max(1, end - start)));
     }
@@ -703,6 +703,14 @@ export class DoodleJumpHazardSystem {
 
     private countType(type: DoodleJumpHazardType): number {
         return this.hazards.filter((hazard) => hazard.type === type && !hazard.triggered).length;
+    }
+
+    private earliestUnlockHeightMeters(): number {
+        return Math.min(
+            this.config.hazards.ufo.unlockHeightMeters,
+            this.config.hazards.blackHole.unlockHeightMeters,
+            this.config.hazards.bearTrap.unlockHeightMeters,
+        );
     }
 
     private allocateId(prefix: string): string {

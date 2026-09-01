@@ -42,6 +42,11 @@ import {
     calculateVerticalSafeBounds,
 } from '../../../shared/ui/PlatformSafeLayout';
 import {
+    attachRewardedVideoIcon,
+    layoutRewardedVideoIconBeforeLabel,
+    loadRewardedVideoIcon,
+} from '../../../shared/ui/RewardedVideoIcon';
+import {
     DOODLE_JUMP_BUNDLE,
     parseDoodleJumpGameplayConfig,
     type DoodleJumpGameplayConfig,
@@ -77,6 +82,7 @@ import {
 import { DoodleJumpStateMachine } from './DoodleJumpStateMachine';
 
 const { ccclass } = _decorator;
+const RUN_PROGRESS_SAVE_INTERVAL_SECONDS = 3;
 
 const COLORS = Object.freeze({
     paper: new Color(247, 241, 221, 255),
@@ -362,7 +368,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private debugHeadStartRemaining = 0;
     private runStarted = false;
     private runShotCount = 0;
+    private runProgressSaveElapsed = 0;
     private runExitTracked = false;
+    private rewardedVideoIconFrame?: SpriteFrame;
     private hideUnsubscribe?: Unsubscribe;
     private showUnsubscribe?: Unsubscribe;
     private resizeBound = false;
@@ -509,6 +517,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.showUnsubscribe = context.services.platform.onShow(this.handlePlatformShow);
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.resizeBound = true;
+        if (context.services.ads.isEnabledForGame(context.gameId)) {
+            this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
+        }
         await this.preloadLoadingVisual();
         this.buildPresentation();
         this.setGameplayPresentationVisible(false);
@@ -601,6 +612,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         }
         this.runStarted = false;
         this.runShotCount = 0;
+        this.runProgressSaveElapsed = 0;
         this.runExitTracked = false;
         this.failureLocked = false;
         this.settlementCommitted = false;
@@ -694,6 +706,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             if (frame.isValid) frame.destroy();
         });
         this.ownedFrames = [];
+        this.rewardedVideoIconFrame?.destroy();
+        this.rewardedVideoIconFrame = undefined;
         this.slicedFrames.clear();
         this.restoreDynamicAtlas();
         this.textureFrames = {};
@@ -808,6 +822,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.consumeHazardEvents(this.simulation.drainHazardEvents());
         this.consumeItemEvents(this.simulation.drainItemEvents());
         this.renderSimulation();
+        this.runProgressSaveElapsed += Math.max(0, deltaTime);
+        if (this.runProgressSaveElapsed >= RUN_PROGRESS_SAVE_INTERVAL_SECONDS) {
+            // Each checkpoint is rebuilt from the immutable run baseline, so
+            // repeated writes replace one another instead of double-counting.
+            this.runProgressSaveElapsed = 0;
+            this.persistCurrentRunHistory(false, false);
+        }
         if (this.context?.services.platform.id === 'wechat'
             && this.inputController?.hasStaleSensor()) {
             this.enterSensorError('1500ms 内没有新的重力感应数据');
@@ -1167,6 +1188,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.stateMachine.transition('Playing');
         this.inputController?.setEnabled(true);
         this.runStarted = true;
+        this.runProgressSaveElapsed = 0;
         const snapshot = this.simulation?.getSnapshot();
         this.context?.services.analytics.track('doodle_jump_run_start', {
             sessionId: this.context.sessionId,
@@ -1400,9 +1422,20 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             `分数 ${score} · 高度 ${heightMeters}m`,
             'panelRevive',
         );
-        const reviveButton = this.createButton(overlay, isFree ? '免费复活' : '看广告复活', 0, 65, 320, 82, () => {
-            void this.requestResurrection(isFree ? 'free' : 'rewarded-ad');
-        });
+        const reviveButton = this.createButton(
+            overlay,
+            isFree ? '免费复活' : '看广告复活',
+            0,
+            65,
+            320,
+            82,
+            () => {
+                void this.requestResurrection(isFree ? 'free' : 'rewarded-ad');
+            },
+            'primary',
+            undefined,
+            !isFree,
+        );
         const restartButton = this.createButton(overlay, '重新开始', 0, -35, 320, 82, () => {
             this.context?.requestRestart();
         }, 'danger');
@@ -3522,12 +3555,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.applySpriteVisual(this.playerNode, frame);
         const visual = this.playerNode.getChildByName('SpriteVisual');
         visual?.setScale(this.playerFacing, 1, 1);
+        const trampolineProgress = itemStatus?.trampolineJumpProgress ?? 0;
+        const trampolineRotation = itemStatus?.trampolineJumpActive
+            && trampolineProgress < 1
+            ? -720 * trampolineProgress
+            : 0;
         visual?.setRotationFromEuler(
             0,
             0,
-            itemStatus?.trampolineJumpActive
-                ? -720 * itemStatus.trampolineJumpProgress
-                : 0,
+            trampolineRotation,
         );
         visual?.setPosition(
             0,
@@ -4077,6 +4113,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         action: () => void,
         style: 'primary' | 'secondary' | 'danger' = 'primary',
         iconKey?: TextureKey,
+        showRewardedVideoIcon = false,
     ): Node {
         const button = this.createGraphicsNode(parent, `Button-${text}`, width, height);
         button.setPosition(x, y, 0);
@@ -4090,8 +4127,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         graphics.lineWidth = 4;
         graphics.roundRect(-width / 2, -height / 2, width, height, 20);
         graphics.stroke();
-        const hasIcon = iconKey !== undefined && this.textureFrames[iconKey] !== undefined;
-        this.createLabel(
+        const hasTextureIcon = iconKey !== undefined && this.textureFrames[iconKey] !== undefined;
+        const hasRewardedIcon = showRewardedVideoIcon
+            && this.rewardedVideoIconFrame !== undefined;
+        const hasIcon = hasTextureIcon || hasRewardedIcon;
+        const label = this.createLabel(
             button,
             'Label',
             text,
@@ -4102,7 +4142,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             width - (hasIcon ? 78 : 20),
             height - 10,
         );
-        if (hasIcon && iconKey) {
+        if (hasTextureIcon && iconKey) {
             this.createSpriteNode(
                 button,
                 'ButtonIcon',
@@ -4111,6 +4151,23 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 42,
                 -width / 2 + 42,
                 0,
+            );
+        } else if (hasRewardedIcon) {
+            const iconSize = 36;
+            const icon = attachRewardedVideoIcon(
+                button,
+                this.rewardedVideoIconFrame,
+                0,
+                0,
+                iconSize,
+            );
+            layoutRewardedVideoIconBeforeLabel(
+                icon,
+                label,
+                text,
+                27,
+                iconSize,
+                width,
             );
         }
         if (this.isNodeWithin(parent, this.pauseOverlayRoot)) {
@@ -4173,6 +4230,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (label) label.color = enabled ? COLORS.paper : new Color(229, 225, 212, 255);
         const icon = button.getChildByName('ButtonIcon')?.getComponent(Sprite);
         if (icon) icon.color = enabled ? Color.WHITE : new Color(170, 170, 164, 255);
+        const rewardedIcon = button.getChildByName('RewardedVideoIcon')?.getComponent(Sprite);
+        if (rewardedIcon) {
+            rewardedIcon.color = enabled ? Color.WHITE : new Color(170, 170, 164, 255);
+        }
     }
 
     private setOverlayButtonsEnabled(enabled: boolean): void {

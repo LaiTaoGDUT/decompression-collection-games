@@ -120,6 +120,18 @@ v2 采用竖向暖白稿纸、浅蓝横线、细铅笔线、低饱和彩笔平�
 - 运行时资产：`assets/games/doodle-jump/visual/items/pickup-spring-v2.png`，规范化到与旧图一致的 329×404 透明画布；弹簧改为暖珊瑚红、底座改为低饱和金黄，从蓝绿色 Normal 平台中明确区分。
 - 所有拾取物继续复用本游戏既有 `item-pickup-sparkles.png`，运行时作为主体后方的常驻纸片星芒，以 seed 错峰进行低频缩放、旋转和透明度呼吸；没有引入跨游戏资源或代码纯色色块。
 
+## 弹簧反弹特效配色统一 v2（当前，2026-09-01）
+
+- 编辑目标：`art_sources/涂鸦跃层/特效/item_motion_vfx/spring_rebound.png`；仅调整原图蓝绿色区域的色相和饱和度，上半部弹簧线圈统一为拾取物的暖珊瑚红，下半部反弹环统一为底座的低饱和金黄。
+- 内置 `image_gen` 用于比对珊瑚红＋金黄方案，生成候选因改变构图且未保留透明通道而未采用；最终资产在原始 RGBA 源图上执行确定性色相替换，完整保留 512×512 画布、透明度、纸边、铅笔线、纹理和所有特效轮廓。
+- 运行时派生图仍为 `assets/games/doodle-jump/visual/effects/spring-rebound.png`，由既有处理脚本按 Alpha 紧边生成，不新增资源路径或跨游戏依赖。
+
+## 大厅 4:3 玩法封面 v2（当前，2026-09-01）
+
+- 生成方式：Codex 内置 `image_gen`，以本游戏正式主角、Normal 平台、珊瑚红弹簧和 Small 怪物为视觉参考，不引用大厅或其他小游戏的正式美术。
+- 采用输出：`exec-b05b47c5-3e43-4681-bc47-4b32559b5f67`；原始 1448×1086、严格 4:3 输出归档为 `art_sources/涂鸦跃层/大厅/lobby_cover.png`，运行时以 192 色调色板和 Lanczos 缩放派生为 `assets/lobby/visual/covers/doodle-jump/lobby-cover.png`（800×600）。
+- 构图以向上跃动的主角和自下而上的平台路线为主体，同时展示弹簧、护盾、纸飞机与独眼怪物；关键元素保持在中央安全区，适配大厅卡片 `cover` 裁切。封面不包含 HUD、文字、Logo 或其他游戏素材。
+
 ## 阶段 9 正式 UI 与引导（当前）
 
 - 源资产：`art_sources/涂鸦跃层/UI/hud_components/`、`overlay_panels/` 和 `tutorial_illustrations/` 内的独立透明 PNG；道具 HUD 图标来自本游戏 `道具/pickups/` 现有图片。

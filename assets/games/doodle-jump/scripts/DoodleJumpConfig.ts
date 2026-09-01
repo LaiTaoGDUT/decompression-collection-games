@@ -603,10 +603,10 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         bearTrap.unlockHeightMeters,
         'hazards.bearTrap.unlockHeightMeters',
     );
-    if (ufoUnlockHeight !== 150
+    if (ufoUnlockHeight !== 600
         || blackHoleUnlockHeight !== 250
-        || bearTrapUnlockHeight !== 250) {
-        throw new Error('Hazard unlock heights must remain UFO 150m, Black Hole 250m, Bear Trap 250m.');
+        || bearTrapUnlockHeight !== 180) {
+        throw new Error('Hazard unlock heights must remain UFO 600m, Black Hole 250m, Bear Trap 180m.');
     }
     const ufoMaximumActive = positiveInteger(ufo.maximumActive, 'hazards.ufo.maximumActive');
     const blackHoleMaximumActive = positiveInteger(
@@ -652,7 +652,11 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     );
     if (maximumActiveHazards > 2
         || hazardSpawnChanceAtUnlock > hazardSpawnChanceCap
-        || hazardDifficultyCapHeight <= ufoUnlockHeight
+        || hazardDifficultyCapHeight <= Math.min(
+            ufoUnlockHeight,
+            blackHoleUnlockHeight,
+            bearTrapUnlockHeight,
+        )
         || hazardTwoActiveHeight > hazardDifficultyCapHeight
         || hazardInitialSeparation < hazardFinalSeparation) {
         throw new Error('Hazard difficulty curve must rise gradually and stop at its configured cap.');
@@ -738,6 +742,62 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     );
     if (maximumAbovePlatform <= minimumAbovePlatform) {
         throw new Error('items.maximumAbovePlatform must exceed the minimum.');
+    }
+    const jetpackDurationSeconds = positiveNumber(
+        jetpack.durationSeconds,
+        'items.jetpack.durationSeconds',
+    );
+    const jetpackVerticalVelocity = positiveNumber(
+        jetpack.verticalVelocity,
+        'items.jetpack.verticalVelocity',
+    );
+    const propellerHatDurationSeconds = positiveNumber(
+        propellerHat.durationSeconds,
+        'items.propellerHat.durationSeconds',
+    );
+    const propellerHatGravity = positiveNumber(
+        propellerHat.gravity,
+        'items.propellerHat.gravity',
+    );
+    const propellerHatMinimumVelocity = positiveNumber(
+        propellerHat.minimumVerticalVelocity,
+        'items.propellerHat.minimumVerticalVelocity',
+    );
+    const rocketDurationSeconds = positiveNumber(
+        rocket.durationSeconds,
+        'items.rocket.durationSeconds',
+    );
+    const rocketVerticalVelocity = positiveNumber(
+        rocket.verticalVelocity,
+        'items.rocket.verticalVelocity',
+    );
+    const inheritedMaximumVelocity = positiveNumber(
+        trampoline.bounceVelocity,
+        'items.trampoline.bounceVelocity',
+    );
+    const propellerDecelerationSeconds = Math.min(
+        propellerHatDurationSeconds,
+        Math.max(
+            0,
+            (inheritedMaximumVelocity - propellerHatMinimumVelocity) / propellerHatGravity,
+        ),
+    );
+    const propellerFinalVelocity = Math.max(
+        propellerHatMinimumVelocity,
+        inheritedMaximumVelocity
+            - propellerHatGravity * propellerDecelerationSeconds,
+    );
+    const maximumPropellerHeight = (
+        (inheritedMaximumVelocity + propellerFinalVelocity) / 2
+        * propellerDecelerationSeconds
+    ) + propellerHatMinimumVelocity
+        * (propellerHatDurationSeconds - propellerDecelerationSeconds);
+    const jetpackHeight = jetpackDurationSeconds * jetpackVerticalVelocity;
+    const rocketHeight = rocketDurationSeconds * rocketVerticalVelocity;
+    if (!(rocketHeight > jetpackHeight && jetpackHeight > maximumPropellerHeight)) {
+        throw new Error(
+            'Flight item heights must remain Rocket > Jetpack > maximum Propeller Hat.',
+        );
     }
     return Object.freeze({
         schemaVersion,
@@ -936,43 +996,25 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
                     jetpack.unlockHeightMeters,
                     'items.jetpack.unlockHeightMeters',
                 ),
-                durationSeconds: positiveNumber(
-                    jetpack.durationSeconds,
-                    'items.jetpack.durationSeconds',
-                ),
-                verticalVelocity: positiveNumber(
-                    jetpack.verticalVelocity,
-                    'items.jetpack.verticalVelocity',
-                ),
+                durationSeconds: jetpackDurationSeconds,
+                verticalVelocity: jetpackVerticalVelocity,
             }),
             propellerHat: Object.freeze({
                 unlockHeightMeters: nonNegativeInteger(
                     propellerHat.unlockHeightMeters,
                     'items.propellerHat.unlockHeightMeters',
                 ),
-                durationSeconds: positiveNumber(
-                    propellerHat.durationSeconds,
-                    'items.propellerHat.durationSeconds',
-                ),
-                gravity: positiveNumber(propellerHat.gravity, 'items.propellerHat.gravity'),
-                minimumVerticalVelocity: positiveNumber(
-                    propellerHat.minimumVerticalVelocity,
-                    'items.propellerHat.minimumVerticalVelocity',
-                ),
+                durationSeconds: propellerHatDurationSeconds,
+                gravity: propellerHatGravity,
+                minimumVerticalVelocity: propellerHatMinimumVelocity,
             }),
             rocket: Object.freeze({
                 unlockHeightMeters: nonNegativeInteger(
                     rocket.unlockHeightMeters,
                     'items.rocket.unlockHeightMeters',
                 ),
-                durationSeconds: positiveNumber(
-                    rocket.durationSeconds,
-                    'items.rocket.durationSeconds',
-                ),
-                verticalVelocity: positiveNumber(
-                    rocket.verticalVelocity,
-                    'items.rocket.verticalVelocity',
-                ),
+                durationSeconds: rocketDurationSeconds,
+                verticalVelocity: rocketVerticalVelocity,
             }),
             shield: Object.freeze({
                 unlockHeightMeters: nonNegativeInteger(
