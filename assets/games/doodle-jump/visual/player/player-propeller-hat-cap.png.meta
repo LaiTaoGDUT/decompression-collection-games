@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "66ba9451-9067-45a1-85a3-80cbff1a2252",
+  "uuid": "9809e475-8cff-41fb-a6ed-1b4516a90372",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "66ba9451-9067-45a1-85a3-80cbff1a2252@6c48a",
-      "displayName": "player-landing",
+      "uuid": "9809e475-8cff-41fb-a6ed-1b4516a90372@6c48a",
+      "displayName": "player-propeller-hat-cap",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "66ba9451-9067-45a1-85a3-80cbff1a2252",
+        "imageUuidOrDatabaseUri": "9809e475-8cff-41fb-a6ed-1b4516a90372",
         "visible": false
       },
       "ver": "1.0.22",
@@ -37,6 +37,6 @@
     "type": "texture",
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "66ba9451-9067-45a1-85a3-80cbff1a2252@6c48a"
+    "redirect": "9809e475-8cff-41fb-a6ed-1b4516a90372@6c48a"
   }
 }

@@ -91,6 +91,7 @@ v2 采用竖向暖白稿纸、浅蓝横线、细铅笔线、低饱和彩笔平�
 - 运行时派生：`assets/games/doodle-jump/visual/enemies/` 与 `assets/games/doodle-jump/visual/effects/enemy-*.png`。
 - 派生方式：`tools/process-doodle-jump-visuals.py` 仅按 Alpha 可见范围紧边裁切并保留原有预烘焙纸片边缘和落影，没有运行时代码阴影，也没有跨游戏复用素材。
 - 锚点与碰撞参考：地面怪物碰撞盒底边贴平台逻辑顶面；同类两帧先放入共享透明画布并按底部中心归一化，运行时再补偿平台预烘焙图片的可见上沿和怪物帧底部透明留边，使脚底最低可见点贴合平台表面。Hover 以平台顶面上方 90 units 为锚点，不使用地面补偿；开发态可叠加身体盒与头部区辅助线。
+- 怪物体型：Small、Large、Hover 三类怪物的正式 Sprite、身体碰撞盒、头顶踩踏区和占位范围均统一放大到原来的 `2×`，并继续以碰撞盒底边为视觉落脚锚点。到达 Large 解锁高度后，动态生成的 Normal 平台直接使用 `236–280 units` 的宽度范围，完整承载放大后的大型怪物并保留两侧纸片留边；禁止先生成窄平台、再在怪物出现或存档恢复时补宽。
 - 主角怪物接触反馈：源图 `art_sources/涂鸦跃层/特效/failure_vfx/enemy_contact_impact.png`，运行时派生图 `assets/games/doodle-jump/visual/effects/player-enemy-contact-impact.png`；处理脚本只按 Alpha 紧边裁切。该图仅用于 `monster-contact`，以主角局部坐标挂载并位于主角前景，普通掉落不复用。
 
 ## 阶段 6 危险物与失败反馈（当前）
@@ -102,16 +103,22 @@ v2 采用竖向暖白稿纸、浅蓝横线、细铅笔线、低饱和彩笔平�
 
 ## 阶段 7 道具与能力反馈（当前）
 
-- 源资产：`art_sources/涂鸦跃层/主角/` 内基础运行图、Jetpack/Propeller Hat/Rocket 三张完整角色组合图及独立 `shield_overlay.png`；六种拾取物来自 `道具/pickups/`；拾取、护盾抵挡和能力运动图来自 `特效/common_vfx/` 与 `特效/item_motion_vfx/`。
-- 运行时派生：`assets/games/doodle-jump/visual/player/`、`visual/items/` 和 `visual/effects/`。`tools/process-doodle-jump-visuals.py` 对拾取物、Overlay 和特效按 Alpha 紧边裁切；四张完整角色图先共同裁取可见范围，再放入同尺寸透明画布并按底部中心对齐，因此切换能力时脚底基线和玩家局部锚点不跳变。
-- Rocket、Jetpack、Propeller Hat 激活时切换对应完整组合 Sprite；Shield 始终以独立 Overlay 叠加，可与任一组合图同时显示。喷气、火箭、气流和 Head Start 使用独立运动特效，Spring/Trampoline 在有效落地时使用各自反弹图，拾取和抵挡也使用既有正式透明图。
+- 源资产：`art_sources/涂鸦跃层/主角/` 内基础运行图、独立生成的 Jetpack/Propeller Hat/Rocket 装备图及 `shield_overlay.png`；六种拾取物来自 `道具/pickups/`；拾取、护盾抵挡和能力运动图来自 `特效/common_vfx/` 与 `特效/item_motion_vfx/`。旧的三张完整角色组合图只作为历史参考，不再进入正式构建。
+- 运行时派生：`assets/games/doodle-jump/visual/player/`、`visual/items/` 和 `visual/effects/`。`tools/process-doodle-jump-visuals.py` 对独立装备、拾取物、Overlay 和特效按 Alpha 紧边裁切，并为每件装备保留稳定的局部锚点；飞行能力切换时基础主角 Sprite、脚底基线和碰撞体不切图、不跳变。
+- 三种飞行能力统一使用“基础主角 + 独立装备”分层结构。Jetpack 位于主角后层，主体被主角躯干自然遮挡，仅露出背包、侧带和喷口；Rocket 位于主角前层，以更大的竖直火箭壳包住主角，舷窗区域必须是真实透明 Alpha，可透出基础主角的头部；Propeller Hat 使用独立帽体与独立扇叶。Shield 始终以独立 Overlay 叠加，可与任一能力状态同时显示。
+- Jetpack、Propeller Hat、Rocket 的持续时间结束时统一播放装备脱落：装备从当前主角世界坐标分离，先向侧上方抛出，再受重力沿抛物线下落并旋转，完全掉出屏幕下方后回收；主角不跟随装备旋转或偏移。Propeller Hat 脱落时帽体与扇叶作为一个整体离开，扇叶在脱落期间继续进行竖轴旋转投影。
+- Propeller Hat 的飞行表现改为“基础主角 + 固定帽体 + 独立扇叶”：不再使用 `player_with_propeller_hat.png` 组合角色图。正式帽子源图为 `art_sources/涂鸦跃层/主角/player_propeller_hat_generated.png`，由内置 ImageGen 以本游戏 `pickup-propeller-hat.png` 和基础主角为风格参考生成；运行时派生为 `visual/player/player-propeller-hat-cap.png` 与 `visual/player/player-propeller-hat-blades.png`。帽体固定覆盖在主角头顶；扇叶绕竖直轴旋转，正面投影使用“展开 → 横向压缩至侧面 → 翻面 → 再展开”的周期缩放，禁止把帽体或扇叶 Sprite 绕屏幕法线做平面转圈。运行时不再叠加 `propeller_airflow.png` 或 `propeller_rotation_lines.png`。
+- Propeller Hat 的帽体和扇叶运行时尺寸均缩至上一版的约 `2/3`，以相同局部锚点关系整体上移，避免遮挡角色脸部；帽体保持固定，只有扇叶执行竖轴旋转投影。
+- ImageGen 最终提示词要点：独立 2D 游戏装备 Sprite；完整竹蜻蜓帽子；红、芥末黄、青绿三片纸帽与水平双叶；手绘纸片拼贴、炭笔轮廓、纸张颗粒；正视、居中、透明背景；禁止角色身体、背景、气流、运动线、文字、Logo 和水印。
+- Jetpack 正式源图为 `art_sources/涂鸦跃层/主角/player_jetpack_generated.png`，由内置 ImageGen 以拾取物、基础主角和旧组合图为造型/尺度参考生成，采用输出 `exec-75a4cf94-21b8-4923-a4b1-952f58874c6a`；提示词锁定双青绿纸罐、珊瑚红喷口、芥末黄束带、炭笔中心架与肩带，要求独立透明装备、不含主角和火焰。运行时派生为 `visual/player/player-jetpack.png`。
+- Rocket 正式源图为 `art_sources/涂鸦跃层/主角/player_rocket_generated.png`，由内置 ImageGen 以拾取物、基础主角和旧组合图为参考生成，采用透明度修正版输出 `exec-f749ba50-eb03-49bd-9aa9-b808315ca6ac`；提示词锁定竖直大火箭、青绿壳体、珊瑚红头锥/尾翼、芥末黄饰边和大圆舷窗。模型输出把棋盘格烘焙进 RGB，因此素材管线只做确定性的背景分离，并将舷窗内圈裁为真实 `alpha=0`，不重绘火箭主体。运行时派生为 `visual/player/player-rocket.png`。
+- Bear Trap 的主体必须始终以 `0°` 平放在平台表面；危险物节点池复用时须重置主体 Sprite 的位置、缩放、颜色与旋转，不能继承 UFO 摆动等上一种危险物的子节点变换。
 - 全部素材仅来自本游戏自己的 `art_sources/涂鸦跃层`，没有引用大厅或其他小游戏资源，也没有使用运行时代码色块、统一 DropShadow 或 3D 效果替代正式主体图。
 
-## 主角独立落地帧 v1（当前，2026-08-31）
+## 主角独立落地帧 v1（已移除，2026-09-02）
 
-- 现有正式 `player_ready_standing.png` 的自然站立姿势正好满足落地帧要求，因此没有重新生成相似角色，避免头部、脸部、围巾和纸张纹理发生漂移；该图无损复制为语义明确的源资产 `art_sources/涂鸦跃层/主角/player_landing_standing.png`。
-- `tools/process-doodle-jump-visuals.py` 仅按 Alpha 紧边并保留 8px 安全边，派生为 `assets/games/doodle-jump/visual/player/player-landing.png`。运行时只在有效落地后显示约 0.06 秒，沿用当前朝向翻转、玩家节点和碰撞盒，双脚最低点与平台可见上沿共用现有脚底基线。
-- 开局自动起跳、从平台下方穿过、Breakable 断裂和飞行道具期间不使用落地帧；未调用图像生成模型，也没有引入外部素材。
+- 运行时不再加载或切换专用落地帧；有效落地只保留纸屑反馈、音效与统计，主角持续使用基础自然站姿。
+- 不再保留 `player_landing_standing.png` 源副本和 `player-landing.png` 派生图，素材处理脚本也不会重新生成它们。
 
 ## 弹簧拾取物改色 v2（当前，2026-08-31）
 

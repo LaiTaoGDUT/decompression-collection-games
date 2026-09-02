@@ -771,6 +771,10 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         rocket.verticalVelocity,
         'items.rocket.verticalVelocity',
     );
+    if (Math.abs(jetpackDurationSeconds - propellerHatDurationSeconds) > 0.0001
+        || Math.abs(jetpackDurationSeconds - rocketDurationSeconds) > 0.0001) {
+        throw new Error('Jetpack, Propeller Hat, and Rocket durations must remain equal.');
+    }
     const inheritedMaximumVelocity = positiveNumber(
         trampoline.bounceVelocity,
         'items.trampoline.bounceVelocity',

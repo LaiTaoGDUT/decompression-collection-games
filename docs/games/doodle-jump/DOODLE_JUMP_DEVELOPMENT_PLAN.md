@@ -62,7 +62,7 @@
 ### 阶段 6 开发状态（2026-08-30）
 
 - 已新增独立纯 TypeScript `DoodleJumpHazardSystem`；危险物与平台生成共用 threat/enemy 随机流但不消费 platform/item/cosmetic 流，UFO、黑洞、捕兽夹均按活动预算、解锁高度、纵向排斥和相机下方 420 units 回收；P0–P2 不生成危险物；
-- UFO 延后到第三个背景场景 600m 解锁；目标高度按角色上方 160–300 units 计算，但实例底边必须仍处在相机顶边之外；使用补全右侧轮廓的新飞碟图，176 × 430 units 的下方光束区按角色碰撞盒重叠锁定，以不超过 130 units/s 水平跟踪；光束内先锁定 0.5 秒，再以 460 units/s² 吸附，连续 1.35 秒触发 `ufo-abduction`；
+- UFO 延后到第三个背景场景 600m 解锁；目标高度按角色上方 160–300 units 计算，但实例底边必须仍处在相机顶边之外；使用补全右侧轮廓的新飞碟图，176 × 430 units 的下方光束区按角色碰撞盒重叠锁定，以不超过 130 units/s 水平跟踪；光束内先锁定 0.5 秒，再以 460 units/s² 吸附，连续 1.5 秒触发 `ufo-abduction`；
 - 黑洞实现 170 units 外圈的距离递增吸力、770 units/s² 上限和 28 units 核心失败；捕兽夹前置到 180m，固定在平台可见顶面并跟随 Moving/Shifting，生成时至少保留 76 units 无陷阱落脚宽度，从平台下方上穿不触发；危险物总生成门槛取三类危险物的最早解锁值，不再错误绑定 UFO 解锁高度；
 - 失败原因扩展为 `fall`、`monster-contact`、`ufo-abduction`、`black-hole`、`bear-trap` 五种，并固化不可变 failureSnapshot；UFO 失败向光束收束淡出，黑洞失败缩小旋入核心，捕兽夹先闭合闪光再下坠，fall/monster-contact 仍完全掉出屏幕后才出现面板；
 - 复活资格继续只由游戏复活开关和本局成功次数决定：首次免费、第二次广告、第三次结算；没有真实广告位时公共广告服务返回 completed；安全平台验证同时排除怪物和全部危险物，只向上搜索，必要时确定性创建 Normal 安全平台并清除复活半径内怪物、危险物和旧纸飞机；
@@ -72,7 +72,7 @@
 
 - 已新增纯 TypeScript `DoodleJumpItemSystem`，道具使用独立 item 随机流；Spring、Trampoline、Jetpack、Propeller Hat、Rocket、Shield 均按冻结高度解锁和六段权重生成，拾取后立即从世界移除，活动上限为 5；道具、怪物和危险物的生成系统双向读取彼此占位，任何后生成对象都不能与已有对象碰撞盒重叠；
 - Spring/Trampoline 分别把下一次有效落地反弹改为 1350/1700 units/s，Trampoline 覆盖 Spring；蹦床起跳后主角在完整上升时间内翻滚两圈，到达最高点开始下落时显式回到 0° 正面，该次跳跃仍持续无敌到下一次有效落地；两者脚底正式反弹图放大并延长至 0.72 秒；Breakable 不产生反弹，因此不会错误消耗待触发状态；
-- Jetpack、Propeller Hat、Rocket 分别实现 2.4/3.6/2.0 秒状态，飞行能力互斥且同类拾取刷新完整持续时间；高度层级冻结为 Rocket 33 m > Jetpack 25.2 m > Propeller Hat 14.4 至 22.85 m，并由配置解析校验最不利拾取速度；Jetpack/Rocket/Head Start 穿平台，Propeller Hat 保留平台碰撞；三种飞行道具激活期间统一免疫怪物、UFO、黑洞和捕兽夹，Head Start 不提供无敌；
+- Jetpack、Propeller Hat、Rocket 保留原有 1.8 秒主动阶段、速度和上升距离；主动阶段结束后不再立即移除道具，而是沿用原本就存在的普通重力减速段，到竖直速度 0 的弹道顶点才脱落。由此三者的完整可见时间可以不同，但不改变改造前的角色运动轨迹和总上升距离。飞行能力互斥且同类拾取刷新完整持续时间；高度层级继续由配置解析校验为 Rocket > Jetpack > Propeller Hat；Jetpack/Rocket/Head Start 穿平台，Propeller Hat 在主动阶段保留平台碰撞，三种飞行道具从激活到顶点统一免疫怪物、UFO、黑洞和捕兽夹，Head Start 不提供无敌；
 - Shield 持续 6 秒，持续期内免疫怪物、UFO、黑洞和捕兽夹，不因第一次接触消耗；fall 不可抵挡；复活成功额外获得配置的 3 秒持续无敌护盾；
 - 道具改为候选平台可承载宽度内的上方位置生成，生成完成后保持固定世界坐标，不再跟随 Moving/Shifting 平台；运行时每帧重申平台＜道具＜主角的渲染层级；
 - Head Start 在传感器校准后、进入 Playing 前显示确认；确认才从 `doodle-jump` 存档或开发库存扣 1，跳过不扣，每局最多使用一次，持续 1.2 秒并以 1450 units/s 穿平台上升；复活不读取或消耗该库存；

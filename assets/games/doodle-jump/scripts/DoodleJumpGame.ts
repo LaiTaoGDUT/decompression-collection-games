@@ -68,6 +68,7 @@ import type {
     DoodleJumpHazardSnapshot,
 } from './DoodleJumpHazardSystem';
 import type {
+    DoodleJumpFlightPower,
     DoodleJumpItemEvent,
     DoodleJumpItemSnapshot,
     DoodleJumpItemStatusSnapshot,
@@ -77,12 +78,19 @@ import {
     readDoodleJumpSave,
     updateDoodleJumpSettings,
     writeDoodleJumpSave,
+    type DoodleJumpActiveRound,
+    type DoodleJumpRunHistoryBaseline,
     type DoodleJumpSaveState,
 } from './DoodleJumpSave';
 import { DoodleJumpStateMachine } from './DoodleJumpStateMachine';
 
 const { ccclass } = _decorator;
 const RUN_PROGRESS_SAVE_INTERVAL_SECONDS = 3;
+const ENEMY_VISUAL_MARGIN_SCALE = 2;
+// The beam source's top ring is 9.5 px right of its texture canvas center.
+// Offset the runtime node so the visible ring, not the PNG bounds, aligns
+// with the UFO's central lower pod.
+const UFO_BEAM_VISUAL_CENTER_OFFSET_X = -11;
 
 const COLORS = Object.freeze({
     paper: new Color(247, 241, 221, 255),
@@ -120,10 +128,10 @@ const TEXTURE_PATHS = Object.freeze({
     decorStarPlanet: 'visual/backgrounds/decor-v2/star-planet/texture',
     decorStarComet: 'visual/backgrounds/decor-v2/star-comet/texture',
     playerJumping: 'visual/player/player-jumping-trimmed/texture',
-    playerLanding: 'visual/player/player-landing/texture',
-    playerJetpack: 'visual/player/player-with-jetpack/texture',
-    playerPropellerHat: 'visual/player/player-with-propeller-hat/texture',
-    playerRocket: 'visual/player/player-with-rocket/texture',
+    playerJetpack: 'visual/player/player-jetpack/texture',
+    playerPropellerHatCap: 'visual/player/player-propeller-hat-cap/texture',
+    playerPropellerHatBlades: 'visual/player/player-propeller-hat-blades/texture',
+    playerRocket: 'visual/player/player-rocket/texture',
     shieldOverlay: 'visual/player/shield-overlay/texture',
     itemSpring: 'visual/items/pickup-spring-v2/texture',
     itemTrampoline: 'visual/items/pickup-trampoline/texture',
@@ -136,8 +144,6 @@ const TEXTURE_PATHS = Object.freeze({
     playerScreenWrap: 'visual/effects/player-screen-wrap-afterimages/texture',
     jetpackFlames: 'visual/effects/jetpack-flames/texture',
     jetpackScraps: 'visual/effects/jetpack-paper-scraps/texture',
-    propellerAirflow: 'visual/effects/propeller-airflow/texture',
-    propellerRotation: 'visual/effects/propeller-rotation-lines/texture',
     rocketFlame: 'visual/effects/rocket-flame/texture',
     rocketScraps: 'visual/effects/rocket-paper-scraps/texture',
     rocketTrail: 'visual/effects/rocket-paper-trail/texture',
@@ -325,7 +331,7 @@ interface DoodleJumpItemStatusSlot {
 }
 
 const LANDING_DEBRIS_DURATION = 0.42;
-const PLAYER_LANDING_POSE_DURATION = 0.06;
+const TRAMPOLINE_ROTATION_TURNS = 2;
 const PLAYER_CONTACT_IMPACT_DURATION = 0.38;
 // Baked platform textures place the actual paper surface about 6 units below
 // their logical top, while normalized enemy frames retain roughly 1.5 units of
@@ -365,6 +371,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private sensitivity: 0.75 | 1 | 1.25 = 1;
     private sensorInvert = false;
     private saveBaseline?: DoodleJumpSaveState;
+    private runHistoryBaseline?: DoodleJumpSaveState;
+    private activeRoundRestored = false;
     private debugHeadStartRemaining = 0;
     private runStarted = false;
     private runShotCount = 0;
@@ -390,6 +398,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private playerNode?: Node;
     private playerMotionEffectNode?: Node;
     private playerWrapEffectNode?: Node;
+    private playerJetpackNode?: Node;
+    private playerRocketNode?: Node;
+    private playerPropellerHatCapNode?: Node;
+    private playerPropellerHatBladesNode?: Node;
     private playerPowerSecondaryEffectNode?: Node;
     private shieldPulseNode?: Node;
     private playerContactEffectNode?: Node;
@@ -417,6 +429,18 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private itemEffectWorldX = 0;
     private itemEffectWorldY = 0;
     private itemEffectKey?: TextureKey;
+    private flightPowerDropRoot?: Node;
+    private flightPowerDropBodyNode?: Node;
+    private flightPowerDropCapNode?: Node;
+    private flightPowerDropBladesNode?: Node;
+    private flightPowerDropType?: DoodleJumpFlightPower;
+    private flightPowerDropElapsed = 0;
+    private flightPowerDropWorldX = 0;
+    private flightPowerDropWorldY = 0;
+    private flightPowerDropVelocityX = 0;
+    private flightPowerDropVelocityY = 0;
+    private flightPowerDropRotation = 0;
+    private flightPowerDropAngularVelocity = 0;
     private titleLabel?: Label;
     private statusLabel?: Label;
     private heightLabel?: Label;
@@ -483,7 +507,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private previousRenderedPlayerX?: number;
     private wrapEffectRemaining = 0;
     private observedLandingCount = 0;
-    private landingPoseRemaining = 0;
     private landingDebrisRemaining = 0;
     private landingDebrisWorldX = 0;
     private landingDebrisWorldY = 0;
@@ -501,14 +524,34 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.debugHeadStartRemaining = this.config.items.debugHeadStartCount;
         const saveLoad = readDoodleJumpSave(context.services.storage);
         this.saveBaseline = saveLoad.save;
+        this.runHistoryBaseline = this.historyBaselineState(saveLoad.save);
         this.sensitivity = saveLoad.save.sensorSensitivity;
         this.sensorInvert = saveLoad.save.sensorInvert;
+        const activeRound = saveLoad.save.activeRound;
         this.simulation = new DoodleJumpSimulation(
             this.config,
-            this.config.generation.seedOverride > 0
+            activeRound?.snapshot.seed ?? (this.config.generation.seedOverride > 0
                 ? this.config.generation.seedOverride
-                : context.sessionId,
+                : context.sessionId),
         );
+        if (activeRound) {
+            try {
+                this.simulation.restore(activeRound.snapshot);
+                this.runShotCount = activeRound.runShotCount;
+                this.successfulRevives = Math.min(
+                    this.config.resurrection.maximumSuccessfulRevives,
+                    activeRound.successfulRevives,
+                );
+                this.observedLandingCount = activeRound.snapshot.landingCount;
+                this.activeRoundRestored = true;
+            } catch (error: unknown) {
+                console.warn('[DoodleJumpGame] Ignored unrestorable active round.', error);
+                const sanitized = Object.freeze({ ...saveLoad.save, activeRound: undefined });
+                this.saveBaseline = sanitized;
+                this.runHistoryBaseline = sanitized;
+                writeDoodleJumpSave(context.services.storage, sanitized, true);
+            }
+        }
         this.inputController = new DoodleJumpInputController(
             context.services.platform,
             this.config,
@@ -561,7 +604,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state !== 'Loading') {
             throw new Error(`Cannot begin DoodleJumpGame from ${this.stateMachine.state}.`);
         }
-        this.sessionStartedAt = Date.now();
+        this.sessionStartedAt = this.activeRoundRestored
+            ? Date.now() - Math.max(0, this.simulation?.getSnapshot().elapsedSeconds ?? 0) * 1000
+            : Date.now();
         if (this.missingRequiredVisuals.length > 0) {
             this.stateMachine.transition('Error');
             this.showMissingResourceView();
@@ -599,7 +644,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     async restart(context?: MiniGameContext<DoodleJumpServices>): Promise<void> {
         if (this.stateMachine.state === 'Disposed') return;
         this.cancelAttack(true);
-        this.persistCurrentRunHistory(false, true);
+        this.persistCurrentRunHistory(false, true, undefined, undefined, false);
         this.trackExitOnce('restart');
         this.lifecycleGeneration += 1;
         this.unscheduleAllCallbacks();
@@ -607,10 +652,12 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.context) {
             const saveLoad = readDoodleJumpSave(this.context.services.storage);
             this.saveBaseline = saveLoad.save;
+            this.runHistoryBaseline = saveLoad.save;
             this.sensitivity = saveLoad.save.sensorSensitivity;
             this.sensorInvert = saveLoad.save.sensorInvert;
         }
         this.runStarted = false;
+        this.activeRoundRestored = false;
         this.runShotCount = 0;
         this.runProgressSaveElapsed = 0;
         this.runExitTracked = false;
@@ -638,7 +685,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.nextBackgroundDecorSeedIndex = 0;
         this.resetPlayerFailureVisual();
         this.observedLandingCount = 0;
-        this.landingPoseRemaining = 0;
         this.landingDebrisRemaining = 0;
         this.itemEffectRemaining = 0;
         this.tutorialActive = false;
@@ -669,7 +715,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     }
 
     discardSavedProgress(): void {
-        this.persistCurrentRunHistory(false, true);
+        this.persistCurrentRunHistory(false, true, undefined, undefined, false);
         this.failureLocked = false;
     }
 
@@ -798,15 +844,16 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
 
     update(deltaTime: number): void {
         if (this.stateMachine.state === 'Failing') {
-            this.updateFailureDrop(deltaTime);
+            if (this.failureDropActive) this.updateFailureDrop(deltaTime);
+            else if (this.pendingFailure) this.finishFailureDrop();
             return;
         }
         if (this.stateMachine.state !== 'Playing' || !this.config || !this.simulation) return;
-        this.landingPoseRemaining = Math.max(0, this.landingPoseRemaining - deltaTime);
         this.landingDebrisRemaining = Math.max(0, this.landingDebrisRemaining - deltaTime);
         this.itemEffectRemaining = Math.max(0, this.itemEffectRemaining - deltaTime);
         this.wrapEffectRemaining = Math.max(0, this.wrapEffectRemaining - deltaTime);
         this.updateCombatVisuals(deltaTime);
+        this.updateFlightPowerDrop(deltaTime);
         const horizontal = this.inputController?.update(
             deltaTime,
             this.sensitivity,
@@ -881,7 +928,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
 
     private proceedAfterCalibration(): void {
         if (this.stateMachine.state !== 'SensorCalibrating') return;
-        if (this.simulation?.getSnapshot().itemStatus.usedHeadStart) {
+        if (this.activeRoundRestored
+            || this.simulation?.getSnapshot().itemStatus.usedHeadStart) {
             this.startPlaying();
         } else if (this.availableHeadStartCount() > 0) {
             this.showHeadStartPrompt();
@@ -1195,8 +1243,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             seed: snapshot?.seed ?? 0,
             sensorInvert: this.sensorInvert,
             usedHeadStart: snapshot?.itemStatus.usedHeadStart ?? false,
+            resumed: this.activeRoundRestored,
         });
-        this.updatePresentationState(this.sensorDegraded ? '键盘开发控制' : '左右倾斜控制移动');
+        this.updatePresentationState(this.activeRoundRestored
+            ? '已恢复上次进度'
+            : this.sensorDegraded ? '键盘开发控制' : '左右倾斜控制移动');
     }
 
     private tryFail(reason: DoodleJumpFailureReason): void {
@@ -1387,7 +1438,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     }
 
     private finishFailureDrop(): void {
-        if (!this.failureDropActive || this.stateMachine.state !== 'Failing') return;
+        if (this.stateMachine.state !== 'Failing') return;
         this.failureDropActive = false;
         this.failureDelayPending = false;
         this.failureFocusHazardNode = undefined;
@@ -1397,7 +1448,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const reviveEnabled = this.context?.services.ads.isEnabledForGame(
             this.context.gameId,
         ) === true;
-        if (!reviveEnabled || this.successfulRevives >= 2) {
+        const maximumRevives = this.config?.resurrection.maximumSuccessfulRevives ?? 0;
+        if (!reviveEnabled || this.successfulRevives >= maximumRevives) {
             this.commitResult(failure.reason, failure.score);
             return;
         }
@@ -1577,9 +1629,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         flush: boolean,
         scoreOverride?: number,
         snapshotOverride?: ReturnType<DoodleJumpSimulation['getSnapshot']>,
+        preserveActiveRound = !completed,
     ): boolean {
         const context = this.context;
-        const baseline = this.saveBaseline;
+        const baseline = this.runHistoryBaseline ?? this.saveBaseline;
         if (!context || !baseline || !this.runStarted || (!completed && this.settlementCommitted)) {
             if (flush && context) {
                 try {
@@ -1595,6 +1648,14 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             snapshot?.maxAbsoluteWorldY ?? 0,
             (snapshot?.combat.score ?? 0) + (snapshot?.hazardStats.score ?? 0),
         );
+        const canResumeCurrentState = this.stateMachine.state === 'Playing'
+            || this.stateMachine.state === 'Paused';
+        const activeRound = !completed
+            && preserveActiveRound
+            && canResumeCurrentState
+            && snapshot
+            ? this.buildActiveRound(snapshot, baseline)
+            : undefined;
         const history = buildDoodleJumpRunSave(baseline, Object.freeze({
             shots: this.runShotCount,
             kills: snapshot?.combat.killCount ?? 0,
@@ -1602,6 +1663,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             maxHeightMeters: this.calculateHeightMeters(snapshot?.maxAbsoluteWorldY ?? 0),
             completed,
             playedAt: Date.now(),
+            activeRound,
         }));
         try {
             writeDoodleJumpSave(context.services.storage, history.save, flush);
@@ -1610,6 +1672,39 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             return false;
         }
         return history.isNewBestScore;
+    }
+
+    private buildActiveRound(
+        snapshot: ReturnType<DoodleJumpSimulation['getSnapshot']>,
+        baseline: DoodleJumpSaveState,
+    ): DoodleJumpActiveRound {
+        const historyBaseline: DoodleJumpRunHistoryBaseline = Object.freeze({
+            playCount: baseline.playCount,
+            highScore: baseline.highScore,
+            lastPlayedAt: baseline.lastPlayedAt,
+            bestHeightMeters: baseline.bestHeightMeters,
+            bestKillCount: baseline.bestKillCount,
+            totalShots: baseline.totalShots,
+            totalKills: baseline.totalKills,
+        });
+        return Object.freeze({
+            version: 1,
+            savedAt: Date.now(),
+            historyBaseline,
+            runShotCount: this.runShotCount,
+            successfulRevives: this.successfulRevives,
+            snapshot,
+        });
+    }
+
+    private historyBaselineState(save: DoodleJumpSaveState): DoodleJumpSaveState {
+        const baseline = save.activeRound?.historyBaseline;
+        if (!baseline) return save;
+        return Object.freeze({
+            ...save,
+            ...baseline,
+            activeRound: undefined,
+        });
     }
 
     private trackExitOnce(reason: string): void {
@@ -1842,6 +1937,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.createHazardFailureEffect(player);
         this.createPlayerItemVisuals(player);
         this.createItemEffect();
+        this.createFlightPowerDropVisual();
 
         this.createLandingDebrisEffect();
 
@@ -2100,6 +2196,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         );
         this.renderLandingEffect(cameraCenterY, centerX);
         this.renderItemEffect(cameraCenterY, centerX);
+        this.renderFlightPowerDrop(cameraCenterY, centerX, snapshot.cameraBottomY);
         this.updateParallaxBackground(snapshot.cameraBottomY, visible);
         this.ensurePlatformNodes(snapshot.platforms.length);
         snapshot.platforms.forEach((platform, index) => {
@@ -2205,7 +2302,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             ? scoreText
             : `0000`.slice(scoreText.length) + scoreText;
         if (this.scoreLabel) this.scoreLabel.string = paddedScore;
-        this.updateItemHud(snapshot.itemStatus);
+        this.updateItemHud(snapshot.itemStatus, snapshot.velocityY);
         if (this.debugLabel) {
             const inputDebug = this.inputController?.getDebugState();
             this.debugLabel.string = [
@@ -2371,8 +2468,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             : enemy.type === 'large'
                 ? frameIndex === 0 ? 'enemyLarge01' : 'enemyLarge02'
                 : frameIndex === 0 ? 'enemyHover01' : 'enemyHover02';
-        const visualWidth = enemy.width + (enemy.type === 'large' ? 28 : 22);
-        const visualHeight = enemy.height + (enemy.type === 'large' ? 24 : 20);
+        const visualWidth = enemy.width
+            + (enemy.type === 'large' ? 28 : 22) * ENEMY_VISUAL_MARGIN_SCALE;
+        const visualHeight = enemy.height
+            + (enemy.type === 'large' ? 24 : 20) * ENEMY_VISUAL_MARGIN_SCALE;
         node.getComponent(UITransform)?.setContentSize(visualWidth, visualHeight);
         if (this.enemyNodeTypes[index] !== key) {
             const frame = this.textureFrames[key as TextureKey];
@@ -2470,6 +2569,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         ['UfoBeam', 'UfoLock', 'UfoTether', 'BlackHoleCore', 'TrapFlash'].forEach(hideChild);
         node.setRotationFromEuler(0, 0, 0);
         node.setScale(1, 1, 1);
+        const existingBodyOpacity = node.getChildByName('SpriteVisual')?.getComponent(UIOpacity);
+        if (existingBodyOpacity) existingBodyOpacity.opacity = 255;
 
         if (hazard.type === 'ufo') {
             node.getComponent(UITransform)?.setContentSize(156, 104);
@@ -2479,7 +2580,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 this.textureFrames.ufoBeam,
                 this.config.hazards.ufo.beamWidth + 18,
                 beamHeight,
-                0,
+                UFO_BEAM_VISUAL_CENTER_OFFSET_X,
                 -beamHeight / 2 - hazard.height / 2 + 12,
             );
             if (beam) {
@@ -2532,6 +2633,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             }
             const ring = this.getSpriteVisual(node);
             ring?.node.setRotationFromEuler(0, 0, elapsedSeconds * 18 + hazard.phase * 360);
+            const ringOpacity = ring?.node.getComponent(UIOpacity)
+                ?? ring?.node.addComponent(UIOpacity);
+            if (ringOpacity) ringOpacity.opacity = 188;
             const core = setChild(
                 'BlackHoleCore',
                 this.textureFrames.blackHoleCore,
@@ -2545,6 +2649,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             node.getComponent(UITransform)?.setContentSize(76, 42);
             if (this.textureFrames.bearTrap) {
                 this.applySpriteVisual(node, this.textureFrames.bearTrap);
+            }
+            const body = this.getSpriteVisual(node);
+            if (body) {
+                // Hazard nodes are pooled. A node that previously rendered a
+                // swaying UFO must not carry that child rotation into a trap.
+                body.color = new Color(255, 255, 255, 255);
+                body.node.setPosition(0, 0, 0);
+                body.node.setRotationFromEuler(0, 0, 0);
+                body.node.setScale(1, 1, 1);
             }
             const flash = setChild(
                 'TrapFlash',
@@ -2846,8 +2959,147 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                     event.y,
                     0.72,
                 );
+            } else if (event.type === 'power-end'
+                && (event.itemType === 'jetpack'
+                    || event.itemType === 'propeller-hat'
+                    || event.itemType === 'rocket')) {
+                this.startFlightPowerDrop(event.itemType, event.x, event.y);
             }
         });
+    }
+
+    private createFlightPowerDropVisual(): void {
+        if (!this.worldRoot) return;
+        const root = new Node('FlightPowerDrop');
+        root.layer = this.node.layer;
+        root.setParent(this.worldRoot);
+        root.addComponent(UITransform).setContentSize(180, 210);
+        root.active = false;
+        const createSpriteNode = (name: string, width: number, height: number): Node => {
+            const node = new Node(name);
+            node.layer = root.layer;
+            node.setParent(root);
+            node.addComponent(UITransform).setContentSize(width, height);
+            const sprite = node.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            node.active = false;
+            return node;
+        };
+        this.flightPowerDropRoot = root;
+        this.flightPowerDropBodyNode = createSpriteNode('DropBody', 123, 180);
+        this.flightPowerDropCapNode = createSpriteNode('DropPropellerCap', 41, 36);
+        this.flightPowerDropBladesNode = createSpriteNode('DropPropellerBlades', 55, 14);
+    }
+
+    private startFlightPowerDrop(
+        type: DoodleJumpFlightPower,
+        worldX: number,
+        worldY: number,
+    ): void {
+        const root = this.flightPowerDropRoot;
+        const body = this.flightPowerDropBodyNode;
+        const cap = this.flightPowerDropCapNode;
+        const blades = this.flightPowerDropBladesNode;
+        if (!root?.isValid || !body?.isValid || !cap?.isValid || !blades?.isValid) return;
+        const direction = this.playerFacing >= 0 ? -1 : 1;
+        this.flightPowerDropType = type;
+        this.flightPowerDropElapsed = 0;
+        this.flightPowerDropWorldX = worldX;
+        this.flightPowerDropWorldY = worldY;
+        this.flightPowerDropVelocityX = direction * (type === 'rocket' ? 185 : 150);
+        this.flightPowerDropVelocityY = type === 'rocket' ? 600 : 520;
+        this.flightPowerDropRotation = 0;
+        this.flightPowerDropAngularVelocity = direction * (type === 'rocket' ? 250 : 390);
+        root.active = true;
+        root.setRotationFromEuler(0, 0, 0);
+        root.setScale(1, 1, 1);
+        root.setSiblingIndex(Math.max(0, root.parent!.children.length - 1));
+        body.active = type !== 'propeller-hat';
+        cap.active = type === 'propeller-hat';
+        blades.active = type === 'propeller-hat';
+        if (type === 'jetpack') {
+            const frame = this.textureFrames.playerJetpack;
+            if (!frame) {
+                root.active = false;
+                return;
+            }
+            body.getComponent(Sprite)!.spriteFrame = frame;
+            body.getComponent(UITransform)?.setContentSize(76, 72);
+            body.setPosition(-25 * this.playerFacing, 11, 0);
+            body.setScale(this.playerFacing, 1, 1);
+        } else if (type === 'rocket') {
+            const frame = this.textureFrames.playerRocket;
+            if (!frame) {
+                root.active = false;
+                return;
+            }
+            body.getComponent(Sprite)!.spriteFrame = frame;
+            body.getComponent(UITransform)?.setContentSize(123, 180);
+            body.setPosition(0, 21, 0);
+            body.setScale(this.playerFacing, 1, 1);
+        } else {
+            const capFrame = this.textureFrames.playerPropellerHatCap;
+            const bladesFrame = this.textureFrames.playerPropellerHatBlades;
+            if (!capFrame || !bladesFrame) {
+                root.active = false;
+                return;
+            }
+            cap.getComponent(Sprite)!.spriteFrame = capFrame;
+            blades.getComponent(Sprite)!.spriteFrame = bladesFrame;
+            cap.setPosition(-3 * this.playerFacing, 79, 0);
+            cap.setScale(1, 1, 1);
+            blades.setPosition(-3 * this.playerFacing, 98, 0);
+            blades.setScale(1, 1, 1);
+        }
+    }
+
+    private updateFlightPowerDrop(deltaSeconds: number): void {
+        const root = this.flightPowerDropRoot;
+        if (!root?.isValid || !root.active || !this.flightPowerDropType) return;
+        const delta = Math.min(0.05, Math.max(0, deltaSeconds));
+        this.flightPowerDropElapsed += delta;
+        this.flightPowerDropWorldX += this.flightPowerDropVelocityX * delta;
+        this.flightPowerDropVelocityY -= 920 * delta;
+        this.flightPowerDropWorldY += this.flightPowerDropVelocityY * delta;
+        this.flightPowerDropRotation += this.flightPowerDropAngularVelocity * delta;
+        root.setRotationFromEuler(0, 0, this.flightPowerDropRotation);
+        if (this.flightPowerDropType === 'propeller-hat') {
+            const blades = this.flightPowerDropBladesNode;
+            const sprite = blades?.getComponent(Sprite);
+            if (blades?.isValid && sprite) {
+                const projectedWidth = Math.cos(this.flightPowerDropElapsed * Math.PI * 2 * 5);
+                blades.setScale(
+                    (projectedWidth < 0 ? -1 : 1) * Math.max(0.08, Math.abs(projectedWidth)),
+                    0.94 + Math.abs(projectedWidth) * 0.06,
+                    1,
+                );
+                sprite.color = projectedWidth < 0
+                    ? new Color(220, 226, 230, 255)
+                    : new Color(255, 255, 255, 255);
+            }
+        }
+        if (this.flightPowerDropElapsed >= 2.4) {
+            root.active = false;
+            this.flightPowerDropType = undefined;
+        }
+    }
+
+    private renderFlightPowerDrop(
+        cameraCenterY: number,
+        centerX: number,
+        cameraBottomY: number,
+    ): void {
+        const root = this.flightPowerDropRoot;
+        if (!root?.isValid || !root.active) return;
+        root.setPosition(
+            this.flightPowerDropWorldX - centerX,
+            this.flightPowerDropWorldY - cameraCenterY,
+            0,
+        );
+        if (this.flightPowerDropWorldY < cameraBottomY - 200) {
+            root.active = false;
+            this.flightPowerDropType = undefined;
+        }
     }
 
     private createItemEffect(): void {
@@ -3535,17 +3787,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!this.playerNode || !this.config) return;
         if (horizontalVelocity < -8) this.playerFacing = -1;
         else if (horizontalVelocity > 8) this.playerFacing = 1;
-        const frame = itemStatus?.flightPower === 'jetpack'
-            ? this.textureFrames.playerJetpack
-            : itemStatus?.flightPower === 'propeller-hat'
-                ? this.textureFrames.playerPropellerHat
-                : itemStatus?.flightPower === 'rocket'
-                    ? this.textureFrames.playerRocket
-                    : itemStatus?.trampolineJumpActive
-                        ? this.textureFrames.playerJumping
-                        : this.landingPoseRemaining > 0
-                            ? this.textureFrames.playerLanding
-                            : this.textureFrames.playerJumping;
+        const frame = this.textureFrames.playerJumping;
         if (!frame) return;
         const visualHeight = 126;
         const visualWidth = visualHeight
@@ -3558,7 +3800,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const trampolineProgress = itemStatus?.trampolineJumpProgress ?? 0;
         const trampolineRotation = itemStatus?.trampolineJumpActive
             && trampolineProgress < 1
-            ? -720 * trampolineProgress
+            ? -360 * TRAMPOLINE_ROTATION_TURNS * trampolineProgress
             : 0;
         visual?.setRotationFromEuler(
             0,
@@ -3597,6 +3839,42 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.playerPowerEffectNode = power;
         this.playerPowerSecondaryEffectNode = createEffect('PlayerPowerSecondaryEffect', 150, 170);
 
+        const jetpack = new Node('PlayerJetpack');
+        jetpack.layer = player.layer;
+        jetpack.setParent(player);
+        jetpack.addComponent(UITransform).setContentSize(76, 72);
+        const jetpackSprite = jetpack.addComponent(Sprite);
+        jetpackSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        jetpack.active = false;
+        this.playerJetpackNode = jetpack;
+
+        const rocket = new Node('PlayerRocket');
+        rocket.layer = player.layer;
+        rocket.setParent(player);
+        rocket.addComponent(UITransform).setContentSize(123, 180);
+        const rocketSprite = rocket.addComponent(Sprite);
+        rocketSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        rocket.active = false;
+        this.playerRocketNode = rocket;
+
+        const propellerHatCap = new Node('PlayerPropellerHatCap');
+        propellerHatCap.layer = player.layer;
+        propellerHatCap.setParent(player);
+        propellerHatCap.addComponent(UITransform).setContentSize(41, 36);
+        const propellerHatCapSprite = propellerHatCap.addComponent(Sprite);
+        propellerHatCapSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        propellerHatCap.active = false;
+        this.playerPropellerHatCapNode = propellerHatCap;
+
+        const propellerHatBlades = new Node('PlayerPropellerHatBlades');
+        propellerHatBlades.layer = player.layer;
+        propellerHatBlades.setParent(player);
+        propellerHatBlades.addComponent(UITransform).setContentSize(55, 14);
+        const propellerHatBladesSprite = propellerHatBlades.addComponent(Sprite);
+        propellerHatBladesSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        propellerHatBlades.active = false;
+        this.playerPropellerHatBladesNode = propellerHatBlades;
+
         const shield = new Node('ShieldOverlay');
         shield.layer = player.layer;
         shield.setParent(player);
@@ -3615,6 +3893,70 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         velocityY: number,
     ): void {
         const quality = this.visualQualityProfile();
+        const jetpack = this.playerJetpackNode;
+        const jetpackFrame = this.textureFrames.playerJetpack;
+        if (jetpack?.isValid) {
+            jetpack.active = status.flightPower === 'jetpack' && jetpackFrame !== undefined;
+            if (jetpack.active && jetpackFrame) {
+                jetpack.getComponent(Sprite)!.spriteFrame = jetpackFrame;
+                jetpack.setPosition(-25 * this.playerFacing, 11, 0);
+                jetpack.setScale(this.playerFacing, 1, 1);
+                jetpack.setRotationFromEuler(0, 0, 0);
+                jetpack.setSiblingIndex(0);
+            }
+        }
+        const rocket = this.playerRocketNode;
+        const rocketFrame = this.textureFrames.playerRocket;
+        if (rocket?.isValid) {
+            rocket.active = status.flightPower === 'rocket' && rocketFrame !== undefined;
+            if (rocket.active && rocketFrame) {
+                rocket.getComponent(Sprite)!.spriteFrame = rocketFrame;
+                rocket.setPosition(0, 21, 0);
+                rocket.setScale(this.playerFacing, 1, 1);
+                rocket.setRotationFromEuler(0, 0, 0);
+                rocket.setSiblingIndex(Math.max(0, rocket.parent!.children.length - 1));
+            }
+        }
+        const propellerActive = status.flightPower === 'propeller-hat';
+        const propellerHatCap = this.playerPropellerHatCapNode;
+        const propellerHatCapFrame = this.textureFrames.playerPropellerHatCap;
+        if (propellerHatCap?.isValid) {
+            propellerHatCap.active = propellerActive && propellerHatCapFrame !== undefined;
+            if (propellerHatCap.active && propellerHatCapFrame) {
+                propellerHatCap.getComponent(Sprite)!.spriteFrame = propellerHatCapFrame;
+                propellerHatCap.setPosition(-3 * this.playerFacing, 79, 0);
+                propellerHatCap.setRotationFromEuler(0, 0, 0);
+                propellerHatCap.setSiblingIndex(
+                    Math.max(0, propellerHatCap.parent!.children.length - 1),
+                );
+            }
+        }
+        const propellerHatBlades = this.playerPropellerHatBladesNode;
+        const propellerHatBladesFrame = this.textureFrames.playerPropellerHatBlades;
+        if (propellerHatBlades?.isValid) {
+            propellerHatBlades.active = propellerActive
+                && propellerHatBladesFrame !== undefined;
+            if (propellerHatBlades.active && propellerHatBladesFrame) {
+                const bladesSprite = propellerHatBlades.getComponent(Sprite)!;
+                bladesSprite.spriteFrame = propellerHatBladesFrame;
+                propellerHatBlades.setPosition(-3 * this.playerFacing, 98, 0);
+                propellerHatBlades.setRotationFromEuler(0, 0, 0);
+                const projectedWidth = Math.cos(elapsedSeconds * Math.PI * 2 * 5);
+                const facingScale = projectedWidth < 0 ? -1 : 1;
+                const widthScale = facingScale * Math.max(0.08, Math.abs(projectedWidth));
+                bladesSprite.color = projectedWidth < 0
+                    ? new Color(220, 226, 230, 255)
+                    : new Color(255, 255, 255, 255);
+                propellerHatBlades.setScale(
+                    widthScale,
+                    0.94 + Math.abs(projectedWidth) * 0.06,
+                    1,
+                );
+                propellerHatBlades.setSiblingIndex(
+                    Math.max(0, propellerHatBlades.parent!.children.length - 1),
+                );
+            }
+        }
         const motion = this.playerMotionEffectNode;
         if (motion?.isValid) {
             const motionKey: TextureKey | undefined = velocityY < -300
@@ -3685,21 +4027,24 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!effect?.isValid) return;
         const key = status.headStartRemainingSeconds > 0 ? 'headStartBurst'
             : status.flightPower === 'jetpack' ? 'jetpackFlames'
-                : status.flightPower === 'propeller-hat' ? 'propellerAirflow'
-                    : status.flightPower === 'rocket' ? 'rocketFlame'
-                        : undefined;
+                : status.flightPower === 'rocket' ? 'rocketFlame'
+                    : undefined;
         const frame = key ? this.textureFrames[key as TextureKey] : undefined;
         effect.active = frame !== undefined;
         if (!frame) return;
         effect.getComponent(Sprite)!.spriteFrame = frame;
-        const width = status.flightPower === 'propeller-hat' ? 136 : 112;
+        const width = status.flightPower === 'jetpack' ? 78 : 112;
         const height = width
             * Math.max(1, frame.originalSize.height)
             / Math.max(1, frame.originalSize.width);
         effect.getComponent(UITransform)?.setContentSize(width, height);
         effect.setPosition(
             0,
-            status.flightPower === 'propeller-hat' ? 58 : -56,
+            status.flightPower === 'rocket'
+                ? -76
+                : status.flightPower === 'jetpack'
+                    ? -43
+                    : -56,
             0,
         );
         effect.setScale(1 + Math.sin(elapsedSeconds * 12) * 0.04, 1, 1);
@@ -3708,29 +4053,30 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!secondary?.isValid) return;
         const secondaryKey: TextureKey | undefined = status.flightPower === 'jetpack'
             ? 'jetpackScraps'
-            : status.flightPower === 'propeller-hat'
-                ? 'propellerRotation'
-                : status.flightPower === 'rocket'
-                    ? elapsedSeconds % 0.24 < 0.12 ? 'rocketScraps' : 'rocketTrail'
-                    : undefined;
+            : status.flightPower === 'rocket'
+                ? elapsedSeconds % 0.24 < 0.12 ? 'rocketScraps' : 'rocketTrail'
+                : undefined;
         const secondaryFrame = secondaryKey && quality.secondaryEffects
             ? this.textureFrames[secondaryKey]
             : undefined;
         secondary.active = secondaryFrame !== undefined;
         if (secondaryFrame) {
             secondary.getComponent(Sprite)!.spriteFrame = secondaryFrame;
-            const width = status.flightPower === 'propeller-hat' ? 148 : 124;
+            const width = 124;
             const height = width
                 * Math.max(1, secondaryFrame.originalSize.height)
                 / Math.max(1, secondaryFrame.originalSize.width);
             secondary.getComponent(UITransform)?.setContentSize(width, height);
-            secondary.setPosition(0, status.flightPower === 'propeller-hat' ? 68 : -48, 0);
+            secondary.setPosition(0, status.flightPower === 'rocket' ? -58 : -32, 0);
             secondary.setScale(quality.effectScale, quality.effectScale, 1);
             secondary.setSiblingIndex(0);
         }
     }
 
-    private updateItemHud(status: DoodleJumpItemStatusSnapshot): void {
+    private updateItemHud(
+        status: DoodleJumpItemStatusSnapshot,
+        playerVelocityY: number,
+    ): void {
         const frameNode = this.itemStatusFrameNode;
         if (!frameNode?.isValid) return;
         const entries: Array<Readonly<{ iconKey: TextureKey; ratio?: number }>> = [];
@@ -3752,13 +4098,24 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 : status.flightPower === 'propeller-hat' ? 'itemIconPropellerHat'
                     : 'itemIconRocket';
             const duration = status.flightPower === 'jetpack'
-                ? this.config?.items.jetpack.durationSeconds ?? 2.4
+                ? this.config?.items.jetpack.durationSeconds ?? 1.8
                 : status.flightPower === 'propeller-hat'
-                    ? this.config?.items.propellerHat.durationSeconds ?? 3.6
-                    : this.config?.items.rocket.durationSeconds ?? 1;
+                    ? this.config?.items.propellerHat.durationSeconds ?? 1.8
+                    : this.config?.items.rocket.durationSeconds ?? 1.8;
+            const coastVelocity = status.flightPower === 'jetpack'
+                ? this.config?.items.jetpack.verticalVelocity ?? 0
+                : status.flightPower === 'propeller-hat'
+                    ? this.config?.items.propellerHat.minimumVerticalVelocity ?? 0
+                    : this.config?.items.rocket.verticalVelocity ?? 0;
+            const gravityMagnitude = Math.max(1, Math.abs(this.config?.player.gravity ?? -1590));
+            const coastSeconds = coastVelocity / gravityMagnitude;
+            const completeAscentSeconds = duration + coastSeconds;
+            const displayRemainingSeconds = status.flightRemainingSeconds > 0
+                ? status.flightRemainingSeconds + coastSeconds
+                : Math.max(0, playerVelocityY) / gravityMagnitude;
             entries.push(Object.freeze({
                 iconKey,
-                ratio: status.flightRemainingSeconds / Math.max(0.001, duration),
+                ratio: displayRemainingSeconds / Math.max(0.001, completeAscentSeconds),
             }));
         }
         if (status.shieldRemainingSeconds > 0) {
@@ -3797,7 +4154,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     ): void {
         if (!this.config || snapshot.landingCount <= this.observedLandingCount) return;
         this.observedLandingCount = snapshot.landingCount;
-        this.landingPoseRemaining = PLAYER_LANDING_POSE_DURATION;
         const platform = snapshot.platforms.find((candidate) => (
             candidate.id === snapshot.lastLandedPlatformId
         ));
@@ -4362,6 +4718,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.playerNode = undefined;
         this.playerMotionEffectNode = undefined;
         this.playerWrapEffectNode = undefined;
+        this.playerJetpackNode = undefined;
+        this.playerRocketNode = undefined;
+        this.playerPropellerHatCapNode = undefined;
+        this.playerPropellerHatBladesNode = undefined;
         this.playerPowerSecondaryEffectNode = undefined;
         this.shieldPulseNode = undefined;
         this.previousRenderedPlayerX = undefined;
@@ -4374,7 +4734,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.landingDebrisVisuals = [];
         this.landingDebrisRemaining = 0;
         this.observedLandingCount = 0;
-        this.landingPoseRemaining = 0;
         this.aimReticleNode = undefined;
         this.platformNodes = [];
         this.platformNodeTypes = [];
@@ -4389,6 +4748,18 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.itemEffectNode = undefined;
         this.itemEffectRemaining = 0;
         this.itemEffectKey = undefined;
+        this.flightPowerDropRoot = undefined;
+        this.flightPowerDropBodyNode = undefined;
+        this.flightPowerDropCapNode = undefined;
+        this.flightPowerDropBladesNode = undefined;
+        this.flightPowerDropType = undefined;
+        this.flightPowerDropElapsed = 0;
+        this.flightPowerDropWorldX = 0;
+        this.flightPowerDropWorldY = 0;
+        this.flightPowerDropVelocityX = 0;
+        this.flightPowerDropVelocityY = 0;
+        this.flightPowerDropRotation = 0;
+        this.flightPowerDropAngularVelocity = 0;
         this.titleLabel = undefined;
         this.statusLabel = undefined;
         this.heightLabel = undefined;

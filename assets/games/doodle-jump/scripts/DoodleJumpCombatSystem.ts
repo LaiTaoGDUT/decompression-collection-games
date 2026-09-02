@@ -155,6 +155,56 @@ export class DoodleJumpCombatSystem {
         this.lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
     }
 
+    restore(
+        snapshots: readonly DoodleJumpEnemySnapshot[],
+        stats: DoodleJumpCombatStats,
+        elapsedSeconds: number,
+        platforms: readonly DoodleJumpCombatPlatform[],
+    ): void {
+        this.reset();
+        this.elapsedSeconds = Math.max(0, elapsedSeconds);
+        this.hitCount = Math.max(0, Math.floor(stats.hitCount));
+        this.killCount = Math.max(0, Math.floor(stats.killCount));
+        this.stompCount = Math.max(0, Math.floor(stats.stompCount));
+        this.smallMonsterKills = Math.max(0, Math.floor(stats.smallMonsterKills));
+        this.largeMonsterKills = Math.max(0, Math.floor(stats.largeMonsterKills));
+        this.hoverMonsterKills = Math.max(0, Math.floor(stats.hoverMonsterKills));
+        this.score = Math.max(0, Math.floor(stats.score));
+        const platformById = new Map<string, DoodleJumpCombatPlatform>();
+        platforms.forEach((platform) => {
+            platformById.set(platform.id, platform);
+            this.evaluatedPlatformIds.add(platform.id);
+        });
+        let maximumId = 0;
+        snapshots.forEach((snapshot) => {
+            const platform = platformById.get(snapshot.anchorPlatformId);
+            const settings = this.config.enemies[snapshot.type];
+            if (!platform || !settings || snapshot.health <= 0) return;
+            const parsedId = Number(snapshot.id.replace(/^E/, ''));
+            if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
+            this.enemies.push({
+                id: snapshot.id,
+                type: snapshot.type,
+                anchorPlatformId: snapshot.anchorPlatformId,
+                anchorOffsetX: snapshot.type === 'hover' ? snapshot.x - platform.x : 0,
+                phaseRadians: snapshot.animationPhase * Math.PI * 2,
+                animationPhase: snapshot.animationPhase,
+                width: settings.width,
+                height: settings.height,
+                headZoneHeight: settings.headZoneHeight,
+                maximumHealth: settings.health,
+                score: settings.killScore,
+                health: Math.min(settings.health, Math.max(1, Math.floor(snapshot.health))),
+                x: snapshot.x,
+                y: snapshot.y,
+                hurtUntil: snapshot.hurt ? this.elapsedSeconds + this.config.enemies.hitFlashSeconds : 0,
+            });
+            this.lastSpawnAnchorY = Math.max(this.lastSpawnAnchorY, platform.y);
+        });
+        this.nextEnemyId = maximumId + 1;
+        this.events.length = 0;
+    }
+
     syncWorld(
         elapsedSeconds: number,
         platforms: readonly DoodleJumpCombatPlatform[],

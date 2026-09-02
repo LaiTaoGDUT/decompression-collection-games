@@ -116,24 +116,22 @@ paper_plane_projectile_sheet.png：纸飞机、瞄准点、投射物拖尾和命
 - 纸飞机的飞行角度由运行时控制，不生成多个固定方向的飞机图。
 - 射击输入支持点击单发和长按连续发射，视觉上统一使用同一张纸飞机。
 
-## 3. 主角使用道具的组合图与护盾覆盖图
+## 3. 主角独立飞行装备与护盾覆盖图
 
 ### Asset
 
-player_with_rocket.png、player_with_jetpack.png、player_with_propeller_hat.png：三张独立的完整“主角＋道具”组合 Sprite，全部使用 player_runtime_prototype.png 的原型姿势。shield_overlay.png：一张独立透明护盾覆盖 Sprite。
+player_jetpack_generated.png：独立喷气背包。player_rocket_generated.png：带真透明舷窗的独立大火箭。player_propeller_hat_generated.png：用于拆分固定帽体与独立扇叶的源图。shield_overlay.png：独立透明护盾覆盖 Sprite。
 
 ### Recommended Settings
 
-- 优先交付 3 张独立组合透明 PNG 和 1 张独立 Shield Overlay 透明 PNG，不要把它们作为运行时覆盖层图集；若生成工具只能批量出图，可先用临时图集生成，再裁切为上述 4 张独立图片。
-- 三张组合图必须使用完全相同的画布尺寸、玩家视觉中心、局部锚点、透明边距和像素密度，并逐项复用 player_runtime_prototype.png 的原型姿势；不要求脚底贴齐画布底部，也不允许改成 Ready 自然站立姿势。
-- 组合图中的主角上半身、原型姿势、四肢角度、脚部位置、纸边和预烘焙软落影保持一致；Rocket、Jetpack、Propeller Hat 本体可以有参考图同款低对比预烘焙落影。
+- 三件装备都必须是真透明背景的独立 Sprite，不包含主角；运行时始终保留 `player_runtime_prototype.png` 基础主角。
+- Jetpack 采用背后层锚点，主角躯干遮挡背包中心；Rocket 采用前景层锚点，大壳体覆盖主角身体，圆形舷窗内圈必须是 `alpha=0`；Propeller Hat 拆成固定帽体和绕竖轴旋转的独立扇叶。
+- 三件装备都需要稳定中心锚点和透明边距，以便能力到期时从主角身上分离并作为一个物理抛物体继续显示。
 - Shield Overlay 只画薄护盾环，中心透明，不包含主角、火箭、喷气背包或螺旋桨帽；不烘焙护盾脉冲，护盾脉冲使用第 9 节的独立 VFX。
 
 ### ChatGPT Image Prompt
 
-    请以参考图中的同一位“纸片跃层·平面涂鸦”主角为基础，按以下文件分别生成 3 张独立的完整“主角＋道具”组合 Sprite；每次只输出一张透明背景 PNG，不要把三个状态拼成一张运行时覆盖层图集。三张图都必须严格沿用 player_runtime_prototype.png 的原型姿势：保持原型图中的身体倾角、头部方向、双臂轮廓、腿部弯曲、脚部位置、表情、围巾形状和整体重心，不能改成 Ready 自然站立姿势。第一张 player_with_rocket.png：在原型姿势主角的背部增加一枚小型青绿色纸片火箭，火箭本体贴合背部并从肩膀上方露出，竖直朝上、扁平、轮廓清晰。第二张 player_with_jetpack.png：在原型姿势主角的背部增加一只扁平对称的纸片喷气背包，使用青绿色和橙色彩笔块。第三张 player_with_propeller_hat.png：在原型姿势主角的头顶增加一顶纸片螺旋桨帽，帽子和小螺旋桨为一体。三张图必须逐项保持参考图和 player_runtime_prototype.png 的主角上半身一致：头部和尖刺发型轮廓、脸部与眼睛位置、青绿色躯干、红色围巾、双臂轮廓、身体倾角、腿部弯曲、脚部位置、上半身比例和配色都不得重新设计。三张图都保留参考图同款窄白色纸边和低对比、软边、轻微向右下偏移的预烘焙贴纸落影，落影贴近整张组合图轮廓并随透明 PNG 导出。
-
-    不要生成自然站立 Ready 姿势、另一套跳跃姿势、奔跑、射击、受击或飞行动作，不要改变原型图中的主角脸部、围巾、四肢、身体倾角或上半身比例；不要把 Rocket、Jetpack、Propeller Hat 画成另一张可拆分的装备图。不要绘制护盾环、火焰、喷气、纸屑、气流、旋转线、护盾脉冲、拖尾、平台、纸飞机、文字、数字、厚重硬边阴影、真实 3D 厚度、场景投影、发光特效或复杂背景；动态道具特效由第 9 节单独生成。
+    请按“纸片跃层·平面涂鸦”风格分别生成独立透明装备。Jetpack：双青绿色纸罐、珊瑚红喷口、芥末黄束带、炭笔中心架与肩带，正视或极轻三分之四视角，不含主角与火焰。Rocket：竖直的大型青绿色火箭，珊瑚红头锥与尾翼、芥末黄饰边，壳体足以在前景遮住主角躯干；上半部设置大圆舷窗，保留纸边和黑色内外轮廓，但内圈必须是真透明 Alpha，不画玻璃、反光、脸或角色。Propeller Hat：完整纸片帽源图，后续拆成帽体与水平双扇叶。所有图片禁止背景、场景、文字、Logo、水印、烟、火焰、运动线和额外角色。
 
 #### Shield Overlay Prompt
 
@@ -143,9 +141,8 @@ player_with_rocket.png、player_with_jetpack.png、player_with_propeller_hat.png
 
 ### Notes
 
-- 开局和普通空中状态显示 player_runtime_prototype.png；有效落地瞬间短暂切换 player_landing_standing.png，飞行能力期间切换对应的 Rocket、Jetpack、Propeller Hat 原型姿势组合 Sprite。Shield 不切换主角图，而是挂载 shield_overlay.png 到玩家视觉根节点。
-- Shield Overlay 可以与基础图或任一飞行道具组合图同时显示；它与主角共享玩家中心和局部坐标，不改变角色碰撞盒，也不参与平台、怪物或危险物碰撞。
-- 三张组合图中的静态道具本体，以及 Shield Overlay 的静态护盾环，都与动态火焰、喷气、气流、旋转线、护盾脉冲、纸屑和拖尾分离，便于运行时控制持续时间、方向和回收。
+- 所有飞行状态持续显示基础主角；Jetpack 位于其后层，Rocket 位于其前层，Propeller Hat 位于头顶。Shield Overlay 与基础主角和独立装备共享玩家局部坐标，不改变碰撞盒。
+- 三件装备的静态主体与动态火焰、纸屑、拖尾和护盾脉冲分离；持续时间结束后静态装备进入统一的抛物线脱落动画并在屏幕下方回收。
 
 ## 4. 道具拾取物和 HUD 图标
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from PIL import Image, ImageEnhance, ImageFilter
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,15 +24,23 @@ def save_transition_png(image: Image.Image, destination: Path) -> None:
     quantized.save(destination, optimize=True)
 
 
-def trim_alpha(
+def prepare_alpha_asset(
     source: Path,
-    destination: Path,
     padding: int = 1,
     alpha_threshold: int = 0,
     max_edge: int | None = None,
-) -> None:
+    keep_center_component: bool = False,
+) -> Image.Image:
     image = Image.open(source).convert("RGBA")
     alpha = image.getchannel("A")
+    if keep_center_component:
+        connected = alpha.point(lambda value: 255 if value > max(2, alpha_threshold) else 0)
+        ImageDraw.floodfill(connected, (image.width // 2, image.height // 2), 128)
+        component = connected.point(lambda value: 255 if value == 128 else 0)
+        cleaned_alpha = Image.new("L", image.size, 0)
+        cleaned_alpha.paste(alpha, mask=component)
+        image.putalpha(cleaned_alpha)
+        alpha = cleaned_alpha
     visible_alpha = alpha if alpha_threshold <= 0 else alpha.point(
         lambda value: 255 if value > alpha_threshold else 0,
     )
@@ -46,7 +54,6 @@ def trim_alpha(
         min(image.width, right + padding),
         min(image.height, bottom + padding),
     )
-    destination.parent.mkdir(parents=True, exist_ok=True)
     cropped = image.crop(crop)
     if max_edge is not None and max(cropped.size) > max_edge:
         scale = max_edge / max(cropped.size)
@@ -54,7 +61,160 @@ def trim_alpha(
             (max(1, round(cropped.width * scale)), max(1, round(cropped.height * scale))),
             Image.Resampling.LANCZOS,
         )
+    return cropped
+
+
+def trim_alpha(
+    source: Path,
+    destination: Path,
+    padding: int = 1,
+    alpha_threshold: int = 0,
+    max_edge: int | None = None,
+    keep_center_component: bool = False,
+) -> None:
+    cropped = prepare_alpha_asset(
+        source,
+        padding=padding,
+        alpha_threshold=alpha_threshold,
+        max_edge=max_edge,
+        keep_center_component=keep_center_component,
+    )
+    destination.parent.mkdir(parents=True, exist_ok=True)
     cropped.save(destination, optimize=True)
+
+
+def split_generated_propeller_hat(
+    source: Path,
+    cap_destination: Path,
+    blades_destination: Path,
+) -> None:
+    """Split the approved generated hat around a shared rotor hub anchor."""
+    image = prepare_alpha_asset(
+        source,
+        padding=16,
+        alpha_threshold=2,
+        max_edge=512,
+        keep_center_component=True,
+    )
+    scale_x = image.width / 512
+    scale_y = image.height / 375
+    point = lambda x, y: (round(x * scale_x), round(y * scale_y))
+    blade_mask = Image.new("L", image.size, 0)
+    draw = ImageDraw.Draw(blade_mask)
+    draw.polygon(
+        [point(0, 0), point(249, 0), point(243, 71), point(216, 94), point(0, 116)],
+        fill=255,
+    )
+    draw.polygon(
+        [point(263, 0), point(512, 0), point(512, 116), point(296, 94), point(269, 71)],
+        fill=255,
+    )
+    draw.ellipse((*point(224, 23), *point(288, 73)), fill=255)
+    source_alpha = image.getchannel("A")
+    blade_alpha = Image.new("L", image.size, 0)
+    blade_alpha.paste(source_alpha, mask=blade_mask)
+    blades_layer = image.copy()
+    blades_layer.putalpha(blade_alpha)
+
+    cap = image.copy()
+    cap_alpha = source_alpha.copy()
+    cap_alpha.paste(0, mask=blade_mask)
+    cap_draw = ImageDraw.Draw(cap_alpha)
+    cap_draw.rectangle((*point(0, 0), *point(512, 72)), fill=0)
+    cap_draw.polygon(
+        [point(0, 72), point(225, 72), point(216, 98), point(188, 112), point(0, 120)],
+        fill=0,
+    )
+    cap_draw.polygon(
+        [point(287, 72), point(512, 72), point(512, 120), point(324, 112), point(296, 98)],
+        fill=0,
+    )
+    cap_alpha = cap_alpha.point(lambda value: value if value > 8 else 0)
+    cap.putalpha(cap_alpha)
+    clean_cap = Image.new("RGBA", cap.size, (0, 0, 0, 0))
+    clean_cap.paste(cap, mask=cap_alpha.point(lambda value: 255 if value > 0 else 0))
+    cap = clean_cap
+    cap_bbox = cap_alpha.getbbox()
+    if cap_bbox is None:
+        raise ValueError(f"No cap pixels in {source}")
+    cap_padding = round(8 * max(scale_x, scale_y))
+    left, top, right, bottom = cap_bbox
+    cap_crop = cap.crop((
+        max(0, left - cap_padding),
+        max(0, top - cap_padding),
+        min(cap.width, right + cap_padding),
+        min(cap.height, bottom + cap_padding),
+    ))
+    cap_destination.parent.mkdir(parents=True, exist_ok=True)
+    cap_crop.save(cap_destination, optimize=True)
+
+    hub_x, hub_y = point(256, 56)
+    rotor_width = image.width
+    rotor_height = round(132 * scale_y)
+    rotor = Image.new("RGBA", (rotor_width, rotor_height), (0, 0, 0, 0))
+    rotor.alpha_composite(
+        blades_layer,
+        (rotor_width // 2 - hub_x, rotor_height // 2 - hub_y),
+    )
+    blades_destination.parent.mkdir(parents=True, exist_ok=True)
+    rotor.save(blades_destination, optimize=True)
+
+
+def prepare_generated_rocket(source: Path, destination: Path) -> None:
+    """Remove the generated checkerboard and cut a true-alpha porthole."""
+    image = Image.open(source).convert("RGBA")
+    mask = Image.new("L", image.size, 0)
+    source_pixels = image.load()
+    mask_pixels = mask.load()
+    for y in range(image.height):
+        for x in range(image.width):
+            red, green, blue, _ = source_pixels[x, y]
+            if max(red, green, blue) - min(red, green, blue) > 10 \
+                    or max(red, green, blue) < 180:
+                mask_pixels[x, y] = 255
+    mask = mask.filter(ImageFilter.MaxFilter(7))
+    mask = mask.filter(ImageFilter.GaussianBlur(1.1))
+    draw = ImageDraw.Draw(mask)
+    scale_x = image.width / 1024
+    scale_y = image.height / 1536
+    draw.ellipse(
+        (
+            round(358 * scale_x),
+            round(512 * scale_y),
+            round(666 * scale_x),
+            round(833 * scale_y),
+        ),
+        fill=0,
+    )
+    image.putalpha(mask)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    cropped = prepare_alpha_asset_from_image(image, padding=12, max_edge=768)
+    cropped.save(destination, optimize=True)
+
+
+def prepare_alpha_asset_from_image(
+    image: Image.Image,
+    padding: int = 1,
+    max_edge: int | None = None,
+) -> Image.Image:
+    alpha = image.getchannel("A")
+    bbox = alpha.getbbox()
+    if bbox is None:
+        raise ValueError("No visible pixels in generated image")
+    left, top, right, bottom = bbox
+    cropped = image.crop((
+        max(0, left - padding),
+        max(0, top - padding),
+        min(image.width, right + padding),
+        min(image.height, bottom + padding),
+    ))
+    if max_edge is not None and max(cropped.size) > max_edge:
+        scale = max_edge / max(cropped.size)
+        cropped = cropped.resize(
+            (max(1, round(cropped.width * scale)), max(1, round(cropped.height * scale))),
+            Image.Resampling.LANCZOS,
+        )
+    return cropped
 
 
 def split_transparent_grid(
@@ -219,23 +379,28 @@ def main() -> None:
     normalize_bottom_center_frames(
         (
             SOURCE / "主角" / "player_runtime_prototype.png",
-            SOURCE / "主角" / "player_with_jetpack.png",
-            SOURCE / "主角" / "player_with_propeller_hat.png",
-            SOURCE / "主角" / "player_with_rocket.png",
         ),
         (
             OUTPUT / "player" / "player-jumping-trimmed.png",
-            OUTPUT / "player" / "player-with-jetpack.png",
-            OUTPUT / "player" / "player-with-propeller-hat.png",
-            OUTPUT / "player" / "player-with-rocket.png",
         ),
         padding=8,
     )
+    split_generated_propeller_hat(
+        SOURCE / "主角" / "player_propeller_hat_generated.png",
+        OUTPUT / "player" / "player-propeller-hat-cap.png",
+        OUTPUT / "player" / "player-propeller-hat-blades.png",
+    )
     trim_alpha(
-        SOURCE / "主角" / "player_landing_standing.png",
-        OUTPUT / "player" / "player-landing.png",
-        padding=8,
+        SOURCE / "主角" / "player_jetpack_generated.png",
+        OUTPUT / "player" / "player-jetpack.png",
+        padding=12,
         alpha_threshold=2,
+        max_edge=640,
+        keep_center_component=True,
+    )
+    prepare_generated_rocket(
+        SOURCE / "主角" / "player_rocket_generated.png",
+        OUTPUT / "player" / "player-rocket.png",
     )
     transparent_assets = {
         SOURCE / "主角" / "shield_overlay.png": OUTPUT / "player" / "shield-overlay.png",
@@ -249,8 +414,6 @@ def main() -> None:
         SOURCE / "特效" / "common_vfx" / "screen_wrap_afterimages.png": OUTPUT / "effects" / "player-screen-wrap-afterimages.png",
         SOURCE / "特效" / "item_motion_vfx" / "jetpack_flames.png": OUTPUT / "effects" / "jetpack-flames.png",
         SOURCE / "特效" / "item_motion_vfx" / "jetpack_paper_scraps.png": OUTPUT / "effects" / "jetpack-paper-scraps.png",
-        SOURCE / "特效" / "item_motion_vfx" / "propeller_airflow.png": OUTPUT / "effects" / "propeller-airflow.png",
-        SOURCE / "特效" / "item_motion_vfx" / "propeller_rotation_lines.png": OUTPUT / "effects" / "propeller-rotation-lines.png",
         SOURCE / "特效" / "item_motion_vfx" / "rocket_flame.png": OUTPUT / "effects" / "rocket-flame.png",
         SOURCE / "特效" / "item_motion_vfx" / "rocket_paper_scraps.png": OUTPUT / "effects" / "rocket-paper-scraps.png",
         SOURCE / "特效" / "item_motion_vfx" / "rocket_paper_trail.png": OUTPUT / "effects" / "rocket-paper-trail.png",

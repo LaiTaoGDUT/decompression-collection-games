@@ -130,11 +130,59 @@ export class DoodleJumpItemSystem {
         }
     }
 
-    updateTimers(deltaSeconds: number, playerX: number, playerY: number): void {
+    restore(
+        snapshots: readonly DoodleJumpItemSnapshot[],
+        status: DoodleJumpItemStatusSnapshot,
+        platformIds: readonly string[],
+    ): void {
+        this.reset();
+        this.items.length = 0;
+        this.events.length = 0;
+        this.evaluatedPlatformIds.clear();
+        platformIds.forEach((id) => this.evaluatedPlatformIds.add(id));
+        let maximumId = 0;
+        snapshots.forEach((snapshot) => {
+            if (platformIds.indexOf(snapshot.anchorPlatformId) < 0) return;
+            const parsedId = Number(snapshot.id.replace(/^I/, ''));
+            if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
+            this.items.push({ ...snapshot });
+        });
+        this.nextItemId = maximumId + 1;
+        this.landingPower = status.landingPower;
+        this.flightPower = status.flightPower;
+        const restoredFlightDuration = status.flightPower
+            ? this.getPoweredDurationSeconds(status.flightPower)
+            : 0;
+        this.flightRemainingSeconds = Math.min(
+            restoredFlightDuration,
+            Math.max(0, status.flightRemainingSeconds),
+        );
+        this.shieldRemainingSeconds = Math.max(0, status.shieldRemainingSeconds);
+        this.trampolineJumpActive = status.trampolineJumpActive;
+        this.trampolineJumpDurationSeconds = status.trampolineJumpActive
+            ? this.config.items.trampoline.bounceVelocity
+                / Math.max(1, Math.abs(this.config.player.gravity))
+            : 0;
+        this.trampolineJumpElapsedSeconds = this.trampolineJumpDurationSeconds
+            * Math.max(0, Math.min(1, status.trampolineJumpProgress));
+        this.headStartRemainingSeconds = Math.max(0, status.headStartRemainingSeconds);
+        this.itemPickupCount = Math.max(0, Math.floor(status.itemPickupCount));
+        this.usedHeadStart = status.usedHeadStart;
+    }
+
+    updateTimers(
+        deltaSeconds: number,
+        playerX: number,
+        playerY: number,
+        playerVelocityY: number,
+    ): void {
         const delta = Math.max(0, deltaSeconds);
-        if (this.flightRemainingSeconds > 0) {
+        if (this.flightPower) {
             this.flightRemainingSeconds = Math.max(0, this.flightRemainingSeconds - delta);
-            if (this.flightRemainingSeconds <= 0 && this.flightPower) {
+            // Keep the original powered phase and trajectory unchanged. Once
+            // powered lift ends, retain the equipment while normal gravity
+            // performs the already-existing coast, then detach at the apex.
+            if (this.flightRemainingSeconds <= 0 && playerVelocityY <= 0) {
                 const ended = this.flightPower;
                 this.flightPower = undefined;
                 this.events.push(Object.freeze({
@@ -193,21 +241,21 @@ export class DoodleJumpItemSystem {
                 platformCollisionEnabled: false,
             });
         }
-        if (this.flightPower === 'jetpack') {
+        if (this.flightPower === 'jetpack' && this.flightRemainingSeconds > 0) {
             return Object.freeze({
                 gravity: 0,
                 fixedVerticalVelocity: this.config.items.jetpack.verticalVelocity,
                 platformCollisionEnabled: false,
             });
         }
-        if (this.flightPower === 'rocket') {
+        if (this.flightPower === 'rocket' && this.flightRemainingSeconds > 0) {
             return Object.freeze({
                 gravity: 0,
                 fixedVerticalVelocity: this.config.items.rocket.verticalVelocity,
                 platformCollisionEnabled: false,
             });
         }
-        if (this.flightPower === 'propeller-hat') {
+        if (this.flightPower === 'propeller-hat' && this.flightRemainingSeconds > 0) {
             return Object.freeze({
                 gravity: -this.config.items.propellerHat.gravity,
                 minimumVerticalVelocity: this.config.items.propellerHat.minimumVerticalVelocity,
@@ -270,7 +318,7 @@ export class DoodleJumpItemSystem {
     }
 
     hasFlightInvincibility(): boolean {
-        return this.flightPower !== undefined && this.flightRemainingSeconds > 0;
+        return this.flightPower !== undefined;
     }
 
     hasTrampolineInvincibility(): boolean {
@@ -367,12 +415,16 @@ export class DoodleJumpItemSystem {
         this.cancelTrampolineJump();
         this.headStartRemainingSeconds = 0;
         this.flightPower = type;
-        this.flightRemainingSeconds = type === 'jetpack'
+        this.flightRemainingSeconds = this.getPoweredDurationSeconds(type);
+        this.events.push(Object.freeze({ type: 'power-start', itemType: type, x: 0, y: 0 }));
+    }
+
+    private getPoweredDurationSeconds(type: DoodleJumpFlightPower): number {
+        return type === 'jetpack'
             ? this.config.items.jetpack.durationSeconds
             : type === 'rocket'
                 ? this.config.items.rocket.durationSeconds
                 : this.config.items.propellerHat.durationSeconds;
-        this.events.push(Object.freeze({ type: 'power-start', itemType: type, x: 0, y: 0 }));
     }
 
     private recycleItems(cameraBottomY: number): void {

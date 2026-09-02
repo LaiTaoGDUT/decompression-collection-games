@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "c1d4227f-7a05-43b9-b1b2-2626d9d2ce27",
+  "uuid": "425408d5-66a4-4f33-b8e8-e374b9348dfa",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "c1d4227f-7a05-43b9-b1b2-2626d9d2ce27@6c48a",
-      "displayName": "propeller-airflow",
+      "uuid": "425408d5-66a4-4f33-b8e8-e374b9348dfa@6c48a",
+      "displayName": "player-propeller-hat-blades",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "c1d4227f-7a05-43b9-b1b2-2626d9d2ce27",
+        "imageUuidOrDatabaseUri": "425408d5-66a4-4f33-b8e8-e374b9348dfa",
         "visible": false
       },
       "ver": "1.0.22",
@@ -37,6 +37,6 @@
     "type": "texture",
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "c1d4227f-7a05-43b9-b1b2-2626d9d2ce27@6c48a"
+    "redirect": "425408d5-66a4-4f33-b8e8-e374b9348dfa@6c48a"
   }
 }

@@ -51,6 +51,17 @@ class DoodleJumpRandomStream {
     getSnapshot(): DoodleJumpRandomStreamSnapshot {
         return Object.freeze({ seed: this.seed, cursor: this.cursor });
     }
+
+    restore(snapshot: DoodleJumpRandomStreamSnapshot): void {
+        if (snapshot.seed !== this.seed
+            || !Number.isInteger(snapshot.cursor)
+            || snapshot.cursor < 0
+            || snapshot.cursor > 1000000) {
+            throw new Error('Invalid Doodle Jump random stream snapshot.');
+        }
+        this.reset();
+        for (let index = 0; index < snapshot.cursor; index += 1) this.next();
+    }
 }
 
 export class DoodleJumpRandomStreams {
@@ -86,5 +97,12 @@ export class DoodleJumpRandomStreams {
             item: this.streams.item.getSnapshot(),
             cosmetic: this.streams.cosmetic.getSnapshot(),
         });
+    }
+
+    restore(snapshot: DoodleJumpRandomStreamsSnapshot): void {
+        this.streams.platform.restore(snapshot.platform);
+        this.streams.enemy.restore(snapshot.enemy);
+        this.streams.item.restore(snapshot.item);
+        this.streams.cosmetic.restore(snapshot.cosmetic);
     }
 }

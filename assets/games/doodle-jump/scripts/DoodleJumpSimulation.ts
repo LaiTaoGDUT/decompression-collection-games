@@ -106,6 +106,9 @@ interface MutablePlatform {
     layerIndex: number;
 }
 
+const LARGE_ENEMY_PLATFORM_EXTRA_WIDTH = 80;
+const LARGE_ENEMY_PLATFORM_WIDTH_VARIATION = 44;
+
 function moveTowards(current: number, target: number, maximumDelta: number): number {
     if (current < target) return Math.min(target, current + maximumDelta);
     if (current > target) return Math.max(target, current - maximumDelta);
@@ -242,6 +245,108 @@ export class DoodleJumpSimulation {
             this.cameraBottomY,
             this.cameraBottomY + this.config.design.height,
             this.getItemOccupiedBodies(),
+        );
+    }
+
+    restore(snapshot: DoodleJumpSimulationSnapshot): void {
+        const finite = (value: number, field: string): number => {
+            if (!Number.isFinite(value)) throw new Error(`Invalid restored ${field}.`);
+            return value;
+        };
+        if (snapshot.seed !== this.initialSeed
+            || snapshot.platforms.length === 0
+            || snapshot.platforms.length > this.config.generation.maxActivePlatforms) {
+            throw new Error('Invalid Doodle Jump active-round snapshot.');
+        }
+        this.accumulator = 0;
+        this.elapsedSeconds = Math.max(0, finite(snapshot.elapsedSeconds, 'elapsedSeconds'));
+        this.droppedFrameSeconds = Math.max(
+            0,
+            finite(snapshot.droppedFrameSeconds, 'droppedFrameSeconds'),
+        );
+        this.playerX = finite(snapshot.playerX, 'playerX');
+        this.playerY = finite(snapshot.playerY, 'playerY');
+        this.velocityX = finite(snapshot.velocityX, 'velocityX');
+        this.velocityY = finite(snapshot.velocityY, 'velocityY');
+        this.cameraBottomY = finite(snapshot.cameraBottomY, 'cameraBottomY');
+        this.maxAbsoluteWorldY = Math.max(
+            this.playerY,
+            finite(snapshot.maxAbsoluteWorldY, 'maxAbsoluteWorldY'),
+        );
+        this.lastLandedPlatformId = snapshot.lastLandedPlatformId;
+        this.landingCount = Math.max(0, Math.floor(snapshot.landingCount));
+        this.fatalReason = undefined;
+        this.fatalFocusX = undefined;
+        this.fatalFocusY = undefined;
+        this.monsterContactGraceRemaining = 0.35;
+        this.generatorCursor = Math.max(0, Math.floor(snapshot.generatorCursor));
+        this.degradedGenerationCount = Math.max(
+            0,
+            Math.floor(snapshot.degradedGenerationCount),
+        );
+        this.platforms.length = 0;
+        let maximumGeneratedId = 7;
+        snapshot.platforms.forEach((platform) => {
+            const generatedId = Number(platform.id.replace(/^G/, ''));
+            if (Number.isInteger(generatedId)) maximumGeneratedId = Math.max(
+                maximumGeneratedId,
+                generatedId,
+            );
+            const config: DoodleJumpFixedPlatformConfig = Object.freeze({
+                id: platform.id,
+                x: finite(platform.x, `platform ${platform.id} x`),
+                y: finite(platform.y, `platform ${platform.id} y`),
+                width: Math.max(1, finite(platform.width, `platform ${platform.id} width`)),
+                type: platform.type,
+            });
+            this.platforms.push({
+                config,
+                generated: /^G/.test(platform.id) || /^resurrect-safe-/.test(platform.id),
+                x: config.x,
+                collisionEnabled: platform.collisionEnabled,
+                consumed: platform.consumed,
+                consumeAt: platform.warningProgress > 0 && platform.collisionEnabled
+                    ? this.elapsedSeconds + 0.25
+                    : 0,
+                effectStartedAt: 0,
+                warningProgress: Math.max(0, platform.warningProgress),
+                predecessorId: platform.predecessorId,
+                generationAttempts: Math.max(0, Math.floor(platform.generationAttempts)),
+                degraded: platform.degraded,
+                mainRoute: platform.mainRoute,
+                layerIndex: Math.floor(platform.layerIndex),
+            });
+        });
+        this.nextGeneratedId = maximumGeneratedId + 1;
+        this.generatedLayerCount = this.platforms.reduce(
+            (maximum, platform) => Math.max(maximum, platform.layerIndex),
+            0,
+        );
+        const latestMain = this.platforms.filter((platform) => (
+            platform.mainRoute && platform.layerIndex === this.generatedLayerCount
+        ));
+        this.latestMainLayer = latestMain.length > 0
+            ? latestMain
+            : [this.findHighestPlatform()];
+        this.randomStreams.restore(snapshot.randomStreams);
+        const combatPlatforms = this.getCombatPlatforms();
+        this.combat.restore(
+            snapshot.enemies,
+            snapshot.combat,
+            this.elapsedSeconds,
+            combatPlatforms,
+        );
+        const hazardPlatforms = this.getHazardPlatforms();
+        this.hazards.restore(
+            snapshot.hazards,
+            snapshot.hazardStats,
+            this.elapsedSeconds,
+            hazardPlatforms,
+        );
+        this.items.restore(
+            snapshot.items,
+            snapshot.itemStatus,
+            this.platforms.map((platform) => platform.config.id),
         );
     }
 
@@ -489,7 +594,7 @@ export class DoodleJumpSimulation {
             this.monsterContactGraceRemaining - delta,
         );
         this.updatePlatforms(delta);
-        this.items.updateTimers(delta, this.playerX, this.playerY);
+        this.items.updateTimers(delta, this.playerX, this.playerY, this.velocityY);
         this.combat.syncWorld(
             this.elapsedSeconds,
             this.getCombatPlatforms(),
@@ -540,6 +645,12 @@ export class DoodleJumpSimulation {
                 );
             }
         }
+        const blackHoleAttraction = this.hazards.resolveBlackHoleAttraction(
+            this.playerX,
+            this.playerY,
+        );
+        this.velocityX += blackHoleAttraction.accelerationX * delta;
+        this.velocityY += blackHoleAttraction.accelerationY * delta;
         this.playerX += this.velocityX * delta;
         this.playerY += this.velocityY * delta;
         if (this.playerX < player.wrapLeft) this.playerX += player.wrapDistance;
@@ -747,9 +858,12 @@ export class DoodleJumpSimulation {
             const routeType = attempt > 16 || recoveryLayer
                 ? 'normal'
                 : this.pickAnchorPlatformType(heightMeters);
-            const widthRange = this.anchorWidthRange(routeType, difficulty, recoveryLayer);
+            const candidateY = layerBaseY + verticalGap;
+            const largeEnemyWidthRange = this.largeEnemyPlatformWidthRange(routeType, candidateY);
+            const widthRange = largeEnemyWidthRange
+                ?? this.anchorWidthRange(routeType, difficulty, recoveryLayer);
             const width = Math.min(
-                recoveryLayer ? 230 : 220,
+                largeEnemyWidthRange?.[1] ?? (recoveryLayer ? 230 : 220),
                 widthRange[0] + this.nextPlatformRandom() * (widthRange[1] - widthRange[0]) + widened,
             );
             const baseHorizontalRange = recoveryLayer
@@ -767,7 +881,7 @@ export class DoodleJumpSimulation {
             const config: DoodleJumpFixedPlatformConfig = Object.freeze({
                 id: `G${this.nextGeneratedId}`,
                 x,
-                y: layerBaseY + verticalGap,
+                y: candidateY,
                 width,
                 type: routeType,
             });
@@ -798,8 +912,11 @@ export class DoodleJumpSimulation {
             return anchor;
         }
 
-        const fallbackWidth = Math.max(175, Math.min(210, generation.normalFallbackWidth));
         const fallbackGap = generation.verticalStep * generation.mainRouteStepCount;
+        const fallbackY = routePrevious.config.y + fallbackGap;
+        const largeEnemyFallbackRange = this.largeEnemyPlatformWidthRange('normal', fallbackY);
+        const fallbackWidth = largeEnemyFallbackRange?.[0]
+            ?? Math.max(175, Math.min(210, generation.normalFallbackWidth));
         const fallbackX = this.clampPlatformX(
             routePrevious.x + (this.nextPlatformRandom() * 2 - 1) * 120,
             fallbackWidth,
@@ -808,7 +925,7 @@ export class DoodleJumpSimulation {
         const fallbackConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
             id: `G${this.nextGeneratedId}`,
             x: fallbackX,
-            y: routePrevious.config.y + fallbackGap,
+            y: fallbackY,
             width: fallbackWidth,
             type: 'normal',
         });
@@ -916,7 +1033,8 @@ export class DoodleJumpSimulation {
         for (let index = 0; index < selectedSlots.length; index += 1) {
             const y = routePrevious.config.y + selectedSlots[index] * verticalStep;
             const type = this.pickInsertedPlatformType();
-            const widthRange = this.widthRange(type);
+            const widthRange = this.largeEnemyPlatformWidthRange(type, y)
+                ?? this.widthRange(type);
             const width = widthRange[0]
                 + this.nextPlatformRandom() * (widthRange[1] - widthRange[0]);
             let config: DoodleJumpFixedPlatformConfig | undefined;
@@ -960,6 +1078,22 @@ export class DoodleJumpSimulation {
         const minimum = width / 2 + movementPadding;
         const maximum = this.config.design.width - width / 2 - movementPadding;
         return Math.max(minimum, Math.min(maximum, x));
+    }
+
+    private largeEnemyPlatformWidthRange(
+        type: DoodleJumpPlatformType,
+        worldY: number,
+    ): readonly [number, number] | undefined {
+        if (type !== 'normal') return undefined;
+        const startWorldY = this.config.fixedPlatforms[0].y
+            + this.config.player.collisionHeight / 2;
+        const heightMeters = Math.max(0, (worldY - startWorldY) / 100);
+        if (heightMeters < this.config.enemies.large.unlockHeightMeters) return undefined;
+        const minimum = this.config.enemies.large.width + LARGE_ENEMY_PLATFORM_EXTRA_WIDTH;
+        return Object.freeze([
+            minimum,
+            Math.min(this.config.design.width, minimum + LARGE_ENEMY_PLATFORM_WIDTH_VARIATION),
+        ]);
     }
 
     private isCandidateReachable(

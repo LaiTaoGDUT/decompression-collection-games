@@ -2,16 +2,13 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "043aae79-2a5f-4024-8904-179d3746a2f1",
-  "files": [
-    ".json",
-    ".png"
-  ],
+  "uuid": "98b629eb-cf2e-4cd1-90bd-111bea3133b3",
+  "files": [".json", ".png"],
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "043aae79-2a5f-4024-8904-179d3746a2f1@6c48a",
-      "displayName": "propeller-rotation-lines",
+      "uuid": "98b629eb-cf2e-4cd1-90bd-111bea3133b3@6c48a",
+      "displayName": "player-rocket",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,14 +19,12 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "043aae79-2a5f-4024-8904-179d3746a2f1",
+        "imageUuidOrDatabaseUri": "98b629eb-cf2e-4cd1-90bd-111bea3133b3",
         "visible": false
       },
       "ver": "1.0.22",
       "imported": true,
-      "files": [
-        ".json"
-      ],
+      "files": [".json"],
       "subMetas": {}
     }
   },
@@ -37,6 +32,6 @@
     "type": "texture",
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "043aae79-2a5f-4024-8904-179d3746a2f1@6c48a"
+    "redirect": "98b629eb-cf2e-4cd1-90bd-111bea3133b3@6c48a"
   }
 }

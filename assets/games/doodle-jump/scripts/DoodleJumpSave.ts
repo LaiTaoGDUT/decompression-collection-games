@@ -2,14 +2,34 @@ import type {
     GameSaveData,
     StorageService,
 } from '../../../services/storage/StorageService';
+import type { DoodleJumpSimulationSnapshot } from './DoodleJumpSimulation';
 
 export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
 export const DOODLE_JUMP_LEGACY_GAME_ID = 'doodleJump';
 export const DOODLE_JUMP_SAVE_DATA_VERSION = 1;
-export const DOODLE_JUMP_GAME_DATA_VERSION = 2;
+export const DOODLE_JUMP_GAME_DATA_VERSION = 3;
 export const DOODLE_JUMP_SETTINGS_VERSION = 1;
 
 export type DoodleJumpSensorSensitivity = 0.75 | 1 | 1.25;
+
+export interface DoodleJumpRunHistoryBaseline {
+    readonly playCount: number;
+    readonly highScore: number;
+    readonly lastPlayedAt: number;
+    readonly bestHeightMeters: number;
+    readonly bestKillCount: number;
+    readonly totalShots: number;
+    readonly totalKills: number;
+}
+
+export interface DoodleJumpActiveRound {
+    readonly version: 1;
+    readonly savedAt: number;
+    readonly historyBaseline: DoodleJumpRunHistoryBaseline;
+    readonly runShotCount: number;
+    readonly successfulRevives: number;
+    readonly snapshot: DoodleJumpSimulationSnapshot;
+}
 
 export interface DoodleJumpSaveState {
     readonly playCount: number;
@@ -24,6 +44,7 @@ export interface DoodleJumpSaveState {
     readonly tutorialCompleted: boolean;
     readonly headStartCount: number;
     readonly settingsVersion: number;
+    readonly activeRound?: DoodleJumpActiveRound;
     /** 包含未知兼容字段；写回时已知字段会覆盖同名值。 */
     readonly custom: Readonly<Record<string, unknown>>;
 }
@@ -41,6 +62,7 @@ export interface DoodleJumpRunHistory {
     readonly maxHeightMeters: number;
     readonly completed: boolean;
     readonly playedAt: number;
+    readonly activeRound?: DoodleJumpActiveRound;
 }
 
 export interface DoodleJumpRunSaveResult {
@@ -59,6 +81,7 @@ const KNOWN_CUSTOM_KEYS = Object.freeze([
     'tutorialCompleted',
     'headStartCount',
     'settingsVersion',
+    'activeRound',
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -94,6 +117,45 @@ function sensitivityField(value: unknown): DoodleJumpSensorSensitivity {
     if (value === undefined) return 1;
     if (value === 0.75 || value === 1 || value === 1.25) return value;
     throw new Error('custom.sensorSensitivity must be 0.75, 1, or 1.25.');
+}
+
+function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
+    if (value === undefined) return undefined;
+    try {
+        if (!isRecord(value)
+            || value.version !== 1
+            || !isRecord(value.historyBaseline)
+            || !isRecord(value.snapshot)) return undefined;
+        const snapshot = value.snapshot;
+        if (!Array.isArray(snapshot.platforms)
+            || !Array.isArray(snapshot.enemies)
+            || !Array.isArray(snapshot.hazards)
+            || !Array.isArray(snapshot.items)
+            || !isRecord(snapshot.randomStreams)) return undefined;
+        const baseline = value.historyBaseline;
+        return Object.freeze({
+            version: 1,
+            savedAt: finiteTimestamp(value.savedAt, 'custom.activeRound.savedAt'),
+            historyBaseline: Object.freeze({
+                playCount: nonNegativeInteger(baseline.playCount, 'activeRound.historyBaseline.playCount'),
+                highScore: nonNegativeInteger(baseline.highScore, 'activeRound.historyBaseline.highScore'),
+                lastPlayedAt: finiteTimestamp(baseline.lastPlayedAt, 'activeRound.historyBaseline.lastPlayedAt'),
+                bestHeightMeters: nonNegativeInteger(baseline.bestHeightMeters, 'activeRound.historyBaseline.bestHeightMeters'),
+                bestKillCount: nonNegativeInteger(baseline.bestKillCount, 'activeRound.historyBaseline.bestKillCount'),
+                totalShots: nonNegativeInteger(baseline.totalShots, 'activeRound.historyBaseline.totalShots'),
+                totalKills: nonNegativeInteger(baseline.totalKills, 'activeRound.historyBaseline.totalKills'),
+            }),
+            runShotCount: nonNegativeInteger(value.runShotCount, 'custom.activeRound.runShotCount'),
+            successfulRevives: nonNegativeInteger(
+                value.successfulRevives,
+                'custom.activeRound.successfulRevives',
+            ),
+            snapshot: snapshot as unknown as DoodleJumpSimulationSnapshot,
+        });
+    } catch (error: unknown) {
+        console.warn('[DoodleJumpSave] Ignored invalid active round.', error);
+        return undefined;
+    }
 }
 
 function isKnownCustomKey(key: string): boolean {
@@ -171,6 +233,7 @@ function parseSave(data: GameSaveData): {
                 'custom.settingsVersion',
                 DOODLE_JUMP_SETTINGS_VERSION,
             ),
+            activeRound: parseActiveRound(custom.activeRound),
             custom: Object.freeze(unknown),
         }),
         migrated: gameDataVersion !== DOODLE_JUMP_GAME_DATA_VERSION
@@ -212,6 +275,7 @@ export function toDoodleJumpGameSaveData(save: DoodleJumpSaveState): GameSaveDat
             tutorialCompleted: save.tutorialCompleted,
             headStartCount: save.headStartCount,
             settingsVersion: save.settingsVersion,
+            activeRound: save.activeRound,
         }),
     });
 }
@@ -290,6 +354,7 @@ export function buildDoodleJumpRunSave(
             bestKillCount: Math.max(baseline.bestKillCount, kills),
             totalShots: baseline.totalShots + shots,
             totalKills: baseline.totalKills + kills,
+            activeRound: history.completed ? undefined : history.activeRound,
         }),
         isNewBestScore,
     });
