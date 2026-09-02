@@ -154,6 +154,8 @@ const TEXTURE_PATHS = Object.freeze({
     trampolineRebound: 'visual/effects/trampoline-rebound/texture',
     normalPlatform: 'visual/platforms/platform-normal-shadowed-v2/texture',
     movingPlatform: 'visual/platforms/platform-moving-shadowed-v2/texture',
+    verticalMovingPlatform: 'visual/platforms/platform-vertical-moving-shadowed-v1/texture',
+    spikedPlatform: 'visual/platforms/platform-spiked-shadowed-v1/texture',
     breakablePlatform: 'visual/platforms/platform-breakable-shadowed-v2/texture',
     breakableLeft: 'visual/platforms/platform-breakable-left/texture',
     breakableRight: 'visual/platforms/platform-breakable-right/texture',
@@ -230,6 +232,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
             '· 主角会自动连续跳跃，不能手动起跳。手机左右倾斜控制横向移动；角色越过屏幕左右边缘会从另一侧出现。',
             '· 点击任意方向发射纸飞机，按住可持续发射。纸飞机可攻击怪物，但不能破坏平台、道具或危险物。',
             '· 镜头只随最高进度向上移动。高度每增加 1 米获得 10 分，击败怪物和中断 UFO 还会获得额外分数。',
+            '· 紫色升降平台会缓慢上下移动且越往高处越常见；星空背景开始出现倒刺平台，顶面可以踩，下方尖刺不能碰。',
             '· 没踩到下一块平台并掉出屏幕、碰到怪物、被 UFO 带走、进入黑洞核心或踩中捕兽夹都会失败。',
             '· 开启复活功能后，第一次失败可免费复活，第二次失败可通过激励广告复活；未配置广告位时第二次复活直接成功。',
             '· 暂停、弹窗和切到后台时，角色、敌人、道具计时和世界运动都会暂停。',
@@ -2692,11 +2695,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (breakLeft) breakLeft.active = isBreaking;
         if (breakRight) breakRight.active = isBreaking;
         const textureKey = type === 'moving' ? 'movingPlatform'
-            : type === 'breakable' ? 'breakablePlatform'
-                : type === 'disappearing' ? 'disappearingPlatform'
-                    : type === 'shifting' ? 'shiftingPlatform'
-                        : type === 'exploding' ? 'explodingPlatform'
-                            : 'normalPlatform';
+            : type === 'vertical-moving' ? 'verticalMovingPlatform'
+                : type === 'spiked' ? 'spikedPlatform'
+                    : type === 'breakable' ? 'breakablePlatform'
+                        : type === 'disappearing' ? 'disappearingPlatform'
+                            : type === 'shifting' ? 'shiftingPlatform'
+                                : type === 'exploding' ? 'explodingPlatform'
+                                    : 'normalPlatform';
         if (this.platformNodeTypes[index] !== type) {
             const frame = this.textureFrames[textureKey as TextureKey];
             if (frame) {
@@ -4246,7 +4251,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             ? this.textureFrames.failureUfoCapture
             : reason === 'black-hole'
                 ? this.textureFrames.failureBlackHoleSuction
-                : reason === 'bear-trap'
+                : reason === 'bear-trap' || reason === 'spikes'
                     ? this.textureFrames.failureBearTrapTrigger
                     : reason === 'fall'
                         ? this.textureFrames.failureFalling
@@ -4259,7 +4264,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             / Math.max(1, frame.originalSize.width);
         effect.getComponent(UITransform)?.setContentSize(width, height);
         this.applySpriteVisual(effect, frame);
-        effect.setPosition(0, reason === 'bear-trap' ? -34 : reason === 'fall' ? 8 : 4, 0);
+        effect.setPosition(
+            0,
+            reason === 'bear-trap' || reason === 'spikes' ? -34 : reason === 'fall' ? 8 : 4,
+            0,
+        );
         effect.setScale(0.92, 0.92, 1);
         effect.setRotationFromEuler(0, 0, 0);
         effect.setSiblingIndex(Math.max(0, effect.parent!.children.length - 1));
@@ -4299,6 +4308,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (reason === 'ufo-abduction') return '被 UFO 光束带走';
         if (reason === 'black-hole') return '被黑洞吸入';
         if (reason === 'bear-trap') return '触发了捕兽夹';
+        if (reason === 'spikes') return '撞到了平台下方的倒刺';
         return '没有落到下一块平台';
     }
 

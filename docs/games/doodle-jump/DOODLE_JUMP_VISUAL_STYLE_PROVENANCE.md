@@ -72,6 +72,14 @@ v2 采用竖向暖白稿纸、浅蓝横线、细铅笔线、低饱和彩笔平�
 - 输出位于 `assets/games/doodle-jump/visual/platforms/platform-*-shadowed-v2.png`。Breakable 左右半片也从带阴影版本派生。
 - Disappearing 使用既有 `platform_vfx_disappearing_fade.png` 派生的纸屑淡出环；Exploding 使用既有倒计时环和爆裂碎片图。处理只做透明裁边，没有借用其他游戏资产。
 
+## 升降平台与倒刺平台独立图片 v1（当前，2026-09-02）
+
+- 生成方式：Codex 内置 `image_gen`，以本游戏 `platform-normal-shadowed-v2.png` 和 `platform-moving-shadowed-v2.png` 为视觉参考；没有使用外部游戏素材。
+- 升降平台采用输出 `exec-48abd1da-67f3-41ed-92d7-56c31f85a9b3`，归档为 `art_sources/涂鸦跃层/平台/generated/platform_vertical_moving_source_v1.png`。最终提示词锁定蓝紫纸片、4 至 5 条内部纵向暖白裁线、平坦顶面、透明独立 Sprite，并明确禁止上下箭头、方向符号和外置运动线。
+- 升降平台原始输出把浅色棋盘格烘焙进 RGB；`tools/process-doodle-jump-visuals.py` 依据中心连通主体执行确定性背景分离、Alpha 紧边和与既有平台一致的软影烘焙，运行时派生为 `visual/platforms/platform-vertical-moving-shadowed-v1.png`。
+- 倒刺平台采用输出 `exec-e97a6dac-8c44-4103-bbfa-4efeafe43cd5`，归档为 `art_sources/涂鸦跃层/平台/generated/platform_spiked_source_v1.png`；运行时派生为 `visual/platforms/platform-spiked-shadowed-v1.png`。提示词锁定完整青绿色平顶、珊瑚红与暗紫警示纸带、只向下伸出的纸片倒刺和真实透明背景。
+- 两种平台均由各自独立图片承担完整外观；运行时已移除升降箭头和 Graphics 倒刺包装，碰撞体、升降轨迹与第四背景解锁规则不随图片尺寸变化。
+
 ## 最终提示词摘要
 
 生成一张原创竖屏手机跳跃游戏界面效果图，展示纯 2D 平面纸片、暖白稿纸、铅笔勾线、彩笔平涂、窄白色纸边、参考图同款柔和偏移落影、平面剪纸平台、纸片角色、纸飞机子弹、弹簧、蹦床、怪物、UFO 和紧凑纸片 HUD。主角上半身必须严格保持参考图中的头部/发型、脸部、青绿色躯干、红色围巾、双臂轮廓、比例和配色，不能重新设计。落影应是每个透明纸片素材自身的低对比预烘焙效果，不由代码后加。构图采用 9:16 竖屏、正交视图、中央玩法区留白和顶部安全区。禁止 3D 纸艺、厚度、倒角、挤出、透视、体积光、强烈实时投影、玻璃、金属、霓虹、Logo、品牌、可读文字和原版可识别角色或素材。

@@ -4,10 +4,12 @@ export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
 export type DoodleJumpPlatformType =
     | 'normal'
     | 'moving'
+    | 'vertical-moving'
     | 'breakable'
     | 'disappearing'
     | 'shifting'
-    | 'exploding';
+    | 'exploding'
+    | 'spiked';
 
 export type DoodleJumpEnemyType = 'small' | 'large' | 'hover';
 export type DoodleJumpHazardType = 'ufo' | 'black-hole' | 'bear-trap';
@@ -107,6 +109,21 @@ export interface DoodleJumpGameplayConfig {
     }>;
     readonly platformBehavior: Readonly<{
         explodingDelaySeconds: number;
+        verticalMoving: Readonly<{
+            unlockHeightMeters: number;
+            spawnChanceAtUnlock: number;
+            spawnChanceAtCap: number;
+            chanceCapHeightMeters: number;
+            minimumAmplitude: number;
+            maximumAmplitude: number;
+            minimumPeriodSeconds: number;
+            maximumPeriodSeconds: number;
+        }>;
+        spiked: Readonly<{
+            unlockHeightMeters: number;
+            spawnChance: number;
+            collisionDepth: number;
+        }>;
     }>;
     readonly visualQuality: Readonly<Record<
         'low' | 'medium' | 'high',
@@ -242,10 +259,12 @@ export interface DoodleJumpGameplayConfig {
 const PLATFORM_TYPES: readonly DoodleJumpPlatformType[] = Object.freeze([
     'normal',
     'moving',
+    'vertical-moving',
     'breakable',
     'disappearing',
     'shifting',
     'exploding',
+    'spiked',
 ]);
 
 const ITEM_TYPES: readonly DoodleJumpItemType[] = Object.freeze([
@@ -425,6 +444,11 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const camera = asRecord(root.camera, 'camera');
     const shooting = asRecord(root.shooting, 'shooting');
     const platformBehavior = asRecord(root.platformBehavior, 'platformBehavior');
+    const verticalMoving = asRecord(
+        platformBehavior.verticalMoving,
+        'platformBehavior.verticalMoving',
+    );
+    const spiked = asRecord(platformBehavior.spiked, 'platformBehavior.spiked');
     const visualQuality = asRecord(root.visualQuality, 'visualQuality');
     const lowVisualQuality = asRecord(visualQuality.low, 'visualQuality.low');
     const mediumVisualQuality = asRecord(visualQuality.medium, 'visualQuality.medium');
@@ -540,6 +564,44 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     if (platformTypeOverride !== 'auto'
         && PLATFORM_TYPES.indexOf(platformTypeOverride) < 0) {
         throw new Error(`Unsupported generation.platformTypeOverride: ${platformTypeOverride}.`);
+    }
+    const verticalMovingUnlock = nonNegativeInteger(
+        verticalMoving.unlockHeightMeters,
+        'platformBehavior.verticalMoving.unlockHeightMeters',
+    );
+    const verticalMovingChanceAtUnlock = unitRatio(
+        verticalMoving.spawnChanceAtUnlock,
+        'platformBehavior.verticalMoving.spawnChanceAtUnlock',
+    );
+    const verticalMovingChanceAtCap = unitRatio(
+        verticalMoving.spawnChanceAtCap,
+        'platformBehavior.verticalMoving.spawnChanceAtCap',
+    );
+    const verticalMovingChanceCapHeight = positiveNumber(
+        verticalMoving.chanceCapHeightMeters,
+        'platformBehavior.verticalMoving.chanceCapHeightMeters',
+    );
+    const verticalMovingMinimumAmplitude = positiveNumber(
+        verticalMoving.minimumAmplitude,
+        'platformBehavior.verticalMoving.minimumAmplitude',
+    );
+    const verticalMovingMaximumAmplitude = positiveNumber(
+        verticalMoving.maximumAmplitude,
+        'platformBehavior.verticalMoving.maximumAmplitude',
+    );
+    const verticalMovingMinimumPeriod = positiveNumber(
+        verticalMoving.minimumPeriodSeconds,
+        'platformBehavior.verticalMoving.minimumPeriodSeconds',
+    );
+    const verticalMovingMaximumPeriod = positiveNumber(
+        verticalMoving.maximumPeriodSeconds,
+        'platformBehavior.verticalMoving.maximumPeriodSeconds',
+    );
+    if (verticalMovingChanceAtCap < verticalMovingChanceAtUnlock
+        || verticalMovingChanceCapHeight <= verticalMovingUnlock
+        || verticalMovingMaximumAmplitude < verticalMovingMinimumAmplitude
+        || verticalMovingMaximumPeriod < verticalMovingMinimumPeriod) {
+        throw new Error('Vertical-moving platform difficulty and motion ranges are invalid.');
     }
     const smallEnemy = parseEnemyTypeConfig(enemies.small, 'enemies.small');
     const largeEnemy = parseEnemyTypeConfig(enemies.large, 'enemies.large');
@@ -852,6 +914,30 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
                 platformBehavior.explodingDelaySeconds,
                 'platformBehavior.explodingDelaySeconds',
             ),
+            verticalMoving: Object.freeze({
+                unlockHeightMeters: verticalMovingUnlock,
+                spawnChanceAtUnlock: verticalMovingChanceAtUnlock,
+                spawnChanceAtCap: verticalMovingChanceAtCap,
+                chanceCapHeightMeters: verticalMovingChanceCapHeight,
+                minimumAmplitude: verticalMovingMinimumAmplitude,
+                maximumAmplitude: verticalMovingMaximumAmplitude,
+                minimumPeriodSeconds: verticalMovingMinimumPeriod,
+                maximumPeriodSeconds: verticalMovingMaximumPeriod,
+            }),
+            spiked: Object.freeze({
+                unlockHeightMeters: nonNegativeInteger(
+                    spiked.unlockHeightMeters,
+                    'platformBehavior.spiked.unlockHeightMeters',
+                ),
+                spawnChance: unitRatio(
+                    spiked.spawnChance,
+                    'platformBehavior.spiked.spawnChance',
+                ),
+                collisionDepth: positiveNumber(
+                    spiked.collisionDepth,
+                    'platformBehavior.spiked.collisionDepth',
+                ),
+            }),
         }),
         visualQuality: Object.freeze({
             low: parseVisualQualityProfile(lowVisualQuality, 'visualQuality.low'),

@@ -70,6 +70,8 @@ interface MutableItem {
     readonly phase: number;
     x: number;
     y: number;
+    anchorOffsetX: number;
+    anchorOffsetY: number;
 }
 
 const FLIGHT_TYPES: readonly DoodleJumpFlightPower[] = Object.freeze([
@@ -145,7 +147,11 @@ export class DoodleJumpItemSystem {
             if (platformIds.indexOf(snapshot.anchorPlatformId) < 0) return;
             const parsedId = Number(snapshot.id.replace(/^I/, ''));
             if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
-            this.items.push({ ...snapshot });
+            this.items.push({
+                ...snapshot,
+                anchorOffsetX: Number.NaN,
+                anchorOffsetY: Number.NaN,
+            });
         });
         this.nextItemId = maximumId + 1;
         this.landingPower = status.landingPower;
@@ -206,6 +212,7 @@ export class DoodleJumpItemSystem {
     ): void {
         const platformById = new Map<string, DoodleJumpItemPlatform>();
         platforms.forEach((platform) => platformById.set(platform.id, platform));
+        this.updateAttachedItems(platformById);
         this.recycleItems(cameraBottomY);
         this.purgeEvaluatedPlatforms(platformById);
         this.evaluateNewPlatforms(platforms, cameraBottomY, cameraTopY, occupiedBodies);
@@ -436,6 +443,21 @@ export class DoodleJumpItemSystem {
         }
     }
 
+    private updateAttachedItems(
+        platformById: ReadonlyMap<string, DoodleJumpItemPlatform>,
+    ): void {
+        this.items.forEach((item) => {
+            const platform = platformById.get(item.anchorPlatformId);
+            if (!platform || !platform.collisionEnabled || platform.consumed) return;
+            if (!Number.isFinite(item.anchorOffsetX) || !Number.isFinite(item.anchorOffsetY)) {
+                item.anchorOffsetX = item.x - platform.x;
+                item.anchorOffsetY = item.y - platform.y;
+            }
+            item.x = platform.x + item.anchorOffsetX;
+            item.y = platform.y + item.anchorOffsetY;
+        });
+    }
+
     private purgeEvaluatedPlatforms(
         platformById: ReadonlyMap<string, DoodleJumpItemPlatform>,
     ): void {
@@ -538,6 +560,8 @@ export class DoodleJumpItemSystem {
             radius,
             anchorPlatformId: platform.id,
             phase: this.randomStreams.next('item'),
+            anchorOffsetX: offsetX,
+            anchorOffsetY: offsetY,
         };
     }
 

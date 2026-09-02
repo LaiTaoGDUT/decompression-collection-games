@@ -34,7 +34,11 @@ import {
     type DoodleJumpItemStatusSnapshot,
 } from './DoodleJumpItemSystem';
 
-export type DoodleJumpFailureReason = 'fall' | 'monster-contact' | DoodleJumpHazardFailureReason;
+export type DoodleJumpFailureReason =
+    | 'fall'
+    | 'monster-contact'
+    | 'spikes'
+    | DoodleJumpHazardFailureReason;
 
 export interface DoodleJumpProjectileTargetHit {
     readonly targetType: 'enemy' | 'ufo';
@@ -48,6 +52,8 @@ export interface DoodleJumpPlatformSnapshot {
     readonly type: DoodleJumpPlatformType;
     readonly x: number;
     readonly y: number;
+    readonly baseX?: number;
+    readonly baseY?: number;
     readonly width: number;
     readonly collisionEnabled: boolean;
     readonly consumed: boolean;
@@ -94,6 +100,7 @@ interface MutablePlatform {
     readonly config: DoodleJumpFixedPlatformConfig;
     readonly generated: boolean;
     x: number;
+    y: number;
     collisionEnabled: boolean;
     consumed: boolean;
     consumeAt: number;
@@ -149,21 +156,7 @@ export class DoodleJumpSimulation {
         this.combat = new DoodleJumpCombatSystem(config, this.randomStreams);
         this.hazards = new DoodleJumpHazardSystem(config, this.randomStreams);
         this.items = new DoodleJumpItemSystem(config, this.randomStreams);
-        this.platforms = config.fixedPlatforms.map((platform, index) => ({
-            config: platform,
-            generated: false,
-            x: platform.x,
-            collisionEnabled: true,
-            consumed: false,
-            consumeAt: 0,
-            effectStartedAt: 0,
-            warningProgress: 0,
-            predecessorId: index > 0 ? config.fixedPlatforms[index - 1].id : undefined,
-            generationAttempts: 0,
-            degraded: false,
-            mainRoute: true,
-            layerIndex: index - 7,
-        }));
+        this.platforms = [];
         this.reset();
         this.validateFixedRoute();
     }
@@ -193,11 +186,30 @@ export class DoodleJumpSimulation {
         this.generatedLayerCount = 0;
         this.degradedGenerationCount = 0;
         this.nextGeneratedId = 8;
-        for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
-            if (this.platforms[index].generated) this.platforms.splice(index, 1);
-        }
+        this.platforms.length = 0;
+        this.config.fixedPlatforms.forEach((platform, index) => {
+            this.platforms.push({
+                config: platform,
+                generated: false,
+                x: platform.x,
+                y: platform.y,
+                collisionEnabled: true,
+                consumed: false,
+                consumeAt: 0,
+                effectStartedAt: 0,
+                warningProgress: 0,
+                predecessorId: index > 0
+                    ? this.config.fixedPlatforms[index - 1].id
+                    : undefined,
+                generationAttempts: 0,
+                degraded: false,
+                mainRoute: true,
+                layerIndex: index - 7,
+            });
+        });
         this.platforms.forEach((platform, index) => {
             platform.x = platform.config.x;
+            platform.y = platform.config.y;
             platform.collisionEnabled = true;
             platform.consumed = false;
             platform.consumeAt = 0;
@@ -292,17 +304,39 @@ export class DoodleJumpSimulation {
                 maximumGeneratedId,
                 generatedId,
             );
+            const restoredX = finite(platform.x, `platform ${platform.id} x`);
+            const restoredY = finite(platform.y, `platform ${platform.id} y`);
+            const restoredWidth = Math.max(
+                1,
+                finite(platform.width, `platform ${platform.id} width`),
+            );
+            const zeroOriginConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
+                id: platform.id,
+                x: 0,
+                y: 0,
+                width: restoredWidth,
+                type: platform.type,
+            });
             const config: DoodleJumpFixedPlatformConfig = Object.freeze({
                 id: platform.id,
-                x: finite(platform.x, `platform ${platform.id} x`),
-                y: finite(platform.y, `platform ${platform.id} y`),
-                width: Math.max(1, finite(platform.width, `platform ${platform.id} width`)),
+                x: finite(
+                    platform.baseX
+                        ?? restoredX - this.platformXAt(zeroOriginConfig, this.elapsedSeconds),
+                    `platform ${platform.id} baseX`,
+                ),
+                y: finite(
+                    platform.baseY
+                        ?? restoredY - this.platformYAt(zeroOriginConfig, this.elapsedSeconds),
+                    `platform ${platform.id} baseY`,
+                ),
+                width: restoredWidth,
                 type: platform.type,
             });
             this.platforms.push({
                 config,
                 generated: /^G/.test(platform.id) || /^resurrect-safe-/.test(platform.id),
-                x: config.x,
+                x: restoredX,
+                y: restoredY,
                 collisionEnabled: platform.collisionEnabled,
                 consumed: platform.consumed,
                 consumeAt: platform.warningProgress > 0 && platform.collisionEnabled
@@ -440,40 +474,40 @@ export class DoodleJumpSimulation {
         const isSafe = (platform: MutablePlatform): boolean => !this.config.resurrection.forceGeneratedSafePlatform
             && platform.collisionEnabled
             && platform.config.type === 'normal'
-            && platform.config.y > this.cameraBottomY
+            && platform.y > this.cameraBottomY
             && this.combat.isAreaClear(
                 platform.x,
-                platform.config.y + this.config.player.collisionHeight / 2,
+                platform.y + this.config.player.collisionHeight / 2,
                 this.config.resurrection.safeHorizontalRadius,
             )
             && this.hazards.isAreaClear(
                 platform.x,
-                platform.config.y + this.config.player.collisionHeight / 2,
+                platform.y + this.config.player.collisionHeight / 2,
                 this.config.resurrection.safeHorizontalRadius,
             )
             && this.items.isAreaClear(
                 platform.x,
-                platform.config.y + this.config.player.collisionHeight / 2,
+                platform.y + this.config.player.collisionHeight / 2,
                 this.config.resurrection.safeHorizontalRadius,
             );
         let target: MutablePlatform | undefined;
 
         this.platforms.forEach((platform) => {
-            if (!isSafe(platform) || platform.config.y > screenTop) return;
-            if (!target || platform.config.y < target.config.y) target = platform;
+            if (!isSafe(platform) || platform.y > screenTop) return;
+            if (!target || platform.y < target.y) target = platform;
         });
 
         if (!target) {
             this.platforms.forEach((platform) => {
-                if (!isSafe(platform) || platform.config.y <= screenTop) return;
-                if (!target || platform.config.y < target.config.y) target = platform;
+                if (!isSafe(platform) || platform.y <= screenTop) return;
+                if (!target || platform.y < target.y) target = platform;
             });
         }
 
         let safePlatformGenerated = false;
         if (!target) {
             const highestY = this.platforms.reduce(
-                (highest, platform) => Math.max(highest, platform.config.y),
+                (highest, platform) => Math.max(highest, platform.y),
                 this.cameraBottomY,
             );
             const verticalStep = this.config.generation.verticalStep;
@@ -493,6 +527,7 @@ export class DoodleJumpSimulation {
                 config: generatedConfig,
                 generated: true,
                 x: generatedConfig.x,
+                y: generatedConfig.y,
                 collisionEnabled: true,
                 consumed: false,
                 consumeAt: 0,
@@ -509,9 +544,9 @@ export class DoodleJumpSimulation {
         }
 
         const targetScreenY = Math.max(1, visibleHeight) * this.config.camera.targetHeightRatio;
-        this.cameraBottomY = Math.max(this.cameraBottomY, target.config.y - targetScreenY);
+        this.cameraBottomY = Math.max(this.cameraBottomY, target.y - targetScreenY);
         this.playerX = target.x;
-        this.playerY = target.config.y + this.config.player.collisionHeight / 2;
+        this.playerY = target.y + this.config.player.collisionHeight / 2;
         this.velocityX = 0;
         this.velocityY = this.config.resurrection.launchVelocity;
         this.accumulator = 0;
@@ -524,17 +559,17 @@ export class DoodleJumpSimulation {
         this.monsterContactGraceRemaining = 0.32;
         this.combat.clearNear(
             target.x,
-            target.config.y + this.config.player.collisionHeight / 2,
+            target.y + this.config.player.collisionHeight / 2,
             this.config.resurrection.safeHorizontalRadius,
         );
         this.hazards.clearNear(
             target.x,
-            target.config.y + this.config.player.collisionHeight / 2,
+            target.y + this.config.player.collisionHeight / 2,
             this.config.resurrection.safeHorizontalRadius,
         );
         this.items.clearNear(
             target.x,
-            target.config.y + this.config.player.collisionHeight / 2,
+            target.y + this.config.player.collisionHeight / 2,
             this.config.resurrection.safeHorizontalRadius,
         );
         this.items.grantShield(this.config.resurrection.shieldSeconds);
@@ -572,7 +607,9 @@ export class DoodleJumpSimulation {
                 id: platform.config.id,
                 type: platform.config.type,
                 x: platform.x,
-                y: platform.config.y,
+                y: platform.y,
+                baseX: platform.config.x,
+                baseY: platform.config.y,
                 width: platform.config.width,
                 collisionEnabled: platform.collisionEnabled,
                 consumed: platform.consumed,
@@ -685,6 +722,16 @@ export class DoodleJumpSimulation {
         const playerInvincible = this.items.hasFlightInvincibility()
             || this.items.hasTrampolineInvincibility()
             || this.items.hasShield();
+        const spikedPlatform = this.findSpikedPlatformContact(
+            previousFootY + player.collisionHeight / 2,
+            collisionPlayerY,
+        );
+        if (spikedPlatform && !playerInvincible) {
+            this.fatalReason = 'spikes';
+            this.fatalFocusX = spikedPlatform.x;
+            this.fatalFocusY = spikedPlatform.y - this.config.platformBehavior.spiked.collisionDepth;
+            return;
+        }
         const hazardResult = this.hazards.resolvePlayer(
             delta,
             this.playerX,
@@ -751,7 +798,10 @@ export class DoodleJumpSimulation {
                                 : cycle < 2.51 ? 2
                                     : 2 - ((cycle - 2.51) / 0.28) * 2;
                 platform.x = platform.config.x + (segment - 1) * 70;
+            } else {
+                platform.x = platform.config.x;
             }
+            platform.y = this.platformYAt(platform.config, this.elapsedSeconds);
             if (platform.consumed) return;
             if (platform.config.type === 'exploding' && platform.effectStartedAt > 0) {
                 const effectProgress = Math.max(
@@ -790,7 +840,7 @@ export class DoodleJumpSimulation {
         for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
             const platform = this.platforms[index];
             if (!platform.collisionEnabled) continue;
-            const topY = platform.config.y;
+            const topY = platform.y;
             if (topY < this.cameraBottomY) continue;
             if (previousFootY < topY || currentFootY > topY) continue;
             // A landing needs at least one quarter of the player's body width
@@ -819,6 +869,35 @@ export class DoodleJumpSimulation {
             }
             return;
         }
+    }
+
+    private findSpikedPlatformContact(
+        previousPlayerY: number,
+        currentPlayerY: number,
+    ): MutablePlatform | undefined {
+        const halfPlayerWidth = this.config.player.collisionWidth / 2;
+        const halfPlayerHeight = this.config.player.collisionHeight / 2;
+        const collisionDepth = this.config.platformBehavior.spiked.collisionDepth;
+        const previousTopY = previousPlayerY + halfPlayerHeight;
+        const currentTopY = currentPlayerY + halfPlayerHeight;
+        const previousBottomY = previousPlayerY - halfPlayerHeight;
+        const currentBottomY = currentPlayerY - halfPlayerHeight;
+        for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
+            const platform = this.platforms[index];
+            if (platform.config.type !== 'spiked'
+                || !platform.collisionEnabled
+                || platform.consumed) continue;
+            if (previousPlayerY >= platform.y && currentPlayerY >= platform.y) continue;
+            if (Math.abs(this.playerX - platform.x)
+                > platform.config.width / 2 + halfPlayerWidth) continue;
+            const spikeBaseY = platform.y - 12;
+            const spikeTipY = platform.y - collisionDepth;
+            const sweptTopY = Math.max(previousTopY, currentTopY);
+            const sweptBottomY = Math.min(previousBottomY, currentBottomY);
+            if (sweptTopY < spikeTipY || sweptBottomY > spikeBaseY) continue;
+            return platform;
+        }
+        return undefined;
     }
 
     private ensureGenerated(visibleHeight: number): void {
@@ -981,6 +1060,7 @@ export class DoodleJumpSimulation {
             config,
             generated: true,
             x: config.x,
+            y: config.y,
             collisionEnabled: true,
             consumed: false,
             consumeAt: 0,
@@ -1032,7 +1112,11 @@ export class DoodleJumpSimulation {
         const selectedSlots = availableSlots.slice(0, insertedCount).sort((a, b) => a - b);
         for (let index = 0; index < selectedSlots.length; index += 1) {
             const y = routePrevious.config.y + selectedSlots[index] * verticalStep;
-            const type = this.pickInsertedPlatformType();
+            const heightMeters = Math.max(
+                0,
+                (y - this.config.fixedPlatforms[0].y) / 100,
+            );
+            const type = this.pickInsertedPlatformType(heightMeters);
             const widthRange = this.largeEnemyPlatformWidthRange(type, y)
                 ?? this.widthRange(type);
             const width = widthRange[0]
@@ -1139,7 +1223,7 @@ export class DoodleJumpSimulation {
         const direction = candidate.x >= previous.x ? 1 : -1;
         for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex += 1) {
             let x = previous.x;
-            let y = previous.config.y + player.collisionHeight / 2;
+            let y = previous.y + player.collisionHeight / 2;
             let velocityX = 0;
             let velocityY = player.bounceVelocity;
             let elapsed = 0;
@@ -1169,14 +1253,19 @@ export class DoodleJumpSimulation {
                 if (x > player.wrapRight) x -= player.wrapDistance;
                 elapsed += delta;
                 const targetX = this.platformXAt(candidate, this.elapsedSeconds + elapsed);
+                const targetY = this.platformYAt(candidate, this.elapsedSeconds + elapsed);
+                const previousTargetY = this.platformYAt(
+                    candidate,
+                    this.elapsedSeconds + elapsed - delta,
+                );
                 const currentFootY = y - player.collisionHeight / 2;
                 const safeLandingReach = Math.max(
                     24,
                     candidate.width / 2 - player.collisionWidth * 0.15,
                 );
                 if (velocityY <= 0
-                    && previousFootY >= candidate.y
-                    && currentFootY <= candidate.y) {
+                    && previousFootY >= previousTargetY
+                    && currentFootY <= targetY) {
                     if (Math.abs(x - targetX) <= safeLandingReach) return true;
                     break;
                 }
@@ -1203,6 +1292,14 @@ export class DoodleJumpSimulation {
         return config.x + (segment - 1) * 70;
     }
 
+    private platformYAt(config: DoodleJumpFixedPlatformConfig, elapsedSeconds: number): number {
+        if (config.type !== 'vertical-moving') return config.y;
+        const profile = this.verticalMovingPlatformProfile(config);
+        return config.y + Math.sin(
+            elapsedSeconds * Math.PI * 2 / profile.periodSeconds + profile.phaseRadians,
+        ) * profile.amplitude;
+    }
+
     private movingPlatformProfile(config: DoodleJumpFixedPlatformConfig): Readonly<{
         amplitude: number;
         periodSeconds: number;
@@ -1213,6 +1310,23 @@ export class DoodleJumpSimulation {
             amplitude: 60 + hash % 31,
             periodSeconds: 1.55 + ((hash >>> 8) % 101) / 100,
             phaseRadians: ((hash >>> 16) & 1) === 0 ? 0 : Math.PI,
+        });
+    }
+
+    private verticalMovingPlatformProfile(config: DoodleJumpFixedPlatformConfig): Readonly<{
+        amplitude: number;
+        periodSeconds: number;
+        phaseRadians: number;
+    }> {
+        const settings = this.config.platformBehavior.verticalMoving;
+        const hash = hashDoodleJumpSeed(`${config.id}:vertical-moving`);
+        const amplitudeRange = settings.maximumAmplitude - settings.minimumAmplitude;
+        const periodRange = settings.maximumPeriodSeconds - settings.minimumPeriodSeconds;
+        return Object.freeze({
+            amplitude: settings.minimumAmplitude + (hash % 1001) / 1000 * amplitudeRange,
+            periodSeconds: settings.minimumPeriodSeconds
+                + ((hash >>> 10) % 1001) / 1000 * periodRange,
+            phaseRadians: ((hash >>> 20) % 1001) / 1000 * Math.PI * 2,
         });
     }
 
@@ -1247,7 +1361,7 @@ export class DoodleJumpSimulation {
         return 'normal';
     }
 
-    private pickInsertedPlatformType(): DoodleJumpPlatformType {
+    private pickInsertedPlatformType(heightMeters: number): DoodleJumpPlatformType {
         const override = this.config.generation.platformTypeOverride;
         if (override !== 'auto') return override;
         const types: readonly DoodleJumpPlatformType[] = [
@@ -1257,14 +1371,43 @@ export class DoodleJumpSimulation {
             'disappearing',
             'shifting',
             'exploding',
+            'vertical-moving',
+            'spiked',
         ];
-        const weights: readonly number[] = [0.34, 0.17, 0.13, 0.12, 0.13, 0.11];
+        const verticalChance = this.verticalMovingSpawnChance(heightMeters);
+        const spiked = this.config.platformBehavior.spiked;
+        const spikedChance = heightMeters >= spiked.unlockHeightMeters
+            ? spiked.spawnChance
+            : 0;
+        const baseScale = Math.max(0, 1 - verticalChance - spikedChance);
+        const weights: readonly number[] = [
+            0.34 * baseScale,
+            0.17 * baseScale,
+            0.13 * baseScale,
+            0.12 * baseScale,
+            0.13 * baseScale,
+            0.11 * baseScale,
+            verticalChance,
+            spikedChance,
+        ];
         let roll = this.nextPlatformRandom();
         for (let index = 0; index < weights.length; index += 1) {
             roll -= weights[index];
             if (roll < 0) return types[index];
         }
         return types[types.length - 1];
+    }
+
+    private verticalMovingSpawnChance(heightMeters: number): number {
+        const settings = this.config.platformBehavior.verticalMoving;
+        if (heightMeters < settings.unlockHeightMeters) return 0;
+        const progress = Math.max(0, Math.min(
+            1,
+            (heightMeters - settings.unlockHeightMeters)
+                / (settings.chanceCapHeightMeters - settings.unlockHeightMeters),
+        ));
+        return settings.spawnChanceAtUnlock
+            + (settings.spawnChanceAtCap - settings.spawnChanceAtUnlock) * progress;
     }
 
     private anchorWidthRange(
@@ -1280,9 +1423,10 @@ export class DoodleJumpSimulation {
 
     private widthRange(type: DoodleJumpPlatformType): readonly [number, number] {
         if (type === 'normal') return [125, 210];
-        if (type === 'moving') return [120, 180];
+        if (type === 'moving' || type === 'vertical-moving') return [120, 180];
         if (type === 'breakable' || type === 'disappearing') return [110, 160];
         if (type === 'shifting') return [110, 150];
+        if (type === 'spiked') return [125, 180];
         return [105, 150];
     }
 
@@ -1321,7 +1465,7 @@ export class DoodleJumpSimulation {
             id: platform.config.id,
             type: platform.config.type,
             x: platform.x,
-            y: platform.config.y,
+            y: platform.y,
             width: platform.config.width,
             collisionEnabled: platform.collisionEnabled,
             consumed: platform.consumed,
@@ -1333,7 +1477,7 @@ export class DoodleJumpSimulation {
             id: platform.config.id,
             type: platform.config.type,
             x: platform.x,
-            y: platform.config.y,
+            y: platform.y,
             width: platform.config.width,
             collisionEnabled: platform.collisionEnabled,
             consumed: platform.consumed,
@@ -1345,7 +1489,7 @@ export class DoodleJumpSimulation {
             id: platform.config.id,
             type: platform.config.type,
             x: platform.x,
-            y: platform.config.y,
+            y: platform.y,
             width: platform.config.width,
             collisionEnabled: platform.collisionEnabled,
             consumed: platform.consumed,

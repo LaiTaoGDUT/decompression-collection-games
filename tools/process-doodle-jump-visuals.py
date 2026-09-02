@@ -301,7 +301,10 @@ def bake_platform_shadow(source: Path, destination: Path) -> None:
     bbox = image.getchannel("A").getbbox()
     if bbox is None:
         raise ValueError(f"No visible pixels in {source}")
-    image = image.crop(bbox)
+    bake_platform_shadow_from_image(image.crop(bbox), destination)
+
+
+def bake_platform_shadow_from_image(image: Image.Image, destination: Path) -> None:
     padding = 14
     offset = (6, 7)
     canvas_size = (image.width + padding * 2, image.height + padding * 2)
@@ -317,6 +320,27 @@ def bake_platform_shadow(source: Path, destination: Path) -> None:
         raise ValueError(f"Failed to bake shadow for {source}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     shadow.crop(final_bbox).save(destination, optimize=True)
+
+
+def prepare_generated_vertical_platform(source: Path, destination: Path) -> None:
+    """Remove a generated pale checkerboard, then apply the shared platform shadow."""
+    image = Image.open(source).convert("RGBA")
+    candidate = Image.new("L", image.size, 0)
+    source_pixels = image.load()
+    candidate_pixels = candidate.load()
+    for y in range(image.height):
+        for x in range(image.width):
+            red, green, blue, _ = source_pixels[x, y]
+            if max(red, green, blue) - min(red, green, blue) > 12 \
+                    or max(red, green, blue) < 232:
+                candidate_pixels[x, y] = 255
+    candidate = candidate.filter(ImageFilter.MaxFilter(5))
+    ImageDraw.floodfill(candidate, (image.width // 2, image.height // 2), 128)
+    component = candidate.point(lambda value: 255 if value == 128 else 0)
+    component = component.filter(ImageFilter.GaussianBlur(0.8))
+    image.putalpha(component)
+    cleaned = prepare_alpha_asset_from_image(image, padding=8, max_edge=384)
+    bake_platform_shadow_from_image(cleaned, destination)
 
 
 def cover(image: Image.Image, size: tuple[int, int]) -> Image.Image:
@@ -525,6 +549,18 @@ def main() -> None:
             SOURCE / "平台" / "base" / filename,
             OUTPUT / "platforms" / f"platform-{platform_type}-shadowed-v2.png",
         )
+    prepare_generated_vertical_platform(
+        SOURCE / "平台" / "generated" / "platform_vertical_moving_source_v1.png",
+        OUTPUT / "platforms" / "platform-vertical-moving-shadowed-v1.png",
+    )
+    trim_alpha(
+        SOURCE / "平台" / "generated" / "platform_spiked_source_v1.png",
+        OUTPUT / "platforms" / "platform-spiked-shadowed-v1.png",
+        padding=4,
+        alpha_threshold=2,
+        max_edge=420,
+        keep_center_component=True,
+    )
 
     breakable = OUTPUT / "platforms" / "platform-breakable-shadowed-v2.png"
     make_breakable_halves(

@@ -476,7 +476,9 @@ export class DoodleJumpCombatSystem {
         occupiedBodies: readonly DoodleJumpCombatOccupiedBody[],
     ): MutableEnemy | undefined {
         const settings = this.config.enemies[type];
-        if (platform.type === 'moving' || platform.type === 'shifting') return undefined;
+        if (platform.type === 'moving'
+            || platform.type === 'vertical-moving'
+            || platform.type === 'shifting') return undefined;
         if (type !== 'hover'
             && (platform.type === 'breakable'
                 || platform.type === 'disappearing'
