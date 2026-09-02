@@ -1,0 +1,78 @@
+assets/games/doodle-jump/configs/gameplay.json
+  s_754ac3cfba4f45::t_381f153a731daa 46-59,61
+  s_754ac3cfba4f45::t_e3137d25291bcd 60
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  s_754ac3cfba4f45::t_4780b1748cfe94 235
+  s_754ac3cfba4f45::t_190d9b607ca3b9 4254,4267-4271,4311
+  s_754ac3cfba4f45::t_b31cd433006b94 157-158,2698-2704
+assets/games/doodle-jump/scripts/DoodleJumpItemSystem.ts
+  s_754ac3cfba4f45::t_c57aea5c77f216 73-74,150-154,215,444-458,460,563-564
+docs/games/doodle-jump/DOODLE_JUMP_IMAGE_PROMPTS.md
+  s_754ac3cfba4f45::t_634662180ec199 3,193,197-219,236-238
+  s_754ac3cfba4f45::t_4a8affab1c88cb 4
+  s_754ac3cfba4f45::t_7049f380f59390 194-196,220-235,239
+  s_754ac3cfba4f45::t_25eda3e72eb561 192
+assets/games/doodle-jump/scripts/DoodleJumpCombatSystem.ts
+  s_754ac3cfba4f45::t_e0e4c9d601369a 479-481
+assets/games/doodle-jump/scripts/DoodleJumpSimulation.ts
+  s_754ac3cfba4f45::t_4d2e76abb61a89 1119,1226,1256-1260,1267-1268,1293,1364,1374-1391,1399-1410,1412,1426,1429
+  s_754ac3cfba4f45::t_ddc7307c58956a 510
+  s_754ac3cfba4f45::t_e79271792637d7 159
+  s_754ac3cfba4f45::t_2dd0df0c99c965 477,480,485,490,496-497,502-503
+  s_754ac3cfba4f45::t_316fd153031c4c 530,547,549,562,567,572,610-612,1063
+  s_754ac3cfba4f45::t_5a0b49caad49c3 189-209
+  s_754ac3cfba4f45::t_4468aa3974a39d 801-802,804,843,1295-1300,1302,1313-1329,1468,1480,1492
+  s_754ac3cfba4f45::t_5d3274c51e6237 37-41,103,212
+  s_754ac3cfba4f45::t_feba2ea57a0511 55-56
+  s_754ac3cfba4f45::t_9dae4399cfc0d4 1115-1118
+  s_754ac3cfba4f45::t_c516e5bfa356d0 307-319,322-332,338-339
+  s_754ac3cfba4f45::t_e3137d25291bcd 725-734,871-898,900
+  s_754ac3cfba4f45::t_4533ab2d9d6861 1294
+assets/games/doodle-jump/scripts/DoodleJumpConfig.ts
+  s_754ac3cfba4f45::t_381f153a731daa 7,11-12,112-126,262,267,447-451,917,926-940
+  s_754ac3cfba4f45::t_d1d2b12dcc18e0 568-604,918-925
+  s_754ac3cfba4f45::t_0c2c5a90183981 567
+docs/games/doodle-jump/DOODLE_JUMP_PLATFORM_GENERATION_RESEARCH.md
+  s_754ac3cfba4f45::t_7feba7b3cd88e4 23
+docs/games/doodle-jump/DOODLE_JUMP_GAMEPLAY_SPEC.md
+  s_754ac3cfba4f45::t_7feba7b3cd88e4 651
+  s_754ac3cfba4f45::t_7049f380f59390 536-549,611-623,627,661,686-689,692
+  s_754ac3cfba4f45::t_096bfe659912b3 46,51,315
+docs/games/doodle-jump/DOODLE_JUMP_DEVELOPMENT_PLAN.md
+  s_754ac3cfba4f45::t_7feba7b3cd88e4 43
+assets/games/doodle-jump/visual/platforms/platform-spiked-shadowed-v1.png.meta
+  s_754ac3cfba4f45::t_78f7e3df9dd80d 18-38
+  s_754ac3cfba4f45::t_e26a822f22a5c6 1-17,39-42
+docs/games/doodle-jump/DOODLE_JUMP_VISUAL_STYLE_PROVENANCE.md
+  s_754ac3cfba4f45::t_634662180ec199 75-82
+docs/common/ARCHITECTURE.md
+  s_754ac3cfba4f45::t_f9dd50a62c1f25 595
+  s_754ac3cfba4f45::t_096bfe659912b3 596
+tools/process-doodle-jump-visuals.py
+  s_754ac3cfba4f45::t_998992b4565eac 552-563
+  s_754ac3cfba4f45::t_d39d85aa6883ae 304-307,323-343
+docs/games/doodle-jump/DOODLE_JUMP_FORMAL_ASSET_MANIFEST.md
+  s_754ac3cfba4f45::t_634662180ec199 15
+assets/games/doodle-jump/visual/platforms/platform-vertical-moving-shadowed-v1.png.meta
+  s_754ac3cfba4f45::t_78f7e3df9dd80d 18-38
+  s_754ac3cfba4f45::t_df73af135e8721 1-17,39-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8a85b9e08353e61925f984b5adbd90d4a9e001ad",
+  "prompts": {},
+  "logical_commit_id": "8a85b9e08353e61925f984b5adbd90d4a9e001ad",
+  "sessions": {
+    "s_754ac3cfba4f45": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05ff1-e9ff-7480-9a72-8a144b2105b5",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 643,
+      "total_deletions": 239
+    }
+  }
+}
