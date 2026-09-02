@@ -43,7 +43,22 @@
     "poolSoftTarget": 32
   },
   "platformBehavior": {
-    "explodingDelaySeconds": 1.5
+    "explodingDelaySeconds": 1.5,
+    "verticalMoving": {
+      "unlockHeightMeters": 120,
+      "spawnChanceAtUnlock": 0.04,
+      "spawnChanceAtCap": 0.18,
+      "chanceCapHeightMeters": 950,
+      "minimumAmplitude": 34,
+      "maximumAmplitude": 54,
+      "minimumPeriodSeconds": 2.1,
+      "maximumPeriodSeconds": 3.2
+    },
+    "spiked": {
+      "unlockHeightMeters": 950,
+      "spawnChance": 0.1,
+      "collisionDepth": 54
+    }
   },
   "visualQuality": {
     "low": { "decorNodeCount": 3, "secondaryEffects": false, "effectScale": 0.78, "uiMotion": false, "dynamicAtlasCount": 2, "dynamicAtlasMaxFrameSize": 180 },

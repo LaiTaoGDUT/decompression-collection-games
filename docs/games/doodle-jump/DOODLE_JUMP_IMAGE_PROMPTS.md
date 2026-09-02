@@ -1,7 +1,7 @@
 # 《涂鸦跃层》图片素材生成提示词
 
-> 版本：v1.3
-> 状态：提示词待人工生成、清理、验收和来源记录；本文不代表任何图片已经生成或获得发布许可。  
+> 版本：v1.4
+> 状态：大部分提示词仍待人工生成、清理和验收；5.1 与 5.2 的平台图片已通过内置 ImageGen 生成、清理并接入运行时。
 > 对应玩法规划：docs/games/doodle-jump/DOODLE_JUMP_GAMEPLAY_SPEC.md v2.5  
 > 资源归属：所有正式图片进入 game-doodle-jump Bundle。
 
@@ -189,6 +189,53 @@ platform_base_sheet.png：六种平台的基础状态。
 
 - 移动、变位和碰撞表现由程序控制，图片只提供清晰的基础轮廓。
 - 平台的碰撞边应与可见顶部边缘对齐，生成后需要统一锚点和高度。
+
+### 5.1 升降平台正式图片
+
+### Asset
+
+`platform_vertical_moving_shadowed_v1.png`：会上下移动的平台独立 Sprite；不使用上下箭头或运行时方向线。
+
+### Recommended Settings
+
+- Aspect ratio：约 4:1 横向。
+- Recommended size：1024×256，最终按 Alpha 紧边并缩放为运行时纹理。
+- Background：透明。
+- Reference image(s)：`platform-normal-shadowed-v2.png` 提供纸片轮廓；`platform-moving-shadowed-v2.png` 提供色彩区分和小尺寸可读性。
+
+### ChatGPT Image Prompt
+
+    生成一条原创的透明 2D 升降平台 Sprite。以既有普通平台和水平移动平台为视觉参考，只沿用正面平面纸片、窄暖白撕纸边、灰黑铅笔轮廓、低饱和彩铅平涂、轻微纸张纹理和低对比软边偏移落影。主体是一条完整、水平、顶部连续平坦的蓝紫色纸片平台，内部只使用 4 至 5 条克制的纵向暖白裁线表达升降导轨感，所有纹理都收在平台本体内部。平台水平居中，约 4:1，四周保留透明边距，缩小到约 150×42 units 后仍清晰。禁止任何向上或向下箭头、方向符号、三角方向标、外置运动线、圆点花纹、倒刺、文字、Logo、水印、3D、透视和背景。
+
+### Notes
+
+- 最终源图：`art_sources/涂鸦跃层/平台/generated/platform_vertical_moving_source_v1.png`。
+- 运行时图：`assets/games/doodle-jump/visual/platforms/platform-vertical-moving-shadowed-v1.png`。
+- 原始输出把浅色棋盘格烘焙进 RGB；处理脚本只做确定性主体分离、Alpha 紧边和统一软影，不改变平台造型。
+
+### 5.2 倒刺平台正式图片
+
+### Asset
+
+`platform_spiked_shadowed_v1.png`：第四段星空背景开始出现的倒刺平台正式 Sprite；顶面可正常踩踏，只有下沿是危险区。
+
+### Recommended Settings
+
+- Aspect ratio：约 4:1 横向。
+- Recommended size：1024×256。
+- Background：透明。
+- Asset type：2D 横向平台 Sprite，运行时按宽度缩放。
+- Reference image(s)：`platform-normal-shadowed-v2.png` 提供纸片轮廓、青绿色主体和落影；`platform-moving-shadowed-v2.png` 提供紫色区分色与小尺寸可读性。只取风格，不复制内部图案。
+
+### ChatGPT Image Prompt
+
+    Use case: stylized-concept。Asset type: 原创手机跳跃游戏中的透明 2D 倒刺平台 Sprite。以提供的 platform-normal-shadowed-v2.png 为主要视觉参考，严格匹配其正面平面纸片、窄暖白撕纸边、灰黑铅笔轮廓、低饱和彩铅排线、轻微软边偏移落影和同等级细节密度。画面中央是一条完整的水平平台：顶部必须连续、平坦、青绿色且没有任何尖刺，清楚表达“可以从上方正常踩踏”；平台下沿包着一条珊瑚红与暗紫色的手工警示纸带，纸带向下伸出 7 至 9 枚间距均匀但略有手绘差异的短三角倒刺，尖端朝下，倒刺与平台主体连成一个清晰轮廓。倒刺应像危险纸片护壳而非金属武器，缩小到约 150×42 units 后仍能一眼区分危险下沿。正面正交视角，主体水平居中，左右留出一致透明边距，顶部碰撞沿靠近统一基准线；isolated asset，transparent background，无环境、无其他物体。禁止顶部尖刺、锯齿顶面、真实金属、血迹、恐怖元素、3D 厚度、透视、霓虹发光、强硬阴影、文字、数字、Logo、水印、角色、怪物、道具和场景背景。
+
+### Notes
+
+- 最终源图：`art_sources/涂鸦跃层/平台/generated/platform_spiked_source_v1.png`。
+- 运行时图：`assets/games/doodle-jump/visual/platforms/platform-spiked-shadowed-v1.png`；顶面碰撞与下沿危险区仍由既有逻辑盒控制。
+- 运行时不再复用普通平台，也不再用 Graphics 绘制倒刺护壳。
 
 ## 6. 平台状态特效
 

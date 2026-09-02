@@ -12,7 +12,7 @@
 | 分组 | 运行时目录 | 交付内容 | 运行时基准 |
 | --- | --- | --- | --- |
 | 主角 | `visual/player/` | 基础跳跃、独立落地帧、Jetpack、Propeller Hat、Rocket、Shield Overlay | 落地帧双脚站稳平台并与基础跳跃图共用脚底基线；逻辑碰撞体不随图片变化 |
-| 平台 | `visual/platforms/` | Normal、Moving、Breakable、Disappearing、Shifting、Exploding，含 Breakable 左右半片 | 中心锚点，逻辑顶面始终为落地基准；软影预烘焙进 RGBA |
+| 平台 | `visual/platforms/` | Normal、Moving、VerticalMoving、Breakable、Disappearing、Shifting、Exploding、Spiked，含 Breakable 左右半片；VerticalMoving 与 Spiked 均使用独立正式 RGBA 图片，不叠加运行时箭头或代码绘制倒刺 | 中心锚点，逻辑顶面始终为落地基准；软影预烘焙进 RGBA；Spiked 的可踩平顶与危险下沿在同一张图内 |
 | 怪物 | `visual/enemies/` | Small/Large/Hover 各2 帧 | 同类两帧共享画布、缩放和底部中心锚点；地面怪可见脚底对齐平台逻辑上沿 |
 | 危险物 | `visual/hazards/` | UFO/光束/锁定/束缚、黑洞环/核心、捕兽夹/闪光 | 主体中心锚点；光束从 UFO 底部向下展开；捕兽夹底边对齐平台顶面 |
 | 道具 | `visual/items/` | Spring、Trampoline、Jetpack、Propeller Hat、Rocket、Shield | 中心锚点，使用逻辑拾取半径；生成后保持固定世界坐标，不跟随平台或做上下浮动 |
