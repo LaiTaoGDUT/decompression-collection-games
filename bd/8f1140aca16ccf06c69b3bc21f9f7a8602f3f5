@@ -1,0 +1,20 @@
+docs/README.md
+  s_141c9a57e644ed::t_bb19413f2cbb98 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bd8f1140aca16ccf06c69b3bc21f9f7a8602f3f5",
+  "prompts": {},
+  "logical_commit_id": "bd8f1140aca16ccf06c69b3bc21f9f7a8602f3f5",
+  "sessions": {
+    "s_141c9a57e644ed": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3fefc0a2-1025-4b2d-9556-0e5d5ec2cebd",
+        "model": "grok-4.6"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
