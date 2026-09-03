@@ -4,10 +4,13 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const gamesRoot = path.join(root, 'assets', 'games');
+const gameAssetsRoot = path.join(root, 'assets', 'game-assets');
 const expectedSubpackageConfigId = '00mTKQ64hMUZEoY95Dbj9L';
+const expectedRemoteConfigId = '00gRa8kX2LmP4qN6sT9vWy';
 const minimumBundleLoadTimeoutMs = 60000;
 const verifiedBundles = [];
 const bundleRoots = new Map();
+const resourceBundleRoots = new Map();
 
 function resolveSceneRef(objects, reference) {
     if (!reference || typeof reference.__id__ !== 'number') return undefined;
@@ -115,6 +118,33 @@ function assertSubpackage(metaPath, expectedBundleName) {
     verifiedBundles.push(config.bundleName);
 }
 
+function walkFiles(directory) {
+    const files = [];
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const entryPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) files.push(...walkFiles(entryPath));
+        else files.push(entryPath);
+    }
+    return files;
+}
+
+function assertRemoteResourceBundle(metaPath, expectedBundleName) {
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    const config = meta.userData ?? {};
+    assert.strictEqual(config.isBundle, true, `${expectedBundleName} must be an Asset Bundle.`);
+    assert.strictEqual(config.isSubpackage, false, `${expectedBundleName} must not be a WeChat subpackage.`);
+    assert.strictEqual(
+        config.bundleConfigID,
+        expectedRemoteConfigId,
+        `${expectedBundleName} must use the project remote-resource configuration.`,
+    );
+    assert.strictEqual(config.bundleName, expectedBundleName);
+    assert(
+        config.priority > 1,
+        `${expectedBundleName} priority must be higher than its code Bundle.`,
+    );
+}
+
 assertSubpackage(path.join(root, 'assets', 'lobby.meta'), 'lobby');
 
 for (const entry of fs.readdirSync(gamesRoot, { withFileTypes: true })) {
@@ -138,19 +168,49 @@ for (const entry of fs.readdirSync(gamesRoot, { withFileTypes: true })) {
         `${entry.name} must use a game-* bundle name.`,
     );
     assertSubpackage(metaPath, config.bundleName);
+    assert(
+        !fs.existsSync(path.join(gameRoot, 'visual')),
+        `${config.bundleName} must not retain a nested visual resource directory.`,
+    );
     bundleRoots.set(config.bundleName, gameRoot);
 }
 
 assert(verifiedBundles.length > 0, 'No game bundles were found.');
+
+for (const entry of fs.readdirSync(gameAssetsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const resourceRoot = path.join(gameAssetsRoot, entry.name);
+    const metaPath = path.join(gameAssetsRoot, `${entry.name}.meta`);
+    assert(fs.existsSync(metaPath), `${entry.name} resource Bundle must have a directory meta file.`);
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    const bundleName = meta.userData?.bundleName;
+    assert.match(bundleName ?? '', /^game-.+-assets$/, `${entry.name} must use a game-*-assets bundle name.`);
+    assertRemoteResourceBundle(metaPath, bundleName);
+    assert(fs.existsSync(path.join(resourceRoot, 'visual')), `${bundleName} must contain its visual root.`);
+    const prohibited = walkFiles(resourceRoot).filter((file) => /\.(?:ts|js|scene|prefab)$/.test(file));
+    assert.deepStrictEqual(
+        prohibited,
+        [],
+        `${bundleName} must contain no scripts, scenes, or Prefabs: ${prohibited.join(', ')}`,
+    );
+    resourceBundleRoots.set(bundleName, resourceRoot);
+}
 
 const manifest = JSON.parse(fs.readFileSync(
     path.join(root, 'assets', 'resources', 'configs', 'games.json'),
     'utf8',
 ));
 assert(Array.isArray(manifest.games), 'Game manifest must contain a games array.');
+assert.strictEqual(manifest.schemaVersion, 2, 'Game manifest schemaVersion must be 2.');
 for (const game of manifest.games) {
     const gameRoot = bundleRoots.get(game.bundle);
     assert(gameRoot, `${game.id} manifest bundle ${game.bundle} must be registered as a game Bundle.`);
+    const resourceRoot = resourceBundleRoots.get(game.resourceBundle);
+    assert(
+        resourceRoot,
+        `${game.id} resourceBundle ${game.resourceBundle} must be registered as a remote resource Bundle.`,
+    );
+    assert.notStrictEqual(game.bundle, game.resourceBundle, `${game.id} code and resource Bundles must differ.`);
     assertSceneCameraBindings(
         path.join(gameRoot, `${game.scene}.scene`),
         game.id,
@@ -158,6 +218,11 @@ for (const game of manifest.games) {
     assertManifestAsset(game.icon, game.id, gameRoot);
     assertManifestAsset(game.cover, game.id, gameRoot);
 }
+assert.strictEqual(
+    resourceBundleRoots.size,
+    manifest.games.length,
+    'Every remote game resource Bundle must belong to exactly one manifest entry.',
+);
 
 const appConfig = JSON.parse(fs.readFileSync(
     path.join(root, 'assets', 'resources', 'configs', 'app.json'),
@@ -184,5 +249,12 @@ assert(
     assetServiceSource.includes(`DEFAULT_BUNDLE_LOAD_TIMEOUT_MS = ${minimumBundleLoadTimeoutMs}`),
     'AssetService default bundle timeout must protect slow WeChat subpackage downloads.',
 );
+assert(
+    assetServiceSource.includes('bundle.loadDir('),
+    'AssetService must fully load the remote resource directory before game startup.',
+);
 
-console.log(`game_bundles=passed, subpackages=${verifiedBundles.join(',')}`);
+console.log(
+    `game_bundles=passed, subpackages=${verifiedBundles.join(',')}, `
+    + `remote=${Array.from(resourceBundleRoots.keys()).join(',')}`,
+);

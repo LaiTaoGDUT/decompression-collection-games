@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "2041ffce-f75f-438e-9ae7-34346228614b",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-doodle-jump-assets",
+    "isSubpackage": false,
+    "isRemoteBundle": {},
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy",
+    "isBundle": true
+  }
+}

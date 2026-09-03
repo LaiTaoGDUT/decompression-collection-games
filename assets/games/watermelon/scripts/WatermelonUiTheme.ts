@@ -17,6 +17,7 @@ export const CAT_UI_PALETTE = Object.freeze({
     peachDark: [216, 99, 111],
     mint: [190, 229, 211],
     mintDark: [83, 157, 132],
+    mintText: [34, 126, 84],
     sky: [187, 221, 239],
     lavender: [218, 201, 236],
     butter: [255, 229, 143],

@@ -422,7 +422,10 @@ export class DoodleJumpHazardSystem {
             const normalized = 1 - distance / this.config.hazards.blackHole.outerRadius;
             // The rim pull must exceed normal steering acceleration, otherwise
             // moveTowards cancels it on the following fixed step.
-            const pullRatio = 0.35 + 0.65 * Math.pow(Math.max(0, normalized), 1.5);
+            // Keep a meaningful lateral pull across the full outer ring. The
+            // previous curve became too weak near the rim, especially when the
+            // player was offset to the left/right of the hole.
+            const pullRatio = 0.52 + 0.48 * Math.pow(Math.max(0, normalized), 1.25);
             const force = this.config.hazards.blackHole.maximumPullAcceleration * pullRatio;
             accelerationX += directionX / Math.max(0.0001, distance) * force;
             accelerationY += directionY / Math.max(0.0001, distance) * force;

@@ -21,6 +21,7 @@ import { calculateTopRightControlPosition } from '../../../shared/ui/PlatformSaf
 import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
 
 const { ccclass } = _decorator;
+const WATERMELON_RESOURCE_BUNDLE = 'game-watermelon-assets';
 
 export interface WatermelonLayoutMetrics {
     readonly width: number;
@@ -46,7 +47,7 @@ export interface WatermelonLayoutMetrics {
 // over the decorative border; the bottom edge has extra breathing room for
 // the cat silhouette and its contrast backing.
 export const WATERMELON_BOARD_WIDTH = 720;
-export const WATERMELON_BOARD_HEIGHT = 930;
+export const WATERMELON_BOARD_HEIGHT = 980;
 // Vertical padding follows the visible inner frame. The side walls need a
 // little more inset because the cat sprite and its contrast ring extend past
 // the physical circle by a few pixels.
@@ -98,7 +99,7 @@ const CAT_HUD_HIGH_SCORE_VALUE_FONT_SIZE = 24;
 const CAT_HUD_CAPTION_Y = 13;
 const CAT_HUD_VALUE_Y = -14;
 const CAT_BOARD_TOP_GAP = 10;
-const CAT_BOARD_BOTTOM_GAP = 58;
+const CAT_BOARD_BOTTOM_GAP = 40;
 const CAT_DANGER_LINE_TOP_OFFSET = 145;
 
 /** 安全区只改变 HUD 与底部留白；玩法几何保持设计坐标，短屏整体缩放棋盘。 */
@@ -188,13 +189,12 @@ export class WatermelonLayout extends Component {
     private platformLayout?: PlatformLayoutInfo;
     private layoutChangeHandler?: () => void;
     private backgroundSourceAspect = 750 / 1334;
+    private artworkLoadPromise?: Promise<void>;
 
     protected onLoad(): void {
         this.applyLayout();
         view.on('canvas-resize', this.handleCanvasResize, this);
-        void this.loadBackground();
-        void this.loadTitleArtwork();
-        void this.loadUiArtwork();
+        void this.prepareArtwork();
     }
 
     protected onDestroy(): void {
@@ -250,6 +250,21 @@ export class WatermelonLayout extends Component {
     setLayoutChangeHandler(handler?: () => void): void {
         this.layoutChangeHandler = handler;
         handler?.();
+    }
+
+    /**
+     * 场景生命周期会早于 MiniGame.initialize() 触发，因此统一复用同一个
+     * 加载 Promise，让运行层能够等正式背景、标题和 HUD 全部准备完成。
+     */
+    prepareArtwork(): Promise<void> {
+        if (!this.artworkLoadPromise) {
+            this.artworkLoadPromise = Promise.all([
+                this.loadBackground(),
+                this.loadTitleArtwork(),
+                this.loadUiArtwork(),
+            ]).then(() => undefined);
+        }
+        return this.artworkLoadPromise;
     }
 
     applyLayout(): void {
@@ -482,7 +497,7 @@ export class WatermelonLayout extends Component {
     }
 
     private loadBackground(): Promise<void> {
-        const bundle = assetManager.getBundle('game-watermelon');
+        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
         if (!bundle) {
             return Promise.resolve();
         }
@@ -525,7 +540,7 @@ export class WatermelonLayout extends Component {
     }
 
     private loadTitleArtwork(): Promise<void> {
-        const bundle = assetManager.getBundle('game-watermelon');
+        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
         const title = this.node.getChildByName('Title');
         if (!bundle || !title) return Promise.resolve();
 
@@ -569,7 +584,7 @@ export class WatermelonLayout extends Component {
     }
 
     private loadUiArtwork(): Promise<void> {
-        const bundle = assetManager.getBundle('game-watermelon');
+        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
         if (!bundle) {
             return Promise.resolve();
         }

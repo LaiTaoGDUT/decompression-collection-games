@@ -13,6 +13,7 @@ import {
     Input,
     KeyCode,
     Label,
+    LabelOutline,
     Node,
     Sprite,
     SpriteFrame,
@@ -32,6 +33,7 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import type { AudioService } from '../../../services/audio/AudioService';
+import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { Platform } from '../../../platform/Platform';
@@ -70,10 +72,25 @@ const MERGE_CELEBRATION_DELAY = 0.55;
 const HIGH_MERGE_EFFECT_SCALE = 1.12 * 1.4;
 const HIGH_MERGE_EFFECT_DURATION_SCALE = 1.15;
 const GAME_2048_DATA_VERSION = 4;
+const GAME_2048_RESOURCE_BUNDLE = 'game-2048-assets';
 const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
 const GAME_2048_TITLE_ASSET_PATH = 'visual/title/t48-user-title-v1/texture';
 const GAME_2048_BOARD_ASSET_PATH = 'visual/boards/t48-user-board-v1/texture';
 const GAME_2048_PAUSE_ICON_ASSET_PATH = 'visual/icons/t48-user-pause-v1/texture';
+const GAME_2048_REWARDED_AD_ICON_ASSET_PATH = 'visual/ui/t48-rewarded-ad-icon-v1/texture';
+const GAME_2048_POPUP_SYSTEM_ASSET_PATH = 'visual/ui/t48-popup-panel-system-v1/texture';
+const GAME_2048_POPUP_RESULT_ASSET_PATH = 'visual/ui/t48-popup-panel-result-v1/texture';
+const GAME_2048_POPUP_2048_ASSET_PATH = 'visual/ui/t48-popup-panel-2048-v1/texture';
+const GAME_2048_POPUP_4096_ASSET_PATH = 'visual/ui/t48-popup-panel-4096-v1/texture';
+const GAME_2048_POPUP_BUTTON_CYAN_ASSET_PATH = 'visual/ui/t48-popup-button-cyan-v1/texture';
+const GAME_2048_POPUP_BUTTON_AMBER_ASSET_PATH = 'visual/ui/t48-popup-button-amber-v1/texture';
+const GAME_2048_POPUP_BUTTON_VIOLET_ASSET_PATH = 'visual/ui/t48-popup-button-violet-v1/texture';
+const GAME_2048_POPUP_SCORE_CYAN_ASSET_PATH = 'visual/ui/t48-popup-score-cyan-v1/texture';
+const GAME_2048_POPUP_SCORE_AMBER_ASSET_PATH = 'visual/ui/t48-popup-score-amber-v1/texture';
+const GAME_2048_SYSTEM_POPUP_ASPECT_RATIO = 700 / 520;
+const GAME_2048_RESULT_POPUP_ASPECT_RATIO = 730 / 520;
+const GAME_2048_TARGET_POPUP_ASPECT_RATIO = 780 / 548;
+const GAME_2048_POPUP_BUTTON_BOTTOM_PADDING = 58;
 const GAME_2048_TILE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096] as const;
 const GAME_2048_TILE_ASSET_PREFIX = 'visual/pieces/t48-user-piece-';
 // 新版棋盘图已去掉外圈留白；四列槽位连同内外间距约占 548/572，棋子间距略放宽为 9px。
@@ -88,6 +105,7 @@ export interface Game2048Services {
     readonly feedback: FeedbackService;
     readonly storage: StorageService;
     readonly platform: Platform;
+    readonly ads?: AdService;
 }
 
 interface OverlayAction {
@@ -104,11 +122,15 @@ interface OverlayState {
     busy: boolean;
 }
 
+interface ResultOverlayContent {
+    readonly score: number;
+    readonly highestTile: number;
+}
+
 const COLORS = Object.freeze({
     void: new Color(2, 6, 22, 255),
     panel: new Color(11, 22, 54, 248),
     panelLight: new Color(21, 39, 82, 255),
-    slot: new Color(8, 18, 42, 226),
     cyan: new Color(30, 245, 250, 255),
     cyanDim: new Color(30, 245, 250, 64),
     violet: new Color(181, 78, 255, 255),
@@ -223,10 +245,16 @@ export class Game2048Game extends Component implements MiniGame {
     private ownedTitleFrame?: SpriteFrame;
     private ownedBoardFrame?: SpriteFrame;
     private ownedPauseFrame?: SpriteFrame;
+    private ownedRewardedAdIconFrame?: SpriteFrame;
+    private ownedSystemPopupFrame?: SpriteFrame;
+    private ownedResultPopupFrame?: SpriteFrame;
+    private ownedMilestonePopupFrame?: SpriteFrame;
+    private ownedTargetPopupFrame?: SpriteFrame;
+    private ownedAchievementScoreFrame?: SpriteFrame;
+    private ownedResultScoreFrame?: SpriteFrame;
+    private readonly ownedPopupButtonFrames = new Map<OverlayAction['tone'], SpriteFrame>();
     private readonly ownedTileFrames = new Map<number, SpriteFrame>();
-    private titleFallback?: Node;
     private titleArtwork?: Sprite;
-    private boardFallback?: Node;
     private boardArtwork?: Sprite;
     private pauseFallback?: Node;
     private pauseArtwork?: Sprite;
@@ -245,6 +273,8 @@ export class Game2048Game extends Component implements MiniGame {
     private operationGeneration = 0;
     private titleClickCount = 0;
     private cheatUnlocked = false;
+    private gameOverOverlay?: OverlayState;
+    private hasShownGameOverAdOffer = false;
 
     setRandomSourceForTesting(random: () => number): void {
         this.model.setRandomSource(random);
@@ -258,7 +288,7 @@ export class Game2048Game extends Component implements MiniGame {
         await Promise.all([this.loadBackground(), this.loadThemeAssets(), this.loadMusic()]);
         this.registerInput();
         this.audioBank = new BundleAudioBank({
-            bundle: 'game-2048',
+            bundle: GAME_2048_RESOURCE_BUNDLE,
             cues: {
                 uiButton: 'visual/audio/t48-button-v1',
                 drop: 'visual/audio/t48-move-v1',
@@ -319,10 +349,12 @@ export class Game2048Game extends Component implements MiniGame {
         this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
+        this.destroyOverlay(this.gameOverOverlay);
         this.pauseOverlay = undefined;
         this.cheatOverlay = undefined;
         this.resultOverlay = undefined;
         this.targetOverlay = undefined;
+        this.gameOverOverlay = undefined;
         this.startRound();
     }
 
@@ -350,6 +382,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
+        this.destroyOverlay(this.gameOverOverlay);
         this.node.children.slice().forEach((child) => this.destroyNodeWithTweens(child));
         this.destroyOwnedThemeFrames();
         this.context = undefined;
@@ -364,6 +397,22 @@ export class Game2048Game extends Component implements MiniGame {
         this.ownedBoardFrame = undefined;
         this.ownedPauseFrame?.destroy();
         this.ownedPauseFrame = undefined;
+        this.ownedRewardedAdIconFrame?.destroy();
+        this.ownedRewardedAdIconFrame = undefined;
+        this.ownedSystemPopupFrame?.destroy();
+        this.ownedSystemPopupFrame = undefined;
+        this.ownedResultPopupFrame?.destroy();
+        this.ownedResultPopupFrame = undefined;
+        this.ownedMilestonePopupFrame?.destroy();
+        this.ownedMilestonePopupFrame = undefined;
+        this.ownedTargetPopupFrame?.destroy();
+        this.ownedTargetPopupFrame = undefined;
+        this.ownedAchievementScoreFrame?.destroy();
+        this.ownedAchievementScoreFrame = undefined;
+        this.ownedResultScoreFrame?.destroy();
+        this.ownedResultScoreFrame = undefined;
+        this.ownedPopupButtonFrames.forEach((frame) => frame.destroy());
+        this.ownedPopupButtonFrames.clear();
         this.ownedTileFrames.forEach((frame) => frame.destroy());
         this.ownedTileFrames.clear();
     }
@@ -394,6 +443,8 @@ export class Game2048Game extends Component implements MiniGame {
         this.completedResultModel = model;
         this.destroyOverlay(this.targetOverlay);
         this.targetOverlay = undefined;
+        this.destroyOverlay(this.gameOverOverlay);
+        this.gameOverOverlay = undefined;
         const extra = model.result.extra ?? {};
         const highest = typeof extra.highestTile === 'number' ? Math.floor(extra.highestTile) : this.model.highestTile;
         const reason = extra.reason === 'target-complete' ? '目标达成' : '信号结束';
@@ -412,6 +463,7 @@ export class Game2048Game extends Component implements MiniGame {
                     action: () => this.dismissResultOverlay(),
                 },
             ],
+            { score: model.result.score, highestTile: highest },
         );
     }
 
@@ -748,7 +800,8 @@ export class Game2048Game extends Component implements MiniGame {
                         if (tile === TARGET_TILE) this.model.acknowledgeTarget();
                         else this.model.acknowledgeMilestone();
                         this.persistProgress(true);
-                        this.destroyOverlay(this.targetOverlay);
+        this.destroyOverlay(this.targetOverlay);
+        this.destroyOverlay(this.gameOverOverlay);
                         this.targetOverlay = undefined;
                         if (!this.model.hasAvailableMove) {
                             this.finishRound('target-complete');
@@ -792,7 +845,76 @@ export class Game2048Game extends Component implements MiniGame {
         this.persistProgress(false);
         if (reason === 'no-moves') this.context?.services.feedback.play('failure');
         if (newRecord) this.context?.services.feedback.play('record');
+        if (reason === 'no-moves' && !this.hasShownGameOverAdOffer) {
+            this.hasShownGameOverAdOffer = true;
+            this.showGameOverAdOffer();
+            return;
+        }
         this.context?.requestExit(this.createResult(reason));
+    }
+
+    private showGameOverAdOffer(): void {
+        this.gameOverOverlay = this.buildOverlay(
+            'Game2048GameOverAdOverlay',
+            '棋盘已满',
+            '首次无可移动方块\n看视频清除2和4后继续游戏',
+            [
+                { name: 'WatchAdButton', label: '看视频清除2和4', tone: 'cyan', action: () => this.watchGameOverAd() },
+                { name: 'SettleButton', label: '结算', tone: 'amber', action: () => this.context?.requestExit(this.createResult('no-moves')) },
+                { name: 'LobbyButton', label: '返回大厅', tone: 'dark', action: () => this.context?.requestLobby(this.createResult('no-moves')) },
+            ],
+        );
+        const button = this.gameOverOverlay.buttons.find((candidate) => candidate.node.name === 'WatchAdButton');
+        if (button && this.ownedRewardedAdIconFrame) {
+            const iconNode = this.createNode(button.node, 'RewardedAdIcon', -124, 0, 52, 38);
+            const icon = iconNode.addComponent(Sprite);
+            icon.sizeMode = Sprite.SizeMode.CUSTOM;
+            icon.spriteFrame = this.ownedRewardedAdIconFrame;
+            iconNode.setScale(0.62, 0.62, 1);
+        }
+    }
+
+    private async watchGameOverAd(): Promise<void> {
+        const context = this.context;
+        const result = context?.services.ads
+            ? await context.services.ads.showRewarded({ placement: AD_PLACEMENTS.game2048ClearSmallTiles, gameId: context.gameId, sessionId: context.sessionId })
+            : { outcome: 'completed' as const };
+        if (result.outcome !== 'completed') return;
+        this.destroyOverlay(this.gameOverOverlay);
+        this.gameOverOverlay = undefined;
+        await this.playSmallTileClearEffect();
+        this.model.clearSmallTiles();
+        this.state = 'playing';
+        this.inputLocked = false;
+        this.renderBoard();
+        this.refreshHud();
+        this.persistProgress(true);
+        this.updateDangerState();
+    }
+
+    private playSmallTileClearEffect(): Promise<void> {
+        const content = this.boardContent;
+        if (!content) return Promise.resolve();
+        const targets = this.model.board
+            .map((value, index) => (value === 2 || value === 4) ? content.getChildByName(`Tile-${index}`) : undefined)
+            .filter((tile): tile is Node => !!tile && tile.isValid);
+        if (targets.length === 0) return Promise.resolve();
+        return new Promise((resolve) => {
+            let remaining = targets.length;
+            targets.forEach((tile) => {
+                const opacity = tile.getComponent(UIOpacity) ?? tile.addComponent(UIOpacity);
+                Tween.stopAllByTarget(tile);
+                Tween.stopAllByTarget(opacity);
+                tween(tile).to(0.22, { scale: new Vec3(0.55, 0.55, 1) }, { easing: 'quadIn' }).start();
+                tween(opacity)
+                    .to(0.22, { opacity: 0 }, { easing: 'quadIn' })
+                    .call(() => {
+                        remaining -= 1;
+                        if (remaining === 0) resolve();
+                    })
+                    .start();
+            });
+        });
     }
 
     private createResult(reason: 'no-moves' | 'target-complete') {
@@ -994,69 +1116,6 @@ export class Game2048Game extends Component implements MiniGame {
             GAME_2048_TITLE_HEIGHT,
         );
         titleFrame.setScale(metrics.fitScale, metrics.fitScale, 1);
-        const titleFallback = this.createNode(
-            titleFrame,
-            'TitleFallback',
-            0,
-            0,
-            GAME_2048_TITLE_WIDTH,
-            GAME_2048_TITLE_HEIGHT,
-        );
-        const titleGraphics = titleFallback.addComponent(Graphics);
-        titleGraphics.fillColor = new Color(0, 0, 0, 82);
-        titleGraphics.roundRect(
-            -GAME_2048_TITLE_WIDTH / 2 - 4,
-            -GAME_2048_TITLE_HEIGHT / 2 - 6,
-            GAME_2048_TITLE_WIDTH,
-            GAME_2048_TITLE_HEIGHT,
-            26,
-        );
-        titleGraphics.fill();
-        titleGraphics.fillColor = new Color(COLORS.panel.r, COLORS.panel.g, COLORS.panel.b, 244);
-        titleGraphics.strokeColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 168);
-        titleGraphics.lineWidth = 3;
-        titleGraphics.roundRect(
-            -GAME_2048_TITLE_WIDTH / 2,
-            -GAME_2048_TITLE_HEIGHT / 2,
-            GAME_2048_TITLE_WIDTH,
-            GAME_2048_TITLE_HEIGHT,
-            26,
-        );
-        titleGraphics.fill();
-        titleGraphics.stroke();
-        titleGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 92);
-        titleGraphics.lineWidth = 1;
-        titleGraphics.roundRect(
-            -GAME_2048_TITLE_WIDTH / 2 + 9,
-            -GAME_2048_TITLE_HEIGHT / 2 + 9,
-            GAME_2048_TITLE_WIDTH - 18,
-            GAME_2048_TITLE_HEIGHT - 18,
-            20,
-        );
-        titleGraphics.stroke();
-        titleGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 170);
-        titleGraphics.lineWidth = 2;
-        titleGraphics.moveTo(-GAME_2048_TITLE_WIDTH / 2 + 38, 34);
-        titleGraphics.lineTo(-GAME_2048_TITLE_WIDTH / 2 + 124, 34);
-        titleGraphics.moveTo(GAME_2048_TITLE_WIDTH / 2 - 124, 34);
-        titleGraphics.lineTo(GAME_2048_TITLE_WIDTH / 2 - 38, 34);
-        titleGraphics.stroke();
-        titleGraphics.fillColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 155);
-        titleGraphics.circle(-GAME_2048_TITLE_WIDTH / 2 + 30, 34, 3);
-        titleGraphics.circle(GAME_2048_TITLE_WIDTH / 2 - 30, 34, 3);
-        titleGraphics.fillColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 210);
-        titleGraphics.circle(-GAME_2048_TITLE_WIDTH / 2 + 30, -31, 3);
-        titleGraphics.circle(GAME_2048_TITLE_WIDTH / 2 - 30, -31, 3);
-        titleGraphics.fill();
-        const kicker = this.createLabel(titleFallback, 'TitleKicker', 'SIGNAL  //  MERGE MATRIX', 0, 29, 16, COLORS.cyan, 370, 22);
-        kicker.spacingX = 2;
-        const titleVioletGlow = this.createLabel(titleFallback, 'TitleVioletGlow', 'NEON  2048', 2, -10, 50,
-            new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 72), 400, 58);
-        titleVioletGlow.isBold = true;
-        titleVioletGlow.spacingX = 4;
-        const title = this.createLabel(titleFallback, 'Title', 'NEON  2048', 0, -7, 48, COLORS.white, 400, 58);
-        title.isBold = true;
-        title.spacingX = 4;
         const titleArtworkNode = this.createNode(
             titleFrame,
             'TitleArtwork',
@@ -1069,7 +1128,6 @@ export class Game2048Game extends Component implements MiniGame {
         titleArtwork.sizeMode = Sprite.SizeMode.CUSTOM;
         titleArtworkNode.active = false;
         titleArtworkNode.setSiblingIndex(titleFrame.children.length - 1);
-        this.titleFallback = titleFallback;
         this.titleArtwork = titleArtwork;
         this.titleButton = titleFrame.addComponent(Button);
         this.titleButton.transition = Button.Transition.SCALE;
@@ -1110,36 +1168,6 @@ export class Game2048Game extends Component implements MiniGame {
             GAME_2048_BOARD_NODE_SIZE,
         );
         this.boardNode.setScale(metrics.boardScale, metrics.boardScale, 1);
-        const boardFallback = this.createNode(
-            this.boardNode,
-            'BoardFallback',
-            0,
-            0,
-            boardSize,
-            boardSize,
-        );
-        const boardGraphics = boardFallback.addComponent(Graphics);
-        boardGraphics.fillColor = new Color(0, 0, 0, 80);
-        boardGraphics.roundRect(-boardSize / 2 - 7, -boardSize / 2 - 13, boardSize + 18, boardSize + 18, 34);
-        boardGraphics.fill();
-        boardGraphics.strokeColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 30);
-        boardGraphics.lineWidth = 12;
-        boardGraphics.roundRect(-boardSize / 2 - 7, -boardSize / 2 - 7, boardSize + 14, boardSize + 14, 36);
-        boardGraphics.stroke();
-        boardGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 34);
-        boardGraphics.lineWidth = 7;
-        boardGraphics.roundRect(-boardSize / 2 - 4, -boardSize / 2 - 4, boardSize + 8, boardSize + 8, 33);
-        boardGraphics.stroke();
-        boardGraphics.fillColor = COLORS.panel;
-        boardGraphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 148);
-        boardGraphics.lineWidth = 2.5;
-        boardGraphics.roundRect(-boardSize / 2, -boardSize / 2, boardSize, boardSize, 30);
-        boardGraphics.fill();
-        boardGraphics.stroke();
-        boardGraphics.strokeColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 55);
-        boardGraphics.lineWidth = 1;
-        boardGraphics.roundRect(-boardSize / 2 + 7, -boardSize / 2 + 7, boardSize - 14, boardSize - 14, 25);
-        boardGraphics.stroke();
         const boardArtworkNode = this.createNode(
             this.boardNode,
             'BoardArtwork',
@@ -1154,9 +1182,7 @@ export class Game2048Game extends Component implements MiniGame {
         const boardGridSize = this.boardGridSize(boardSize);
         this.boardContent = this.createNode(this.boardNode, 'BoardContent', 0, 0, boardGridSize, boardGridSize);
         this.boardContent.setSiblingIndex(this.boardNode.children.length - 1);
-        this.boardFallback = boardFallback;
         this.boardArtwork = boardArtwork;
-        this.buildSlots(boardGridSize);
 
         this.createLabel(
             this.node,
@@ -1198,7 +1224,7 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private loadBackground(): Promise<void> {
-        const bundle = assetManager.getBundle('game-2048');
+        const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
         const background = this.node.getChildByName('BackgroundImage');
         if (!bundle || !background) return Promise.resolve();
 
@@ -1235,10 +1261,33 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private async loadThemeAssets(): Promise<void> {
-        const [title, board, pause, ...tiles] = await Promise.all([
+        const [
+            title,
+            board,
+            pause,
+            systemPopup,
+            resultPopup,
+            milestonePopup,
+            targetPopup,
+            cyanButton,
+            amberButton,
+            violetButton,
+            achievementScore,
+            resultScore,
+            ...tiles
+        ] = await Promise.all([
             this.loadTextureFrame(GAME_2048_TITLE_ASSET_PATH),
             this.loadTextureFrame(GAME_2048_BOARD_ASSET_PATH),
             this.loadTextureFrame(GAME_2048_PAUSE_ICON_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_SYSTEM_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_RESULT_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_2048_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_4096_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_BUTTON_CYAN_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_BUTTON_AMBER_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_BUTTON_VIOLET_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_SCORE_CYAN_ASSET_PATH),
+            this.loadTextureFrame(GAME_2048_POPUP_SCORE_AMBER_ASSET_PATH),
             ...GAME_2048_TILE_VALUES.map((value) => this.loadTextureFrame(
                 `${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`,
             )),
@@ -1248,6 +1297,15 @@ export class Game2048Game extends Component implements MiniGame {
             title?.destroy();
             board?.destroy();
             pause?.destroy();
+            systemPopup?.destroy();
+            resultPopup?.destroy();
+            milestonePopup?.destroy();
+            targetPopup?.destroy();
+            cyanButton?.destroy();
+            amberButton?.destroy();
+            violetButton?.destroy();
+            achievementScore?.destroy();
+            resultScore?.destroy();
             tiles.forEach((frame) => frame?.destroy());
             return;
         }
@@ -1255,6 +1313,16 @@ export class Game2048Game extends Component implements MiniGame {
         this.ownedTitleFrame = title;
         this.ownedBoardFrame = board;
         this.ownedPauseFrame = pause;
+        this.ownedRewardedAdIconFrame = await this.loadTextureFrame(GAME_2048_REWARDED_AD_ICON_ASSET_PATH);
+        this.ownedSystemPopupFrame = systemPopup;
+        this.ownedResultPopupFrame = resultPopup;
+        this.ownedMilestonePopupFrame = milestonePopup;
+        this.ownedTargetPopupFrame = targetPopup;
+        if (cyanButton) this.ownedPopupButtonFrames.set('cyan', cyanButton);
+        if (amberButton) this.ownedPopupButtonFrames.set('amber', amberButton);
+        if (violetButton) this.ownedPopupButtonFrames.set('dark', violetButton);
+        this.ownedAchievementScoreFrame = achievementScore;
+        this.ownedResultScoreFrame = resultScore;
         GAME_2048_TILE_VALUES.forEach((value, index) => {
             const frame = tiles[index];
             if (frame) this.ownedTileFrames.set(value, frame);
@@ -1263,7 +1331,7 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private loadTextureFrame(assetPath: string): Promise<SpriteFrame | undefined> {
-        const bundle = assetManager.getBundle('game-2048');
+        const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
         if (!bundle) return Promise.resolve(undefined);
         return new Promise((resolve) => {
             bundle.load(assetPath, Texture2D, (error, texture) => {
@@ -1284,15 +1352,9 @@ export class Game2048Game extends Component implements MiniGame {
             this.titleArtwork.spriteFrame = this.ownedTitleFrame ?? null;
             this.titleArtwork.node.active = !!this.ownedTitleFrame;
         }
-        if (this.titleFallback?.isValid) {
-            this.titleFallback.active = !this.ownedTitleFrame;
-        }
         if (this.boardArtwork?.node.isValid) {
             this.boardArtwork.spriteFrame = this.ownedBoardFrame ?? null;
             this.boardArtwork.node.active = !!this.ownedBoardFrame;
-        }
-        if (this.boardFallback?.isValid) {
-            this.boardFallback.active = !this.ownedBoardFrame;
         }
         if (this.pauseArtwork?.node.isValid) {
             this.pauseArtwork.spriteFrame = this.ownedPauseFrame ?? null;
@@ -1301,13 +1363,10 @@ export class Game2048Game extends Component implements MiniGame {
         if (this.pauseFallback?.isValid) {
             this.pauseFallback.active = !this.ownedPauseFrame;
         }
-        this.boardContent?.children
-            .filter((child) => child.name.startsWith('Slot-'))
-            .forEach((slot) => { slot.active = !this.ownedBoardFrame; });
     }
 
     private async loadMusic(): Promise<void> {
-        const bundle = assetManager.getBundle('game-2048');
+        const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
         if (!bundle) return;
         const loadClip = (assetPath: string): Promise<AudioClip> => new Promise((resolve, reject) => {
             bundle.load(assetPath, AudioClip, (error, clip) => error ? reject(error) : resolve(clip));
@@ -1328,30 +1387,6 @@ export class Game2048Game extends Component implements MiniGame {
             this.context?.services.audio.playMusic(normal);
         }
         this.dangerMusicClip = danger;
-    }
-
-    private buildSlots(boardSize: number): void {
-        if (!this.boardContent) return;
-        const gap = this.boardGap(boardSize);
-        const tileSize = (boardSize - gap * (BOARD_SIZE + 1)) / BOARD_SIZE;
-        const radius = Math.min(20, tileSize / 2);
-        const highlightInset = Math.min(20, tileSize * 0.16);
-        const highlightY = tileSize / 2 - Math.min(9, tileSize * 0.07);
-        for (let index = 0; index < BOARD_SIZE * BOARD_SIZE; index += 1) {
-            const { x, y } = this.tilePosition(index, boardSize, gap, tileSize);
-            const slot = this.createNode(this.boardContent, `Slot-${index}`, x, y, tileSize, tileSize);
-            const graphics = slot.addComponent(Graphics);
-            graphics.fillColor = COLORS.slot;
-            graphics.strokeColor = new Color(91, 157, 177, 36);
-            graphics.lineWidth = 1;
-            graphics.roundRect(-tileSize / 2, -tileSize / 2, tileSize, tileSize, radius);
-            graphics.fill();
-            graphics.stroke();
-            graphics.strokeColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 20);
-            graphics.moveTo(-tileSize / 2 + highlightInset, highlightY);
-            graphics.lineTo(tileSize / 2 - highlightInset, highlightY);
-            graphics.stroke();
-        }
     }
 
     private renderBoard(result?: Game2048MoveResult): void {
@@ -1803,8 +1838,13 @@ export class Game2048Game extends Component implements MiniGame {
         shade.rect(-width / 2, -height / 2, width, height);
         shade.fill();
 
-        const panelWidth = Math.max(200, Math.min(548, layout.contentWidth - 32));
-        const panelHeight = Math.max(360, Math.min(700, height - layout.safeTop - layout.safeBottom - 64));
+        // 达成弹窗恢复原型的纵向节奏；矮屏或窄屏时整体等比缩小。
+        // 不再使用“最小高度”顶回可用安全区，从根源上避免上下溢出。
+        const panelWidth = 600;
+        const panelHeight = panelWidth * GAME_2048_TARGET_POPUP_ASPECT_RATIO;
+        const availableWidth = Math.max(1, layout.contentWidth - 32);
+        const availableHeight = Math.max(1, height - layout.safeTop - layout.safeBottom - 48);
+        const panelScale = Math.min(1, availableWidth / panelWidth, availableHeight / panelHeight);
         const panel = this.createNode(
             root,
             'AchievementPanel',
@@ -1815,6 +1855,10 @@ export class Game2048Game extends Component implements MiniGame {
         );
         const graphics = panel.addComponent(Graphics);
         const targetMaterial = TILE_MATERIALS[tile] ?? TILE_MATERIALS[TARGET_TILE];
+        const popupFrame = tile === TARGET_TILE
+            ? this.ownedTargetPopupFrame
+            : this.ownedMilestonePopupFrame;
+        this.createPopupArtwork(panel, 'AchievementPanelArtwork', popupFrame, panelWidth, panelHeight);
 
         // 2048/4096 复用同一套庆祝构图，只根据目标数字切换材质和文案。
         graphics.fillColor = colorWithAlpha(targetMaterial.glow, 18);
@@ -1834,10 +1878,42 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.lineWidth = 1;
         graphics.roundRect(-panelWidth / 2 + 8, -panelHeight / 2 + 8, panelWidth - 16, panelHeight - 16, 25);
         graphics.stroke();
+        graphics.enabled = !popupFrame;
 
-        const halo = this.createNode(panel, `Target${tile}Halo`, 0, 184, 390, 300);
+        const crest = this.createNode(panel, `Target${tile}Crest`, 0, panelHeight / 2 - 8, 82, 82);
+        const crestGraphics = crest.addComponent(Graphics);
+        crestGraphics.fillColor = new Color(COLORS.void.r, COLORS.void.g, COLORS.void.b, 255);
+        crestGraphics.strokeColor = colorWithAlpha(targetMaterial.facet, 245);
+        crestGraphics.lineWidth = 4;
+        crestGraphics.moveTo(0, 38);
+        crestGraphics.lineTo(38, 0);
+        crestGraphics.lineTo(0, -38);
+        crestGraphics.lineTo(-38, 0);
+        crestGraphics.close();
+        crestGraphics.fill();
+        crestGraphics.stroke();
+        crestGraphics.strokeColor = colorWithAlpha(targetMaterial.accent, 175);
+        crestGraphics.lineWidth = 2;
+        crestGraphics.moveTo(0, 27);
+        crestGraphics.lineTo(27, 0);
+        crestGraphics.lineTo(0, -27);
+        crestGraphics.lineTo(-27, 0);
+        crestGraphics.close();
+        crestGraphics.stroke();
+        crestGraphics.fillColor = colorWithAlpha(targetMaterial.facet, 235);
+        crestGraphics.rect(-10, -10, 8, 8);
+        crestGraphics.fillColor = colorWithAlpha(targetMaterial.accent, 235);
+        crestGraphics.rect(2, -10, 8, 8);
+        crestGraphics.fillColor = COLORS.cyan;
+        crestGraphics.rect(-10, 2, 8, 8);
+        crestGraphics.fillColor = COLORS.violet;
+        crestGraphics.rect(2, 2, 8, 8);
+        crestGraphics.fill();
+        crest.active = !popupFrame;
+
+        const halo = this.createNode(panel, `Target${tile}Halo`, 0, 135, 312, 246);
         const haloGraphics = halo.addComponent(Graphics);
-        [142, 122, 101, 82].forEach((radius, index) => {
+        [116, 99, 82, 66].forEach((radius, index) => {
             haloGraphics.strokeColor = colorWithAlpha(
                 index % 2 === 0 ? targetMaterial.glow : targetMaterial.accent,
                 52 + index * 18,
@@ -1850,10 +1926,11 @@ export class Game2048Game extends Component implements MiniGame {
         haloGraphics.lineWidth = 2;
         for (let index = 0; index < 12; index += 1) {
             const angle = (Math.PI * 2 * index) / 12;
-            haloGraphics.moveTo(Math.cos(angle) * 112, Math.sin(angle) * 112);
-            haloGraphics.lineTo(Math.cos(angle) * 154, Math.sin(angle) * 154);
+            haloGraphics.moveTo(Math.cos(angle) * 91, Math.sin(angle) * 91);
+            haloGraphics.lineTo(Math.cos(angle) * 124, Math.sin(angle) * 124);
         }
         haloGraphics.stroke();
+        halo.active = !popupFrame;
         halo.setScale(0.78, 0.78, 1);
         tween(halo)
             .repeatForever(
@@ -1863,25 +1940,26 @@ export class Game2048Game extends Component implements MiniGame {
             )
             .start();
 
-        const crystalCore = this.createNode(panel, `Target${tile}CrystalCore`, 0, 184, 192, 192);
+        const crystalCore = this.createNode(panel, `Target${tile}CrystalCore`, 0, 135, 156, 156);
         const crystalOpacity = crystalCore.addComponent(UIOpacity);
         crystalOpacity.opacity = 210;
         const crystalGraphics = crystalCore.addComponent(Graphics);
         crystalGraphics.fillColor = colorWithAlpha(targetMaterial.core, 84);
-        crystalGraphics.moveTo(0, -70);
-        crystalGraphics.lineTo(70, 0);
-        crystalGraphics.lineTo(0, 70);
-        crystalGraphics.lineTo(-70, 0);
+        crystalGraphics.moveTo(0, -57);
+        crystalGraphics.lineTo(57, 0);
+        crystalGraphics.lineTo(0, 57);
+        crystalGraphics.lineTo(-57, 0);
         crystalGraphics.close();
         crystalGraphics.fill();
+        crystalCore.active = !popupFrame;
         crystalGraphics.strokeColor = colorWithAlpha(targetMaterial.accent, 210);
         crystalGraphics.lineWidth = 3;
         crystalGraphics.stroke();
         crystalGraphics.fillColor = colorWithAlpha(targetMaterial.facet, 112);
-        crystalGraphics.moveTo(0, -49);
-        crystalGraphics.lineTo(49, 0);
-        crystalGraphics.lineTo(0, 49);
-        crystalGraphics.lineTo(-49, 0);
+        crystalGraphics.moveTo(0, -40);
+        crystalGraphics.lineTo(40, 0);
+        crystalGraphics.lineTo(0, 40);
+        crystalGraphics.lineTo(-40, 0);
         crystalGraphics.close();
         crystalGraphics.fill();
         tween(crystalCore)
@@ -1899,12 +1977,12 @@ export class Game2048Game extends Component implements MiniGame {
             )
             .start();
 
-        const burst = this.createNode(panel, 'AchievementBurst', 0, 184, 340, 260);
+        const burst = this.createNode(panel, 'AchievementBurst', 0, 135, 276, 216);
         const burstGraphics = burst.addComponent(Graphics);
         for (let index = 0; index < 20; index += 1) {
             const angle = (Math.PI * 2 * index) / 20;
-            const inner = index % 2 === 0 ? 88 : 98;
-            const outer = index % 2 === 0 ? 125 : 116;
+            const inner = index % 2 === 0 ? 72 : 80;
+            const outer = index % 2 === 0 ? 102 : 94;
             burstGraphics.strokeColor = index % 3 === 0
                 ? colorWithAlpha(targetMaterial.accent, 112)
                 : colorWithAlpha(targetMaterial.facet, 138);
@@ -1915,11 +1993,18 @@ export class Game2048Game extends Component implements MiniGame {
         }
         burstGraphics.strokeColor = colorWithAlpha(targetMaterial.glow, 92);
         burstGraphics.lineWidth = 2;
-        burstGraphics.circle(0, 0, 108);
+        burstGraphics.circle(0, 0, 88);
         burstGraphics.stroke();
+        burst.active = !popupFrame;
 
-        const badge = this.createNode(panel, `Unlocked${tile}Tile`, 0, 184, 142, 142);
-        this.drawTile(badge, tile, 142);
+        const badgeSize = 190;
+        // 两种达成态使用独立下移量：2048 文案较短，需要更明显的顶部留白；
+        // 4096 标题较长，只做较小幅度下移。按钮仍由底部基线统一定位。
+        const achievementContentOffsetY = tile === TARGET_TILE ? -18 : -32;
+        const achievementTitleY = panelHeight / 2 - 132 + achievementContentOffsetY;
+        const badgeCenterY = achievementTitleY - 135;
+        const badge = this.createNode(panel, `Unlocked${tile}Tile`, 0, badgeCenterY, badgeSize, badgeSize);
+        this.drawTile(badge, tile, badgeSize);
 
         const sparkColors = [
             colorWithAlpha(targetMaterial.facet, 255),
@@ -1927,7 +2012,7 @@ export class Game2048Game extends Component implements MiniGame {
             colorWithAlpha(targetMaterial.glow, 255),
         ] as const;
         const sparkPositions = [
-            [-174, 240], [-142, 128], [162, 245], [182, 142], [-211, 188], [214, 198],
+            [-144, 201], [-122, 111], [136, 204], [151, 119], [-172, 156], [177, 166],
         ] as const;
         sparkPositions.forEach(([x, y], index) => {
             const spark = this.createNode(panel, `CelebrationSpark-${index}`, x, y, 16, 16);
@@ -1950,6 +2035,7 @@ export class Game2048Game extends Component implements MiniGame {
                 sparkGraphics.circle(0, 0, 4);
                 sparkGraphics.fill();
             }
+            spark.active = !popupFrame;
             spark.setScale(0.35, 0.35, 1);
             tween(spark)
                 .delay(0.08 + index * 0.035)
@@ -1965,31 +2051,55 @@ export class Game2048Game extends Component implements MiniGame {
                 .start();
         });
 
-        const kicker = this.createLabel(
-            panel, 'AchievementKicker', `ACHIEVEMENT  //  ${tile}`, 0, panelHeight / 2 - 34,
-            16, colorWithAlpha(targetMaterial.accent, 255), panelWidth - 72, 24,
+        const achievementTitle = tile === TARGET_TILE ? '终极目标达成' : '恭喜你达成';
+        const title = this.createLabel(
+            panel,
+            'Title',
+            achievementTitle,
+            0,
+            achievementTitleY,
+            tile === TARGET_TILE ? 46 : 50,
+            colorWithAlpha(targetMaterial.facet, 255),
+            panelWidth - 112,
+            62,
         );
-        kicker.spacingX = 3;
-
-        const title = this.createLabel(panel, 'Title', '恭喜你！', 0, 80, 48, COLORS.white, panelWidth - 64, 58);
         title.isBold = true;
-        const subtitle = this.createLabel(
-            panel, 'Subtitle', `成功点亮 ${tile}`, 0, 31, 27, colorWithAlpha(targetMaterial.facet, 255), panelWidth - 72, 40,
+        const achievementTitleOutline = title.node.addComponent(LabelOutline);
+        achievementTitleOutline.color = colorWithAlpha(targetMaterial.glow, 142);
+        achievementTitleOutline.width = 3;
+        const scoreChipWidth = 450;
+        const scoreChipHeight = 78;
+        const scoreChip = this.createNode(
+            panel,
+            'AchievementScore',
+            0,
+            badgeCenterY - 170,
+            scoreChipWidth,
+            scoreChipHeight,
         );
-        subtitle.isBold = true;
-
-        const scoreChip = this.createNode(panel, 'AchievementScore', 0, -24, panelWidth - 112, 54);
         const scoreGraphics = scoreChip.addComponent(Graphics);
         scoreGraphics.fillColor = colorWithAlpha(targetMaterial.facet, 16);
         scoreGraphics.strokeColor = colorWithAlpha(targetMaterial.facet, 104);
         scoreGraphics.lineWidth = 1.5;
-        scoreGraphics.roundRect(-(panelWidth - 112) / 2, -27, panelWidth - 112, 54, 15);
+        scoreGraphics.roundRect(-scoreChipWidth / 2, -scoreChipHeight / 2, scoreChipWidth, scoreChipHeight, 13);
         scoreGraphics.fill();
         scoreGraphics.stroke();
-        const score = this.createLabel(
-            scoreChip, 'Score', `本局得分  ${this.model.score}`, 0, 0, 25, COLORS.white, panelWidth - 136, 42,
+        const scoreArtwork = this.createPopupArtwork(
+            scoreChip,
+            'AchievementScoreArtwork',
+            this.ownedAchievementScoreFrame,
+            scoreChipWidth,
+            scoreChipHeight,
         );
-        score.isBold = true;
+        scoreGraphics.enabled = !scoreArtwork;
+        const scoreCaption = this.createLabel(
+            scoreChip, 'ScoreCaption', '本局得分', -98, 0, 26, COLORS.muted, 188, 46,
+        );
+        scoreCaption.isBold = true;
+        const scoreValue = this.createLabel(
+            scoreChip, 'ScoreValue', `${this.model.score}`, 115, 0, 30, COLORS.white, 205, 46,
+        );
+        scoreValue.isBold = true;
 
         const state: OverlayState = {
             root,
@@ -1997,25 +2107,38 @@ export class Game2048Game extends Component implements MiniGame {
             rebuild: () => this.buildTargetOverlay(actions, tile),
             busy: false,
         };
-        const buttonWidth = Math.min(390, panelWidth - 64);
-        const buttonStartY = -102;
+        const buttonWidth = Math.min(460, panelWidth - 120);
+        const buttonHeight = 86;
+        const buttonGap = 90;
+        const lastButtonCenterY = -panelHeight / 2
+            + GAME_2048_POPUP_BUTTON_BOTTOM_PADDING
+            + buttonHeight / 2;
+        const buttonStartY = lastButtonCenterY + (actions.length - 1) * buttonGap;
         actions.forEach((action, index) => {
-            const button = this.createButton(
-                panel, action.name, action.label, 0, buttonStartY - index * 75,
-                buttonWidth, 58, action.tone,
+            const button = this.createOverlayButton(
+                panel, action.name, action.label, 0, buttonStartY - index * buttonGap,
+                buttonWidth, buttonHeight, action.tone,
             );
             button.node.on(Button.EventType.CLICK, () => this.runOverlayAction(state, action), this);
             state.buttons.push(button);
         });
 
-        burst.setScale(0.55, 0.55, 1);
-        tween(burst).to(0.5, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
-        panel.setScale(0.82, 0.76, 1);
-        tween(panel).to(0.28, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        if (!popupFrame) {
+            burst.setScale(0.55, 0.55, 1);
+            tween(burst).to(0.5, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        }
+        panel.setScale(panelScale * 0.82, panelScale * 0.76, 1);
+        tween(panel).to(0.28, { scale: new Vec3(panelScale, panelScale, 1) }, { easing: 'backOut' }).start();
         return state;
     }
 
-    private buildOverlay(name: string, title: string, body: string, actions: readonly OverlayAction[]): OverlayState {
+    private buildOverlay(
+        name: string,
+        title: string,
+        body: string,
+        actions: readonly OverlayAction[],
+        resultContent?: ResultOverlayContent,
+    ): OverlayState {
         const rootSize = this.node.getComponent(UITransform)?.contentSize;
         const width = rootSize?.width ?? 750;
         const height = rootSize?.height ?? 1334;
@@ -2028,14 +2151,13 @@ export class Game2048Game extends Component implements MiniGame {
         shade.rect(-width / 2, -height / 2, width, height);
         shade.fill();
 
-        const panelHeight = Math.max(
-            360,
-            Math.min(
-                actions.length === 2 ? 500 : 590,
-                height - layout.safeTop - layout.safeBottom - 64,
-            ),
-        );
-        const panelWidth = Math.max(200, Math.min(520, layout.contentWidth - 64));
+        const panelWidth = resultContent ? 580 : 570;
+        const panelHeight = panelWidth * (resultContent
+            ? GAME_2048_RESULT_POPUP_ASPECT_RATIO
+            : GAME_2048_SYSTEM_POPUP_ASPECT_RATIO);
+        const availableWidth = Math.max(1, layout.contentWidth - 40);
+        const availableHeight = Math.max(1, height - layout.safeTop - layout.safeBottom - 40);
+        const panelScale = Math.min(1, availableWidth / panelWidth, availableHeight / panelHeight);
         const panel = this.createNode(
             root,
             'NeonPanel',
@@ -2045,6 +2167,8 @@ export class Game2048Game extends Component implements MiniGame {
             panelHeight,
         );
         const graphics = panel.addComponent(Graphics);
+        const popupFrame = resultContent ? this.ownedResultPopupFrame : this.ownedSystemPopupFrame;
+        this.createPopupArtwork(panel, 'PopupPanelArtwork', popupFrame, panelWidth, panelHeight);
         graphics.strokeColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 28);
         graphics.lineWidth = 16;
         graphics.roundRect(-panelWidth / 2 - 8, -panelHeight / 2 - 8, panelWidth + 16, panelHeight + 16, 38);
@@ -2066,35 +2190,138 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.moveTo(-72, panelHeight / 2 - 78);
         graphics.lineTo(72, panelHeight / 2 - 78);
         graphics.stroke();
-        this.createLabel(panel, 'Kicker', 'SYSTEM // 2048', 0, panelHeight / 2 - 55, 17, COLORS.cyan, panelWidth - 70, 26).spacingX = 3;
-        const titleLabel = this.createLabel(panel, 'Title', title, 0, panelHeight / 2 - 120, 46, COLORS.white, panelWidth - 70, 58);
+        graphics.enabled = !popupFrame;
+
+        // 原型顶部的悬浮菱形状态核，结算态切换为金色，暂停/开发层保持青紫。
+        const crestAccent = resultContent ? COLORS.amber : COLORS.cyan;
+        const crest = this.createNode(panel, 'OverlayCrest', 0, panelHeight / 2 - 8, 84, 84);
+        const crestGraphics = crest.addComponent(Graphics);
+        crestGraphics.fillColor = new Color(COLORS.void.r, COLORS.void.g, COLORS.void.b, 255);
+        crestGraphics.strokeColor = new Color(crestAccent.r, crestAccent.g, crestAccent.b, 245);
+        crestGraphics.lineWidth = 4;
+        crestGraphics.moveTo(0, 38);
+        crestGraphics.lineTo(38, 0);
+        crestGraphics.lineTo(0, -38);
+        crestGraphics.lineTo(-38, 0);
+        crestGraphics.close();
+        crestGraphics.fill();
+        crestGraphics.stroke();
+        crestGraphics.strokeColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 210);
+        crestGraphics.lineWidth = 2;
+        crestGraphics.moveTo(0, 27);
+        crestGraphics.lineTo(27, 0);
+        crestGraphics.lineTo(0, -27);
+        crestGraphics.lineTo(-27, 0);
+        crestGraphics.close();
+        crestGraphics.stroke();
+        crestGraphics.fillColor = new Color(crestAccent.r, crestAccent.g, crestAccent.b, 230);
+        crestGraphics.rect(-10, -10, 8, 8);
+        crestGraphics.fillColor = new Color(COLORS.violet.r, COLORS.violet.g, COLORS.violet.b, 230);
+        crestGraphics.rect(2, -10, 8, 8);
+        crestGraphics.fillColor = new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 230);
+        crestGraphics.rect(-10, 2, 8, 8);
+        crestGraphics.fillColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 230);
+        crestGraphics.rect(2, 2, 8, 8);
+        crestGraphics.fill();
+        crest.active = !popupFrame;
+
+        const contentTop = panelHeight / 2 - (resultContent ? 160 : 150);
+        const titleLabel = this.createLabel(
+            panel,
+            'Title',
+            title,
+            0,
+            contentTop - 15,
+            resultContent ? 60 : 56,
+            COLORS.white,
+            panelWidth - 112,
+            70,
+        );
         titleLabel.isBold = true;
-        this.createLabel(panel, 'Body', body, 0, panelHeight / 2 - 210, 27, COLORS.muted, panelWidth - 80, 90);
+        const titleOutline = titleLabel.node.addComponent(LabelOutline);
+        titleOutline.color = resultContent
+            ? new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 138)
+            : new Color(77, 171, 255, 168);
+        titleOutline.width = resultContent ? 4 : 3;
+        if (resultContent) {
+            const scoreCaption = this.createLabel(panel, 'ScoreCaption', '最终分数', 0, contentTop - 95, 26,
+                COLORS.cyan, panelWidth - 128, 38);
+            scoreCaption.isBold = true;
+            const scoreChipWidth = 430;
+            const scoreChipHeight = 130;
+            const scoreChip = this.createNode(panel, 'ResultScoreChip', 0, contentTop - 190, scoreChipWidth, scoreChipHeight);
+            const scoreGraphics = scoreChip.addComponent(Graphics);
+            scoreGraphics.fillColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 22);
+            scoreGraphics.strokeColor = new Color(COLORS.amber.r, COLORS.amber.g, COLORS.amber.b, 220);
+            scoreGraphics.lineWidth = 2;
+            scoreGraphics.roundRect(-scoreChipWidth / 2, -scoreChipHeight / 2, scoreChipWidth, scoreChipHeight, 17);
+            scoreGraphics.fill();
+            scoreGraphics.stroke();
+            const scoreArtwork = this.createPopupArtwork(
+                scoreChip,
+                'ResultScoreArtwork',
+                this.ownedResultScoreFrame,
+                scoreChipWidth,
+                scoreChipHeight,
+            );
+            scoreGraphics.enabled = !scoreArtwork;
+            const scoreLabel = this.createLabel(scoreChip, 'Score', `${resultContent.score}`, 0, 0, 54,
+                COLORS.amber, scoreChipWidth - 54, 70);
+            scoreLabel.isBold = true;
+            const highestLabel = this.createLabel(
+                panel,
+                'HighestTile',
+                `本局最高数字  ${resultContent.highestTile}`,
+                0,
+                contentTop - 287,
+                25,
+                COLORS.muted,
+                panelWidth - 128,
+                40,
+            );
+            highestLabel.isBold = true;
+        } else {
+            const [scoreLine = body, descriptionLine = ''] = body.split('\n');
+            const scoreLineLabel = this.createLabel(
+                panel, 'ScoreLine', scoreLine, 0, contentTop - 106, 30,
+                new Color(112, 202, 255, 255), panelWidth - 132, 42,
+            );
+            scoreLineLabel.isBold = true;
+            this.createLabel(
+                panel, 'DescriptionLine', descriptionLine, 0, contentTop - 156, 25,
+                COLORS.muted, panelWidth - 132, 40,
+            );
+        }
 
         const state: OverlayState = {
             root,
             buttons: [],
-            rebuild: () => this.buildOverlay(name, title, body, actions),
+            rebuild: () => this.buildOverlay(name, title, body, actions, resultContent),
             busy: false,
         };
-        const startY = actions.length === 2 ? -70 : -62;
-        const buttonWidth = Math.min(360, panelWidth - 64);
+        const buttonGap = resultContent ? 90 : 98;
+        const buttonWidth = Math.min(460, panelWidth - 120);
+        const buttonHeight = 86;
+        const lastButtonCenterY = -panelHeight / 2
+            + GAME_2048_POPUP_BUTTON_BOTTOM_PADDING
+            + buttonHeight / 2;
+        const startY = lastButtonCenterY + (actions.length - 1) * buttonGap;
         actions.forEach((action, index) => {
-            const button = this.createButton(
+            const button = this.createOverlayButton(
                 panel,
                 action.name,
                 action.label,
                 0,
-                startY - index * 84,
+                startY - index * buttonGap,
                 buttonWidth,
-                62,
+                buttonHeight,
                 action.tone,
             );
             button.node.on(Button.EventType.CLICK, () => this.runOverlayAction(state, action), this);
             state.buttons.push(button);
         });
-        panel.setScale(0.86, 0.78, 1);
-        tween(panel).to(0.22, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+        panel.setScale(panelScale * 0.86, panelScale * 0.78, 1);
+        tween(panel).to(0.22, { scale: new Vec3(panelScale, panelScale, 1) }, { easing: 'backOut' }).start();
         return state;
     }
 
@@ -2194,6 +2421,110 @@ export class Game2048Game extends Component implements MiniGame {
         button.zoomScale = 0.95;
         button.duration = 0.08;
         return button;
+    }
+
+    private createPopupArtwork(
+        parent: Node,
+        name: string,
+        frame: SpriteFrame | undefined,
+        width: number,
+        height: number,
+    ): Sprite | undefined {
+        if (!frame) return undefined;
+        const artworkNode = this.createNode(parent, name, 0, 0, width, height);
+        const artwork = artworkNode.addComponent(Sprite);
+        artwork.sizeMode = Sprite.SizeMode.CUSTOM;
+        artwork.spriteFrame = frame;
+        artworkNode.setSiblingIndex(0);
+        return artwork;
+    }
+
+    /** 弹窗专用的晶体切角按钮，不影响 HUD 与开发入口的原有按钮皮肤。 */
+    private createOverlayButton(
+        parent: Node,
+        name: string,
+        text: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        tone: 'cyan' | 'amber' | 'dark',
+    ): Button {
+        const node = this.createNode(parent, name, x, y, width, height);
+        node.addComponent(UIOpacity);
+        const graphics = node.addComponent(Graphics);
+        const accent = tone === 'cyan' ? COLORS.cyan
+            : tone === 'amber' ? COLORS.amber
+                : COLORS.violet;
+        const fill = tone === 'dark'
+            ? new Color(COLORS.panel.r, COLORS.panel.g, COLORS.panel.b, 252)
+            : new Color(
+                Math.round(COLORS.panel.r * 0.6 + accent.r * 0.4),
+                Math.round(COLORS.panel.g * 0.6 + accent.g * 0.4),
+                Math.round(COLORS.panel.b * 0.6 + accent.b * 0.4),
+                255,
+            );
+
+        graphics.fillColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 14 : 32);
+        this.drawChamferedRectPath(graphics, -width / 2 - 6, -height / 2 - 5, width + 12, height + 10, 15);
+        graphics.fill();
+        graphics.fillColor = fill;
+        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 170 : 235);
+        graphics.lineWidth = tone === 'dark' ? 2 : 2.5;
+        this.drawChamferedRectPath(graphics, -width / 2, -height / 2, width, height, 12);
+        graphics.fill();
+        graphics.stroke();
+        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 82);
+        graphics.lineWidth = 1;
+        this.drawChamferedRectPath(graphics, -width / 2 + 6, -height / 2 + 6, width - 12, height - 12, 8);
+        graphics.stroke();
+        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 130);
+        graphics.moveTo(-width / 2 + 30, height / 2 - 7);
+        graphics.lineTo(width / 2 - 30, height / 2 - 7);
+        graphics.stroke();
+
+        const button = node.addComponent(Button);
+        button.transition = Button.Transition.SCALE;
+        button.zoomScale = 0.96;
+        button.duration = 0.08;
+        const artworkFrame = this.ownedPopupButtonFrames.get(tone);
+        graphics.enabled = !artworkFrame;
+        if (artworkFrame) {
+            const artworkNode = this.createNode(node, 'ButtonArtwork', 0, 0, width, height);
+            const artwork = artworkNode.addComponent(Sprite);
+            artwork.sizeMode = Sprite.SizeMode.CUSTOM;
+            artwork.spriteFrame = artworkFrame;
+            artworkNode.setSiblingIndex(0);
+        }
+        const isRewardedAdButton = name === 'WatchAdButton';
+        // 看视频按钮采用紧凑的文字盒，图标才能贴着文字左缘布局，避免按整块按钮宽度居中造成视觉间距过大。
+        const labelWidth = isRewardedAdButton ? 240 : width - 24;
+        const label = this.createLabel(node, 'Label', text, isRewardedAdButton ? 22 : 0, 0, height <= 54 ? 22 : 24,
+            tone === 'dark' ? new Color(196, 156, 255, 255) : COLORS.white, labelWidth, height - 8);
+        label.isBold = true;
+        return button;
+    }
+
+    private drawChamferedRectPath(
+        graphics: Graphics,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        cut: number,
+    ): void {
+        const right = x + width;
+        const top = y + height;
+        const corner = Math.max(0, Math.min(cut, width / 2, height / 2));
+        graphics.moveTo(x + corner, top);
+        graphics.lineTo(right - corner, top);
+        graphics.lineTo(right, top - corner);
+        graphics.lineTo(right, y + corner);
+        graphics.lineTo(right - corner, y);
+        graphics.lineTo(x + corner, y);
+        graphics.lineTo(x, y + corner);
+        graphics.lineTo(x, top - corner);
+        graphics.close();
     }
 
     private createButton(

@@ -12,7 +12,9 @@ import {
     LabelOutline,
     Mask,
     Node,
+    Rect,
     ScrollView,
+    Size,
     Sprite,
     SpriteFrame,
     Texture2D,
@@ -35,11 +37,6 @@ import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
-import {
-    attachRewardedVideoIcon,
-    layoutRewardedVideoIconBeforeLabel,
-    loadRewardedVideoIcon,
-} from '../../../shared/ui/RewardedVideoIcon';
 import { ChessEndlessLayout } from './ChessEndlessLayout';
 import {
     chessEndlessModalContentRect,
@@ -65,7 +62,7 @@ import {
 const { ccclass } = _decorator;
 
 const GAME_ID = 'chess-endless';
-const BUNDLE = 'game-chess-endless';
+const RESOURCE_BUNDLE = 'game-chess-endless-assets';
 const CHESS_DATA_VERSION = 2;
 const MOVE_DURATION = 0.15;
 const CAPTURE_DURATION = 0.24;
@@ -152,6 +149,7 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     pauseIcon: 'visual/ui/icon_pause/texture',
     helpIcon: 'visual/ui/icon_help/texture',
     closeIcon: 'visual/ui/icon_close/texture',
+    rewardedVideoIcon: 'visual/ui/chess-endless-rewarded-video-icon-v1/texture',
     itemCard: 'visual/ui/ui_item_card_bg/texture',
     itemSlot: 'visual/ui/ui_item_slot/texture',
     crossSlash: 'visual/icons/icon_item_cross_slash/texture',
@@ -180,6 +178,62 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     rewardChestClosed: 'visual/vfx/vfx_reward_chest_closed/texture',
     rewardChestOpen: 'visual/vfx/vfx_reward_chest_open/texture',
 });
+const CHESS_REWARDED_VIDEO_ICON_ASPECT = 120 / 115;
+
+function attachChessRewardedVideoIcon(
+    parent: Node,
+    frame: SpriteFrame | undefined,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+): Node | undefined {
+    if (!frame) return undefined;
+    const node = new Node('ChessEndlessRewardedVideoIcon');
+    node.layer = parent.layer;
+    node.setParent(parent);
+    node.setPosition(x, y);
+    node.addComponent(UITransform).setContentSize(width, height);
+    const sprite = node.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    sprite.spriteFrame = frame;
+    return node;
+}
+
+function measureChessTextWidth(text: string, fontSize: number): number {
+    let width = 0;
+    for (const character of text) {
+        if (character === ' ') width += fontSize * 0.35;
+        else if (/^[\u0000-\u00ff]$/.test(character)) width += fontSize * 0.56;
+        else width += fontSize;
+    }
+    return width;
+}
+
+function layoutChessRewardedVideoIconBeforeLabel(
+    icon: Node | undefined,
+    label: Label,
+    text: string,
+    fontSize: number,
+    iconWidth: number,
+    iconHeight: number,
+    buttonWidth: number,
+    gap = 4,
+): void {
+    if (!icon) return;
+    const labelTransform = label.node.getComponent(UITransform);
+    if (!labelTransform) return;
+    const textWidth = Math.min(
+        Math.max(fontSize, measureChessTextWidth(text, fontSize)),
+        Math.max(fontSize, buttonWidth - iconWidth - gap - 28),
+    );
+    const totalWidth = iconWidth + gap + textWidth;
+    const centerY = label.node.position.y;
+    labelTransform.setContentSize(textWidth, labelTransform.contentSize.height);
+    label.node.setPosition((iconWidth + gap) / 2, centerY);
+    icon.setPosition(-totalWidth / 2 + iconWidth / 2, centerY);
+    icon.getComponent(UITransform)?.setContentSize(iconWidth, iconHeight);
+}
 
 const AUDIO_PATHS: Readonly<Record<string, string>> = Object.freeze({
     musicNormal: 'visual/audio/chess-game-normal-loop-v1',
@@ -353,7 +407,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
     private reviveAdPending = false;
-    private rewardedVideoIconFrame?: SpriteFrame;
 
     async initialize(context: MiniGameContext<ChessEndlessServices>): Promise<void> {
         if (this.lifecycle !== 'idle') throw new Error(`Cannot initialize ChessEndlessGame from ${this.lifecycle}.`);
@@ -364,7 +417,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.layout.setPlatformLayout(context.services.platform.getLayoutInfo());
         this.layout.setLayoutChangeHandler(this.handleLayoutChange);
         await Promise.all([this.loadTextures(), this.loadAudio()]);
-        this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
         this.buildInterface();
         this.scheduleOnce(() => {
             if (this.lifecycle === 'disposed') return;
@@ -475,8 +527,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.context?.services.audio.stopMusic();
         this.frames.forEach((frame) => frame.destroy());
         this.frames.clear();
-        this.rewardedVideoIconFrame?.destroy();
-        this.rewardedVideoIconFrame = undefined;
         this.clips.clear();
         this.clearChildren(this.node);
         this.removeQaBridge();
@@ -2250,7 +2300,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         graphics.roundRect(-width / 2, -height / 2, width, height, 7);
         graphics.fill();
         graphics.stroke();
-        const iconSize = Math.min(36, height - 18);
+        const iconHeight = Math.min(40, height - 18);
+        const iconWidth = iconHeight * CHESS_REWARDED_VIDEO_ICON_ASPECT;
         this.createLabel(
             node,
             'Label',
@@ -2264,20 +2315,23 @@ export class ChessEndlessGame extends Component implements MiniGame {
         );
         const label = node.getChildByName('Label')?.getComponent(Label);
         if (showAdIcon && label) {
-            const icon = attachRewardedVideoIcon(
+            const icon = attachChessRewardedVideoIcon(
                 node,
-                this.rewardedVideoIconFrame,
+                this.frames.get('rewardedVideoIcon'),
                 0,
                 0,
-                iconSize,
+                iconWidth,
+                iconHeight,
             );
-            layoutRewardedVideoIconBeforeLabel(
+            layoutChessRewardedVideoIconBeforeLabel(
                 icon,
                 label,
                 text,
                 24,
-                iconSize,
+                iconWidth,
+                iconHeight,
                 width,
+                4,
             );
         }
         const opacity = node.addComponent(UIOpacity);
@@ -2515,8 +2569,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async loadTextures(): Promise<void> {
-        const bundle = assetManager.getBundle(BUNDLE);
-        if (!bundle) throw new Error(`Bundle ${BUNDLE} is unavailable.`);
+        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
+        if (!bundle) throw new Error(`Bundle ${RESOURCE_BUNDLE} is unavailable.`);
         await Promise.all(Object.keys(TEXTURE_PATHS).map((key) => new Promise<void>((resolve, reject) => {
             const path = TEXTURE_PATHS[key]!;
             bundle.load(path, Texture2D, (error, texture) => {
@@ -2526,6 +2580,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 }
                 const frame = new SpriteFrame();
                 frame.texture = texture;
+                if (key === 'rewardedVideoIcon') {
+                    frame.packable = false;
+                    frame.rect = new Rect(0, 0, texture.width, texture.height);
+                    frame.originalSize = new Size(texture.width, texture.height);
+                }
                 this.frames.set(key, frame);
                 resolve();
             });
@@ -2533,8 +2592,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async loadAudio(): Promise<void> {
-        const bundle = assetManager.getBundle(BUNDLE);
-        if (!bundle) throw new Error(`Bundle ${BUNDLE} is unavailable.`);
+        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
+        if (!bundle) throw new Error(`Bundle ${RESOURCE_BUNDLE} is unavailable.`);
         await Promise.all(Object.keys(AUDIO_PATHS).map((key) => new Promise<void>((resolve, reject) => {
             const path = AUDIO_PATHS[key]!;
             bundle.load(path, AudioClip, (error, clip) => {

@@ -338,6 +338,12 @@ export class App extends Component {
                 adUnitId: wechatAds.doodleJumpReviveRewarded.adUnitId,
                 logName: 'Doodle Jump revive',
             }),
+            Object.freeze({
+                gameId: 'game2048',
+                placement: AD_PLACEMENTS.game2048ClearSmallTiles,
+                adUnitId: wechatAds.game2048ClearSmallTilesRewarded.adUnitId,
+                logName: '2048 clear small tiles',
+            }),
         ]);
         const gameAdEnablement: Record<string, boolean> = {};
         Object.keys(config.ads.games).forEach((gameId) => {

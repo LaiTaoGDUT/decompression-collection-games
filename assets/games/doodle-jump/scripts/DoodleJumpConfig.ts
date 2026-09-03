@@ -1,4 +1,5 @@
 export const DOODLE_JUMP_BUNDLE = 'game-doodle-jump';
+export const DOODLE_JUMP_RESOURCE_BUNDLE = 'game-doodle-jump-assets';
 export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
 
 export type DoodleJumpPlatformType =

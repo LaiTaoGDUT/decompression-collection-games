@@ -40,11 +40,6 @@ import type { FeedbackService } from '../../../services/feedback/FeedbackService
 import type { Platform } from '../../../platform/Platform';
 import type { StorageService } from '../../../services/storage/StorageService';
 import {
-    attachRewardedVideoIcon,
-    layoutRewardedVideoIconBeforeLabel,
-    loadRewardedVideoIcon,
-} from '../../../shared/ui/RewardedVideoIcon';
-import {
     DEFAULT_DESKTOP_CLEANUP_CONFIG,
     parseDesktopCleanupGameplayConfig,
     type DesktopCleanupGameplayConfig,
@@ -83,6 +78,7 @@ import {
 const { ccclass } = _decorator;
 
 const BUNDLE = 'game-catch';
+const RESOURCE_BUNDLE = 'game-catch-assets';
 const BACKGROUND_PATH = 'visual/backgrounds/desktop-cleanup-backdrop-v2/texture';
 const PLAYMAT_PATH = 'visual/backgrounds/desktop-cleanup-playmat-v2/texture';
 const PICKUP_ANIMATION_DURATION_SECONDS = 0.2;
@@ -117,6 +113,9 @@ const THEME_TEXTURE_PATHS = Object.freeze({
     popupButtonPaper: 'visual/ui/desktop-cleanup-popup-button-paper-v1/texture',
     smoke: 'visual/vfx/desktop-cleanup-match-smoke-v1/texture',
 } as const);
+const DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_PATH =
+    'visual/ui/desktop-cleanup-rewarded-video-icon-v1/texture';
+const DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_ASPECT = 120 / 85;
 type ThemeFrameKey = keyof typeof THEME_TEXTURE_PATHS;
 const THEME_FRAME_KEYS: readonly ThemeFrameKey[] = Object.freeze([
     'playmat',
@@ -157,6 +156,61 @@ type ItemHitPolygon = readonly ItemHitPolygonPoint[];
 
 interface ItemHitPolygonShape {
     readonly outer: ItemHitPolygon;
+}
+
+function attachDesktopCleanupAdIcon(
+    parent: Node,
+    frame: SpriteFrame | undefined,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+): Node | undefined {
+    if (!frame) return undefined;
+    const node = new Node('DesktopCleanupRewardedVideoIcon');
+    node.layer = parent.layer;
+    node.setParent(parent);
+    node.setPosition(x, y);
+    node.addComponent(UITransform).setContentSize(width, height);
+    const sprite = node.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    sprite.spriteFrame = frame;
+    return node;
+}
+
+function measureDesktopCleanupTextWidth(text: string, fontSize: number): number {
+    let width = 0;
+    for (const character of text) {
+        if (character === ' ') width += fontSize * 0.35;
+        else if (/^[\u0000-\u00ff]$/.test(character)) width += fontSize * 0.56;
+        else width += fontSize;
+    }
+    return width;
+}
+
+function layoutDesktopCleanupAdIconBeforeLabel(
+    icon: Node | undefined,
+    label: Label,
+    text: string,
+    fontSize: number,
+    iconWidth: number,
+    iconHeight: number,
+    buttonWidth: number,
+    gap = 4,
+): void {
+    if (!icon) return;
+    const labelTransform = label.node.getComponent(UITransform);
+    if (!labelTransform) return;
+    const textWidth = Math.min(
+        Math.max(fontSize, measureDesktopCleanupTextWidth(text, fontSize)),
+        Math.max(fontSize, buttonWidth - iconWidth - gap - 28),
+    );
+    const totalWidth = iconWidth + gap + textWidth;
+    const centerY = label.node.position.y;
+    labelTransform.setContentSize(textWidth, labelTransform.contentSize.height);
+    label.node.setPosition((iconWidth + gap) / 2, centerY);
+    icon.setPosition(-totalWidth / 2 + iconWidth / 2, centerY);
+    icon.getComponent(UITransform)?.setContentSize(iconWidth, iconHeight);
 }
 
 function defineHitPolygon(points: readonly ItemHitPolygonVertex[]): ItemHitPolygon {
@@ -578,9 +632,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         // A missing theme must fail through the runtime's recoverable load
         // error path instead of exposing an obsolete procedural interface.
         await this.loadThemeAssets();
-        if (this.isAdsEnabled()) {
-            this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
-        }
         this.buildInterface();
         this.registerGlobalInput();
         this.applyThemeAssets();
@@ -786,7 +837,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private async loadThemeAssets(): Promise<void> {
-        const [background, themeAtlases, themeTextures] = await Promise.all([
+        const [background, themeAtlases, themeTextures, rewardedVideoIconTexture] = await Promise.all([
             this.loadTexture(BACKGROUND_PATH),
             Promise.all(DESKTOP_CLEANUP_THEME_IDS.map(async (themeId) => (
                 [themeId, await this.loadTexture(getDesktopCleanupTheme(themeId).itemAtlasPath)] as const
@@ -794,10 +845,12 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             Promise.all(THEME_FRAME_KEYS.map(async (key) => (
                 [key, await this.loadTexture(THEME_TEXTURE_PATHS[key])] as const
             ))),
+            this.loadTexture(DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_PATH),
         ]);
         if (!background
             || themeAtlases.some(([, texture]) => !texture)
-            || themeTextures.some(([, texture]) => !texture)) {
+            || themeTextures.some(([, texture]) => !texture)
+            || !rewardedVideoIconTexture) {
             throw new Error('Desktop cleanup formal theme assets are incomplete.');
         }
         if (this.state === 'disposed' || !this.node.isValid) return;
@@ -818,6 +871,20 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             const frame = this.createThemeFrame(key, texture);
             this.themeFrames.set(key, frame);
         });
+        this.rewardedVideoIconFrame?.destroy();
+        this.rewardedVideoIconFrame = new SpriteFrame();
+        this.rewardedVideoIconFrame.texture = rewardedVideoIconTexture;
+        this.rewardedVideoIconFrame.rect = new Rect(
+            0,
+            0,
+            rewardedVideoIconTexture.width,
+            rewardedVideoIconTexture.height,
+        );
+        this.rewardedVideoIconFrame.originalSize = new Size(
+            rewardedVideoIconTexture.width,
+            rewardedVideoIconTexture.height,
+        );
+        this.rewardedVideoIconFrame.packable = false;
     }
 
     private setPresentationVisible(visible: boolean): void {
@@ -829,7 +896,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private loadTexture(path: string): Promise<Texture2D | undefined> {
-        const bundle = assetManager.getBundle(BUNDLE);
+        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
         if (!bundle) return Promise.resolve(undefined);
         return new Promise((resolve) => {
             bundle.load(path, Texture2D, (error, texture) => {
@@ -2229,12 +2296,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const frame = this.rewardedVideoIconFrame;
         const scale = this.layout?.scale ?? 1;
         if (!frame) return undefined;
-        const icon = attachRewardedVideoIcon(
+        const iconHeight = 30 * scale;
+        const icon = attachDesktopCleanupAdIcon(
             card,
             frame,
             48 * scale,
             -48 * scale,
-            30 * scale,
+            iconHeight * DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_ASPECT,
+            iconHeight,
         );
         if (!icon) return undefined;
         icon.name = 'AdCountIcon';
@@ -3755,7 +3824,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         button.zoomScale = 0.96;
         button.duration = 0.08;
         node.on(Button.EventType.CLICK, handler);
-        const iconSize = Math.min(42, height - 22);
+        const iconHeight = Math.min(34, height - 22);
+        const iconWidth = iconHeight * DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_ASPECT;
         const labelFontSize = Math.min(30, height * 0.34);
         const label = this.createLabel(
             node,
@@ -3773,20 +3843,23 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         label.enableWrapText = false;
         label.overflow = Label.Overflow.SHRINK;
         if (showAdIcon) {
-            const icon = attachRewardedVideoIcon(
+            const icon = attachDesktopCleanupAdIcon(
                 node,
                 this.rewardedVideoIconFrame,
                 0,
                 0,
-                iconSize,
+                iconWidth,
+                iconHeight,
             );
-            layoutRewardedVideoIconBeforeLabel(
+            layoutDesktopCleanupAdIconBeforeLabel(
                 icon,
                 label,
                 text,
                 labelFontSize,
-                iconSize,
+                iconWidth,
+                iconHeight,
                 width,
+                4,
             );
         }
         label.isBold = true;

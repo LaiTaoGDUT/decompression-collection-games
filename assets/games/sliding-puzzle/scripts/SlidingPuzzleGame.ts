@@ -52,6 +52,7 @@ import {
 } from './SlidingPuzzleTypes';
 
 const { ccclass } = _decorator;
+const SLIDING_PUZZLE_RESOURCE_BUNDLE = 'game-sliding-puzzle-assets';
 
 type SlidingPuzzleState =
     | 'idle'
@@ -951,7 +952,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const path = this.selectedConfig.presetAssetPath;
-        const bundle = assetManager.getBundle('game-sliding-puzzle');
+        const bundle = assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
         if (!path || !bundle) {
             return false;
         }
@@ -996,7 +997,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private async loadVisualAssets(): Promise<void> {
-        const bundle = assetManager.getBundle('game-sliding-puzzle');
+        const bundle = assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
         if (!bundle || this.state === 'disposed') {
             return;
         }

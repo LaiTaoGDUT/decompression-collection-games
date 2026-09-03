@@ -1,7 +1,6 @@
 import {
     _decorator,
     assetManager,
-    BlockInputEvents,
     BoxCollider2D,
     Button,
     Color,
@@ -50,11 +49,6 @@ import type {
     StorageService,
 } from '../../../services/storage/StorageService';
 import {
-    attachRewardedVideoIcon,
-    layoutRewardedVideoIconBeforeLabel,
-    loadRewardedVideoIcon,
-} from '../../../shared/ui/RewardedVideoIcon';
-import {
     CAT_TOKEN_VISIBLE_DIAMETER_RATIO,
     FRUIT_LEVELS,
     configureFruitCatalog,
@@ -84,6 +78,11 @@ import {
 } from './WatermelonGameplayConfig';
 import { WatermelonOverlayView } from './WatermelonOverlayView';
 import {
+    destroyWatermelonPopupFrames,
+    loadWatermelonPopupFrames,
+    type WatermelonPopupFrames,
+} from './WatermelonPopupAssets';
+import {
     WATERMELON_BOARD_HEIGHT,
     WATERMELON_BOARD_BOTTOM_PADDING,
     WATERMELON_BOARD_INNER_PADDING,
@@ -92,15 +91,12 @@ import {
     WATERMELON_BOARD_WALL_THICKNESS,
     WatermelonLayout,
 } from './WatermelonLayout';
-import {
-    calculateWatermelonOverlayMetrics,
-    readWatermelonViewport,
-} from './WatermelonResponsiveRules';
-import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
+import { catUiColor } from './WatermelonUiTheme';
 
 const { ccclass } = _decorator;
 type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
 
+const WATERMELON_RESOURCE_BUNDLE = 'game-watermelon-assets';
 const NEXT_CAT_PREVIEW_SIZE = 56;
 const CAT_DROP_TOP_GAP = 8;
 const ROUND_SAVE_INTERVAL_SECONDS = 1;
@@ -207,7 +203,6 @@ export class WatermelonGame extends Component implements MiniGame {
     private resultPersisted = false;
     private continueRule = new SingleContinueRule();
     private frozenResult?: WatermelonProgressSnapshot;
-    private continueOverlay?: Node;
     private continueOffered = false;
     private continueCompleted = false;
     private terminalActionPending = false;
@@ -220,7 +215,7 @@ export class WatermelonGame extends Component implements MiniGame {
     private roundSaveElapsed = 0;
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
-    private rewardedVideoIconFrame?: SpriteFrame;
+    private popupFrames?: WatermelonPopupFrames;
 
     /** 固定种子回归入口；生产默认始终使用平台随机源。 */
     setRandomSourceForTesting(source: () => number): void {
@@ -248,28 +243,35 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context = context;
         const layout = this.node.getComponent(WatermelonLayout);
         layout?.setPlatformLayout(context.services.platform.getLayoutInfo());
+        await layout?.prepareArtwork();
         this.fruitContainer = container;
         this.dropPreview = preview;
         layout?.setLayoutChangeHandler(this.handleLayoutChange);
-        this.overlayView = new WatermelonOverlayView(this.node, context.services.feedback);
         this.gameplay = await this.loadGameplayConfig();
         configureFruitCatalog(this.gameplay);
         this.overflowGuard = new OverflowGuard(this.gameplay.dangerOverflowSeconds);
         try {
-            [this.prefabs, this.spriteFrames, this.bubbleFrame] = await Promise.all([
+            [this.prefabs, this.spriteFrames, this.bubbleFrame, this.popupFrames] = await Promise.all([
                 this.loadFruitPrefabs(),
                 this.loadFruitSpriteFrames(),
                 this.loadBubbleFrame(),
+                loadWatermelonPopupFrames(),
             ]);
-            this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
+            this.overlayView = new WatermelonOverlayView(
+                this.node,
+                context.services.feedback,
+                this.popupFrames,
+            );
         } catch (error) {
             console.error('[WatermelonGame] Required gameplay assets failed to load.', error);
             this.destroyFruitSpriteFrames();
             this.destroyBubbleFrame();
+            destroyWatermelonPopupFrames(this.popupFrames);
+            this.popupFrames = undefined;
             throw error;
         }
         this.audioBank = new BundleAudioBank({
-            bundle: 'game-watermelon',
+            bundle: WATERMELON_RESOURCE_BUNDLE,
             music: 'visual/audio/w1-paper-loop-v1',
             cues: {
                 uiButton: 'visual/audio/w1-game-button-v1',
@@ -450,6 +452,8 @@ export class WatermelonGame extends Component implements MiniGame {
         this.destroyContinueOverlay();
         this.overlayView?.dispose();
         this.overlayView = undefined;
+        destroyWatermelonPopupFrames(this.popupFrames);
+        this.popupFrames = undefined;
         this.completedResultModel = undefined;
         this.audioBank?.dispose();
         this.audioBank = undefined;
@@ -458,8 +462,6 @@ export class WatermelonGame extends Component implements MiniGame {
         this.prefabs = [];
         await this.releaseFruitSpriteFramesAfterDraw();
         this.destroyBubbleFrame();
-        this.rewardedVideoIconFrame?.destroy();
-        this.rewardedVideoIconFrame = undefined;
         this.context = undefined;
         this.saveData = undefined;
         this.fruitContainer = undefined;
@@ -489,10 +491,10 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     private loadFruitSpriteFrames(): Promise<SpriteFrame[][]> {
-        const bundle = assetManager.getBundle('game-watermelon');
+        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
 
         if (!bundle) {
-            return Promise.reject(new Error('game-watermelon bundle is unavailable.'));
+            return Promise.reject(new Error(`${WATERMELON_RESOURCE_BUNDLE} bundle is unavailable.`));
         }
 
         return Promise.all(FRUIT_LEVELS.map((config) => Promise.all(
@@ -513,7 +515,7 @@ export class WatermelonGame extends Component implements MiniGame {
     }
 
     private loadBubbleFrame(): Promise<SpriteFrame | undefined> {
-        const bundle = assetManager.getBundle('game-watermelon');
+        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
 
         if (!bundle) {
             return Promise.resolve(undefined);
@@ -839,18 +841,30 @@ export class WatermelonGame extends Component implements MiniGame {
             this.gameplay.initialSpawnWeights,
         );
         this.updateNextPreview();
-        this.scheduleOnce(() => {
-            if (this.isGenerationCurrent(generation)
-                && this.state === 'playing'
-                && !this.gameEnding) {
-                this.dropGate.enable();
-                this.positionDropPreview();
-                if (this.dropPreview) {
-                    this.dropPreview.active = true;
-                }
-                this.updateAimGuide();
-            }
-        }, this.gameplay.dropCooldownSeconds);
+        this.scheduleOnce(
+            () => this.finishDropCooldown(generation),
+            this.gameplay.dropCooldownSeconds,
+        );
+    }
+
+    private finishDropCooldown(generation: number): void {
+        if (!this.isGenerationCurrent(generation) || this.gameEnding) {
+            return;
+        }
+
+        // 暂停期间调度器仍可能触发回调；保留冷却完成动作，等继续游戏后
+        // 再恢复投放闸门和顶部可下落猫咪，避免预览永久停留在隐藏状态。
+        if (this.state !== 'playing') {
+            this.scheduleOnce(() => this.finishDropCooldown(generation), 0.05);
+            return;
+        }
+
+        this.dropGate.enable();
+        this.positionDropPreview();
+        if (this.dropPreview) {
+            this.dropPreview.active = true;
+        }
+        this.updateAimGuide();
     }
 
     private readonly handlePause = (): void => {
@@ -1231,9 +1245,6 @@ export class WatermelonGame extends Component implements MiniGame {
         }
         if (!this.continueRule.beginRequest()) return;
 
-        this.setContinueOverlayBusy(true, '正在播放视频…');
-        this.context?.services.feedback.play('uiButton');
-
         try {
             const result = ads
                 ? await ads.showRewarded({
@@ -1269,8 +1280,6 @@ export class WatermelonGame extends Component implements MiniGame {
         if (this.terminalActionPending) return;
         this.terminalActionPending = true;
         this.continueRule.decline();
-        this.setContinueOverlayBusy(true, '正在安抚猫咪…');
-        this.context?.services.feedback.play('uiButton');
         const result = this.completeFrozenRound('failure_restart');
         this.context?.requestRestart(result);
     }
@@ -1279,8 +1288,6 @@ export class WatermelonGame extends Component implements MiniGame {
         if (this.terminalActionPending) return;
         this.terminalActionPending = true;
         this.continueRule.decline();
-        this.setContinueOverlayBusy(true, '正在返回大厅…');
-        this.context?.services.feedback.play('uiButton');
         const result = this.completeFrozenRound('failure_lobby');
         this.context?.requestLobby(result);
     }
@@ -1340,208 +1347,16 @@ export class WatermelonGame extends Component implements MiniGame {
     private showContinueOverlay(): void {
         this.destroyContinueOverlay();
         this.continueOffered = true;
-        const viewport = readWatermelonViewport(this.node);
-        const metrics = calculateWatermelonOverlayMetrics(
-            viewport.width,
-            viewport.height,
-            viewport.safeTop,
-            viewport.safeBottom,
-            650,
-            viewport.safeLeft,
-            viewport.safeRight,
-        );
-        const overlay = new Node('ContinueOverlay');
-        overlay.layer = this.node.layer;
-        overlay.setParent(this.node);
-        overlay.setSiblingIndex(this.node.children.length - 1);
-        overlay.addComponent(BlockInputEvents);
-        overlay.addComponent(UITransform).setContentSize(metrics.width, metrics.height);
-
-        const backdrop = overlay.addComponent(Graphics);
-        backdrop.fillColor = catUiColor('ink', 188);
-        backdrop.rect(
-            -metrics.width / 2,
-            -metrics.height / 2,
-            metrics.width,
-            metrics.height,
-        );
-        backdrop.fill();
-
-        const panel = new Node('Panel');
-        panel.layer = overlay.layer;
-        panel.setParent(overlay);
-        panel.setPosition(metrics.contentX, metrics.panelY);
-        panel.addComponent(UITransform).setContentSize(metrics.panelWidth, metrics.panelHeight);
-        const panelGraphics = panel.addComponent(Graphics);
-        panelGraphics.fillColor = catUiColor('ink', 38);
-        panelGraphics.roundRect(
-            -metrics.panelWidth / 2 + 14,
-            -metrics.panelHeight / 2 - 12,
-            metrics.panelWidth - 10,
-            metrics.panelHeight - 10,
-            CAT_UI_SHAPE.panelRadius,
-        );
-        panelGraphics.fill();
-        panelGraphics.fillColor = catUiColor('surface');
-        panelGraphics.strokeColor = catUiColor('lavender');
-        panelGraphics.lineWidth = 7;
-        panelGraphics.roundRect(
-            -metrics.panelWidth / 2,
-            -metrics.panelHeight / 2,
-            metrics.panelWidth,
-            metrics.panelHeight,
-            CAT_UI_SHAPE.panelRadius,
-        );
-        panelGraphics.fill();
-        panelGraphics.stroke();
-        panelGraphics.fillColor = catUiColor('blush');
-        panelGraphics.roundRect(-112, metrics.panelHeight / 2 - 72, 224, 40, 20);
-        panelGraphics.fill();
-        panelGraphics.fillColor = catUiColor('peach', 190);
-        panelGraphics.circle(0, metrics.panelHeight / 2 - 52, 9);
-        panelGraphics.circle(-14, metrics.panelHeight / 2 - 38, 5);
-        panelGraphics.circle(0, metrics.panelHeight / 2 - 34, 5);
-        panelGraphics.circle(14, metrics.panelHeight / 2 - 38, 5);
-        panelGraphics.fill();
-
-        this.createOverlayLabel(panel, 'Title', '再坚持一下？', 0, 242, 38);
-        this.createOverlayLabel(panel, 'Message', '看完视频，清除越线猫咪并继续本局', 0, 184, 24);
-        this.createOverlayLabel(panel, 'Status', '每局仅有一次续玩机会', 0, 139, 21);
-        this.createOverlayButton(panel, 'ContinueButton', '看视频续玩', 0, 57, () => {
-            void this.requestContinue();
+        this.overlayView?.showContinue({
+            continueGame: () => this.requestContinue(),
+            settle: () => this.declineContinue(),
+            restart: () => this.restartFromFailure(),
+            returnToLobby: () => this.returnToLobbyFromFailure(),
         });
-        this.createOverlayButton(panel, 'SettleButton', '查看本局结算', 0, -32, () => {
-            this.declineContinue();
-        }, false);
-        this.createOverlayButton(panel, 'RestartButton', '再来一局', 0, -121, () => {
-            this.restartFromFailure();
-        });
-        this.createOverlayButton(panel, 'LobbyButton', '回到大厅', 0, -210, () => {
-            this.returnToLobbyFromFailure();
-        }, false);
-        panel.setScale(metrics.panelScale, metrics.panelScale, 1);
-        this.continueOverlay = overlay;
-    }
-
-    private createOverlayLabel(
-        parent: Node,
-        name: string,
-        text: string,
-        x: number,
-        y: number,
-        fontSize: number,
-    ): Label {
-        const node = new Node(name);
-        node.layer = parent.layer;
-        node.setParent(parent);
-        node.setPosition(x, y);
-        node.addComponent(UITransform).setContentSize(520, 52);
-        const label = node.addComponent(Label);
-        label.string = text;
-        label.fontSize = fontSize;
-        label.lineHeight = fontSize + 10;
-        label.color = catUiColor('ink');
-        label.horizontalAlign = 1;
-        label.verticalAlign = 1;
-        label.overflow = Label.Overflow.SHRINK;
-        return label;
-    }
-
-    private createOverlayButton(
-        parent: Node,
-        name: string,
-        text: string,
-        x: number,
-        y: number,
-        handler: () => void,
-        primary = true,
-    ): void {
-        const node = new Node(name);
-        node.layer = parent.layer;
-        node.setParent(parent);
-        node.setPosition(x, y);
-        const panelWidth = parent.getComponent(UITransform)?.contentSize.width ?? 590;
-        const buttonWidth = Math.min(400, panelWidth - 130);
-        const buttonHeight = 66;
-        node.addComponent(UITransform).setContentSize(buttonWidth, buttonHeight);
-        node.addComponent(UIOpacity);
-        const graphics = node.addComponent(Graphics);
-        graphics.fillColor = primary
-            ? catUiColor('peach')
-            : catUiColor('cream');
-        const labelColor = primary || name === 'RestartButton'
-            ? catUiColor('surface')
-            : catUiColor('ink');
-        // Primary actions use a dark ink edge for contrast; secondary actions
-        // keep the warm accent border used by this popup.
-        graphics.strokeColor = name === 'ContinueButton'
-            || name === 'RestartButton'
-            ? catUiColor('ink')
-            : primary ? catUiColor('surface') : catUiColor('peachDark');
-        graphics.lineWidth = 5;
-        graphics.roundRect(
-            -buttonWidth / 2,
-            -buttonHeight / 2,
-            buttonWidth,
-            buttonHeight,
-            CAT_UI_SHAPE.buttonRadius,
-        );
-        graphics.fill();
-        graphics.stroke();
-        const button = node.addComponent(Button);
-        button.transition = Button.Transition.SCALE;
-        button.zoomScale = 0.95;
-        button.duration = 0.08;
-        node.on(Button.EventType.CLICK, handler, this);
-
-        const label = this.createOverlayLabel(
-            node,
-            'Text',
-            text,
-            0,
-            0,
-            26,
-        );
-        if (name === 'ContinueButton') {
-            const icon = attachRewardedVideoIcon(
-                node,
-                this.rewardedVideoIconFrame,
-                0,
-                0,
-                34,
-            );
-            layoutRewardedVideoIconBeforeLabel(
-                icon,
-                label,
-                text,
-                26,
-                34,
-                buttonWidth,
-            );
-        }
-        label.color = labelColor;
-    }
-
-    private setContinueOverlayBusy(busy: boolean, status: string): void {
-        const panel = this.continueOverlay?.getChildByName('Panel');
-        const statusLabel = panel?.getChildByName('Status')?.getComponent(Label);
-        if (statusLabel) {
-            statusLabel.string = status;
-        }
-        for (const name of ['ContinueButton', 'SettleButton', 'RestartButton', 'LobbyButton']) {
-            const node = panel?.getChildByName(name);
-            const button = node?.getComponent(Button);
-            if (button) {
-                button.interactable = !busy;
-            }
-            const opacity = node?.getComponent(UIOpacity);
-            if (opacity) opacity.opacity = busy ? 155 : 255;
-        }
     }
 
     private destroyContinueOverlay(): void {
-        this.continueOverlay?.destroy();
-        this.continueOverlay = undefined;
+        this.overlayView?.hideContinue();
     }
 
     private updateDangerFeedback(failed = false): void {

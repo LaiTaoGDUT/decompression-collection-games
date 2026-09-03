@@ -51,8 +51,8 @@
       "chanceCapHeightMeters": 950,
       "minimumAmplitude": 34,
       "maximumAmplitude": 54,
-      "minimumPeriodSeconds": 2.1,
-      "maximumPeriodSeconds": 3.2
+      "minimumPeriodSeconds": 1.8,
+      "maximumPeriodSeconds": 2.8
     },
     "spiked": {
       "unlockHeightMeters": 950,
@@ -67,8 +67,8 @@
   },
   "enemies": {
     "enabled": true,
-    "spawnChanceAtUnlock": 0.08,
-    "spawnChancePerPlatform": 0.18,
+    "spawnChanceAtUnlock": 0.1,
+    "spawnChancePerPlatform": 0.21,
     "difficultyCapHeightMeters": 900,
     "maximumActive": 3,
     "twoActiveHeightMeters": 320,
@@ -119,8 +119,8 @@
   "hazards": {
     "enabled": true,
     "typeOverride": "auto",
-    "spawnChanceAtUnlock": 0.04,
-    "spawnChancePerPlatform": 0.12,
+    "spawnChanceAtUnlock": 0.055,
+    "spawnChancePerPlatform": 0.15,
     "difficultyCapHeightMeters": 1000,
     "maximumActive": 2,
     "twoActiveHeightMeters": 600,
@@ -148,9 +148,9 @@
     "blackHole": {
       "unlockHeightMeters": 250,
       "maximumActive": 2,
-      "outerRadius": 215,
+      "outerRadius": 250,
       "coreRadius": 42,
-      "maximumPullAcceleration": 3600
+      "maximumPullAcceleration": 4200
     },
     "bearTrap": {
       "unlockHeightMeters": 180,
@@ -210,7 +210,7 @@
     "mainRouteStepCount": 4,
     "maxInsertedPlatforms": 3,
     "recoveryLayerInterval": 10,
-    "maxHorizontalGap": 185,
+    "maxHorizontalGap": 200,
     "preloadAboveScreen": 620,
     "normalFallbackWidth": 185,
     "maxCandidateAttempts": 24,

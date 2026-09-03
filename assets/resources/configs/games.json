@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "games": [
     {
       "id": "watermelon",
@@ -7,6 +7,7 @@
       "name": "合成大胖橘",
       "description": "投放并合成圆滚滚猫咪，最终养成大胖橘。",
       "bundle": "game-watermelon",
+      "resourceBundle": "game-watermelon-assets",
       "scene": "scenes/Watermelon",
       "entryComponent": "WatermelonGame",
       "icon": "visual/icons/watermelon/cat-merge-icon-v1/texture",
@@ -30,6 +31,7 @@
       "name": "棋逢对手",
       "description": "只控一枚车，在不断增援的中国象棋战阵中步步突围。",
       "bundle": "game-chess-endless",
+      "resourceBundle": "game-chess-endless-assets",
       "scene": "scenes/ChessEndless",
       "entryComponent": "ChessEndlessGame",
       "icon": "visual/icons/chess-endless/chess-endless-icon-v1/texture",
@@ -53,6 +55,7 @@
       "name": "霓虹 2048",
       "description": "滑动数字点亮霓虹矩阵，合成 2048 后继续冲击更高纪录。",
       "bundle": "game-2048",
+      "resourceBundle": "game-2048-assets",
       "scene": "scenes/Game2048",
       "entryComponent": "Game2048Game",
       "icon": "images/icon",
@@ -76,6 +79,7 @@
       "name": "木框拼图",
       "description": "滑动方块，让图片重新完整。",
       "bundle": "game-sliding-puzzle",
+      "resourceBundle": "game-sliding-puzzle-assets",
       "scene": "scenes/SlidingPuzzle",
       "entryComponent": "SlidingPuzzleGame",
       "icon": "visual/icons/sliding-puzzle/sliding-puzzle-icon-v1/texture",
@@ -99,6 +103,7 @@
       "name": "桌面大清理",
       "description": "在软陶工作台中翻找物件，三件归位，限时找回幸运徽章。",
       "bundle": "game-catch",
+      "resourceBundle": "game-catch-assets",
       "scene": "scenes/DesktopCleanup",
       "entryComponent": "DesktopCleanupGame",
       "icon": "visual/icons/catch/desktop-cleanup-icon-v1/texture",
@@ -120,9 +125,10 @@
     {
       "id": "doodle-jump",
       "version": "0.1.0",
-      "name": "涂鸦跃层",
+      "name": "纸片跳跃",
       "description": "倾斜手机在纸片平台间不断向上跳跃，并用纸飞机清理障碍。",
       "bundle": "game-doodle-jump",
+      "resourceBundle": "game-doodle-jump-assets",
       "scene": "scenes/DoodleJump",
       "entryComponent": "DoodleJumpGame",
       "icon": "visual/icons/doodle-jump/game-icon/texture",

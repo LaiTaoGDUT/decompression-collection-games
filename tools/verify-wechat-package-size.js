@@ -2,14 +2,16 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
+const projectRoot = path.resolve(__dirname, '..');
 const maxMainPackageBytes = 4 * 1024 * 1024;
-const buildRoot = path.resolve(__dirname, '..', 'build');
-const expectedSubpackages = [
-    'game-chess-endless',
-    'game-2048',
-    'game-watermelon',
-    'game-sliding-puzzle',
-];
+const maxUploadedPackageBytes = 30 * 1024 * 1024;
+const buildRoot = path.join(projectRoot, 'build');
+const manifest = JSON.parse(fs.readFileSync(
+    path.join(projectRoot, 'assets', 'resources', 'configs', 'games.json'),
+    'utf8',
+));
+const expectedSubpackages = ['lobby', ...manifest.games.map((game) => game.bundle)];
+const expectedRemoteBundles = manifest.games.map((game) => game.resourceBundle);
 
 const candidates = fs.existsSync(buildRoot)
     ? fs.readdirSync(buildRoot, { withFileTypes: true })
@@ -42,17 +44,25 @@ const gameJson = selected?.gameJson ?? JSON.parse(fs.readFileSync(gameJsonPath, 
 const actualSubpackages = new Set((gameJson.subpackages ?? []).map((entry) => entry.name));
 expectedSubpackages.forEach((name) => assert(
     actualSubpackages.has(name),
-    `WeChat output is stale: missing subpackage ${name}; rebuild with the current Cocos bundle configuration.`,
+    `WeChat output is stale: missing local subpackage ${name}; rebuild with the current Cocos bundle configuration.`,
 ));
+expectedRemoteBundles.forEach((name) => {
+    assert(
+        !actualSubpackages.has(name),
+        `${name} must be remote and must not appear in game.json subpackages.`,
+    );
+    assert(
+        fs.existsSync(path.join(root, 'remote', name)),
+        `WeChat output is stale: missing remote Bundle ${name}.`,
+    );
+});
 
-function directorySize(directory, excludedDirectoryName) {
+function directorySize(directory, excludedDirectoryNames = []) {
+    if (!fs.existsSync(directory)) return 0;
     let total = 0;
 
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-        if (entry.isDirectory() && entry.name === excludedDirectoryName) {
-            continue;
-        }
-
+        if (entry.isDirectory() && excludedDirectoryNames.includes(entry.name)) continue;
         const entryPath = path.join(directory, entry.name);
         total += entry.isDirectory()
             ? directorySize(entryPath)
@@ -62,16 +72,44 @@ function directorySize(directory, excludedDirectoryName) {
     return total;
 }
 
-const mainPackageBytes = directorySize(root, 'subpackages');
-const mainPackageKiB = mainPackageBytes / 1024;
-const headroomKiB = (maxMainPackageBytes - mainPackageBytes) / 1024;
+const mainPackageBytes = directorySize(root, ['subpackages', 'remote']);
+const subpackageBytes = directorySize(path.join(root, 'subpackages'));
+const uploadedPackageBytes = mainPackageBytes + subpackageBytes;
+const remoteBundleBytes = directorySize(path.join(root, 'remote'));
 
 assert(
     mainPackageBytes <= maxMainPackageBytes,
-    `WeChat main package is ${mainPackageKiB.toFixed(2)} KiB; maximum is 4096 KiB.`,
+    `WeChat main package is ${(mainPackageBytes / 1024).toFixed(2)} KiB; maximum is 4096 KiB.`,
+);
+assert(
+    uploadedPackageBytes <= maxUploadedPackageBytes,
+    `WeChat uploaded main + subpackages are ${(uploadedPackageBytes / 1024 / 1024).toFixed(2)} MiB; maximum is 30 MiB.`,
 );
 
+const settingsFiles = fs.readdirSync(path.join(root, 'src'))
+    .filter((name) => /^settings(?:\.[a-f0-9]+)?\.json$/.test(name));
+assert.strictEqual(settingsFiles.length, 1, 'WeChat output must contain exactly one settings JSON file.');
+const builtSettings = JSON.parse(fs.readFileSync(
+    path.join(root, 'src', settingsFiles[0]),
+    'utf8',
+));
+expectedRemoteBundles.forEach((name) => {
+    const version = builtSettings.assets?.bundleVers?.[name];
+    assert.match(
+        version ?? '',
+        /^[a-f0-9]+$/,
+        `${name} must have an MD5 version in built settings.`,
+    );
+    assert(
+        fs.existsSync(path.join(root, 'remote', name, `config.${version}.json`)),
+        `${name} must output a versioned remote config file.`,
+    );
+});
+
 console.log(
-    `wechat_main_package=passed, output=${path.basename(root)}, size=${mainPackageKiB.toFixed(2)}KiB, `
-    + `headroom=${headroomKiB.toFixed(2)}KiB`,
+    `wechat_package=passed, output=${path.basename(root)}, `
+    + `main=${(mainPackageBytes / 1024 / 1024).toFixed(2)}MiB, `
+    + `subpackages=${(subpackageBytes / 1024 / 1024).toFixed(2)}MiB, `
+    + `uploaded=${(uploadedPackageBytes / 1024 / 1024).toFixed(2)}MiB, `
+    + `remote=${(remoteBundleBytes / 1024 / 1024).toFixed(2)}MiB`,
 );

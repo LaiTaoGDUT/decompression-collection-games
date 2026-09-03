@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "0b59639f-8bf5-4702-888d-c36ed068ead3",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-watermelon-assets",
+    "isSubpackage": false,
+    "isRemoteBundle": {},
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy",
+    "isBundle": true
+  }
+}

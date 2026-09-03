@@ -1,4 +1,4 @@
-# 《涂鸦跃层》图片素材生成提示词
+# 《纸片跳跃》图片素材生成提示词
 
 > 版本：v1.4
 > 状态：大部分提示词仍待人工生成、清理和验收；5.1 与 5.2 的平台图片已通过内置 ImageGen 生成、清理并接入运行时。
@@ -511,7 +511,7 @@ tutorial_illustrations_sheet.png：三张无文字教程插图。
 
 ### Asset
 
-lobby_cover.png：大厅中的《涂鸦跃层》封面展示图。
+lobby_cover.png：大厅中的《纸片跳跃》封面展示图。
 
 ### Recommended Settings
 

@@ -476,20 +476,26 @@ Canvas
 | `core` | 框架与公共服务 | 主包 |
 | `lobby` | 大厅场景与资源 | 主包 |
 | `shared` | 高频公共 UI 和公共资源 | 主包或公共分包 |
-| `game-watermelon` | 合成大西瓜游戏全部内容 | 独立游戏分包 |
-| `game-2048` | 霓虹 2048 的场景、规则、主题 UI 与音频 | 独立游戏分包 |
-| `game-sliding-puzzle` | 滑块拼图的场景、规则、图片处理、主题 UI 与音频 | 独立游戏分包 |
-| `game-switch` | 开关游戏全部内容 | 独立游戏分包 |
-| `game-catch` | 《桌面大清理》的场景、规则、软陶桌面主题 UI 与后续独立音频 | 独立游戏分包 |
+| `game-<id>` | 单个游戏的脚本、场景、配置和 Prefab | 微信本地独立分包 |
+| `game-<id>-assets` | 单个游戏的图片、音频、字体、动画等非代码资源 | 微信远程 Asset Bundle |
 
 资源规则：
 
-- 单游戏资源只能放在该游戏 Bundle。
+- 每个游戏固定由一个本地代码 Bundle 和一个同名 `-assets` 远程资源 Bundle 组成；两者是并列 Bundle，禁止嵌套 Asset Bundle。
+- `GameManifest` 自 `schemaVersion: 2` 起必须同时声明 `bundle` 与 `resourceBundle`。前者指向本地代码分包，后者指向远程资源包；v1 清单不再被运行时接受，目录配置必须随应用版本原子升级。
+- 进入游戏时，`GameRuntime` 先加载 `resourceBundle`，并通过 `AssetService` 对其 `visual` 根目录执行完整 `loadDir`；全部资源成功后再加载代码 Bundle、启动场景、调用 `initialize()` 和 `begin()`。不允许把首局必需资源推迟到游戏过程中下载。
+- 远程资源 Bundle 的优先级必须高于代码 Bundle，使场景和 Prefab 中的静态资源依赖由已加载的远程 Bundle 提供；远程包不得包含 TypeScript、JavaScript、场景或游戏逻辑配置。
+- 退出、进入失败和重试前必须依次切离游戏场景，并由 `AssetService` 尽最大努力释放代码 Bundle 与资源 Bundle；其中一个释放失败不得跳过另一个。
+- 单游戏资源只能放在该游戏的代码 Bundle 或资源 Bundle，资源运行时路径保持以 `visual/` 开头。
 - 真正跨游戏复用的资源才允许放入 `shared`。
 - 游戏 Bundle 之间禁止互相引用。
 - 图集和音频按照使用范围拆分。
 - 所有动态加载和释放必须经过 `AssetService`。
 - 每次构建检查主包体积、分包体积和重复资源。
+
+构建与发布要求：微信目标开启远程 Bundle 和 MD5 缓存，并配置合法的 HTTPS CDN 根地址；上传微信的代码包只包含主包与本地游戏分包，构建产物的 `remote` 目录独立发布到 CDN。浏览器构建保持资源 Bundle 本地输出，以支持开发预览和自动化验证。
+
+兼容与回滚：本次拆分不修改用户存档结构。回滚应用代码时必须同时回滚 `games.json` 和 CDN 资源版本；若需要临时取消远程发布，可保留双 Bundle 目录与清单协议，仅把资源 Bundle 构建配置切回本地，禁止把资源复制回代码 Bundle 形成双份 UUID 或跨 Bundle 引用。发布失败时保留上一版带 MD5 的 CDN 文件，客户端继续按自身构建版本读取，不能覆盖或清理仍被线上版本引用的文件。
 
 ### 布局适配基线（强制）
 
@@ -580,9 +586,9 @@ ad_result
 
 任何单个小游戏异常都不得导致整个合集失去响应。
 
-## 17. 《涂鸦跃层》规划接入记录
+## 17. 《纸片跳跃》规划接入记录
 
-《涂鸦跃层》当前只完成规划，尚未进入正式 Bundle 实现。规划文件为 `docs/games/doodle-jump/DOODLE_JUMP_GAMEPLAY_SPEC.md`，版本 v2.5；目标 Bundle 为 `game-doodle-jump`，Manifest `gameId` 固定为 `doodle-jump`，场景和入口分别为 `scenes/DoodleJump` 与 `DoodleJumpGame`。大厅只依赖 Manifest 和大厅展示副本，不加载游戏内纸片素材。
+《纸片跳跃》当前只完成规划，尚未进入正式 Bundle 实现。规划文件为 `docs/games/doodle-jump/DOODLE_JUMP_GAMEPLAY_SPEC.md`，版本 v2.5；目标 Bundle 为 `game-doodle-jump`，Manifest `gameId` 固定为 `doodle-jump`，场景和入口分别为 `scenes/DoodleJump` 与 `DoodleJumpGame`。大厅只依赖 Manifest 和大厅展示副本，不加载游戏内纸片素材。
 
 危险物与道具继续由独立确定性随机流和各自系统生成，但危险物的全局候选门槛必须取 UFO、黑洞、捕兽夹三者的最早解锁高度，不能再由 UFO 解锁高度代替所有危险物门槛；这样 UFO 可以延后到第三个背景场景而捕兽夹仍能前置出现。道具、怪物和敌方危险物在生成时必须双向读取另外两类对象的占位碰撞盒，任何后生成对象都不得与已有对象重叠。该占位规则只属于 `game-doodle-jump` 本地玩法逻辑，不改变公共协议、存档结构、随机流数量或 Bundle 边界；回滚时可恢复旧生成规则，无需迁移用户数据。
 
@@ -590,7 +596,7 @@ ad_result
 
 游戏通过现有 `MiniGameContext.services` 使用 `platform`、`audio`、`feedback`、`storage`、`analytics`、`ads` 和 `deviceTier`。`InputService`、`SaveService`、`AppStateService` 不属于当前容器，`AssetService` 由运行层负责 Bundle 加载和释放，因此本游戏不在 Context 中虚构这些服务。暂停、前后台、广告和退出继续经过 `MiniGameContext` 与应用状态机。复活不使用持久库存，由 `ads.games.doodle-jump.enabled` 作为本游戏唯一复活功能开关：开关开启时，每局第一次失败可免费复活，第二次失败通过独立语义广告位 `doodle-jump-revive` 请求激励视频，第三次失败直接结算；开关关闭时所有失败均直接结算。第二次复活只有已配置真实广告且返回 `completed` 时才视为看完广告；中途关闭或失败不消耗第二次机会。没有配置广告位或路由时沿用 `AdService` 的 `completed` 降级语义，不触碰平台广告 API，直接复活成功。应用配置需要为 `doodle-jump` 提供独立复活开关和可选微信广告位，禁止借用其他游戏 placement。
 
-玩法状态在游戏内部显式包含 `Failing` 和 `Resurrecting`，失败过程中的临时快照只保存在内存。存档使用现有 `GameSaveData`：公共 `playCount/highScore/lastPlayedAt` 分别承载总局数、最高分和最后游玩时间；`custom.gameDataVersion = 3` 在 v2 的高度、击杀、射击统计、传感器设置、独立 `tutorialCompleted` 引导标记和起步助推兼容库存之上，新增可选 `activeRound`。活动局保存版本、保存时间、局前历史基线、本局射击数、成功复活次数和完整 `DoodleJumpSimulationSnapshot`，包括角色速度与位置、相机、平台、生成游标、随机流游标、敌人、危险物、道具及其持续状态。Playing 期间每 3 秒按“活动局固定历史基线＋本局绝对累计”重建并提交一次检查点，底层写入继续由公共存储的 3 秒 throttle 合并；暂停、微信 hide、退出和销毁时立即 `flush()` 最新活动局。重新进入时若 `activeRound` 结构有效，使用其 seed 构造模拟器并恢复局面、复活次数和射击计数，跳过起步助推选择后继续游戏；活动局损坏时只忽略该字段并开始新局，不清空根存档。明确重开、结束结算和丢弃进度会清除 `activeRound`；重复检查点不得重复累加 `playCount/totalShots/totalKills`。v2 → v3 只新增空的可选活动局，无需伪造旧局面；回滚到 v2 时旧代码应把 `activeRound` 当未知字段原样保留，正式回滚前可由 v3 清除活动局。`tutorialCompleted` 只在完整看完首次引导后写为 true，不以 `playCount` 推断。旧规划别名 `doodleJump` 只允许迁移到 `doodle-jump`，未知 `custom` 字段保留，历史规划中若已出现 `resurrectCount` 只能作为不再读取的未知兼容字段原样保留；迁移失败不得重置根存档。复活点只向上寻找：先检查失败相机当前可见玩法区内的安全平台，没有时保持物理与危险更新暂停，让复活流程驱动相机和生成器向上搜索；越过已预生成范围仍没有候选时，生成无危险附着的 Normal 安全平台作为确定性终止条件。该过程不回退高度、分数或生成游标，也不允许向下放置角色。
+玩法状态在游戏内部显式包含 `Failing` 和 `Resurrecting`，失败快照在进入 `Failing` 前立即写入活动局并同步 `flush()`，复活成功切回 `Playing` 后也立即写入复活后的安全快照并同步 `flush()`。存档使用现有 `GameSaveData`：公共 `playCount/highScore/lastPlayedAt` 分别承载总局数、最高分和最后游玩时间；`custom.gameDataVersion = 3` 在 v2 的高度、击杀、射击统计、传感器设置、独立 `tutorialCompleted` 引导标记和起步助推兼容库存之上，新增可选 `activeRound`。活动局保存版本、保存时间、局前历史基线、本局射击数、成功复活次数和完整 `DoodleJumpSimulationSnapshot`，包括角色速度与位置、相机、平台、生成游标、随机流游标、敌人、危险物、道具及其持续状态。Playing 期间每 3 秒按“活动局固定历史基线＋本局绝对累计”重建并提交一次检查点，底层写入继续由公共存储的 3 秒 throttle 合并；暂停、微信 hide、退出和销毁时立即 `flush()` 最新活动局，Failing/ResurrectPrompt/Resurrecting 阶段只 flush 已保存快照，禁止用不可恢复状态覆盖活动局。重新进入时若 `activeRound` 结构有效，使用其 seed 构造模拟器并恢复局面、复活次数和射击计数，跳过起步助推选择后继续游戏；活动局损坏时只忽略该字段并开始新局，不清空根存档。明确重开、结束结算和丢弃进度会清除 `activeRound`；重复检查点不得重复累加 `playCount/totalShots/totalKills`。v2 → v3 只新增空的可选活动局，无需伪造旧局面；回滚到 v2 时旧代码应把 `activeRound` 当未知字段原样保留，正式回滚前可由 v3 清除活动局。`tutorialCompleted` 只在完整看完首次引导后写为 true，不以 `playCount` 推断。旧规划别名 `doodleJump` 只允许迁移到 `doodle-jump`，未知 `custom` 字段保留，历史规划中若已出现 `resurrectCount` 只能作为不再读取的未知兼容字段原样保留；迁移失败不得重置根存档。复活点只向上寻找：先检查失败相机当前可见玩法区内的安全平台，没有时保持物理与危险更新暂停，让复活流程驱动相机和生成器向上搜索；越过已预生成范围仍没有候选时，生成无危险附着的 Normal 安全平台作为确定性终止条件。该过程不回退高度、分数或生成游标，也不允许向下放置角色。
 
 平台系统新增 `vertical-moving` 与 `spiked` 两个游戏内类型，不改变公共 `MiniGame`、Bundle 或服务边界。上下移动平台使用确定性 ID 派生振幅、周期和相位，其活动局快照为所有平台新增可选 `baseX/baseY`，把生成基准位置与当前渲染/碰撞位置分离；旧快照缺少这两个字段时按平台 ID、类型、已保存时间和当前 `x/y` 反推生成基准，因此无需提升根存档或活动局版本，且顺带修正旧 Moving 平台恢复后围绕瞬时位置二次漂移的问题。倒刺平台从第四段星空背景的 950 米门槛起参与插入平台抽样，顶部沿用单向落地面，只有下方倒刺接触属于致命碰撞；生成器、怪物、危险物和道具读取平台的当前动态位置，避免附着物与上下移动平台脱节。回滚时可移除两个新类型并继续兼容旧快照的可选基准字段；若旧客户端遇到包含新类型的未结束活动局，应按现有“活动局结构无效则忽略并开新局”的安全降级处理，不能清空根存档。
 

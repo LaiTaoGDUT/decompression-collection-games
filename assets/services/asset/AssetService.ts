@@ -23,6 +23,18 @@ export class AssetBundleLoadError extends Error {
     }
 }
 
+export class AssetBundleAssetLoadError extends Error {
+    constructor(
+        readonly bundleName: string,
+        readonly directory: string,
+        readonly cause: unknown,
+    ) {
+        const reason = cause instanceof Error ? cause.message : String(cause);
+        super(`Failed to load directory "${directory}" from Asset Bundle "${bundleName}": ${reason}`);
+        this.name = 'AssetBundleAssetLoadError';
+    }
+}
+
 export class AssetBundleReleaseError extends Error {
     constructor(
         readonly bundleName: string,
@@ -55,6 +67,11 @@ export class AssetService {
         string,
         Promise<AssetManager.Bundle>
     >();
+    private readonly pendingPreparations = new Map<
+        string,
+        Promise<AssetManager.Bundle>
+    >();
+    private readonly preparedDirectories = new Set<string>();
 
     constructor(
         private readonly provider: AssetBundleProvider = assetManager,
@@ -92,13 +109,76 @@ export class AssetService {
         return load;
     }
 
+    /**
+     * 加载 Bundle 配置并完整加载指定目录。游戏远程资源使用本方法，只有
+     * loadDir 成功后 GameRuntime 才能继续启动场景和 initialize()。
+     */
+    prepareBundle(
+        name: string,
+        directory = 'visual',
+        onProgress?: (finished: number, total: number) => void,
+    ): Promise<AssetManager.Bundle> {
+        const bundleName = normalizeBundleName(name);
+        const normalizedDirectory = directory.trim().replace(/^\/+|\/+$/g, '');
+
+        if (!normalizedDirectory) {
+            return Promise.reject(new Error('Asset directory must not be empty.'));
+        }
+
+        const preparationKey = this.createPreparationKey(
+            bundleName,
+            normalizedDirectory,
+        );
+        if (this.preparedDirectories.has(preparationKey)) {
+            const loadedBundle = this.provider.getBundle(bundleName);
+            if (loadedBundle) {
+                onProgress?.(1, 1);
+                return Promise.resolve(loadedBundle);
+            }
+            this.preparedDirectories.delete(preparationKey);
+        }
+
+        const pendingPreparation = this.pendingPreparations.get(preparationKey);
+        if (pendingPreparation) {
+            return pendingPreparation;
+        }
+
+        const preparation = this.createPreparation(
+            bundleName,
+            normalizedDirectory,
+            onProgress,
+        );
+        this.pendingPreparations.set(preparationKey, preparation);
+
+        const clearPendingPreparation = (): void => {
+            if (this.pendingPreparations.get(preparationKey) === preparation) {
+                this.pendingPreparations.delete(preparationKey);
+            }
+        };
+        void preparation.then(clearPendingPreparation, clearPendingPreparation);
+
+        return preparation;
+    }
+
     async releaseBundle(name: string): Promise<boolean> {
         const bundleName = normalizeBundleName(name);
         const pendingLoad = this.pendingLoads.get(bundleName);
 
         if (pendingLoad) {
-            await pendingLoad;
+            await pendingLoad.catch(() => undefined);
         }
+
+        const pendingPreparations: Promise<AssetManager.Bundle>[] = [];
+        this.pendingPreparations.forEach((preparation, key) => {
+            if (key.startsWith(`${bundleName}\u0000`)) {
+                pendingPreparations.push(preparation);
+            }
+        });
+        await Promise.all(pendingPreparations.map(async (preparation) => {
+            await preparation.catch(() => undefined);
+        }));
+
+        this.clearPreparedDirectories(bundleName);
 
         const bundle = this.provider.getBundle(bundleName);
 
@@ -156,6 +236,62 @@ export class AssetService {
             }
 
             throw new AssetBundleLoadError(bundleName, error);
+        });
+    }
+
+    private async createPreparation(
+        bundleName: string,
+        directory: string,
+        onProgress?: (finished: number, total: number) => void,
+    ): Promise<AssetManager.Bundle> {
+        const bundle = await this.loadBundle(bundleName);
+
+        await new Promise<void>((resolve, reject) => {
+            let settled = false;
+            const timeout = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                reject(new AssetBundleAssetLoadError(
+                    bundleName,
+                    directory,
+                    new Error(`Timed out after ${this.loadTimeoutMs} ms.`),
+                ));
+            }, this.loadTimeoutMs);
+
+            bundle.loadDir(
+                directory,
+                (finished, total) => onProgress?.(finished, total),
+                (error) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeout);
+                    if (error) {
+                        reject(new AssetBundleAssetLoadError(
+                            bundleName,
+                            directory,
+                            error,
+                        ));
+                        return;
+                    }
+                    resolve();
+                },
+            );
+        });
+
+        this.preparedDirectories.add(this.createPreparationKey(bundleName, directory));
+        return bundle;
+    }
+
+    private createPreparationKey(bundleName: string, directory: string): string {
+        return `${bundleName}\u0000${directory}`;
+    }
+
+    private clearPreparedDirectories(bundleName: string): void {
+        const prefix = `${bundleName}\u0000`;
+        this.preparedDirectories.forEach((key) => {
+            if (key.startsWith(prefix)) {
+                this.preparedDirectories.delete(key);
+            }
         });
     }
 }

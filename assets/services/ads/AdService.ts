@@ -6,6 +6,7 @@ export const AD_PLACEMENTS = Object.freeze({
     chessEndlessRevive: 'chess-endless-revive',
     desktopCleanupRewarded: 'desktop-cleanup-rewarded',
     doodleJumpRevive: 'doodle-jump-revive',
+    game2048ClearSmallTiles: 'game2048-clear-small-tiles',
 } as const);
 
 export type AdOutcome = 'completed' | 'skipped' | 'failed';
