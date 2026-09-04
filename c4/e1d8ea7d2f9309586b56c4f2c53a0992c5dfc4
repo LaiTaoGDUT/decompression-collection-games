@@ -1,0 +1,55 @@
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_c0174440e57398::t_e607421b97baaf 73-77,1383,1402-1443,2666,2708
+  s_c0174440e57398::t_b4c88ef95219ee 1298,1300,1349,1385-1394,1445-1449
+  s_c0174440e57398::t_be927ff9ae6f40 78-79
+  s_c0174440e57398::t_65e98d40253337 1380-1382
+  s_c0174440e57398::t_8af7f272402910 1384
+  s_c0174440e57398::t_c24b431ab50760 1395-1397,1399-1401
+  s_c0174440e57398::t_46a0c76339e429 1450-1451
+  s_c0174440e57398::t_32bb03c865d7a8 2663-2665
+  s_c0174440e57398::t_11d33cf5ce8df3 2667-2669,2705-2707
+  s_c0174440e57398::t_194effc4a42b8a 2709-2710
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  s_c11763a68f4c23::t_41a88fe02cc8e4 1354
+assets/services/analytics/AnalyticsService.ts
+  s_c11763a68f4c23::t_1d53b879fd2a73 23,25-26
+assets/games/doodle-jump/scripts/DoodleJumpCombatSystem.ts
+  s_e7d36e849bd18d::t_76adf23abf8523 367-372,493
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c4e1d8ea7d2f9309586b56c4f2c53a0992c5dfc4",
+  "prompts": {},
+  "logical_commit_id": "c4e1d8ea7d2f9309586b56c4f2c53a0992c5dfc4",
+  "sessions": {
+    "s_c0174440e57398": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06b20-546c-7fd0-b1e9-9b44bd0c8197",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 71,
+      "total_deletions": 84
+    },
+    "s_c11763a68f4c23": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06b93-53a3-7010-a795-e06cac8148c4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 4,
+      "total_deletions": 40
+    },
+    "s_e7d36e849bd18d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "97efce0c-ead2-4eee-b42d-f780f7f2db1b",
+        "model": "grok-4.6"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
