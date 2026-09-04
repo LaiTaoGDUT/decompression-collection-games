@@ -62,7 +62,7 @@
             "overwriteSettings": {
               "wechatgame": {
                 "isRemote": true,
-                "compressionType": "merge_dep"
+                "compressionType": "merge_all_json"
               }
             }
           }

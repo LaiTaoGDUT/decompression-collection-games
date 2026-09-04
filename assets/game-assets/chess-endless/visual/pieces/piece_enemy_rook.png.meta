@@ -31,10 +31,102 @@
         ".json"
       ],
       "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "e0a90596-ce5d-4e74-861b-5c8132da1c54@f9941",
+      "displayName": "piece_enemy_rook",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": -0.5,
+        "offsetY": 0.5,
+        "trimX": 63,
+        "trimY": 72,
+        "width": 257,
+        "height": 239,
+        "rawWidth": 384,
+        "rawHeight": 384,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -128.5,
+            -119.5,
+            0,
+            128.5,
+            -119.5,
+            0,
+            -128.5,
+            119.5,
+            0,
+            128.5,
+            119.5,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            63,
+            312,
+            320,
+            312,
+            63,
+            73,
+            320,
+            73
+          ],
+          "nuv": [
+            0.1640625,
+            0.19010416666666666,
+            0.8333333333333334,
+            0.19010416666666666,
+            0.1640625,
+            0.8125,
+            0.8333333333333334,
+            0.8125
+          ],
+          "minPos": [
+            -128.5,
+            -119.5,
+            0
+          ],
+          "maxPos": [
+            128.5,
+            119.5,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "e0a90596-ce5d-4e74-861b-5c8132da1c54@6c48a",
+        "atlasUuid": "",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
     }
   },
   "userData": {
-    "type": "texture",
+    "type": "sprite-frame",
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
     "redirect": "e0a90596-ce5d-4e74-861b-5c8132da1c54@6c48a"

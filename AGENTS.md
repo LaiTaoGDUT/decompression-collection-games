@@ -59,6 +59,15 @@
 - 外部素材必须有可追溯来源和明确许可。来源未确认的素材只能作为开发占位，禁止进入候选构建；不得直接取用其他游戏或模仿可识别品牌/艺术家风格。
 - 玩法参数、广告位、频控和可调整文案应配置化，不要散落魔法数。
 
+### Auto Atlas（`.pac`）合图规则
+
+- Auto Atlas 只在“同一个游戏 Bundle、同一个视觉模块、会一起使用”的小型 SpriteFrame 集合中使用，例如 HUD 图标、道具图标、棋子、数字方块和连续动画帧；不要按文件所在目录机械合图，也不要跨游戏、跨大厅/游戏 Bundle 合图。
+- 以下素材默认保持单图：全屏背景、平铺/重复纹理、大型弹窗或九宫格面板、用户上传/照片预置图、大厅封面、需要独立压缩或独立替换的资源，以及尺寸过大或需要分阶段下载的动画帧。已有美术设计好的整张 atlas 也不要再套一层 `.pac`。
+- 进入 `.pac` 的 PNG 必须以 Cocos `SpriteFrame` 类型导入，并与 `.pac` 放在同一资源模块目录；`.pac.meta` 的 `maxWidth/maxHeight`、padding、压缩格式按模块统一配置。动态字符串加载时保持 `filterUnused: false`，并确认 `removeSpriteAtlasInBundle: false`，否则运行时可能找不到图集。
+- 场景/Prefab 静态引用 `SpriteFrame` 时通常无需改业务代码；脚本若原来通过 `bundle.load(path, Texture2D)` 动态加载，则必须改为加载 `SpriteAtlas` 后用 `getSpriteFrame(frameName)`，统一优先复用 `assets/services/asset/AutoAtlasLoader.ts`，不能在原图已被移除后继续请求原始 `Texture2D`。
+- 图集帧由业务创建的运行时副本只能由当前游戏销毁；`SpriteAtlas`、图集纹理和 Bundle 不得由游戏自行卸载，统一交给 `AssetService` 释放。编辑器预览可以回退原图，但微信构建必须以实际生成的 Atlas 产物为准。
+- 新增图片时先记录“使用范围、是否动态加载、是否需独立更新/压缩”，再决定单图或图集；改动 `.pac` 或 SpriteFrame 元数据后必须刷新 Cocos 资源、重新构建，并检查 `build/wechatgame/remote` 中存在图集及其配置。合图主要优化纹理切换/Draw Call，不保证包体字节数下降，主包、分包和远程包体积仍要分别校验。
+
 ## 存档与兼容
 
 - 根存档和各游戏数据都必须携带版本。单个小游戏只能读写自己的数据命名空间，禁止因游戏隐藏、回滚或字段不识别而清空用户根存档。

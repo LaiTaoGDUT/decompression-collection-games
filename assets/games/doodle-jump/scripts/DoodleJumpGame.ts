@@ -2,6 +2,7 @@ import {
     _decorator,
     assetManager,
     Canvas,
+    Camera,
     Color,
     Component,
     DynamicAtlasManager,
@@ -38,6 +39,10 @@ import type { AudioService } from '../../../services/audio/AudioService';
 import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { StorageService } from '../../../services/storage/StorageService';
+import {
+    autoAtlasFrameName,
+    loadAutoAtlasFrames,
+} from '../../../services/asset/AutoAtlasLoader';
 import {
     calculateVerticalSafeBounds,
 } from '../../../shared/ui/PlatformSafeLayout';
@@ -219,6 +224,8 @@ const TEXTURE_PATHS = Object.freeze({
 const DOODLE_JUMP_REWARDED_VIDEO_ICON_PATH =
     'visual/ui/doodle-jump-rewarded-video-icon-v1/texture';
 const DOODLE_JUMP_REWARDED_VIDEO_ICON_ASPECT = 120 / 85;
+const DOODLE_JUMP_HUD_ATLAS_PATH = 'visual/ui/hud/doodle-hud';
+const DOODLE_JUMP_ITEM_ICON_ATLAS_PATH = 'visual/ui/item-icons/doodle-item-icons';
 
 type TextureKey = keyof typeof TEXTURE_PATHS;
 
@@ -288,7 +295,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
             '· 镜头只随最高进度向上移动。高度每增加 1 米获得 10 分，击败怪物和中断 UFO 还会获得额外分数。',
             '· 紫色升降平台会缓慢上下移动且越往高处越常见；星空背景开始出现倒刺平台，顶面可以踩，下方尖刺不能碰。',
             '· 没踩到下一块平台并掉出屏幕、碰到怪物、被 UFO 带走、进入黑洞核心或踩中捕兽夹都会失败。',
-            '· 开启复活功能后，第一次失败可免费复活，第二次失败可通过激励广告复活；未配置广告位时第二次复活直接成功。',
+            '· 开启复活功能后，失败可通过激励广告复活；未配置广告位时复活直接成功。',
             '· 暂停、弹窗和切到后台时，角色、敌人、道具计时和世界运动都会暂停。',
         ].join('\n'),
     }),
@@ -440,6 +447,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private showUnsubscribe?: Unsubscribe;
     private resizeBound = false;
     private dynamicRoot?: Node;
+    private uiCamera?: Camera;
     private backgroundRoot?: Node;
     private backgroundBaseNodes: Node[] = [];
     private backgroundDecorNodes: Node[] = [];
@@ -817,6 +825,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.audioBank?.dispose();
         this.audioBank = undefined;
         this.destroyPresentation();
+        this.uiCamera = undefined;
         this.ownedFrames.forEach((frame) => {
             if (frame.isValid) frame.destroy();
         });
@@ -966,6 +975,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!canvas.cameraComponent?.isValid) {
             throw new Error('DoodleJump Canvas must bind a valid UI Camera.');
         }
+        this.uiCamera = canvas.cameraComponent;
         if (canvas.node.layer !== canvas.cameraComponent.node.layer) {
             throw new Error('DoodleJump Canvas and UI Camera must use the same layer.');
         }
@@ -1341,43 +1351,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.context?.services.feedback.play('failure');
         this.updatePresentationState(this.failureReasonText(reason));
         if (snapshot && this.config?.generation.exportFailureDebug) {
-            console.warn('[DoodleJumpGame] failure-debug', JSON.stringify({
-                sessionId: this.context?.sessionId ?? '',
-                failureReason: reason,
-                score,
-                seed: snapshot.seed,
-                generatorCursor: snapshot.generatorCursor,
-                degradedGenerationCount: snapshot.degradedGenerationCount,
-                randomStreams: snapshot.randomStreams,
-                player: {
-                    x: snapshot.playerX,
-                    y: snapshot.playerY,
-                    velocityX: snapshot.velocityX,
-                    velocityY: snapshot.velocityY,
-                },
-                cameraBottomY: snapshot.cameraBottomY,
-                maxAbsoluteWorldY: snapshot.maxAbsoluteWorldY,
-                elapsedSeconds: snapshot.elapsedSeconds,
-                lastLandedPlatformId: snapshot.lastLandedPlatformId ?? '',
-                combat: snapshot.combat,
-                hazards: snapshot.hazards,
-                hazardStats: snapshot.hazardStats,
-                items: snapshot.items,
-                itemStatus: snapshot.itemStatus,
-                enemies: snapshot.enemies,
-                platforms: snapshot.platforms.map((platform) => ({
-                    id: platform.id,
-                    predecessorId: platform.predecessorId ?? '',
-                    type: platform.type,
-                    x: platform.x,
-                    y: platform.y,
-                    width: platform.width,
-                    collisionEnabled: platform.collisionEnabled,
-                    consumed: platform.consumed,
-                    generationAttempts: platform.generationAttempts,
-                    degraded: platform.degraded,
-                })),
-            }));
+            // 预留失败诊断出口，当前不打印日志。
         }
         this.context?.services.analytics.track('doodle_jump_fail', {
             sessionId: this.context.sessionId,
@@ -1537,7 +1511,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state === 'Failing') this.stateMachine.transition('ResurrectPrompt');
         this.reviveActionLocked = false;
         this.destroyOverlay();
-        const isFree = this.successfulRevives === 0;
         const heightMeters = this.calculateHeightMeters(
             this.failureSnapshot?.maxAbsoluteWorldY ?? 0,
         );
@@ -1550,17 +1523,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         );
         const reviveButton = this.createButton(
             overlay,
-            isFree ? '免费复活' : '看广告复活',
+            '看广告复活',
             0,
             65,
             320,
             82,
             () => {
-                void this.requestResurrection(isFree ? 'free' : 'rewarded-ad');
+                void this.requestResurrection();
             },
             'primary',
             undefined,
-            !isFree,
+            true,
         );
         const restartButton = this.createButton(overlay, '重新开始', 0, -35, 320, 82, () => {
             this.context?.requestRestart();
@@ -1576,30 +1549,28 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         }
     }
 
-    private async requestResurrection(source: 'free' | 'rewarded-ad'): Promise<void> {
+    private async requestResurrection(): Promise<void> {
         if (this.stateMachine.state !== 'ResurrectPrompt'
             || this.reviveActionLocked
             || !this.context
             || !this.config) return;
         this.reviveActionLocked = true;
         this.setOverlayButtonsEnabled(false);
-        if (source === 'rewarded-ad') {
-            const override = this.config.resurrection.debugRewardedOutcome;
-            const result = override === 'auto'
-                ? await this.context.services.ads.showRewarded({
-                    placement: this.config.resurrection.placement,
-                    gameId: this.context.gameId,
-                    sessionId: this.context.sessionId,
-                })
-                : Object.freeze({ outcome: override });
-            if (this.stateMachine.state !== 'ResurrectPrompt') return;
-            if (result.outcome !== 'completed') {
-                this.reviveActionLocked = false;
-                this.showResurrectionPrompt(
-                    result.outcome === 'skipped' ? '广告未完整观看，可以重试' : '广告暂不可用，可以重试',
-                );
-                return;
-            }
+        const override = this.config.resurrection.debugRewardedOutcome;
+        const result = override === 'auto'
+            ? await this.context.services.ads.showRewarded({
+                placement: this.config.resurrection.placement,
+                gameId: this.context.gameId,
+                sessionId: this.context.sessionId,
+            })
+            : Object.freeze({ outcome: override });
+        if (this.stateMachine.state !== 'ResurrectPrompt') return;
+        if (result.outcome !== 'completed') {
+            this.reviveActionLocked = false;
+            this.showResurrectionPrompt(
+                result.outcome === 'skipped' ? '广告未完整观看，可以重试' : '广告暂不可用，可以重试',
+            );
+            return;
         }
         if (this.stateMachine.state !== 'ResurrectPrompt') return;
         this.stateMachine.transition('Resurrecting');
@@ -1621,7 +1592,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             failureReason,
             heightMeters: failureHeightMeters,
             reviveIndex: this.successfulRevives,
-            source,
+            source: 'rewarded-ad',
             safePlatformGenerated: resurrection?.safePlatformGenerated ?? false,
             platformId: resurrection?.platformId ?? '',
         });
@@ -3401,14 +3372,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.projectilePool.push(projectile.node);
     }
 
-    private updateAimFromUiLocation(x: number, y: number): void {
+    private updateAimFromScreenLocation(x: number, y: number): void {
         if (!this.dynamicRoot?.isValid || !this.playerNode?.isValid || !this.config) return;
-        // Input coordinates must be converted into the same local space as the
-        // reticle and player. Both are children of worldRoot; converting via
-        // dynamicRoot can leave a Y offset when the nested UI transform is
-        // scaled/aligned by the Canvas.
+        // getLocation() is expressed in screen units, not a scene-world
+        // position. When the WeChat Canvas is scaled by Fit Width, converting
+        // the raw screen point through the bound UI camera first keeps
+        // the reticle/player and the touch share the exact same coordinate
+        // space on every device.
+        const world = this.uiCamera?.screenToWorld(new Vec3(x, y, 0));
+        if (!world) return;
         const local = this.worldRoot?.getComponent(UITransform)?.convertToNodeSpaceAR(
-            new Vec3(x, y, 0),
+            world,
         );
         if (!local) return;
         const deltaX = local.x - this.playerNode.position.x;
@@ -3486,7 +3460,42 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
 
     private async loadVisualAssets(): Promise<void> {
         const keys = Object.keys(TEXTURE_PATHS) as TextureKey[];
-        const frames = await Promise.all(keys.map(async (key) => {
+        const hudKeys = keys.filter((key) => key.indexOf('hud') === 0);
+        const itemIconKeys = keys.filter((key) => key.indexOf('itemIcon') === 0);
+        const resourceBundle = assetManager.getBundle(DOODLE_JUMP_RESOURCE_BUNDLE);
+        if (!resourceBundle) {
+            throw new Error(`Bundle ${DOODLE_JUMP_RESOURCE_BUNDLE} is unavailable.`);
+        }
+        const [hudFrames, itemIconFrames] = await Promise.all([
+            loadAutoAtlasFrames(
+                resourceBundle,
+                DOODLE_JUMP_HUD_ATLAS_PATH,
+                hudKeys.map((key) => ({
+                    key,
+                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]),
+                    fallbackTexturePath: TEXTURE_PATHS[key],
+                })),
+            ),
+            loadAutoAtlasFrames(
+                resourceBundle,
+                DOODLE_JUMP_ITEM_ICON_ATLAS_PATH,
+                itemIconKeys.map((key) => ({
+                    key,
+                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]),
+                    fallbackTexturePath: TEXTURE_PATHS[key],
+                })),
+            ),
+        ]);
+        Object.keys({ ...hudFrames, ...itemIconFrames }).forEach((key) => {
+            const frame = hudFrames[key] ?? itemIconFrames[key];
+            if (frame) {
+                this.textureFrames[key as TextureKey] = frame;
+                this.ownedFrames.push(frame);
+            }
+        });
+
+        const atlasKeys = new Set([...hudKeys, ...itemIconKeys]);
+        const frames = await Promise.all(keys.filter((key) => !atlasKeys.has(key)).map(async (key) => {
             const existing = this.textureFrames[key];
             if (existing) return [key, existing] as const;
             try {
@@ -4950,7 +4959,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!this.isGameplayPointerAllowed(location.x, location.y)) return;
         this.lastTouchStartAt = Date.now();
         this.attackPointerId = event.getID();
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
         this.tryFirePaperPlane();
     };
 
@@ -4958,7 +4968,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state !== 'Playing'
             || this.attackPointerId !== event.getID()) return;
         const location = event.getUILocation();
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
     };
 
     private readonly handleGameplayRelease = (event: EventTouch): void => {
@@ -4977,14 +4988,16 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const location = event.getUILocation();
         if (!this.isGameplayPointerAllowed(location.x, location.y)) return;
         this.mouseAttackHeld = true;
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
         this.tryFirePaperPlane();
     };
 
     private readonly handleGameplayMouseMove = (event: EventMouse): void => {
         if (!this.mouseAttackHeld || this.stateMachine.state !== 'Playing') return;
         const location = event.getUILocation();
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
     };
 
     private readonly handleGameplayMouseRelease = (): void => {

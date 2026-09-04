@@ -49,6 +49,10 @@ import type {
     StorageService,
 } from '../../../services/storage/StorageService';
 import {
+    autoAtlasFrameName,
+    loadAutoAtlasFrames,
+} from '../../../services/asset/AutoAtlasLoader';
+import {
     CAT_TOKEN_VISIBLE_DIAMETER_RATIO,
     FRUIT_LEVELS,
     configureFruitCatalog,
@@ -97,6 +101,7 @@ const { ccclass } = _decorator;
 type WatermelonState = 'idle' | 'ready' | 'playing' | 'paused' | 'disposed';
 
 const WATERMELON_RESOURCE_BUNDLE = 'game-watermelon-assets';
+const WATERMELON_CAT_ATLAS_PATH = 'visual/cats/frames-c6/watermelon-cat-frames';
 const NEXT_CAT_PREVIEW_SIZE = 56;
 const CAT_DROP_TOP_GAP = 8;
 const ROUND_SAVE_INTERVAL_SECONDS = 1;
@@ -497,21 +502,28 @@ export class WatermelonGame extends Component implements MiniGame {
             return Promise.reject(new Error(`${WATERMELON_RESOURCE_BUNDLE} bundle is unavailable.`));
         }
 
-        return Promise.all(FRUIT_LEVELS.map((config) => Promise.all(
-            config.animationSprites.map((path) => new Promise<SpriteFrame>((resolve, reject) => {
-                bundle.load(path, Texture2D, (error, texture) => {
-                    if (error || !texture) {
-                        reject(new Error(
-                            `Cat animation texture failed: ${path}. ${error?.message ?? 'Asset missing.'}`,
-                        ));
-                        return;
-                    }
-                    const spriteFrame = new SpriteFrame();
-                    spriteFrame.texture = texture;
-                    resolve(spriteFrame);
+        const entries: Array<{
+            readonly key: string;
+            readonly frameName: string;
+            readonly fallbackTexturePath: string;
+        }> = [];
+        FRUIT_LEVELS.forEach((config, level) => {
+            config.animationSprites.forEach((path, frameIndex) => {
+                entries.push({
+                    key: `${level}:${frameIndex}`,
+                    frameName: autoAtlasFrameName(path),
+                    fallbackTexturePath: path,
                 });
-            })),
-        )));
+            });
+        });
+        return loadAutoAtlasFrames(bundle, WATERMELON_CAT_ATLAS_PATH, entries)
+            .then((frames) => FRUIT_LEVELS.map((config, level) => config.animationSprites.map((_, frameIndex) => {
+                const frame = frames[`${level}:${frameIndex}`];
+                if (!frame) {
+                    throw new Error(`Cat animation frame missing: ${level}:${frameIndex}`);
+                }
+                return frame;
+            })));
     }
 
     private loadBubbleFrame(): Promise<SpriteFrame | undefined> {

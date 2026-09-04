@@ -4,7 +4,7 @@
 > Cocos Creator：3.8.8  
 > 目标平台：微信小游戏，浏览器预览作为开发环境  
 > 设计基准：竖屏 750 × 1334；横向使用 Canvas `Fit Width`，纵向避让顶部胶囊和底部安全区
-> 最后更新：2026-08-28
+> 最后更新：2026-09-04
 
 文档索引见：[README.md](../README.md)；各小游戏的实施与验收内容维护在对应的 `docs/games/<gameId>/` 目录中。
 
@@ -493,6 +493,22 @@ Canvas
 - 所有动态加载和释放必须经过 `AssetService`。
 - 每次构建检查主包体积、分包体积和重复资源。
 
+### Auto Atlas（`.pac`）约定
+
+Auto Atlas 只用于同一游戏、同一视觉模块内会一起使用的小型 SpriteFrame，例如 HUD、道具图标、棋子和数字方块；全屏背景、平铺纹理、大型面板、照片预置和其他需要独立压缩/独立替换的图片继续作为单图资源。当前已接入的图集如下：
+
+| 游戏 | `.pac` | 用途 |
+|---|---|---|
+| `chess-endless` | `visual/icons/chess-icons.pac`、`visual/pieces/chess-pieces.pac` | 道具图标、棋子 |
+| `doodle-jump` | `visual/ui/hud/doodle-hud.pac`、`visual/ui/item-icons/doodle-item-icons.pac` | HUD、道具图标 |
+| `sliding-puzzle` | `visual/icons/sliding-icons.pac` | 操作图标 |
+| `twenty48` | `visual/pieces/twenty48-pieces.pac` | 数字方块 |
+| `watermelon` | `visual/cats/frames-c6/watermelon-cat-frames.pac` | 猫咪动画帧 |
+
+图集内的 PNG 必须以 SpriteFrame 类型导入。由于运行时按字符串路径动态请求帧，`.pac.meta` 保持 `filterUnused: false` 和 `removeSpriteAtlasInBundle: false`；确认微信构建产物已包含图集后，原始纹理和图片由 Auto Atlas 的 `removeTextureInBundle/removeImageInBundle` 规则移除，避免重复打包。运行时通过 `AutoAtlasLoader` 加载 `.pac`、按帧名取得 SpriteFrame，并复制为游戏自有帧；游戏销毁自有帧，Bundle 的最终释放仍统一交给 `AssetService`，禁止业务直接卸载图集。
+
+编辑器预览阶段图集可能尚未生成，`AutoAtlasLoader` 会回退到同目录原始纹理，因此不影响场景编辑和浏览器预览；微信构建/发布必须以真实生成的 Atlas 产物为准。若要回滚，只需移除对应 `.pac` 并恢复普通纹理加载，源 PNG 和 SpriteFrame 元数据仍可保留，不涉及存档迁移。
+
 构建与发布要求：微信目标开启远程 Bundle 和 MD5 缓存，并配置合法的 HTTPS CDN 根地址；上传微信的代码包只包含主包与本地游戏分包，构建产物的 `remote` 目录独立发布到 CDN。浏览器构建保持资源 Bundle 本地输出，以支持开发预览和自动化验证。
 
 兼容与回滚：本次拆分不修改用户存档结构。回滚应用代码时必须同时回滚 `games.json` 和 CDN 资源版本；若需要临时取消远程发布，可保留双 Bundle 目录与清单协议，仅把资源 Bundle 构建配置切回本地，禁止把资源复制回代码 Bundle 形成双份 UUID 或跨 Bundle 引用。发布失败时保留上一版带 MD5 的 CDN 文件，客户端继续按自身构建版本读取，不能覆盖或清理仍被线上版本引用的文件。
@@ -594,9 +610,11 @@ ad_result
 
 本次规划整改选择复用现有公共协议，不新增全局服务或修改 `Platform.startAccelerometer(): void` 的返回契约。游戏通过 `supportsAccelerometer/startAccelerometer/stopAccelerometer/onAccelerometerChange` 建立传感器会话，以首个有效样本和 1500ms 超时判定成功；触摸输入、可复现生成器、失败/复活状态机和纸片视图均属于游戏 Bundle 内部。若未来要加入 Web `DeviceMotion` 或把传感器启动改成 Promise，必须先扩展 `Platform`、同步 WeChat/Web 实现、补充兼容测试和回滚说明，不能在小游戏里直接调用 `wx.*`。
 
-游戏通过现有 `MiniGameContext.services` 使用 `platform`、`audio`、`feedback`、`storage`、`analytics`、`ads` 和 `deviceTier`。`InputService`、`SaveService`、`AppStateService` 不属于当前容器，`AssetService` 由运行层负责 Bundle 加载和释放，因此本游戏不在 Context 中虚构这些服务。暂停、前后台、广告和退出继续经过 `MiniGameContext` 与应用状态机。复活不使用持久库存，由 `ads.games.doodle-jump.enabled` 作为本游戏唯一复活功能开关：开关开启时，每局第一次失败可免费复活，第二次失败通过独立语义广告位 `doodle-jump-revive` 请求激励视频，第三次失败直接结算；开关关闭时所有失败均直接结算。第二次复活只有已配置真实广告且返回 `completed` 时才视为看完广告；中途关闭或失败不消耗第二次机会。没有配置广告位或路由时沿用 `AdService` 的 `completed` 降级语义，不触碰平台广告 API，直接复活成功。应用配置需要为 `doodle-jump` 提供独立复活开关和可选微信广告位，禁止借用其他游戏 placement。
+游戏通过现有 `MiniGameContext.services` 使用 `platform`、`audio`、`feedback`、`storage`、`analytics`、`ads` 和 `deviceTier`。`InputService`、`SaveService`、`AppStateService` 不属于当前容器，`AssetService` 由运行层负责 Bundle 加载和释放，因此本游戏不在 Context 中虚构这些服务。暂停、前后台、广告和退出继续经过 `MiniGameContext` 与应用状态机。复活不使用持久库存，由 `ads.games.doodle-jump.enabled` 作为本游戏唯一复活功能开关：开关开启时，每次可用复活机会均通过独立语义广告位 `doodle-jump-revive` 请求激励视频，达到次数上限后直接结算；开关关闭时所有失败均直接结算。广告只有返回 `completed` 时才视为看完；中途关闭或失败不消耗复活机会。没有配置广告位或路由时沿用 `AdService` 的 `completed` 降级语义，不触碰平台广告 API，直接复活成功。应用配置需要为 `doodle-jump` 提供独立复活开关和可选微信广告位，禁止借用其他游戏 placement。
 
 玩法状态在游戏内部显式包含 `Failing` 和 `Resurrecting`，失败快照在进入 `Failing` 前立即写入活动局并同步 `flush()`，复活成功切回 `Playing` 后也立即写入复活后的安全快照并同步 `flush()`。存档使用现有 `GameSaveData`：公共 `playCount/highScore/lastPlayedAt` 分别承载总局数、最高分和最后游玩时间；`custom.gameDataVersion = 3` 在 v2 的高度、击杀、射击统计、传感器设置、独立 `tutorialCompleted` 引导标记和起步助推兼容库存之上，新增可选 `activeRound`。活动局保存版本、保存时间、局前历史基线、本局射击数、成功复活次数和完整 `DoodleJumpSimulationSnapshot`，包括角色速度与位置、相机、平台、生成游标、随机流游标、敌人、危险物、道具及其持续状态。Playing 期间每 3 秒按“活动局固定历史基线＋本局绝对累计”重建并提交一次检查点，底层写入继续由公共存储的 3 秒 throttle 合并；暂停、微信 hide、退出和销毁时立即 `flush()` 最新活动局，Failing/ResurrectPrompt/Resurrecting 阶段只 flush 已保存快照，禁止用不可恢复状态覆盖活动局。重新进入时若 `activeRound` 结构有效，使用其 seed 构造模拟器并恢复局面、复活次数和射击计数，跳过起步助推选择后继续游戏；活动局损坏时只忽略该字段并开始新局，不清空根存档。明确重开、结束结算和丢弃进度会清除 `activeRound`；重复检查点不得重复累加 `playCount/totalShots/totalKills`。v2 → v3 只新增空的可选活动局，无需伪造旧局面；回滚到 v2 时旧代码应把 `activeRound` 当未知字段原样保留，正式回滚前可由 v3 清除活动局。`tutorialCompleted` 只在完整看完首次引导后写为 true，不以 `playCount` 推断。旧规划别名 `doodleJump` 只允许迁移到 `doodle-jump`，未知 `custom` 字段保留，历史规划中若已出现 `resurrectCount` 只能作为不再读取的未知兼容字段原样保留；迁移失败不得重置根存档。复活点只向上寻找：先检查失败相机当前可见玩法区内的安全平台，没有时保持物理与危险更新暂停，让复活流程驱动相机和生成器向上搜索；越过已预生成范围仍没有候选时，生成无危险附着的 Normal 安全平台作为确定性终止条件。该过程不回退高度、分数或生成游标，也不允许向下放置角色。
+
+`DoodleJumpSimulationSnapshot.platforms[].width` 继续沿用现有活动局快照字段，但其语义包含平台运行时宽度：Normal 平台先保存高度曲线给出的收窄宽度，只有大型怪物实际生成成功后才保存确定性扩宽结果。该字段没有新增结构或版本迁移；恢复时先读取快照宽度，并以存活大型怪物重新校验扩宽状态，保证旧快照可安全读取且不会因怪物击杀造成平台几何跳变。
 
 平台系统新增 `vertical-moving` 与 `spiked` 两个游戏内类型，不改变公共 `MiniGame`、Bundle 或服务边界。上下移动平台使用确定性 ID 派生振幅、周期和相位，其活动局快照为所有平台新增可选 `baseX/baseY`，把生成基准位置与当前渲染/碰撞位置分离；旧快照缺少这两个字段时按平台 ID、类型、已保存时间和当前 `x/y` 反推生成基准，因此无需提升根存档或活动局版本，且顺带修正旧 Moving 平台恢复后围绕瞬时位置二次漂移的问题。倒刺平台从第四段星空背景的 950 米门槛起参与插入平台抽样，顶部沿用单向落地面，只有下方倒刺接触属于致命碰撞；生成器、怪物、危险物和道具读取平台的当前动态位置，避免附着物与上下移动平台脱节。回滚时可移除两个新类型并继续兼容旧快照的可选基准字段；若旧客户端遇到包含新类型的未结束活动局，应按现有“活动局结构无效则忽略并开新局”的安全降级处理，不能清空根存档。
 

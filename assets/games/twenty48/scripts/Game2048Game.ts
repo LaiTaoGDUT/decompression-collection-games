@@ -39,6 +39,10 @@ import type { FeedbackService } from '../../../services/feedback/FeedbackService
 import type { Platform } from '../../../platform/Platform';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
 import {
+    autoAtlasFrameName,
+    loadAutoAtlasFrames,
+} from '../../../services/asset/AutoAtlasLoader';
+import {
     BOARD_SIZE,
     Game2048Model,
     MILESTONE_TILE,
@@ -93,6 +97,7 @@ const GAME_2048_TARGET_POPUP_ASPECT_RATIO = 780 / 548;
 const GAME_2048_POPUP_BUTTON_BOTTOM_PADDING = 58;
 const GAME_2048_TILE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096] as const;
 const GAME_2048_TILE_ASSET_PREFIX = 'visual/pieces/t48-user-piece-';
+const GAME_2048_TILE_ATLAS_PATH = 'visual/pieces/twenty48-pieces';
 // 新版棋盘图已去掉外圈留白；四列槽位连同内外间距约占 548/572，棋子间距略放宽为 9px。
 const GAME_2048_BOARD_GRID_RATIO = 548 / 572;
 const GAME_2048_BOARD_GAP_RATIO = 9 / 548;
@@ -1261,6 +1266,21 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private async loadThemeAssets(): Promise<void> {
+        const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
+        if (!bundle) return;
+        const tileRequests = GAME_2048_TILE_VALUES.map((value) => {
+            const path = `${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`;
+            return {
+                key: String(value),
+                frameName: autoAtlasFrameName(path),
+                fallbackTexturePath: path,
+            };
+        });
+        const tileFrames = await loadAutoAtlasFrames(
+            bundle,
+            GAME_2048_TILE_ATLAS_PATH,
+            tileRequests,
+        );
         const [
             title,
             board,
@@ -1274,7 +1294,6 @@ export class Game2048Game extends Component implements MiniGame {
             violetButton,
             achievementScore,
             resultScore,
-            ...tiles
         ] = await Promise.all([
             this.loadTextureFrame(GAME_2048_TITLE_ASSET_PATH),
             this.loadTextureFrame(GAME_2048_BOARD_ASSET_PATH),
@@ -1288,9 +1307,6 @@ export class Game2048Game extends Component implements MiniGame {
             this.loadTextureFrame(GAME_2048_POPUP_BUTTON_VIOLET_ASSET_PATH),
             this.loadTextureFrame(GAME_2048_POPUP_SCORE_CYAN_ASSET_PATH),
             this.loadTextureFrame(GAME_2048_POPUP_SCORE_AMBER_ASSET_PATH),
-            ...GAME_2048_TILE_VALUES.map((value) => this.loadTextureFrame(
-                `${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`,
-            )),
         ]);
 
         if (!this.node.isValid || this.state === 'disposed') {
@@ -1306,7 +1322,7 @@ export class Game2048Game extends Component implements MiniGame {
             violetButton?.destroy();
             achievementScore?.destroy();
             resultScore?.destroy();
-            tiles.forEach((frame) => frame?.destroy());
+            Object.keys(tileFrames).forEach((key) => tileFrames[key]?.destroy());
             return;
         }
 
@@ -1323,8 +1339,8 @@ export class Game2048Game extends Component implements MiniGame {
         if (violetButton) this.ownedPopupButtonFrames.set('dark', violetButton);
         this.ownedAchievementScoreFrame = achievementScore;
         this.ownedResultScoreFrame = resultScore;
-        GAME_2048_TILE_VALUES.forEach((value, index) => {
-            const frame = tiles[index];
+        GAME_2048_TILE_VALUES.forEach((value) => {
+            const frame = tileFrames[String(value)];
             if (frame) this.ownedTileFrames.set(value, frame);
         });
         this.applyLoadedThemeAssets();
