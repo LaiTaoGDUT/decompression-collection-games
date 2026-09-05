@@ -2,6 +2,7 @@ import {
     _decorator,
     assetManager,
     Canvas,
+    Camera,
     Color,
     Component,
     DynamicAtlasManager,
@@ -39,15 +40,15 @@ import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { StorageService } from '../../../services/storage/StorageService';
 import {
+    autoAtlasFrameName,
+    loadAutoAtlasFrames,
+} from '../../../services/asset/AutoAtlasLoader';
+import {
     calculateVerticalSafeBounds,
 } from '../../../shared/ui/PlatformSafeLayout';
 import {
-    attachRewardedVideoIcon,
-    layoutRewardedVideoIconBeforeLabel,
-    loadRewardedVideoIcon,
-} from '../../../shared/ui/RewardedVideoIcon';
-import {
     DOODLE_JUMP_BUNDLE,
+    DOODLE_JUMP_RESOURCE_BUNDLE,
     parseDoodleJumpGameplayConfig,
     type DoodleJumpGameplayConfig,
 } from './DoodleJumpConfig';
@@ -220,8 +221,68 @@ const TEXTURE_PATHS = Object.freeze({
     itemIconShield: 'visual/ui/item-icons/shield/texture',
     itemIconHeadStart: 'visual/ui/item-icons/head-start/texture',
 });
+const DOODLE_JUMP_REWARDED_VIDEO_ICON_PATH =
+    'visual/ui/doodle-jump-rewarded-video-icon-v1/texture';
+const DOODLE_JUMP_REWARDED_VIDEO_ICON_ASPECT = 120 / 85;
+const DOODLE_JUMP_HUD_ATLAS_PATH = 'visual/ui/hud/doodle-hud';
+const DOODLE_JUMP_ITEM_ICON_ATLAS_PATH = 'visual/ui/item-icons/doodle-item-icons';
 
 type TextureKey = keyof typeof TEXTURE_PATHS;
+
+function attachDoodleJumpAdIcon(
+    parent: Node,
+    frame: SpriteFrame | undefined,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+): Node | undefined {
+    if (!frame) return undefined;
+    const node = new Node('DoodleJumpRewardedVideoIcon');
+    node.layer = parent.layer;
+    node.setParent(parent);
+    node.setPosition(x, y);
+    node.addComponent(UITransform).setContentSize(width, height);
+    const sprite = node.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    sprite.spriteFrame = frame;
+    return node;
+}
+
+function measureDoodleJumpTextWidth(text: string, fontSize: number): number {
+    let width = 0;
+    for (const character of text) {
+        if (character === ' ') width += fontSize * 0.35;
+        else if (/^[\u0000-\u00ff]$/.test(character)) width += fontSize * 0.56;
+        else width += fontSize;
+    }
+    return width;
+}
+
+function layoutDoodleJumpAdIconBeforeLabel(
+    icon: Node | undefined,
+    label: Label,
+    text: string,
+    fontSize: number,
+    iconWidth: number,
+    iconHeight: number,
+    buttonWidth: number,
+    gap = 4,
+): void {
+    if (!icon) return;
+    const labelTransform = label.node.getComponent(UITransform);
+    if (!labelTransform) return;
+    const textWidth = Math.min(
+        Math.max(fontSize, measureDoodleJumpTextWidth(text, fontSize)),
+        Math.max(fontSize, buttonWidth - iconWidth - gap - 28),
+    );
+    const totalWidth = iconWidth + gap + textWidth;
+    const centerY = label.node.position.y;
+    labelTransform.setContentSize(textWidth, labelTransform.contentSize.height);
+    label.node.setPosition((iconWidth + gap) / 2, centerY);
+    icon.setPosition(-totalWidth / 2 + iconWidth / 2, centerY);
+    icon.getComponent(UITransform)?.setContentSize(iconWidth, iconHeight);
+}
 
 const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.freeze([
     Object.freeze({
@@ -234,7 +295,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
             '· 镜头只随最高进度向上移动。高度每增加 1 米获得 10 分，击败怪物和中断 UFO 还会获得额外分数。',
             '· 紫色升降平台会缓慢上下移动且越往高处越常见；星空背景开始出现倒刺平台，顶面可以踩，下方尖刺不能碰。',
             '· 没踩到下一块平台并掉出屏幕、碰到怪物、被 UFO 带走、进入黑洞核心或踩中捕兽夹都会失败。',
-            '· 开启复活功能后，第一次失败可免费复活，第二次失败可通过激励广告复活；未配置广告位时第二次复活直接成功。',
+            '· 开启复活功能后，失败可通过激励广告复活；未配置广告位时复活直接成功。',
             '· 暂停、弹窗和切到后台时，角色、敌人、道具计时和世界运动都会暂停。',
         ].join('\n'),
     }),
@@ -386,6 +447,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private showUnsubscribe?: Unsubscribe;
     private resizeBound = false;
     private dynamicRoot?: Node;
+    private uiCamera?: Camera;
     private backgroundRoot?: Node;
     private backgroundBaseNodes: Node[] = [];
     private backgroundDecorNodes: Node[] = [];
@@ -564,7 +626,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.resizeBound = true;
         if (context.services.ads.isEnabledForGame(context.gameId)) {
-            this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
+            this.rewardedVideoIconFrame = await this.loadRewardedVideoIcon();
         }
         await this.preloadLoadingVisual();
         this.buildPresentation();
@@ -574,7 +636,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.applyVisualAssets();
         this.setGameplayPresentationVisible(true);
         this.audioBank = new BundleAudioBank({
-            bundle: DOODLE_JUMP_BUNDLE,
+            bundle: DOODLE_JUMP_RESOURCE_BUNDLE,
             optionalMusic: 'audio/doodle-jump-paper-loop',
             cues: {},
             optionalCues: {
@@ -725,7 +787,19 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     async dispose(): Promise<void> {
         if (this.stateMachine.state === 'Disposed') return;
         this.cancelAttack(true);
-        this.persistCurrentRunHistory(false, true);
+        if (this.stateMachine.state === 'Failing'
+            || this.stateMachine.state === 'ResurrectPrompt'
+            || this.stateMachine.state === 'Resurrecting') {
+            // 失败/复活状态已经在状态改变时写入活动局；销毁时只做最终
+            // flush，避免用不可恢复状态覆盖掉失败或复活快照。
+            try {
+                this.context?.services.storage.flush();
+            } catch (error: unknown) {
+                console.error('[DoodleJumpGame] Storage flush failed on dispose.', error);
+            }
+        } else {
+            this.persistCurrentRunHistory(false, true);
+        }
         this.trackExitOnce('dispose');
         this.lifecycleGeneration += 1;
         this.inputController?.dispose();
@@ -751,6 +825,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.audioBank?.dispose();
         this.audioBank = undefined;
         this.destroyPresentation();
+        this.uiCamera = undefined;
         this.ownedFrames.forEach((frame) => {
             if (frame.isValid) frame.destroy();
         });
@@ -900,6 +975,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!canvas.cameraComponent?.isValid) {
             throw new Error('DoodleJump Canvas must bind a valid UI Camera.');
         }
+        this.uiCamera = canvas.cameraComponent;
         if (canvas.node.layer !== canvas.cameraComponent.node.layer) {
             throw new Error('DoodleJump Canvas and UI Camera must use the same layer.');
         }
@@ -1260,53 +1336,22 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.failureLocked = true;
         this.inputController?.setEnabled(false);
         this.cancelAttack(true);
-        this.stateMachine.transition('Failing');
-        this.context?.services.feedback.play('failure');
-        this.updatePresentationState(this.failureReasonText(reason));
         const snapshot = this.simulation?.getSnapshot();
         this.failureSnapshot = snapshot;
         const score = this.calculateScore(
             snapshot?.maxAbsoluteWorldY ?? 0,
             (snapshot?.combat.score ?? 0) + (snapshot?.hazardStats.score ?? 0),
         );
+        // 失败快照是跨生命周期边界的关键状态：先在仍可构建 activeRound 的
+        // Playing 状态同步写盘，再切换到 Failing，避免死亡后立即退出时只剩
+        // 上一次 3 秒检查点。
+        this.persistCurrentRunHistory(false, true, undefined, snapshot);
+        this.runProgressSaveElapsed = 0;
+        this.stateMachine.transition('Failing');
+        this.context?.services.feedback.play('failure');
+        this.updatePresentationState(this.failureReasonText(reason));
         if (snapshot && this.config?.generation.exportFailureDebug) {
-            console.warn('[DoodleJumpGame] failure-debug', JSON.stringify({
-                sessionId: this.context?.sessionId ?? '',
-                failureReason: reason,
-                score,
-                seed: snapshot.seed,
-                generatorCursor: snapshot.generatorCursor,
-                degradedGenerationCount: snapshot.degradedGenerationCount,
-                randomStreams: snapshot.randomStreams,
-                player: {
-                    x: snapshot.playerX,
-                    y: snapshot.playerY,
-                    velocityX: snapshot.velocityX,
-                    velocityY: snapshot.velocityY,
-                },
-                cameraBottomY: snapshot.cameraBottomY,
-                maxAbsoluteWorldY: snapshot.maxAbsoluteWorldY,
-                elapsedSeconds: snapshot.elapsedSeconds,
-                lastLandedPlatformId: snapshot.lastLandedPlatformId ?? '',
-                combat: snapshot.combat,
-                hazards: snapshot.hazards,
-                hazardStats: snapshot.hazardStats,
-                items: snapshot.items,
-                itemStatus: snapshot.itemStatus,
-                enemies: snapshot.enemies,
-                platforms: snapshot.platforms.map((platform) => ({
-                    id: platform.id,
-                    predecessorId: platform.predecessorId ?? '',
-                    type: platform.type,
-                    x: platform.x,
-                    y: platform.y,
-                    width: platform.width,
-                    collisionEnabled: platform.collisionEnabled,
-                    consumed: platform.consumed,
-                    generationAttempts: platform.generationAttempts,
-                    degraded: platform.degraded,
-                })),
-            }));
+            // 预留失败诊断出口，当前不打印日志。
         }
         this.context?.services.analytics.track('doodle_jump_fail', {
             sessionId: this.context.sessionId,
@@ -1466,7 +1511,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state === 'Failing') this.stateMachine.transition('ResurrectPrompt');
         this.reviveActionLocked = false;
         this.destroyOverlay();
-        const isFree = this.successfulRevives === 0;
         const heightMeters = this.calculateHeightMeters(
             this.failureSnapshot?.maxAbsoluteWorldY ?? 0,
         );
@@ -1479,17 +1523,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         );
         const reviveButton = this.createButton(
             overlay,
-            isFree ? '免费复活' : '看广告复活',
+            '看广告复活',
             0,
             65,
             320,
             82,
             () => {
-                void this.requestResurrection(isFree ? 'free' : 'rewarded-ad');
+                void this.requestResurrection();
             },
             'primary',
             undefined,
-            !isFree,
+            true,
         );
         const restartButton = this.createButton(overlay, '重新开始', 0, -35, 320, 82, () => {
             this.context?.requestRestart();
@@ -1505,30 +1549,28 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         }
     }
 
-    private async requestResurrection(source: 'free' | 'rewarded-ad'): Promise<void> {
+    private async requestResurrection(): Promise<void> {
         if (this.stateMachine.state !== 'ResurrectPrompt'
             || this.reviveActionLocked
             || !this.context
             || !this.config) return;
         this.reviveActionLocked = true;
         this.setOverlayButtonsEnabled(false);
-        if (source === 'rewarded-ad') {
-            const override = this.config.resurrection.debugRewardedOutcome;
-            const result = override === 'auto'
-                ? await this.context.services.ads.showRewarded({
-                    placement: this.config.resurrection.placement,
-                    gameId: this.context.gameId,
-                    sessionId: this.context.sessionId,
-                })
-                : Object.freeze({ outcome: override });
-            if (this.stateMachine.state !== 'ResurrectPrompt') return;
-            if (result.outcome !== 'completed') {
-                this.reviveActionLocked = false;
-                this.showResurrectionPrompt(
-                    result.outcome === 'skipped' ? '广告未完整观看，可以重试' : '广告暂不可用，可以重试',
-                );
-                return;
-            }
+        const override = this.config.resurrection.debugRewardedOutcome;
+        const result = override === 'auto'
+            ? await this.context.services.ads.showRewarded({
+                placement: this.config.resurrection.placement,
+                gameId: this.context.gameId,
+                sessionId: this.context.sessionId,
+            })
+            : Object.freeze({ outcome: override });
+        if (this.stateMachine.state !== 'ResurrectPrompt') return;
+        if (result.outcome !== 'completed') {
+            this.reviveActionLocked = false;
+            this.showResurrectionPrompt(
+                result.outcome === 'skipped' ? '广告未完整观看，可以重试' : '广告暂不可用，可以重试',
+            );
+            return;
         }
         if (this.stateMachine.state !== 'ResurrectPrompt') return;
         this.stateMachine.transition('Resurrecting');
@@ -1550,14 +1592,18 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             failureReason,
             heightMeters: failureHeightMeters,
             reviveIndex: this.successfulRevives,
-            source,
+            source: 'rewarded-ad',
             safePlatformGenerated: resurrection?.safePlatformGenerated ?? false,
             platformId: resurrection?.platformId ?? '',
         });
         this.stateMachine.transition('Playing');
+        this.runProgressSaveElapsed = 0;
+        const revived = this.simulation?.getSnapshot();
+        // 复活会重置位置、速度、附近危险物和护盾，必须把这个新局面立即
+        // 固化，不能等下一次 3 秒检查点。
+        this.persistCurrentRunHistory(false, true, undefined, revived);
         this.inputController?.setEnabled(true);
         this.context.services.feedback.play('continue');
-        const revived = this.simulation?.getSnapshot();
         if (revived) this.startItemEffect(
             'resurrectionPulse',
             revived.playerX,
@@ -1962,7 +2008,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const title = this.createLabel(
             this.uiRoot,
             'Title',
-            '涂鸦跃层',
+            '纸片跳跃',
             0,
             safe.topY - 42,
             34,
@@ -3326,10 +3372,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.projectilePool.push(projectile.node);
     }
 
-    private updateAimFromUiLocation(x: number, y: number): void {
+    private updateAimFromScreenLocation(x: number, y: number): void {
         if (!this.dynamicRoot?.isValid || !this.playerNode?.isValid || !this.config) return;
-        const local = this.dynamicRoot.getComponent(UITransform)?.convertToNodeSpaceAR(
-            new Vec3(x, y, 0),
+        // getLocation() is expressed in screen units, not a scene-world
+        // position. When the WeChat Canvas is scaled by Fit Width, converting
+        // the raw screen point through the bound UI camera first keeps
+        // the reticle/player and the touch share the exact same coordinate
+        // space on every device.
+        const world = this.uiCamera?.screenToWorld(new Vec3(x, y, 0));
+        if (!world) return;
+        const local = this.worldRoot?.getComponent(UITransform)?.convertToNodeSpaceAR(
+            world,
         );
         if (!local) return;
         const deltaX = local.x - this.playerNode.position.x;
@@ -3407,7 +3460,42 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
 
     private async loadVisualAssets(): Promise<void> {
         const keys = Object.keys(TEXTURE_PATHS) as TextureKey[];
-        const frames = await Promise.all(keys.map(async (key) => {
+        const hudKeys = keys.filter((key) => key.indexOf('hud') === 0);
+        const itemIconKeys = keys.filter((key) => key.indexOf('itemIcon') === 0);
+        const resourceBundle = assetManager.getBundle(DOODLE_JUMP_RESOURCE_BUNDLE);
+        if (!resourceBundle) {
+            throw new Error(`Bundle ${DOODLE_JUMP_RESOURCE_BUNDLE} is unavailable.`);
+        }
+        const [hudFrames, itemIconFrames] = await Promise.all([
+            loadAutoAtlasFrames(
+                resourceBundle,
+                DOODLE_JUMP_HUD_ATLAS_PATH,
+                hudKeys.map((key) => ({
+                    key,
+                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]),
+                    fallbackTexturePath: TEXTURE_PATHS[key],
+                })),
+            ),
+            loadAutoAtlasFrames(
+                resourceBundle,
+                DOODLE_JUMP_ITEM_ICON_ATLAS_PATH,
+                itemIconKeys.map((key) => ({
+                    key,
+                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]),
+                    fallbackTexturePath: TEXTURE_PATHS[key],
+                })),
+            ),
+        ]);
+        Object.keys({ ...hudFrames, ...itemIconFrames }).forEach((key) => {
+            const frame = hudFrames[key] ?? itemIconFrames[key];
+            if (frame) {
+                this.textureFrames[key as TextureKey] = frame;
+                this.ownedFrames.push(frame);
+            }
+        });
+
+        const atlasKeys = new Set([...hudKeys, ...itemIconKeys]);
+        const frames = await Promise.all(keys.filter((key) => !atlasKeys.has(key)).map(async (key) => {
             const existing = this.textureFrames[key];
             if (existing) return [key, existing] as const;
             try {
@@ -4519,21 +4607,25 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 0,
             );
         } else if (hasRewardedIcon) {
-            const iconSize = 36;
-            const icon = attachRewardedVideoIcon(
+            const iconHeight = 32;
+            const iconWidth = iconHeight * DOODLE_JUMP_REWARDED_VIDEO_ICON_ASPECT;
+            const icon = attachDoodleJumpAdIcon(
                 button,
                 this.rewardedVideoIconFrame,
                 0,
                 0,
-                iconSize,
+                iconWidth,
+                iconHeight,
             );
-            layoutRewardedVideoIconBeforeLabel(
+            layoutDoodleJumpAdIconBeforeLabel(
                 icon,
                 label,
                 text,
                 27,
-                iconSize,
+                iconWidth,
+                iconHeight,
                 width,
+                4,
             );
         }
         if (this.isNodeWithin(parent, this.pauseOverlayRoot)) {
@@ -4596,7 +4688,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (label) label.color = enabled ? COLORS.paper : new Color(229, 225, 212, 255);
         const icon = button.getChildByName('ButtonIcon')?.getComponent(Sprite);
         if (icon) icon.color = enabled ? Color.WHITE : new Color(170, 170, 164, 255);
-        const rewardedIcon = button.getChildByName('RewardedVideoIcon')?.getComponent(Sprite);
+        const rewardedIcon = button.getChildByName('DoodleJumpRewardedVideoIcon')?.getComponent(Sprite);
         if (rewardedIcon) {
             rewardedIcon.color = enabled ? Color.WHITE : new Color(170, 170, 164, 255);
         }
@@ -4676,14 +4768,29 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     }
 
     private loadTexture(path: string): Promise<Texture2D> {
-        const bundle = assetManager.getBundle(DOODLE_JUMP_BUNDLE);
-        if (!bundle) return Promise.reject(new Error(`Bundle ${DOODLE_JUMP_BUNDLE} is unavailable.`));
+        const bundle = assetManager.getBundle(DOODLE_JUMP_RESOURCE_BUNDLE);
+        if (!bundle) return Promise.reject(new Error(`Bundle ${DOODLE_JUMP_RESOURCE_BUNDLE} is unavailable.`));
         return new Promise<Texture2D>((resolve, reject) => {
             bundle.load(path, Texture2D, (error, asset) => {
                 if (error || !asset) reject(error ?? new Error(`Missing asset ${path}.`));
                 else resolve(asset);
             });
         });
+    }
+
+    private async loadRewardedVideoIcon(): Promise<SpriteFrame | undefined> {
+        try {
+            const texture = await this.loadTexture(DOODLE_JUMP_REWARDED_VIDEO_ICON_PATH);
+            const frame = new SpriteFrame();
+            frame.texture = texture;
+            frame.packable = false;
+            frame.rect = new Rect(0, 0, texture.width, texture.height);
+            frame.originalSize = new Size(texture.width, texture.height);
+            return frame;
+        } catch (error: unknown) {
+            console.warn('[DoodleJumpGame] Rewarded video icon unavailable.', error);
+            return undefined;
+        }
     }
 
     private clearTextureReferences(): void {
@@ -4852,7 +4959,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!this.isGameplayPointerAllowed(location.x, location.y)) return;
         this.lastTouchStartAt = Date.now();
         this.attackPointerId = event.getID();
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
         this.tryFirePaperPlane();
     };
 
@@ -4860,7 +4968,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state !== 'Playing'
             || this.attackPointerId !== event.getID()) return;
         const location = event.getUILocation();
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
     };
 
     private readonly handleGameplayRelease = (event: EventTouch): void => {
@@ -4879,14 +4988,16 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const location = event.getUILocation();
         if (!this.isGameplayPointerAllowed(location.x, location.y)) return;
         this.mouseAttackHeld = true;
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
         this.tryFirePaperPlane();
     };
 
     private readonly handleGameplayMouseMove = (event: EventMouse): void => {
         if (!this.mouseAttackHeld || this.stateMachine.state !== 'Playing') return;
         const location = event.getUILocation();
-        this.updateAimFromUiLocation(location.x, location.y);
+        const screenLocation = event.getLocation();
+        this.updateAimFromScreenLocation(screenLocation.x, screenLocation.y);
     };
 
     private readonly handleGameplayMouseRelease = (): void => {
@@ -4913,6 +5024,18 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     }
 
     private readonly handlePlatformHide = (): void => {
+        // Failing/ResurrectPrompt 已在状态改变时同步保存。此时只 flush 待写
+        // 队列，不能再次以不可恢复状态重建存档并清掉 activeRound。
+        if (this.stateMachine.state === 'Failing'
+            || this.stateMachine.state === 'ResurrectPrompt'
+            || this.stateMachine.state === 'Resurrecting') {
+            try {
+                this.context?.services.storage.flush();
+            } catch (error: unknown) {
+                console.error('[DoodleJumpGame] Storage flush failed on platform hide.', error);
+            }
+            return;
+        }
         this.persistCurrentRunHistory(false, true);
         if (this.stateMachine.state === 'Playing') {
             this.cancelAttack(true);

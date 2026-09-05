@@ -50,7 +50,7 @@
         "enabled": true
       },
       "game2048": {
-        "enabled": false
+        "enabled": true
       },
       "sliding-puzzle": {
         "enabled": false
@@ -73,6 +73,9 @@
         "adUnitId": ""
       },
       "doodleJumpReviveRewarded": {
+        "adUnitId": ""
+      },
+      "game2048ClearSmallTilesRewarded": {
         "adUnitId": ""
       }
     }

@@ -364,6 +364,12 @@ export class DoodleJumpCombatSystem {
         })));
     }
 
+    hasLargeMonsterOnPlatform(platformId: string): boolean {
+        return this.enemies.some((enemy) => (
+            enemy.type === 'large' && enemy.anchorPlatformId === platformId
+        ));
+    }
+
     getStats(): DoodleJumpCombatStats {
         return Object.freeze({
             hitCount: this.hitCount,
@@ -484,7 +490,7 @@ export class DoodleJumpCombatSystem {
                 || platform.type === 'disappearing'
                 || platform.type === 'exploding')) return undefined;
         const maximumGroundRange = Math.max(0, platform.width / 2 - settings.width / 2 - 8);
-        if (type !== 'hover' && maximumGroundRange < 12) return undefined;
+        if (type !== 'large' && type !== 'hover' && maximumGroundRange < 12) return undefined;
         const side = this.randomStreams.next('enemy') < 0.5 ? -1 : 1;
         const anchorOffsetX = type === 'hover'
             ? side * Math.min(118, platform.width / 2 + 62)

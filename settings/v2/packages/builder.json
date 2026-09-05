@@ -33,6 +33,40 @@
             }
           }
         }
+      },
+      "00gRa8kX2LmP4qN6sT9vWy": {
+        "displayName": "微信小游戏远程游戏资源包",
+        "configs": {
+          "native": {
+            "preferredOptions": {
+              "isRemote": false,
+              "compressionType": "merge_dep"
+            }
+          },
+          "web": {
+            "preferredOptions": {
+              "isRemote": false,
+              "compressionType": "merge_dep"
+            },
+            "fallbackOptions": {
+              "isRemote": false,
+              "compressionType": "merge_dep"
+            }
+          },
+          "miniGame": {
+            "fallbackOptions": {
+              "isRemote": false,
+              "compressionType": "merge_dep"
+            },
+            "configMode": "overwrite",
+            "overwriteSettings": {
+              "wechatgame": {
+                "isRemote": true,
+                "compressionType": "merge_all_json"
+              }
+            }
+          }
+        }
       }
     }
   },

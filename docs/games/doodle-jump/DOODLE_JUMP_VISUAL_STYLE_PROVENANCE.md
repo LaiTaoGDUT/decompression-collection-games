@@ -1,4 +1,4 @@
-# 《涂鸦跃层》视觉风格参考记录
+# 《纸片跳跃》视觉风格参考记录
 
 - 资产：`art_sources/涂鸦跃层/flat-paper-ui-reference-v1.png`
 - 用途：纯 2D 平面纸片界面风格参考，不作为运行时整屏纹理。
@@ -99,7 +99,7 @@ v2 采用竖向暖白稿纸、浅蓝横线、细铅笔线、低饱和彩笔平�
 - 运行时派生：`assets/games/doodle-jump/visual/enemies/` 与 `assets/games/doodle-jump/visual/effects/enemy-*.png`。
 - 派生方式：`tools/process-doodle-jump-visuals.py` 仅按 Alpha 可见范围紧边裁切并保留原有预烘焙纸片边缘和落影，没有运行时代码阴影，也没有跨游戏复用素材。
 - 锚点与碰撞参考：地面怪物碰撞盒底边贴平台逻辑顶面；同类两帧先放入共享透明画布并按底部中心归一化，运行时再补偿平台预烘焙图片的可见上沿和怪物帧底部透明留边，使脚底最低可见点贴合平台表面。Hover 以平台顶面上方 90 units 为锚点，不使用地面补偿；开发态可叠加身体盒与头部区辅助线。
-- 怪物体型：Small、Large、Hover 三类怪物的正式 Sprite、身体碰撞盒、头顶踩踏区和占位范围均统一放大到原来的 `2×`，并继续以碰撞盒底边为视觉落脚锚点。到达 Large 解锁高度后，动态生成的 Normal 平台直接使用 `236–280 units` 的宽度范围，完整承载放大后的大型怪物并保留两侧纸片留边；禁止先生成窄平台、再在怪物出现或存档恢复时补宽。
+- 怪物体型：Small、Large、Hover 三类怪物的正式 Sprite、身体碰撞盒、头顶踩踏区和占位范围均统一放大到原来的 `2×`，并继续以碰撞盒底边为视觉落脚锚点。Normal 平台先按高度曲线收窄；只有大型怪物实际生成成功的平台才确定性扩到 `236–280 units`，以完整承载放大后的大型怪物并保留两侧纸片留边。未生成大型怪物的平台保持收窄，已扩宽平台在本局内保持宽度；存档恢复时按存活的大型怪物补齐扩宽状态。
 - 主角怪物接触反馈：源图 `art_sources/涂鸦跃层/特效/failure_vfx/enemy_contact_impact.png`，运行时派生图 `assets/games/doodle-jump/visual/effects/player-enemy-contact-impact.png`；处理脚本只按 Alpha 紧边裁切。该图仅用于 `monster-contact`，以主角局部坐标挂载并位于主角前景，普通掉落不复用。
 
 ## 阶段 6 危险物与失败反馈（当前）

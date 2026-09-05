@@ -39,7 +39,7 @@ export const DEFAULT_WATERMELON_GAMEPLAY_CONFIG: WatermelonGameplayConfig = deep
     dangerStableSpeedSquared: 0.25,
     dangerOverflowSeconds: 3.5,
     continueSettleSeconds: 0.6,
-    gravityScale: 2.35,
+    gravityScale: 2.7,
     linearDamping: 0.75,
     angularDamping: 1,
     wallFriction: 0.42,

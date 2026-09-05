@@ -17,6 +17,9 @@ export interface GameManifest {
     /** Cocos Creator Asset Bundle 名称。 */
     readonly bundle: string;
 
+    /** 进入游戏前必须完整加载的远程资源 Asset Bundle 名称。 */
+    readonly resourceBundle: string;
+
     /** Bundle 内的入口场景路径。 */
     readonly scene: string;
 
@@ -39,7 +42,7 @@ export interface GameManifest {
     readonly enabled: boolean;
     readonly visibility: 'public' | 'development';
 
-    /** 进入场景前必须完成加载的 Bundle 内资源路径。 */
+    /** 代码 Bundle 中额外需要预加载的资源路径；游戏视觉资源由 resourceBundle 整包加载。 */
     readonly preload: readonly string[];
 
     /** 用于大厅筛选和内容分组，不参与运行逻辑。 */

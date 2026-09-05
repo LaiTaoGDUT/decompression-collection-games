@@ -99,6 +99,7 @@ export interface DoodleJumpResurrectionResult {
 interface MutablePlatform {
     readonly config: DoodleJumpFixedPlatformConfig;
     readonly generated: boolean;
+    width: number;
     x: number;
     y: number;
     collisionEnabled: boolean;
@@ -191,6 +192,7 @@ export class DoodleJumpSimulation {
             this.platforms.push({
                 config: platform,
                 generated: false,
+                width: platform.width,
                 x: platform.x,
                 y: platform.y,
                 collisionEnabled: true,
@@ -208,6 +210,7 @@ export class DoodleJumpSimulation {
             });
         });
         this.platforms.forEach((platform, index) => {
+            platform.width = platform.config.width;
             platform.x = platform.config.x;
             platform.y = platform.config.y;
             platform.collisionEnabled = true;
@@ -242,6 +245,7 @@ export class DoodleJumpSimulation {
             this.cameraBottomY + this.config.design.height,
             this.getCombatOccupiedBodies(),
         );
+        this.applyLargeMonsterPlatformWidths();
         this.hazards.syncWorld(
             0,
             this.elapsedSeconds,
@@ -335,6 +339,7 @@ export class DoodleJumpSimulation {
             this.platforms.push({
                 config,
                 generated: /^G/.test(platform.id) || /^resurrect-safe-/.test(platform.id),
+                width: restoredWidth,
                 x: restoredX,
                 y: restoredY,
                 collisionEnabled: platform.collisionEnabled,
@@ -370,6 +375,7 @@ export class DoodleJumpSimulation {
             this.elapsedSeconds,
             combatPlatforms,
         );
+        this.applyLargeMonsterPlatformWidths();
         const hazardPlatforms = this.getHazardPlatforms();
         this.hazards.restore(
             snapshot.hazards,
@@ -526,6 +532,7 @@ export class DoodleJumpSimulation {
             target = {
                 config: generatedConfig,
                 generated: true,
+                width: generatedConfig.width,
                 x: generatedConfig.x,
                 y: generatedConfig.y,
                 collisionEnabled: true,
@@ -610,7 +617,7 @@ export class DoodleJumpSimulation {
                 y: platform.y,
                 baseX: platform.config.x,
                 baseY: platform.config.y,
-                width: platform.config.width,
+                width: platform.width,
                 collisionEnabled: platform.collisionEnabled,
                 consumed: platform.consumed,
                 warningProgress: platform.warningProgress,
@@ -639,6 +646,7 @@ export class DoodleJumpSimulation {
             this.cameraBottomY + visibleHeight,
             this.getCombatOccupiedBodies(),
         );
+        this.applyLargeMonsterPlatformWidths();
         this.hazards.syncWorld(
             delta,
             this.elapsedSeconds,
@@ -767,6 +775,7 @@ export class DoodleJumpSimulation {
             this.cameraBottomY + visibleHeight,
             this.getCombatOccupiedBodies(),
         );
+        this.applyLargeMonsterPlatformWidths();
         this.hazards.syncWorld(
             0,
             this.elapsedSeconds,
@@ -846,7 +855,7 @@ export class DoodleJumpSimulation {
             // A landing needs at least one quarter of the player's body width
             // to overlap the platform. More than three quarters hanging outside
             // is treated as a miss instead of an edge catch.
-            const horizontalReach = platform.config.width / 2 + halfPlayerWidth / 2;
+            const horizontalReach = platform.width / 2 + halfPlayerWidth / 2;
             if (Math.abs(this.playerX - platform.x) > horizontalReach) continue;
             if (platform.config.type === 'breakable') {
                 platform.collisionEnabled = false;
@@ -889,7 +898,7 @@ export class DoodleJumpSimulation {
                 || platform.consumed) continue;
             if (previousPlayerY >= platform.y && currentPlayerY >= platform.y) continue;
             if (Math.abs(this.playerX - platform.x)
-                > platform.config.width / 2 + halfPlayerWidth) continue;
+                > platform.width / 2 + halfPlayerWidth) continue;
             const spikeBaseY = platform.y - 12;
             const spikeTipY = platform.y - collisionDepth;
             const sweptTopY = Math.max(previousTopY, currentTopY);
@@ -938,11 +947,9 @@ export class DoodleJumpSimulation {
                 ? 'normal'
                 : this.pickAnchorPlatformType(heightMeters);
             const candidateY = layerBaseY + verticalGap;
-            const largeEnemyWidthRange = this.largeEnemyPlatformWidthRange(routeType, candidateY);
-            const widthRange = largeEnemyWidthRange
-                ?? this.anchorWidthRange(routeType, difficulty, recoveryLayer);
+            const widthRange = this.anchorWidthRange(routeType, difficulty, recoveryLayer);
             const width = Math.min(
-                largeEnemyWidthRange?.[1] ?? (recoveryLayer ? 230 : 220),
+                recoveryLayer ? 230 : 220,
                 widthRange[0] + this.nextPlatformRandom() * (widthRange[1] - widthRange[0]) + widened,
             );
             const baseHorizontalRange = recoveryLayer
@@ -993,9 +1000,7 @@ export class DoodleJumpSimulation {
 
         const fallbackGap = generation.verticalStep * generation.mainRouteStepCount;
         const fallbackY = routePrevious.config.y + fallbackGap;
-        const largeEnemyFallbackRange = this.largeEnemyPlatformWidthRange('normal', fallbackY);
-        const fallbackWidth = largeEnemyFallbackRange?.[0]
-            ?? Math.max(175, Math.min(210, generation.normalFallbackWidth));
+        const fallbackWidth = Math.max(175, Math.min(210, generation.normalFallbackWidth));
         const fallbackX = this.clampPlatformX(
             routePrevious.x + (this.nextPlatformRandom() * 2 - 1) * 120,
             fallbackWidth,
@@ -1059,6 +1064,7 @@ export class DoodleJumpSimulation {
         return {
             config,
             generated: true,
+            width: config.width,
             x: config.x,
             y: config.y,
             collisionEnabled: true,
@@ -1091,13 +1097,14 @@ export class DoodleJumpSimulation {
         if (maximumCount <= 0) return;
 
         const override = this.config.generation.platformTypeOverride;
-        const roll = this.nextPlatformRandom();
         const desiredCount = override !== 'auto'
             ? 1
-            : roll < 0.16 ? 0
-                : roll < 0.52 ? 1
-                    : roll < 0.84 ? 2
-                        : 3;
+            : this.pickInsertedPlatformCount(
+                Math.max(
+                    0,
+                    (routeConfig.y - this.config.fixedPlatforms[0].y) / 100,
+                ),
+            );
         const insertedCount = Math.min(maximumCount, desiredCount);
         if (insertedCount <= 0) return;
 
@@ -1117,8 +1124,7 @@ export class DoodleJumpSimulation {
                 (y - this.config.fixedPlatforms[0].y) / 100,
             );
             const type = this.pickInsertedPlatformType(heightMeters);
-            const widthRange = this.largeEnemyPlatformWidthRange(type, y)
-                ?? this.widthRange(type);
+            const widthRange = this.widthRange(type);
             const width = widthRange[0]
                 + this.nextPlatformRandom() * (widthRange[1] - widthRange[0]);
             let config: DoodleJumpFixedPlatformConfig | undefined;
@@ -1164,20 +1170,53 @@ export class DoodleJumpSimulation {
         return Math.max(minimum, Math.min(maximum, x));
     }
 
-    private largeEnemyPlatformWidthRange(
-        type: DoodleJumpPlatformType,
-        worldY: number,
-    ): readonly [number, number] | undefined {
-        if (type !== 'normal') return undefined;
-        const startWorldY = this.config.fixedPlatforms[0].y
-            + this.config.player.collisionHeight / 2;
-        const heightMeters = Math.max(0, (worldY - startWorldY) / 100);
-        if (heightMeters < this.config.enemies.large.unlockHeightMeters) return undefined;
+    private pickInsertedPlatformCount(heightMeters: number): number {
+        const curve = this.config.generation.insertedPlatformCountCurve;
+        const progress = Math.max(
+            0,
+            Math.min(
+                1,
+                (heightMeters - curve.startHeightMeters)
+                    / (curve.endHeightMeters - curve.startHeightMeters),
+            ),
+        );
+        const weights: readonly number[] = [
+            curve.weightsAtStart[0]
+                + (curve.weightsAtEnd[0] - curve.weightsAtStart[0]) * progress,
+            curve.weightsAtStart[1]
+                + (curve.weightsAtEnd[1] - curve.weightsAtStart[1]) * progress,
+            curve.weightsAtStart[2]
+                + (curve.weightsAtEnd[2] - curve.weightsAtStart[2]) * progress,
+            curve.weightsAtStart[3]
+                + (curve.weightsAtEnd[3] - curve.weightsAtStart[3]) * progress,
+        ];
+        let roll = this.nextPlatformRandom();
+        for (let count = 0; count < weights.length; count += 1) {
+            roll -= weights[count];
+            if (roll < 0) return count;
+        }
+        return weights.length - 1;
+    }
+
+    private applyLargeMonsterPlatformWidths(): void {
+        this.platforms.forEach((platform) => {
+            if (platform.config.type !== 'normal'
+                || !this.combat.hasLargeMonsterOnPlatform(platform.config.id)) return;
+            platform.width = Math.max(
+                platform.width,
+                this.largeEnemyPlatformWidth(platform.config.id),
+            );
+        });
+    }
+
+    private largeEnemyPlatformWidth(platformId: string): number {
         const minimum = this.config.enemies.large.width + LARGE_ENEMY_PLATFORM_EXTRA_WIDTH;
-        return Object.freeze([
-            minimum,
-            Math.min(this.config.design.width, minimum + LARGE_ENEMY_PLATFORM_WIDTH_VARIATION),
-        ]);
+        const maximum = Math.min(
+            this.config.design.width,
+            minimum + LARGE_ENEMY_PLATFORM_WIDTH_VARIATION,
+        );
+        const hash = hashDoodleJumpSeed(`${platformId}:large-enemy-platform`);
+        return minimum + (hash % 1001) / 1000 * (maximum - minimum);
     }
 
     private isCandidateReachable(
@@ -1466,7 +1505,7 @@ export class DoodleJumpSimulation {
             type: platform.config.type,
             x: platform.x,
             y: platform.y,
-            width: platform.config.width,
+            width: platform.width,
             collisionEnabled: platform.collisionEnabled,
             consumed: platform.consumed,
         }));
@@ -1478,7 +1517,7 @@ export class DoodleJumpSimulation {
             type: platform.config.type,
             x: platform.x,
             y: platform.y,
-            width: platform.config.width,
+            width: platform.width,
             collisionEnabled: platform.collisionEnabled,
             consumed: platform.consumed,
         }));
@@ -1490,7 +1529,7 @@ export class DoodleJumpSimulation {
             type: platform.config.type,
             x: platform.x,
             y: platform.y,
-            width: platform.config.width,
+            width: platform.width,
             collisionEnabled: platform.collisionEnabled,
             consumed: platform.consumed,
         }));

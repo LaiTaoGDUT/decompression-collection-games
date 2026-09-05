@@ -142,10 +142,10 @@ interface DesktopCleanupToolEffect {
     readonly removedItemIds?: readonly string[];
 }
 
-// Keep the visible pile footprint unchanged while using 27 depth layers.
-// Six items per layer gives a 162-item board without making the playmat too
+// Keep the visible pile footprint unchanged while using 32 depth layers.
+// Six items per layer gives a 192-item board without making the playmat too
 // dense to read.
-const LAYER_COUNT = 27;
+const LAYER_COUNT = 32;
 const GROUPS_PER_LAYER = 2;
 const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
 const TOTAL_ITEM_COUNT = LAYER_COUNT * ITEMS_PER_LAYER;

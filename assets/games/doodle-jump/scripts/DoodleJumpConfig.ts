@@ -1,4 +1,5 @@
 export const DOODLE_JUMP_BUNDLE = 'game-doodle-jump';
+export const DOODLE_JUMP_RESOURCE_BUNDLE = 'game-doodle-jump-assets';
 export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
 
 export type DoodleJumpPlatformType =
@@ -61,6 +62,13 @@ export interface DoodleJumpFixedPlatformConfig {
     readonly y: number;
     readonly width: number;
     readonly type: DoodleJumpPlatformType;
+}
+
+export interface DoodleJumpInsertedPlatformCountCurve {
+    readonly startHeightMeters: number;
+    readonly endHeightMeters: number;
+    readonly weightsAtStart: readonly [number, number, number, number];
+    readonly weightsAtEnd: readonly [number, number, number, number];
 }
 
 export interface DoodleJumpGameplayConfig {
@@ -246,6 +254,7 @@ export interface DoodleJumpGameplayConfig {
         verticalStep: number;
         mainRouteStepCount: number;
         maxInsertedPlatforms: number;
+        insertedPlatformCountCurve: DoodleJumpInsertedPlatformCountCurve;
         recoveryLayerInterval: number;
         maxHorizontalGap: number;
         preloadAboveScreen: number;
@@ -338,6 +347,32 @@ function unitRatio(value: unknown, path: string): number {
         throw new Error(`${path} must be between zero and one inclusive.`);
     }
     return parsed;
+}
+
+function parseInsertedPlatformCountWeights(
+    value: unknown,
+    path: string,
+): readonly [number, number, number, number] {
+    if (!Array.isArray(value) || value.length !== 4) {
+        throw new Error(`${path} must contain exactly four weights for 0/1/2/3 platforms.`);
+    }
+    const weights = value.map((weight, index) => unitRatio(weight, `${path}[${index}]`));
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    if (Math.abs(total - 1) > 0.0001) {
+        throw new Error(`${path} weights must sum to one.`);
+    }
+    return Object.freeze([
+        weights[0],
+        weights[1],
+        weights[2],
+        weights[3],
+    ]) as readonly [number, number, number, number];
+}
+
+function expectedInsertedPlatformCount(
+    weights: readonly [number, number, number, number],
+): number {
+    return weights[1] + weights[2] * 2 + weights[3] * 3;
 }
 
 function parseEnemyTypeConfig(value: unknown, path: string): DoodleJumpEnemyTypeConfig {
@@ -468,6 +503,10 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const headStart = asRecord(items.headStart, 'items.headStart');
     const resurrection = asRecord(root.resurrection, 'resurrection');
     const generation = asRecord(root.generation, 'generation');
+    const insertedPlatformCountCurve = asRecord(
+        generation.insertedPlatformCountCurve,
+        'generation.insertedPlatformCountCurve',
+    );
     if (!Array.isArray(root.fixedPlatforms) || root.fixedPlatforms.length !== 8) {
         throw new Error('fixedPlatforms must contain exactly P0-P7.');
     }
@@ -535,6 +574,33 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         || maxInsertedPlatforms >= mainRouteStepCount) {
         throw new Error(
             'generation.maxInsertedPlatforms must not exceed 3 or the available intermediate steps.',
+        );
+    }
+    const insertedPlatformCountStartHeight = nonNegativeInteger(
+        insertedPlatformCountCurve.startHeightMeters,
+        'generation.insertedPlatformCountCurve.startHeightMeters',
+    );
+    const insertedPlatformCountEndHeight = positiveInteger(
+        insertedPlatformCountCurve.endHeightMeters,
+        'generation.insertedPlatformCountCurve.endHeightMeters',
+    );
+    if (insertedPlatformCountEndHeight <= insertedPlatformCountStartHeight) {
+        throw new Error(
+            'generation.insertedPlatformCountCurve.endHeightMeters must exceed startHeightMeters.',
+        );
+    }
+    const insertedPlatformCountWeightsAtStart = parseInsertedPlatformCountWeights(
+        insertedPlatformCountCurve.weightsAtStart,
+        'generation.insertedPlatformCountCurve.weightsAtStart',
+    );
+    const insertedPlatformCountWeightsAtEnd = parseInsertedPlatformCountWeights(
+        insertedPlatformCountCurve.weightsAtEnd,
+        'generation.insertedPlatformCountCurve.weightsAtEnd',
+    );
+    if (expectedInsertedPlatformCount(insertedPlatformCountWeightsAtEnd)
+        >= expectedInsertedPlatformCount(insertedPlatformCountWeightsAtStart)) {
+        throw new Error(
+            'generation.insertedPlatformCountCurve must reduce expected inserted platform count.',
         );
     }
     if (recoveryLayerInterval < 4 || recoveryLayerInterval > 30) {
@@ -1163,6 +1229,12 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             verticalStep,
             mainRouteStepCount,
             maxInsertedPlatforms,
+            insertedPlatformCountCurve: Object.freeze({
+                startHeightMeters: insertedPlatformCountStartHeight,
+                endHeightMeters: insertedPlatformCountEndHeight,
+                weightsAtStart: insertedPlatformCountWeightsAtStart,
+                weightsAtEnd: insertedPlatformCountWeightsAtEnd,
+            }),
             recoveryLayerInterval,
             maxHorizontalGap,
             preloadAboveScreen: positiveNumber(

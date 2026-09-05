@@ -5,6 +5,8 @@ import {
     Graphics,
     Label,
     Node,
+    Sprite,
+    SpriteFrame,
     tween,
     UIOpacity,
     UITransform,
@@ -16,17 +18,67 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
+import type { WatermelonPopupFrames } from './WatermelonPopupAssets';
 import {
     calculateWatermelonOverlayMetrics,
     readWatermelonViewport,
 } from './WatermelonResponsiveRules';
-import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
+import { catUiColor } from './WatermelonUiTheme';
 
-interface ActionSpec {
+type PopupKind = 'pause' | 'continue' | 'result';
+type ButtonTone = 'mint' | 'peach' | 'cream' | 'creamMint' | 'text';
+
+function layoutVideoIconBeforeLabel(
+    icon: Node | undefined,
+    label: Label,
+    text: string,
+    fontSize: number,
+    iconSize: number,
+    buttonWidth: number,
+    gap = 10,
+): void {
+    if (!icon) return;
+    const labelTransform = label.node.getComponent(UITransform);
+    if (!labelTransform) return;
+    let measuredTextWidth = 0;
+    for (const character of text) {
+        if (character === ' ') measuredTextWidth += fontSize * 0.35;
+        else if (/^[\u0000-\u00ff]$/.test(character)) measuredTextWidth += fontSize * 0.56;
+        else measuredTextWidth += fontSize;
+    }
+    const textWidth = Math.min(
+        Math.max(fontSize, measuredTextWidth),
+        Math.max(fontSize, buttonWidth - iconSize - gap - 28),
+    );
+    const totalWidth = iconSize + gap + textWidth;
+    const centerY = label.node.position.y;
+    labelTransform.setContentSize(textWidth, labelTransform.contentSize.height);
+    label.node.setPosition((iconSize + gap) / 2, centerY);
+    icon.setPosition(-totalWidth / 2 + iconSize / 2, centerY);
+}
+
+interface PopupAction {
     readonly name: string;
     readonly label: string;
     readonly action: () => void | Promise<void>;
-    readonly tone: 'mint' | 'peach' | 'danger' | 'soft';
+    readonly tone: ButtonTone;
+    readonly videoIcon?: boolean;
+    readonly busyLabel?: string;
+    readonly compact?: boolean;
+}
+
+interface PopupStat {
+    readonly label: string;
+    readonly value: string;
+}
+
+interface PopupSpec {
+    readonly name: string;
+    readonly kind: PopupKind;
+    readonly body?: string;
+    readonly stats?: readonly PopupStat[];
+    readonly actions: readonly PopupAction[];
+    readonly highlight?: boolean;
 }
 
 interface OverlayState {
@@ -35,33 +87,78 @@ interface OverlayState {
     busy: boolean;
 }
 
-/** 萌系猫咪主题暂停与结果层；行为模型仍由公共运行层提供。 */
+export interface WatermelonContinueModel {
+    readonly continueGame: () => void | Promise<void>;
+    readonly settle: () => void | Promise<void>;
+    readonly restart: () => void | Promise<void>;
+    readonly returnToLobby: () => void | Promise<void>;
+}
+
+const PANEL_WIDTH = 650;
+const PANEL_HEIGHT = 1155;
+const BUTTON_ART_HEIGHT_RATIO = 0.68;
+const BUTTON_VISUAL_GAP = 32;
+const FIXED_BUTTON_TEXT_OFFSET_Y = 8;
+const ADJUSTED_BACKGROUND_TEXT_OFFSET_Y = 6;
+const RESULT_STAT_GAP = 102;
+
+/** 使用猫咪游戏独占图片资源构建暂停、续玩和结算弹窗。 */
 export class WatermelonOverlayView {
     private pause?: OverlayState;
+    private continuePrompt?: OverlayState;
     private result?: OverlayState;
 
     constructor(
         private readonly owner: Node,
         private readonly feedback: FeedbackService,
+        private readonly frames: WatermelonPopupFrames,
     ) {}
 
     showPause(model: MiniGamePauseModel, score: number): void {
         this.hidePause();
-        this.pause = this.build(
-            'W1PauseOverlay',
-            '暂停一下',
-            `当前分数  ${score}\n猫咪们会在原位等你回来`,
-            [
+        this.pause = this.build({
+            name: 'W1PauseOverlay',
+            kind: 'pause',
+            body: '猫咪们会在原位等你回来',
+            stats: [{ label: '当前分数', value: String(score) }],
+            actions: [
                 { name: 'ResumeButton', label: '继续游戏', action: model.resume, tone: 'mint' },
-                { name: 'RestartButton', label: '重新开始', action: model.restart, tone: 'peach' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.exit, tone: 'soft' },
+                { name: 'RestartButton', label: '重新开始', action: model.restart, tone: 'cream' },
+                { name: 'LobbyButton', label: '回到大厅', action: model.exit, tone: 'text' },
             ],
-        );
+        });
     }
 
     hidePause(): void {
         this.destroyState(this.pause);
         this.pause = undefined;
+    }
+
+    showContinue(model: WatermelonContinueModel): void {
+        this.hideContinue();
+        this.continuePrompt = this.build({
+            name: 'W1ContinueOverlay',
+            kind: 'continue',
+            body: '清除越线猫咪，继续本局',
+            actions: [
+                {
+                    name: 'ContinueButton',
+                    label: '看视频续玩',
+                    action: model.continueGame,
+                    tone: 'mint',
+                    videoIcon: true,
+                    busyLabel: '正在播放视频…',
+                },
+                { name: 'SettleButton', label: '查看本局结算', action: model.settle, tone: 'cream' },
+                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'cream' },
+                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'text' },
+            ],
+        });
+    }
+
+    hideContinue(): void {
+        this.destroyState(this.continuePrompt);
+        this.continuePrompt = undefined;
     }
 
     showResult(model: MiniGameResultModel, dismiss: () => void): void {
@@ -71,17 +168,20 @@ export class WatermelonOverlayView {
         const maxFruitLevel = typeof extra.maxFruitLevel === 'number'
             ? Math.max(0, Math.min(10, Math.floor(extra.maxFruitLevel)))
             : 0;
-        this.result = this.build(
-            'W1ResultOverlay',
-            newRecord ? '新纪录！' : '本局完成',
-            `最终分数  ${model.result.score}\n本局最大猫咪等级  ${maxFruitLevel}`,
-            [
-                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'peach' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'soft' },
-                { name: 'InspectCatsButton', label: '关闭并查看猫咪', action: dismiss, tone: 'mint' },
+        this.result = this.build({
+            name: 'W1ResultOverlay',
+            kind: 'result',
+            stats: [
+                { label: '最终分数', value: String(model.result.score) },
+                { label: '最大猫咪等级', value: String(maxFruitLevel) },
             ],
-            newRecord,
-        );
+            actions: [
+                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'peach' },
+                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'cream' },
+                { name: 'InspectCatsButton', label: '关闭并查看猫咪', action: dismiss, tone: 'creamMint' },
+            ],
+            highlight: newRecord,
+        });
     }
 
     hideResult(): void {
@@ -91,27 +191,22 @@ export class WatermelonOverlayView {
 
     dispose(): void {
         this.hidePause();
+        this.hideContinue();
         this.hideResult();
     }
 
-    private build(
-        name: string,
-        title: string,
-        body: string,
-        actions: readonly ActionSpec[],
-        highlight = false,
-    ): OverlayState {
+    private build(spec: PopupSpec): OverlayState {
         const viewport = readWatermelonViewport(this.owner);
         const metrics = calculateWatermelonOverlayMetrics(
             viewport.width,
             viewport.height,
             viewport.safeTop,
             viewport.safeBottom,
-            650,
+            PANEL_HEIGHT,
             viewport.safeLeft,
             viewport.safeRight,
         );
-        const root = new Node(name);
+        const root = new Node(spec.name);
         root.layer = this.owner.layer;
         root.setParent(this.owner);
         root.setSiblingIndex(this.owner.children.length - 1);
@@ -122,143 +217,226 @@ export class WatermelonOverlayView {
         widget.isAlignLeft = widget.isAlignRight = true;
         widget.top = widget.bottom = widget.left = widget.right = 0;
         widget.updateAlignment();
+
         const shade = root.addComponent(Graphics);
-        shade.fillColor = catUiColor('ink', 172);
-        shade.rect(
-            -metrics.width / 2,
-            -metrics.height / 2,
-            metrics.width,
-            metrics.height,
-        );
+        shade.fillColor = catUiColor('ink', 194);
+        shade.rect(-metrics.width / 2, -metrics.height / 2, metrics.width, metrics.height);
         shade.fill();
 
-        const panel = new Node('CozyPanel');
-        panel.layer = root.layer;
-        panel.setParent(root);
-        panel.setPosition(metrics.contentX, metrics.panelY);
-        panel.addComponent(UITransform).setContentSize(metrics.panelWidth, metrics.panelHeight);
-        const panelGraphics = panel.addComponent(Graphics);
-        panelGraphics.fillColor = catUiColor('ink', 38);
-        panelGraphics.roundRect(
-            -metrics.panelWidth / 2 + 14,
-            -metrics.panelHeight / 2 - 12,
-            metrics.panelWidth - 10,
-            metrics.panelHeight - 10,
-            CAT_UI_SHAPE.panelRadius,
+        const panel = this.createSpriteSurface(
+            root,
+            'CatPopupPanel',
+            this.getBackgroundFrame(spec),
+            PANEL_WIDTH,
+            PANEL_HEIGHT,
+            metrics.contentX,
+            metrics.panelY,
         );
-        panelGraphics.fill();
-        panelGraphics.fillColor = catUiColor('surface');
-        panelGraphics.strokeColor = highlight
-            ? catUiColor('butter')
-            : catUiColor('lavender');
-        panelGraphics.lineWidth = 7;
-        panelGraphics.roundRect(
-            -metrics.panelWidth / 2,
-            -metrics.panelHeight / 2,
-            metrics.panelWidth,
-            metrics.panelHeight,
-            CAT_UI_SHAPE.panelRadius,
-        );
-        panelGraphics.fill();
-        panelGraphics.stroke();
-        panelGraphics.fillColor = highlight
-            ? catUiColor('butter')
-            : catUiColor('blush');
-        panelGraphics.roundRect(-104, metrics.panelHeight / 2 - 70, 208, 38, 19);
-        panelGraphics.fill();
-        // A compact paw mark establishes theme without crowding the content.
-        panelGraphics.fillColor = catUiColor('peach', 190);
-        panelGraphics.circle(0, metrics.panelHeight / 2 - 51, 9);
-        panelGraphics.circle(-14, metrics.panelHeight / 2 - 37, 5);
-        panelGraphics.circle(0, metrics.panelHeight / 2 - 33, 5);
-        panelGraphics.circle(14, metrics.panelHeight / 2 - 37, 5);
-        panelGraphics.fill();
-
-        const contentWidth = metrics.panelWidth - 90;
-        this.createLabel(panel, 'Title', title, 0, 214, 42, highlight ? catUiColor('danger') : catUiColor('ink'), contentWidth, 62);
-        this.createLabel(panel, 'Body', body, 0, 112, 26, catUiColor('ink'), contentWidth, 100);
+        panel.getComponent(Sprite)!.type = Sprite.Type.SIMPLE;
+        this.createContent(panel, spec);
 
         const buttons: Button[] = [];
         const state: OverlayState = { root, buttons, busy: false };
-        const startY = actions.length === 3 ? -18 : -54;
-        actions.forEach((action, index) => {
-            buttons.push(this.createButton(
-                panel,
-                action,
-                startY - index * 88,
-                () => this.run(state, action),
-            ));
-        });
+        this.createActions(panel, spec, state, buttons);
 
-        panel.setScale(0.88 * metrics.panelScale, 0.72 * metrics.panelScale, 1);
+        panel.setScale(0.88 * metrics.panelScale, 0.74 * metrics.panelScale, 1);
         tween(panel)
-            .to(0.22, {
-                scale: new Vec3(metrics.panelScale, metrics.panelScale, 1),
-            }, { easing: 'backOut' })
+            .to(0.24, { scale: new Vec3(metrics.panelScale, metrics.panelScale, 1) }, { easing: 'backOut' })
             .start();
         return state;
     }
 
-    private createButton(
-        parent: Node,
-        spec: ActionSpec,
-        y: number,
-        handler: () => void,
-    ): Button {
+    private createContent(panel: Node, spec: PopupSpec): void {
+        if (spec.kind === 'pause') {
+            this.createStat(panel, spec.stats![0], 78);
+            this.createBodyLine(panel, spec.body!, -28);
+            return;
+        }
+        if (spec.kind === 'continue') {
+            this.createBodyLine(panel, spec.body!, 78);
+            return;
+        }
+        spec.stats!.forEach((stat, index) => {
+            this.createStat(panel, stat, 88 - index * RESULT_STAT_GAP);
+        });
+    }
+
+    private createActions(panel: Node, spec: PopupSpec, state: OverlayState, buttons: Button[]): void {
+        let visualTop = spec.kind === 'continue' ? 18 : -80;
+        spec.actions.forEach((action) => {
+            const visualHeight = this.getButtonVisualHeight(action);
+            const y = visualTop - visualHeight / 2;
+            buttons.push(this.createButton(panel, action, y, () => this.run(state, action)));
+            visualTop = y - visualHeight / 2 - BUTTON_VISUAL_GAP;
+        });
+    }
+
+    private getBackgroundFrame(spec: PopupSpec): SpriteFrame {
+        if (spec.kind === 'pause') return this.frames.pauseBackground;
+        if (spec.kind === 'continue') return this.frames.continueBackground;
+        return spec.highlight ? this.frames.resultBackground : this.frames.resultNormalBackground;
+    }
+
+    private createStat(parent: Node, stat: PopupStat, y: number): void {
+        const width = 510;
+        const height = this.heightForFrame(this.frames.statStrip, width);
+        const node = this.createSpriteSurface(parent, `Stat-${stat.label}`, this.frames.statStrip, width, height, 0, y);
+        node.getComponent(Sprite)!.type = Sprite.Type.SIMPLE;
+        const labelText = this.createLabel(node, 'StatLabel', stat.label, -54, ADJUSTED_BACKGROUND_TEXT_OFFSET_Y, 29, catUiColor('ink'), 260, 62);
+        labelText.isBold = true;
+        const value = this.createLabel(node, 'StatValue', stat.value, 153, ADJUSTED_BACKGROUND_TEXT_OFFSET_Y, 40, catUiColor('peachDark'), 170, 66);
+        value.isBold = true;
+    }
+
+    private createBodyLine(parent: Node, text: string, y: number): void {
+        const decorations = this.createGraphicsLayer(parent, 'BodyDecorations', 560, 64);
+        decorations.node.setPosition(0, y);
+        this.drawFlower(decorations, -246, 0, catUiColor('peach'));
+        this.drawFlower(decorations, 246, 0, catUiColor('peach'));
+        this.createLabel(parent, 'Body', text, 0, y, 29, catUiColor('ink'), 470, 58);
+    }
+
+    private createButton(parent: Node, spec: PopupAction, y: number, handler: () => void): Button {
+        const textOnly = spec.tone === 'text';
+        const width = this.getButtonWidth(spec);
+        const frame = textOnly ? undefined : this.getButtonFrame(spec.tone);
+        const height = this.getButtonHeight(spec);
         const node = new Node(spec.name);
         node.layer = parent.layer;
         node.setParent(parent);
         node.setPosition(0, y);
-        const panelWidth = parent.getComponent(UITransform)?.contentSize.width ?? 610;
-        const buttonWidth = Math.min(400, panelWidth - 130);
-        const buttonHeight = 66;
-        node.addComponent(UITransform).setContentSize(buttonWidth, buttonHeight);
+        node.addComponent(UITransform).setContentSize(width, height);
         node.addComponent(UIOpacity);
-        const graphics = node.addComponent(Graphics);
-        graphics.fillColor = spec.tone === 'mint'
-            ? catUiColor('mintDark')
-            : spec.tone === 'peach'
-                ? catUiColor('peach')
-                : spec.tone === 'danger' ? catUiColor('danger') : catUiColor('cream');
-        const labelColor = spec.name === 'RestartButton'
-            || spec.tone === 'mint'
-            || spec.tone === 'danger'
-            ? catUiColor('surface')
-            : catUiColor('ink');
-        // Use dark ink on the colored primary buttons so the outline remains
-        // distinct from both the button fill and the light popup panel.
-        graphics.strokeColor = spec.name === 'ResumeButton'
-            || spec.name === 'RestartButton'
-            ? catUiColor('ink')
-            : spec.tone === 'soft' ? catUiColor('peachDark') : catUiColor('surface');
-        graphics.lineWidth = 5;
-        graphics.roundRect(
-            -buttonWidth / 2,
-            -buttonHeight / 2,
-            buttonWidth,
-            buttonHeight,
-            CAT_UI_SHAPE.buttonRadius,
-        );
-        graphics.fill();
-        graphics.stroke();
+        if (!textOnly) {
+            const sprite = node.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.type = Sprite.Type.SIMPLE;
+            sprite.spriteFrame = frame!;
+        } else {
+            const graphics = node.addComponent(Graphics);
+            graphics.strokeColor = catUiColor('peachDark', 145);
+            graphics.lineWidth = 2;
+            graphics.moveTo(-width * 0.265, -22);
+            graphics.lineTo(width * 0.265, -22);
+            graphics.stroke();
+            this.drawPaw(graphics, -width * 0.385, 0, catUiColor('peach', 215), 0.58);
+            this.drawPaw(graphics, width * 0.385, 0, catUiColor('peach', 215), 0.58);
+        }
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
-        button.zoomScale = 0.95;
+        button.zoomScale = 0.96;
         button.duration = 0.08;
         node.on(Button.EventType.CLICK, handler);
-        const label = this.createLabel(
-            node,
-            'Label',
-            spec.label,
-            0,
-            0,
-            25,
-            labelColor,
-            buttonWidth - 30,
-            48,
-        );
-        label.isBold = true;
+        const color = spec.tone === 'mint' || spec.tone === 'creamMint'
+            ? catUiColor('mintText') : catUiColor('ink');
+        const labelX = 0;
+        const labelWidth = width - 72;
+        const labelFontSize = textOnly ? 28 : spec.tone === 'creamMint' ? 34 : 40;
+        const labelY = spec.tone === 'mint' ? ADJUSTED_BACKGROUND_TEXT_OFFSET_Y : FIXED_BUTTON_TEXT_OFFSET_Y;
+        const label = this.createLabel(node, 'Label', spec.label, labelX, labelY, labelFontSize, color, labelWidth, Math.max(62, height - 36));
+        label.enableWrapText = false;
+        label.isBold = !textOnly;
+        if (!textOnly) label.fontFamily = 'Arial Rounded MT Bold';
+        if (spec.videoIcon) {
+            const icon = this.createSpriteSurface(node, 'CatVideoIcon', this.frames.videoIcon, 78, 78, 0, 0);
+            icon.getComponent(Sprite)!.type = Sprite.Type.SIMPLE;
+            layoutVideoIconBeforeLabel(
+                icon,
+                label,
+                spec.label,
+                labelFontSize,
+                78,
+                width,
+                6,
+            );
+        }
         return button;
+    }
+
+    private getButtonFrame(tone: Exclude<ButtonTone, 'text'>): SpriteFrame {
+        if (tone === 'mint') return this.frames.mintButton;
+        if (tone === 'peach') return this.frames.peachButton;
+        if (tone === 'creamMint') return this.frames.creamMintButton;
+        return this.frames.creamButton;
+    }
+
+    private getButtonWidth(spec: PopupAction): number {
+        if (spec.tone === 'text') return 280;
+        if (spec.compact || spec.tone === 'creamMint') return 390;
+        return 450;
+    }
+
+    private getButtonHeight(spec: PopupAction): number {
+        if (spec.tone === 'text') return 60;
+        if (spec.compact || spec.tone === 'creamMint') {
+            return this.heightForFrame(this.frames.creamMintButton, this.getButtonWidth(spec));
+        }
+        // 结算页的“回到大厅”和“再来一局”需要同一按钮几何尺寸；
+        // 两套底图纵横比不同，因此 cream 按钮沿用 peach 的逻辑高度。
+        if (spec.tone === 'cream') {
+            return this.heightForFrame(this.frames.peachButton, this.getButtonWidth(spec));
+        }
+        return this.heightForFrame(this.getButtonFrame(spec.tone), this.getButtonWidth(spec));
+    }
+
+    private getButtonVisualHeight(spec: PopupAction): number {
+        if (spec.tone === 'text') return 42;
+        return this.getButtonHeight(spec) * BUTTON_ART_HEIGHT_RATIO;
+    }
+
+    private heightForFrame(frame: SpriteFrame, width: number): number {
+        const texture = frame.texture;
+        if (!texture || texture.width <= 0 || texture.height <= 0) return width;
+        return width * texture.height / texture.width;
+    }
+
+    private createSpriteSurface(
+        parent: Node,
+        name: string,
+        frame: SpriteFrame,
+        width: number,
+        height: number,
+        x: number,
+        y: number,
+    ): Node {
+        const node = new Node(name);
+        node.layer = parent.layer;
+        node.setParent(parent);
+        node.setPosition(x, y);
+        node.addComponent(UITransform).setContentSize(width, height);
+        const sprite = node.addComponent(Sprite);
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        sprite.spriteFrame = frame;
+        return node;
+    }
+
+    private createGraphicsLayer(parent: Node, name: string, width: number, height: number): Graphics {
+        const node = new Node(name);
+        node.layer = parent.layer;
+        node.setParent(parent);
+        node.addComponent(UITransform).setContentSize(width, height);
+        return node.addComponent(Graphics);
+    }
+
+    private drawPaw(graphics: Graphics, x: number, y: number, color: Color, scale: number): void {
+        graphics.fillColor = color;
+        graphics.circle(x, y - 3 * scale, 10 * scale);
+        graphics.circle(x - 11 * scale, y + 9 * scale, 5 * scale);
+        graphics.circle(x, y + 14 * scale, 5 * scale);
+        graphics.circle(x + 11 * scale, y + 9 * scale, 5 * scale);
+        graphics.fill();
+    }
+
+    private drawFlower(graphics: Graphics, x: number, y: number, color: Color): void {
+        graphics.fillColor = color;
+        graphics.circle(x - 8, y, 7);
+        graphics.circle(x + 8, y, 7);
+        graphics.circle(x, y - 8, 7);
+        graphics.circle(x, y + 8, 7);
+        graphics.fill();
+        graphics.fillColor = catUiColor('butter');
+        graphics.circle(x, y, 5);
+        graphics.fill();
     }
 
     private createLabel(
@@ -279,6 +457,7 @@ export class WatermelonOverlayView {
         node.addComponent(UITransform).setContentSize(width, height);
         const label = node.addComponent(Label);
         label.string = text;
+        label.fontFamily = 'PingFang SC';
         label.fontSize = fontSize;
         label.lineHeight = fontSize + 10;
         label.color = color;
@@ -288,7 +467,7 @@ export class WatermelonOverlayView {
         return label;
     }
 
-    private async run(state: OverlayState, spec: ActionSpec): Promise<void> {
+    private async run(state: OverlayState, spec: PopupAction): Promise<void> {
         if (state.busy) return;
         state.busy = true;
         this.feedback.play('uiButton');
@@ -297,12 +476,12 @@ export class WatermelonOverlayView {
             const opacity = button.node.getComponent(UIOpacity);
             if (opacity) opacity.opacity = button.node.name === spec.name ? 230 : 145;
         });
-        const selected = state.root.getChildByName('CozyPanel')
+        const selected = state.root.getChildByName('CatPopupPanel')
             ?.getChildByName(spec.name)
             ?.getChildByName('Label')
             ?.getComponent(Label);
         const original = selected?.string;
-        if (selected) selected.string = '处理中…';
+        if (selected) selected.string = spec.busyLabel ?? '处理中…';
         try {
             await spec.action();
         } catch (error: unknown) {

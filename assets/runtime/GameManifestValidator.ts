@@ -1,7 +1,7 @@
 import type { GameManifest } from './GameManifest';
 import { isSemanticVersion } from '../core/version/SemanticVersion';
 
-const SUPPORTED_SCHEMA_VERSION = 1;
+const SUPPORTED_SCHEMA_VERSION = 2;
 const ID_PATTERN = /^[a-z][a-z0-9-]*$/;
 const COMPONENT_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const ORIENTATIONS = ['portrait', 'landscape'] as const;
@@ -201,6 +201,12 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         errors,
     );
     const bundle = readString(value, 'bundle', `${prefix}.bundle`, errors);
+    const resourceBundle = readString(
+        value,
+        'resourceBundle',
+        `${prefix}.resourceBundle`,
+        errors,
+    );
     const scene = readResourcePath(value, 'scene', `${prefix}.scene`, errors);
     const entryComponent = readString(
         value,
@@ -272,6 +278,18 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         addError(errors, `${prefix}.bundle`, 'must use lowercase letters, numbers, and hyphens');
     }
 
+    if (resourceBundle && !ID_PATTERN.test(resourceBundle)) {
+        addError(
+            errors,
+            `${prefix}.resourceBundle`,
+            'must use lowercase letters, numbers, and hyphens',
+        );
+    }
+
+    if (bundle && resourceBundle && bundle === resourceBundle) {
+        addError(errors, `${prefix}.resourceBundle`, 'must differ from the code bundle');
+    }
+
     if (entryComponent && !COMPONENT_PATTERN.test(entryComponent)) {
         addError(errors, `${prefix}.entryComponent`, 'must be a valid component class name');
     }
@@ -290,6 +308,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         name: name!,
         description: description!,
         bundle: bundle!,
+        resourceBundle: resourceBundle!,
         scene: scene!,
         entryComponent: entryComponent!,
         icon: icon!,

@@ -40,7 +40,7 @@ export function calculateWatermelonOverlayMetrics(
     const clampedRight = Math.max(0, Math.min(width * 0.45, safeRight));
     const contentWidth = Math.max(1, width - clampedLeft - clampedRight);
     const availableHeight = Math.max(1, height - clampedTop - clampedBottom - 48);
-    const panelWidth = 610;
+    const panelWidth = 650;
     const panelHeight = Math.max(1, preferredPanelHeight);
     const panelScale = Math.max(
         0.01,

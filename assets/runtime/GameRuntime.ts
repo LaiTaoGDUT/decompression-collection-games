@@ -93,6 +93,7 @@ export class GameRuntimeError extends Error {
     constructor(
         readonly stage:
             | 'state'
+            | 'resources'
             | 'bundle'
             | 'scene'
             | 'entry'
@@ -452,11 +453,28 @@ export class GameRuntime {
         this.completedResult = undefined;
 
         try {
+            try {
+                await this.assets.prepareBundle(
+                    manifest.resourceBundle,
+                    'visual',
+                    (finished, total) => {
+                        const ratio = total > 0 ? finished / total : 0;
+                        this.loading?.updateProgress(
+                            '正在完整加载游戏资源',
+                            0.08 + Math.min(Math.max(ratio, 0), 1) * 0.48,
+                        );
+                    },
+                );
+                this.loading?.updateProgress('游戏资源完整加载完成', 0.56);
+            } catch (cause: unknown) {
+                throw new GameRuntimeError('resources', manifest.id, cause);
+            }
+
             let bundle: AssetManager.Bundle;
 
             try {
                 bundle = await this.assets.loadBundle(manifest.bundle);
-                this.loading?.updateProgress('游戏资源准备完成', 0.28);
+                this.loading?.updateProgress('游戏代码准备完成', 0.66);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('bundle', manifest.id, cause);
             }
@@ -465,7 +483,7 @@ export class GameRuntime {
 
             try {
                 scene = await this.loadAndLaunchBundleScene(bundle, manifest.scene);
-                this.loading?.updateProgress('正在布置游戏场景', 0.58);
+                this.loading?.updateProgress('正在布置游戏场景', 0.78);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('scene', manifest.id, cause);
             }
@@ -475,7 +493,7 @@ export class GameRuntime {
             try {
                 entry = this.loader.locateEntry(scene, manifest);
                 this.entry = entry;
-                this.loading?.updateProgress('正在启动游戏组件', 0.7);
+                this.loading?.updateProgress('正在启动游戏组件', 0.86);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('entry', manifest.id, cause);
             }
@@ -488,7 +506,7 @@ export class GameRuntime {
                     this.timeouts.initializeMs,
                     'game initialization',
                 );
-                this.loading?.updateProgress('马上就可以开始啦', 0.92);
+                this.loading?.updateProgress('马上就可以开始啦', 0.96);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('initialize', manifest.id, cause);
             }
@@ -518,13 +536,11 @@ export class GameRuntime {
                 sessionId: session.id,
             });
         } catch (error: unknown) {
-            this.entry = undefined;
-            this.session = undefined;
-            this.manifest = undefined;
-
             if (this.stateMachine.currentState === 'loading-game') {
                 this.stateMachine.transition('error');
             }
+
+            await this.cleanupFailedEnter(manifest);
 
             this.presentGameLoadError(manifest, error);
 
@@ -635,7 +651,7 @@ export class GameRuntime {
 
             this.flushStorage('before bundle release');
             try {
-                await this.assets.releaseBundle(manifest.bundle);
+                await this.releaseGameBundles(manifest);
             } catch (cause: unknown) {
                 releaseError = new GameRuntimeError('release', manifest.id, cause);
             }
@@ -667,6 +683,61 @@ export class GameRuntime {
         this.session = undefined;
         this.manifest = undefined;
         this.score = 0;
+    }
+
+    private async cleanupFailedEnter(manifest: GameManifest): Promise<void> {
+        const entry = this.entry;
+        if (entry) {
+            try {
+                await entry.dispose();
+            } catch (error: unknown) {
+                console.warn(
+                    '[GameRuntime] Failed entry disposal did not block load recovery.',
+                    error,
+                );
+            } finally {
+                this.flushStorage('failed game dispose');
+            }
+        }
+
+        if (this.stateMachine.currentState === 'error') {
+            try {
+                await this.enterLobbyScene();
+            } catch (error: unknown) {
+                console.warn(
+                    '[GameRuntime] Failed lobby recovery did not skip bundle cleanup.',
+                    error,
+                );
+            }
+        }
+
+        try {
+            await this.releaseGameBundles(manifest);
+        } catch (error: unknown) {
+            console.warn(
+                '[GameRuntime] Failed bundle cleanup did not block retry UI.',
+                error,
+            );
+        }
+
+        this.clearActiveGame();
+    }
+
+    private async releaseGameBundles(manifest: GameManifest): Promise<void> {
+        const bundleNames = [manifest.bundle, manifest.resourceBundle];
+        let firstError: unknown;
+
+        for (const bundleName of bundleNames) {
+            try {
+                await this.assets.releaseBundle(bundleName);
+            } catch (error: unknown) {
+                firstError ??= error;
+            }
+        }
+
+        if (firstError) {
+            throw firstError;
+        }
     }
 
     private flushStorage(reason: string): void {
@@ -870,11 +941,13 @@ export class GameRuntime {
         this.errors?.hide();
 
         try {
-            await this.enterLobby();
+            if (this.stateMachine.currentState !== 'lobby') {
+                await this.enterLobby();
+            }
             this.failedManifest = undefined;
             if (manifest) {
                 try {
-                    await this.assets.releaseBundle(manifest.bundle);
+                    await this.releaseGameBundles(manifest);
                 } catch (releaseError: unknown) {
                     console.warn(
                         '[GameRuntime] Failed bundle cleanup did not block lobby recovery.',
@@ -969,6 +1042,7 @@ export class GameRuntime {
         const stage = error instanceof GameRuntimeError ? error.stage : 'state';
         const code = stage.toUpperCase();
         const messages: Readonly<Record<string, string>> = {
+            resources: '游戏资源下载未完成，请检查网络后重试。',
             bundle: '游戏资源暂时不可用，请检查网络后重试。',
             scene: '游戏场景没有完整加载，请稍后重试。',
             entry: '游戏内容校验失败，请返回大厅。',

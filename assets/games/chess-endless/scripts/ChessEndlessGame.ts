@@ -12,7 +12,9 @@ import {
     LabelOutline,
     Mask,
     Node,
+    Rect,
     ScrollView,
+    Size,
     Sprite,
     SpriteFrame,
     Texture2D,
@@ -36,10 +38,9 @@ import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
 import {
-    attachRewardedVideoIcon,
-    layoutRewardedVideoIconBeforeLabel,
-    loadRewardedVideoIcon,
-} from '../../../shared/ui/RewardedVideoIcon';
+    autoAtlasFrameName,
+    loadAutoAtlasFrames,
+} from '../../../services/asset/AutoAtlasLoader';
 import { ChessEndlessLayout } from './ChessEndlessLayout';
 import {
     chessEndlessModalContentRect,
@@ -65,9 +66,17 @@ import {
 const { ccclass } = _decorator;
 
 const GAME_ID = 'chess-endless';
-const BUNDLE = 'game-chess-endless';
+const RESOURCE_BUNDLE = 'game-chess-endless-assets';
+const CHESS_ICON_ATLAS_PATH = 'visual/icons/chess-icons';
+const CHESS_PIECE_ATLAS_PATH = 'visual/pieces/chess-pieces';
 const CHESS_DATA_VERSION = 2;
-const MOVE_DURATION = 0.15;
+// 棋子在一次紧凑的移动中同步完成抬高与落地，避免串行动画显得拖沓。
+const MOVE_DURATION = 0.28;
+const PIECE_LIFT_DURATION = MOVE_DURATION * 0.5;
+const PIECE_DROP_DURATION = MOVE_DURATION * 0.5;
+const PIECE_MOVE_TOTAL_DURATION = MOVE_DURATION;
+const PIECE_LIFT_HEIGHT = 24;
+const PIECE_LIFT_SCALE = 1.08;
 const CAPTURE_DURATION = 0.24;
 const CHESS_MUSIC_VOLUME = 0.5;
 const CROSS_DURATION = 0.62;
@@ -152,6 +161,7 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     pauseIcon: 'visual/ui/icon_pause/texture',
     helpIcon: 'visual/ui/icon_help/texture',
     closeIcon: 'visual/ui/icon_close/texture',
+    rewardedVideoIcon: 'visual/ui/chess-endless-rewarded-video-icon-v1/texture',
     itemCard: 'visual/ui/ui_item_card_bg/texture',
     itemSlot: 'visual/ui/ui_item_slot/texture',
     crossSlash: 'visual/icons/icon_item_cross_slash/texture',
@@ -180,6 +190,62 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     rewardChestClosed: 'visual/vfx/vfx_reward_chest_closed/texture',
     rewardChestOpen: 'visual/vfx/vfx_reward_chest_open/texture',
 });
+const CHESS_REWARDED_VIDEO_ICON_ASPECT = 120 / 115;
+
+function attachChessRewardedVideoIcon(
+    parent: Node,
+    frame: SpriteFrame | undefined,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+): Node | undefined {
+    if (!frame) return undefined;
+    const node = new Node('ChessEndlessRewardedVideoIcon');
+    node.layer = parent.layer;
+    node.setParent(parent);
+    node.setPosition(x, y);
+    node.addComponent(UITransform).setContentSize(width, height);
+    const sprite = node.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    sprite.spriteFrame = frame;
+    return node;
+}
+
+function measureChessTextWidth(text: string, fontSize: number): number {
+    let width = 0;
+    for (const character of text) {
+        if (character === ' ') width += fontSize * 0.35;
+        else if (/^[\u0000-\u00ff]$/.test(character)) width += fontSize * 0.56;
+        else width += fontSize;
+    }
+    return width;
+}
+
+function layoutChessRewardedVideoIconBeforeLabel(
+    icon: Node | undefined,
+    label: Label,
+    text: string,
+    fontSize: number,
+    iconWidth: number,
+    iconHeight: number,
+    buttonWidth: number,
+    gap = 4,
+): void {
+    if (!icon) return;
+    const labelTransform = label.node.getComponent(UITransform);
+    if (!labelTransform) return;
+    const textWidth = Math.min(
+        Math.max(fontSize, measureChessTextWidth(text, fontSize)),
+        Math.max(fontSize, buttonWidth - iconWidth - gap - 28),
+    );
+    const totalWidth = iconWidth + gap + textWidth;
+    const centerY = label.node.position.y;
+    labelTransform.setContentSize(textWidth, labelTransform.contentSize.height);
+    label.node.setPosition((iconWidth + gap) / 2, centerY);
+    icon.setPosition(-totalWidth / 2 + iconWidth / 2, centerY);
+    icon.getComponent(UITransform)?.setContentSize(iconWidth, iconHeight);
+}
 
 const AUDIO_PATHS: Readonly<Record<string, string>> = Object.freeze({
     musicNormal: 'visual/audio/chess-game-normal-loop-v1',
@@ -353,7 +419,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
     private reviveAdPending = false;
-    private rewardedVideoIconFrame?: SpriteFrame;
 
     async initialize(context: MiniGameContext<ChessEndlessServices>): Promise<void> {
         if (this.lifecycle !== 'idle') throw new Error(`Cannot initialize ChessEndlessGame from ${this.lifecycle}.`);
@@ -364,7 +429,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.layout.setPlatformLayout(context.services.platform.getLayoutInfo());
         this.layout.setLayoutChangeHandler(this.handleLayoutChange);
         await Promise.all([this.loadTextures(), this.loadAudio()]);
-        this.rewardedVideoIconFrame = await loadRewardedVideoIcon();
         this.buildInterface();
         this.scheduleOnce(() => {
             if (this.lifecycle === 'disposed') return;
@@ -475,8 +539,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.context?.services.audio.stopMusic();
         this.frames.forEach((frame) => frame.destroy());
         this.frames.clear();
-        this.rewardedVideoIconFrame?.destroy();
-        this.rewardedVideoIconFrame = undefined;
         this.clips.clear();
         this.clearChildren(this.node);
         this.removeQaBridge();
@@ -1233,9 +1295,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         if (playerNode) {
             const point = this.boardPoint(target);
-            await this.tweenNode(playerNode, MOVE_DURATION, { position: new Vec3(point.x, point.y, 0) }, 'quadOut');
+            await this.animatePieceMove(playerNode, new Vec3(point.x, point.y, 0), Boolean(capturedNode));
         } else {
-            await this.waitSeconds(MOVE_DURATION);
+            await this.waitSeconds(PIECE_MOVE_TOTAL_DURATION);
         }
         if (!this.isOperationCurrent(generation)) return;
         if (capturedNode) await this.animateCapture(capturedNode, result.captured);
@@ -1284,9 +1346,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.playSound(result.killedPlayer ? 'playerKilled' : 'enemyMove', result.killedPlayer ? 1 : 0.72);
             if (moving) {
                 const point = this.boardPoint(result.moved.to);
-                await this.tweenNode(moving, MOVE_DURATION, { position: new Vec3(point.x, point.y, 0) }, 'quadOut');
+                await this.animatePieceMove(moving, new Vec3(point.x, point.y, 0), result.killedPlayer);
             } else {
-                await this.waitSeconds(MOVE_DURATION);
+                await this.waitSeconds(PIECE_MOVE_TOTAL_DURATION);
             }
             if (!this.isOperationCurrent(generation)) return;
         }
@@ -1315,6 +1377,76 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.inputLocked = false;
         this.selectedPlayer = true;
         this.renderAll();
+    }
+
+    /**
+     * 统一的棋子移动表现：棋子一边向目标格移动，一边沿弧线抬高再落下。
+     * 根节点只负责棋子在棋盘上的移动，Visual/Shadow 子节点负责高度错觉，避免改变逻辑坐标。
+     * 吃子时把移动棋子提到同层级最上方，让它在目标格视觉上压住被吃棋子。
+     */
+    private async animatePieceMove(node: Node, target: Vec3, targetOccupied = false): Promise<void> {
+        if (!node.isValid) {
+            await this.waitSeconds(PIECE_MOVE_TOTAL_DURATION);
+            return;
+        }
+
+        if (targetOccupied) this.raisePieceAbovePeers(node);
+
+        const visual = node.getChildByName('Visual');
+        const shadow = node.getChildByName('Shadow');
+        const visualPosition = visual?.position.clone() ?? new Vec3();
+        const visualScale = visual?.scale.clone() ?? new Vec3(1, 1, 1);
+        const shadowPosition = shadow?.position.clone() ?? new Vec3();
+        const shadowScale = shadow?.scale.clone() ?? new Vec3(1, 1, 1);
+
+        const moveAnimations: Promise<void>[] = [
+            this.tweenNode(node, MOVE_DURATION, { position: target }, 'quadOut'),
+        ];
+        if (visual) {
+            moveAnimations.push(new Promise((resolve) => {
+                if (!visual.isValid) {
+                    resolve();
+                    return;
+                }
+                tween(visual)
+                    .to(PIECE_LIFT_DURATION, {
+                        position: new Vec3(visualPosition.x, visualPosition.y + PIECE_LIFT_HEIGHT, visualPosition.z),
+                        scale: new Vec3(
+                            visualScale.x * PIECE_LIFT_SCALE,
+                            visualScale.y * PIECE_LIFT_SCALE,
+                            visualScale.z,
+                        ),
+                    }, { easing: 'quadOut' })
+                    .to(PIECE_DROP_DURATION, { position: visualPosition, scale: visualScale }, { easing: 'quadIn' })
+                    .call(() => resolve())
+                    .start();
+            }));
+        }
+        if (shadow) {
+            moveAnimations.push(new Promise((resolve) => {
+                if (!shadow.isValid) {
+                    resolve();
+                    return;
+                }
+                tween(shadow)
+                    .to(PIECE_LIFT_DURATION, {
+                        position: new Vec3(shadowPosition.x, shadowPosition.y - 3, shadowPosition.z),
+                        scale: new Vec3(shadowScale.x * 0.72, shadowScale.y * 0.72, shadowScale.z),
+                    }, { easing: 'quadIn' })
+                    .to(PIECE_DROP_DURATION, { position: shadowPosition, scale: shadowScale }, { easing: 'quadOut' })
+                    .call(() => resolve())
+                    .start();
+            }));
+        }
+
+        // 根节点移动与棋面高度曲线同时开始，移动总时长保持在 0.28 秒。
+        await Promise.all(moveAnimations);
+    }
+
+    private raisePieceAbovePeers(node: Node): void {
+        const parent = node.parent;
+        if (!parent || !node.isValid) return;
+        node.setSiblingIndex(Math.max(0, parent.children.length - 1));
     }
 
     private async animateCapture(node: Node, record?: KillRecord): Promise<void> {
@@ -2250,7 +2382,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         graphics.roundRect(-width / 2, -height / 2, width, height, 7);
         graphics.fill();
         graphics.stroke();
-        const iconSize = Math.min(36, height - 18);
+        const iconHeight = Math.min(40, height - 18);
+        const iconWidth = iconHeight * CHESS_REWARDED_VIDEO_ICON_ASPECT;
         this.createLabel(
             node,
             'Label',
@@ -2264,20 +2397,23 @@ export class ChessEndlessGame extends Component implements MiniGame {
         );
         const label = node.getChildByName('Label')?.getComponent(Label);
         if (showAdIcon && label) {
-            const icon = attachRewardedVideoIcon(
+            const icon = attachChessRewardedVideoIcon(
                 node,
-                this.rewardedVideoIconFrame,
+                this.frames.get('rewardedVideoIcon'),
                 0,
                 0,
-                iconSize,
+                iconWidth,
+                iconHeight,
             );
-            layoutRewardedVideoIconBeforeLabel(
+            layoutChessRewardedVideoIconBeforeLabel(
                 icon,
                 label,
                 text,
                 24,
-                iconSize,
+                iconWidth,
+                iconHeight,
                 width,
+                4,
             );
         }
         const opacity = node.addComponent(UIOpacity);
@@ -2515,26 +2651,68 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async loadTextures(): Promise<void> {
-        const bundle = assetManager.getBundle(BUNDLE);
-        if (!bundle) throw new Error(`Bundle ${BUNDLE} is unavailable.`);
-        await Promise.all(Object.keys(TEXTURE_PATHS).map((key) => new Promise<void>((resolve, reject) => {
-            const path = TEXTURE_PATHS[key]!;
-            bundle.load(path, Texture2D, (error, texture) => {
-                if (error || !texture) {
-                    reject(error ?? new Error(`Missing texture ${path}`));
-                    return;
-                }
-                const frame = new SpriteFrame();
-                frame.texture = texture;
-                this.frames.set(key, frame);
-                resolve();
-            });
-        })));
+        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
+        if (!bundle) throw new Error(`Bundle ${RESOURCE_BUNDLE} is unavailable.`);
+
+        const pieceKeys = Object.keys(TEXTURE_PATHS)
+            .filter((key) => key.indexOf('piece') === 0);
+        const iconKeys = [
+            'crossSlash',
+            'freeze',
+            'delay',
+            'banish',
+            'teleport',
+            'revive',
+        ];
+        const [pieceFrames, iconFrames] = await Promise.all([
+            loadAutoAtlasFrames(
+                bundle,
+                CHESS_PIECE_ATLAS_PATH,
+                pieceKeys.map((key) => ({
+                    key,
+                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]!),
+                    fallbackTexturePath: TEXTURE_PATHS[key]!,
+                })),
+            ),
+            loadAutoAtlasFrames(
+                bundle,
+                CHESS_ICON_ATLAS_PATH,
+                iconKeys.map((key) => ({
+                    key,
+                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]!),
+                    fallbackTexturePath: TEXTURE_PATHS[key]!,
+                })),
+            ),
+        ]);
+        Object.keys(pieceFrames).forEach((key) => this.frames.set(key, pieceFrames[key]!));
+        Object.keys(iconFrames).forEach((key) => this.frames.set(key, iconFrames[key]!));
+
+        const atlasKeys = new Set([...pieceKeys, ...iconKeys]);
+        await Promise.all(Object.keys(TEXTURE_PATHS)
+            .filter((key) => !atlasKeys.has(key))
+            .map((key) => new Promise<void>((resolve, reject) => {
+                const path = TEXTURE_PATHS[key]!;
+                bundle.load(path, Texture2D, (error, texture) => {
+                    if (error || !texture) {
+                        reject(error ?? new Error(`Missing texture ${path}`));
+                        return;
+                    }
+                    const frame = new SpriteFrame();
+                    frame.texture = texture;
+                    if (key === 'rewardedVideoIcon') {
+                        frame.packable = false;
+                        frame.rect = new Rect(0, 0, texture.width, texture.height);
+                        frame.originalSize = new Size(texture.width, texture.height);
+                    }
+                    this.frames.set(key, frame);
+                    resolve();
+                });
+            })));
     }
 
     private async loadAudio(): Promise<void> {
-        const bundle = assetManager.getBundle(BUNDLE);
-        if (!bundle) throw new Error(`Bundle ${BUNDLE} is unavailable.`);
+        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
+        if (!bundle) throw new Error(`Bundle ${RESOURCE_BUNDLE} is unavailable.`);
         await Promise.all(Object.keys(AUDIO_PATHS).map((key) => new Promise<void>((resolve, reject) => {
             const path = AUDIO_PATHS[key]!;
             bundle.load(path, AudioClip, (error, clip) => {

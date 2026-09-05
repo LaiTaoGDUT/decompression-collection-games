@@ -34,6 +34,10 @@ import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { StorageService } from '../../../services/storage/StorageService';
 import type { GameResult, LocalImageSelection } from '../../../core/types/CommonTypes';
+import {
+    autoAtlasFrameName,
+    loadAutoAtlasFrames,
+} from '../../../services/asset/AutoAtlasLoader';
 import { SlidingPuzzleCropController } from './SlidingPuzzleCropController';
 import { SlidingPuzzleModel } from './SlidingPuzzleModel';
 import {
@@ -52,6 +56,8 @@ import {
 } from './SlidingPuzzleTypes';
 
 const { ccclass } = _decorator;
+const SLIDING_PUZZLE_RESOURCE_BUNDLE = 'game-sliding-puzzle-assets';
+const SLIDING_PUZZLE_ICON_ATLAS_PATH = 'visual/icons/sliding-icons';
 
 type SlidingPuzzleState =
     | 'idle'
@@ -246,6 +252,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private imageTexture?: Texture2D;
     private imageAsset?: ImageAsset;
     private imageTextureOwned = false;
+    /** 当前纹理对应的预置图路径；换图加载期间旧图仍保持可见。 */
+    private loadedPresetAssetPath?: string;
+    /** 预置图异步加载中的目标路径，用于使连续点击正确失效旧请求。 */
+    private loadingPresetAssetPath?: string;
     private pendingImageTexture?: Texture2D;
     private pendingImageAsset?: ImageAsset;
     private pendingImageTextureOwned = false;
@@ -807,15 +817,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             const nextPresetAssetPath = SLIDING_PUZZLE_PRESET_ASSET_PATHS[nextPresetIndex];
             const keepsCurrentImage = this.selectedConfig.imageSource === 'preset'
                 && this.selectedConfig.presetAssetPath === nextPresetAssetPath
-                && this.imageTexture !== undefined;
+                && this.imageTexture !== undefined
+                && this.loadedPresetAssetPath === nextPresetAssetPath
+                && this.loadingPresetAssetPath === undefined;
             this.selectedPresetIndex = nextPresetIndex;
-            if (!keepsCurrentImage) {
-                this.imageLoadToken += 1;
-                // 先销毁仍在渲染旧图片的动态节点，再释放它使用的图片帧和纹理。
-                // 不能让旧 Sprite 在当前点击事件结束后的渲染帧里继续提交。
-                this.destroyDynamicView();
-                this.releaseImageResources();
-            }
             this.selectedConfig = Object.freeze({
                 boardSize: this.selectedSize,
                 imageSource: 'preset',
@@ -823,8 +828,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             });
             this.cropController.cancel();
             this.context?.services.feedback.play('uiButton');
-            this.showSetup();
             if (!keepsCurrentImage) {
+                // 换图时保留当前预览，直到新纹理加载完成后再原子替换，
+                // 避免“先清空旧图 -> 显示占位 -> 再重建整页”造成闪烁。
                 void this.trackAssetLoad(this.loadPresetImage(true));
             }
         }, compact ? SETUP_COMPACT_SOURCE_BUTTON_FONT_SIZE : SETUP_SOURCE_BUTTON_FONT_SIZE);
@@ -951,18 +957,25 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const path = this.selectedConfig.presetAssetPath;
-        const bundle = assetManager.getBundle('game-sliding-puzzle');
+        const bundle = assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
         if (!path || !bundle) {
             return false;
         }
-        if (this.imageTexture && !this.imageTextureOwned) {
+        if (this.imageTexture
+            && !this.imageTextureOwned
+            && this.loadedPresetAssetPath === path) {
             return true;
         }
 
         this.imageLoadToken += 1;
         const token = this.imageLoadToken;
+        this.loadingPresetAssetPath = path;
         this.releasePendingImageResources();
-        this.releaseImageResources();
+        // 不要在异步加载开始前释放当前纹理。选图页需要继续显示旧图，
+        // 待新纹理准备好后再切换，避免出现一帧空白或占位图。
+        const previousImageAsset = this.imageAsset;
+        const previousTexture = this.imageTexture;
+        const previousTextureOwned = this.imageTextureOwned;
         const texture = await new Promise<Texture2D | undefined>((resolve) => {
             try {
                 bundle.load(
@@ -979,6 +992,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         });
 
         if (token !== this.imageLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
+            if (token === this.imageLoadToken) {
+                this.loadingPresetAssetPath = undefined;
+            }
             if (texture) {
                 // 这次请求已经拿到 Bundle 资源，但所属局面已经失效，
                 // 必须在 Bundle 释放前平衡本次 load 的引用。
@@ -987,16 +1003,32 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return false;
         }
 
+        if (!texture) {
+            // 加载失败时继续保留旧图，选图页仍可操作和重试，
+            // 不要把当前预览替换成空白占位。
+            this.loadingPresetAssetPath = undefined;
+            return false;
+        }
+
+        this.imageAsset = undefined;
         this.imageTexture = texture;
         this.imageTextureOwned = false;
+        this.loadedPresetAssetPath = path;
+        this.loadingPresetAssetPath = undefined;
         if (refreshSetup && this.state === 'setup') {
             this.showSetup();
+        } else {
+            // 开始新局时当前仍是选图页，先解除旧 Sprite 对旧纹理的引用，
+            // 再释放旧资源；随后 startRound() 会创建棋盘视图。
+            this.destroyDynamicView();
         }
+        // 新预览已经建立后再释放旧纹理，保证旧 Sprite 不会引用已销毁资源。
+        this.releaseImageResourceSet(previousImageAsset, previousTexture, previousTextureOwned);
         return texture !== undefined;
     }
 
     private async loadVisualAssets(): Promise<void> {
-        const bundle = assetManager.getBundle('game-sliding-puzzle');
+        const bundle = assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
         if (!bundle || this.state === 'disposed') {
             return;
         }
@@ -1007,7 +1039,35 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 key,
                 SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key],
             ]);
+        const iconKeys: SlidingPuzzleVisualKey[] = [
+            'backIcon',
+            'pauseIcon',
+            'cropIcon',
+            'referenceIcon',
+            'albumIcon',
+            'closeIcon',
+        ];
+        const atlasFrames = await loadAutoAtlasFrames(
+            bundle,
+            SLIDING_PUZZLE_ICON_ATLAS_PATH,
+            iconKeys.map((key) => ({
+                key,
+                frameName: autoAtlasFrameName(SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key]),
+                fallbackTexturePath: SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key],
+            })),
+        );
+        if (token !== this.visualLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
+            Object.keys(atlasFrames).forEach((key) => atlasFrames[key]?.destroy());
+            return;
+        }
+        Object.keys(atlasFrames).forEach((key) => {
+            const frame = atlasFrames[key];
+            if (frame) this.visualFrames.set(key as SlidingPuzzleVisualKey, frame);
+        });
         const loaded = await Promise.all(entries.map(async ([key, path]) => {
+            if (iconKeys.indexOf(key) >= 0) {
+                return { key, texture: undefined };
+            }
             const texture = await new Promise<Texture2D | undefined>((resolve) => {
                 try {
                     bundle.load(
@@ -1079,9 +1139,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private releaseImageResources(): void {
-        // Sprite 必须先解除对图片帧的引用，再销毁帧/纹理。随机换图时这个
-        // 方法会在当前点击事件里执行；如果先 destroy 帧，Cocos 可能在同一
-        // 渲染帧继续提交旧 Sprite，Batcher2D 就会从 null 纹理读取 hash。
+        // Sprite 必须先解除对图片帧的引用，再销毁帧/纹理；如果先 destroy
+        // 帧，Cocos 可能在同一渲染帧继续提交旧 Sprite，Batcher2D 就会从
+        // null 纹理读取 hash。
         this.clearSpriteFrameReferences(this.dynamicNode);
         this.clearSpriteFrameReferences(this.overlayNode);
         this.destroyTileFrames();
@@ -1092,7 +1152,17 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.imageAsset = undefined;
         this.imageTexture = undefined;
         this.imageTextureOwned = false;
+        this.loadedPresetAssetPath = undefined;
+        this.loadingPresetAssetPath = undefined;
 
+        this.releaseImageResourceSet(imageAsset, texture, ownsTexture);
+    }
+
+    private releaseImageResourceSet(
+        imageAsset: ImageAsset | undefined,
+        texture: Texture2D | undefined,
+        ownsTexture: boolean,
+    ): void {
         if (ownsTexture) {
             texture?.destroy();
         } else if (texture) {

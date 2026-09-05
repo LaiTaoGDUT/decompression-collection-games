@@ -225,6 +225,19 @@ export class Game2048Model {
         if (this.highestTile >= MILESTONE_TILE) this.milestoneAcknowledgedState = true;
     }
 
+    /** 激励广告奖励：清除棋盘上所有 2 和 4，并保留其余棋子继续游戏。 */
+    clearSmallTiles(): number {
+        let cleared = 0;
+        this.cells = this.cells.map((value) => {
+            if (value === 2 || value === 4) {
+                cleared += 1;
+                return 0;
+            }
+            return value;
+        });
+        return cleared;
+    }
+
     move(direction: Game2048Direction): Game2048MoveResult {
         const next = [...this.cells];
         const mergedIndices: number[] = [];

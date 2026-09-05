@@ -20,10 +20,10 @@ export interface AnalyticsTransport {
     send(event: AnalyticsEvent): void;
 }
 
-/** 开发环境适配器只输出单个结构化对象。 */
+/** 开发环境适配器预留统计出口，当前不输出日志。 */
 export class ConsoleAnalyticsTransport implements AnalyticsTransport {
-    send(event: AnalyticsEvent): void {
-        console.info('[Analytics]', event);
+    send(_event: AnalyticsEvent): void {
+        // 保留适配器作为后续接入正式上报的占位，不向控制台打印统计事件。
     }
 }
 
