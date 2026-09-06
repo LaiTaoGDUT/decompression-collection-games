@@ -26,7 +26,7 @@ import {
 import { catUiColor } from './WatermelonUiTheme';
 
 type PopupKind = 'pause' | 'continue' | 'result';
-type ButtonTone = 'mint' | 'peach' | 'cream' | 'creamMint' | 'text';
+type PopupArtworkKind = 'pause' | 'continue' | 'record';
 
 function layoutVideoIconBeforeLabel(
     icon: Node | undefined,
@@ -61,10 +61,9 @@ interface PopupAction {
     readonly name: string;
     readonly label: string;
     readonly action: () => void | Promise<void>;
-    readonly tone: ButtonTone;
+    readonly textOnly?: boolean;
     readonly videoIcon?: boolean;
     readonly busyLabel?: string;
-    readonly compact?: boolean;
 }
 
 interface PopupStat {
@@ -94,15 +93,42 @@ export interface WatermelonContinueModel {
     readonly returnToLobby: () => void | Promise<void>;
 }
 
-const PANEL_WIDTH = 650;
-const PANEL_HEIGHT = 1155;
-const BUTTON_ART_HEIGHT_RATIO = 0.68;
-const BUTTON_VISUAL_GAP = 32;
-const FIXED_BUTTON_TEXT_OFFSET_Y = 8;
-const ADJUSTED_BACKGROUND_TEXT_OFFSET_Y = 6;
-const RESULT_STAT_GAP = 102;
+const PANEL_WIDTH = 565;
+const PANEL_HEIGHT = 930;
+// The source panel has had its transparent margin removed and now uses the
+// final 1x design width. Only its quiet vertical centre is stretched.
+const PAUSE_PANEL_ART_WIDTH = 550;
+const PAUSE_PANEL_ART_HEIGHT = 900;
+const PAUSE_ART_SCALE = 1;
+const PAUSE_PANEL_DISPLAY_HEIGHT = 860;
+const RECORD_PANEL_ART_WIDTH = 550;
+const RECORD_PANEL_BASE_ART_HEIGHT = 930;
+const RECORD_PANEL_ART_HEIGHT = 980;
+const RECORD_PANEL_VERTICAL_EXPANSION = RECORD_PANEL_ART_HEIGHT - RECORD_PANEL_BASE_ART_HEIGHT;
+const RECORD_PANEL_SOURCE_WIDTH = 750;
+const RECORD_PANEL_SOURCE_HEIGHT = 1261;
+const RECORD_PANEL_DISPLAY_SCALE = RECORD_PANEL_ART_WIDTH / RECORD_PANEL_SOURCE_WIDTH;
+const RECORD_PANEL_SOURCE_LOGICAL_HEIGHT = Math.max(
+    RECORD_PANEL_SOURCE_HEIGHT,
+    RECORD_PANEL_ART_HEIGHT / RECORD_PANEL_DISPLAY_SCALE,
+);
+const CONTINUE_PANEL_ART_WIDTH = 550;
+const CONTINUE_PANEL_ART_HEIGHT = 800;
+const CONTINUE_PANEL_DISPLAY_SCALE = RECORD_PANEL_ART_WIDTH / CONTINUE_PANEL_ART_WIDTH;
+const NORMAL_RESULT_PANEL_ART_HEIGHT = 880;
+const NORMAL_RESULT_PANEL_VERTICAL_TRIM = RECORD_PANEL_BASE_ART_HEIGHT - NORMAL_RESULT_PANEL_ART_HEIGHT;
+const NORMAL_RESULT_PANEL_SOURCE_LOGICAL_HEIGHT = Math.max(
+    CONTINUE_PANEL_ART_HEIGHT,
+    NORMAL_RESULT_PANEL_ART_HEIGHT / CONTINUE_PANEL_DISPLAY_SCALE,
+);
+const PAUSE_CONTROL_WIDTH = 350;
+const PAUSE_TEXT_COLOR = new Color(0x69, 0x47, 0x38, 255);
+const POPUP_TITLE_TEXT_COLOR = new Color(0x57, 0x3d, 0x30, 255);
+const RECORD_TEXT_COLOR = new Color(0x57, 0x3d, 0x30, 255);
+const RECORD_RESTART_TEXT_COLOR = new Color(0xfa, 0xf7, 0xf8, 255);
+const RECORD_STAT_BACKGROUND = new Color(0xf7, 0xe8, 0xd0, 255);
 
-/** 使用猫咪游戏独占图片资源构建暂停、续玩和结算弹窗。 */
+/** 使用水果果冻主题图片资源构建暂停、续玩和结算弹窗。 */
 export class WatermelonOverlayView {
     private pause?: OverlayState;
     private continuePrompt?: OverlayState;
@@ -119,12 +145,12 @@ export class WatermelonOverlayView {
         this.pause = this.build({
             name: 'W1PauseOverlay',
             kind: 'pause',
-            body: '猫咪们会在原位等你回来',
+            body: '水果们会在原位等你回来',
             stats: [{ label: '当前分数', value: String(score) }],
             actions: [
-                { name: 'ResumeButton', label: '继续游戏', action: model.resume, tone: 'mint' },
-                { name: 'RestartButton', label: '重新开始', action: model.restart, tone: 'cream' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.exit, tone: 'text' },
+                { name: 'ResumeButton', label: '继续游戏', action: model.resume },
+                { name: 'RestartButton', label: '重新开始', action: model.restart },
+                { name: 'LobbyButton', label: '回到大厅', action: model.exit, textOnly: true },
             ],
         });
     }
@@ -139,19 +165,18 @@ export class WatermelonOverlayView {
         this.continuePrompt = this.build({
             name: 'W1ContinueOverlay',
             kind: 'continue',
-            body: '清除越线猫咪，继续本局',
+            body: '清除越线水果，继续本局',
             actions: [
                 {
                     name: 'ContinueButton',
                     label: '看视频续玩',
                     action: model.continueGame,
-                    tone: 'mint',
                     videoIcon: true,
                     busyLabel: '正在播放视频…',
                 },
-                { name: 'SettleButton', label: '查看本局结算', action: model.settle, tone: 'cream' },
-                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'cream' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'text' },
+                { name: 'SettleButton', label: '查看本局结算', action: model.settle },
+                { name: 'RestartButton', label: '再来一局', action: model.restart },
+                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, textOnly: true },
             ],
         });
     }
@@ -173,12 +198,12 @@ export class WatermelonOverlayView {
             kind: 'result',
             stats: [
                 { label: '最终分数', value: String(model.result.score) },
-                { label: '最大猫咪等级', value: String(maxFruitLevel) },
+                { label: '最大水果等级', value: String(maxFruitLevel) },
             ],
             actions: [
-                { name: 'RestartButton', label: '再来一局', action: model.restart, tone: 'peach' },
-                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, tone: 'cream' },
-                { name: 'InspectCatsButton', label: '关闭并查看猫咪', action: dismiss, tone: 'creamMint' },
+                { name: 'RestartButton', label: '再来一局', action: model.restart },
+                { name: 'InspectFruitsButton', label: '关闭并查看水果', action: dismiss },
+                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, textOnly: true },
             ],
             highlight: newRecord,
         });
@@ -197,12 +222,20 @@ export class WatermelonOverlayView {
 
     private build(spec: PopupSpec): OverlayState {
         const viewport = readWatermelonViewport(this.owner);
+        const recordArtwork = spec.kind === 'result' && spec.highlight === true;
+        const resultArtwork = spec.kind === 'result';
         const metrics = calculateWatermelonOverlayMetrics(
             viewport.width,
             viewport.height,
             viewport.safeTop,
             viewport.safeBottom,
-            PANEL_HEIGHT,
+            spec.kind === 'pause'
+                ? PAUSE_PANEL_DISPLAY_HEIGHT
+                : spec.kind === 'continue'
+                    ? CONTINUE_PANEL_ART_HEIGHT
+                    : resultArtwork
+                        ? recordArtwork ? RECORD_PANEL_ART_HEIGHT : NORMAL_RESULT_PANEL_ART_HEIGHT
+                    : PANEL_HEIGHT,
             viewport.safeLeft,
             viewport.safeRight,
         );
@@ -219,88 +252,278 @@ export class WatermelonOverlayView {
         widget.updateAlignment();
 
         const shade = root.addComponent(Graphics);
-        shade.fillColor = catUiColor('ink', 194);
+        shade.fillColor = new Color(48, 39, 30, 178);
         shade.rect(-metrics.width / 2, -metrics.height / 2, metrics.width, metrics.height);
         shade.fill();
 
-        const panel = this.createSpriteSurface(
-            root,
-            'CatPopupPanel',
-            this.getBackgroundFrame(spec),
-            PANEL_WIDTH,
-            PANEL_HEIGHT,
-            metrics.contentX,
-            metrics.panelY,
+        const panel = resultArtwork
+            ? this.createResultPanel(
+                root,
+                metrics.contentX,
+                metrics.panelY - 16 + (recordArtwork
+                    ? RECORD_PANEL_VERTICAL_EXPANSION
+                    : -NORMAL_RESULT_PANEL_VERTICAL_TRIM) / 2,
+                recordArtwork ? this.frames.recordBackground : this.frames.continuePanel,
+                recordArtwork ? RECORD_PANEL_SOURCE_WIDTH : CONTINUE_PANEL_ART_WIDTH,
+                recordArtwork ? RECORD_PANEL_SOURCE_LOGICAL_HEIGHT : NORMAL_RESULT_PANEL_SOURCE_LOGICAL_HEIGHT,
+            )
+            : this.createSpriteSurface(
+                root,
+                'FruitPopupPanel',
+                this.getBackgroundFrame(spec),
+                spec.kind === 'pause' ? PAUSE_PANEL_ART_WIDTH : spec.kind === 'continue' ? CONTINUE_PANEL_ART_WIDTH : PANEL_WIDTH,
+                spec.kind === 'pause' ? PAUSE_PANEL_ART_HEIGHT : spec.kind === 'continue' ? CONTINUE_PANEL_ART_HEIGHT : PANEL_HEIGHT,
+                metrics.contentX,
+                spec.kind === 'pause' || spec.kind === 'continue' ? metrics.panelY - 16 : metrics.panelY - 35,
+            );
+        const contentPanel = resultArtwork
+            ? this.createResultContent(
+                panel,
+                recordArtwork ? RECORD_PANEL_DISPLAY_SCALE : CONTINUE_PANEL_DISPLAY_SCALE,
+                recordArtwork ? RECORD_PANEL_ART_HEIGHT : NORMAL_RESULT_PANEL_ART_HEIGHT,
+                recordArtwork
+                    ? -RECORD_PANEL_VERTICAL_EXPANSION / 2
+                    : NORMAL_RESULT_PANEL_VERTICAL_TRIM / 2,
+            )
+            : panel;
+        const panelSprite = panel.getComponent(Sprite);
+        if (panelSprite) {
+            panelSprite.type = spec.kind === 'pause' || spec.kind === 'continue'
+                ? Sprite.Type.SLICED
+                : Sprite.Type.SIMPLE;
+        }
+        const pauseArtwork = spec.kind === 'pause';
+        const title = this.createLabel(
+            contentPanel,
+            'PopupTitle',
+            this.getPopupTitle(spec),
+            0,
+            resultArtwork ? 245 : 238,
+            resultArtwork ? 64 : 54,
+            pauseArtwork || spec.kind === 'continue'
+                ? POPUP_TITLE_TEXT_COLOR
+                : resultArtwork
+                    ? RECORD_TEXT_COLOR
+                : catUiColor(spec.highlight ? 'peachDark' : 'ink'),
+            pauseArtwork || spec.kind === 'continue' || resultArtwork ? 470 : 500,
+            resultArtwork ? 88 : 76,
         );
-        panel.getComponent(Sprite)!.type = Sprite.Type.SIMPLE;
-        this.createContent(panel, spec);
+        title.isBold = true;
+        if (pauseArtwork || spec.kind === 'continue') title.spacingX = 8;
+        if (resultArtwork) title.spacingX = 5;
+        this.createContent(contentPanel, spec);
 
         const buttons: Button[] = [];
         const state: OverlayState = { root, buttons, busy: false };
-        this.createActions(panel, spec, state, buttons);
+        this.createActions(contentPanel, spec, state, buttons);
 
-        panel.setScale(0.88 * metrics.panelScale, 0.74 * metrics.panelScale, 1);
+        const resultDisplayScale = recordArtwork ? RECORD_PANEL_DISPLAY_SCALE : CONTINUE_PANEL_DISPLAY_SCALE;
+        const finalScale = (resultArtwork ? resultDisplayScale : PAUSE_ART_SCALE) * metrics.panelScale;
+        const initialScale = 0.88 * finalScale;
+        panel.setScale(initialScale, resultArtwork ? initialScale : 0.74 * finalScale, 1);
         tween(panel)
-            .to(0.24, { scale: new Vec3(metrics.panelScale, metrics.panelScale, 1) }, { easing: 'backOut' })
+            .to(0.24, { scale: new Vec3(finalScale, finalScale, 1) }, { easing: 'backOut' })
             .start();
         return state;
     }
 
     private createContent(panel: Node, spec: PopupSpec): void {
         if (spec.kind === 'pause') {
-            this.createStat(panel, spec.stats![0], 78);
-            this.createBodyLine(panel, spec.body!, -28);
+            this.createBodyLine(panel, spec.body!, 168, 27, 430, 54, PAUSE_TEXT_COLOR);
+            this.createPauseStat(panel, spec.stats![0]);
             return;
         }
         if (spec.kind === 'continue') {
-            this.createBodyLine(panel, spec.body!, 78);
+            this.createBodyLine(panel, spec.body!, 158, 27, 430, 54, PAUSE_TEXT_COLOR);
             return;
         }
-        spec.stats!.forEach((stat, index) => {
-            this.createStat(panel, stat, 88 - index * RESULT_STAT_GAP);
-        });
+        if (spec.kind === 'result') {
+            // Keep a breathing gap below the title and above the first action;
+            // the lobby link remains fixed so its bottom inset stays aligned
+            // with the pause popup.
+            const recordStatY = [105, -20];
+            spec.stats!.forEach((stat, index) => {
+                this.createRecordStat(panel, stat, recordStatY[index] ?? -65);
+            });
+            return;
+        }
     }
 
     private createActions(panel: Node, spec: PopupSpec, state: OverlayState, buttons: Button[]): void {
-        let visualTop = spec.kind === 'continue' ? 18 : -80;
-        spec.actions.forEach((action) => {
-            const visualHeight = this.getButtonVisualHeight(action);
-            const y = visualTop - visualHeight / 2;
-            buttons.push(this.createButton(panel, action, y, () => this.run(state, action)));
-            visualTop = y - visualHeight / 2 - BUTTON_VISUAL_GAP;
-        });
+        if (spec.kind === 'pause') {
+            const pauseY = [-125, -232, -325];
+            spec.actions.forEach((action, index) => {
+                buttons.push(this.createButton(
+                    panel,
+                    action,
+                    pauseY[index],
+                    () => this.run(state, action),
+                    'pause',
+                ));
+            });
+            return;
+        }
+        if (spec.kind === 'continue') {
+            const continueY = [16, -98, -204, -295];
+            spec.actions.forEach((action, index) => {
+                buttons.push(this.createButton(
+                    panel,
+                    action,
+                    continueY[index],
+                    () => this.run(state, action),
+                    'continue',
+                ));
+            });
+            return;
+        }
+        if (spec.kind === 'result') {
+            const resultY = [-150, -255, -340];
+            spec.actions.forEach((action, index) => {
+                buttons.push(this.createButton(
+                    panel,
+                    action,
+                    resultY[index],
+                    () => this.run(state, action),
+                    'record',
+                ));
+            });
+            return;
+        }
     }
 
     private getBackgroundFrame(spec: PopupSpec): SpriteFrame {
         if (spec.kind === 'pause') return this.frames.pauseBackground;
-        if (spec.kind === 'continue') return this.frames.continueBackground;
-        return spec.highlight ? this.frames.resultBackground : this.frames.resultNormalBackground;
+        return this.frames.continuePanel;
     }
 
-    private createStat(parent: Node, stat: PopupStat, y: number): void {
-        const width = 510;
-        const height = this.heightForFrame(this.frames.statStrip, width);
-        const node = this.createSpriteSurface(parent, `Stat-${stat.label}`, this.frames.statStrip, width, height, 0, y);
-        node.getComponent(Sprite)!.type = Sprite.Type.SIMPLE;
-        const labelText = this.createLabel(node, 'StatLabel', stat.label, -54, ADJUSTED_BACKGROUND_TEXT_OFFSET_Y, 29, catUiColor('ink'), 260, 62);
-        labelText.isBold = true;
-        const value = this.createLabel(node, 'StatValue', stat.value, 153, ADJUSTED_BACKGROUND_TEXT_OFFSET_Y, 40, catUiColor('peachDark'), 170, 66);
+    private getPopupTitle(spec: PopupSpec): string {
+        if (spec.kind === 'pause') return '暂停一下';
+        if (spec.kind === 'continue') return '再坚持一下';
+        return spec.highlight ? '新纪录！' : '本局完成';
+    }
+
+    private createPauseStat(parent: Node, stat: PopupStat): void {
+        const node = this.createSpriteSurface(
+            parent,
+            `Stat-${stat.label}`,
+            this.frames.pauseScoreBackground,
+            PAUSE_CONTROL_WIDTH,
+            130,
+            0,
+            38,
+        );
+        node.getComponent(Sprite)!.type = Sprite.Type.SLICED;
+        const label = this.createLabel(node, 'StatLabel', stat.label, 0, 24, 22, PAUSE_TEXT_COLOR, 280, 38);
+        label.isBold = false;
+        const value = this.createLabel(node, 'StatValue', stat.value, 0, -24, 46, PAUSE_TEXT_COLOR, 280, 58);
         value.isBold = true;
     }
 
-    private createBodyLine(parent: Node, text: string, y: number): void {
-        const decorations = this.createGraphicsLayer(parent, 'BodyDecorations', 560, 64);
-        decorations.node.setPosition(0, y);
-        this.drawFlower(decorations, -246, 0, catUiColor('peach'));
-        this.drawFlower(decorations, 246, 0, catUiColor('peach'));
-        this.createLabel(parent, 'Body', text, 0, y, 29, catUiColor('ink'), 470, 58);
+    private createRecordStat(parent: Node, stat: PopupStat, y: number): void {
+        const width = PAUSE_CONTROL_WIDTH;
+        const height = 112;
+        const node = new Node(`Stat-${stat.label}`);
+        node.layer = parent.layer;
+        node.setParent(parent);
+        node.setPosition(0, y);
+        node.addComponent(UITransform).setContentSize(width, height);
+        const graphics = node.addComponent(Graphics);
+        graphics.fillColor = RECORD_STAT_BACKGROUND;
+        graphics.roundRect(-width / 2, -height / 2, width, height, 30);
+        graphics.fill();
+        const label = this.createLabel(node, 'StatLabel', stat.label, 0, 29, 25, RECORD_TEXT_COLOR, 300, 36);
+        label.isBold = false;
+        const value = this.createLabel(node, 'StatValue', stat.value, 0, -21, 52, RECORD_TEXT_COLOR, 320, 72);
+        value.isBold = true;
     }
 
-    private createButton(parent: Node, spec: PopupAction, y: number, handler: () => void): Button {
-        const textOnly = spec.tone === 'text';
-        const width = this.getButtonWidth(spec);
-        const frame = textOnly ? undefined : this.getButtonFrame(spec.tone);
-        const height = this.getButtonHeight(spec);
+    /**
+     * Keep the source artwork at its native 750px width and let Cocos' native
+     * SLICED assembler stretch only the centre band. The popup root is then
+     * uniformly scaled to the 550px design width, so the top fruit crown and
+     * bottom glow retain their original aspect ratio.
+     */
+    private createResultPanel(
+        parent: Node,
+        x: number,
+        y: number,
+        frame: SpriteFrame,
+        sourceWidth: number,
+        sourceLogicalHeight: number,
+    ): Node {
+        const panel = new Node('FruitPopupPanel');
+        panel.layer = parent.layer;
+        panel.setParent(parent);
+        panel.setPosition(x, y);
+        panel.addComponent(UITransform).setContentSize(sourceWidth, sourceLogicalHeight);
+        const artwork = this.createSpriteSurface(
+            panel,
+            'RecordPanelArtwork',
+            frame,
+            sourceWidth,
+            sourceLogicalHeight,
+            0,
+            0,
+        );
+        artwork.getComponent(Sprite)!.type = Sprite.Type.SLICED;
+        return panel;
+    }
+
+    private createResultContent(
+        panel: Node,
+        displayScale: number,
+        contentHeight: number,
+        contentOffsetY: number,
+    ): Node {
+        const content = new Node('FruitPopupContent');
+        content.layer = panel.layer;
+        content.setParent(panel);
+        content.addComponent(UITransform).setContentSize(RECORD_PANEL_ART_WIDTH, contentHeight);
+        // Keep the title, scores, actions and lobby link at their established
+        // world positions while the result panel's top/bottom bounds change.
+        content.setPosition(0, contentOffsetY);
+        content.setScale(1 / displayScale, 1 / displayScale, 1);
+        return content;
+    }
+
+    private createBodyLine(
+        parent: Node,
+        text: string,
+        y: number,
+        fontSize = 27,
+        width = 430,
+        height = 54,
+        color = catUiColor('ink'),
+    ): void {
+        this.createLabel(parent, 'Body', text, 0, y, fontSize, color, width, height);
+    }
+
+    private createButton(
+        parent: Node,
+        spec: PopupAction,
+        y: number,
+        handler: () => void,
+        popupKind: PopupArtworkKind,
+    ): Button {
+        const pauseArtwork = popupKind === 'pause';
+        const recordArtwork = popupKind === 'record';
+        const continueVideoArtwork = popupKind === 'continue' && spec.videoIcon;
+        const textOnly = spec.textOnly === true;
+        const width = textOnly ? 260 : continueVideoArtwork ? PAUSE_CONTROL_WIDTH + 20 : PAUSE_CONTROL_WIDTH;
+        const frame = textOnly
+            ? undefined
+                : continueVideoArtwork
+                ? this.frames.continueVideoButton
+                : pauseArtwork
+                ? spec.name === 'ResumeButton'
+                    ? this.frames.pauseResumeButton
+                    : this.frames.pauseRestartButton
+                : recordArtwork
+                    ? spec.name === 'RestartButton'
+                        ? this.frames.recordRestartButton
+                        : this.frames.pauseRestartButton
+                : this.frames.pauseRestartButton;
+        const height = textOnly ? 58 : continueVideoArtwork ? 104 : 90;
         const node = new Node(spec.name);
         node.layer = parent.layer;
         node.setParent(parent);
@@ -310,84 +533,59 @@ export class WatermelonOverlayView {
         if (!textOnly) {
             const sprite = node.addComponent(Sprite);
             sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-            sprite.type = Sprite.Type.SIMPLE;
+            sprite.type = Sprite.Type.SLICED;
             sprite.spriteFrame = frame!;
         } else {
             const graphics = node.addComponent(Graphics);
-            graphics.strokeColor = catUiColor('peachDark', 145);
-            graphics.lineWidth = 2;
-            graphics.moveTo(-width * 0.265, -22);
-            graphics.lineTo(width * 0.265, -22);
+            graphics.strokeColor = recordArtwork
+                ? RECORD_TEXT_COLOR
+                : PAUSE_TEXT_COLOR;
+            graphics.lineWidth = 3.5;
+            const underlineY = -19;
+            graphics.moveTo(-width * 0.265, underlineY);
+            graphics.lineTo(width * 0.265, underlineY);
             graphics.stroke();
-            this.drawPaw(graphics, -width * 0.385, 0, catUiColor('peach', 215), 0.58);
-            this.drawPaw(graphics, width * 0.385, 0, catUiColor('peach', 215), 0.58);
+            graphics.fillColor = catUiColor('peach', 180);
+            graphics.circle(-width * 0.35, 0, 4);
+            graphics.circle(width * 0.35, 0, 4);
+            graphics.fill();
         }
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.96;
         button.duration = 0.08;
         node.on(Button.EventType.CLICK, handler);
-        const color = spec.tone === 'mint' || spec.tone === 'creamMint'
-            ? catUiColor('mintText') : catUiColor('ink');
+        const color = continueVideoArtwork || (pauseArtwork && spec.name === 'ResumeButton')
+            ? POPUP_TITLE_TEXT_COLOR
+            : recordArtwork && spec.name === 'RestartButton'
+            ? RECORD_RESTART_TEXT_COLOR
+            : recordArtwork
+                ? RECORD_TEXT_COLOR
+                : PAUSE_TEXT_COLOR;
         const labelX = 0;
         const labelWidth = width - 72;
-        const labelFontSize = textOnly ? 28 : spec.tone === 'creamMint' ? 34 : 40;
-        const labelY = spec.tone === 'mint' ? ADJUSTED_BACKGROUND_TEXT_OFFSET_Y : FIXED_BUTTON_TEXT_OFFSET_Y;
+        const labelFontSize = textOnly ? 28 : 34;
+        const labelY = textOnly ? 1 : 2;
         const label = this.createLabel(node, 'Label', spec.label, labelX, labelY, labelFontSize, color, labelWidth, Math.max(62, height - 36));
         label.enableWrapText = false;
-        label.isBold = !textOnly;
-        if (!textOnly) label.fontFamily = 'Arial Rounded MT Bold';
-        if (spec.videoIcon) {
-            const icon = this.createSpriteSurface(node, 'CatVideoIcon', this.frames.videoIcon, 78, 78, 0, 0);
+        label.isBold = continueVideoArtwork === true
+            || (pauseArtwork && spec.name === 'ResumeButton')
+            || (recordArtwork && spec.name === 'RestartButton');
+        label.spacingX = continueVideoArtwork ? 2 : 4;
+        if (continueVideoArtwork) {
+            const icon = this.createSpriteSurface(node, 'FruitVideoIcon', this.frames.continueVideoIcon, 64, 64, 0, 0);
             icon.getComponent(Sprite)!.type = Sprite.Type.SIMPLE;
             layoutVideoIconBeforeLabel(
                 icon,
                 label,
                 spec.label,
                 labelFontSize,
-                78,
+                64,
                 width,
                 6,
             );
         }
         return button;
-    }
-
-    private getButtonFrame(tone: Exclude<ButtonTone, 'text'>): SpriteFrame {
-        if (tone === 'mint') return this.frames.mintButton;
-        if (tone === 'peach') return this.frames.peachButton;
-        if (tone === 'creamMint') return this.frames.creamMintButton;
-        return this.frames.creamButton;
-    }
-
-    private getButtonWidth(spec: PopupAction): number {
-        if (spec.tone === 'text') return 280;
-        if (spec.compact || spec.tone === 'creamMint') return 390;
-        return 450;
-    }
-
-    private getButtonHeight(spec: PopupAction): number {
-        if (spec.tone === 'text') return 60;
-        if (spec.compact || spec.tone === 'creamMint') {
-            return this.heightForFrame(this.frames.creamMintButton, this.getButtonWidth(spec));
-        }
-        // 结算页的“回到大厅”和“再来一局”需要同一按钮几何尺寸；
-        // 两套底图纵横比不同，因此 cream 按钮沿用 peach 的逻辑高度。
-        if (spec.tone === 'cream') {
-            return this.heightForFrame(this.frames.peachButton, this.getButtonWidth(spec));
-        }
-        return this.heightForFrame(this.getButtonFrame(spec.tone), this.getButtonWidth(spec));
-    }
-
-    private getButtonVisualHeight(spec: PopupAction): number {
-        if (spec.tone === 'text') return 42;
-        return this.getButtonHeight(spec) * BUTTON_ART_HEIGHT_RATIO;
-    }
-
-    private heightForFrame(frame: SpriteFrame, width: number): number {
-        const texture = frame.texture;
-        if (!texture || texture.width <= 0 || texture.height <= 0) return width;
-        return width * texture.height / texture.width;
     }
 
     private createSpriteSurface(
@@ -408,35 +606,6 @@ export class WatermelonOverlayView {
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         sprite.spriteFrame = frame;
         return node;
-    }
-
-    private createGraphicsLayer(parent: Node, name: string, width: number, height: number): Graphics {
-        const node = new Node(name);
-        node.layer = parent.layer;
-        node.setParent(parent);
-        node.addComponent(UITransform).setContentSize(width, height);
-        return node.addComponent(Graphics);
-    }
-
-    private drawPaw(graphics: Graphics, x: number, y: number, color: Color, scale: number): void {
-        graphics.fillColor = color;
-        graphics.circle(x, y - 3 * scale, 10 * scale);
-        graphics.circle(x - 11 * scale, y + 9 * scale, 5 * scale);
-        graphics.circle(x, y + 14 * scale, 5 * scale);
-        graphics.circle(x + 11 * scale, y + 9 * scale, 5 * scale);
-        graphics.fill();
-    }
-
-    private drawFlower(graphics: Graphics, x: number, y: number, color: Color): void {
-        graphics.fillColor = color;
-        graphics.circle(x - 8, y, 7);
-        graphics.circle(x + 8, y, 7);
-        graphics.circle(x, y - 8, 7);
-        graphics.circle(x, y + 8, 7);
-        graphics.fill();
-        graphics.fillColor = catUiColor('butter');
-        graphics.circle(x, y, 5);
-        graphics.fill();
     }
 
     private createLabel(
@@ -467,6 +636,17 @@ export class WatermelonOverlayView {
         return label;
     }
 
+    private findButtonLabel(parent: Node, buttonName: string): Label | undefined {
+        const button = parent.getChildByName(buttonName);
+        const directLabel = button?.getChildByName('Label')?.getComponent(Label);
+        if (directLabel) return directLabel;
+        for (const child of parent.children) {
+            const nestedLabel = this.findButtonLabel(child, buttonName);
+            if (nestedLabel) return nestedLabel;
+        }
+        return undefined;
+    }
+
     private async run(state: OverlayState, spec: PopupAction): Promise<void> {
         if (state.busy) return;
         state.busy = true;
@@ -476,10 +656,8 @@ export class WatermelonOverlayView {
             const opacity = button.node.getComponent(UIOpacity);
             if (opacity) opacity.opacity = button.node.name === spec.name ? 230 : 145;
         });
-        const selected = state.root.getChildByName('CatPopupPanel')
-            ?.getChildByName(spec.name)
-            ?.getChildByName('Label')
-            ?.getComponent(Label);
+        const panel = state.root.getChildByName('FruitPopupPanel');
+        const selected = panel ? this.findButtonLabel(panel, spec.name) : undefined;
         const original = selected?.string;
         if (selected) selected.string = spec.busyLabel ?? '处理中…';
         try {

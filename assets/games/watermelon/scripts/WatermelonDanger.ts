@@ -41,6 +41,15 @@ export class OverflowGuard {
         return true;
     }
 
+    /** Mirror an external solver's accumulated danger time without double-counting it. */
+    synchronize(elapsedSeconds: number): boolean {
+        if (this.finished) return false;
+        this.elapsed = Math.max(0, elapsedSeconds);
+        if (this.elapsed < this.requiredSeconds) return false;
+        this.finished = true;
+        return true;
+    }
+
     reset(): void {
         this.elapsed = 0;
         this.finished = false;

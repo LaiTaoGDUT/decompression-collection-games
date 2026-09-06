@@ -116,11 +116,36 @@ interface MutablePlatform {
 
 const LARGE_ENEMY_PLATFORM_EXTRA_WIDTH = 80;
 const LARGE_ENEMY_PLATFORM_WIDTH_VARIATION = 44;
+const SHIFTING_PLATFORM_HOLD_SECONDS = 0.65;
+const SHIFTING_PLATFORM_TRANSITION_SECONDS = 0.28;
+const SHIFTING_PLATFORM_CYCLE_SECONDS = SHIFTING_PLATFORM_HOLD_SECONDS * 4
+    + SHIFTING_PLATFORM_TRANSITION_SECONDS * 4;
 
 function moveTowards(current: number, target: number, maximumDelta: number): number {
     if (current < target) return Math.min(target, current + maximumDelta);
     if (current > target) return Math.max(target, current - maximumDelta);
     return current;
+}
+
+function shiftingPlatformSegmentAt(elapsedSeconds: number): number {
+    const cycle = elapsedSeconds % SHIFTING_PLATFORM_CYCLE_SECONDS;
+    const hold = SHIFTING_PLATFORM_HOLD_SECONDS;
+    const transition = SHIFTING_PLATFORM_TRANSITION_SECONDS;
+    const firstTransitionEnd = hold + transition;
+    const secondHoldEnd = firstTransitionEnd + hold;
+    const secondTransitionEnd = secondHoldEnd + transition;
+    const thirdHoldEnd = secondTransitionEnd + hold;
+    const returnToSecondEnd = thirdHoldEnd + transition;
+    const secondReturnHoldEnd = returnToSecondEnd + hold;
+
+    if (cycle < hold) return 0;
+    if (cycle < firstTransitionEnd) return (cycle - hold) / transition;
+    if (cycle < secondHoldEnd) return 1;
+    if (cycle < secondTransitionEnd) return 1 + (cycle - secondHoldEnd) / transition;
+    if (cycle < thirdHoldEnd) return 2;
+    if (cycle < returnToSecondEnd) return 2 - (cycle - thirdHoldEnd) / transition;
+    if (cycle < secondReturnHoldEnd) return 1;
+    return 1 - (cycle - secondReturnHoldEnd) / transition;
 }
 
 export class DoodleJumpSimulation {
@@ -799,13 +824,7 @@ export class DoodleJumpSimulation {
             if (platform.config.type === 'moving') {
                 platform.x = this.platformXAt(platform.config, this.elapsedSeconds);
             } else if (platform.config.type === 'shifting') {
-                const cycle = this.elapsedSeconds % 2.79;
-                const segment = cycle < 0.65 ? 0
-                    : cycle < 0.93 ? (cycle - 0.65) / 0.28
-                        : cycle < 1.58 ? 1
-                            : cycle < 1.86 ? 1 + (cycle - 1.58) / 0.28
-                                : cycle < 2.51 ? 2
-                                    : 2 - ((cycle - 2.51) / 0.28) * 2;
+                const segment = shiftingPlatformSegmentAt(this.elapsedSeconds);
                 platform.x = platform.config.x + (segment - 1) * 70;
             } else {
                 platform.x = platform.config.x;
@@ -1321,13 +1340,7 @@ export class DoodleJumpSimulation {
             ) * profile.amplitude;
         }
         if (config.type !== 'shifting') return config.x;
-        const cycle = elapsedSeconds % 2.79;
-        const segment = cycle < 0.65 ? 0
-            : cycle < 0.93 ? (cycle - 0.65) / 0.28
-                : cycle < 1.58 ? 1
-                    : cycle < 1.86 ? 1 + (cycle - 1.58) / 0.28
-                        : cycle < 2.51 ? 2
-                            : 2 - ((cycle - 2.51) / 0.28) * 2;
+        const segment = shiftingPlatformSegmentAt(elapsedSeconds);
         return config.x + (segment - 1) * 70;
     }
 

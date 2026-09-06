@@ -21,14 +21,8 @@ export interface FruitLevelConfig {
         g: number;
         b: number;
     }>;
-    readonly backgroundColor: Readonly<{
-        r: number;
-        g: number;
-        b: number;
-    }>;
     readonly prefab: string;
     readonly sprite: string;
-    readonly animationSprites: readonly [string, string, string];
     readonly initialSpawn: boolean;
     readonly nextLevel?: number;
 }
@@ -36,10 +30,13 @@ export interface FruitLevelConfig {
 /** C6 sprites keep a two-pixel transparent gutter for safe texture filtering. */
 export const CAT_TOKEN_VISIBLE_DIAMETER_RATIO = 252 / 256;
 
+// The cat artwork is numbered by the current logical level. Prefab IDs remain
+// the legacy fruit IDs at that level because those serialized prefabs carry the
+// stable gameplay components and scene compatibility.
 const DEFINITIONS = [
     ['cream-kitten', '小奶猫', [247, 221, 176], 'cherry'],
-    ['gray-tabby', '灰灰', [157, 164, 173], 'strawberry'],
-    ['calico', '三花猫', [224, 155, 85], 'grape'],
+    ['calico', '三花猫', [224, 155, 85], 'strawberry'],
+    ['gray-tabby', '灰灰', [157, 164, 173], 'grape'],
     ['tuxedo', '奶牛猫', [62, 65, 74], 'dekopon'],
     ['white-fluffy', '小白团', [244, 244, 238], 'orange'],
     ['brown-tabby', '虎斑猫', [153, 104, 62], 'apple'],
@@ -55,32 +52,6 @@ const FRAME_VERSIONS = [
     'c6-v1', 'c6-v1', 'c8-v1', 'c6-v1', 'c6-v1',
 ] as const;
 
-/** Per-level pair with the smallest measured pixel delta among the old three idle frames. */
-const IDLE_FRAME_PAIRS = [
-    [1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
-    [1, 2], [1, 2], [1, 2], [1, 2], [1, 2],
-] as const;
-
-/**
- * 1～11 级猫咪的独立背景色相。
- *
- * Each level deliberately uses a different hue family so the cat silhouette
- * remains readable after merges and the next-cat preview is easy to scan.
- */
-const BALL_BACKGROUND_COLORS = [
-    [154, 184, 234], // 01 sky blue
-    [238, 158, 148], // 02 coral
-    [111, 201, 188], // 03 turquoise
-    [242, 199, 91],  // 04 sunflower
-    [192, 167, 229], // 05 lilac
-    [155, 201, 158], // 06 sage
-    [119, 169, 216], // 07 denim
-    [201, 141, 187], // 08 plum
-    [230, 164, 110], // 09 apricot
-    [182, 200, 107], // 10 olive
-    [215, 123, 157], // 11 berry
-] as const;
-
 function createFruitCatalog(
     gameplay: WatermelonGameplayConfig,
 ): readonly FruitLevelConfig[] {
@@ -90,12 +61,7 @@ function createFruitCatalog(
         const physics = gameplay.fruits[level];
         const assetPrefix = `visual/cats/frames-c6/cat-${level < 10 ? '0' : ''}${level}-${id}`;
         const frameVersion = FRAME_VERSIONS[level];
-        const [firstIdle, secondIdle] = IDLE_FRAME_PAIRS[level];
-        const animationSprites = Object.freeze([
-            `${assetPrefix}-idle-${firstIdle}-${frameVersion}/texture`,
-            `${assetPrefix}-idle-${secondIdle}-${frameVersion}/texture`,
-            `${assetPrefix}-fall-${frameVersion}/texture`,
-        ]) as readonly [string, string, string];
+        const sprite = `${assetPrefix}-idle-1-${frameVersion}/texture`;
         return Object.freeze({
             level,
             id,
@@ -110,16 +76,10 @@ function createFruitCatalog(
             angularDamping: gameplay.angularDamping,
             score: gameplay.mergeScores[level],
             color: Object.freeze({ r: rgb[0], g: rgb[1], b: rgb[2] }),
-            backgroundColor: Object.freeze({
-                r: BALL_BACKGROUND_COLORS[level][0],
-                g: BALL_BACKGROUND_COLORS[level][1],
-                b: BALL_BACKGROUND_COLORS[level][2],
-            }),
             // Keep the existing serialized physics prefabs for save and scene
             // compatibility; only the runtime visual catalog changes to cats.
             prefab: `prefabs/fruits/fruit-${level < 10 ? '0' : ''}${level}-${legacyPrefabId}`,
-            sprite: animationSprites[0],
-            animationSprites,
+            sprite,
             initialSpawn: level <= 4,
             ...(level < DEFINITIONS.length - 1 ? { nextLevel: level + 1 } : {}),
         });
@@ -174,9 +134,7 @@ export function validateFruitCatalog(
             || fruit.angularDamping < 0
             || fruit.score <= 0
             || !fruit.prefab
-            || !fruit.sprite
-            || fruit.animationSprites.length !== 3
-            || fruit.animationSprites.some((path) => !path)) {
+            || !fruit.sprite) {
             errors.push(`Fruit level ${index} has incomplete physical data.`);
         }
 

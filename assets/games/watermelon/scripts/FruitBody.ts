@@ -1,10 +1,7 @@
 import {
     _decorator,
     CircleCollider2D,
-    Collider2D,
-    Color,
     Component,
-    Contact2DType,
     ERigidBody2DType,
     Graphics,
     Node,
@@ -12,22 +9,16 @@ import {
     Sprite,
     SpriteFrame,
     UITransform,
-    Vec2,
 } from 'cc';
 import {
     CAT_TOKEN_VISIBLE_DIAMETER_RATIO,
     getFruitConfig,
 } from './FruitCatalog';
+import { WatermelonFluidSprite } from './WatermelonFluidSprite';
 
 const { ccclass, property } = _decorator;
-const DANGER_SPAWN_GRACE_SECONDS = 0.7;
-// Disabled while the baseline cat physics is being tuned. Keep these values
-// explicit so the settle fallback can be re-enabled without changing its flow.
-const SETTLE_LINEAR_SPEED_SQUARED = 0;
-const SETTLE_ANGULAR_SPEED = 0;
-const SETTLE_DURATION_SECONDS = 0;
 
-/** 单只圆滚滚猫咪的等级、圆形碰撞边界与内部动画。 */
+/** 单颗圆形水果的等级、圆形碰撞边界与单帧视觉。 */
 @ccclass('FruitBody')
 export class FruitBody extends Component {
     @property({ min: 0, max: 10, step: 1 })
@@ -36,105 +27,10 @@ export class FruitBody extends Component {
     private mergeLocked = false;
     private dropSequenceId = 0;
     private dropMergeCount = 0;
-    private ageSeconds = 0;
-    private enteredSafeZone = false;
-    private animationFrames: readonly SpriteFrame[] = [];
-    private bubbleFrame?: SpriteFrame;
-    private idleFrameIndex = 0;
-    private frameMode: 'idle' | 'fall' = 'idle';
-    /** 只保留当前仍在接触的碰撞体，不能用“曾经接触过”的布尔值代替。 */
-    private readonly activeContacts = new Set<Collider2D>();
-    private lowSpeedSeconds = 0;
-    private collisionHandler?: (self: FruitBody, other: FruitBody) => void;
+    private fluidSprite?: WatermelonFluidSprite;
 
     protected onLoad(): void {
         this.applyConfig();
-        const collider = this.node.getComponent(CircleCollider2D);
-        collider?.on(
-            Contact2DType.BEGIN_CONTACT,
-            this.handleContact,
-            this,
-        );
-        collider?.on(
-            Contact2DType.END_CONTACT,
-            this.handleEndContact,
-            this,
-        );
-    }
-
-    protected onDestroy(): void {
-        this.stopVisualAnimations();
-        const collider = this.node.getComponent(CircleCollider2D);
-        collider?.off(
-            Contact2DType.BEGIN_CONTACT,
-            this.handleContact,
-            this,
-        );
-        collider?.off(
-            Contact2DType.END_CONTACT,
-            this.handleEndContact,
-            this,
-        );
-        this.activeContacts.clear();
-        this.collisionHandler = undefined;
-    }
-
-    protected update(deltaTime: number): void {
-        if (Number.isFinite(deltaTime) && deltaTime > 0) {
-            this.ageSeconds += deltaTime;
-            this.updateNaturalSettle(deltaTime);
-        }
-    }
-
-    /** Preserve landing inertia, then eliminate the solver's permanent micro-roll. */
-    private updateNaturalSettle(deltaTime: number): void {
-        if (SETTLE_LINEAR_SPEED_SQUARED <= 0
-            || SETTLE_ANGULAR_SPEED <= 0
-            || SETTLE_DURATION_SECONDS <= 0) {
-            this.lowSpeedSeconds = 0;
-            return;
-        }
-
-        this.removeInvalidContacts();
-        if (this.activeContacts.size === 0 || this.mergeLocked) {
-            this.lowSpeedSeconds = 0;
-            return;
-        }
-
-        const rigidBody = this.node.getComponent(RigidBody2D);
-        if (!rigidBody || rigidBody.type !== ERigidBody2DType.Dynamic) {
-            return;
-        }
-        if (!rigidBody.isAwake()) {
-            this.lowSpeedSeconds = 0;
-            return;
-        }
-
-        const velocity = rigidBody.linearVelocity;
-        const speedSquared = velocity.x * velocity.x + velocity.y * velocity.y;
-        if (speedSquared > SETTLE_LINEAR_SPEED_SQUARED
-            || Math.abs(rigidBody.angularVelocity) > SETTLE_ANGULAR_SPEED) {
-            this.lowSpeedSeconds = 0;
-            return;
-        }
-
-        this.lowSpeedSeconds += deltaTime;
-        if (this.lowSpeedSeconds < SETTLE_DURATION_SECONDS) {
-            return;
-        }
-
-        rigidBody.linearVelocity = new Vec2(0, 0);
-        rigidBody.angularVelocity = 0;
-        rigidBody.sleep();
-        this.lowSpeedSeconds = 0;
-    }
-
-    private removeInvalidContacts(): void {
-        for (const contact of this.activeContacts) {
-            if (!contact.isValid || !contact.node?.isValid) {
-                this.activeContacts.delete(contact);
-            }
-        }
     }
 
     get isMergeLocked(): boolean {
@@ -155,21 +51,10 @@ export class FruitBody extends Component {
         this.dropMergeCount = Math.max(0, Math.floor(mergeCount));
     }
 
-    /** A new fruit starts above the line and must not look like settled overflow. */
-    canParticipateInDangerCheck(dangerY: number): boolean {
-        const top = this.node.position.y + getFruitConfig(this.level).radius;
-        if (top <= dangerY) {
-            this.enteredSafeZone = true;
+    setSpriteFrame(spriteFrame: SpriteFrame): void {
+        if (!spriteFrame?.isValid) {
+            throw new Error(`Cat level ${this.level} has no valid daily sprite frame.`);
         }
-        return this.enteredSafeZone || this.ageSeconds >= DANGER_SPAWN_GRACE_SECONDS;
-    }
-
-    setAnimationFrames(spriteFrames: readonly SpriteFrame[]): void {
-        if (spriteFrames.length < 3) {
-            throw new Error(`Cat level ${this.level} requires two idle frames and one fall frame.`);
-        }
-        this.animationFrames = spriteFrames;
-        this.frameMode = 'idle';
         const config = getFruitConfig(this.level);
         const graphics = this.node.getComponent(Graphics);
         if (graphics) {
@@ -182,147 +67,29 @@ export class FruitBody extends Component {
             visual.layer = this.node.layer;
             visual.setParent(this.node);
             visual.addComponent(UITransform);
-            visual.addComponent(Sprite);
+            visual.addComponent(WatermelonFluidSprite);
         }
         // The visible token and CircleCollider2D use the same physical diameter.
         const visualSize = config.radius * 2 / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
-        const sprite = visual.getComponent(Sprite)!;
+        const sprite = visual.getComponent(WatermelonFluidSprite)!;
+        this.fluidSprite = sprite;
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        sprite.spriteFrame = spriteFrames[0];
+        sprite.spriteFrame = spriteFrame;
         visual.getComponent(UITransform)?.setContentSize(visualSize, visualSize);
-        this.drawFruitContrastBacking(visual, visualSize);
-        this.setBubbleFrame(this.bubbleFrame);
-        this.startIdleFrameAnimation();
     }
 
-    /** Apply the shared transparent highlight after the cat and colored ball are ready. */
-    setBubbleFrame(frame?: SpriteFrame): void {
-        this.bubbleFrame = frame;
-        const visual = this.node.getChildByName('CatVisual');
-        if (!visual) {
-            return;
-        }
-
-        let bubble = this.node.getChildByName('BubbleForeground');
-        if (!bubble) {
-            bubble = new Node('BubbleForeground');
-            bubble.layer = this.node.layer;
-            bubble.setParent(this.node);
-            bubble.addComponent(UITransform);
-            bubble.addComponent(Sprite);
-        }
-
-        const visualSize = getFruitConfig(this.level).radius * 2 / CAT_TOKEN_VISIBLE_DIAMETER_RATIO;
-        bubble.getComponent(UITransform)?.setContentSize(visualSize, visualSize);
-        const sprite = bubble.getComponent(Sprite)!;
-        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        sprite.spriteFrame = frame ?? null;
-        bubble.active = !!frame;
-        bubble.setSiblingIndex(visual.getSiblingIndex() + 1);
-    }
-
-    private drawFruitContrastBacking(visual: Node, visualSize: number): void {
-        let ring = this.node.getChildByName('FruitOutline');
-        if (!ring) {
-            ring = new Node('FruitOutline');
-            ring.layer = this.node.layer;
-            ring.setParent(this.node);
-            ring.addComponent(UITransform);
-            ring.addComponent(Graphics);
-        }
-        ring.active = true;
-        ring.setPosition(0, 0);
-        ring.getComponent(UITransform)?.setContentSize(visualSize + 14, visualSize + 14);
-        // Keep the translucent contrast ring behind the sprite across repeated
-        // visual setup; matching its index would alternate their draw order.
-        ring.setSiblingIndex(Math.max(0, visual.getSiblingIndex() - 1));
-        // Draw the configured color to the complete circular boundary. The
-        // cat sprite and bubble highlight are layered above this backing.
-        const backgroundRadius = visualSize / 2;
-        const graphics = ring.getComponent(Graphics)!;
-        const config = getFruitConfig(this.level);
-        graphics.clear();
-        graphics.fillColor = new Color(86, 62, 82, 30);
-        graphics.circle(1.5, -2, backgroundRadius + 1.5);
-        graphics.fill();
-        graphics.fillColor = new Color(
-            config.backgroundColor.r,
-            config.backgroundColor.g,
-            config.backgroundColor.b,
-            255,
-        );
-        graphics.circle(0, 0, backgroundRadius);
-        graphics.fill();
-        graphics.strokeColor = new Color(105, 75, 95, 90);
-        graphics.lineWidth = Math.max(2, visualSize * 0.018);
-        graphics.circle(0, 0, Math.max(0, backgroundRadius - graphics.lineWidth / 2));
-        graphics.stroke();
-    }
-
-    playDropAnimation(): void {
-        this.activeContacts.clear();
-        this.lowSpeedSeconds = 0;
-        this.frameMode = 'fall';
-        this.stopFrameAnimation();
-        this.showFrame(2);
-    }
-
-    playCollisionAnimation(): void {
-        this.frameMode = 'idle';
-        this.startIdleFrameAnimation();
-    }
-
-    playMergeReveal(): void {
-        this.frameMode = 'idle';
-        this.stopFrameAnimation();
-        this.showFrame(1);
-        this.scheduleOnce(this.startIdleFrameAnimation, 0.18);
-    }
-
-    stopVisualAnimations(): void {
-        this.stopFrameAnimation();
-    }
-
-    resumeIdleAnimation(): void {
-        if (this.frameMode === 'fall') {
-            this.showFrame(2);
-        } else {
-            this.startIdleFrameAnimation();
-        }
-    }
-
-    private readonly startIdleFrameAnimation = (): void => {
-        if (!this.node.isValid || this.mergeLocked || this.animationFrames.length < 2) {
-            return;
-        }
-        this.stopFrameAnimation();
-        this.idleFrameIndex = this.level % 2;
-        this.showFrame(this.idleFrameIndex);
-        this.schedule(this.advanceIdleFrame, 0.9 + (this.level % 3) * 0.1);
-    };
-
-    private readonly advanceIdleFrame = (): void => {
-        this.idleFrameIndex = (this.idleFrameIndex + 1) % 2;
-        this.showFrame(this.idleFrameIndex);
-    };
-
-    private stopFrameAnimation(): void {
-        this.unschedule(this.advanceIdleFrame);
-        this.unschedule(this.startIdleFrameAnimation);
-    }
-
-    private showFrame(index: number): void {
-        const sprite = this.node.getChildByName('CatVisual')?.getComponent(Sprite);
-        const frame = this.animationFrames[index];
-        if (sprite && frame?.isValid) {
-            sprite.spriteFrame = frame;
-        }
-    }
-
-    setCollisionHandler(
-        handler: (self: FruitBody, other: FruitBody) => void,
+    applyFluidShape(
+        points: readonly { x: number; y: number }[],
+        centerX: number,
+        centerY: number,
     ): void {
-        this.collisionHandler = handler;
+        if (points.length < 3) return;
+        const visual = this.fluidSprite?.node ?? this.node.getChildByName('CatVisual');
+        const sprite = this.fluidSprite ?? visual?.getComponent(WatermelonFluidSprite);
+        if (!visual || !sprite) return;
+        this.fluidSprite = sprite;
+        sprite.setFluidPoints(points, centerX, centerY);
+        visual.setScale(1, 1, 1);
     }
 
     lockForMerge(): boolean {
@@ -395,39 +162,11 @@ export class FruitBody extends Component {
             rigidBody.linearDamping = config.linearDamping;
             rigidBody.angularDamping = config.angularDamping;
             rigidBody.bullet = config.radius <= 38;
+            // Movement and collision are owned exclusively by the soft-body
+            // world. The legacy Cocos body remains serialized only for prefab
+            // compatibility and never participates at runtime.
+            rigidBody.enabled = false;
         }
     }
 
-    private readonly handleContact = (
-        _selfCollider: Collider2D,
-        otherCollider: Collider2D,
-    ): void => {
-        if (this.mergeLocked) {
-            return;
-        }
-
-        this.activeContacts.add(otherCollider);
-
-        // The falling frame describes the airborne state, so any first
-        // physical contact (floor, wall or another cat) ends it.
-        if (this.frameMode === 'fall') {
-            this.playCollisionAnimation();
-        }
-
-        const other = otherCollider.node.getComponent(FruitBody);
-
-        if (other) {
-            this.collisionHandler?.(this, other);
-        }
-    };
-
-    private readonly handleEndContact = (
-        _selfCollider: Collider2D,
-        otherCollider: Collider2D,
-    ): void => {
-        this.activeContacts.delete(otherCollider);
-        if (this.activeContacts.size === 0) {
-            this.lowSpeedSeconds = 0;
-        }
-    };
 }

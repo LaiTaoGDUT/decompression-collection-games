@@ -73,12 +73,13 @@
   "splash-setting": {
     "logo": {
       "type": "custom",
-      "image": "project://settings/lobby-cn-title-logo-v3.png"
+      "image": "project://settings/小程序标题.png"
     },
     "totalTime": 500,
     "background": {
-      "image": "project://settings/插屏背景.png",
+      "image": "project://settings/插屏背景1.jpg",
       "type": "custom"
-    }
+    },
+    "displayRatio": 0.75
   }
 }

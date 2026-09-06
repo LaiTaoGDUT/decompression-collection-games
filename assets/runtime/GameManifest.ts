@@ -26,8 +26,7 @@ export interface GameManifest {
     /** 入口场景中实现 MiniGame 协议的组件类名。 */
     readonly entryComponent: string;
 
-    /** 大厅卡片使用的资源路径。 */
-    readonly icon: string;
+    /** 大厅卡片使用的封面资源路径。 */
     readonly cover: string;
 
     /**

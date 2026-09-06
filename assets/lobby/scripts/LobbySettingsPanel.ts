@@ -1,4 +1,5 @@
 import {
+    assetManager,
     Button,
     BlockInputEvents,
     Color,
@@ -6,8 +7,14 @@ import {
     HorizontalTextAlignment,
     Label,
     Node,
+    Sprite,
+    SpriteFrame,
     sys,
+    Texture2D,
+    tween,
+    Tween,
     UITransform,
+    Vec3,
     VerticalTextAlignment,
     view,
     Widget,
@@ -38,7 +45,6 @@ interface SettingRow {
     readonly track: Graphics;
     readonly knob: Graphics;
     readonly valueLabel: Label;
-    readonly unavailableLabel?: Label;
 }
 
 const COLOR = {
@@ -54,13 +60,35 @@ const COLOR = {
     error: new Color(216, 78, 92, 255),
 };
 
+const UI_ASSET_PATHS = {
+    settings: 'visual/ui/lobby-settings-button/texture',
+    close: 'visual/ui/lobby-close-button/texture',
+    panel: 'visual/ui/lobby-settings-panel/texture',
+    music: 'visual/ui/lobby-music-icon/texture',
+    sound: 'visual/ui/lobby-sound-icon/texture',
+    vibration: 'visual/ui/lobby-vibration-icon/texture',
+} as const;
+
+const SETTINGS_PANEL_WIDTH = 620;
+const SETTINGS_PANEL_HEIGHT = 620;
+const SETTINGS_PANEL_CORNER_RADIUS = 34;
+const SETTINGS_CLOSE_SIZE = 64;
+const SETTINGS_CLOSE_MARGIN = 20;
+const SETTINGS_PANEL_COLLAPSED_SCALE_X = 0.88;
+const SETTINGS_PANEL_COLLAPSED_SCALE_Y = 0.74;
+const SETTINGS_PANEL_OPEN_DURATION = 0.24;
+
 /** L1 settings UI. It only talks to public services and owns no game node. */
 export class LobbySettingsPanel {
     private root: Node | null = null;
+    private panel: Node | null = null;
     private settingsEntry: Node | null = null;
     private services?: LobbySettingsServices;
     private errorLabel?: Label;
     private readonly rows = new Map<SettingKey, SettingRow>();
+    private readonly ownedFrames: SpriteFrame[] = [];
+    private loadToken = 0;
+    private transitionToken = 0;
 
     mount(contentRoot: Node, services: LobbySettingsServices): void {
         if (this.root?.isValid) {
@@ -79,11 +107,18 @@ export class LobbySettingsPanel {
 
     unmount(): void {
         view.off('canvas-resize', this.handleCanvasResize, this);
+        if (this.panel?.isValid) {
+            Tween.stopAllByTarget(this.panel);
+        }
         this.rows.clear();
         this.root = null;
+        this.panel = null;
         this.settingsEntry = null;
         this.services = undefined;
         this.errorLabel = undefined;
+        this.loadToken += 1;
+        this.ownedFrames.forEach((frame) => frame.destroy());
+        this.ownedFrames.length = 0;
     }
 
     private createSettingsEntry(
@@ -97,6 +132,7 @@ export class LobbySettingsPanel {
                 existing.setParent(fullscreenParent);
             }
             this.settingsEntry = existing;
+            this.ensureSettingsEntrySkin(existing);
             this.layoutSettingsEntry();
             return;
         }
@@ -106,38 +142,9 @@ export class LobbySettingsPanel {
         fullscreenParent.addChild(entry);
         entry.addComponent(UITransform).setContentSize(
             LOBBY_SETTINGS_ENTRY_SIZE,
-            LOBBY_SETTINGS_ENTRY_SIZE,
+            LOBBY_SETTINGS_ENTRY_SIZE * 134 / 128,
         );
-        const graphics = entry.addComponent(Graphics);
-        graphics.fillColor = new Color(12, 37, 149, 145);
-        graphics.circle(3, -6, 39);
-        graphics.fill();
-        graphics.fillColor = new Color(41, 118, 250, 255);
-        graphics.strokeColor = new Color(211, 243, 255, 255);
-        graphics.lineWidth = 4;
-        graphics.circle(0, 0, 37);
-        graphics.fill();
-        graphics.stroke();
-        graphics.fillColor = new Color(105, 205, 255, 255);
-        graphics.circle(0, 0, 29);
-        graphics.fill();
-        graphics.fillColor = Color.WHITE;
-        for (let index = 0; index < 32; index += 1) {
-            const angle = -Math.PI / 2 + index * Math.PI / 16;
-            const radius = index % 4 < 2 ? 20 : 15;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            if (index === 0) {
-                graphics.moveTo(x, y);
-            } else {
-                graphics.lineTo(x, y);
-            }
-        }
-        graphics.close();
-        graphics.fill();
-        graphics.fillColor = new Color(42, 121, 238, 255);
-        graphics.circle(0, 0, 7);
-        graphics.fill();
+        this.ensureSettingsEntrySkin(entry);
 
         const button = entry.addComponent(Button);
         button.transition = Button.Transition.SCALE;
@@ -146,6 +153,25 @@ export class LobbySettingsPanel {
         entry.on(Button.EventType.CLICK, this.open, this);
         this.settingsEntry = entry;
         this.layoutSettingsEntry();
+    }
+
+    private ensureSettingsEntrySkin(entry: Node): void {
+        let skin = entry.getChildByName('SettingsEntrySkin');
+        if (!skin) {
+            skin = new Node('SettingsEntrySkin');
+            skin.layer = entry.layer;
+            entry.addChild(skin);
+            skin.addComponent(UITransform);
+            skin.addComponent(Sprite);
+        }
+        const sprite = skin.getComponent(Sprite)!;
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        skin.setSiblingIndex(0);
+        skin.getComponent(UITransform)?.setContentSize(
+            LOBBY_SETTINGS_ENTRY_SIZE,
+            LOBBY_SETTINGS_ENTRY_SIZE * 134 / 128,
+        );
+        this.loadSprite(UI_ASSET_PATHS.settings, sprite);
     }
 
     private layoutSettingsEntry(): void {
@@ -172,6 +198,10 @@ export class LobbySettingsPanel {
                 top: systemSafeTop,
                 right: systemSafeRight,
             },
+        );
+        entry.getComponent(UITransform)?.setContentSize(
+            LOBBY_SETTINGS_ENTRY_SIZE,
+            LOBBY_SETTINGS_ENTRY_SIZE * 134 / 128,
         );
         entry.setScale(metrics.scale, metrics.scale, 1);
         entry.setPosition(metrics.x, metrics.y);
@@ -206,42 +236,46 @@ export class LobbySettingsPanel {
         const panel = new Node('SettingsPanel');
         panel.layer = root.layer;
         root.addChild(panel);
-        panel.addComponent(UITransform).setContentSize(560, 560);
+        this.panel = panel;
+        panel.addComponent(UITransform).setContentSize(SETTINGS_PANEL_WIDTH, SETTINGS_PANEL_HEIGHT);
         const panelGraphics = panel.addComponent(Graphics);
-        panelGraphics.fillColor = new Color(70, 43, 38, 58);
-        panelGraphics.roundRect(-274, -292, 560, 560, 34);
-        panelGraphics.fill();
         panelGraphics.fillColor = COLOR.surface;
-        panelGraphics.strokeColor = new Color(255, 255, 255, 255);
-        panelGraphics.lineWidth = 3;
-        panelGraphics.roundRect(-280, -280, 560, 560, 34);
+        panelGraphics.roundRect(
+            -SETTINGS_PANEL_WIDTH / 2,
+            -SETTINGS_PANEL_HEIGHT / 2,
+            SETTINGS_PANEL_WIDTH,
+            SETTINGS_PANEL_HEIGHT,
+            SETTINGS_PANEL_CORNER_RADIUS,
+        );
         panelGraphics.fill();
-        panelGraphics.stroke();
-        panelGraphics.fillColor = new Color(246, 113, 49, 255);
-        panelGraphics.roundRect(-54, 164, 108, 7, 4);
-        panelGraphics.fill();
-        panelGraphics.fillColor = new Color(255, 205, 85, 255);
-        panelGraphics.circle(-70, 167, 4);
-        panelGraphics.circle(70, 167, 4);
-        panelGraphics.fill();
+        const panelSkin = new Node('SettingsPanelSkin');
+        panelSkin.layer = panel.layer;
+        panel.addChild(panelSkin);
+        panelSkin.setSiblingIndex(0);
+        panelSkin.addComponent(UITransform).setContentSize(SETTINGS_PANEL_WIDTH, SETTINGS_PANEL_HEIGHT);
+        const panelSprite = panelSkin.addComponent(Sprite);
+        panelSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        panelSprite.type = Sprite.Type.SLICED;
+        this.loadSprite(UI_ASSET_PATHS.panel, panelSprite, 30, 30, 68, 68, () => panelGraphics.clear());
 
-        const title = this.createLabel(panel, 'SettingsTitle', '游戏设置', -150, 220, 300, 48, 34, COLOR.primary);
+        const title = this.createLabel(panel, 'SettingsTitle', '游戏设置', -175, 232, 350, 60, 49, COLOR.primary);
         title.horizontalAlign = HorizontalTextAlignment.CENTER;
-        const subtitle = this.createLabel(panel, 'SettingsSubtitle', '声音与触感', -120, 140, 240, 30, 20, COLOR.secondary);
+        title.isBold = true;
+        const subtitle = this.createLabel(panel, 'SettingsSubtitle', '✦  声音与触感  ✦', -175, 174, 350, 38, 25, COLOR.secondary);
         subtitle.horizontalAlign = HorizontalTextAlignment.CENTER;
         this.createCloseButton(panel);
-        this.createSettingRow(panel, 'music', '背景音乐', 70);
-        this.createSettingRow(panel, 'sound', '互动音效', -30);
-        this.createSettingRow(panel, 'vibration', '触感振动', -130);
+        this.createSettingRow(panel, 'music', '背景音乐', 92);
+        this.createSettingRow(panel, 'sound', '游戏音效', -24);
+        this.createSettingRow(panel, 'vibration', '震动反馈', -140);
         this.errorLabel = this.createLabel(
             panel,
             'SettingsError',
             '',
-            -230,
-            -230,
-            460,
+            -264,
+            -260,
+            528,
             34,
-            20,
+            22,
             COLOR.error,
         );
         this.errorLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
@@ -252,25 +286,14 @@ export class LobbySettingsPanel {
         const node = new Node('SettingsClose');
         node.layer = panel.layer;
         panel.addChild(node);
-        node.setPosition(224, 220);
-        node.addComponent(UITransform).setContentSize(72, 72);
-        const graphics = node.addComponent(Graphics);
-        graphics.fillColor = new Color(91, 55, 42, 42);
-        graphics.circle(1, -3, 27);
-        graphics.fill();
-        graphics.fillColor = new Color(255, 238, 220, 255);
-        graphics.strokeColor = new Color(248, 190, 143, 255);
-        graphics.lineWidth = 2;
-        graphics.circle(0, 0, 26);
-        graphics.fill();
-        graphics.stroke();
-        graphics.strokeColor = new Color(210, 91, 49, 255);
-        graphics.lineWidth = 3;
-        graphics.moveTo(-12, -12);
-        graphics.lineTo(12, 12);
-        graphics.moveTo(-12, 12);
-        graphics.lineTo(12, -12);
-        graphics.stroke();
+        node.setPosition(
+            SETTINGS_PANEL_WIDTH / 2 - SETTINGS_CLOSE_MARGIN - SETTINGS_CLOSE_SIZE / 2,
+            SETTINGS_PANEL_HEIGHT / 2 - SETTINGS_CLOSE_MARGIN - SETTINGS_CLOSE_SIZE / 2,
+        );
+        node.addComponent(UITransform).setContentSize(SETTINGS_CLOSE_SIZE, SETTINGS_CLOSE_SIZE);
+        const sprite = node.addComponent(Sprite);
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.loadSprite(UI_ASSET_PATHS.close, sprite);
         const button = node.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.92;
@@ -288,28 +311,30 @@ export class LobbySettingsPanel {
         row.layer = panel.layer;
         panel.addChild(row);
         row.setPosition(0, y);
-        row.addComponent(UITransform).setContentSize(460, 82);
+        row.addComponent(UITransform).setContentSize(540, 104);
         const ticket = row.addComponent(Graphics);
-        ticket.fillColor = new Color(255, 255, 255, 255);
-        ticket.strokeColor = COLOR.border;
-        ticket.lineWidth = 3;
-        ticket.roundRect(-230, -41, 460, 82, 20);
-        ticket.fill();
+        ticket.strokeColor = COLOR.divider;
+        ticket.lineWidth = 2;
+        ticket.moveTo(-270, -52);
+        ticket.lineTo(270, -52);
         ticket.stroke();
 
         const icon = new Node(`${key}Icon`);
         icon.layer = row.layer;
         row.addChild(icon);
-        icon.setPosition(-190, 0);
-        icon.addComponent(UITransform).setContentSize(60, 60);
-        this.drawSettingIcon(icon.addComponent(Graphics), key);
+        icon.setPosition(-226, 0);
+        icon.addComponent(UITransform).setContentSize(64, 64);
+        const iconSprite = icon.addComponent(Sprite);
+        iconSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.loadSprite(UI_ASSET_PATHS[key], iconSprite);
 
-        this.createLabel(row, `${key}Label`, title, -150, 5, 220, 38, 24, COLOR.primary);
+        const rowTitle = this.createLabel(row, `${key}Label`, title, -180, 3, 240, 46, 31, COLOR.primary);
+        rowTitle.isBold = true;
 
         const switchNode = new Node(`${key}Switch`);
         switchNode.layer = row.layer;
         row.addChild(switchNode);
-        switchNode.setPosition(174, 0);
+        switchNode.setPosition(214, 0);
         switchNode.addComponent(UITransform).setContentSize(100, 54);
         const track = switchNode.addComponent(Graphics);
         const button = switchNode.addComponent(Button);
@@ -335,102 +360,64 @@ export class LobbySettingsPanel {
         );
         valueLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
 
-        let unavailableLabel: Label | undefined;
-        if (key === 'vibration') {
-            unavailableLabel = this.createLabel(
-                row,
-                'VibrationUnavailable',
-                '',
-                -150,
-                -19,
-                310,
-                24,
-                15,
-                COLOR.secondary,
-            );
-        }
-
         const settingRow: SettingRow = {
             key,
             button,
             track,
             knob,
             valueLabel,
-            unavailableLabel,
         };
         this.rows.set(key, settingRow);
         switchNode.on(Button.EventType.CLICK, () => this.toggle(key));
     }
 
-    private drawSettingIcon(graphics: Graphics, key: SettingKey): void {
-        graphics.fillColor = new Color(255, 211, 74, 255);
-        graphics.strokeColor = new Color(245, 132, 34, 255);
-        graphics.lineWidth = 3;
-        graphics.circle(0, 0, 25);
-        graphics.fill();
-        graphics.stroke();
-        graphics.strokeColor = COLOR.action;
-        graphics.fillColor = COLOR.action;
-        graphics.lineWidth = 4;
-
-        if (key === 'music') {
-            graphics.moveTo(-3, 12);
-            graphics.lineTo(-3, -9);
-            graphics.lineTo(13, -5);
-            graphics.lineTo(13, 15);
-            graphics.stroke();
-            graphics.circle(-10, -11, 6);
-            graphics.circle(6, -7, 6);
-            graphics.fill();
-        } else if (key === 'sound') {
-            graphics.moveTo(-14, -7);
-            graphics.lineTo(-6, -7);
-            graphics.lineTo(5, -16);
-            graphics.lineTo(5, 16);
-            graphics.lineTo(-6, 7);
-            graphics.lineTo(-14, 7);
-            graphics.close();
-            graphics.fill();
-            graphics.moveTo(10, -8);
-            graphics.bezierCurveTo(18, -4, 18, 4, 10, 8);
-            graphics.stroke();
-        } else {
-            graphics.roundRect(-9, -15, 18, 30, 5);
-            graphics.stroke();
-            graphics.moveTo(-15, -12);
-            graphics.lineTo(-20, -6);
-            graphics.lineTo(-15, 0);
-            graphics.lineTo(-20, 6);
-            graphics.lineTo(-15, 12);
-            graphics.moveTo(15, -12);
-            graphics.lineTo(20, -6);
-            graphics.lineTo(15, 0);
-            graphics.lineTo(20, 6);
-            graphics.lineTo(15, 12);
-            graphics.stroke();
-        }
-    }
-
     private readonly open = (): void => {
-        if (!this.root) {
+        const root = this.root;
+        const panel = this.panel;
+        if (!root || !panel?.isValid) {
             return;
         }
+        const transitionToken = ++this.transitionToken;
         this.refresh();
         this.services?.feedback.vibrate('light');
         this.services?.feedback.play('popup');
         if (this.settingsEntry) {
             this.settingsEntry.active = false;
         }
-        this.root.active = true;
+        root.active = true;
+        Tween.stopAllByTarget(panel);
+        panel.setScale(
+            SETTINGS_PANEL_COLLAPSED_SCALE_X,
+            SETTINGS_PANEL_COLLAPSED_SCALE_Y,
+            1,
+        );
+        tween(panel)
+            .to(
+                SETTINGS_PANEL_OPEN_DURATION,
+                { scale: new Vec3(1, 1, 1) },
+                { easing: 'backOut' },
+            )
+            .call(() => {
+                if (transitionToken === this.transitionToken && panel.isValid) {
+                    panel.setScale(1, 1, 1);
+                }
+            })
+            .start();
     };
 
     private readonly close = (): void => {
-        if (this.root) {
-            this.services?.feedback.play('uiButton');
-            this.root.active = false;
-            if (this.settingsEntry) {
-                this.settingsEntry.active = true;
-            }
+        const root = this.root;
+        const panel = this.panel;
+        if (!root?.active || !panel?.isValid) {
+            return;
+        }
+        ++this.transitionToken;
+        this.services?.feedback.play('uiButton');
+        Tween.stopAllByTarget(panel);
+        panel.setScale(1, 1, 1);
+        root.active = false;
+        if (this.settingsEntry?.isValid) {
+            this.settingsEntry.active = true;
         }
     };
 
@@ -494,40 +481,86 @@ export class LobbySettingsPanel {
             return;
         }
         row.button.interactable = available;
+        const active = enabled && available;
+        const activeColor = row.key === 'music'
+            ? new Color(246, 91, 60, 255)
+            : row.key === 'sound'
+                ? new Color(55, 171, 172, 255)
+                : new Color(161, 111, 68, 255);
+        const activeBorder = row.key === 'music'
+            ? new Color(196, 66, 43, 255)
+            : row.key === 'sound'
+                ? new Color(33, 132, 139, 255)
+                : new Color(116, 75, 45, 255);
         row.track.clear();
-        row.track.fillColor = !available
-            ? COLOR.disabled
-            : enabled ? COLOR.action : new Color(224, 207, 192, 255);
+        row.track.fillColor = new Color(87, 46, 31, 55);
+        row.track.roundRect(-47, -29, 96, 50, 25);
+        row.track.fill();
+        row.track.fillColor = active
+            ? activeColor
+            : new Color(242, 224, 194, available ? 255 : 175);
         row.track.roundRect(-48, -25, 96, 50, 25);
         row.track.fill();
-        row.track.strokeColor = enabled && available
-            ? new Color(194, 70, 34, 255)
+        row.track.strokeColor = active
+            ? activeBorder
             : new Color(170, 142, 124, 180);
-        row.track.lineWidth = 1.5;
+        row.track.lineWidth = 2;
         row.track.roundRect(-48, -25, 96, 50, 25);
         row.track.stroke();
+        row.track.fillColor = new Color(255, 255, 255, active ? 72 : 100);
+        row.track.roundRect(-36, 10, 66, 7, 3.5);
+        row.track.fill();
 
         const knobNode = row.knob.node;
-        knobNode.setPosition(!available ? 0 : enabled ? 23 : -23, 0);
+        knobNode.setPosition(active ? 23 : -23, 0);
         row.knob.clear();
-        row.knob.fillColor = new Color(102, 55, 37, 40);
-        row.knob.circle(1, -2, 21);
+        row.knob.fillColor = new Color(102, 55, 37, 74);
+        row.knob.circle(1, -3, 22);
         row.knob.fill();
         row.knob.fillColor = available ? COLOR.paper : new Color(235, 225, 216, 255);
-        row.knob.circle(0, 0, 20);
+        row.knob.strokeColor = active ? activeBorder : new Color(171, 130, 100, 255);
+        row.knob.lineWidth = 2;
+        row.knob.circle(0, 0, 20.5);
+        row.knob.fill();
+        row.knob.stroke();
+        row.knob.fillColor = new Color(255, 255, 255, 150);
+        row.knob.circle(-5, 6, 6);
         row.knob.fill();
 
         row.valueLabel.string = '';
         row.valueLabel.node.active = false;
-        if (row.unavailableLabel) {
-            row.unavailableLabel.string = available ? '' : '当前平台不支持振动';
-        }
     }
 
     private setError(message: string): void {
         if (this.errorLabel) {
             this.errorLabel.string = message;
         }
+    }
+
+    private loadSprite(
+        path: string,
+        sprite: Sprite,
+        insetLeft = 0,
+        insetRight = 0,
+        insetTop = 0,
+        insetBottom = 0,
+        onLoaded?: () => void,
+    ): void {
+        const bundle = assetManager.getBundle('lobby');
+        if (!bundle) return;
+        const token = this.loadToken;
+        bundle.load(path, Texture2D, (error: Error | null, texture: Texture2D) => {
+            if (error || !texture || token !== this.loadToken || !sprite.node.isValid) return;
+            const frame = new SpriteFrame();
+            frame.texture = texture;
+            frame.insetLeft = insetLeft;
+            frame.insetRight = insetRight;
+            frame.insetTop = insetTop;
+            frame.insetBottom = insetBottom;
+            this.ownedFrames.push(frame);
+            sprite.spriteFrame = frame;
+            onLoaded?.();
+        });
     }
 
     private createLabel(

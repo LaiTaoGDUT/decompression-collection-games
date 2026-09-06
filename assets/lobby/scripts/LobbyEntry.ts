@@ -41,7 +41,7 @@ import {
 
 const { ccclass, property } = _decorator;
 const EMPTY_GAMES: readonly GameManifest[] = Object.freeze([]);
-const GRID_SIDE_PADDING = 40;
+const GRID_SIDE_PADDING = 36;
 const GRID_BOTTOM = 40;
 const GRID_BOTTOM_SPACER_NAME = 'GameListBottomSpacer';
 export type EnterGameRequest = (manifest: GameManifest) => Promise<void>;

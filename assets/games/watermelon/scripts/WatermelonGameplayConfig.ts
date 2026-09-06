@@ -34,10 +34,10 @@ const EXPECTED_INITIAL_COUNT = 5;
 export const DEFAULT_WATERMELON_GAMEPLAY_CONFIG: WatermelonGameplayConfig = deepFreeze({
     schemaVersion: 1,
     initialSpawnWeights: [30, 25, 20, 15, 10],
-    dropCooldownSeconds: 0.45,
+    dropCooldownSeconds: 0.42,
     dropEdgePadding: 2,
     dangerStableSpeedSquared: 0.25,
-    dangerOverflowSeconds: 3.5,
+    dangerOverflowSeconds: 3,
     continueSettleSeconds: 0.6,
     gravityScale: 2.7,
     linearDamping: 0.75,
@@ -48,17 +48,17 @@ export const DEFAULT_WATERMELON_GAMEPLAY_CONFIG: WatermelonGameplayConfig = deep
     // Mass now grows faster than circular area, making higher-level cats
     // progressively denser so they can dislodge smaller cats beneath them.
     fruits: [
-        { radius: 26.88, mass: 1, friction: 0.32, restitution: 0.08 },
-        { radius: 33.6, mass: 1.8, friction: 0.32, restitution: 0.08 },
-        { radius: 42.56, mass: 3, friction: 0.32, restitution: 0.08 },
-        { radius: 51.52, mass: 4.9, friction: 0.32, restitution: 0.08 },
-        { radius: 62.72, mass: 7.7, friction: 0.32, restitution: 0.08 },
-        { radius: 76.16, mass: 11.8, friction: 0.32, restitution: 0.08 },
-        { radius: 91.84, mass: 18, friction: 0.32, restitution: 0.08 },
-        { radius: 109.76, mass: 27.6, friction: 0.32, restitution: 0.08 },
-        { radius: 129.92, mass: 41.2, friction: 0.32, restitution: 0.08 },
-        { radius: 152.32, mass: 62.4, friction: 0.32, restitution: 0.08 },
-        { radius: 176.96, mass: 92.4, friction: 0.32, restitution: 0.08 },
+        { radius: 29.57, mass: 1, friction: 0.32, restitution: 0.08 },
+        { radius: 36.96, mass: 1.8, friction: 0.32, restitution: 0.08 },
+        { radius: 46.82, mass: 3, friction: 0.32, restitution: 0.08 },
+        { radius: 56.67, mass: 4.9, friction: 0.32, restitution: 0.08 },
+        { radius: 68.99, mass: 7.7, friction: 0.32, restitution: 0.08 },
+        { radius: 83.78, mass: 11.8, friction: 0.32, restitution: 0.08 },
+        { radius: 101.02, mass: 18, friction: 0.32, restitution: 0.08 },
+        { radius: 120.74, mass: 27.6, friction: 0.32, restitution: 0.08 },
+        { radius: 142.91, mass: 41.2, friction: 0.32, restitution: 0.08 },
+        { radius: 167.55, mass: 62.4, friction: 0.32, restitution: 0.08 },
+        { radius: 194.66, mass: 92.4, friction: 0.32, restitution: 0.08 },
     ],
 });
 

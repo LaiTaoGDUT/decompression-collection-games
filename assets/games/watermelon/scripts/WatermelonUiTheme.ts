@@ -1,27 +1,30 @@
 import { Color } from 'cc';
 
 /**
- * Shared visual tokens for the cat merge game.
+ * Shared visual tokens for the fruit merge game.
  *
  * These are the Cocos equivalent of CSS theme variables: every HUD surface,
- * overlay, and transient effect draws from the same soft picture-book palette.
+ * overlay, and transient effect draws from the same light neutral jelly palette.
  */
 export const CAT_UI_PALETTE = Object.freeze({
-    ink: [75, 45, 69],
-    mutedInk: [75, 45, 69],
-    // Warm oat-white: softer than pure white against the bright cat-room art.
-    surface: [250, 243, 232],
-    cream: [255, 244, 226],
-    blush: [255, 214, 207],
-    peach: [247, 139, 139],
-    peachDark: [216, 99, 111],
-    mint: [190, 229, 211],
-    mintDark: [83, 157, 132],
-    mintText: [34, 126, 84],
-    sky: [187, 221, 239],
-    lavender: [218, 201, 236],
-    butter: [255, 229, 143],
-    danger: [224, 82, 105],
+    ink: [78, 67, 74],
+    mutedInk: [111, 100, 105],
+    scoreInk: [126, 68, 78],
+    mergeInk: [113, 96, 184],
+    bestScoreInk: [111, 78, 44],
+    hintInk: [96, 67, 76],
+    surface: [255, 250, 241],
+    cream: [255, 247, 230],
+    blush: [255, 229, 226],
+    peach: [247, 180, 164],
+    peachDark: [184, 110, 112],
+    mint: [218, 241, 225],
+    mintDark: [104, 165, 135],
+    mintText: [62, 126, 92],
+    sky: [200, 229, 237],
+    lavender: [229, 219, 239],
+    butter: [255, 235, 188],
+    danger: [220, 94, 125],
 } as const);
 
 export type CatUiColorName = keyof typeof CAT_UI_PALETTE;

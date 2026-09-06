@@ -201,7 +201,7 @@ const manifest = JSON.parse(fs.readFileSync(
     'utf8',
 ));
 assert(Array.isArray(manifest.games), 'Game manifest must contain a games array.');
-assert.strictEqual(manifest.schemaVersion, 2, 'Game manifest schemaVersion must be 2.');
+assert.strictEqual(manifest.schemaVersion, 3, 'Game manifest schemaVersion must be 3.');
 for (const game of manifest.games) {
     const gameRoot = bundleRoots.get(game.bundle);
     assert(gameRoot, `${game.id} manifest bundle ${game.bundle} must be registered as a game Bundle.`);
@@ -215,7 +215,6 @@ for (const game of manifest.games) {
         path.join(gameRoot, `${game.scene}.scene`),
         game.id,
     );
-    assertManifestAsset(game.icon, game.id, gameRoot);
     assertManifestAsset(game.cover, game.id, gameRoot);
 }
 assert.strictEqual(

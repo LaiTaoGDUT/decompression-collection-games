@@ -2,13 +2,13 @@ import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 
 export const LOBBY_DESIGN_WIDTH = 750;
 export const LOBBY_DESIGN_HEIGHT = 1334;
-export const LOBBY_BRAND_WIDTH = 450;
-export const LOBBY_BRAND_HEIGHT = 300;
-export const LOBBY_BRAND_TOP_GAP = 12;
+export const LOBBY_BRAND_WIDTH = 600;
+export const LOBBY_BRAND_HEIGHT = 198;
+export const LOBBY_BRAND_TOP_GAP = 42;
 export const LOBBY_VIEWPORT_TOP_GAP = 12;
-export const LOBBY_BRAND_TO_GRID_GAP = 8;
-export const LOBBY_BRAND_AREA_HEIGHT = 330;
-export const LOBBY_SETTINGS_ENTRY_SIZE = 92;
+export const LOBBY_BRAND_TO_GRID_GAP = 68;
+export const LOBBY_BRAND_AREA_HEIGHT = 320;
+export const LOBBY_SETTINGS_ENTRY_SIZE = 80;
 export const LOBBY_SETTINGS_ENTRY_TOP_GAP = 20;
 export const LOBBY_SETTINGS_ENTRY_RIGHT_GAP = 28;
 

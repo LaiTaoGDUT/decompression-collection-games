@@ -399,7 +399,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "合成大胖橘",
+    "_string": "合成大西瓜",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 44,
@@ -1183,7 +1183,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "左右移动 · 松手投放",
+    "_string": "左右移动，松手投放，摇晃搅动",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 26,
@@ -2092,7 +2092,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "合成相同猫咪，养成大胖橘！",
+    "_string": "左右移动，松手投放，摇晃搅动",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 26,

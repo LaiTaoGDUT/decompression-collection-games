@@ -183,7 +183,6 @@ export interface GameManifest {
   readonly resourceBundle: string;
   readonly scene: string;
   readonly entryComponent: string;
-  readonly icon: string;
   readonly cover: string;
   readonly loadingCover?: string | null;
   readonly orientation: 'portrait' | 'landscape';

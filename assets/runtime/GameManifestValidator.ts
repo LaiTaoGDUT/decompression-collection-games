@@ -1,7 +1,7 @@
 import type { GameManifest } from './GameManifest';
 import { isSemanticVersion } from '../core/version/SemanticVersion';
 
-const SUPPORTED_SCHEMA_VERSION = 2;
+const SUPPORTED_SCHEMA_VERSION = 3;
 const ID_PATTERN = /^[a-z][a-z0-9-]*$/;
 const COMPONENT_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const ORIENTATIONS = ['portrait', 'landscape'] as const;
@@ -214,7 +214,6 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         `${prefix}.entryComponent`,
         errors,
     );
-    const icon = readResourcePath(value, 'icon', `${prefix}.icon`, errors);
     const cover = readResourcePath(value, 'cover', `${prefix}.cover`, errors);
     const loadingCover = readOptionalResourcePath(
         value,
@@ -311,7 +310,6 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         resourceBundle: resourceBundle!,
         scene: scene!,
         entryComponent: entryComponent!,
-        icon: icon!,
         cover: cover!,
         loadingCover,
         orientation: orientation!,

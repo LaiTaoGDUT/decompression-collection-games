@@ -45,18 +45,20 @@ const COLORS = {
 
 const STARTUP_BACKGROUND_PATH = 'loading/loading-lobby-background-v1/texture';
 const STARTUP_TITLE_PATH = 'loading/loading-lobby-title-v1/texture';
+const LOADING_PANEL_PATH = 'loading/warm/loading-panel/texture';
+const LOADING_TRACK_PATH = 'loading/warm/loading-progress-track/texture';
+const LOADING_FILL_PATH = 'loading/warm/loading-progress-fill/texture';
 const LEGACY_LOADING_RESERVED_GAP = 12;
 const LEGACY_LOADING_TITLE_WIDTH = 450;
 const LEGACY_LOADING_TITLE_HEIGHT = 300;
 const LEGACY_LOADING_TITLE_TOP_GAP = 12;
-const LOBBY_STARTUP_PROGRESS_SIDE_INSET = 48;
-const LOBBY_STARTUP_PROGRESS_NODE_HEIGHT = 40;
-const LOBBY_STARTUP_PROGRESS_BAR_HEIGHT = 30;
-const LOBBY_STARTUP_PROGRESS_FILL_HEIGHT = 24;
+const LOBBY_STARTUP_PROGRESS_NODE_HEIGHT = 48;
+const LOBBY_STARTUP_PROGRESS_BAR_HEIGHT = 42;
+const LOBBY_STARTUP_PROGRESS_FILL_HEIGHT = 29;
 const LOBBY_STARTUP_TEXT_SIZE = 28;
-const LOBBY_STARTUP_TEXT_BOX_HEIGHT = 50;
-const LOBBY_STARTUP_TIP_SIZE = 22;
-const LOBBY_STARTUP_TIP_BOX_HEIGHT = 38;
+const LOBBY_STARTUP_TEXT_BOX_HEIGHT = 54;
+const LOBBY_STARTUP_TIP_SIZE = 23;
+const LOBBY_STARTUP_TIP_BOX_HEIGHT = 42;
 const LOBBY_STARTUP_PERCENT_WIDTH = 88;
 
 interface LoadingLayoutMetrics {
@@ -124,17 +126,15 @@ function calculateLoadingLayout(
     const scale = variant === 'game'
         ? Math.max(0.01, Math.min(widthScale, contentHeight / 822))
         : lobbyBrand!.scale;
-    const panelWidth = 640 * scale;
-    const panelHeight = 790 * scale;
+    const panelWidth = 560 * scale;
+    const panelHeight = 650 * scale;
     const coverWidth = Math.max(1, panelWidth - 64 * scale);
-    const coverHeight = coverWidth * 0.75;
+    const coverHeight = coverWidth * 0.57;
     const trackWidth = Math.max(
         1,
-        panelWidth - (
-            variant === 'lobby'
-                ? LOBBY_STARTUP_PROGRESS_SIDE_INSET
-                : 96
-        ) * scale,
+        variant === 'lobby'
+            ? Math.min(contentWidth, 620 * scale)
+            : panelWidth - 96 * scale,
     );
 
     return Object.freeze({
@@ -167,9 +167,14 @@ export class LoadingView extends Component implements LoadingPresenter {
     private ownedCoverFrame?: SpriteFrame;
     private startupBackgroundSprite?: Sprite;
     private startupTitleSprite?: Sprite;
+    private loadingPanelSprite?: Sprite;
+    private progressTrackSprite?: Sprite;
+    private progressFillSprite?: Sprite;
     private startupSafeAreaNode?: Node;
     private startupContentNode?: Node;
     private ownedStartupFrames: SpriteFrame[] = [];
+    private readonly ownedWarmFrames: SpriteFrame[] = [];
+    private warmLoadToken = 0;
     private variant: 'game' | 'lobby' = 'game';
     private restartMode = false;
     private progress = 0;
@@ -189,6 +194,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         widget.left = widget.right = widget.top = widget.bottom = 0;
         widget.updateAlignment();
         this.ensureStructure();
+        this.loadWarmArtwork();
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.hide();
     }
@@ -200,6 +206,10 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.node.getComponent(Widget)?.updateAlignment();
         this.ensureStructure();
         this.variant = model.variant ?? 'game';
+        const tip = this.findManagedNode('LoadingTip')?.getComponent(Label);
+        if (tip) tip.string = this.variant === 'lobby'
+            ? '挑一款，随手玩一把'
+            : '马上就能玩啦';
         this.layoutAndDraw();
         if (this.nameLabel) {
             this.nameLabel.string = model.gameName ?? '休闲解压小游戏大全';
@@ -278,6 +288,9 @@ export class LoadingView extends Component implements LoadingPresenter {
     protected onDestroy(): void {
         view.off('canvas-resize', this.handleCanvasResize, this);
         this.hide();
+        this.warmLoadToken += 1;
+        this.ownedWarmFrames.forEach((frame) => frame.destroy());
+        this.ownedWarmFrames.length = 0;
     }
 
     private readonly handleCanvasResize = (): void => {
@@ -335,7 +348,10 @@ export class LoadingView extends Component implements LoadingPresenter {
             this.startupTitleSprite.node.setParent(this.startupContentNode ?? this.node);
         }
         ensureGraphics('LoadingBackdrop');
-        ensureGraphics('LoadingPanel');
+        const loadingPanel = ensureGraphics('LoadingPanel');
+        this.loadingPanelSprite = this.ensureSkinSprite(loadingPanel, 'LoadingPanelSkin');
+        this.loadingPanelSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.loadingPanelSprite.type = Sprite.Type.SLICED;
         const coverFrame = ensureGraphics('LoadingCoverFrame');
         let clip = coverFrame.getChildByName('CoverClip');
         if (!clip) {
@@ -357,8 +373,14 @@ export class LoadingView extends Component implements LoadingPresenter {
         }
         this.coverSprite = artwork.getComponent(Sprite) ?? undefined;
 
-        ensureGraphics('ProgressTrack');
-        ensureGraphics('ProgressFill');
+        const progressTrack = ensureGraphics('ProgressTrack');
+        this.progressTrackSprite = this.ensureSkinSprite(progressTrack, 'ProgressTrackSkin');
+        this.progressTrackSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.progressTrackSprite.type = Sprite.Type.SLICED;
+        const progressFill = ensureGraphics('ProgressFill');
+        this.progressFillSprite = this.ensureSkinSprite(progressFill, 'ProgressFillSkin');
+        this.progressFillSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.progressFillSprite.type = Sprite.Type.SLICED;
         this.nameLabel = ensureLabel('LoadingGameName');
         this.messageLabel = this.findManagedNode('LoadingMessage')
             ?.getComponent(Label) ?? ensureLabel('LoadingMessage');
@@ -522,6 +544,7 @@ export class LoadingView extends Component implements LoadingPresenter {
 
         const panel = this.graphics('LoadingPanel');
         panel.node.active = true;
+        if (this.loadingPanelSprite) this.loadingPanelSprite.enabled = false;
         panel.node.setPosition(centerX, centerY);
         panel.node.getComponent(UITransform)?.setContentSize(panelWidth, panelHeight);
         panel.clear();
@@ -660,11 +683,16 @@ export class LoadingView extends Component implements LoadingPresenter {
                 : undefined;
             startupTitle.active = startup;
             startupTitle.setPosition(
-                0,
-                contentHeight / 2 - (
-                    brand?.centerFromTop
-                    ?? (LEGACY_LOADING_TITLE_TOP_GAP + LEGACY_LOADING_TITLE_HEIGHT / 2) * scale
-                ),
+                startup ? -metrics.contentX : 0,
+                startup
+                    // The title's center sits one third of the way down the
+                    // full screen. Convert that screen-space target into the
+                    // safe-content node's local coordinates.
+                    ? metrics.height / 6 - metrics.contentY
+                    : contentHeight / 2 - (
+                        brand?.centerFromTop
+                        ?? (LEGACY_LOADING_TITLE_TOP_GAP + LEGACY_LOADING_TITLE_HEIGHT / 2) * scale
+                    ),
             );
             startupTitle.getComponent(UITransform)?.setContentSize(
                 brand?.width ?? LEGACY_LOADING_TITLE_WIDTH * scale,
@@ -705,8 +733,18 @@ export class LoadingView extends Component implements LoadingPresenter {
             metrics.panelWidth,
             metrics.panelHeight,
         );
+        this.loadingPanelSprite?.node.setPosition(0, 0);
+        this.loadingPanelSprite?.node.getComponent(UITransform)?.setContentSize(
+            metrics.panelWidth,
+            metrics.panelHeight,
+        );
         panel.clear();
-        panel.fillColor = new Color(8, 22, 74, 74);
+        if (this.loadingPanelSprite?.spriteFrame) {
+            this.loadingPanelSprite.enabled = true;
+        }
+        panel.fillColor = this.loadingPanelSprite?.spriteFrame
+            ? new Color(0, 0, 0, 0)
+            : new Color(8, 22, 74, 74);
         panel.roundRect(
             -metrics.panelWidth / 2 + 8 * scale,
             -metrics.panelHeight / 2 - 14 * scale,
@@ -714,7 +752,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             metrics.panelHeight,
             42 * scale,
         );
-        panel.fill();
+        if (!this.loadingPanelSprite?.spriteFrame) panel.fill();
         panel.fillColor = COLORS.panel;
         panel.strokeColor = new Color(255, 255, 255, 210);
         panel.lineWidth = 3 * scale;
@@ -725,13 +763,19 @@ export class LoadingView extends Component implements LoadingPresenter {
             metrics.panelHeight,
             42 * scale,
         );
-        panel.fill();
-        panel.stroke();
+        if (!this.loadingPanelSprite?.spriteFrame) {
+            panel.fill();
+            panel.stroke();
+        }
 
         const frame = this.graphics('LoadingCoverFrame');
         frame.node.active = !startup;
-        // Keep a visible breathing space between the panel top and cover.
-        frame.node.setPosition(centerX, centerY + 155 * scale);
+        // Keep the cover's top inset equal to the panel's horizontal inset.
+        // Deriving this from the actual metrics keeps the relationship stable
+        // as the modal scales on different portrait screens.
+        const coverTopInset = 32 * scale;
+        const coverCenterY = metrics.panelHeight / 2 - coverTopInset - metrics.coverHeight / 2;
+        frame.node.setPosition(centerX, centerY + coverCenterY);
         frame.node.getComponent(UITransform)?.setContentSize(
             metrics.coverWidth,
             metrics.coverHeight,
@@ -768,24 +812,26 @@ export class LoadingView extends Component implements LoadingPresenter {
 
         this.styleLabel(
             'LoadingGameName',
-            40 * scale,
-            COLORS.ink,
+            46 * scale,
+            new Color(91, 42, 24, 255),
             centerX,
-            centerY - 112 * scale,
+            centerY + coverCenterY - metrics.coverHeight / 2 - 22 * scale - 29 * scale,
             Math.max(1, metrics.panelWidth - 70 * scale),
             58 * scale,
             true,
+            HorizontalTextAlignment.CENTER,
+            4 * scale,
         );
         const trackWidth = metrics.trackWidth;
         const trackLeft = centerX - trackWidth / 2;
         this.styleLabel(
             'LoadingMessage',
-            (startup ? LOBBY_STARTUP_TEXT_SIZE : 23) * scale,
-            startup ? new Color(123, 75, 74, 235) : COLORS.secondary,
+            (startup ? LOBBY_STARTUP_TEXT_SIZE : 27) * scale,
+            new Color(105, 52, 32, 235),
             trackLeft,
             startup
                 ? -contentHeight / 2 + 182 * scale
-                : centerY - 194 * scale,
+                : centerY - 174 * scale,
             Math.max(1, trackWidth - (startup ? 108 : 90) * scale),
             (startup ? LOBBY_STARTUP_TEXT_BOX_HEIGHT : 42) * scale,
             false,
@@ -793,26 +839,26 @@ export class LoadingView extends Component implements LoadingPresenter {
         );
         this.styleLabel(
             'LoadingPercent',
-            (startup ? LOBBY_STARTUP_TEXT_SIZE : 23) * scale,
-            startup ? new Color(155, 77, 73, 255) : COLORS.blue,
+            (startup ? LOBBY_STARTUP_TEXT_SIZE : 27) * scale,
+            new Color(91, 42, 24, 255),
             startup
                 ? trackLeft + trackWidth - LOBBY_STARTUP_PERCENT_WIDTH * scale / 2
                 : centerX + metrics.panelWidth / 2 - 72 * scale,
             startup
                 ? -contentHeight / 2 + 182 * scale
-                : centerY - 194 * scale,
+                : centerY - 174 * scale,
             (startup ? LOBBY_STARTUP_PERCENT_WIDTH : 72) * scale,
             (startup ? LOBBY_STARTUP_TEXT_BOX_HEIGHT : 42) * scale,
             true,
         );
         this.styleLabel(
             'LoadingTip',
-            (startup ? LOBBY_STARTUP_TIP_SIZE : 19) * scale,
-            startup ? new Color(123, 75, 74, 220) : new Color(121, 133, 165, 210),
+            (startup ? LOBBY_STARTUP_TIP_SIZE : 23) * scale,
+            new Color(105, 52, 32, 230),
             centerX,
             startup
                 ? -contentHeight / 2 + 80 * scale
-                : centerY - 308 * scale,
+                : centerY - 282 * scale,
             Math.max(1, metrics.panelWidth - 90 * scale),
             (startup ? LOBBY_STARTUP_TIP_BOX_HEIGHT : 32) * scale,
             false,
@@ -822,17 +868,25 @@ export class LoadingView extends Component implements LoadingPresenter {
         const track = this.graphics('ProgressTrack');
         track.node.setPosition(
             startup ? 0 : centerX,
-            startup ? -contentHeight / 2 + 130 * scale : centerY - 254 * scale,
+            startup ? -contentHeight / 2 + 130 * scale : centerY - 232 * scale,
         );
         track.node.getComponent(UITransform)?.setContentSize(
             trackWidth,
-            (startup ? LOBBY_STARTUP_PROGRESS_NODE_HEIGHT : 32) * scale,
+            LOBBY_STARTUP_PROGRESS_NODE_HEIGHT * scale,
+        );
+        this.progressTrackSprite?.node.setPosition(0, 0);
+        this.progressTrackSprite?.node.getComponent(UITransform)?.setContentSize(
+            trackWidth,
+            LOBBY_STARTUP_PROGRESS_BAR_HEIGHT * scale,
         );
         track.clear();
+        if (this.progressTrackSprite) {
+            this.progressTrackSprite.enabled = true;
+        }
         track.fillColor = startup
             ? new Color(255, 248, 228, 220)
             : new Color(198, 211, 231, 255);
-        const trackHeight = (startup ? LOBBY_STARTUP_PROGRESS_BAR_HEIGHT : 24) * scale;
+        const trackHeight = LOBBY_STARTUP_PROGRESS_BAR_HEIGHT * scale;
         track.roundRect(
             -trackWidth / 2,
             -trackHeight / 2,
@@ -840,7 +894,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             trackHeight,
             trackHeight / 2,
         );
-        track.fill();
+        if (!this.progressTrackSprite?.spriteFrame) track.fill();
         this.drawProgressFill();
     }
 
@@ -910,43 +964,64 @@ export class LoadingView extends Component implements LoadingPresenter {
             this.variant === 'lobby' ? 0 : metrics.contentX,
             this.variant === 'lobby'
                 ? -contentHeight / 2 + 130 * scale
-                : metrics.contentY - 254 * scale,
+                : metrics.contentY - 232 * scale,
         );
-        const fillNodeHeight = (
-            this.variant === 'lobby'
-                ? LOBBY_STARTUP_PROGRESS_NODE_HEIGHT
-                : 32
-        ) * scale;
+        const fillNodeHeight = LOBBY_STARTUP_PROGRESS_NODE_HEIGHT * scale;
         fill.node.getComponent(UITransform)?.setContentSize(trackWidth, fillNodeHeight);
-        const fillHeight = (
-            this.variant === 'lobby'
-                ? LOBBY_STARTUP_PROGRESS_FILL_HEIGHT
-                : 18
-        ) * scale;
+        const fillHeight = LOBBY_STARTUP_PROGRESS_FILL_HEIGHT * scale;
         fill.clear();
-        const inset = 3 * scale;
+        const inset = 7 * scale;
         const available = trackWidth - inset * 2;
         const filled = available * this.progress;
-        if (filled > 0.5) {
+        // A sliced pill exactly as wide as its two caps makes the cap edges
+        // meet and exposes a bright seam. Reserve a narrow center slice even
+        // at the minimum visible progress so the caps never touch.
+        const minimumFillWidth = fillHeight + 4 * scale;
+        const visibleFillWidth = filled > 0
+            ? Math.min(available, Math.max(minimumFillWidth, filled))
+            : 0;
+        if (this.progressFillSprite?.spriteFrame) {
+            fill.clear();
+            this.progressFillSprite.enabled = visibleFillWidth > 0.5;
+            fill.node.setPosition(
+                (this.variant === 'lobby' ? 0 : metrics.contentX)
+                    - trackWidth / 2 + inset + visibleFillWidth / 2,
+                this.variant === 'lobby'
+                    ? -contentHeight / 2 + 130 * scale
+                    : metrics.contentY - 232 * scale,
+            );
+            fill.node.getComponent(UITransform)?.setContentSize(
+                Math.max(1, visibleFillWidth),
+                fillHeight,
+            );
+            this.progressFillSprite.node.setPosition(0, 0);
+            this.progressFillSprite.node.getComponent(UITransform)?.setContentSize(
+                Math.max(1, visibleFillWidth),
+                fillHeight,
+            );
+            if (this.percentLabel) this.percentLabel.string = `${Math.round(this.progress * 100)}%`;
+            return;
+        }
+        if (visibleFillWidth > 0.5) {
             fill.fillColor = this.variant === 'lobby'
                 ? new Color(239, 116, 105, 255)
                 : COLORS.blue;
             fill.roundRect(
                 -trackWidth / 2 + inset,
                 -fillHeight / 2,
-                filled,
+                visibleFillWidth,
                 fillHeight,
                 fillHeight / 2,
             );
             fill.fill();
-            if (filled > 28 * scale) {
+            if (visibleFillWidth > 28 * scale) {
                 fill.fillColor = this.variant === 'lobby'
                     ? new Color(255, 225, 145, 210)
                     : new Color(100, 220, 247, 175);
                 fill.roundRect(
                     -trackWidth / 2 + inset + 5 * scale,
                     1 * scale,
-                    Math.max(0, filled - 10 * scale),
+                    Math.max(0, visibleFillWidth - 10 * scale),
                     3 * scale,
                     1.5 * scale,
                 );
@@ -999,6 +1074,44 @@ export class LoadingView extends Component implements LoadingPresenter {
         load(STARTUP_TITLE_PATH, this.startupTitleSprite);
     }
 
+    private loadWarmArtwork(): void {
+        const bundle = assetManager.getBundle('resources');
+        if (!bundle) return;
+        const token = ++this.warmLoadToken;
+        const load = (
+            path: string,
+            sprite: Sprite | undefined,
+            insets: readonly [number, number, number, number],
+        ): void => {
+            if (!sprite) return;
+            bundle.load(path, Texture2D, (error, texture) => {
+                if (error || !texture || token !== this.warmLoadToken || !this.node.isValid) return;
+                const frame = new SpriteFrame();
+                frame.texture = texture;
+                [frame.insetLeft, frame.insetRight, frame.insetTop, frame.insetBottom] = insets;
+                this.ownedWarmFrames.push(frame);
+                sprite.spriteFrame = frame;
+                if (this.node.active && !this.restartMode) this.layoutAndDraw();
+            });
+        };
+        load(LOADING_PANEL_PATH, this.loadingPanelSprite, [30, 30, 68, 68]);
+        load(LOADING_TRACK_PATH, this.progressTrackSprite, [18, 18, 0, 0]);
+        load(LOADING_FILL_PATH, this.progressFillSprite, [16, 16, 0, 0]);
+    }
+
+    private ensureSkinSprite(parent: Node, name: string): Sprite {
+        let node = parent.getChildByName(name);
+        if (!node) {
+            node = new Node(name);
+            node.layer = parent.layer;
+            parent.addChild(node);
+            node.setSiblingIndex(0);
+            node.addComponent(UITransform);
+            node.addComponent(Sprite);
+        }
+        return node.getComponent(Sprite)!;
+    }
+
     private layoutCover(viewportWidth: number, viewportHeight: number): void {
         const node = this.coverSprite?.node;
         if (!node) return;
@@ -1042,6 +1155,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         height: number,
         bold: boolean,
         align = HorizontalTextAlignment.CENTER,
+        spacingX = 0,
     ): void {
         const label = this.findManagedNode(name)?.getComponent(Label);
         if (!label) return;
@@ -1058,6 +1172,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         label.lineHeight = Math.round(fontSize * 1.35);
         label.color = color;
         label.isBold = bold;
+        label.spacingX = spacingX;
         label.horizontalAlign = align;
         label.verticalAlign = VerticalTextAlignment.CENTER;
         label.overflow = Label.Overflow.SHRINK;

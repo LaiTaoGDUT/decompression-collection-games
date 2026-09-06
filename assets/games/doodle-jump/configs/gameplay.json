@@ -51,11 +51,11 @@
       "chanceCapHeightMeters": 950,
       "minimumAmplitude": 34,
       "maximumAmplitude": 54,
-      "minimumPeriodSeconds": 1.8,
-      "maximumPeriodSeconds": 2.8
+      "minimumPeriodSeconds": 1.4,
+      "maximumPeriodSeconds": 2.2
     },
     "spiked": {
-      "unlockHeightMeters": 950,
+      "unlockHeightMeters": 600,
       "spawnChance": 0.1,
       "collisionDepth": 54
     }
