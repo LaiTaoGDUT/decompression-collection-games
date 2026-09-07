@@ -1,0 +1,197 @@
+assets/shared/components/LoadingView.ts
+  h_293365c3a5ebee 215
+assets/games/watermelon/scripts/WatermelonGame.ts
+  s_5bc0ee1bde1d85::t_ef3b9d5be26210 787-790
+  h_293365c3a5ebee 598
+  s_5bc0ee1bde1d85::t_3b606b98102f89 125-132,245-248,514-516,556-557,562,564-597,599-623
+  s_7a680ff1976295::t_8ae091f195c8e9 1724-1726
+  s_7a680ff1976295::t_9f8804e3758832 113,465,1134-1135,1137-1138,1575,1727
+  s_7a680ff1976295::t_776ed2b1c368cb 114-115,1757-1760
+assets/games/chess-endless/scenes/ChessEndless.scene
+  h_293365c3a5ebee 265
+assets/game-assets/sliding-puzzle/visual/ui.meta
+  s_ea0c76dfdd06d0::t_8d8921743e8f53 1-9
+assets/resources/configs/games.json
+  h_293365c3a5ebee 54,77
+  s_1e2935892cff68::t_4648380487845b 135
+AGENTS.md
+  h_293365c3a5ebee 47-50
+assets/games/twenty48/scenes/Game2048.scene
+  h_293365c3a5ebee 265
+assets/games/twenty48/scripts/Game2048Game.ts
+  s_1723ec8477c95d::t_5b6d370f0839db 568,578,588,605-617
+  s_1723ec8477c95d::t_89d249aedb9b8b 1756-1767,1770-1779,1814-1817
+  s_1723ec8477c95d::t_7fc4517c94d66f 340-341,411
+  s_1723ec8477c95d::t_2659ee28c1696a 531,708,742,930,1073,1227
+  s_1723ec8477c95d::t_b0b9fb6cabb10d 135-136,138-144,244-247
+  s_1723ec8477c95d::t_7ba2e4aaf59141 1446,1448-1498,1500-1523,1525-1540,1542-1545,1552-1553,1558,1561,1563-1570,1577,1580-1581,1754
+  s_1723ec8477c95d::t_3f0f4dd739bc53 137,1499,1524,1582-1583,1589
+  s_1723ec8477c95d::t_841087c9efd2d1 362-365
+  s_1723ec8477c95d::t_c024e4495dfa64 1753
+  s_1723ec8477c95d::t_4544a06e77f1b0 1755
+assets/games/watermelon/scripts/WatermelonLayout.ts
+  h_293365c3a5ebee 1091
+  s_ea857156423036::t_cd7853ee880958 100-105,137,139,148-149,357,361,564,573-574,679,849-852,858-860,864-867,874-877
+assets/game-assets/sliding-puzzle/visual/ui/pz1-display-mode-number-v1.png.meta
+  s_ea0c76dfdd06d0::t_8d8921743e8f53 1-42
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  s_9541f766317761::t_54aac8a8495c0d 2743-2748
+assets/games/watermelon/scripts/WatermelonFluidWorld.ts
+  s_5bc0ee1bde1d85::t_3b606b98102f89 324-337,340-341,343
+  s_7a680ff1976295::t_8ac3dac6cc7ed9 62,68-69,109-110,154-159,350-351,358-359,387-388,390-395,397,439-442,507-508,511-514
+  s_7a680ff1976295::t_776ed2b1c368cb 259-260,338-339,344
+  s_5bc0ee1bde1d85::t_58acf1981a76bd 322-323
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  s_ea0c76dfdd06d0::t_8b61eaf86041ca 1554-1556,1561,1569,2880-2884,2891,2898
+  s_ea0c76dfdd06d0::t_7d74cc2ad0daa7 1562
+  s_ea0c76dfdd06d0::t_8d8921743e8f53 170-171,1491-1492,1494-1521,1542-1553,1560
+  s_ea0c76dfdd06d0::t_d95db4bfea7eb7 775,778,784
+  s_ea0c76dfdd06d0::t_148126b58078b3 1589-1590,1595-1610,1726-1756
+  s_ea0c76dfdd06d0::t_6ca1c8aa3c0c7d 136,139,233-234,1481-1490,1493,1522,1524-1537,1557-1559,1563-1568,1570-1586,1588,1614,1725
+  s_ea0c76dfdd06d0::t_dd9db792115229 140
+  s_ea0c76dfdd06d0::t_1180f7210c5801 245,1475-1477,1523,1957-1959,3145
+  s_ea0c76dfdd06d0::t_d309a5858877ed 1587,1591-1594,1611-1612
+  s_ea0c76dfdd06d0::t_a02bd9a167ea09 137-138,1538-1541
+  s_ea0c76dfdd06d0::t_79591fdae6e83e 1479,1903-1908,1913-1925,1927-1945
+  s_ea0c76dfdd06d0::t_12851c482e2f30 1480
+docs/games/doodle-jump/DOODLE_JUMP_PERFORMANCE_PLAN.md
+  s_5cacff5e386428::t_dbe9828c462028 1-291
+assets/games/sliding-puzzle/scripts/SlidingPuzzleTypes.ts
+  s_ea0c76dfdd06d0::t_d95db4bfea7eb7 3
+assets/games/watermelon/scripts/FruitCatalog.ts
+  s_ea857156423036::t_331e17838d3b9b 33-35,37-47,60,62
+  s_ea857156423036::t_f61de40eca99a8 79-80
+assets/games/watermelon/scripts/WatermelonOverlayView.ts
+  s_ea857156423036::t_2d7f70933079af 21,195,203
+  s_ea857156423036::t_6c666d94435220 197
+  h_293365c3a5ebee 404
+assets/game-assets/sliding-puzzle/visual/ui/pz1-display-mode-original-v1.png.meta
+  s_ea0c76dfdd06d0::t_8d8921743e8f53 1-42
+assets/games/watermelon/scripts/WatermelonSemiFluid.ts
+  s_7a680ff1976295::t_776ed2b1c368cb 8-13,17
+  s_7a680ff1976295::t_e5693f0bea8eeb 1-6
+assets/games/sliding-puzzle/scripts/SlidingPuzzleLayout.ts
+  s_ea0c76dfdd06d0::t_a02bd9a167ea09 76
+  s_ea0c76dfdd06d0::t_6ca1c8aa3c0c7d 74-75
+  s_ea0c76dfdd06d0::t_d95db4bfea7eb7 104
+assets/runtime/GameRuntime.ts
+  h_293365c3a5ebee 168
+assets/games/sliding-puzzle/scripts/SlidingPuzzleModel.ts
+  s_ea0c76dfdd06d0::t_d95db4bfea7eb7 15,111
+docs/lobby/LOBBY_AUDIO_PROMPTS.md
+  h_293365c3a5ebee 3,69,110,148,186
+assets/games/watermelon/scenes/Watermelon.scene
+  h_293365c3a5ebee 402
+assets/games/doodle-jump/configs/gameplay.json
+  s_0c575d9ed2f2b0::t_01e1488e38d249 194
+.codex/config.toml
+  h_293365c3a5ebee 7-8
+assets/game-assets/watermelon/visual/ui/c1-cat-high-score-panel-v2.png.meta
+  h_293365c3a5ebee 97-120
+assets/game-assets/watermelon/visual/ui/c1-cat-next-panel-v2.png.meta
+  h_293365c3a5ebee 97-120
+assets/game-assets/watermelon/visual/ui/c1-cat-score-panel-v2.png.meta
+  h_293365c3a5ebee 97-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f4c464bb5cf1e91258cd68e6d6336abadce082a7",
+  "prompts": {},
+  "logical_commit_id": "f4c464bb5cf1e91258cd68e6d6336abadce082a7",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_0c575d9ed2f2b0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07afd-b8ac-7f91-9984-7010fa564959",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 1,
+      "total_deletions": 1
+    },
+    "s_1723ec8477c95d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07aca-cd43-74f0-954e-92e23f3577b2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 200,
+      "total_deletions": 53
+    },
+    "s_1e2935892cff68": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07adc-389a-7dd1-8129-fcf74ec0f758",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 1,
+      "total_deletions": 1
+    },
+    "s_5bc0ee1bde1d85": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a079ff-f82d-75d0-9a6c-7d90224fbd72",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 103,
+      "total_deletions": 2
+    },
+    "s_5cacff5e386428": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07b14-7445-71b0-9975-787bfd2cd0bd",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 291
+    },
+    "s_7a680ff1976295": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07a13-b352-7f50-8be1-178279865d67",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 230,
+      "total_deletions": 232
+    },
+    "s_9541f766317761": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07af5-a0ea-7111-9abe-a53ac93ebf2e",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 6
+    },
+    "s_ea0c76dfdd06d0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a079c2-697b-7e61-9cd6-747af67beb2d",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 403,
+      "total_deletions": 82
+    },
+    "s_ea857156423036": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07a09-c9a2-7940-87fd-1a2ad338b664",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 82,
+      "total_deletions": 65
+    }
+  }
+}
