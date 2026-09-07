@@ -2740,6 +2740,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
         // while the component is still in TRIMMED mode. Select CUSTOM first so the
         // layout dimensions chosen by createNode remain authoritative.
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        // The browser fallback uses the original 384x384 piece canvas, while the
+        // WeChat Auto Atlas frame is transparently trimmed. Preserve the original
+        // padding for chess pieces so both paths render the same visible diameter.
+        if (key.startsWith('piece')) {
+            sprite.trim = false;
+        }
         sprite.spriteFrame = this.frames.get(key) ?? null;
         transform?.setContentSize(intendedWidth, intendedHeight);
     }

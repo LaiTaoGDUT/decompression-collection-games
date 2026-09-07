@@ -2,7 +2,6 @@ import { WATERMELON_SEMI_FLUID } from './WatermelonSemiFluid';
 
 const POINT_COUNT = 18;
 const TAU = Math.PI * 2;
-const FIXED_HZ = 120;
 const REFERENCE_SEPARATION_SLOP = -1.2;
 // Only the body created by a merge uses this reduced rebound during its brief
 // initial depenetration. Ordinary contacts retain the reference-game response.
@@ -60,13 +59,14 @@ interface FluidOverlap {
 }
 
 const clamp = (value: number, minimum: number, maximum: number): number => (
-    Math.max(minimum, Math.min(maximum, value))
+    value < minimum ? minimum : value > maximum ? maximum : value
 );
 
 function updateCenter(body: WatermelonFluidBody): void {
     let x = 0;
     let y = 0;
-    for (const point of body.points) {
+    for (let index = 0; index < POINT_COUNT; index += 1) {
+        const point = body.points[index];
         x += point.x;
         y += point.y;
     }
@@ -106,8 +106,8 @@ function constrainPressure(body: WatermelonFluidBody, stiffness: number): void {
     const gradientY = body.pressureGradientY;
     let norm = 0;
     for (let index = 0; index < POINT_COUNT; index += 1) {
-        const before = body.points[(index + POINT_COUNT - 1) % POINT_COUNT];
-        const after = body.points[(index + 1) % POINT_COUNT];
+        const before = body.points[index === 0 ? POINT_COUNT - 1 : index - 1];
+        const after = body.points[index + 1 === POINT_COUNT ? 0 : index + 1];
         const gx = (after.y - before.y) * 0.5;
         const gy = (before.x - after.x) * 0.5;
         gradientX[index] = gx;
@@ -151,14 +151,12 @@ function findOverlap(
     for (let index = 0; index < POINT_COUNT; index += 1) {
         const firstPoint = first.points[index];
         const secondPoint = second.points[index];
-        firstSupport = Math.max(
-            firstSupport,
-            (firstPoint.x - first.x) * nx + (firstPoint.y - first.y) * ny,
-        );
-        secondSupport = Math.max(
-            secondSupport,
-            (second.x - secondPoint.x) * nx + (second.y - secondPoint.y) * ny,
-        );
+        const firstProjection = (firstPoint.x - first.x) * nx
+            + (firstPoint.y - first.y) * ny;
+        const secondProjection = (second.x - secondPoint.x) * nx
+            + (second.y - secondPoint.y) * ny;
+        if (firstProjection > firstSupport) firstSupport = firstProjection;
+        if (secondProjection > secondSupport) secondSupport = secondProjection;
     }
     const depth = firstSupport + secondSupport - distance;
     if (depth < separationSlop) return false;
@@ -258,8 +256,8 @@ export class WatermelonFluidWorld {
             return {
                 x: pointX,
                 y: pointY,
-                px: pointX - scaledVelocityX / FIXED_HZ,
-                py: pointY - scaledVelocityY / FIXED_HZ,
+                px: pointX - scaledVelocityX / WATERMELON_SEMI_FLUID.simulationHz,
+                py: pointY - scaledVelocityY / WATERMELON_SEMI_FLUID.simulationHz,
             };
         });
         const body: WatermelonFluidBody = {
@@ -323,20 +321,42 @@ export class WatermelonFluidWorld {
         this.nextId = 1;
     }
 
-    step(deltaSeconds = 1 / FIXED_HZ): void {
+    /**
+     * Port of melon-lab's `World.stir()`. The reference simulation uses a
+     * top-down Y axis; this world uses Cocos' bottom-up Y axis, so the vertical
+     * impulse and the Y contribution to the swirl are inverted here.
+     */
+    stir(randomSource: () => number = Math.random): void {
+        const coordinateScale = this.coordinateScale;
+        const centerX = (this.bounds.left + this.bounds.right) * 0.5;
+        const stirCenterY = this.bounds.bottom + 150 * coordinateScale;
+        for (const body of this.bodies) {
+            const velocityX = (body.x - centerX) * -1.5
+                - (body.y - stirCenterY) * 1.9;
+            const velocityY = (250 + randomSource() * 100) * coordinateScale;
+            for (const point of body.points) {
+                point.px = point.x - velocityX / WATERMELON_SEMI_FLUID.simulationHz;
+                point.py = point.y - velocityY / WATERMELON_SEMI_FLUID.simulationHz;
+            }
+        }
+    }
+
+    step(deltaSeconds = 1 / WATERMELON_SEMI_FLUID.simulationHz): void {
         const delta = Math.max(0, deltaSeconds);
         const coordinateScale = this.coordinateScale;
         const maxPointSpeed = WATERMELON_SEMI_FLUID.maxPointSpeedPerStep
             * coordinateScale;
         this.timeSeconds += delta;
-        for (const body of this.bodies) {
+        for (let bodyIndex = 0; bodyIndex < this.bodies.length; bodyIndex += 1) {
+            const body = this.bodies[bodyIndex];
             body.ageSeconds += delta;
             body.noImpulseCorrectionSeconds = Math.max(
                 0,
                 body.noImpulseCorrectionSeconds - delta,
             );
             body.mergeReboundSeconds = Math.max(0, body.mergeReboundSeconds - delta);
-            for (const point of body.points) {
+            for (let pointIndex = 0; pointIndex < POINT_COUNT; pointIndex += 1) {
+                const point = body.points[pointIndex];
                 const velocityX = clamp(
                     (point.x - point.px) * WATERMELON_SEMI_FLUID.damping,
                     -maxPointSpeed,
@@ -364,12 +384,17 @@ export class WatermelonFluidWorld {
         mergeFirst.length = 0;
         mergeSecond.length = 0;
         for (let iteration = 0; iteration < WATERMELON_SEMI_FLUID.iterations; iteration += 1) {
-            for (const body of this.bodies) {
+            for (let bodyIndex = 0; bodyIndex < this.bodies.length; bodyIndex += 1) {
+                const body = this.bodies[bodyIndex];
                 for (let index = 0; index < POINT_COUNT; index += 1) {
-                    constrainDistance(body.points[index], body.points[(index + 1) % POINT_COUNT], body.edgeLength, WATERMELON_SEMI_FLUID.edge);
-                    constrainDistance(body.points[index], body.points[(index + 2) % POINT_COUNT], body.bendLength, WATERMELON_SEMI_FLUID.bend);
+                    const edgeIndex = index + 1 === POINT_COUNT ? 0 : index + 1;
+                    const bendIndex = index + 2 >= POINT_COUNT
+                        ? index + 2 - POINT_COUNT
+                        : index + 2;
+                    constrainDistance(body.points[index], body.points[edgeIndex], body.edgeLength, WATERMELON_SEMI_FLUID.edge);
+                    constrainDistance(body.points[index], body.points[bendIndex], body.bendLength, WATERMELON_SEMI_FLUID.bend);
                     if (index < POINT_COUNT / 2) {
-                        constrainDistance(body.points[index], body.points[(index + POINT_COUNT / 2) % POINT_COUNT], body.radius * 2, WATERMELON_SEMI_FLUID.shape);
+                        constrainDistance(body.points[index], body.points[index + POINT_COUNT / 2], body.radius * 2, WATERMELON_SEMI_FLUID.shape);
                     }
                 }
                 constrainPressure(body, WATERMELON_SEMI_FLUID.pressure);
@@ -411,8 +436,10 @@ export class WatermelonFluidWorld {
                 }
             }
 
-            for (const body of this.bodies) {
-                for (const point of body.points) {
+            for (let bodyIndex = 0; bodyIndex < this.bodies.length; bodyIndex += 1) {
+                const body = this.bodies[bodyIndex];
+                for (let pointIndex = 0; pointIndex < POINT_COUNT; pointIndex += 1) {
+                    const point = body.points[pointIndex];
                     if (point.x < this.bounds.left) {
                         point.x = this.bounds.left;
                         point.px = point.x + (point.x - point.px) * 0.08;
@@ -477,10 +504,14 @@ export class WatermelonFluidWorld {
         mergeFirst.length = 0;
         mergeSecond.length = 0;
 
-        for (const body of this.bodies) {
+        for (let bodyIndex = 0; bodyIndex < this.bodies.length; bodyIndex += 1) {
+            const body = this.bodies[bodyIndex];
             updateCenter(body);
             let highest = Number.NEGATIVE_INFINITY;
-            for (const point of body.points) highest = Math.max(highest, point.y);
+            for (let pointIndex = 0; pointIndex < POINT_COUNT; pointIndex += 1) {
+                const pointY = body.points[pointIndex].y;
+                if (pointY > highest) highest = pointY;
+            }
             body.dangerSeconds = body.ageSeconds > 1.8 && highest > this.bounds.dangerLine
                 ? body.dangerSeconds + delta
                 : Math.max(0, body.dangerSeconds - delta * 2);

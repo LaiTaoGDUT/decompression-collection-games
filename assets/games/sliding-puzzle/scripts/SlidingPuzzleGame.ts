@@ -133,6 +133,11 @@ const SETUP_START_BUTTON_FONT_SIZE = 36;
 const SETUP_COMPACT_START_BUTTON_FONT_SIZE = 34;
 const PLAY_HUD_FONT_SIZE = 34;
 const PLAY_SIDE_ICON_SIZE = 70;
+const DISPLAY_MODE_SWITCH_WIDTH = 360;
+// 素材画布为 720 × 220，运行时按 1:2 等比缩放，禁止单独拉伸宽或高。
+const DISPLAY_MODE_SWITCH_HEIGHT = 110;
+const DISPLAY_MODE_SWITCH_GAP = 24;
+const TILE_NUMBER_OVERLAY_ALPHA = 120;
 // 裁切预览的外框只保留极窄边缘；图片不再被 28px 的通用预览内缩挤小。
 const CROP_PREVIEW_FRAME_GAP = 12;
 // 棋盘背景素材为 512×512，实际木框内槽从约 32px 处开始。
@@ -162,6 +167,8 @@ const SLIDING_PUZZLE_VISUAL_ASSET_PATHS = Object.freeze({
     board: SLIDING_PUZZLE_BOARD_ASSET_PATH,
     tileSkin: SLIDING_PUZZLE_TILE_SKIN_ASSET_PATH,
     popup: SLIDING_PUZZLE_POPUP_BACKGROUND_ASSET_PATH,
+    displayModeOriginal: 'visual/ui/pz1-display-mode-original-v1/texture',
+    displayModeNumber: 'visual/ui/pz1-display-mode-number-v1/texture',
     backIcon: 'visual/icons/pz1-back-v1/texture',
     pauseIcon: 'visual/icons/pz1-pause-v1/texture',
     cropIcon: 'visual/icons/pz1-crop-v1/texture',
@@ -223,6 +230,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private inputLocked = false;
     private completionRequested = false;
     private completionTransitionPending = false;
+    /** 是否在每块拼图上显示半透明蒙层和原始序号。 */
+    private showTileNumbers = false;
     /** 当前棋盘只接受一个触摸会话，避免多指或重绘时串用坐标。 */
     private activeTouchId: number | null = null;
     private touchStartX = 0;
@@ -233,6 +242,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private movesLabel?: Label;
     private boardNode?: Node;
     private pauseButtonNode?: Node;
+    private displayModeSwitchNode?: Node;
     /** 以实际渲染出来的方块节点为准，避免 Canvas 适配后手动坐标换算产生偏移。 */
     private readonly tileIndexByNode = new Map<Node, number>();
     private backgroundNode?: Node;
@@ -762,15 +772,16 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const sizeCaptionY = previewY - previewSize / 2 - (compact ? 28 : 36);
+        const boardSizeOptionCount = SLIDING_PUZZLE_BOARD_SIZES.length;
         const sizeButtonWidth = Math.min(
             compact ? 106 : 120,
-            Math.max(64, (metrics.setupPanelWidth - 64) / 4 - 4),
+            Math.max(64, (metrics.setupPanelWidth - 64) / boardSizeOptionCount - 4),
         );
         const sizeButtonHeight = compact ? 80 : 86;
         const sizeSpacing = sizeButtonWidth + 10;
         const sizeY = sizeCaptionY - (compact ? 56 : 66);
         SLIDING_PUZZLE_BOARD_SIZES.forEach((size, index) => {
-            const x = (index - 1.5) * sizeSpacing;
+            const x = (index - (boardSizeOptionCount - 1) / 2) * sizeSpacing;
             this.createButton(
                 content,
                 `Size${size}`,
@@ -1461,7 +1472,144 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.boardNode = board;
         this.rebuildTileFrames();
         this.renderBoard();
+        if (this.state === 'playing') {
+            this.createDisplayModeSwitch(root);
+        }
         this.refreshHud();
+    }
+
+    private createDisplayModeSwitch(parent: Node): void {
+        const metrics = this.layout;
+        if (!metrics) {
+            return;
+        }
+
+        const boardBottom = metrics.boardCenterY - metrics.boardSize / 2;
+        const safeBottom = -metrics.viewportHeight / 2 + metrics.safeBottom;
+        const desiredY = boardBottom - DISPLAY_MODE_SWITCH_GAP - DISPLAY_MODE_SWITCH_HEIGHT / 2;
+        const minimumY = safeBottom + DISPLAY_MODE_SWITCH_HEIGHT / 2 + 24;
+        const switchFrame = this.visualFrames.get(
+            this.showTileNumbers ? 'displayModeNumber' : 'displayModeOriginal',
+        );
+        const switchRoot = switchFrame
+            ? new Node('DisplayModeSwitch')
+            : this.createPanel(
+                parent,
+                'DisplayModeSwitch',
+                DISPLAY_MODE_SWITCH_WIDTH,
+                DISPLAY_MODE_SWITCH_HEIGHT,
+                COLORS.paper,
+                18,
+            );
+        if (switchFrame) {
+            switchRoot.layer = this.node.layer;
+            switchRoot.setParent(parent);
+            switchRoot.addComponent(UITransform).setContentSize(
+                DISPLAY_MODE_SWITCH_WIDTH,
+                DISPLAY_MODE_SWITCH_HEIGHT,
+            );
+            const artwork = new Node('Artwork');
+            artwork.layer = this.node.layer;
+            artwork.setParent(switchRoot);
+            artwork.addComponent(UITransform).setContentSize(
+                DISPLAY_MODE_SWITCH_WIDTH,
+                DISPLAY_MODE_SWITCH_HEIGHT,
+            );
+            const sprite = artwork.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.spriteFrame = switchFrame;
+        }
+        switchRoot.setPosition(0, Math.max(minimumY, desiredY), 0);
+        this.displayModeSwitchNode = switchRoot;
+
+        const segmentWidth = DISPLAY_MODE_SWITCH_WIDTH / 2 - 6;
+        const segmentHeight = DISPLAY_MODE_SWITCH_HEIGHT - 10;
+        const createSegment = (
+            name: string,
+            text: string,
+            x: number,
+            selected: boolean,
+            onClick: () => void,
+        ): void => {
+            const segment = new Node(name);
+            segment.layer = this.node.layer;
+            segment.setParent(switchRoot);
+            segment.setPosition(x, 0, 0);
+            segment.addComponent(UITransform).setContentSize(
+                segmentWidth,
+                Math.max(DISPLAY_MODE_SWITCH_HEIGHT, SLIDING_PUZZLE_TOUCH_SIZE),
+            );
+            if (!switchFrame) {
+                const graphics = segment.addComponent(Graphics);
+                graphics.fillColor = selected ? COLORS.teal : colorWithAlpha(COLORS.paper, 0);
+                graphics.roundRect(
+                    -segmentWidth / 2,
+                    -segmentHeight / 2,
+                    segmentWidth,
+                    segmentHeight,
+                    13,
+                );
+                graphics.fill();
+            }
+            const labelX = selected && switchFrame
+                ? (text === '原图' ? 34 : -34)
+                : 0;
+            const label = this.createLabel(
+                segment,
+                'Label',
+                selected && !switchFrame ? `${text} ✓` : text,
+                labelX,
+                0,
+                28,
+                selected ? COLORS.paperLight : COLORS.woodDark,
+                segmentWidth - 20,
+                segmentHeight,
+            );
+            label.isBold = selected;
+            this.bindButtonInteraction(segment, onClick, false);
+        };
+
+        const segmentOffset = DISPLAY_MODE_SWITCH_WIDTH / 4 - 3;
+        createSegment('OriginalMode', '原图', -segmentOffset, !this.showTileNumbers, () => {
+            this.setTileNumberDisplay(false);
+        });
+        createSegment('NumberMode', '序号', segmentOffset, this.showTileNumbers, () => {
+            this.setTileNumberDisplay(true);
+        });
+    }
+
+    private setTileNumberDisplay(showTileNumbers: boolean): void {
+        if (this.state !== 'playing' || this.showTileNumbers === showTileNumbers) {
+            return;
+        }
+
+        this.showTileNumbers = showTileNumbers;
+        this.inputLocked = true;
+        this.context?.services.feedback.play('toggle');
+        // 序号蒙层在棋盘创建时已经缓存；切换时只改变可见性，并在当前
+        // 点击事件派发结束后单独重建轻量切换器，不再重建棋盘或切片帧。
+        this.scheduleOnce(() => {
+            if (this.state !== 'playing') {
+                return;
+            }
+            this.tileIndexByNode.forEach((_tileIndex, tile) => {
+                const overlay = tile.getChildByName('TileNumberOverlay');
+                if (overlay?.isValid) {
+                    overlay.active = this.showTileNumbers;
+                }
+            });
+            const previousSwitch = this.displayModeSwitchNode;
+            const switchParent = previousSwitch?.parent ?? this.dynamicNode;
+            if (previousSwitch?.isValid) {
+                previousSwitch.active = false;
+                previousSwitch.destroy();
+            }
+            this.displayModeSwitchNode = undefined;
+            if (switchParent?.isValid) {
+                this.createDisplayModeSwitch(switchParent);
+            }
+            this.inputLocked = false;
+        }, 0);
     }
 
     private renderBoard(): void {
@@ -1574,6 +1722,38 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     tileSize - 16,
                 );
             }
+
+            const imageInset = clamp(tileSize * TILE_SKIN_INSET_RATIO, 2, 4);
+            const overlaySize = tileSize - imageInset * 2;
+            const overlay = new Node('TileNumberOverlay');
+            overlay.layer = this.node.layer;
+            overlay.setParent(tile);
+            overlay.addComponent(UITransform).setContentSize(overlaySize, overlaySize);
+            const overlayGraphics = overlay.addComponent(Graphics);
+            overlayGraphics.fillColor = colorWithAlpha(COLORS.ink, TILE_NUMBER_OVERLAY_ALPHA);
+            overlayGraphics.roundRect(
+                -overlaySize / 2,
+                -overlaySize / 2,
+                overlaySize,
+                overlaySize,
+                Math.max(2, tileRadius - 1),
+            );
+            overlayGraphics.fill();
+            const numberLabel = this.createLabel(
+                overlay,
+                'Number',
+                String(value),
+                0,
+                0,
+                size === 4
+                    ? clamp(tileSize * 0.36, 32, 56)
+                    : clamp(tileSize * 0.4, 32, 64),
+                COLORS.paperLight,
+                overlaySize - 12,
+                overlaySize - 12,
+            );
+            numberLabel.isBold = true;
+            overlay.active = this.showTileNumbers;
 
             const bevel = new Node('TileBevel');
             bevel.layer = this.node.layer;
@@ -1720,12 +1900,49 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         this.context?.services.feedback.play('drop');
-        this.renderBoard();
+        // 一次有效操作只会移动一个方块。复用现有节点可以避免 7×7 序号模式
+        // 每步销毁并重建 48 套 Sprite、Graphics 和 Label。
+        if (!this.moveRenderedTile(result)) {
+            // 资源异步刷新或画布重建恰好发生在移动期间时，保留完整重建兜底。
+            this.renderBoard();
+        }
         this.refreshHud();
 
         if (result.completed) {
             this.finishRound();
         }
+    }
+
+    private moveRenderedTile(result: SlidingPuzzleMoveResult): boolean {
+        const board = this.boardNode;
+        const metrics = this.layout;
+        const movedTile = result.movedTile;
+        const targetIndex = result.toIndex;
+        if (!board
+            || !metrics
+            || movedTile === undefined
+            || targetIndex === undefined) {
+            return false;
+        }
+
+        const tile = board.getChildByName(`Tile${movedTile}`);
+        if (!tile?.isValid) {
+            return false;
+        }
+
+        const size = this.model.boardSize;
+        const innerSize = metrics.boardSize * (1 - BOARD_INNER_INSET_RATIO * 2);
+        const tileAreaSize = Math.max(1, innerSize - TILE_EDGE_INSET * 2);
+        const tileSize = tileAreaSize / size;
+        const row = Math.floor(targetIndex / size);
+        const column = targetIndex % size;
+        tile.setPosition(
+            -tileAreaSize / 2 + tileSize / 2 + column * tileSize,
+            tileAreaSize / 2 - tileSize / 2 - row * tileSize,
+            0,
+        );
+        this.tileIndexByNode.set(tile, targetIndex);
+        return true;
     }
 
     private finishRound(): void {
@@ -1737,6 +1954,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.completionTransitionPending = true;
         this.state = 'completed';
         this.inputLocked = true;
+        if (this.displayModeSwitchNode?.isValid) {
+            this.displayModeSwitchNode.active = false;
+        }
         if (this.pauseButtonNode?.isValid) {
             this.pauseButtonNode.active = true;
         }
@@ -2657,21 +2877,25 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         return button;
     }
 
-    private bindButtonInteraction(button: Node, onClick: () => void): void {
+    private bindButtonInteraction(
+        button: Node,
+        onClick: () => void,
+        animatePress = true,
+    ): void {
         const baseX = button.position.x;
         const baseY = button.position.y;
         const baseScaleX = button.scale.x;
         const baseScaleY = button.scale.y;
         let touchEndedAt = 0;
         const press = (): void => {
-            if (!button.isValid) {
+            if (!button.isValid || !animatePress) {
                 return;
             }
             button.setScale(baseScaleX * BUTTON_PRESS_SCALE, baseScaleY * BUTTON_PRESS_SCALE, 1);
             button.setPosition(baseX, baseY - BUTTON_PRESS_OFFSET, 0);
         };
         const release = (): void => {
-            if (!button.isValid) {
+            if (!button.isValid || !animatePress) {
                 return;
             }
             button.setScale(baseScaleX, baseScaleY, 1);
@@ -2918,6 +3142,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.destroyTransientFrames();
         this.boardNode = undefined;
         this.pauseButtonNode = undefined;
+        this.displayModeSwitchNode = undefined;
         this.cropPreviewNode = undefined;
         this.cropPreviewSprite = undefined;
         this.resetCropGestureState();

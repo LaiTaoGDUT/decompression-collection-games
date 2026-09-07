@@ -44,3 +44,7 @@
 
 - Auto Atlas 只在“同一个游戏 Bundle、同一个视觉模块、会一起使用”的小型 SpriteFrame 集合中使用，例如 HUD 图标、道具图标、棋子、数字方块和连续动画帧；不要按文件所在目录机械合图，也不要跨游戏、跨大厅/游戏 Bundle 合图。
 
+## 改动完成门槛
+
+- 最低完成门槛：TypeScript 无编译错误、`git diff --check` 通过。
+- 新增、删除或修改 Cocos 资源后，使用 `cocos_creator_stdio` MCP刷新资源

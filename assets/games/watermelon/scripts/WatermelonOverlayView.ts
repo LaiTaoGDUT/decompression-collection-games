@@ -18,6 +18,7 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
+import { FRUIT_LEVELS, getFruitConfig } from './FruitCatalog';
 import type { WatermelonPopupFrames } from './WatermelonPopupAssets';
 import {
     calculateWatermelonOverlayMetrics,
@@ -191,14 +192,15 @@ export class WatermelonOverlayView {
         const extra = model.result.extra ?? {};
         const newRecord = extra.newRecord === true;
         const maxFruitLevel = typeof extra.maxFruitLevel === 'number'
-            ? Math.max(0, Math.min(10, Math.floor(extra.maxFruitLevel)))
+            ? Math.max(0, Math.min(FRUIT_LEVELS.length - 1, Math.floor(extra.maxFruitLevel)))
             : 0;
+        const maxFruitName = getFruitConfig(maxFruitLevel).displayName;
         this.result = this.build({
             name: 'W1ResultOverlay',
             kind: 'result',
             stats: [
                 { label: '最终分数', value: String(model.result.score) },
-                { label: '最大水果等级', value: String(maxFruitLevel) },
+                { label: '最大水果', value: maxFruitName },
             ],
             actions: [
                 { name: 'RestartButton', label: '再来一局', action: model.restart },
@@ -399,7 +401,7 @@ export class WatermelonOverlayView {
     private getPopupTitle(spec: PopupSpec): string {
         if (spec.kind === 'pause') return '暂停一下';
         if (spec.kind === 'continue') return '再坚持一下';
-        return spec.highlight ? '新纪录！' : '本局完成';
+        return spec.highlight ? '新纪录!!!' : '本局完成';
     }
 
     private createPauseStat(parent: Node, stat: PopupStat): void {

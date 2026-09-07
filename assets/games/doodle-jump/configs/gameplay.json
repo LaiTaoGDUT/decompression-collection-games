@@ -191,7 +191,7 @@
   },
   "resurrection": {
     "placement": "doodle-jump-revive",
-    "maximumSuccessfulRevives": 2,
+    "maximumSuccessfulRevives": 1,
     "shieldSeconds": 3,
     "launchVelocity": 940,
     "safeHorizontalRadius": 160,

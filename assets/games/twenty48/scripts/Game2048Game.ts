@@ -132,6 +132,16 @@ interface ResultOverlayContent {
     readonly highestTile: number;
 }
 
+interface Game2048TileView {
+    readonly node: Node;
+    readonly homePosition: Vec3;
+    readonly artwork: Sprite;
+    readonly fallbackGraphics: Graphics;
+    readonly fallbackLabel: Label;
+    readonly opacity: UIOpacity;
+    value: number;
+}
+
 const COLORS = Object.freeze({
     void: new Color(2, 6, 22, 255),
     panel: new Color(11, 22, 54, 248),
@@ -231,6 +241,10 @@ export class Game2048Game extends Component implements MiniGame {
     private readonly model = new Game2048Model();
     private boardNode?: Node;
     private boardContent?: Node;
+    private readonly tileViews: Game2048TileView[] = [];
+    private boardGridSizeValue = 0;
+    private boardGapValue = 0;
+    private boardTileSizeValue = 0;
     private scoreLabel?: Label;
     private bestLabel?: Label;
     private titleButton?: Button;
@@ -323,6 +337,8 @@ export class Game2048Game extends Component implements MiniGame {
         this.operationGeneration += 1;
         this.inputLocked = true;
         this.state = 'paused';
+        // 移动模型已经提交时，暂停必须把复用视图同步到最终格位，避免恢复后留下半程动画。
+        this.syncBoardViews();
         // 平台 hide 会复用统一暂停路径；在这里同步落盘，避免只依赖最近一次移动。
         this.persistProgress(true);
         this.context?.services.audio.pauseMusic();
@@ -343,6 +359,10 @@ export class Game2048Game extends Component implements MiniGame {
         } else if (this.model.highestTile < TARGET_TILE && this.model.needsMilestoneCelebration) {
             this.targetOverlay = undefined;
             this.showAchievementOverlay(MILESTONE_TILE);
+        } else if (!this.model.hasAvailableMove) {
+            this.finishRound('no-moves');
+        } else {
+            this.updateDangerState();
         }
     }
 
@@ -388,6 +408,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
         this.destroyOverlay(this.gameOverOverlay);
+        this.tileViews.length = 0;
         this.node.children.slice().forEach((child) => this.destroyNodeWithTweens(child));
         this.destroyOwnedThemeFrames();
         this.context = undefined;
@@ -507,7 +528,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.context?.reportScore(0);
         this.completedResultModel = undefined;
         this.persistProgress(true);
-        this.renderBoard();
+        this.syncBoardViews();
         this.refreshHud();
         if (resumedTarget) this.showAchievementOverlay(TARGET_TILE);
         else if (resumedMilestone) this.showAchievementOverlay(MILESTONE_TILE);
@@ -544,6 +565,7 @@ export class Game2048Game extends Component implements MiniGame {
     private readonly handleCanvasResize = (): void => {
         if (!this.node.isValid || this.state === 'disposed' || this.state === 'idle') return;
 
+        this.operationGeneration += 1;
         const pauseRebuild = this.pauseOverlay?.rebuild;
         const cheatRebuild = this.cheatOverlay?.rebuild;
         const resultRebuild = this.resultOverlay?.rebuild;
@@ -553,6 +575,7 @@ export class Game2048Game extends Component implements MiniGame {
         const wasCheat = !!this.cheatOverlay;
         const wasCompleted = this.state === 'completed';
         const wasTarget = this.state === 'target';
+        const wasAnimatingMove = this.state === 'playing' && this.inputLocked;
 
         this.unregisterInput();
         this.pauseOverlay = undefined;
@@ -562,7 +585,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.dangerLayer = undefined;
         this.buildInterface();
         this.applyLoadedThemeAssets();
-        this.renderBoard();
+        this.syncBoardViews();
         this.refreshHud();
         if (shouldRestoreDanger) {
             const emptyCount = this.model.board.reduce((count, value) => count + (value === 0 ? 1 : 0), 0);
@@ -579,6 +602,19 @@ export class Game2048Game extends Component implements MiniGame {
             this.resultOverlay = resultRebuild();
         } else if (wasTarget && targetRebuild) {
             this.targetOverlay = targetRebuild();
+        }
+
+        if (wasAnimatingMove) {
+            this.inputLocked = false;
+            if (this.model.needsTargetCelebration) {
+                this.showAchievementOverlay(TARGET_TILE);
+            } else if (this.model.highestTile < TARGET_TILE && this.model.needsMilestoneCelebration) {
+                this.showAchievementOverlay(MILESTONE_TILE);
+            } else if (!this.model.hasAvailableMove) {
+                this.finishRound('no-moves');
+            } else {
+                this.updateDangerState();
+            }
         }
     };
 
@@ -669,7 +705,7 @@ export class Game2048Game extends Component implements MiniGame {
         }
 
         this.historicalHighestTile = Math.max(this.historicalHighestTile, this.model.highestTile);
-        this.renderBoard();
+        this.syncBoardViews();
         this.refreshHud();
         this.updateDangerState();
         this.persistProgress();
@@ -703,7 +739,7 @@ export class Game2048Game extends Component implements MiniGame {
 
         this.scheduleOnce(() => {
             if (!this.isOperationCurrent(generation)) return;
-            this.renderBoard(result);
+            this.syncBoardViews(result);
             this.playHighMergeFeedback(result, generation);
             this.updateDangerState(result.gameOver);
         }, TILE_SLIDE_DURATION);
@@ -891,7 +927,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.model.clearSmallTiles();
         this.state = 'playing';
         this.inputLocked = false;
-        this.renderBoard();
+        this.syncBoardViews();
         this.refreshHud();
         this.persistProgress(true);
         this.updateDangerState();
@@ -1034,6 +1070,7 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private buildInterface(): void {
+        this.tileViews.length = 0;
         this.node.children.slice().forEach((child) => this.destroyNodeWithTweens(child));
         const metrics = this.readLayoutMetrics();
         this.layoutMetrics = metrics;
@@ -1187,6 +1224,7 @@ export class Game2048Game extends Component implements MiniGame {
         const boardGridSize = this.boardGridSize(boardSize);
         this.boardContent = this.createNode(this.boardNode, 'BoardContent', 0, 0, boardGridSize, boardGridSize);
         this.boardContent.setSiblingIndex(this.boardNode.children.length - 1);
+        this.buildTileViews(boardGridSize);
         this.boardArtwork = boardArtwork;
 
         this.createLabel(
@@ -1405,67 +1443,150 @@ export class Game2048Game extends Component implements MiniGame {
         this.dangerMusicClip = danger;
     }
 
-    private renderBoard(result?: Game2048MoveResult): void {
+    private buildTileViews(boardSize: number): void {
         const content = this.boardContent;
-        const panel = this.boardNode?.getComponent(UITransform);
-        if (!content || !panel) return;
-        content.children.filter((child) => child.name.startsWith('Tile-')).forEach((child) => {
-            this.destroyNodeWithTweens(child);
-        });
-        const boardSize = content.getComponent(UITransform)?.contentSize.width
-            ?? panel.contentSize.width - 24;
-        const gap = this.boardGap(boardSize);
-        const tileSize = (boardSize - gap * (BOARD_SIZE + 1)) / BOARD_SIZE;
+        if (!content) return;
 
-        this.model.board.forEach((value, index) => {
-            if (value === 0) return;
-            const { x, y } = this.tilePosition(index, boardSize, gap, tileSize);
-            const tile = this.createNode(content, `Tile-${index}`, x, y, tileSize, tileSize);
-            this.drawTile(tile, value, tileSize);
+        this.boardGridSizeValue = boardSize;
+        this.boardGapValue = this.boardGap(boardSize);
+        this.boardTileSizeValue = (
+            boardSize - this.boardGapValue * (BOARD_SIZE + 1)
+        ) / BOARD_SIZE;
+
+        for (let index = 0; index < BOARD_SIZE * BOARD_SIZE; index += 1) {
+            const position = this.tilePosition(
+                index,
+                this.boardGridSizeValue,
+                this.boardGapValue,
+                this.boardTileSizeValue,
+            );
+            const tile = this.createNode(
+                content,
+                `Tile-${index}`,
+                position.x,
+                position.y,
+                this.boardTileSizeValue,
+                this.boardTileSizeValue,
+            );
+            const opacity = tile.addComponent(UIOpacity);
+            const fallbackGraphics = tile.addComponent(Graphics);
+            const artworkNode = this.createNode(
+                tile,
+                'Artwork',
+                0,
+                0,
+                this.boardTileSizeValue,
+                this.boardTileSizeValue,
+            );
+            const artwork = artworkNode.addComponent(Sprite);
+            artwork.sizeMode = Sprite.SizeMode.CUSTOM;
+            const fallbackLabel = this.createLabel(
+                tile,
+                'Value',
+                '',
+                0,
+                2,
+                59,
+                COLORS.white,
+                this.boardTileSizeValue - 12,
+                this.boardTileSizeValue - 12,
+            );
+            fallbackLabel.isBold = true;
+            fallbackLabel.node.active = false;
+            tile.active = false;
+            this.tileViews.push({
+                node: tile,
+                homePosition: new Vec3(position.x, position.y, 0),
+                artwork,
+                fallbackGraphics,
+                fallbackLabel,
+                opacity,
+                value: -1,
+            });
+        }
+    }
+
+    /**
+     * 将模型状态提交到固定的 16 个棋子视图。普通移动只更新已有组件，
+     * 不在热路径创建或销毁棋子节点。
+     */
+    private syncBoardViews(result?: Game2048MoveResult): void {
+        const content = this.boardContent;
+        if (!content || this.tileViews.length !== BOARD_SIZE * BOARD_SIZE) return;
+
+        const board = this.model.board;
+        for (let index = 0; index < this.tileViews.length; index += 1) {
+            const view = this.tileViews[index];
+            const value = board[index] ?? 0;
+
+            Tween.stopAllByTarget(view.node);
+            Tween.stopAllByTarget(view.opacity);
+            view.node.setPosition(view.homePosition);
+            view.node.setScale(1, 1, 1);
+            view.node.setSiblingIndex(index);
+            view.opacity.opacity = 255;
+
+            if (value === 0) {
+                view.node.active = false;
+                view.value = 0;
+                continue;
+            }
+
+            view.node.active = true;
+            if (view.value !== value) {
+                this.applyTileViewValue(view, value, this.boardTileSizeValue);
+                view.value = value;
+            }
+
             if (result?.spawned?.index === index) {
-                tile.setScale(0.45, 0.45, 1);
-                tween(tile).to(0.14, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+                view.node.setScale(0.45, 0.45, 1);
+                tween(view.node)
+                    .to(0.14, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+                    .start();
             } else if ((result?.mergedIndices.indexOf(index) ?? -1) >= 0) {
                 const effectLevel = value >= 128
                     ? Math.min(5, Math.max(1, Math.log2(value) - 6))
                     : 0;
                 const peakScale = 1.04 + effectLevel * 0.008;
                 const startScale = effectLevel > 0 ? 0.82 : 0.8;
-                tile.setScale(startScale, startScale, 1);
-                tween(tile)
+                view.node.setScale(startScale, startScale, 1);
+                tween(view.node)
                     .to(0.07, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'quadOut' })
                     .to(0.06, { scale: new Vec3(1, 1, 1) })
                     .start();
             }
-        });
+        }
 
         result?.mergedIndices.forEach((index) => {
-            const value = this.model.board[index] ?? 0;
+            const value = board[index] ?? 0;
             if (value >= 128) {
-                this.createHighMergeEffect(content, index, value, boardSize, gap, tileSize);
+                this.createHighMergeEffect(
+                    content,
+                    index,
+                    value,
+                    this.boardGridSizeValue,
+                    this.boardGapValue,
+                    this.boardTileSizeValue,
+                );
             }
         });
     }
 
     private animateBoardMove(result: Game2048MoveResult): void {
         const content = this.boardContent;
-        const panel = this.boardNode?.getComponent(UITransform);
-        if (!content || !panel) return;
-        const boardSize = content.getComponent(UITransform)?.contentSize.width
-            ?? panel.contentSize.width - 24;
-        const gap = this.boardGap(boardSize);
-        const tileSize = (boardSize - gap * (BOARD_SIZE + 1)) / BOARD_SIZE;
+        if (!content || this.tileViews.length !== BOARD_SIZE * BOARD_SIZE) return;
 
         result.tileMotions.forEach((motion) => {
-            const tile = content.getChildByName(`Tile-${motion.fromIndex}`);
-            if (!tile || motion.fromIndex === motion.toIndex) return;
-            const destination = this.tilePosition(motion.toIndex, boardSize, gap, tileSize);
+            const tile = this.tileViews[motion.fromIndex]?.node;
+            if (!tile?.isValid || motion.fromIndex === motion.toIndex) return;
+            const destination = this.tileViews[motion.toIndex];
+            if (!destination) return;
             Tween.stopAllByTarget(tile);
             tile.setSiblingIndex(content.children.length - 1);
             tween(tile)
                 .to(
                     TILE_SLIDE_DURATION,
-                    { position: new Vec3(destination.x, destination.y, 0) },
+                    { position: destination.homePosition },
                     { easing: 'quadOut' },
                 )
                 .start();
@@ -1632,10 +1753,33 @@ export class Game2048Game extends Component implements MiniGame {
             return;
         }
 
+        const graphics = tile.addComponent(Graphics);
+        const label = this.createLabel(tile, 'Value', '', 0, 2, 59, COLORS.white, size - 12, size - 12);
+        this.drawFallbackTile(graphics, label, value, size);
+    }
+
+    private applyTileViewValue(view: Game2048TileView, value: number, size: number): void {
+        const spriteFrame = this.ownedTileFrames.get(value);
+        view.fallbackGraphics.clear();
+        if (spriteFrame) {
+            if (view.artwork.spriteFrame !== spriteFrame) view.artwork.spriteFrame = spriteFrame;
+            view.artwork.node.active = true;
+            view.fallbackLabel.node.active = false;
+            return;
+        }
+
+        view.artwork.spriteFrame = null;
+        view.artwork.node.active = false;
+        view.fallbackLabel.node.active = true;
+        this.drawFallbackTile(view.fallbackGraphics, view.fallbackLabel, value, size);
+    }
+
+    private drawFallbackTile(graphics: Graphics, label: Label, value: number, size: number): void {
+        graphics.clear();
+
         const rgb: Rgb = TILE_COLORS[value] ?? [214, 112, 188];
         const base = [10, 21, 38] as const;
         const fill = rgb.map((channel, index) => Math.round(base[index] + channel * 0.38));
-        const graphics = tile.addComponent(Graphics);
         graphics.fillColor = new Color(0, 0, 0, 70);
         graphics.roundRect(-size / 2 - 2, -size / 2 - 7, size + 4, size + 4, 23);
         graphics.fill();
@@ -1667,7 +1811,10 @@ export class Game2048Game extends Component implements MiniGame {
             Math.round(COLORS.white.b * 0.88 + rgb[2] * 0.12),
             255,
         );
-        const label = this.createLabel(tile, 'Value', String(value), 0, 2, fontSize, color, size - 12, size - 12);
+        label.string = String(value);
+        label.fontSize = fontSize;
+        label.lineHeight = fontSize + 9;
+        label.color = color;
         label.isBold = true;
     }
 

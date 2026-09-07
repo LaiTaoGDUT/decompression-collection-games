@@ -65,7 +65,6 @@ import {
     createStartedWatermelonSave,
     normalizeWatermelonSave,
     refreshCompletedWatermelonSave,
-    refreshWatermelonHighScore,
     WATERMELON_DATA_VERSION,
 } from './WatermelonSave';
 import { SinglePointerDropController } from './WatermelonInput';
@@ -111,9 +110,9 @@ const WATERMELON_RESOURCE_BUNDLE = 'game-watermelon-assets';
 const WATERMELON_CAT_ATLAS_PATH = 'visual/cats/frames-c6/watermelon-cat-frames';
 const NEXT_CAT_PREVIEW_SIZE = 56;
 const CAT_DROP_TOP_GAP = 8;
-const ROUND_SAVE_INTERVAL_SECONDS = 1;
-const FLUID_FIXED_STEP_SECONDS = 1 / 120;
-const MAX_FLUID_STEPS_PER_FRAME = 4;
+const ROUND_SAVE_INTERVAL_SECONDS = 3;
+const FLUID_FIXED_STEP_SECONDS = 1 / WATERMELON_SEMI_FLUID.simulationHz;
+const MAX_FLUID_STEPS_PER_FRAME = 2;
 const MERGE_SCORE_FONT_SIZE = 38;
 const MERGE_CHAIN_SCORE_FONT_SIZE = 42;
 const MERGE_SCORE_LINE_HEIGHT = 48;
@@ -123,6 +122,14 @@ const CONTINUE_CLEAR_SHRINK_SECONDS = 0.24;
 const CONTINUE_CLEAR_FADE_DELAY_SECONDS = 0.06;
 const CONTINUE_CLEAR_FADE_SECONDS = 0.26;
 const CONTINUE_CLEAR_STAGGER_SECONDS = 0.035;
+const SENSOR_TILT_SENSITIVITY = 1.08;
+const SHAKE_IMPULSE_THRESHOLD = 1.15;
+const SHAKE_WINDOW_MILLISECONDS = 450;
+const SHAKE_REQUIRED_IMPULSES = 3;
+const SHAKE_SAMPLE_GAP_MILLISECONDS = 220;
+const STIR_COOLDOWN_MILLISECONDS = 3_000;
+const INSTRUCTION_PROMPT_SECONDS = 1.15;
+const DEFAULT_INSTRUCTION_TEXT = '左右移动，松手投放，摇晃搅动';
 
 interface SavedFruit {
     readonly level: number;
@@ -235,6 +242,10 @@ export class WatermelonGame extends Component implements MiniGame {
     private unsubscribeAccelerometer?: Unsubscribe;
     private rawSensorTilt = 0;
     private sensorTilt = 0;
+    private previousAcceleration?: { x: number; y: number; z: number; sampledAt: number };
+    private readonly shakeImpulseTimes: number[] = [];
+    private stirCooldownUntil = 0;
+    private instructionPromptGeneration = 0;
     private fluidAccumulator = 0;
     private readonly fluidWorld = new WatermelonFluidWorld(
         FRUIT_LEVELS.map((fruit) => fruit.radius),
@@ -398,7 +409,6 @@ export class WatermelonGame extends Component implements MiniGame {
 
         this.roundSaveElapsed += Math.max(0, deltaTime);
         if (this.roundSaveElapsed >= ROUND_SAVE_INTERVAL_SECONDS) {
-            this.roundSaveElapsed = 0;
             this.persistRoundProgress(true);
         }
 
@@ -452,8 +462,7 @@ export class WatermelonGame extends Component implements MiniGame {
 
         if (context) this.context = context;
         this.operationGeneration += 1;
-        this.persistHighScore(this.progress.snapshot.score, 'restart');
-        this.persistRoundProgress(false);
+        this.cacheHighScore(this.progress.snapshot.score);
         this.destroyContinueOverlay();
         this.state = 'playing';
         this.context?.services.audio.resumeMusic();
@@ -493,7 +502,6 @@ export class WatermelonGame extends Component implements MiniGame {
         }
 
         this.operationGeneration += 1;
-        this.persistHighScore(this.progress.snapshot.score, 'exit');
         if (!this.gameEnding && !this.savedProgressDiscarded) {
             this.persistRoundProgress(true);
         }
@@ -503,6 +511,9 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context?.services.platform.stopAccelerometer();
         this.rawSensorTilt = 0;
         this.sensorTilt = 0;
+        this.resetShakeTracking();
+        this.stirCooldownUntil = 0;
+        this.instructionPromptGeneration += 1;
         this.fruitContainer?.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_MOVE, this.handleTouchMove, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
@@ -542,13 +553,74 @@ export class WatermelonGame extends Component implements MiniGame {
         this.gameEnding = true;
     }
 
-    private readonly handleAccelerometer = (sample: { x: number }): void => {
-        const raw = Math.max(-1, Math.min(1, sample.x));
+    private readonly handleAccelerometer = (sample: { x: number; y: number; z: number }): void => {
+        const raw = Math.max(-1, Math.min(1, sample.x * SENSOR_TILT_SENSITIVITY));
         const deadZone = 0.04;
         this.rawSensorTilt = Math.abs(raw) <= deadZone
             ? 0
             : Math.sign(raw) * Math.min(1, (Math.abs(raw) - deadZone) / (1 - deadZone));
+        this.trackShake(sample, Date.now());
     };
+
+    private trackShake(
+        sample: { x: number; y: number; z: number },
+        sampledAt: number,
+    ): void {
+        const previous = this.previousAcceleration;
+        this.previousAcceleration = { ...sample, sampledAt };
+        if (this.state !== 'playing' || this.gameEnding || !previous) {
+            this.shakeImpulseTimes.length = 0;
+            return;
+        }
+
+        const sampleGap = sampledAt - previous.sampledAt;
+        if (sampleGap <= 0 || sampleGap > SHAKE_SAMPLE_GAP_MILLISECONDS) {
+            this.shakeImpulseTimes.length = 0;
+            return;
+        }
+
+        const deltaX = sample.x - previous.x;
+        const deltaY = sample.y - previous.y;
+        const deltaZ = sample.z - previous.z;
+        const impulse = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+        const windowStart = sampledAt - SHAKE_WINDOW_MILLISECONDS;
+        while (this.shakeImpulseTimes.length > 0
+            && this.shakeImpulseTimes[0] < windowStart) {
+            this.shakeImpulseTimes.shift();
+        }
+        if (impulse < SHAKE_IMPULSE_THRESHOLD) return;
+
+        this.shakeImpulseTimes.push(sampledAt);
+        if (this.shakeImpulseTimes.length < SHAKE_REQUIRED_IMPULSES) return;
+
+        this.shakeImpulseTimes.length = 0;
+        if (sampledAt < this.stirCooldownUntil) {
+            this.showTemporaryInstruction('搅动太快啦！休息一下');
+            return;
+        }
+
+        this.stirCooldownUntil = sampledAt + STIR_COOLDOWN_MILLISECONDS;
+        this.fluidWorld.stir(this.randomSource);
+        this.context?.services.feedback.vibrate('heavy');
+    }
+
+    private resetShakeTracking(): void {
+        this.previousAcceleration = undefined;
+        this.shakeImpulseTimes.length = 0;
+    }
+
+    private showTemporaryInstruction(text: string): void {
+        const layout = this.node.getComponent(WatermelonLayout);
+        layout?.setInstructionPresentation(text, true);
+        const promptGeneration = ++this.instructionPromptGeneration;
+        this.scheduleOnce(() => {
+            if (promptGeneration !== this.instructionPromptGeneration
+                || this.state === 'disposed') {
+                return;
+            }
+            layout?.setInstructionPresentation(DEFAULT_INSTRUCTION_TEXT);
+        }, INSTRUCTION_PROMPT_SECONDS);
+    }
 
     private handleFluidMerge(event: WatermelonFluidMergeEvent): void {
         const firstNode = this.fluidNodes.get(event.first.id);
@@ -590,7 +662,6 @@ export class WatermelonGame extends Component implements MiniGame {
         const scoreEvent = this.progress.recordMerge(event.level, dropMergeCount);
         this.spawnMergeFeedback(scoreEvent, event.x, event.y);
         this.updateProgress();
-        this.persistRoundProgress(true);
         this.context?.services.feedback.play('fold');
         this.context?.services.feedback.play('merge');
         if (scoreEvent.isChain) this.context?.services.feedback.play('chain');
@@ -713,6 +784,10 @@ export class WatermelonGame extends Component implements MiniGame {
         this.clearFruits();
         this.rawSensorTilt = 0;
         this.sensorTilt = 0;
+        this.resetShakeTracking();
+        this.instructionPromptGeneration += 1;
+        this.node.getComponent(WatermelonLayout)
+            ?.setInstructionPresentation(DEFAULT_INSTRUCTION_TEXT);
         this.fluidAccumulator = 0;
         this.aimX = 0;
         this.activeDropSequenceId = 0;
@@ -938,7 +1013,6 @@ export class WatermelonGame extends Component implements MiniGame {
         );
         this.progress.recordSpawn(droppedLevel);
         this.updateProgress();
-        this.persistRoundProgress(true);
         this.context?.services.feedback.play('drop');
         if (this.dropPreview) {
             this.dropPreview.active = false;
@@ -1057,23 +1131,11 @@ export class WatermelonGame extends Component implements MiniGame {
         }
     }
 
-    private persistHighScore(score: number, reason: 'score-update' | 'restart' | 'exit'): void {
-        if (!this.context || !this.saveData) {
-            return;
-        }
-
+    private cacheHighScore(score: number): void {
+        if (!this.saveData) return;
         const safeScore = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
-        if (safeScore <= (this.saveData.highScore ?? 0)) {
-            return;
-        }
-
-        const refreshed = refreshWatermelonHighScore(this.saveData, safeScore);
-        try {
-            this.context.services.storage.writeGameData('watermelon', refreshed);
-            this.saveData = refreshed;
-        } catch (error: unknown) {
-            console.error(`[WatermelonGame] High score save failed during ${reason}.`, error);
-        }
+        if (safeScore <= (this.saveData.highScore ?? 0)) return;
+        this.saveData = Object.freeze({ ...this.saveData, highScore: safeScore });
     }
 
     private freezeRoundPhysics(): void {
@@ -1510,17 +1572,12 @@ export class WatermelonGame extends Component implements MiniGame {
             return;
         }
 
-        const previous = storage.getGameData('watermelon');
+        const previous = this.saveData ?? storage.getGameData('watermelon');
         this.roundStartingHighScore = previous?.highScore ?? 0;
         this.saveData = createStartedWatermelonSave(
             previous,
             Date.now(),
         );
-        try {
-            storage.writeGameData('watermelon', this.saveData);
-        } catch (error: unknown) {
-            console.error('[WatermelonGame] Start save failed.', error);
-        }
         this.updateProgress();
         this.persistRoundProgress(true);
     }
@@ -1664,6 +1721,10 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private persistRoundProgress(inProgress: boolean): void {
         if (!this.context || !this.saveData) return;
+        // Forced lifecycle checkpoints also restart the periodic window. Reset
+        // before serialization so a storage failure cannot retry every frame.
+        this.roundSaveElapsed = 0;
+        this.cacheHighScore(this.progress.snapshot.score);
         const activeRound = inProgress ? this.captureActiveRound() : Object.freeze({ inProgress: false });
         const next: GameSaveData = {
             ...this.saveData,
@@ -1693,8 +1754,10 @@ export class WatermelonGame extends Component implements MiniGame {
             let velocityY = 0;
             if (fluid) {
                 for (const point of fluid.points) {
-                    velocityX += (point.x - point.px) * 120 / fluid.points.length;
-                    velocityY += (point.y - point.py) * 120 / fluid.points.length;
+                    velocityX += (point.x - point.px)
+                        * WATERMELON_SEMI_FLUID.simulationHz / fluid.points.length;
+                    velocityY += (point.y - point.py)
+                        * WATERMELON_SEMI_FLUID.simulationHz / fluid.points.length;
                 }
             }
             fruits.push(Object.freeze({
@@ -1836,7 +1899,6 @@ export class WatermelonGame extends Component implements MiniGame {
 
     private updateProgress(): void {
         const snapshot = this.progress.snapshot;
-        this.persistHighScore(snapshot.score, 'score-update');
         const label = this.node.getChildByName('ScoreLabel')
             ?.getChildByName('Value')?.getComponent(Label);
 

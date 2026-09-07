@@ -212,7 +212,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             : '马上就能玩啦';
         this.layoutAndDraw();
         if (this.nameLabel) {
-            this.nameLabel.string = model.gameName ?? '休闲解压小游戏大全';
+            this.nameLabel.string = model.gameName ?? '随手玩一把';
         }
         this.progress = 0;
         this.realProgress = Math.max(0, Math.min(1, model.progress));

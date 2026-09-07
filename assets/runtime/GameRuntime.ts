@@ -165,7 +165,7 @@ export class GameRuntime {
 
         this.loading?.show({
             variant: 'lobby',
-            gameName: '休闲解压小游戏大全',
+            gameName: '随手玩一把',
             message: '正在加载游戏大厅',
             progress: 0.04,
         });

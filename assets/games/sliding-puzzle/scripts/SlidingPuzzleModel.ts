@@ -12,6 +12,7 @@ export const SLIDING_PUZZLE_SHUFFLE_STEPS: Readonly<Record<SlidingPuzzleBoardSiz
         4: 80,
         5: 160,
         6: 280,
+        7: 420,
     });
 
 const ALL_DIRECTIONS: readonly SlidingPuzzleDirection[] = ['up', 'down', 'left', 'right'];
@@ -107,7 +108,7 @@ export class SlidingPuzzleModel {
     loadForTesting(board: readonly number[], moves = 0): SlidingPuzzleSnapshot {
         const size = Math.sqrt(board.length);
         if (!Number.isInteger(size) || !isBoardSize(size)) {
-            throw new Error('Sliding puzzle test board must be a square with size 3 to 6.');
+            throw new Error(`Sliding puzzle test board must be a square with size ${SLIDING_PUZZLE_BOARD_SIZES.join(', ')}.`);
         }
 
         const expected = new Set(Array.from({ length: board.length }, (_value, index) => index));

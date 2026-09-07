@@ -4,6 +4,8 @@
 # Keep the command and script path relative so this project config works from
 # different checkout locations on both operating systems.
 
+model_reasoning_summary = "detailed"
+model_verbosity = "high"
 [mcp_servers.cocos-creator-stdio]
 command = "node"
 args = ["tools/cocos-mcp-platform-bridge.js"]

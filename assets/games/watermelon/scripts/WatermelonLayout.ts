@@ -97,6 +97,12 @@ const CAT_HUD_HIGH_SCORE_VALUE_FONT_SIZE = 28;
 const CAT_HUD_CAPTION_Y = 13;
 const CAT_HUD_VALUE_Y = -14;
 const CAT_INSTRUCTION_FONT_SIZE = 19;
+const CAT_TITLE_WIDTH = 400;
+const CAT_TITLE_HEIGHT = 160;
+const CAT_PAUSE_TOUCH_SIZE = 104;
+const CAT_PAUSE_ART_WIDTH = 76;
+const CAT_PAUSE_ART_HEIGHT = 72;
+const CAT_PAUSE_FALLBACK_BASE_SIZE = 68;
 const CAT_BOARD_BOTTOM_GAP = 14;
 const CAT_ROUTE_HEIGHT = 76;
 const CAT_ROUTE_BOTTOM_GAP = 12;
@@ -128,9 +134,9 @@ export function calculateWatermelonLayout(
         height,
         platformLayout,
         {
-            controlWidth: 88,
+            controlWidth: CAT_PAUSE_TOUCH_SIZE,
             // 标题图片高于暂停按钮，两者共用中心线时按标题高度避让胶囊。
-            controlHeight: 140 * uiScale,
+            controlHeight: CAT_TITLE_HEIGHT * uiScale,
             rightInset: Math.max(44, 58 * uiScale),
             defaultTopInset: clampedTop + 72 * uiScale,
             reservedGap: 10,
@@ -139,8 +145,8 @@ export function calculateWatermelonLayout(
     const safeLeftEdge = -width / 2 + left;
     const safeRightEdge = width / 2 - right;
     const pauseX = Math.max(
-        safeLeftEdge + 44,
-        Math.min(safeRightEdge - 44, pausePosition.x),
+        safeLeftEdge + CAT_PAUSE_TOUCH_SIZE / 2,
+        Math.min(safeRightEdge - CAT_PAUSE_TOUCH_SIZE / 2, pausePosition.x),
     );
     // 标题与暂停按钮共用同一视觉基线，并一起落在平台胶囊下方。
     const topY = pausePosition.y;
@@ -348,11 +354,11 @@ export class WatermelonLayout extends Component {
         this.applyUiArtworkLayout(metrics);
         this.node.getChildByName('Title')
             ?.getComponent(UITransform)
-            ?.setContentSize(350 * metrics.uiScale, 140 * metrics.uiScale);
+            ?.setContentSize(CAT_TITLE_WIDTH * metrics.uiScale, CAT_TITLE_HEIGHT * metrics.uiScale);
         this.node.getChildByName('Title')
             ?.getChildByName('TitleArtwork')
             ?.getComponent(UITransform)
-            ?.setContentSize(350 * metrics.uiScale, 140 * metrics.uiScale);
+            ?.setContentSize(CAT_TITLE_WIDTH * metrics.uiScale, CAT_TITLE_HEIGHT * metrics.uiScale);
         this.node.getChildByName('HighScoreLabel')
             ?.getComponent(UITransform)
             ?.setContentSize(CAT_HUD_PANEL_WIDTH * metrics.uiScale, 76 * metrics.uiScale);
@@ -555,7 +561,7 @@ export class WatermelonLayout extends Component {
         }
 
         const title = this.node.getChildByName('Title');
-        title?.getComponent(UITransform)?.setContentSize(350, 140);
+        title?.getComponent(UITransform)?.setContentSize(CAT_TITLE_WIDTH, CAT_TITLE_HEIGHT);
         const titleLabel = title?.getComponent(Label);
         if (titleLabel) titleLabel.string = '';
 
@@ -564,8 +570,8 @@ export class WatermelonLayout extends Component {
             return;
         }
 
-        // 触摸热区保持 88×88，内部纸片图标收在 68×68，兼顾易点与轻巧观感。
-        pause.getComponent(UITransform)?.setContentSize(88, 88);
+        // 放大的按钮同步扩大触摸热区，避免视觉尺寸与实际可点击范围不一致。
+        pause.getComponent(UITransform)?.setContentSize(CAT_PAUSE_TOUCH_SIZE, CAT_PAUSE_TOUCH_SIZE);
         const button = pause.getComponent(Button);
         if (button) {
             button.transition = Button.Transition.SCALE;
@@ -670,7 +676,7 @@ export class WatermelonLayout extends Component {
                     this.ownedTitleFrame = frame;
                     sprite.spriteFrame = frame;
                     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-                    artwork.getComponent(UITransform)?.setContentSize(350, 140);
+                    artwork.getComponent(UITransform)?.setContentSize(CAT_TITLE_WIDTH, CAT_TITLE_HEIGHT);
                     this.applyLayout();
                 } else if (error) {
                     console.warn('[WatermelonLayout] Title artwork failed to load.', error);
@@ -840,26 +846,35 @@ export class WatermelonLayout extends Component {
 
         const pause = this.node.getChildByName('PauseButton');
         if (pause) {
-            pause.getComponent(UITransform)?.setContentSize(88 * scale, 88 * scale);
+            pause.getComponent(UITransform)?.setContentSize(
+                CAT_PAUSE_TOUCH_SIZE * scale,
+                CAT_PAUSE_TOUCH_SIZE * scale,
+            );
             const pauseArtwork = this.ensureSpriteNode(pause, 'PauseArtwork');
             this.applyHudShadow(
                 pause,
                 'PauseShadow',
                 0,
-                -4 * scale,
-                64 * scale,
-                61 * scale,
+                -5 * scale,
+                CAT_PAUSE_ART_WIDTH * scale,
+                CAT_PAUSE_ART_HEIGHT * scale,
                 scale,
             );
             pauseArtwork.node.setPosition(0, 0);
-            pauseArtwork.transform.setContentSize(64 * scale, 61 * scale);
+            pauseArtwork.transform.setContentSize(
+                CAT_PAUSE_ART_WIDTH * scale,
+                CAT_PAUSE_ART_HEIGHT * scale,
+            );
             pauseArtwork.sprite.sizeMode = Sprite.SizeMode.CUSTOM;
             pauseArtwork.sprite.spriteFrame = this.getUiArtworkFrame('pause') ?? null;
             pauseArtwork.node.active = this.hasUiArtwork('pause');
             const fallback = pause.getChildByName('CozyPauseIcon');
             if (fallback) {
                 fallback.active = !this.hasUiArtwork('pause');
-                fallback.setScale(scale, scale, 1);
+                const fallbackScale = scale
+                    * CAT_PAUSE_ART_WIDTH
+                    / CAT_PAUSE_FALLBACK_BASE_SIZE;
+                fallback.setScale(fallbackScale, fallbackScale, 1);
             }
         }
     }
@@ -1073,7 +1088,7 @@ export class WatermelonLayout extends Component {
         this.styleLabel('Title', 36 * scale, catUiColor('ink'), '');
         this.styleNumericHudLabels('ScoreLabel', scale);
         this.styleNumericHudLabels('HighScoreLabel', scale);
-        this.styleLabel('NextLabel', CAT_HUD_CAPTION_FONT_SIZE * scale, catUiColor('scoreInk'), '下一只');
+        this.styleLabel('NextLabel', CAT_HUD_CAPTION_FONT_SIZE * scale, catUiColor('scoreInk'), '下一个');
         const nextLabel = this.node.getChildByName('NextLabel')?.getComponent(Label);
         if (nextLabel) {
             nextLabel.isBold = true;

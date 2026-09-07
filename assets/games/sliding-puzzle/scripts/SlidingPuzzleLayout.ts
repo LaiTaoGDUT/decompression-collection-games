@@ -71,7 +71,9 @@ export function calculateSlidingPuzzleLayout(
     const footerY = -height / 2 + safeBottom + 54;
 
     const boardTopFromTop = headerTopInset + 154;
-    const boardBottomLimit = height - safeBottom - 90;
+    // 棋盘下方需要容纳“原图 / 序号”显示切换。宽屏高设备仍由横向宽度
+    // 决定棋盘大小；只有矮屏会额外缩小棋盘，确保切换控件不越过底部安全区。
+    const boardBottomLimit = height - safeBottom - 230;
     const boardAvailableHeight = Math.max(180, boardBottomLimit - boardTopFromTop);
     const boardMaxByWidth = Math.max(180, width - 48);
     const board = Math.min(
@@ -99,7 +101,7 @@ export function calculateSlidingPuzzleLayout(
         titleY,
         boardCenterY,
         boardSize: board,
-        cellSize: board / Math.max(3, Math.min(6, boardSize)),
+        cellSize: board / Math.max(3, Math.min(7, boardSize)),
         pauseX,
         pauseY: headerY,
         footerY,

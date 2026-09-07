@@ -1,15 +1,20 @@
-/** Parameters copied from melon-lab's `MODES.fluid`. Keep these together so
- * gameplay tuning cannot drift from the reference simulation. */
+/**
+ * 60 Hz equivalents of melon-lab's 120 Hz `MODES.fluid` parameters.
+ * Distance-constraint stiffness uses `1 - (1 - referenceStiffness) ** 2`,
+ * damping is squared, and the per-step speed cap is doubled so their
+ * per-second response stays aligned with the reference simulation.
+ */
 export const WATERMELON_SEMI_FLUID = Object.freeze({
-    edge: 0.7,
-    bend: 0.24,
-    shape: 0.017,
-    damping: 0.992,
-    pressure: 0.8,
+    simulationHz: 60,
+    edge: 0.91,
+    bend: 0.4224,
+    shape: 0.033711,
+    damping: 0.984064,
+    pressure: 0.96,
     referencePlayfieldWidth: 450,
     gravity: 980,
     tiltAcceleration: 760,
-    maxPointSpeedPerStep: 5,
+    maxPointSpeedPerStep: 10,
     iterations: 6,
     restoreDepenetrationSeconds: 0.2,
 });

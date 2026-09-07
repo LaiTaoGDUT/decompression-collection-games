@@ -1,6 +1,6 @@
 import type { LocalImageSelection } from '../../../core/types/CommonTypes';
 
-export const SLIDING_PUZZLE_BOARD_SIZES = [3, 4, 5, 6] as const;
+export const SLIDING_PUZZLE_BOARD_SIZES = [3, 4, 5, 6, 7] as const;
 
 export type SlidingPuzzleBoardSize = typeof SLIDING_PUZZLE_BOARD_SIZES[number];
 export type SlidingPuzzleDirection = 'up' | 'down' | 'left' | 'right';
