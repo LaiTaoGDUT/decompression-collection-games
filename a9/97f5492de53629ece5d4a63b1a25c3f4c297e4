@@ -1,0 +1,56 @@
+AGENTS.md
+  h_293365c3a5ebee 50
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  h_293365c3a5ebee 12,15,37-38,69,80,103-106,139-141,145-147,154-157,193-194,196,205-206,233-283,338-339,351-352,364,390-396,404-405,407,428,430,436-437,466,483-484,499-505,514,529,536,654-658,667,680-681,716-717,722,728-741,745-746,748,751,754-762,845,899-900,939,941-942,944-947,951-954,956-964,966-968,970,976-1352,1468,1524-1526,1542,1558-1559,1561,1669-1671,1828,1868,1877-1918,1922-1969,1976,1978-1979,1983-1993,2022-2027,2030,2035,2047-2059,2064-2065,2068-2069,2075-2076,2079-2080,2237,2561,2608,3089-3090,3098,3130,3138,3146-3153,3155,3164-3166,3168,3196-3237,3524-3525,3540,3547-3550,3560,3562-3597,3599,3758-3826,3828-3867,3869-3965,3967-4002,4004-4042,4044-4062,4064,4066-4073,4075-4140,4142-4201,4203-4208,4210-4240,4243-4255,4353-4356
+  h_293365c3a5ebee 406,752-753,955,1919-1921,1981,2028,2060-2063,2066-2067,2070-2074,2077-2078,2081,3083-3088,3091-3097,3099,3132-3137,3139,3154,3167,3966,4003,4043,4063,4065,4074,4241-4242
+.codex/config.toml
+  h_293365c3a5ebee 30-32
+assets/app/App.ts
+  h_293365c3a5ebee 410,454-459,484-486
+assets/core/types/CommonTypes.ts
+  h_293365c3a5ebee 69-80
+assets/game-assets/sliding-puzzle/visual/icons/pz1-library-v1.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/sliding-puzzle/visual/icons/pz1-random-v1.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/sliding-puzzle/visual/icons/pz1-selected-v1.png.meta
+  h_293365c3a5ebee 1-134
+assets/games/catch/scripts/DesktopCleanupGame.ts
+  h_293365c3a5ebee 668-669,675
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  h_293365c3a5ebee 479-480,488
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  h_293365c3a5ebee 691-692,699
+assets/games/sliding-puzzle/scripts/SlidingPuzzleModel.ts
+  h_293365c3a5ebee 82-124,169-190
+assets/games/twenty48/scripts/Game2048Game.ts
+  h_293365c3a5ebee 335-336,345
+assets/games/watermelon/scripts/WatermelonGame.ts
+  h_293365c3a5ebee 437,447
+assets/lobby/scripts/GameCardView.ts
+  h_293365c3a5ebee 348-350,356,358,362,369,371,379
+assets/platform/Platform.ts
+  h_293365c3a5ebee 4,32-36
+assets/platform/WeChatPlatform.ts
+  h_293365c3a5ebee 6,72-115,145-157,367-499
+assets/platform/WebPlatform.ts
+  h_293365c3a5ebee 5,190-281
+assets/runtime/GameRuntime.ts
+  h_293365c3a5ebee 84,248,265,267,274-280,303
+assets/runtime/MiniGame.ts
+  h_293365c3a5ebee 48-52
+settings/v2/packages/builder.json
+  h_293365c3a5ebee 80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a997f5492de53629ece5d4a63b1a25c3f4c297e4",
+  "prompts": {},
+  "logical_commit_id": "a997f5492de53629ece5d4a63b1a25c3f4c297e4",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
