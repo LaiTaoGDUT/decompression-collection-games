@@ -79,6 +79,49 @@ export class SlidingPuzzleModel {
         });
     }
 
+    /** 从持久化快照恢复正式局面；任何不完整或不可解的数据都拒绝载入。 */
+    restore(snapshot: SlidingPuzzleSnapshot): SlidingPuzzleSnapshot {
+        if (!isBoardSize(snapshot.size)) {
+            throw new Error(`Sliding puzzle board size must be one of ${SLIDING_PUZZLE_BOARD_SIZES.join(', ')}.`);
+        }
+
+        const tileCount = snapshot.size * snapshot.size;
+        if (snapshot.board.length !== tileCount) {
+            throw new Error('Sliding puzzle snapshot board length does not match its size.');
+        }
+
+        const expected = new Set(Array.from({ length: tileCount }, (_value, index) => index));
+        if (snapshot.board.some((value) => !Number.isInteger(value) || !expected.delete(value))
+            || expected.size !== 0) {
+            throw new Error('Sliding puzzle snapshot must contain every tile exactly once.');
+        }
+
+        const emptyIndex = snapshot.board.indexOf(0);
+        if (!Number.isInteger(snapshot.emptyIndex) || snapshot.emptyIndex !== emptyIndex) {
+            throw new Error('Sliding puzzle snapshot empty index is inconsistent with its board.');
+        }
+        if (!Number.isFinite(snapshot.moves) || !Number.isInteger(snapshot.moves) || snapshot.moves < 0) {
+            throw new Error('Sliding puzzle snapshot move count must be a non-negative integer.');
+        }
+        if (!this.isSolvable(snapshot.board, snapshot.size, emptyIndex)) {
+            throw new Error('Sliding puzzle snapshot board is not solvable.');
+        }
+
+        const completed = snapshot.board.every((tile, index) => (
+            index === tileCount - 1 ? tile === 0 : tile === index + 1
+        ));
+        if (snapshot.completed !== completed) {
+            throw new Error('Sliding puzzle snapshot completion flag is inconsistent with its board.');
+        }
+
+        this.size = snapshot.size;
+        this.tiles = Array.from(snapshot.board);
+        this.empty = emptyIndex;
+        this.moveCount = snapshot.moves;
+        this.shuffleCount = SLIDING_PUZZLE_SHUFFLE_STEPS[snapshot.size];
+        return this.snapshot;
+    }
+
     get shuffleSteps(): number {
         return this.shuffleCount;
     }
@@ -123,6 +166,28 @@ export class SlidingPuzzleModel {
         this.moveCount = Math.max(0, Math.floor(moves));
         this.shuffleCount = 0;
         return this.snapshot;
+    }
+
+    private isSolvable(
+        board: readonly number[],
+        size: SlidingPuzzleBoardSize,
+        emptyIndex: number,
+    ): boolean {
+        let inversions = 0;
+        for (let left = 0; left < board.length; left += 1) {
+            if (board[left] === 0) continue;
+            for (let right = left + 1; right < board.length; right += 1) {
+                if (board[right] !== 0 && board[left] > board[right]) {
+                    inversions += 1;
+                }
+            }
+        }
+
+        if (size % 2 === 1) {
+            return inversions % 2 === 0;
+        }
+        const emptyRowFromBottom = size - Math.floor(emptyIndex / size);
+        return (inversions + emptyRowFromBottom) % 2 === 1;
     }
 
     canMove(direction: SlidingPuzzleDirection): boolean {

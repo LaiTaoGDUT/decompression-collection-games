@@ -77,7 +77,7 @@
     },
     "totalTime": 500,
     "background": {
-      "image": "project://settings/插屏背景1.jpg",
+      "image": "project://settings/插屏背景.png",
       "type": "custom"
     },
     "displayRatio": 0.75

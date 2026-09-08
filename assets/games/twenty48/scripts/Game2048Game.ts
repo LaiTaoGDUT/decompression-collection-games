@@ -332,8 +332,8 @@ export class Game2048Game extends Component implements MiniGame {
         this.startRound(true);
     }
 
-    pause(): void {
-        if (this.state !== 'playing' && this.state !== 'target') return;
+    pause(): boolean {
+        if (this.state !== 'playing' && this.state !== 'target') return false;
         this.operationGeneration += 1;
         this.inputLocked = true;
         this.state = 'paused';
@@ -342,6 +342,7 @@ export class Game2048Game extends Component implements MiniGame {
         // 平台 hide 会复用统一暂停路径；在这里同步落盘，避免只依赖最近一次移动。
         this.persistProgress(true);
         this.context?.services.audio.pauseMusic();
+        return true;
     }
 
     resume(): void {

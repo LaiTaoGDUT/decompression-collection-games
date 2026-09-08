@@ -476,8 +476,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         console.info('[ChessEndless] ready');
     }
 
-    pause(): void {
-        if (this.lifecycle !== 'playing') return;
+    pause(): boolean {
+        if (this.lifecycle !== 'playing') return false;
         this.operationGeneration += 1;
         this.lifecycle = 'paused';
         this.inputLocked = true;
@@ -485,6 +485,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.persistProgress(false);
         }
         this.context?.services.audio.pauseMusic();
+        return true;
     }
 
     resume(): void {

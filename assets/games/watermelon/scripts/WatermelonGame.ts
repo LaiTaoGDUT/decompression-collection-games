@@ -434,7 +434,7 @@ export class WatermelonGame extends Component implements MiniGame {
         }
     }
 
-    pause(): void {
+    pause(): boolean {
         if (this.state !== 'playing') {
             throw new Error(`Cannot pause WatermelonGame from ${this.state}.`);
         }
@@ -444,6 +444,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.pointer.reset();
         this.cleanupTransientEffects();
         this.context?.services.audio.pauseMusic();
+        return true;
     }
 
     resume(): void {

@@ -665,13 +665,14 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.model.phase !== 'playing') this.syncTerminalPhase();
     }
 
-    pause(): void {
-        if (this.state === 'disposed' || this.state === 'idle' || this.state === 'ready') return;
+    pause(): boolean {
+        if (this.state === 'disposed' || this.state === 'idle' || this.state === 'ready') return false;
         this.clearPendingPileTaps();
         this.settlePendingImmediately();
         if (this.state !== 'paused') this.stateBeforePause = this.state;
         this.state = 'paused';
         this.inputLocked = true;
+        return true;
     }
 
     resume(): void {

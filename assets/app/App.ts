@@ -407,6 +407,7 @@ export class App extends Component {
             services.get(ASSET_SERVICE),
             services.get(GAME_LOADER_SERVICE),
             Object.freeze({
+                assets: services.get(ASSET_SERVICE),
                 audio: services.get(AUDIO_SERVICE),
                 feedback: services.get(FEEDBACK_SERVICE),
                 storage: services.get(STORAGE_SERVICE),
@@ -450,11 +451,12 @@ export class App extends Component {
         }
 
         try {
-            // Platform suspension must freeze the active MiniGame itself, not
-            // only the global state.  Reusing the runtime pause path also
-            // preserves a visible, recoverable pause surface on foreground.
-            this.services.get(GAME_RUNTIME_SERVICE).openPauseMenu();
-            this.pausedByPlatform = true;
+            // Platform suspension asks the active MiniGame to freeze itself,
+            // not only the global state.  A preparation screen may decline the
+            // pause; an accepted pause preserves a recoverable foreground UI.
+            this.pausedByPlatform = this.services
+                .get(GAME_RUNTIME_SERVICE)
+                .openPauseMenu();
         } catch (error: unknown) {
             this.pausedByPlatform = false;
             console.error('[App] Platform safety pause failed.', error);
@@ -479,8 +481,9 @@ export class App extends Component {
             && !this.pausedByPlatform
             && stateMachine.currentState === 'playing') {
             try {
-                this.services.get(GAME_RUNTIME_SERVICE).openPauseMenu();
-                this.pausedByPlatform = true;
+                this.pausedByPlatform = this.services
+                    .get(GAME_RUNTIME_SERVICE)
+                    .openPauseMenu();
             } catch (error: unknown) {
                 console.error('[App] Deferred platform safety pause failed.', error);
             }

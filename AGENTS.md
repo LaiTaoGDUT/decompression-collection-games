@@ -47,4 +47,4 @@
 ## 改动完成门槛
 
 - 最低完成门槛：TypeScript 无编译错误、`git diff --check` 通过。
-- 新增、删除或修改 Cocos 资源后，使用 `cocos_creator_stdio` MCP刷新资源
+- 每次改动后，使用 `cocos_creator_stdio` MCP刷新资源

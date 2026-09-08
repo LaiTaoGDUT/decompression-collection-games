@@ -345,31 +345,30 @@ export class GameCardView extends Component {
         const halfHeight = this.cardHeight / 2;
         const skinScale = this.cardWidth / 320;
         const innerWidth = this.cardWidth - 34 * skinScale;
-        const coverHeight = this.mode === 'coming-soon'
-            ? 180 * skinScale
-            : 180 * skinScale;
-        const coverTopInset = 20 * skinScale;
+        const coverWidth = this.cardWidth - 42 * skinScale;
+        const coverHeight = 172 * skinScale;
+        const coverTopInset = 24 * skinScale;
         const coverY = halfHeight - coverTopInset - coverHeight / 2;
         const coverVisualY = coverY + 5 * skinScale;
 
         if (this.coverRoot) {
             this.coverRoot.setPosition(0, coverVisualY);
-            this.coverRoot.getComponent(UITransform)?.setContentSize(innerWidth, coverHeight);
+            this.coverRoot.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
             this.coverFallback?.node.setPosition(0, 0);
-            this.coverFallback?.node.getComponent(UITransform)?.setContentSize(innerWidth, coverHeight);
+            this.coverFallback?.node.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
             const coverClip = this.coverRoot.getChildByName('CoverClip');
             coverClip?.setPosition(0, 0);
             coverClip?.getComponent(UITransform)?.setContentSize(
-                innerWidth,
+                coverWidth,
                 coverHeight,
             );
             const maskGraphics = coverClip?.getComponent(Graphics);
             maskGraphics?.clear();
             if (maskGraphics) {
                 maskGraphics.roundRect(
-                    -innerWidth / 2,
+                    -coverWidth / 2,
                     -coverHeight / 2,
-                    innerWidth,
+                    coverWidth,
                     coverHeight,
                     20 * skinScale,
                 );
@@ -377,7 +376,7 @@ export class GameCardView extends Component {
             }
             const artwork = this.coverSprite?.node;
             artwork?.setPosition(0, 0);
-            this.layoutCoverArtwork(innerWidth, coverHeight);
+            this.layoutCoverArtwork(coverWidth, coverHeight);
         }
 
         // Keep the three text/action groups on one deliberate rhythm below

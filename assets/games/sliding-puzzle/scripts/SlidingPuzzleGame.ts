@@ -9,8 +9,10 @@ import {
     Graphics,
     ImageAsset,
     Label,
+    Mask,
     Node,
     Rect,
+    ScrollView,
     Size,
     Sprite,
     SpriteFrame,
@@ -32,7 +34,8 @@ import type {
 } from '../../../runtime/MiniGame';
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
-import type { StorageService } from '../../../services/storage/StorageService';
+import type { AssetService } from '../../../services/asset/AssetService';
+import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
 import type { GameResult, LocalImageSelection } from '../../../core/types/CommonTypes';
 import {
     autoAtlasFrameName,
@@ -63,6 +66,7 @@ type SlidingPuzzleState =
     | 'idle'
     | 'ready'
     | 'setup'
+    | 'preset-library'
     | 'picking-image'
     | 'crop-editing'
     | 'starting'
@@ -73,6 +77,7 @@ type SlidingPuzzleState =
     | 'disposed';
 
 export interface SlidingPuzzleServices {
+    readonly assets: AssetService;
     readonly audio: AudioService;
     readonly feedback: FeedbackService;
     readonly platform: Platform;
@@ -95,6 +100,10 @@ const COLORS = Object.freeze({
 });
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_LOCAL_IMAGE_PIXEL_SIZE = 1024;
+const LOCAL_IMAGE_JPEG_QUALITY = 0.92;
+const MAX_LOCAL_PUZZLE_HISTORY = 10;
+const SLIDING_PUZZLE_DATA_VERSION = 2;
 const SWIPE_THRESHOLD = 34;
 const PREVIEW_PAN_EPSILON = 0.0001;
 const TILE_SKIN_INSET_RATIO = 0.018;
@@ -127,17 +136,25 @@ const SETUP_PREVIEW_MAX_SIZE = 320;
 const SETUP_COMPACT_PREVIEW_MAX_SIZE = 240;
 const SETUP_SIZE_BUTTON_FONT_SIZE = 30;
 const SETUP_COMPACT_SIZE_BUTTON_FONT_SIZE = 28;
-const SETUP_SOURCE_BUTTON_FONT_SIZE = 30;
-const SETUP_COMPACT_SOURCE_BUTTON_FONT_SIZE = 28;
+const SETUP_SOURCE_ACTION_FONT_SIZE = 26;
+const SETUP_SOURCE_ACTION_CONTENT_GAP = 8;
+const SETUP_SOURCE_ACTION_SUBTITLE_FONT_SIZE = 17;
 const SETUP_START_BUTTON_FONT_SIZE = 36;
 const SETUP_COMPACT_START_BUTTON_FONT_SIZE = 34;
 const PLAY_HUD_FONT_SIZE = 34;
+const PLAY_HUD_INFO_COLUMN_WIDTH = 180;
+const PLAY_HUD_INFO_COLUMN_GAP = 30;
+const PLAY_HUD_INFO_OFFSET_Y = 72;
 const PLAY_SIDE_ICON_SIZE = 70;
 const DISPLAY_MODE_SWITCH_WIDTH = 360;
 // 素材画布为 720 × 220，运行时按 1:2 等比缩放，禁止单独拉伸宽或高。
 const DISPLAY_MODE_SWITCH_HEIGHT = 110;
 const DISPLAY_MODE_SWITCH_GAP = 24;
 const TILE_NUMBER_OVERLAY_ALPHA = 120;
+const IMAGE_PREVIEW_CORNER_RADIUS = 8;
+const PRESET_LIBRARY_CARD_CORNER_RADIUS = 12;
+const PRESET_SELECTED_ICON_SIZE = 64;
+const PRESET_SELECTED_ICON_EDGE_INSET = 16;
 // 裁切预览的外框只保留极窄边缘；图片不再被 28px 的通用预览内缩挤小。
 const CROP_PREVIEW_FRAME_GAP = 12;
 // 棋盘背景素材为 512×512，实际木框内槽从约 32px 处开始。
@@ -173,7 +190,10 @@ const SLIDING_PUZZLE_VISUAL_ASSET_PATHS = Object.freeze({
     pauseIcon: 'visual/icons/pz1-pause-v1/texture',
     cropIcon: 'visual/icons/pz1-crop-v1/texture',
     referenceIcon: 'visual/icons/pz1-reference-v1/texture',
+    randomIcon: 'visual/icons/pz1-random-v1/texture',
+    libraryIcon: 'visual/icons/pz1-library-v1/texture',
     albumIcon: 'visual/icons/pz1-album-v1/texture',
+    selectedIcon: 'visual/icons/pz1-selected-v1/texture',
     closeIcon: 'visual/icons/pz1-close-v1/texture',
 });
 
@@ -182,6 +202,8 @@ type SlidingPuzzleVisualKey = keyof typeof SLIDING_PUZZLE_VISUAL_ASSET_PATHS;
 const BUTTON_ICON_ASSET_KEYS: Readonly<Record<string, SlidingPuzzleVisualKey>> = Object.freeze({
     ReferenceButton: 'referenceIcon',
     PauseButton: 'pauseIcon',
+    PresetButton: 'randomIcon',
+    PresetLibraryButton: 'libraryIcon',
     ImageButton: 'albumIcon',
     CancelCrop: 'closeIcon',
     ConfirmCrop: 'cropIcon',
@@ -206,6 +228,57 @@ function isSupportedImageMimeType(mimeType?: string): boolean {
         || normalized === 'image/png'
         || normalized === 'image/jpg'
         || normalized === 'image/jpeg';
+}
+
+function isRecordValue(value: unknown): value is Readonly<Record<string, unknown>> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+interface PresetLibraryTexture {
+    readonly kind: 'preset' | 'local';
+    readonly path: string;
+    readonly id?: string;
+    readonly texture?: Texture2D;
+    readonly imageAsset?: ImageAsset;
+    /** 当前预览纹理由主图片状态持有，图库关闭时不能重复释放。 */
+    readonly releaseOnClose: boolean;
+}
+
+interface LocalPuzzleRecord {
+    readonly id: string;
+    readonly path: string;
+    readonly width: number;
+    readonly height: number;
+    readonly createdAt: number;
+    readonly lastPlayedAt: number;
+}
+
+interface PuzzleLibrarySource {
+    readonly kind: 'preset' | 'local';
+    readonly path: string;
+    readonly id?: string;
+    readonly lastPlayedAt: number;
+    readonly originalIndex: number;
+    readonly selected: boolean;
+}
+
+interface SlidingPuzzleSavedImage {
+    readonly kind: 'preset' | 'local';
+    readonly id?: string;
+    readonly path?: string;
+}
+
+interface SlidingPuzzleActiveRound {
+    readonly version: 1;
+    readonly inProgress: true;
+    readonly boardSize: SlidingPuzzleBoardSize;
+    readonly board: readonly number[];
+    readonly emptyIndex: number;
+    readonly moves: number;
+    readonly elapsedSeconds: number;
+    readonly showTileNumbers: boolean;
+    readonly image: SlidingPuzzleSavedImage;
+    readonly updatedAt: number;
 }
 
 /**
@@ -262,6 +335,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private imageTexture?: Texture2D;
     private imageAsset?: ImageAsset;
     private imageTextureOwned = false;
+    private localImageSelection?: LocalImageSelection;
+    private localPuzzleRecordId?: string;
     /** 当前纹理对应的预置图路径；换图加载期间旧图仍保持可见。 */
     private loadedPresetAssetPath?: string;
     /** 预置图异步加载中的目标路径，用于使连续点击正确失效旧请求。 */
@@ -273,6 +348,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private readonly visualTextures = new Map<SlidingPuzzleVisualKey, Texture2D>();
     private readonly visualFrames = new Map<SlidingPuzzleVisualKey, SpriteFrame>();
     private visualLoadToken = 0;
+    private presetLibraryLoadToken = 0;
+    private presetLibraryTextures: PresetLibraryTexture[] = [];
     private readonly tileFrames: SpriteFrame[] = [];
     private readonly transientFrames = new Set<SpriteFrame>();
     private readonly pendingAssetLoads = new Set<Promise<unknown>>();
@@ -284,6 +361,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
      */
     private syntheticMouseEventsBlockedUntil = 0;
     private restartToSetupAfterRuntimeRestart = false;
+    private savedProgressDiscarded = false;
     private cropPreviewNode?: Node;
     private cropPreviewSprite?: Sprite;
     private cropPreviewFrame?: SpriteFrame;
@@ -309,15 +387,24 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             context.services.audio.onHide();
             if (this.state === 'playing') {
                 context.requestPause();
+            } else if (this.state === 'paused' || this.state === 'reference-preview') {
+                this.persistProgress();
+                try {
+                    context.services.storage.flush();
+                } catch (error: unknown) {
+                    console.warn('[SlidingPuzzleGame] Failed to flush progress while hiding.', error);
+                }
             }
         });
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.resizeListening = true;
         this.buildBackground();
-        this.showSetup();
         // 视觉素材和预置图都异步预热；任一资源缺失都不阻塞进入游戏。
         void this.trackAssetLoad(this.loadVisualAssets());
-        void this.trackAssetLoad(this.loadPresetImage(true));
+        if (!await this.restoreActiveRound()) {
+            this.showSetup();
+            void this.trackAssetLoad(this.loadPresetImage(true));
+        }
     }
 
     begin(): void {
@@ -338,14 +425,16 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.refreshHud();
     }
 
-    pause(): void {
+    pause(): boolean {
         if (this.state !== 'playing') {
-            return;
+            return false;
         }
 
         this.state = 'paused';
         this.inputLocked = true;
         this.pauseButtonNode && (this.pauseButtonNode.active = false);
+        this.persistProgress();
+        return true;
     }
 
     resume(): void {
@@ -374,6 +463,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.hidePauseMenu();
         this.hideResultView();
         this.hideReferencePreview();
+        this.discardSavedProgress();
         const restartToSetup = this.restartToSetupAfterRuntimeRestart;
         this.restartToSetupAfterRuntimeRestart = false;
         if (restartToSetup) {
@@ -390,7 +480,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     discardSavedProgress(): void {
-        // 本作暂不保存局内进度；保留生命周期钩子，便于未来接入版本化存档。
+        this.savedProgressDiscarded = true;
+        this.writeActiveRound(undefined);
     }
 
     async dispose(): Promise<void> {
@@ -407,12 +498,20 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
+        if (!this.savedProgressDiscarded
+            && (this.state === 'playing'
+                || this.state === 'paused'
+                || this.state === 'reference-preview')) {
+            this.persistProgress();
+        }
+
         // 先把状态切到 disposed，令所有晚到的异步回调进入清理分支，
         // 再等待它们结束，避免回调和 Bundle release 并发操作同一份纹理。
         this.state = 'disposed';
         this.context?.services.platform.cancelLocalImagePicker();
         this.imageLoadToken += 1;
         this.visualLoadToken += 1;
+        this.presetLibraryLoadToken += 1;
         this.uiActionPending = true;
 
         this.unsubscribeShow?.();
@@ -427,13 +526,14 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.clearSpriteFrameReferences(this.node);
         this.destroyOverlay();
         this.destroyDynamicView();
+        this.releasePresetLibraryTextures();
         if (this.backgroundNode?.isValid) {
             this.backgroundNode.destroy();
         }
         this.backgroundNode = undefined;
         this.cropController.dispose();
 
-        const pendingLoads = [...this.pendingAssetLoads];
+        const pendingLoads = Array.from(this.pendingAssetLoads);
         await Promise.all(pendingLoads.map(async (load) => {
             try {
                 await load;
@@ -551,6 +651,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const panelWidth = 640;
         const contentWidth = this.getPopupContentWidth(panelWidth);
         const titleHeight = 56;
+        const closeIconSize = 50;
+        const closeButtonSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, closeIconSize + 28);
+        // 标题栏按关闭按钮的完整触控高度占位，让标题与按钮共用中心线，
+        // 同时保证下方统计信息不会侵入关闭按钮的点击区域。
+        const titleRowHeight = closeButtonSize;
         const statsHeight = 84;
         const previewSize = 280;
         const buttonHeight = 84;
@@ -559,7 +664,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const previewButtonGap = 24;
         const buttonGap = 16;
         const panelHeight = this.getPopupHeight(
-            titleHeight
+            titleRowHeight
             + titleStatsGap
             + statsHeight
             + statsPreviewGap
@@ -572,15 +677,13 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         panel.setPosition(0, this.getPopupCenterY(), 0);
         this.setPopupScale(panel, panelWidth, panelHeight);
         let cursorY = panelHeight / 2 - POPUP_CONTENT_PADDING_TOP;
-        const titleY = cursorY - titleHeight / 2;
-        cursorY -= titleHeight + titleStatsGap;
+        const titleY = cursorY - titleRowHeight / 2;
+        cursorY -= titleRowHeight + titleStatsGap;
         const statsY = cursorY - statsHeight / 2;
         cursorY -= statsHeight + statsPreviewGap;
         const previewY = cursorY - previewSize / 2;
         cursorY -= previewSize + previewButtonGap;
         let buttonY = cursorY - buttonHeight / 2;
-        const closeIconSize = 50;
-        const closeButtonSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, closeIconSize + 28);
 
         const closeResultButton = this.createIconButton(
             panel,
@@ -610,27 +713,53 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const title = model.result.completed ? '拼图完成' : '本局结束';
-        const titleWidth = Math.max(1, contentWidth - closeButtonSize - 40);
+        // 左右对称地为关闭按钮留位，标题才能以弹窗本身为基准真正居中。
+        const titleWidth = Math.max(1, contentWidth - (closeButtonSize + 24) * 2);
         this.createLabel(
             panel,
             'ResultTitle',
             title,
-            -closeButtonSize / 4,
+            0,
             titleY,
             36,
             COLORS.woodDark,
             titleWidth,
             titleHeight,
         );
+        const resultStatWidth = (contentWidth - 32) / 3;
+        const resultStatStep = resultStatWidth + 16;
+        const resultStatY = statsY - 8;
         this.createLabel(
             panel,
-            'ResultStats',
-            `用时 ${this.formatDuration(this.elapsedSeconds)}  ·  步数 ${this.model.moves}`,
-            0,
-            statsY,
+            'ResultSize',
+            `规格：${this.model.boardSize}x${this.model.boardSize}`,
+            -resultStatStep,
+            resultStatY,
             26,
             COLORS.ink,
-            contentWidth,
+            resultStatWidth,
+            statsHeight,
+        );
+        this.createLabel(
+            panel,
+            'ResultTime',
+            `用时 ${this.formatDuration(this.elapsedSeconds)}`,
+            0,
+            resultStatY,
+            26,
+            COLORS.ink,
+            resultStatWidth,
+            statsHeight,
+        );
+        this.createLabel(
+            panel,
+            'ResultMoves',
+            `步数 ${this.model.moves}`,
+            resultStatStep,
+            resultStatY,
+            26,
+            COLORS.ink,
+            resultStatWidth,
             statsHeight,
         );
         if (this.imageTexture) {
@@ -713,6 +842,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         // 页面重建，都要清掉遗留的输入锁，保证“从相册选择”可以再次触发。
         this.inputLocked = false;
         this.destroyDynamicView();
+        this.releasePresetLibraryTextures();
         this.layout = this.getLayout();
         const root = new Node('SlidingPuzzleSetup');
         root.layer = this.node.layer;
@@ -766,6 +896,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 previewSize,
                 previewSize,
                 '',
+                false,
+                IMAGE_PREVIEW_CORNER_RADIUS,
             );
         } else {
             this.createPlaceholderPreview(content, 0, previewY, previewSize, previewSize, '正在准备图片');
@@ -804,55 +936,420 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             );
         });
 
+        const sourceButtonGap = 12;
         const sourceButtonWidth = Math.min(
-            compact ? 264 : 284,
-            Math.max(132, (metrics.setupPanelWidth - 48) / 2),
+            240,
+            Math.max(176, (metrics.setupPanelWidth - 48 - sourceButtonGap) / 2),
         );
-        const sourceButtonHeight = compact ? 84 : 90;
-        const sourceOffset = sourceButtonWidth / 2 + 16;
+        const sourceButtonHeight = compact ? 76 : 86;
+        const sourceRowGap = 12;
+        const sourceRowWidth = sourceButtonWidth * 2 + sourceButtonGap;
+        const sourceColumnX = (sourceButtonWidth + sourceButtonGap) / 2;
         const defaultSourceY = sizeY - (compact ? 108 : 128);
         const startHeight = compact ? 80 : 100;
         const startGap = 24;
-        const sourceY = compact
-            ? Math.max(
-                defaultSourceY,
-                metrics.footerY
-                + startHeight / 2
-                + sourceButtonHeight / 2
-                + startGap
-                - metrics.setupPanelCenterY,
-            )
-            : defaultSourceY;
-        this.createButton(content, 'PresetButton', '随机一张拼图', -sourceOffset, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.wood, () => {
-            const nextPresetIndex = this.getRandomPresetIndex();
-            const nextPresetAssetPath = SLIDING_PUZZLE_PRESET_ASSET_PATHS[nextPresetIndex];
-            const keepsCurrentImage = this.selectedConfig.imageSource === 'preset'
-                && this.selectedConfig.presetAssetPath === nextPresetAssetPath
-                && this.imageTexture !== undefined
-                && this.loadedPresetAssetPath === nextPresetAssetPath
-                && this.loadingPresetAssetPath === undefined;
-            this.selectedPresetIndex = nextPresetIndex;
-            this.selectedConfig = Object.freeze({
-                boardSize: this.selectedSize,
-                imageSource: 'preset',
-                presetAssetPath: nextPresetAssetPath,
-            });
-            this.cropController.cancel();
+        // 相册按钮独占第二行。最小纵向位置按“开始拼图”按钮上沿反推，
+        // 保证矮屏下两行来源按钮仍完整位于底部安全区之上。
+        const minimumSourceY = metrics.footerY
+            - metrics.setupPanelCenterY
+            + startHeight / 2
+            + startGap
+            + sourceButtonHeight * 1.5
+            + sourceRowGap;
+        const sourceY = Math.max(defaultSourceY, minimumSourceY);
+        const albumSourceY = sourceY - sourceButtonHeight - sourceRowGap;
+        this.createButton(content, 'PresetButton', '随机一张', -sourceColumnX, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.wood, () => {
+            void this.trackAssetLoad(this.selectRandomPuzzle());
+        }, SETUP_SOURCE_ACTION_FONT_SIZE);
+        this.createButton(content, 'PresetLibraryButton', '选择拼图', sourceColumnX, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.teal, () => {
             this.context?.services.feedback.play('uiButton');
-            if (!keepsCurrentImage) {
-                // 换图时保留当前预览，直到新纹理加载完成后再原子替换，
-                // 避免“先清空旧图 -> 显示占位 -> 再重建整页”造成闪烁。
-                void this.trackAssetLoad(this.loadPresetImage(true));
-            }
-        }, compact ? SETUP_COMPACT_SOURCE_BUTTON_FONT_SIZE : SETUP_SOURCE_BUTTON_FONT_SIZE);
-        this.createButton(content, 'ImageButton', '从相册选择', sourceOffset, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.teal, () => {
+            this.showPresetLibrary();
+        }, SETUP_SOURCE_ACTION_FONT_SIZE);
+        this.createButton(content, 'ImageButton', '从相册选择', 0, albumSourceY, sourceRowWidth, sourceButtonHeight, COLORS.paperLight, () => {
             void this.pickLocalImage();
-        }, compact ? SETUP_COMPACT_SOURCE_BUTTON_FONT_SIZE : SETUP_SOURCE_BUTTON_FONT_SIZE);
+        }, SETUP_SOURCE_ACTION_FONT_SIZE, COLORS.woodDark, '（仅本地使用）');
 
         const startWidth = Math.min(compact ? 440 : 480, metrics.setupPanelWidth - 32);
         this.createButton(root, 'StartButton', '开始拼图', 0, metrics.footerY, startWidth, startHeight, COLORS.red, () => {
             void this.startRound();
         }, compact ? SETUP_COMPACT_START_BUTTON_FONT_SIZE : SETUP_START_BUTTON_FONT_SIZE);
+    }
+
+    private showPresetLibrary(): void {
+        if (this.state === 'disposed') {
+            return;
+        }
+
+        this.inputLocked = false;
+        this.destroyDynamicView();
+        this.releasePresetLibraryTextures();
+        this.state = 'preset-library';
+        this.layout = this.getLayout();
+        const root = new Node('SlidingPuzzlePresetLibrary');
+        root.layer = this.node.layer;
+        root.setParent(this.node);
+        this.dynamicNode = root;
+        const metrics = this.layout;
+
+        this.createIconButton(
+            root,
+            'BackButton',
+            -metrics.viewportWidth / 2 + 58,
+            metrics.headerY,
+            'backIcon',
+            SETUP_BACK_ICON_SIZE,
+            () => {
+                if (this.state !== 'preset-library') return;
+                this.context?.services.feedback.play('uiButton');
+                this.state = 'setup';
+                this.showSetup();
+            },
+        );
+        const title = this.createLabel(
+            root,
+            'Title',
+            '选择拼图',
+            0,
+            metrics.headerY - 22,
+            SETUP_TITLE_FONT_SIZE,
+            COLORS.paperLight,
+            460,
+            64,
+        );
+        title.isBold = true;
+        this.createLabel(
+            root,
+            'SortHint',
+            '最近玩过的拼图排在前面',
+            0,
+            metrics.headerY - 78,
+            23,
+            COLORS.paper,
+            520,
+            42,
+        );
+
+        const viewportWidth = Math.min(680, Math.max(280, metrics.viewportWidth - 40));
+        const viewportTop = metrics.headerY - 112;
+        const viewportBottom = -metrics.viewportHeight / 2 + metrics.safeBottom + 32;
+        // 视口严格使用标题下方到底部安全区之间的真实高度；矮屏只缩短
+        // 可视窗口并通过滚动访问卡片，不能用最小高度把内容顶出安全区。
+        const viewportHeight = Math.max(1, viewportTop - viewportBottom);
+        const viewport = new Node('PresetLibraryViewport');
+        viewport.layer = this.node.layer;
+        viewport.setParent(root);
+        viewport.setPosition(0, (viewportTop + viewportBottom) / 2, 0);
+        viewport.addComponent(UITransform).setContentSize(viewportWidth, viewportHeight);
+        const mask = viewport.addComponent(Mask);
+        mask.type = Mask.Type.GRAPHICS_RECT;
+
+        const content = new Node('PresetLibraryContent');
+        content.layer = this.node.layer;
+        content.setParent(viewport);
+        const contentTransform = content.addComponent(UITransform);
+        contentTransform.setAnchorPoint(0.5, 1);
+        contentTransform.setContentSize(viewportWidth, viewportHeight);
+        content.setPosition(0, viewportHeight / 2, 0);
+
+        const scrollView = viewport.addComponent(ScrollView);
+        scrollView.content = content;
+        scrollView.horizontal = false;
+        scrollView.vertical = true;
+        scrollView.inertia = true;
+        scrollView.brake = 0.75;
+        scrollView.elastic = true;
+        scrollView.cancelInnerEvents = true;
+
+        this.createLabel(
+            content,
+            'Loading',
+            '正在整理拼图库…',
+            0,
+            -80,
+            26,
+            COLORS.paperLight,
+            viewportWidth - 48,
+            60,
+        );
+
+        const sources = this.getSortedPuzzleLibrarySources();
+        const token = ++this.presetLibraryLoadToken;
+        void this.trackAssetLoad(this.loadPresetLibraryTextures(sources, token)).then((loaded) => {
+            if (token !== this.presetLibraryLoadToken
+                || this.state !== 'preset-library'
+                || !root.isValid
+                || !content.isValid) {
+                return;
+            }
+            if (!loaded) {
+                const loadingLabel = content.getChildByName('Loading')?.getComponent(Label);
+                if (loadingLabel) {
+                    loadingLabel.string = '拼图库加载失败，请返回重试';
+                }
+                return;
+            }
+            this.renderPresetLibraryGrid(content, viewportWidth, viewportHeight);
+        }).catch((error: unknown) => {
+            console.warn('[SlidingPuzzleGame] Failed to build preset library.', error);
+            if (token === this.presetLibraryLoadToken
+                && this.state === 'preset-library'
+                && content.isValid) {
+                const loadingLabel = content.getChildByName('Loading')?.getComponent(Label);
+                if (loadingLabel) {
+                    loadingLabel.string = '拼图库加载失败，请返回重试';
+                }
+            }
+        });
+    }
+
+    private async loadPresetLibraryTextures(
+        sources: readonly PuzzleLibrarySource[],
+        token: number,
+    ): Promise<boolean> {
+        const bundle = await this.loadResourceBundle();
+        if (!bundle
+            || token !== this.presetLibraryLoadToken
+            || this.state !== 'preset-library') {
+            return false;
+        }
+
+        const entries = await Promise.all(sources.map(async (source): Promise<PresetLibraryTexture> => {
+            if ((source.kind === 'preset' && source.path === this.loadedPresetAssetPath && this.imageTexture)
+                || (source.kind === 'local' && source.id === this.localPuzzleRecordId && this.imageTexture)) {
+                return Object.freeze({
+                    kind: source.kind,
+                    path: source.path,
+                    id: source.id,
+                    texture: this.imageTexture,
+                    releaseOnClose: false,
+                });
+            }
+
+            if (source.kind === 'local') {
+                const selection = await this.context?.services.platform.openPersistedLocalImage(source.path);
+                if (!selection) return Object.freeze({ ...source, releaseOnClose: false });
+                const imageAsset = await new Promise<ImageAsset | undefined>((resolve) => {
+                    assetManager.loadRemote<ImageAsset>(selection.uri, { ext: '.jpg' }, (error, asset) => resolve(error ? undefined : asset));
+                });
+                selection.release();
+                if (!imageAsset) return Object.freeze({ ...source, releaseOnClose: false });
+                const texture = new Texture2D();
+                texture.image = imageAsset;
+                return Object.freeze({ ...source, imageAsset, texture, releaseOnClose: true });
+            }
+
+            const texture = await new Promise<Texture2D | undefined>((resolve) => {
+                try {
+                    bundle.load(
+                        source.path,
+                        Texture2D,
+                        (error: Error | null, loadedTexture: Texture2D) => resolve(
+                            error ? undefined : loadedTexture,
+                        ),
+                    );
+                } catch (error: unknown) {
+                    console.warn('[SlidingPuzzleGame] Failed to load preset library image.', source.path, error);
+                    resolve(undefined);
+                }
+            });
+            return Object.freeze({ ...source, texture, releaseOnClose: texture !== undefined });
+        }));
+
+        if (token !== this.presetLibraryLoadToken
+            || this.state !== 'preset-library') {
+            entries.forEach((entry) => {
+                if (entry.releaseOnClose && entry.texture) {
+                    if (entry.kind === 'local') {
+                        entry.texture.destroy();
+                        entry.imageAsset?.destroy();
+                    } else {
+                        this.releaseBundleTexture(entry.texture);
+                    }
+                }
+            });
+            return false;
+        }
+
+        this.presetLibraryTextures = entries;
+        return true;
+    }
+
+    private renderPresetLibraryGrid(
+        content: Node,
+        viewportWidth: number,
+        viewportHeight: number,
+    ): void {
+        content.children.slice().forEach((child) => {
+            child.active = false;
+            child.destroy();
+        });
+
+        const columnCount = 2;
+        const sidePadding = 16;
+        const columnGap = 18;
+        const rowGap = 22;
+        const cardSize = Math.min(
+            306,
+            (viewportWidth - sidePadding * 2 - columnGap) / columnCount,
+        );
+        const rowCount = Math.max(1, Math.ceil(this.presetLibraryTextures.length / columnCount));
+        const contentHeight = Math.max(
+            viewportHeight,
+            sidePadding * 2 + rowCount * cardSize + Math.max(0, rowCount - 1) * rowGap,
+        );
+        content.getComponent(UITransform)?.setContentSize(viewportWidth, contentHeight);
+        content.setPosition(0, viewportHeight / 2, 0);
+
+        this.presetLibraryTextures.forEach((entry, index) => {
+            const column = index % columnCount;
+            const row = Math.floor(index / columnCount);
+            const x = (column - (columnCount - 1) / 2) * (cardSize + columnGap);
+            const y = -sidePadding - cardSize / 2 - row * (cardSize + rowGap);
+            const selected = entry.kind === 'preset'
+                ? this.selectedConfig.imageSource === 'preset' && this.selectedConfig.presetAssetPath === entry.path
+                : this.selectedConfig.imageSource === 'local' && this.localPuzzleRecordId === entry.id;
+            const card = this.createPanel(
+                content,
+                `PresetCard${index}`,
+                cardSize,
+                cardSize,
+                COLORS.paper,
+                PRESET_LIBRARY_CARD_CORNER_RADIUS,
+            );
+            card.setPosition(x, y, 0);
+
+            if (entry.texture) {
+                const imageSize = cardSize - 20;
+                const frame = new SpriteFrame();
+                const textureSize = Math.max(1, Math.min(entry.texture.width, entry.texture.height));
+                frame.texture = entry.texture;
+                frame.rect = new Rect(
+                    (entry.texture.width - textureSize) / 2,
+                    (entry.texture.height - textureSize) / 2,
+                    textureSize,
+                    textureSize,
+                );
+                frame.originalSize = new Size(textureSize, textureSize);
+                this.transientFrames.add(frame);
+                this.createRoundedSprite(
+                    card,
+                    'ImageClip',
+                    imageSize,
+                    imageSize,
+                    frame,
+                    IMAGE_PREVIEW_CORNER_RADIUS,
+                );
+            } else {
+                this.createLabel(
+                    card,
+                    'Unavailable',
+                    '图片暂不可用',
+                    0,
+                    0,
+                    22,
+                    COLORS.ink,
+                    cardSize - 36,
+                    60,
+                );
+            }
+
+            if (selected) {
+                const selectedIcon = this.visualFrames.get('selectedIcon');
+                if (selectedIcon) {
+                    const badge = this.createSpriteNode(
+                        card,
+                        'SelectedIcon',
+                        PRESET_SELECTED_ICON_SIZE,
+                        PRESET_SELECTED_ICON_SIZE,
+                        selectedIcon,
+                    );
+                    const badgeOffset = PRESET_SELECTED_ICON_EDGE_INSET + PRESET_SELECTED_ICON_SIZE / 2;
+                    badge.node.setPosition(
+                        cardSize / 2 - badgeOffset,
+                        cardSize / 2 - badgeOffset,
+                        0,
+                    );
+                }
+            }
+
+            if (entry.kind === 'local') {
+                const badgeWidth = 72;
+                const badgeHeight = 40;
+                const badge = this.createPanel(
+                    card,
+                    'LocalImageBadge',
+                    badgeWidth,
+                    badgeHeight,
+                    colorWithAlpha(COLORS.woodDark, 224),
+                    12,
+                );
+                const badgeInset = 14;
+                badge.setPosition(
+                    -cardSize / 2 + badgeInset + badgeWidth / 2,
+                    cardSize / 2 - badgeInset - badgeHeight / 2,
+                    0,
+                );
+                const badgeLabel = this.createLabel(
+                    badge,
+                    'Label',
+                    '本地',
+                    0,
+                    0,
+                    20,
+                    COLORS.paperLight,
+                    badgeWidth - 12,
+                    badgeHeight,
+                );
+                badgeLabel.isBold = true;
+            }
+
+            if (entry.texture) {
+                this.bindButtonInteraction(card, () => this.selectPuzzleFromLibrary(entry));
+            }
+        });
+    }
+
+    private selectPuzzleFromLibrary(entry: PresetLibraryTexture): void {
+        if (entry.kind === 'preset') {
+            this.selectPresetFromLibrary(entry.path);
+            return;
+        }
+        if (this.state !== 'preset-library' || this.inputLocked || !entry.texture || !entry.imageAsset || !entry.id) return;
+        this.releaseImageResources();
+        this.imageTexture = entry.texture;
+        this.imageAsset = entry.imageAsset;
+        this.imageTextureOwned = true;
+        this.localPuzzleRecordId = entry.id;
+        this.selectedConfig = Object.freeze({ boardSize: this.selectedSize, imageSource: 'local', imageUri: entry.path });
+        const index = this.presetLibraryTextures.indexOf(entry);
+        if (index >= 0) {
+            this.presetLibraryTextures[index] = Object.freeze({ ...entry, releaseOnClose: false });
+        }
+        this.context?.services.feedback.play('uiButton');
+        this.state = 'setup';
+        this.showSetup();
+    }
+
+    private selectPresetFromLibrary(path: string): void {
+        if (this.state !== 'preset-library' || this.inputLocked) {
+            return;
+        }
+        const index = SLIDING_PUZZLE_PRESET_ASSET_PATHS.indexOf(path);
+        if (index < 0) {
+            return;
+        }
+
+        this.selectedPresetIndex = index;
+        this.selectedConfig = Object.freeze({
+            boardSize: this.selectedSize,
+            imageSource: 'preset',
+            presetAssetPath: path,
+        });
+        this.cropController.cancel();
+        this.context?.services.feedback.play('uiButton');
+        this.state = 'setup';
+        this.showSetup();
+        void this.trackAssetLoad(this.loadPresetImage(true));
     }
 
     private async pickLocalImage(): Promise<void> {
@@ -968,7 +1465,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const path = this.selectedConfig.presetAssetPath;
-        const bundle = assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
+        const bundle = await this.loadResourceBundle();
         if (!path || !bundle) {
             return false;
         }
@@ -1024,6 +1521,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.imageAsset = undefined;
         this.imageTexture = texture;
         this.imageTextureOwned = false;
+        this.localImageSelection?.release();
+        this.localImageSelection = undefined;
+        this.localPuzzleRecordId = undefined;
         this.loadedPresetAssetPath = path;
         this.loadingPresetAssetPath = undefined;
         if (refreshSetup && this.state === 'setup') {
@@ -1039,7 +1539,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private async loadVisualAssets(): Promise<void> {
-        const bundle = assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
+        const bundle = await this.loadResourceBundle();
         if (!bundle || this.state === 'disposed') {
             return;
         }
@@ -1055,7 +1555,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             'pauseIcon',
             'cropIcon',
             'referenceIcon',
+            'randomIcon',
+            'libraryIcon',
             'albumIcon',
+            'selectedIcon',
             'closeIcon',
         ];
         const atlasFrames = await loadAutoAtlasFrames(
@@ -1163,6 +1666,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.imageAsset = undefined;
         this.imageTexture = undefined;
         this.imageTextureOwned = false;
+        this.localImageSelection?.release();
+        this.localImageSelection = undefined;
+        this.localPuzzleRecordId = undefined;
         this.loadedPresetAssetPath = undefined;
         this.loadingPresetAssetPath = undefined;
 
@@ -1319,7 +1825,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const cropTitle = this.createLabel(
             root,
             'CropTitle',
-            '选择图片',
+            '选择相册图片',
             0,
             metrics.titleY,
             CROP_TITLE_FONT_SIZE,
@@ -1359,7 +1865,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 true,
             );
         } else {
-            this.createPlaceholderPreview(root, 0, previewY, previewSize, previewSize, '图片准备中');
+            this.createPlaceholderPreview(root, 0, previewY, previewSize, previewSize, '图片准备中', 0);
         }
         this.createButton(root, 'CancelCrop', '取消', -126, actionY, 220, actionHeight, COLORS.red, () => {
             this.state = 'setup';
@@ -1368,21 +1874,123 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.releasePendingImageResources();
         });
         this.createButton(root, 'ConfirmCrop', '使用这张图', 126, actionY, 250, actionHeight, COLORS.teal, () => {
-            const crop = this.cropController.confirm();
-            if (!crop || !this.promotePendingImage()) {
+            void this.trackAssetLoad(this.confirmLocalImageCrop());
+        });
+    }
+
+    private async confirmLocalImageCrop(): Promise<void> {
+        if (this.state !== 'crop-editing' || this.inputLocked || !this.context) {
+            return;
+        }
+
+        const confirmed = this.cropController.confirm();
+        const sourceTexture = this.pendingImageTexture;
+        if (!confirmed || !sourceTexture) {
+            return;
+        }
+
+        const cropRect = this.getCropRect(sourceTexture, confirmed.crop);
+        // 小图保持裁切区域的原生像素边长；只有超过上限时才降采样，
+        // 绝不把低分辨率相册图片反向放大到 1024。
+        const outputSize = Math.min(
+            MAX_LOCAL_IMAGE_PIXEL_SIZE,
+            Math.max(1, Math.floor(cropRect.width)),
+        );
+        const token = ++this.imageLoadToken;
+        this.inputLocked = true;
+
+        try {
+            const encodedImage = await this.context.services.platform.cropLocalImage({
+                uri: confirmed.selection.uri,
+                sourceX: cropRect.x,
+                sourceY: cropRect.y,
+                sourceSize: cropRect.width,
+                outputSize,
+                quality: LOCAL_IMAGE_JPEG_QUALITY,
+            });
+            if (!encodedImage
+                || token !== this.imageLoadToken
+                || this.state !== 'crop-editing'
+                || !this.pendingImageTexture) {
+                encodedImage?.release();
+                if (token === this.imageLoadToken && this.state === 'crop-editing') {
+                    this.context.services.feedback.play('collision');
+                }
+                return;
+            }
+
+            const croppedImageAsset = await new Promise<ImageAsset | undefined>((resolve) => {
+                try {
+                    assetManager.loadRemote<ImageAsset>(
+                        encodedImage.uri,
+                        { ext: '.jpg' },
+                        (error: Error | null, asset: ImageAsset) => resolve(
+                            error ? undefined : asset,
+                        ),
+                    );
+                } catch (error: unknown) {
+                    console.warn('[SlidingPuzzleGame] Failed to decode cropped JPEG.', error);
+                    resolve(undefined);
+                }
+            });
+            if (!croppedImageAsset
+                || token !== this.imageLoadToken
+                || this.state !== 'crop-editing'
+                || !this.pendingImageTexture) {
+                encodedImage.release();
+                croppedImageAsset?.destroy();
+                if (token === this.imageLoadToken && this.state === 'crop-editing') {
+                    this.context.services.feedback.play('collision');
+                }
+                return;
+            }
+
+            let croppedTexture: Texture2D | undefined;
+            try {
+                croppedTexture = new Texture2D();
+                croppedTexture.image = croppedImageAsset;
+            } catch (error: unknown) {
+                encodedImage.release();
+                croppedTexture?.destroy();
+                croppedImageAsset.destroy();
+                console.warn('[SlidingPuzzleGame] Failed to create cropped local texture.', error);
+                this.context.services.feedback.play('collision');
+                return;
+            }
+
+            // 原始大图只服务于裁切编辑。新纹理创建成功后立即释放原图，
+            // 当前会话之后只持有裁切完成、最大 1024×1024 的正方形纹理。
+            this.releasePendingImageResources();
+            this.pendingImageAsset = croppedImageAsset;
+            this.pendingImageTexture = croppedTexture;
+            this.pendingImageTextureOwned = true;
+            if (!this.promotePendingImage()) {
+                encodedImage.release();
+                this.releasePendingImageResources();
                 return;
             }
 
             this.selectedConfig = Object.freeze({
                 boardSize: this.selectedSize,
                 imageSource: 'local',
-                imageUri: crop.selection.uri,
-                crop: crop.crop,
+                imageUri: encodedImage.uri,
             });
+            this.localImageSelection = encodedImage;
+            this.cropController.cancel();
             this.state = 'setup';
-            this.context?.services.feedback.play('uiButton');
+            this.context.services.feedback.play('uiButton');
             this.showSetup();
-        });
+        } catch (error: unknown) {
+            console.warn('[SlidingPuzzleGame] Failed to crop local image.', error);
+            if (token === this.imageLoadToken && this.state === 'crop-editing') {
+                this.context.services.feedback.play('collision');
+            }
+        } finally {
+            // dispose() 会递增 imageLoadToken；令牌仍有效即可确认当前会话存活。
+            if (token === this.imageLoadToken) {
+                this.inputLocked = false;
+            }
+        }
     }
 
     private async startRound(): Promise<void> {
@@ -1411,11 +2019,20 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         if ((this.state as SlidingPuzzleState) === 'disposed') {
             return;
         }
+        if (this.selectedConfig.imageSource === 'preset'
+            && this.selectedConfig.presetAssetPath
+            && this.loadedPresetAssetPath === this.selectedConfig.presetAssetPath) {
+            this.recordPresetPlayed(this.selectedConfig.presetAssetPath);
+        } else if (this.selectedConfig.imageSource === 'local') {
+            await this.persistCurrentLocalPuzzle();
+        }
         this.model.reset(this.selectedSize);
+        this.savedProgressDiscarded = false;
         this.context?.reportScore(0);
         this.state = 'playing';
         this.inputLocked = false;
         this.showPlay();
+        this.persistProgress();
         this.context?.services.feedback.play('uiButton');
     }
 
@@ -1427,8 +2044,41 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         root.setParent(this.node);
         this.dynamicNode = root;
         const metrics = this.layout;
-        this.timerLabel = this.createLabel(root, 'Timer', '用时 00:00', -132, metrics.headerY - 60, PLAY_HUD_FONT_SIZE, COLORS.paperLight, 260, 52);
-        this.movesLabel = this.createLabel(root, 'Moves', '步数 000', 132, metrics.headerY - 60, PLAY_HUD_FONT_SIZE, COLORS.paperLight, 260, 52);
+        const hudInfoStep = PLAY_HUD_INFO_COLUMN_WIDTH + PLAY_HUD_INFO_COLUMN_GAP;
+        const hudInfoY = metrics.headerY - PLAY_HUD_INFO_OFFSET_Y;
+        this.createLabel(
+            root,
+            'BoardSize',
+            `规格：${this.model.boardSize}x${this.model.boardSize}`,
+            -hudInfoStep,
+            hudInfoY,
+            PLAY_HUD_FONT_SIZE,
+            COLORS.paperLight,
+            PLAY_HUD_INFO_COLUMN_WIDTH,
+            52,
+        );
+        this.timerLabel = this.createLabel(
+            root,
+            'Timer',
+            '用时 00:00',
+            0,
+            hudInfoY,
+            PLAY_HUD_FONT_SIZE,
+            COLORS.paperLight,
+            PLAY_HUD_INFO_COLUMN_WIDTH,
+            52,
+        );
+        this.movesLabel = this.createLabel(
+            root,
+            'Moves',
+            '步数 000',
+            hudInfoStep,
+            hudInfoY,
+            PLAY_HUD_FONT_SIZE,
+            COLORS.paperLight,
+            PLAY_HUD_INFO_COLUMN_WIDTH,
+            52,
+        );
         this.createIconButton(
             root,
             'ReferenceButton',
@@ -1584,6 +2234,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         this.showTileNumbers = showTileNumbers;
+        this.persistProgress();
         this.inputLocked = true;
         this.context?.services.feedback.play('toggle');
         // 序号蒙层在棋盘创建时已经缓存；切换时只改变可见性，并在当前
@@ -1907,6 +2558,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.renderBoard();
         }
         this.refreshHud();
+        this.persistProgress();
 
         if (result.completed) {
             this.finishRound();
@@ -1953,6 +2605,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.completionRequested = true;
         this.completionTransitionPending = true;
         this.state = 'completed';
+        this.discardSavedProgress();
         this.inputLocked = true;
         if (this.displayModeSwitchNode?.isValid) {
             this.displayModeSwitchNode.active = false;
@@ -2427,8 +3080,23 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         panel.setScale(scale, scale, 1);
     }
 
-    private createPlaceholderPreview(parent: Node, x: number, y: number, width: number, height: number, caption: string): Node {
-        const preview = this.createPanel(parent, 'ImagePlaceholder', width, height, COLORS.paperLight, 20);
+    private createPlaceholderPreview(
+        parent: Node,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        caption: string,
+        cornerRadius = 20,
+    ): Node {
+        const preview = this.createPanel(
+            parent,
+            'ImagePlaceholder',
+            width,
+            height,
+            COLORS.paperLight,
+            cornerRadius,
+        );
         preview.setPosition(x, y, 0);
         const graphics = preview.getComponent(Graphics)!;
         graphics.fillColor = colorWithAlpha(COLORS.teal, 90);
@@ -2459,23 +3127,32 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         height: number,
         caption: string,
         interactiveCrop = false,
+        cornerRadius = 0,
     ): Node {
-        const preview = this.createPanel(parent, 'ImagePreview', width, height, COLORS.paperLight, 20);
+        const preview = this.createPanel(
+            parent,
+            'ImagePreview',
+            width,
+            height,
+            COLORS.paperLight,
+            interactiveCrop ? 0 : IMAGE_PREVIEW_CORNER_RADIUS,
+        );
         preview.setPosition(x, y, 0);
         const imageSize = Math.max(
             1,
             Math.min(width, height) - (interactiveCrop ? CROP_PREVIEW_FRAME_GAP : 28),
         );
-        const imageNode = new Node('Image');
-        imageNode.layer = this.node.layer;
-        imageNode.setParent(preview);
-        imageNode.addComponent(UITransform).setContentSize(imageSize, imageSize);
-        const sprite = imageNode.addComponent(Sprite);
-        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         const frame = this.createPreviewFrame();
-        if (frame) {
-            sprite.spriteFrame = frame;
-        }
+        const sprite = cornerRadius > 0
+            ? this.createRoundedSprite(
+                preview,
+                'ImageClip',
+                imageSize,
+                imageSize,
+                frame,
+                cornerRadius,
+            )
+            : this.createSpriteNode(preview, 'Image', imageSize, imageSize, frame);
 
         const frameNode = new Node('CropFrame');
         frameNode.layer = this.node.layer;
@@ -2484,7 +3161,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const frameGraphics = frameNode.addComponent(Graphics);
         frameGraphics.lineWidth = interactiveCrop ? 5 : 3;
         frameGraphics.strokeColor = interactiveCrop ? COLORS.paperLight : colorWithAlpha(COLORS.woodDark, 120);
-        frameGraphics.roundRect(-imageSize / 2 + 2, -imageSize / 2 + 2, imageSize - 4, imageSize - 4, 14);
+        if (interactiveCrop) {
+            frameGraphics.rect(-imageSize / 2 + 2, -imageSize / 2 + 2, imageSize - 4, imageSize - 4);
+        } else {
+            frameGraphics.roundRect(-imageSize / 2 + 2, -imageSize / 2 + 2, imageSize - 4, imageSize - 4, 14);
+        }
         frameGraphics.stroke();
 
         if (caption) {
@@ -2512,6 +3193,48 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             preview.on(Node.EventType.MOUSE_WHEEL, this.handleCropMouseWheel, this);
         }
         return preview;
+    }
+
+    private createRoundedSprite(
+        parent: Node,
+        name: string,
+        width: number,
+        height: number,
+        frame: SpriteFrame | undefined,
+        radius: number,
+    ): Sprite {
+        const clip = new Node(name);
+        clip.layer = this.node.layer;
+        clip.setParent(parent);
+        clip.addComponent(UITransform).setContentSize(width, height);
+        // Mask 切换到 GRAPHICS_STENCIL 时会初始化它依赖的 Graphics。
+        // 必须先完成 Mask 类型设置，再绘制路径，否则类型切换可能清掉
+        // 之前画好的圆角模板，运行时图片仍会按矩形显示。
+        const mask = clip.addComponent(Mask);
+        mask.type = Mask.Type.GRAPHICS_STENCIL;
+        const stencil = clip.getComponent(Graphics) ?? clip.addComponent(Graphics);
+        stencil.clear();
+        stencil.fillColor = Color.WHITE;
+        stencil.roundRect(-width / 2, -height / 2, width, height, radius);
+        stencil.fill();
+        return this.createSpriteNode(clip, 'Image', width, height, frame);
+    }
+
+    private createSpriteNode(
+        parent: Node,
+        name: string,
+        width: number,
+        height: number,
+        frame?: SpriteFrame,
+    ): Sprite {
+        const image = new Node(name);
+        image.layer = this.node.layer;
+        image.setParent(parent);
+        image.addComponent(UITransform).setContentSize(width, height);
+        const sprite = image.addComponent(Sprite);
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        sprite.spriteFrame = frame ?? null;
+        return sprite;
     }
 
     private createPreviewFrame(): SpriteFrame | undefined {
@@ -2798,6 +3521,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         color: Color,
         onClick: () => void,
         fontSize?: number,
+        labelColor: Color = COLORS.paperLight,
+        subtitle?: string,
     ): Node {
         const button = this.createPanel(parent, name, width, height, color, 16);
         button.getComponent(UITransform)?.setContentSize(
@@ -2812,26 +3537,66 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             0,
             0,
             fontSize ?? Math.min(26, height * 0.3),
-            COLORS.paperLight,
+            labelColor,
             width - 12,
             height - 10,
         );
         const iconKey = BUTTON_ICON_ASSET_KEYS[name];
         const iconFrame = iconKey ? this.visualFrames.get(iconKey) : undefined;
         if (iconFrame) {
-            const iconSize = Math.min(62, height - 16);
+            const isSetupSourceAction = name === 'PresetButton'
+                || name === 'PresetLibraryButton'
+                || name === 'ImageButton';
+            const iconSize = Math.min(isSetupSourceAction ? 54 : 62, height - 16);
             const iconNode = new Node('Icon');
             iconNode.layer = this.node.layer;
             iconNode.setParent(button);
-            iconNode.setPosition(width <= 160 ? 0 : -width / 2 + iconSize / 2 + 16, 0, 0);
             iconNode.addComponent(UITransform).setContentSize(iconSize, iconSize);
             const iconSprite = iconNode.addComponent(Sprite);
             iconSprite.sizeMode = Sprite.SizeMode.CUSTOM;
             iconSprite.spriteFrame = iconFrame;
 
             if (width <= 160) {
+                iconNode.setPosition(0, 0, 0);
                 label.node.active = false;
+            } else if (isSetupSourceAction) {
+                // 三个选图来源按钮都把“图标 + 文字”作为一个整体居中；
+                // 文案宽度按当前字号和字符数计算，宽按钮不会把内容拉散。
+                // 相册按钮的主副文案先组成一个垂直居中的文本块，再与图标对齐。
+                const subtitleWidth = subtitle
+                    ? SETUP_SOURCE_ACTION_SUBTITLE_FONT_SIZE * subtitle.length + 4
+                    : 0;
+                const labelWidth = Math.min(
+                    width - iconSize - SETUP_SOURCE_ACTION_CONTENT_GAP - 16,
+                    Math.ceil(Math.max(label.fontSize * text.length + 4, subtitleWidth)),
+                );
+                const contentWidth = iconSize + SETUP_SOURCE_ACTION_CONTENT_GAP + labelWidth;
+                const contentLeft = -contentWidth / 2;
+                iconNode.setPosition(contentLeft + iconSize / 2, 0, 0);
+                label.node.setPosition(
+                    contentLeft + iconSize + SETUP_SOURCE_ACTION_CONTENT_GAP + labelWidth / 2,
+                    subtitle ? 12 : 0,
+                    0,
+                );
+                label.node.getComponent(UITransform)?.setContentSize(
+                    labelWidth,
+                    subtitle ? 32 : height - 10,
+                );
+                if (subtitle) {
+                    this.createLabel(
+                        button,
+                        'Subtitle',
+                        subtitle,
+                        contentLeft + iconSize + SETUP_SOURCE_ACTION_CONTENT_GAP + labelWidth / 2,
+                        -16,
+                        SETUP_SOURCE_ACTION_SUBTITLE_FONT_SIZE,
+                        labelColor,
+                        labelWidth,
+                        24,
+                    );
+                }
             } else {
+                iconNode.setPosition(-width / 2 + iconSize / 2 + 16, 0, 0);
                 const labelWidth = width - iconSize - 36;
                 const labelTransform = label.node.getComponent(UITransform);
                 label.node.setPosition(
@@ -2994,17 +3759,500 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
     }
 
-    private getRandomPresetIndex(): number {
-        const count = SLIDING_PUZZLE_PRESET_ASSET_PATHS.length;
-        if (count <= 1) {
-            return 0;
+    private async restoreActiveRound(): Promise<boolean> {
+        const context = this.context;
+        if (!context) return false;
+        const raw = context.services.storage.getGameData(context.gameId)?.custom?.activeRound;
+        if (raw === undefined) return false;
+
+        try {
+            const activeRound = this.parseActiveRound(raw);
+            if (!activeRound) {
+                throw new Error('Active sliding puzzle save has an invalid structure.');
+            }
+
+            this.selectedSize = activeRound.boardSize;
+            let imageLoaded = false;
+            if (activeRound.image.kind === 'preset' && activeRound.image.path) {
+                const presetIndex = SLIDING_PUZZLE_PRESET_ASSET_PATHS.indexOf(activeRound.image.path);
+                if (presetIndex < 0) {
+                    throw new Error('Saved preset image no longer exists in the puzzle library.');
+                }
+                this.selectedPresetIndex = presetIndex;
+                this.selectedConfig = Object.freeze({
+                    boardSize: activeRound.boardSize,
+                    imageSource: 'preset',
+                    presetAssetPath: activeRound.image.path,
+                });
+                imageLoaded = await this.trackAssetLoad(this.loadPresetImage(false));
+            } else if (activeRound.image.kind === 'local' && activeRound.image.id) {
+                const record = this.getLocalPuzzleRecords()
+                    .find((item) => item.id === activeRound.image.id);
+                if (!record) {
+                    throw new Error('Saved local puzzle image is missing from the local library.');
+                }
+                imageLoaded = await this.trackAssetLoad(this.loadPersistedLocalPuzzleImage(record));
+                if (imageLoaded) {
+                    this.selectedConfig = Object.freeze({
+                        boardSize: activeRound.boardSize,
+                        imageSource: 'local',
+                        imageUri: record.path,
+                    });
+                    this.localPuzzleRecordId = record.id;
+                }
+            }
+
+            if (!imageLoaded || (this.state as SlidingPuzzleState) === 'disposed') {
+                throw new Error('Saved sliding puzzle image could not be loaded.');
+            }
+
+            const restored = this.model.restore(Object.freeze({
+                size: activeRound.boardSize,
+                board: activeRound.board,
+                emptyIndex: activeRound.emptyIndex,
+                moves: activeRound.moves,
+                completed: false,
+            }));
+            if (restored.completed) {
+                throw new Error('Completed sliding puzzle saves are not recoverable.');
+            }
+
+            this.elapsedSeconds = activeRound.elapsedSeconds;
+            this.showTileNumbers = activeRound.showTileNumbers;
+            this.savedProgressDiscarded = false;
+            this.completionRequested = false;
+            this.completionTransitionPending = false;
+            this.completionImageRevealed = false;
+            this.state = 'playing';
+            this.inputLocked = false;
+            this.context?.reportScore(0);
+            this.showPlay();
+            return true;
+        } catch (error: unknown) {
+            if ((this.state as SlidingPuzzleState) === 'disposed') {
+                return false;
+            }
+            console.warn('[SlidingPuzzleGame] Invalid active round was discarded.', error);
+            this.writeActiveRound(undefined);
+            this.releaseImageResources();
+            this.selectedSize = 4;
+            this.selectedPresetIndex = 0;
+            this.selectedConfig = Object.freeze({
+                boardSize: 4,
+                imageSource: 'preset',
+                presetAssetPath: SLIDING_PUZZLE_PRESET_ASSET_PATHS[0],
+            });
+            this.state = 'ready';
+            return false;
+        }
+    }
+
+    private parseActiveRound(value: unknown): SlidingPuzzleActiveRound | undefined {
+        if (!isRecordValue(value)
+            || value.version !== 1
+            || value.inProgress !== true
+            || typeof value.boardSize !== 'number'
+            || !SLIDING_PUZZLE_BOARD_SIZES.some((size) => size === value.boardSize)
+            || !Array.isArray(value.board)
+            || typeof value.emptyIndex !== 'number'
+            || typeof value.moves !== 'number'
+            || typeof value.elapsedSeconds !== 'number'
+            || !Number.isFinite(value.elapsedSeconds)
+            || value.elapsedSeconds < 0
+            || typeof value.showTileNumbers !== 'boolean'
+            || typeof value.updatedAt !== 'number'
+            || !Number.isFinite(value.updatedAt)
+            || !isRecordValue(value.image)
+            || (value.image.kind !== 'preset' && value.image.kind !== 'local')) {
+            return undefined;
         }
 
-        let next = this.selectedPresetIndex;
-        while (next === this.selectedPresetIndex) {
-            next = Math.floor(Math.random() * count);
+        const boardSize = value.boardSize as SlidingPuzzleBoardSize;
+        const board = value.board;
+        if (board.length !== boardSize * boardSize
+            || board.some((tile) => typeof tile !== 'number' || !Number.isInteger(tile))) {
+            return undefined;
         }
-        return next;
+
+        const image = value.image;
+        if ((image.kind === 'preset' && typeof image.path !== 'string')
+            || (image.kind === 'local' && typeof image.id !== 'string')) {
+            return undefined;
+        }
+
+        return Object.freeze({
+            version: 1,
+            inProgress: true,
+            boardSize,
+            board: Object.freeze(Array.from(board) as number[]),
+            emptyIndex: value.emptyIndex,
+            moves: value.moves,
+            elapsedSeconds: value.elapsedSeconds,
+            showTileNumbers: value.showTileNumbers,
+            image: image.kind === 'preset'
+                ? Object.freeze({ kind: 'preset' as const, path: image.path as string })
+                : Object.freeze({ kind: 'local' as const, id: image.id as string }),
+            updatedAt: value.updatedAt,
+        });
+    }
+
+    private persistProgress(): void {
+        if (this.savedProgressDiscarded) return;
+        const snapshot = this.model.snapshot;
+        if (snapshot.completed) {
+            this.writeActiveRound(undefined);
+            return;
+        }
+
+        let image: SlidingPuzzleSavedImage | undefined;
+        if (this.selectedConfig.imageSource === 'preset'
+            && this.selectedConfig.presetAssetPath
+            && SLIDING_PUZZLE_PRESET_ASSET_PATHS.indexOf(this.selectedConfig.presetAssetPath) >= 0) {
+            image = Object.freeze({
+                kind: 'preset',
+                path: this.selectedConfig.presetAssetPath,
+            });
+        } else if (this.selectedConfig.imageSource === 'local' && this.localPuzzleRecordId) {
+            image = Object.freeze({ kind: 'local', id: this.localPuzzleRecordId });
+        }
+        if (!image) return;
+
+        this.writeActiveRound(Object.freeze({
+            version: 1,
+            inProgress: true,
+            boardSize: snapshot.size,
+            board: Object.freeze(Array.from(snapshot.board)),
+            emptyIndex: snapshot.emptyIndex,
+            moves: snapshot.moves,
+            elapsedSeconds: Math.max(0, this.elapsedSeconds),
+            showTileNumbers: this.showTileNumbers,
+            image,
+            updatedAt: Date.now(),
+        }));
+    }
+
+    private writeActiveRound(activeRound: SlidingPuzzleActiveRound | undefined): void {
+        const context = this.context;
+        if (!context) return;
+        const storage = context.services.storage;
+        const previous = storage.getGameData(context.gameId);
+        const previousCustom = isRecordValue(previous?.custom) ? previous.custom : {};
+        const custom: Record<string, unknown> = {};
+        Object.keys(previousCustom).forEach((key) => {
+            if (key !== 'activeRound') custom[key] = previousCustom[key];
+        });
+        if (activeRound) custom.activeRound = activeRound;
+
+        try {
+            storage.writeGameData(context.gameId, Object.freeze({
+                dataVersion: Math.max(SLIDING_PUZZLE_DATA_VERSION, previous?.dataVersion ?? 1),
+                playCount: previous?.playCount ?? 0,
+                ...(previous?.highScore === undefined ? {} : { highScore: previous.highScore }),
+                ...(previous?.lastPlayedAt === undefined ? {} : { lastPlayedAt: previous.lastPlayedAt }),
+                custom: Object.freeze(custom),
+            }));
+        } catch (error: unknown) {
+            console.warn('[SlidingPuzzleGame] Failed to update active round save.', error);
+        }
+    }
+
+    private async loadPersistedLocalPuzzleImage(record: LocalPuzzleRecord): Promise<boolean> {
+        const context = this.context;
+        if (!context || this.state === 'disposed') return false;
+        const selection = await context.services.platform.openPersistedLocalImage(record.path);
+        if (!selection || (this.state as SlidingPuzzleState) === 'disposed') {
+            selection?.release();
+            return false;
+        }
+
+        const imageAsset = await new Promise<ImageAsset | undefined>((resolve) => {
+            try {
+                assetManager.loadRemote<ImageAsset>(
+                    selection.uri,
+                    { ext: '.jpg' },
+                    (error, asset) => resolve(error ? undefined : asset),
+                );
+            } catch (error: unknown) {
+                console.warn('[SlidingPuzzleGame] Failed to decode persisted local image.', error);
+                resolve(undefined);
+            }
+        });
+        selection.release();
+        if (!imageAsset || (this.state as SlidingPuzzleState) === 'disposed') {
+            imageAsset?.destroy();
+            return false;
+        }
+
+        let texture: Texture2D | undefined;
+        try {
+            texture = new Texture2D();
+            texture.image = imageAsset;
+        } catch (error: unknown) {
+            texture?.destroy();
+            imageAsset.destroy();
+            console.warn('[SlidingPuzzleGame] Failed to create persisted local texture.', error);
+            return false;
+        }
+
+        this.releaseImageResources();
+        this.imageAsset = imageAsset;
+        this.imageTexture = texture;
+        this.imageTextureOwned = true;
+        this.localPuzzleRecordId = record.id;
+        return true;
+    }
+
+    private async selectRandomPuzzle(): Promise<void> {
+        if (this.state !== 'setup' || this.inputLocked) return;
+        const allSources = Array.from(this.getSortedPuzzleLibrarySources());
+        if (allSources.length === 0) return;
+
+        const isCurrent = (source: PuzzleLibrarySource): boolean => source.kind === 'preset'
+            ? this.selectedConfig.imageSource === 'preset'
+                && this.selectedConfig.presetAssetPath === source.path
+            : this.selectedConfig.imageSource === 'local'
+                && this.localPuzzleRecordId === source.id;
+        const candidates = allSources.length > 1
+            ? allSources.filter((source) => !isCurrent(source))
+            : allSources;
+        this.inputLocked = true;
+        this.cropController.cancel();
+
+        try {
+            // 本地文件可能被浏览器或系统清理。随机命中失效记录时继续尝试
+            // 其余候选项，不能因为一张坏记录让整个随机按钮失效。
+            while (candidates.length > 0 && this.state === 'setup') {
+                const randomIndex = Math.floor(Math.random() * candidates.length);
+                const source = candidates.splice(randomIndex, 1)[0];
+                if (source.kind === 'local' && source.id) {
+                    const record = this.getLocalPuzzleRecords().find((item) => item.id === source.id);
+                    if (!record || !await this.loadPersistedLocalPuzzleImage(record)) {
+                        continue;
+                    }
+                    if ((this.state as SlidingPuzzleState) === 'disposed') return;
+                    this.selectedConfig = Object.freeze({
+                        boardSize: this.selectedSize,
+                        imageSource: 'local',
+                        imageUri: record.path,
+                    });
+                    this.localPuzzleRecordId = record.id;
+                    this.context?.services.feedback.play('uiButton');
+                    this.showSetup();
+                    return;
+                }
+
+                if (source.kind === 'preset') {
+                    const presetIndex = SLIDING_PUZZLE_PRESET_ASSET_PATHS.indexOf(source.path);
+                    if (presetIndex < 0) continue;
+                    this.selectedPresetIndex = presetIndex;
+                    this.selectedConfig = Object.freeze({
+                        boardSize: this.selectedSize,
+                        imageSource: 'preset',
+                        presetAssetPath: source.path,
+                    });
+                    if (!await this.loadPresetImage(true)) {
+                        continue;
+                    }
+                    this.context?.services.feedback.play('uiButton');
+                    return;
+                }
+            }
+            this.context?.services.feedback.play('collision');
+        } finally {
+            if (this.state === 'setup') this.inputLocked = false;
+        }
+    }
+
+    private async loadResourceBundle() {
+        const assets = this.context?.services.assets;
+        if (!assets || this.state === 'disposed') return undefined;
+        try {
+            return await assets.loadBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
+        } catch (error: unknown) {
+            console.warn('[SlidingPuzzleGame] Failed to load resource bundle.', error);
+            return undefined;
+        }
+    }
+
+    private getLocalPuzzleRecords(): LocalPuzzleRecord[] {
+        const context = this.context;
+        const value = context?.services.storage.getGameData(context.gameId)?.custom?.localPuzzleLibrary;
+        if (!Array.isArray(value)) return [];
+        const records: LocalPuzzleRecord[] = [];
+        value.forEach((item) => {
+            if (!isRecordValue(item)
+                || typeof item.id !== 'string'
+                || typeof item.path !== 'string'
+                || typeof item.width !== 'number'
+                || typeof item.height !== 'number'
+                || typeof item.createdAt !== 'number'
+                || typeof item.lastPlayedAt !== 'number') return;
+            records.push(Object.freeze({
+                id: item.id,
+                path: item.path,
+                width: item.width,
+                height: item.height,
+                createdAt: item.createdAt,
+                lastPlayedAt: item.lastPlayedAt,
+            }));
+        });
+        return records;
+    }
+
+    private getSortedPuzzleLibrarySources(): readonly PuzzleLibrarySource[] {
+        const context = this.context;
+        const previous = context?.services.storage.getGameData(context.gameId);
+        const historyValue = previous?.custom?.presetLastPlayedAt;
+        const history = isRecordValue(historyValue) ? historyValue : {};
+        const selectedPresetPath = this.selectedConfig.imageSource === 'preset'
+            ? this.selectedConfig.presetAssetPath
+            : undefined;
+        const presets: PuzzleLibrarySource[] = SLIDING_PUZZLE_PRESET_ASSET_PATHS
+            .map((path, originalIndex) => {
+                const value = history[path];
+                const lastPlayedAt = typeof value === 'number' && Number.isFinite(value)
+                    ? value
+                    : 0;
+                return Object.freeze({
+                    kind: 'preset' as const,
+                    path,
+                    originalIndex,
+                    lastPlayedAt,
+                    selected: path === selectedPresetPath,
+                });
+            });
+        const locals: PuzzleLibrarySource[] = this.getLocalPuzzleRecords().map((record, index) => Object.freeze({
+            kind: 'local' as const,
+            path: record.path,
+            id: record.id,
+            lastPlayedAt: record.lastPlayedAt,
+            originalIndex: presets.length + index,
+            selected: this.selectedConfig.imageSource === 'local' && this.localPuzzleRecordId === record.id,
+        }));
+        return presets.concat(locals)
+            .sort((left, right) => {
+                if (left.selected !== right.selected) {
+                    return left.selected ? -1 : 1;
+                }
+                return right.lastPlayedAt - left.lastPlayedAt
+                    || left.originalIndex - right.originalIndex;
+            })
+            ;
+    }
+
+    private async persistCurrentLocalPuzzle(): Promise<void> {
+        const context = this.context;
+        const texture = this.imageTexture;
+        if (!context || !texture) return;
+        const now = Date.now();
+        const previousConfig = this.selectedConfig;
+        const transientSelection = this.localImageSelection;
+        let newRecord: LocalPuzzleRecord | undefined;
+        let records = this.getLocalPuzzleRecords();
+        try {
+            if (this.localPuzzleRecordId) {
+                records = records.map((record) => record.id === this.localPuzzleRecordId
+                    ? Object.freeze({ ...record, lastPlayedAt: now })
+                    : record);
+            } else {
+                const uri = transientSelection?.uri ?? this.selectedConfig.imageUri;
+                if (!uri) return;
+                const id = `custom-${now}-${Math.floor(Math.random() * 0x1000000).toString(16)}`;
+                const path = await context.services.platform.persistLocalImage(uri, id);
+                if (!path) return;
+                newRecord = Object.freeze({ id, path, width: texture.width, height: texture.height, createdAt: now, lastPlayedAt: now });
+                this.localPuzzleRecordId = id;
+                this.selectedConfig = Object.freeze({ ...this.selectedConfig, imageUri: path });
+                records.push(newRecord);
+            }
+            records.sort((left, right) => right.lastPlayedAt - left.lastPlayedAt);
+            let retained = records.slice(0, MAX_LOCAL_PUZZLE_HISTORY);
+            const activeRecord = this.localPuzzleRecordId
+                ? records.find((record) => record.id === this.localPuzzleRecordId)
+                : undefined;
+            if (activeRecord && !retained.some((record) => record.id === activeRecord.id)) {
+                retained = retained.slice(0, MAX_LOCAL_PUZZLE_HISTORY - 1).concat(activeRecord);
+            }
+            const removed = records.filter((record) => (
+                !retained.some((retainedRecord) => retainedRecord.id === record.id)
+            ));
+            records = retained;
+            const storage = context.services.storage;
+            const previous = storage.getGameData(context.gameId);
+            const previousCustom = isRecordValue(previous?.custom) ? previous.custom : {};
+            storage.writeGameData(context.gameId, Object.freeze({
+                dataVersion: Math.max(SLIDING_PUZZLE_DATA_VERSION, previous?.dataVersion ?? 1),
+                playCount: (previous?.playCount ?? 0) + 1,
+                ...(previous?.highScore === undefined ? {} : { highScore: previous.highScore }),
+                lastPlayedAt: now,
+                custom: Object.freeze({ ...previousCustom, localPuzzleLibrary: Object.freeze(records) }),
+            }));
+            if (newRecord) {
+                transientSelection?.release();
+                this.localImageSelection = undefined;
+            }
+            await Promise.all(removed.map((record) => context.services.platform.deletePersistedLocalImage(record.path)));
+        } catch (error: unknown) {
+            if (newRecord) {
+                await context.services.platform.deletePersistedLocalImage(newRecord.path);
+                this.localPuzzleRecordId = undefined;
+                this.selectedConfig = previousConfig;
+            }
+            console.warn('[SlidingPuzzleGame] Failed to update local puzzle library.', error);
+        }
+    }
+
+    private recordPresetPlayed(path: string): void {
+        const context = this.context;
+        if (!context || SLIDING_PUZZLE_PRESET_ASSET_PATHS.indexOf(path) < 0) {
+            return;
+        }
+
+        const storage = context.services.storage;
+        const previous = storage.getGameData(context.gameId);
+        const previousCustom = isRecordValue(previous?.custom) ? previous.custom : {};
+        const historyValue = previousCustom.presetLastPlayedAt;
+        const previousHistory = isRecordValue(historyValue) ? historyValue : {};
+        const history: Record<string, number> = {};
+        Object.keys(previousHistory).forEach((presetPath) => {
+            const value = previousHistory[presetPath];
+            if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+                history[presetPath] = value;
+            }
+        });
+        const now = Date.now();
+        history[path] = now;
+        const save: GameSaveData = Object.freeze({
+            dataVersion: Math.max(SLIDING_PUZZLE_DATA_VERSION, previous?.dataVersion ?? 1),
+            playCount: (previous?.playCount ?? 0) + 1,
+            ...(previous?.highScore === undefined ? {} : { highScore: previous.highScore }),
+            lastPlayedAt: now,
+            custom: Object.freeze({
+                ...previousCustom,
+                presetLastPlayedAt: Object.freeze(history),
+            }),
+        });
+        try {
+            storage.writeGameData(context.gameId, save);
+        } catch (error: unknown) {
+            // 最近游玩记录失败不能阻断开局；下次仍按已有顺序展示。
+            console.warn('[SlidingPuzzleGame] Failed to save preset play history.', error);
+        }
+    }
+
+    private releasePresetLibraryTextures(): void {
+        this.presetLibraryLoadToken += 1;
+        this.presetLibraryTextures.forEach((entry) => {
+            if (entry.releaseOnClose && entry.texture) {
+                if (entry.kind === 'local') {
+                    entry.texture.destroy();
+                    entry.imageAsset?.destroy();
+                } else {
+                    this.releaseBundleTexture(entry.texture);
+                }
+            }
+        });
+        this.presetLibraryTextures = [];
     }
 
     private createLabel(
@@ -3102,6 +4350,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         if (previousState === 'setup') {
             this.showSetup();
+            return;
+        }
+        if (previousState === 'preset-library') {
+            this.showPresetLibrary();
             return;
         }
         if (previousState === 'crop-editing') {

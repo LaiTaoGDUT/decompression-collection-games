@@ -81,6 +81,7 @@ export interface GameRuntimeTimeouts {
 }
 
 interface GameRuntimeServices {
+    readonly assets?: AssetService;
     readonly storage?: StorageService;
 }
 
@@ -244,7 +245,7 @@ export class GameRuntime {
         return leaving;
     }
 
-    openPauseMenu(): void {
+    openPauseMenu(): boolean {
         const entry = this.entry;
         const manifest = this.manifest;
         const state = this.stateMachine.currentState;
@@ -261,12 +262,20 @@ export class GameRuntime {
         }
 
         if (state === 'playing') {
+            let paused = false;
             try {
-                entry.pause();
+                paused = entry.pause();
             } catch (cause: unknown) {
                 throw new GameRuntimeError('pause', manifest.id, cause);
             } finally {
                 this.flushStorage('pause');
+            }
+
+            // Session 已进入 playing 并不代表小游戏正在可暂停的游玩阶段：
+            // 某些游戏还会停留在选图、校准等准备界面。小游戏拒绝暂停时，
+            // 全局状态必须保持 playing，否则后续真正开局后将无法再次暂停。
+            if (!paused) {
+                return false;
             }
 
             if (!this.stateMachine.transition('paused')) {
@@ -291,6 +300,7 @@ export class GameRuntime {
         } else {
             this.pauseMenu?.show(model);
         }
+        return true;
     }
 
     finishGame(result: GameResult): GameResult {

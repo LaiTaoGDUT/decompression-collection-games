@@ -688,14 +688,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         });
     }
 
-    pause(): void {
-        if (this.stateMachine.state !== 'Playing') return;
+    pause(): boolean {
+        if (this.stateMachine.state !== 'Playing') return false;
         this.persistCurrentRunHistory(false, true);
         this.inputController?.setEnabled(false);
         this.cancelAttack(true);
         this.stateMachine.transition('Paused');
         this.context?.services.audio.pauseMusic();
         this.updatePresentationState('已暂停');
+        return true;
     }
 
     resume(): void {

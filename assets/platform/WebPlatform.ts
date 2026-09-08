@@ -2,6 +2,7 @@ import { EventBus } from '../core/events/EventBus';
 import type {
     DeviceProfile,
     LaunchOptions,
+    LocalImageCropRequest,
     LocalImageSelection,
     PlatformLayoutInfo,
     PlatformUiRect,
@@ -186,6 +187,98 @@ export class WebPlatform implements Platform {
                 settle(null);
             }
         });
+    }
+
+    async cropLocalImage(request: LocalImageCropRequest): Promise<LocalImageSelection | null> {
+        if (typeof document === 'undefined' || typeof Image === 'undefined') {
+            return null;
+        }
+
+        const outputSize = Math.max(1, Math.floor(request.outputSize));
+        const canvas = document.createElement('canvas');
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            return null;
+        }
+
+        const image = new Image();
+        const loaded = await new Promise<boolean>((resolve) => {
+            image.onload = () => resolve(true);
+            image.onerror = () => resolve(false);
+            image.src = request.uri;
+        });
+        if (!loaded) {
+            return null;
+        }
+
+        try {
+            context.clearRect(0, 0, outputSize, outputSize);
+            context.drawImage(
+                image,
+                request.sourceX,
+                request.sourceY,
+                request.sourceSize,
+                request.sourceSize,
+                0,
+                0,
+                outputSize,
+                outputSize,
+            );
+            const blob = await new Promise<Blob | null>((resolve) => {
+                canvas.toBlob(resolve, 'image/jpeg', request.quality);
+            });
+            if (!blob || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+                return null;
+            }
+
+            const uri = URL.createObjectURL(blob);
+            let released = false;
+            return Object.freeze({
+                uri,
+                mimeType: 'image/jpeg',
+                sizeBytes: blob.size,
+                release: (): void => {
+                    if (released) return;
+                    released = true;
+                    URL.revokeObjectURL(uri);
+                },
+            });
+        } catch (error: unknown) {
+            console.warn('[WebPlatform] Failed to crop local image.', error);
+            return null;
+        }
+    }
+
+    async persistLocalImage(uri: string, id: string): Promise<string | null> {
+        if (typeof localStorage === 'undefined') return null;
+        try {
+            const blob = await fetch(uri).then((response) => response.blob());
+            const dataUrl = await new Promise<string | null>((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(blob);
+            });
+            if (!dataUrl) return null;
+            const key = `sliding-puzzle.local-image.${id}`;
+            localStorage.setItem(key, dataUrl);
+            return key;
+        } catch (error: unknown) {
+            console.warn('[WebPlatform] Failed to persist local image.', error);
+            return null;
+        }
+    }
+
+    async openPersistedLocalImage(uri: string): Promise<LocalImageSelection | null> {
+        if (typeof localStorage === 'undefined') return null;
+        const dataUrl = localStorage.getItem(uri);
+        return dataUrl ? Object.freeze({ uri: dataUrl, mimeType: 'image/jpeg', release: (): void => {} }) : null;
+    }
+
+    async deletePersistedLocalImage(uri: string): Promise<void> {
+        if (typeof localStorage !== 'undefined') localStorage.removeItem(uri);
     }
 
     cancelLocalImagePicker(): void {

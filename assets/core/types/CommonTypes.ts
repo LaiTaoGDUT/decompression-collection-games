@@ -66,6 +66,18 @@ export interface LocalImageSelection {
     readonly release: () => void;
 }
 
+/** 平台离屏画布执行本地图片裁切与重采样时使用的像素坐标。 */
+export interface LocalImageCropRequest {
+    readonly uri: string;
+    readonly sourceX: number;
+    readonly sourceY: number;
+    readonly sourceSize: number;
+    /** 正方形输出边长；业务层负责决定是否需要降采样。 */
+    readonly outputSize: number;
+    /** JPEG 编码质量，范围为 (0, 1]。 */
+    readonly quality: number;
+}
+
 /** 一局小游戏结束后交给运行层的标准结果。 */
 export interface GameResult {
     readonly score: number;

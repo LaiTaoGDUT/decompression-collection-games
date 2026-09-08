@@ -45,7 +45,11 @@ export interface MiniGameContext<TServices extends object = object> {
 export interface MiniGame<TServices extends object = object> {
     initialize(context: MiniGameContext<TServices>): Promise<void>;
     begin(): void;
-    pause(): void;
+    /**
+     * 尝试暂停当前小游戏。只有小游戏确实进入了可恢复的暂停态时才返回 true。
+     * 准备页、原生选择器等非游玩阶段应返回 false，避免运行层与小游戏状态分叉。
+     */
+    pause(): boolean;
     resume(): void;
     restart(context?: MiniGameContext<TServices>): Promise<void>;
     /** 运行层准备执行“重新开局”时，清除当前局的可恢复标记。 */

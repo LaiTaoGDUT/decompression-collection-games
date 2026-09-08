@@ -3,6 +3,7 @@ import type {
     DevicePerformanceTier,
     DeviceProfile,
     LaunchOptions,
+    LocalImageCropRequest,
     LocalImageSelection,
     PlatformLayoutInfo,
     PlatformUiRect,
@@ -68,6 +69,50 @@ interface WeChatChooseMediaOptions {
     readonly fail?: (error?: WeChatApiError) => void;
 }
 
+interface WeChatImage {
+    src: string;
+    onload?: (() => void) | null;
+    onerror?: (() => void) | null;
+}
+
+interface WeChatCanvas2DContext {
+    clearRect(x: number, y: number, width: number, height: number): void;
+    drawImage(
+        image: WeChatImage,
+        sourceX: number,
+        sourceY: number,
+        sourceWidth: number,
+        sourceHeight: number,
+        destinationX: number,
+        destinationY: number,
+        destinationWidth: number,
+        destinationHeight: number,
+    ): void;
+}
+
+interface WeChatCanvasFileResult {
+    readonly tempFilePath?: string;
+}
+
+interface WeChatOffscreenCanvas {
+    width: number;
+    height: number;
+    getContext(type: '2d'): WeChatCanvas2DContext | null;
+    createImage?(): WeChatImage;
+    toTempFilePath?(options: {
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+        destWidth?: number;
+        destHeight?: number;
+        fileType?: 'jpg' | 'png';
+        quality?: number;
+        success?: (result: WeChatCanvasFileResult) => void;
+        fail?: (error?: WeChatApiError) => void;
+    }): string | void;
+}
+
 interface WeChatApiError {
     readonly errMsg?: string;
 }
@@ -97,6 +142,19 @@ interface WeChatApi {
         withShareTicket: boolean;
     }): void;
     chooseMedia?(options: WeChatChooseMediaOptions): void;
+    createImage?(): WeChatImage;
+    createOffscreenCanvas?(options: {
+        type: '2d';
+        width: number;
+        height: number;
+    }): WeChatOffscreenCanvas;
+    env?: { readonly USER_DATA_PATH?: string };
+    getFileSystemManager?(): {
+        mkdir(options: { dirPath: string; recursive?: boolean; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
+        copyFile(options: { srcPath: string; destPath: string; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
+        access(options: { path: string; success?: () => void; fail?: () => void }): void;
+        unlink(options: { filePath: string; success?: () => void; fail?: () => void }): void;
+    };
     onShow(callback: () => void): void;
     onHide(callback: () => void): void;
     offShow?(callback: () => void): void;
@@ -306,6 +364,139 @@ export class WeChatPlatform implements Platform {
                 finish(null);
             }
         });
+    }
+
+    async cropLocalImage(request: LocalImageCropRequest): Promise<LocalImageSelection | null> {
+        const api = this.api;
+        if (!api?.createOffscreenCanvas) {
+            return null;
+        }
+
+        const outputSize = Math.max(1, Math.floor(request.outputSize));
+        try {
+            const canvas = api.createOffscreenCanvas({
+                type: '2d',
+                width: outputSize,
+                height: outputSize,
+            });
+            canvas.width = outputSize;
+            canvas.height = outputSize;
+            const context = canvas.getContext('2d');
+            const image = canvas.createImage?.() ?? api.createImage?.();
+            if (!context || !image || !canvas.toTempFilePath) {
+                return null;
+            }
+
+            const loaded = await new Promise<boolean>((resolve) => {
+                let settled = false;
+                const finish = (success: boolean): void => {
+                    if (settled) return;
+                    settled = true;
+                    image.onload = null;
+                    image.onerror = null;
+                    resolve(success);
+                };
+                image.onload = () => finish(true);
+                image.onerror = () => finish(false);
+                image.src = request.uri;
+            });
+            if (!loaded) {
+                return null;
+            }
+
+            context.clearRect(0, 0, outputSize, outputSize);
+            context.drawImage(
+                image,
+                request.sourceX,
+                request.sourceY,
+                request.sourceSize,
+                request.sourceSize,
+                0,
+                0,
+                outputSize,
+                outputSize,
+            );
+            const uri = await new Promise<string | null>((resolve) => {
+                let settled = false;
+                const finish = (path: string | null): void => {
+                    if (settled) return;
+                    settled = true;
+                    resolve(path);
+                };
+                const syncPath = canvas.toTempFilePath?.({
+                    x: 0,
+                    y: 0,
+                    width: outputSize,
+                    height: outputSize,
+                    destWidth: outputSize,
+                    destHeight: outputSize,
+                    fileType: 'jpg',
+                    quality: request.quality,
+                    success: (result) => finish(result.tempFilePath ?? null),
+                    fail: () => finish(null),
+                });
+                if (typeof syncPath === 'string' && syncPath) {
+                    finish(syncPath);
+                }
+            });
+            if (!uri) {
+                return null;
+            }
+            return Object.freeze({
+                uri,
+                mimeType: 'image/jpeg',
+                // 微信临时文件随平台生命周期回收，当前接口不主动删除。
+                release: (): void => {},
+            });
+        } catch (error: unknown) {
+            console.warn('[WeChatPlatform] Failed to crop local image.', error);
+            return null;
+        }
+    }
+
+    async persistLocalImage(uri: string, id: string): Promise<string | null> {
+        const fs = this.api?.getFileSystemManager?.();
+        const root = this.api?.env?.USER_DATA_PATH;
+        if (!fs || !root) return null;
+        const directory = `${root}/sliding-puzzle-custom`;
+        const destination = `${directory}/${id}.jpg`;
+        await new Promise<void>((resolve) => fs.mkdir({
+            dirPath: directory,
+            recursive: true,
+            success: () => resolve(),
+            // 目录已存在和创建失败都交给 copyFile 给出最终结果。
+            fail: () => resolve(),
+        }));
+        return new Promise<string | null>((resolve) => fs.copyFile({
+            srcPath: uri,
+            destPath: destination,
+            success: () => resolve(destination),
+            fail: (error) => {
+                console.warn('[WeChatPlatform] Failed to persist local image.', error?.errMsg);
+                resolve(null);
+            },
+        }));
+    }
+
+    async openPersistedLocalImage(uri: string): Promise<LocalImageSelection | null> {
+        const fs = this.api?.getFileSystemManager?.();
+        if (!fs) return null;
+        const exists = await new Promise<boolean>((resolve) => fs.access({
+            path: uri,
+            success: () => resolve(true),
+            fail: () => resolve(false),
+        }));
+        return exists ? Object.freeze({ uri, mimeType: 'image/jpeg', release: (): void => {} }) : null;
+    }
+
+    async deletePersistedLocalImage(uri: string): Promise<void> {
+        const fs = this.api?.getFileSystemManager?.();
+        if (!fs) return;
+        await new Promise<void>((resolve) => fs.unlink({
+            filePath: uri,
+            success: () => resolve(),
+            fail: () => resolve(),
+        }));
     }
 
     cancelLocalImagePicker(): void {

@@ -1,6 +1,7 @@
 import type {
     DeviceProfile,
     LaunchOptions,
+    LocalImageCropRequest,
     LocalImageSelection,
     PlatformLayoutInfo,
     SafeArea,
@@ -28,6 +29,11 @@ export interface Platform {
     getLayoutInfo(): PlatformLayoutInfo;
     getLaunchOptions(): LaunchOptions;
     pickLocalImage(): Promise<LocalImageSelection | null>;
+    /** 将本地图片裁成正方形并按请求尺寸输出 JPEG 临时文件。 */
+    cropLocalImage(request: LocalImageCropRequest): Promise<LocalImageSelection | null>;
+    persistLocalImage(uri: string, id: string): Promise<string | null>;
+    openPersistedLocalImage(uri: string): Promise<LocalImageSelection | null>;
+    deletePersistedLocalImage(uri: string): Promise<void>;
     /** 取消当前平台原生图片选择请求；没有请求时必须安全无副作用。 */
     cancelLocalImagePicker(): void;
     supportsVibration(): boolean;
