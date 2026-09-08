@@ -2,31 +2,25 @@ import {
     _decorator,
     assetManager,
     BoxCollider2D,
-    CircleCollider2D,
     Button,
     Color,
     Component,
     director,
     Director,
-    ERigidBody2DType,
     EventTouch,
     Graphics,
     input,
     Input,
-    instantiate,
     JsonAsset,
     Label,
     Node,
-    Prefab,
     RigidBody2D,
-    Size,
     Sprite,
     SpriteFrame,
     tween,
     Tween,
     UIOpacity,
     UITransform,
-    Vec2,
     Vec3,
 } from 'cc';
 import type {
@@ -111,25 +105,60 @@ const WATERMELON_CAT_ATLAS_PATH = 'visual/cats/frames-c6/watermelon-cat-frames';
 const NEXT_CAT_PREVIEW_SIZE = 56;
 const CAT_DROP_TOP_GAP = 8;
 const ROUND_SAVE_INTERVAL_SECONDS = 3;
+const DROP_SAVE_QUIET_SECONDS = 2.4;
+const STIR_SAVE_QUIET_SECONDS = 3;
+const MERGE_SAVE_QUIET_SECONDS = 1.2;
 const FLUID_FIXED_STEP_SECONDS = 1 / WATERMELON_SEMI_FLUID.simulationHz;
 const MAX_FLUID_STEPS_PER_FRAME = 2;
 const MERGE_SCORE_FONT_SIZE = 38;
 const MERGE_CHAIN_SCORE_FONT_SIZE = 42;
 const MERGE_SCORE_LINE_HEIGHT = 48;
 const MERGE_CHAIN_SCORE_LINE_HEIGHT = 54;
+// Keep this in the same order as the shipped jelly fruit frames. Some legacy
+// catalog IDs no longer describe the artwork (notably lemon through persimmon),
+// so VFX color must follow the visible sprite rather than those old IDs.
+const JELLY_SPLASH_PALETTE = Object.freeze([
+    [244, 48, 78],   // cherry
+    [170, 62, 226],  // grape
+    [255, 100, 132], // strawberry
+    [255, 151, 43],  // orange
+    [255, 218, 45],  // lemon
+    [143, 207, 35],  // kiwi
+    [255, 137, 149], // peach
+    [255, 126, 28],  // persimmon
+    [250, 187, 39],  // pineapple
+    [158, 211, 82],  // melon
+    [53, 181, 82],   // watermelon
+] as const);
 const CONTINUE_CLEAR_POP_SECONDS = 0.1;
 const CONTINUE_CLEAR_SHRINK_SECONDS = 0.24;
 const CONTINUE_CLEAR_FADE_DELAY_SECONDS = 0.06;
 const CONTINUE_CLEAR_FADE_SECONDS = 0.26;
 const CONTINUE_CLEAR_STAGGER_SECONDS = 0.035;
 const SENSOR_TILT_SENSITIVITY = 1.08;
-const SHAKE_IMPULSE_THRESHOLD = 1.15;
+const SHAKE_IMPULSE_THRESHOLD = 1;
 const SHAKE_WINDOW_MILLISECONDS = 450;
 const SHAKE_REQUIRED_IMPULSES = 3;
 const SHAKE_SAMPLE_GAP_MILLISECONDS = 220;
-const STIR_COOLDOWN_MILLISECONDS = 3_000;
-const INSTRUCTION_PROMPT_SECONDS = 1.15;
+const STIR_COOLDOWN_MILLISECONDS = 1_000;
 const DEFAULT_INSTRUCTION_TEXT = '左右移动，松手投放，摇晃搅动';
+
+function jellySplashColor(
+    level: number,
+    alpha: number,
+    whiteMix = 0,
+): Color {
+    const source = JELLY_SPLASH_PALETTE[
+        Math.max(0, Math.min(JELLY_SPLASH_PALETTE.length - 1, Math.floor(level)))
+    ];
+    const mix = Math.max(0, Math.min(1, whiteMix));
+    return new Color(
+        Math.round(source[0] + (255 - source[0]) * mix),
+        Math.round(source[1] + (255 - source[1]) * mix),
+        Math.round(source[2] + (255 - source[2]) * mix),
+        Math.max(0, Math.min(255, Math.round(alpha))),
+    );
+}
 
 interface SavedFruit {
     readonly level: number;
@@ -209,7 +238,6 @@ export class WatermelonGame extends Component implements MiniGame {
     private context?: MiniGameContext<WatermelonGameServices>;
     private fruitContainer?: Node;
     private dropPreview?: Node;
-    private prefabs: Prefab[] = [];
     private spriteFrames: SpriteFrame[] = [];
     private currentLevel = 0;
     private nextLevel = 0;
@@ -242,11 +270,16 @@ export class WatermelonGame extends Component implements MiniGame {
     private unsubscribeAccelerometer?: Unsubscribe;
     private rawSensorTilt = 0;
     private sensorTilt = 0;
-    private previousAcceleration?: { x: number; y: number; z: number; sampledAt: number };
+    private hasPreviousAcceleration = false;
+    private previousAccelerationX = 0;
+    private previousAccelerationY = 0;
+    private previousAccelerationZ = 0;
+    private previousAccelerationAt = 0;
     private readonly shakeImpulseTimes: number[] = [];
     private stirCooldownUntil = 0;
-    private instructionPromptGeneration = 0;
+    private stirPending = false;
     private fluidAccumulator = 0;
+    private roundSaveQuietRemaining = 0;
     private readonly fluidWorld = new WatermelonFluidWorld(
         FRUIT_LEVELS.map((fruit) => fruit.radius),
         {
@@ -295,8 +328,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.configureFluidWorld();
         this.overflowGuard = new OverflowGuard(this.gameplay.dangerOverflowSeconds);
         try {
-            [this.prefabs, this.spriteFrames, this.popupFrames] = await Promise.all([
-                this.loadFruitPrefabs(),
+            [this.spriteFrames, this.popupFrames] = await Promise.all([
                 this.loadFruitSpriteFrames(),
                 loadWatermelonPopupFrames(),
             ]);
@@ -370,6 +402,18 @@ export class WatermelonGame extends Component implements MiniGame {
         const tiltAlpha = 1 - Math.exp(-frameDelta / 0.09);
         this.sensorTilt += (this.rawSensorTilt - this.sensorTilt) * tiltAlpha;
         this.fluidWorld.tilt = this.sensorTilt;
+        if (this.stirPending) {
+            // Accelerometer callbacks are not synchronized with the Cocos
+            // frame. Coalesce them and mutate the solver only at its frame
+            // boundary instead of doing unscheduled work between frames.
+            this.stirPending = false;
+            this.fluidWorld.stir(this.randomSource);
+            this.roundSaveQuietRemaining = Math.max(
+                this.roundSaveQuietRemaining,
+                STIR_SAVE_QUIET_SECONDS,
+            );
+            this.context?.services.feedback.vibrate('heavy');
+        }
         this.fluidAccumulator += frameDelta;
         let fluidSteps = 0;
         while (this.fluidAccumulator >= FLUID_FIXED_STEP_SECONDS
@@ -407,9 +451,16 @@ export class WatermelonGame extends Component implements MiniGame {
 
         this.updateDangerFeedback();
 
-        this.roundSaveElapsed += Math.max(0, deltaTime);
-        if (this.roundSaveElapsed >= ROUND_SAVE_INTERVAL_SECONDS) {
-            this.persistRoundProgress(true);
+        const elapsed = Math.max(0, deltaTime);
+        this.roundSaveElapsed += elapsed;
+        this.roundSaveQuietRemaining = Math.max(0, this.roundSaveQuietRemaining - elapsed);
+        if (this.roundSaveElapsed >= ROUND_SAVE_INTERVAL_SECONDS
+            && this.roundSaveQuietRemaining <= 0) {
+            // Snapshot construction serializes all 18 points of every fruit
+            // and StorageService serializes the complete user-data root.
+            // Commit and flush together during a quiet frame; otherwise the
+            // deferred setItem timer can wake up in the middle of the next drop.
+            this.persistRoundProgress(true, true);
         }
 
         if (finished) {
@@ -514,7 +565,6 @@ export class WatermelonGame extends Component implements MiniGame {
         this.sensorTilt = 0;
         this.resetShakeTracking();
         this.stirCooldownUntil = 0;
-        this.instructionPromptGeneration += 1;
         this.fruitContainer?.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_MOVE, this.handleTouchMove, this);
         this.fruitContainer?.off(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
@@ -544,7 +594,6 @@ export class WatermelonGame extends Component implements MiniGame {
         this.audioBank = undefined;
         this.dropGate.disable();
         this.pointer.reset();
-        this.prefabs = [];
         await this.releaseFruitSpriteFramesAfterDraw();
         this.context = undefined;
         this.saveData = undefined;
@@ -567,63 +616,65 @@ export class WatermelonGame extends Component implements MiniGame {
         sample: { x: number; y: number; z: number },
         sampledAt: number,
     ): void {
-        const previous = this.previousAcceleration;
-        this.previousAcceleration = { ...sample, sampledAt };
-        if (this.state !== 'playing' || this.gameEnding || !previous) {
+        const hadPrevious = this.hasPreviousAcceleration;
+        const previousX = this.previousAccelerationX;
+        const previousY = this.previousAccelerationY;
+        const previousZ = this.previousAccelerationZ;
+        const previousAt = this.previousAccelerationAt;
+        this.hasPreviousAcceleration = true;
+        this.previousAccelerationX = sample.x;
+        this.previousAccelerationY = sample.y;
+        this.previousAccelerationZ = sample.z;
+        this.previousAccelerationAt = sampledAt;
+        if (this.state !== 'playing' || this.gameEnding || !hadPrevious) {
             this.shakeImpulseTimes.length = 0;
             return;
         }
 
-        const sampleGap = sampledAt - previous.sampledAt;
+        const sampleGap = sampledAt - previousAt;
         if (sampleGap <= 0 || sampleGap > SHAKE_SAMPLE_GAP_MILLISECONDS) {
             this.shakeImpulseTimes.length = 0;
             return;
         }
 
-        const deltaX = sample.x - previous.x;
-        const deltaY = sample.y - previous.y;
-        const deltaZ = sample.z - previous.z;
-        const impulse = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+        const deltaX = sample.x - previousX;
+        const deltaY = sample.y - previousY;
+        const deltaZ = sample.z - previousZ;
+        const impulseSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
         const windowStart = sampledAt - SHAKE_WINDOW_MILLISECONDS;
         while (this.shakeImpulseTimes.length > 0
             && this.shakeImpulseTimes[0] < windowStart) {
             this.shakeImpulseTimes.shift();
         }
-        if (impulse < SHAKE_IMPULSE_THRESHOLD) return;
+        if (impulseSquared < SHAKE_IMPULSE_THRESHOLD * SHAKE_IMPULSE_THRESHOLD) return;
 
         this.shakeImpulseTimes.push(sampledAt);
         if (this.shakeImpulseTimes.length < SHAKE_REQUIRED_IMPULSES) return;
 
         this.shakeImpulseTimes.length = 0;
         if (sampledAt < this.stirCooldownUntil) {
-            this.showTemporaryInstruction('搅动太快啦！休息一下');
             return;
         }
 
         this.stirCooldownUntil = sampledAt + STIR_COOLDOWN_MILLISECONDS;
-        this.fluidWorld.stir(this.randomSource);
-        this.context?.services.feedback.vibrate('heavy');
+        this.stirPending = true;
     }
 
     private resetShakeTracking(): void {
-        this.previousAcceleration = undefined;
+        this.hasPreviousAcceleration = false;
+        this.previousAccelerationX = 0;
+        this.previousAccelerationY = 0;
+        this.previousAccelerationZ = 0;
+        this.previousAccelerationAt = 0;
         this.shakeImpulseTimes.length = 0;
-    }
-
-    private showTemporaryInstruction(text: string): void {
-        const layout = this.node.getComponent(WatermelonLayout);
-        layout?.setInstructionPresentation(text, true);
-        const promptGeneration = ++this.instructionPromptGeneration;
-        this.scheduleOnce(() => {
-            if (promptGeneration !== this.instructionPromptGeneration
-                || this.state === 'disposed') {
-                return;
-            }
-            layout?.setInstructionPresentation(DEFAULT_INSTRUCTION_TEXT);
-        }, INSTRUCTION_PROMPT_SECONDS);
+        this.stirPending = false;
     }
 
     private handleFluidMerge(event: WatermelonFluidMergeEvent): void {
+        this.roundSaveQuietRemaining = Math.max(
+            this.roundSaveQuietRemaining,
+            MERGE_SAVE_QUIET_SECONDS,
+        );
         const firstNode = this.fluidNodes.get(event.first.id);
         const secondNode = this.fluidNodes.get(event.second.id);
         const first = firstNode?.getComponent(FruitBody);
@@ -667,26 +718,6 @@ export class WatermelonGame extends Component implements MiniGame {
         this.context?.services.feedback.play('merge');
         if (scoreEvent.isChain) this.context?.services.feedback.play('chain');
         if (scoreEvent.isMilestone) this.context?.services.feedback.play('milestone');
-    }
-
-    private loadFruitPrefabs(): Promise<Prefab[]> {
-        const bundle = assetManager.getBundle('game-watermelon');
-
-        if (!bundle) {
-            return Promise.reject(new Error('game-watermelon bundle is unavailable.'));
-        }
-
-        return Promise.all(FRUIT_LEVELS.map((config) => new Promise<Prefab>(
-            (resolve, reject) => {
-                bundle.load(
-                    config.prefab,
-                    Prefab,
-                    (error, prefab) => error
-                        ? reject(new Error(`Fruit prefab failed: ${config.prefab}. ${error.message}`))
-                        : resolve(prefab),
-                );
-            },
-        )));
     }
 
     private loadFruitSpriteFrames(): Promise<SpriteFrame[]> {
@@ -786,7 +817,6 @@ export class WatermelonGame extends Component implements MiniGame {
         this.rawSensorTilt = 0;
         this.sensorTilt = 0;
         this.resetShakeTracking();
-        this.instructionPromptGeneration += 1;
         this.node.getComponent(WatermelonLayout)
             ?.setInstructionPresentation(DEFAULT_INSTRUCTION_TEXT);
         this.fluidAccumulator = 0;
@@ -813,6 +843,7 @@ export class WatermelonGame extends Component implements MiniGame {
         this.continueCompleted = false;
         this.terminalActionPending = false;
         this.roundSaveElapsed = 0;
+        this.roundSaveQuietRemaining = 0;
         this.savedProgressDiscarded = false;
         this.destroyContinueOverlay();
         this.updateProgress();
@@ -920,17 +951,11 @@ export class WatermelonGame extends Component implements MiniGame {
         wall.getComponent(UITransform)?.setContentSize(width, height);
         const body = wall.getComponent(RigidBody2D);
         const collider = wall.getComponent(BoxCollider2D);
-
-        if (body) {
-            body.type = ERigidBody2DType.Static;
-        }
-
-        if (collider) {
-            collider.size = new Size(width, height);
-            collider.friction = this.gameplay.wallFriction;
-            collider.restitution = this.gameplay.wallRestitution;
-            collider.apply();
-        }
+        // The point solver owns these same bounds. Keeping the serialized
+        // Box2D walls enabled made Cocos step a second, empty physics world
+        // throughout the round and served no collision consumer.
+        if (collider) collider.enabled = false;
+        if (body) body.enabled = false;
     }
 
     private readonly handleTouchStart = (event: EventTouch): void => {
@@ -1011,6 +1036,10 @@ export class WatermelonGame extends Component implements MiniGame {
                 - config.radius
                 - CAT_DROP_TOP_GAP,
             this.activeDropSequenceId,
+        );
+        this.roundSaveQuietRemaining = Math.max(
+            this.roundSaveQuietRemaining,
+            DROP_SAVE_QUIET_SECONDS,
         );
         this.progress.recordSpawn(droppedLevel);
         this.updateProgress();
@@ -1442,7 +1471,7 @@ export class WatermelonGame extends Component implements MiniGame {
             label.string = `⚠ 危险 ${this.overflowGuard.remainingSeconds.toFixed(1)}s`;
             label.color = catUiColor('peachDark');
         } else {
-            label.string = '· · ·  水果警戒线  · · ·';
+            label.string = '· · · · · ·  水果警戒线  · · · · · · ';
             label.color = catUiColor('peachDark', 205);
         }
         label.enabled = true;
@@ -1455,6 +1484,8 @@ export class WatermelonGame extends Component implements MiniGame {
     ): void {
         const container = this.fruitContainer;
         if (!container) return;
+
+        this.spawnJellyMergeSplash(event.resultLevel, x, y);
 
         const scoreNode = new Node('MergeScoreFx');
         scoreNode.layer = container.layer;
@@ -1502,48 +1533,130 @@ export class WatermelonGame extends Component implements MiniGame {
         }
         tween(opacity).delay(event.isChain ? 0.34 : 0).to(duration - (event.isChain ? 0.34 : 0), { opacity: 0 }).start();
 
-        const colors = [
-            new Color(255, 112, 132, 190),
-            new Color(172, 222, 92, 190),
-        ];
-        for (let index = 0; index < 2; index += 1) {
-            const direction = index === 0 ? -1 : 1;
-            const particle = new Node('JellyDropFx');
-            particle.layer = container.layer;
-            particle.setParent(container);
-            particle.setPosition(x + direction * 7, y + 3);
-            particle.addComponent(UITransform).setContentSize(34, 42);
-            const particleOpacity = particle.addComponent(UIOpacity);
-            const graphics = particle.addComponent(Graphics);
-            graphics.fillColor = colors[index];
-            graphics.moveTo(0, -15);
-            graphics.bezierCurveTo(-13.5, -5, -12.5, 14, 0, 17);
-            graphics.bezierCurveTo(12.5, 14, 13.5, -5, 0, -15);
-            graphics.close();
-            graphics.fill();
-            graphics.fillColor = new Color(255, 255, 255, 145);
-            graphics.ellipse(-4, 7, 3.2, 5.2);
-            graphics.fill();
-            particle.setScale(0.68, 0.68, 1);
-            this.effectNodes.add(particle);
-            tween(particleOpacity)
-                .delay(0.08)
-                .to(0.28, { opacity: 0 }, { easing: 'quadIn' })
-                .start();
-            tween(particle)
-                .to(0.12, {
-                    position: new Vec3(x + direction * 20, y + 24, 0),
-                    scale: new Vec3(1, 1, 1),
-                    angle: direction * 12,
-                }, { easing: 'backOut' })
-                .to(0.24, {
-                    position: new Vec3(x + direction * 34, y + 48, 0),
-                    scale: new Vec3(0.82, 0.82, 1),
-                    angle: direction * 25,
-                }, { easing: 'quadOut' })
-                .call(() => this.releaseEffectNode(particle))
-                .start();
+    }
+
+    /**
+     * Throws glossy tear-shaped drops from around the resulting fruit. Every
+     * measurement is derived from that fruit's radius, so larger merges create
+     * wider, heavier splashes without covering the fruit with a center ripple.
+     */
+    private spawnJellyMergeSplash(resultLevel: number, x: number, y: number): void {
+        const container = this.fruitContainer;
+        if (!container) return;
+
+        const fruitRadius = getFruitConfig(resultLevel).radius;
+        const duration = 0.4 + Math.min(0.18, resultLevel * 0.018);
+
+        const deviceTier = this.context?.services.deviceTier ?? 'medium';
+        const baseDropCount = deviceTier === 'low' ? 6 : deviceTier === 'high' ? 10 : 8;
+        const dropCount = baseDropCount + Math.floor(resultLevel / 4);
+        const phase = resultLevel * 0.43;
+        for (let index = 0; index < dropCount; index += 1) {
+            const variation = ((index * 37 + resultLevel * 19) % 100) / 100;
+            const angle = phase
+                + Math.PI * 2 * index / dropCount
+                + Math.sin(index * 2.31 + resultLevel) * 0.16;
+            this.spawnJellyMergeDrop(
+                container,
+                resultLevel,
+                x,
+                y,
+                fruitRadius,
+                angle,
+                variation,
+                duration,
+                index,
+            );
         }
+    }
+
+    private spawnJellyMergeDrop(
+        container: Node,
+        resultLevel: number,
+        x: number,
+        y: number,
+        fruitRadius: number,
+        angle: number,
+        variation: number,
+        duration: number,
+        index: number,
+    ): void {
+        const directionX = Math.cos(angle);
+        const directionY = Math.sin(angle);
+        const startDistance = Math.max(16, fruitRadius * 0.68);
+        const travelDistance = (34 + fruitRadius * (0.86 + variation * 0.25)) * 1.12;
+        const width = (11 + fruitRadius * 0.06) * (0.78 + variation * 0.42) * 1.14;
+        const height = width * (1.38 + variation * 0.24);
+        const startX = x + directionX * startDistance;
+        const startY = y + directionY * startDistance;
+        const endX = x + directionX * travelDistance;
+        const endY = y + directionY * travelDistance
+            - travelDistance * (0.08 + variation * 0.08);
+        const particle = new Node('JellySplashDropFx');
+        particle.layer = container.layer;
+        particle.setParent(container);
+        particle.setPosition(startX, startY);
+        particle.addComponent(UITransform).setContentSize(width * 2, height * 2);
+        const opacity = particle.addComponent(UIOpacity);
+        const graphics = particle.addComponent(Graphics);
+
+        graphics.fillColor = jellySplashColor(resultLevel, 218, variation * 0.12);
+        graphics.moveTo(0, -height * 0.54);
+        graphics.bezierCurveTo(
+            -width * 0.5,
+            -height * 0.14,
+            -width * 0.55,
+            height * 0.3,
+            0,
+            height * 0.5,
+        );
+        graphics.bezierCurveTo(
+            width * 0.55,
+            height * 0.3,
+            width * 0.5,
+            -height * 0.14,
+            0,
+            -height * 0.54,
+        );
+        graphics.close();
+        graphics.fill();
+        graphics.strokeColor = jellySplashColor(resultLevel, 205, 0.5);
+        graphics.lineWidth = Math.max(1.2, width * 0.1);
+        graphics.stroke();
+        graphics.fillColor = new Color(255, 255, 255, 164);
+        graphics.ellipse(-width * 0.17, height * 0.2, width * 0.12, height * 0.14);
+        graphics.fill();
+        // A tiny detached bead behind each main drop makes the burst read as
+        // stretched liquid without doubling the number of scene nodes.
+        graphics.fillColor = jellySplashColor(resultLevel, 172, 0.25);
+        graphics.circle(0, -height * 0.78, Math.max(2.4, width * 0.22));
+        graphics.fill();
+
+        const angleDegrees = angle * 180 / Math.PI;
+        particle.angle = angleDegrees - 90;
+        particle.setScale(0.28, 0.4, 1);
+        this.effectNodes.add(particle);
+        tween(particle)
+            .to(duration * 0.34, {
+                position: new Vec3(
+                    startX + (endX - startX) * 0.56,
+                    startY + (endY - startY) * 0.56 + height * 0.28,
+                    0,
+                ),
+                scale: new Vec3(0.9, 1.24, 1),
+                angle: angleDegrees - 90 + (index % 2 === 0 ? 8 : -8),
+            }, { easing: 'quadOut' })
+            .to(duration * 0.66, {
+                position: new Vec3(endX, endY, 0),
+                scale: new Vec3(0.52, 0.68, 1),
+                angle: angleDegrees - 90 + (index % 2 === 0 ? 21 : -21),
+            }, { easing: 'quadIn' })
+            .call(() => this.releaseEffectNode(particle))
+            .start();
+        tween(opacity)
+            .delay(duration * 0.38)
+            .to(duration * 0.62, { opacity: 0 }, { easing: 'quadIn' })
+            .start();
     }
 
     private releaseEffectNode(node: Node): void {
@@ -1580,7 +1693,6 @@ export class WatermelonGame extends Component implements MiniGame {
             Date.now(),
         );
         this.updateProgress();
-        this.persistRoundProgress(true);
     }
 
     private restoreSavedRound(): boolean {
@@ -1640,7 +1752,6 @@ export class WatermelonGame extends Component implements MiniGame {
             }
             this.updateProgress();
             this.updatePreviews();
-            this.persistRoundProgress(true);
             return true;
         } catch (error: unknown) {
             console.warn('[WatermelonGame] Ignoring invalid round save.', error);
@@ -1720,7 +1831,7 @@ export class WatermelonGame extends Component implements MiniGame {
         return { ...(round as unknown as WatermelonActiveRound), fruits };
     }
 
-    private persistRoundProgress(inProgress: boolean): void {
+    private persistRoundProgress(inProgress: boolean, flushImmediately = false): void {
         if (!this.context || !this.saveData) return;
         // Forced lifecycle checkpoints also restart the periodic window. Reset
         // before serialization so a storage failure cannot retry every frame.
@@ -1739,6 +1850,9 @@ export class WatermelonGame extends Component implements MiniGame {
         try {
             this.context.services.storage.writeGameData('watermelon', next);
             this.saveData = next;
+            if (flushImmediately) {
+                this.context.services.storage.flush();
+            }
         } catch (error: unknown) {
             console.error('[WatermelonGame] Round save failed.', error);
         }
@@ -1803,14 +1917,21 @@ export class WatermelonGame extends Component implements MiniGame {
         existingFluidBody?: WatermelonFluidBody,
     ): FruitBody {
         const container = this.fruitContainer;
-        const prefab = this.prefabs[level];
 
-        if (!container || !prefab) {
-            throw new Error(`Fruit prefab ${level} is unavailable.`);
+        if (!container) {
+            throw new Error('Fruit container is unavailable.');
         }
 
-        const fruit = instantiate(prefab);
-        fruit.parent = container;
+        // Fruit prefabs predate the soft-body solver and still serialize a
+        // Graphics, RigidBody2D and CircleCollider2D. Instantiating them made
+        // Box2D create and tear down a body on every drop/merge even though it
+        // never owned runtime physics. Build the minimal runtime node directly.
+        const fruit = new Node(`Fruit-${level}`);
+        fruit.active = false;
+        fruit.layer = container.layer;
+        fruit.addComponent(UITransform);
+        const body = fruit.addComponent(FruitBody);
+        body.level = level;
         const boardWidth = container.getComponent(UITransform)?.contentSize.width
             ?? WATERMELON_BOARD_WIDTH;
         const boardHeight = container.getComponent(UITransform)?.contentSize.height
@@ -1829,21 +1950,6 @@ export class WatermelonGame extends Component implements MiniGame {
         );
         const spawnY = Math.max(minY, Math.min(maxY, y));
         fruit.setPosition(spawnX, spawnY);
-        const body = fruit.getComponent(FruitBody);
-
-        if (!body) {
-            fruit.destroy();
-            throw new Error(`Fruit prefab ${level} has no FruitBody.`);
-        }
-
-        // The soft-body simulation is the sole runtime physics owner. Remove
-        // legacy Box2D components instead of merely disabling them.
-        fruit.getComponent(RigidBody2D)?.destroy();
-        fruit.getComponent(CircleCollider2D)?.destroy();
-
-        // Prefabs carry their default serialized level, but the requested level
-        // is the source of truth at runtime (including a just-created merge).
-        body.level = level;
         body.setDropChain(dropSequenceId, dropMergeCount);
         const fluid = existingFluidBody
             ?? this.fluidWorld.add(
@@ -1856,20 +1962,6 @@ export class WatermelonGame extends Component implements MiniGame {
         this.fluidBodies.set(fruit, fluid);
         this.fluidNodes.set(fluid.id, fruit);
         body.applyConfig();
-        // The soft-body world owns translation and gravity. Keep the Cocos
-        // collider only for legacy contact reporting while preventing Box2D
-        // from competing with the point solver.
-        const rigidBody = fruit.getComponent(RigidBody2D);
-        if (rigidBody) {
-            rigidBody.gravityScale = 0;
-            rigidBody.linearDamping = 0;
-            rigidBody.angularDamping = 0;
-            rigidBody.linearVelocity = Vec2.ZERO;
-            rigidBody.angularVelocity = 0;
-            rigidBody.enabled = false;
-        }
-        const collider = fruit.getComponent(CircleCollider2D);
-        if (collider) collider.enabled = false;
         const spriteFrame = this.spriteFrames[level];
         if (!spriteFrame) {
             fruit.destroy();
@@ -1878,6 +1970,8 @@ export class WatermelonGame extends Component implements MiniGame {
             throw new Error(`Cat daily sprite frame is unavailable: ${level}.`);
         }
         body.setSpriteFrame(spriteFrame);
+        fruit.setParent(container);
+        fruit.active = true;
         return body;
     }
 

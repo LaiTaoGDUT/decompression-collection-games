@@ -1101,7 +1101,7 @@ export class WatermelonLayout extends Component {
         if (danger) {
             danger.enabled = true;
             danger.color = catUiColor('ink', 205);
-            danger.fontSize = 20;
+            danger.fontSize = 28;
             danger.lineHeight = 28;
         }
     }

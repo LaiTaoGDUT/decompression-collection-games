@@ -72,8 +72,8 @@ const { ccclass } = _decorator;
 const TILE_SLIDE_DURATION = 0.1;
 const TILE_SETTLE_DURATION = 0.06;
 const MERGE_CELEBRATION_DELAY = 0.55;
-// 在现有合成特效基础上再放大一点，并让大数字反馈多停留一瞬间。
-const HIGH_MERGE_EFFECT_SCALE = 1.12 * 1.4;
+// 高阶合成的光晕会越出棋子边缘，但仍限制在相邻一格内快速消散。
+const HIGH_MERGE_EFFECT_SCALE = 1.56;
 const HIGH_MERGE_EFFECT_DURATION_SCALE = 1.15;
 const GAME_2048_DATA_VERSION = 4;
 const GAME_2048_RESOURCE_BUNDLE = 'game-2048-assets';
@@ -182,14 +182,30 @@ const TILE_COLORS: Readonly<Record<number, Rgb>> = Object.freeze({
     4096: [255, 75, 197],
 });
 
-// 高阶合成与目标庆祝使用独立材质；棋子本身不再挂载常驻高阶视觉层。
+// 256 起进入高阶合成材质；棋子本身不挂载常驻特效，避免微信小游戏长局累积节点。
 const HIGH_TIER_LEVELS: Readonly<Record<number, number>> = Object.freeze({
-    1024: 1,
-    2048: 2,
-    4096: 3,
+    256: 1,
+    512: 2,
+    1024: 3,
+    2048: 4,
+    4096: 5,
 });
 
 const TILE_MATERIALS: Readonly<Record<number, TileMaterial>> = Object.freeze({
+    256: {
+        surface: [76, 5, 57],
+        facet: [255, 154, 222],
+        core: [255, 236, 250],
+        accent: [255, 42, 164],
+        glow: [255, 83, 202],
+    },
+    512: {
+        surface: [91, 8, 33],
+        facet: [255, 155, 125],
+        core: [255, 239, 226],
+        accent: [255, 48, 91],
+        glow: [255, 91, 104],
+    },
     1024: {
         surface: [42, 7, 112],
         facet: [218, 132, 255],
@@ -1548,13 +1564,24 @@ export class Game2048Game extends Component implements MiniGame {
                 const effectLevel = value >= 128
                     ? Math.min(5, Math.max(1, Math.log2(value) - 6))
                     : 0;
-                const peakScale = 1.04 + effectLevel * 0.008;
-                const startScale = effectLevel > 0 ? 0.82 : 0.8;
-                view.node.setScale(startScale, startScale, 1);
-                tween(view.node)
-                    .to(0.07, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'quadOut' })
-                    .to(0.06, { scale: new Vec3(1, 1, 1) })
-                    .start();
+                const tier = HIGH_TIER_LEVELS[value] ?? 0;
+                if (tier > 0) {
+                    const peakScale = 1.09 + tier * 0.012;
+                    view.node.setScale(0.74, 0.74, 1);
+                    tween(view.node)
+                        .to(0.06, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'backOut' })
+                        .to(0.04, { scale: new Vec3(0.97, 0.97, 1) }, { easing: 'quadIn' })
+                        .to(0.05, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
+                        .start();
+                } else {
+                    const peakScale = 1.04 + effectLevel * 0.008;
+                    const startScale = effectLevel > 0 ? 0.82 : 0.8;
+                    view.node.setScale(startScale, startScale, 1);
+                    tween(view.node)
+                        .to(0.07, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'quadOut' })
+                        .to(0.06, { scale: new Vec3(1, 1, 1) })
+                        .start();
+                }
             }
         }
 
@@ -1618,6 +1645,11 @@ export class Game2048Game extends Component implements MiniGame {
         const tier = HIGH_TIER_LEVELS[value] ?? 0;
         const eliteBoost = (level >= 3 ? 1 + (level - 2) * 0.05 : 1) + tier * 0.025;
         const ringCount = Math.min(4, level);
+
+        if (material && tier > 0) {
+            this.createNeonMergeAura(content, index, value, x, y, tileSize, material, tier);
+            this.createNeonMergeBurst(content, index, value, x, y, tileSize, material, tier);
+        }
 
         const flash = this.createNode(content, `MergeFlash-${index}-${value}`, x, y, tileSize, tileSize);
         flash.setSiblingIndex(content.children.length - 1);
@@ -1699,7 +1731,201 @@ export class Game2048Game extends Component implements MiniGame {
                 .start();
         }
 
-        if (material) this.createHighTierMergeCore(content, index, value, x, y, tileSize, material, tier);
+        if (material) {
+            this.createHighTierMergeCore(content, index, value, x, y, tileSize, material, tier);
+            if (tier > 0) {
+                this.createNeonMergeSparks(content, index, value, x, y, tileSize, material, tier);
+            }
+        }
+    }
+
+    /**
+     * 用多层宽线条做出类似加法发光的霓虹冲击波。Graphics 不需要额外纹理，
+     * 在微信小游戏上也能保持与棋子实际色相一致。
+     */
+    private createNeonMergeAura(
+        content: Node,
+        index: number,
+        value: number,
+        x: number,
+        y: number,
+        tileSize: number,
+        material: TileMaterial,
+        tier: number,
+    ): void {
+        const aura = this.createNode(content, `MergeNeonAura-${index}-${value}`, x, y, tileSize, tileSize);
+        aura.setSiblingIndex(content.children.length - 1);
+        aura.angle = -8 - tier * 2;
+        const opacity = aura.addComponent(UIOpacity);
+        opacity.opacity = 214;
+        const graphics = aura.addComponent(Graphics);
+        const radius = tileSize * 0.23;
+
+        [18, 10, 3].forEach((lineWidth, layer) => {
+            graphics.strokeColor = colorWithAlpha(
+                layer === 2 ? material.core : (layer === 1 ? material.glow : material.accent),
+                layer === 2 ? 235 : (layer === 1 ? 108 : 32),
+            );
+            graphics.lineWidth = lineWidth + tier * (layer === 0 ? 1.1 : 0.35);
+            graphics.roundRect(-radius, -radius, radius * 2, radius * 2, radius * 0.34);
+            graphics.stroke();
+        });
+
+        graphics.strokeColor = colorWithAlpha(material.facet, 178);
+        graphics.lineWidth = 1.5 + tier * 0.18;
+        graphics.moveTo(0, -radius * 1.18);
+        graphics.lineTo(radius * 1.18, 0);
+        graphics.lineTo(0, radius * 1.18);
+        graphics.lineTo(-radius * 1.18, 0);
+        graphics.close();
+        graphics.stroke();
+
+        const duration = (0.2 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE;
+        const endScale = (1.22 + tier * 0.045) * HIGH_MERGE_EFFECT_SCALE;
+        aura.setScale(0.55, 0.55, 1);
+        tween(aura)
+            .to(duration, {
+                scale: new Vec3(endScale, endScale, 1),
+                angle: 16 + tier * 5,
+            }, { easing: 'quadOut' })
+            .start();
+        tween(opacity)
+            .delay(duration * 0.2)
+            .to(duration * 0.8, { opacity: 0 }, { easing: 'quadIn' })
+            .call(() => this.destroyNodeWithTweens(aura))
+            .start();
+    }
+
+    /** 旋转的能量射线让合成从单纯“放大圆环”变成有方向感的爆发。 */
+    private createNeonMergeBurst(
+        content: Node,
+        index: number,
+        value: number,
+        x: number,
+        y: number,
+        tileSize: number,
+        material: TileMaterial,
+        tier: number,
+    ): void {
+        const burst = this.createNode(content, `MergeNeonBurst-${index}-${value}`, x, y, tileSize, tileSize);
+        burst.setSiblingIndex(content.children.length - 1);
+        burst.angle = tier % 2 === 0 ? 9 : -9;
+        const opacity = burst.addComponent(UIOpacity);
+        opacity.opacity = 235;
+        const graphics = burst.addComponent(Graphics);
+        const rayCount = 12 + Math.min(8, tier * 2);
+
+        // 先画低透明宽线作为光晕，再叠加高亮细芯。同色射线合并成一次
+        // stroke，避免高级棋子合成时在同一帧重复触发 Graphics 网格化。
+        for (let pass = 0; pass < 2; pass += 1) {
+            for (let colorGroup = 0; colorGroup < 3; colorGroup += 1) {
+                const rayColor = colorGroup === 0
+                    ? material.facet
+                    : (colorGroup === 1 ? material.glow : material.accent);
+                graphics.strokeColor = colorWithAlpha(rayColor, pass === 0 ? 42 : 220);
+                graphics.lineWidth = pass === 0 ? 7 + tier * 0.55 : 1.4 + tier * 0.16;
+                for (let rayIndex = colorGroup; rayIndex < rayCount; rayIndex += 3) {
+                    const angle = Math.PI * 2 * rayIndex / rayCount;
+                    const alternating = rayIndex % 2 === 0;
+                    const inner = tileSize * (alternating ? 0.25 : 0.31);
+                    const outer = tileSize * (alternating ? 0.63 + tier * 0.022 : 0.49 + tier * 0.018);
+                    graphics.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+                    graphics.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+                }
+                graphics.stroke();
+            }
+        }
+
+        graphics.strokeColor = colorWithAlpha(material.core, 228);
+        graphics.lineWidth = 1.4 + tier * 0.2;
+        graphics.circle(0, 0, tileSize * 0.32);
+        graphics.stroke();
+
+        const duration = (0.18 + tier * 0.014) * HIGH_MERGE_EFFECT_DURATION_SCALE;
+        burst.setScale(0.42, 0.42, 1);
+        tween(burst)
+            .to(duration, {
+                scale: new Vec3(1.12 + tier * 0.035, 1.12 + tier * 0.035, 1),
+                angle: tier % 2 === 0 ? -22 - tier * 3 : 22 + tier * 3,
+            }, { easing: 'quadOut' })
+            .start();
+        tween(opacity)
+            .delay(duration * 0.24)
+            .to(duration * 0.76, { opacity: 0 }, { easing: 'quadIn' })
+            .call(() => this.destroyNodeWithTweens(burst))
+            .start();
+    }
+
+    /**
+     * 所有火花合并在一个 Graphics 中，通过整体缩放保留外扩轨迹。
+     * 这使每次合成的火花从 7–11 个节点降为 1 个，多棋子同时合成时不再出现实例化尖峰。
+     */
+    private createNeonMergeSparks(
+        content: Node,
+        index: number,
+        value: number,
+        x: number,
+        y: number,
+        tileSize: number,
+        material: TileMaterial,
+        tier: number,
+    ): void {
+        const sparkCount = 6 + Math.min(6, tier);
+        const sparks = this.createNode(content, `MergeNeonSparks-${index}-${value}`, x, y, tileSize, tileSize);
+        sparks.setSiblingIndex(content.children.length - 1);
+        sparks.angle = tier % 2 === 0 ? -7 : 7;
+        sparks.setScale(0.42, 0.42, 1);
+        const opacity = sparks.addComponent(UIOpacity);
+        opacity.opacity = 250;
+        const graphics = sparks.addComponent(Graphics);
+
+        for (let pass = 0; pass < 2; pass += 1) {
+            for (let colorGroup = 0; colorGroup < 3; colorGroup += 1) {
+                const sparkColor = colorGroup === 0
+                    ? material.core
+                    : (colorGroup === 1 ? material.facet : material.glow);
+                graphics.strokeColor = colorWithAlpha(sparkColor, pass === 0 ? 48 : 245);
+                graphics.lineWidth = pass === 0 ? 6 + tier * 0.3 : 1.5 + tier * 0.12;
+                for (let sparkIndex = colorGroup; sparkIndex < sparkCount; sparkIndex += 3) {
+                    const angle = Math.PI * 2 * sparkIndex / sparkCount + tier * 0.17;
+                    const alternating = sparkIndex % 2 === 0;
+                    const centerDistance = tileSize * (alternating ? 0.46 : 0.53);
+                    const sparkLength = 10 + tier * 1.2 + (sparkIndex % 2) * 3;
+                    const centerX = Math.cos(angle) * centerDistance;
+                    const centerY = Math.sin(angle) * centerDistance;
+                    const halfLength = sparkLength * 0.5;
+                    const tangentX = -Math.sin(angle) * sparkLength * 0.2;
+                    const tangentY = Math.cos(angle) * sparkLength * 0.2;
+                    graphics.moveTo(
+                        centerX - Math.cos(angle) * halfLength,
+                        centerY - Math.sin(angle) * halfLength,
+                    );
+                    graphics.lineTo(
+                        centerX + Math.cos(angle) * halfLength,
+                        centerY + Math.sin(angle) * halfLength,
+                    );
+                    if (pass === 1) {
+                        graphics.moveTo(centerX - tangentX, centerY - tangentY);
+                        graphics.lineTo(centerX + tangentX, centerY + tangentY);
+                    }
+                }
+                graphics.stroke();
+            }
+        }
+
+        const duration = (0.22 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE;
+        const endScale = 1.08 + tier * 0.032;
+        tween(sparks)
+            .to(duration, {
+                scale: new Vec3(endScale, endScale, 1),
+                angle: tier % 2 === 0 ? 13 + tier * 2 : -13 - tier * 2,
+            }, { easing: 'quadOut' })
+            .start();
+        tween(opacity)
+            .delay(duration * 0.38)
+            .to(duration * 0.62, { opacity: 0 }, { easing: 'quadIn' })
+            .call(() => this.destroyNodeWithTweens(sparks))
+            .start();
     }
 
     private createHighTierMergeCore(

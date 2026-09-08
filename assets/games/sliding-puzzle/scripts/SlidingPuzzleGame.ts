@@ -1133,9 +1133,15 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 });
                 selection.release();
                 if (!imageAsset) return Object.freeze({ ...source, releaseOnClose: false });
-                const texture = new Texture2D();
-                texture.image = imageAsset;
-                return Object.freeze({ ...source, imageAsset, texture, releaseOnClose: true });
+                try {
+                    const texture = new Texture2D();
+                    texture.image = imageAsset;
+                    return Object.freeze({ ...source, imageAsset, texture, releaseOnClose: true });
+                } catch (error: unknown) {
+                    this.releaseRemoteImageAsset(imageAsset);
+                    console.warn('[SlidingPuzzleGame] Failed to create local library texture.', source.path, error);
+                    return Object.freeze({ ...source, releaseOnClose: false });
+                }
             }
 
             const texture = await new Promise<Texture2D | undefined>((resolve) => {
@@ -1161,7 +1167,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 if (entry.releaseOnClose && entry.texture) {
                     if (entry.kind === 'local') {
                         entry.texture.destroy();
-                        entry.imageAsset?.destroy();
+                        this.releaseRemoteImageAsset(entry.imageAsset);
                     } else {
                         this.releaseBundleTexture(entry.texture);
                     }
@@ -1438,7 +1444,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             || token !== this.imageLoadToken
             || (this.state as SlidingPuzzleState) === 'disposed') {
             if (imageAsset) {
-                imageAsset.destroy();
+                this.releaseRemoteImageAsset(imageAsset);
             }
             return false;
         }
@@ -1454,7 +1460,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return true;
         } catch (error: unknown) {
             console.warn('[SlidingPuzzleGame] Failed to create local texture.', error);
-            imageAsset.destroy();
+            this.releaseRemoteImageAsset(imageAsset);
             return false;
         }
     }
@@ -1688,11 +1694,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.releaseBundleTexture(texture);
         }
         if (imageAsset) {
-            try {
-                assetManager.releaseAsset(imageAsset);
-            } catch (error: unknown) {
-                imageAsset.destroy();
-            }
+            this.releaseRemoteImageAsset(imageAsset);
         }
     }
 
@@ -1708,11 +1710,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             texture?.destroy();
         }
         if (imageAsset) {
-            try {
-                assetManager.releaseAsset(imageAsset);
-            } catch (error: unknown) {
-                imageAsset.destroy();
-            }
+            this.releaseRemoteImageAsset(imageAsset);
         }
     }
 
@@ -1938,7 +1936,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 || this.state !== 'crop-editing'
                 || !this.pendingImageTexture) {
                 encodedImage.release();
-                croppedImageAsset?.destroy();
+                this.releaseRemoteImageAsset(croppedImageAsset);
                 if (token === this.imageLoadToken && this.state === 'crop-editing') {
                     this.context.services.feedback.play('collision');
                 }
@@ -1952,7 +1950,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             } catch (error: unknown) {
                 encodedImage.release();
                 croppedTexture?.destroy();
-                croppedImageAsset.destroy();
+                this.releaseRemoteImageAsset(croppedImageAsset);
                 console.warn('[SlidingPuzzleGame] Failed to create cropped local texture.', error);
                 this.context.services.feedback.play('collision');
                 return;
@@ -3979,7 +3977,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         });
         selection.release();
         if (!imageAsset || (this.state as SlidingPuzzleState) === 'disposed') {
-            imageAsset?.destroy();
+            this.releaseRemoteImageAsset(imageAsset);
             return false;
         }
 
@@ -3989,7 +3987,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             texture.image = imageAsset;
         } catch (error: unknown) {
             texture?.destroy();
-            imageAsset.destroy();
+            this.releaseRemoteImageAsset(imageAsset);
             console.warn('[SlidingPuzzleGame] Failed to create persisted local texture.', error);
             return false;
         }
@@ -4246,13 +4244,27 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             if (entry.releaseOnClose && entry.texture) {
                 if (entry.kind === 'local') {
                     entry.texture.destroy();
-                    entry.imageAsset?.destroy();
+                    // loadRemote 的 ImageAsset 由 AssetManager 缓存。直接 destroy
+                    // 会留下仍可命中、但 native 数据已经失效的缓存条目，导致
+                    // 退出拼图库后再次随机或重进拼图库永久加载失败。
+                    this.releaseRemoteImageAsset(entry.imageAsset);
                 } else {
                     this.releaseBundleTexture(entry.texture);
                 }
             }
         });
         this.presetLibraryTextures = [];
+    }
+
+    private releaseRemoteImageAsset(imageAsset: ImageAsset | undefined): void {
+        if (!imageAsset) return;
+        try {
+            // 既释放 native 图片数据，也让 AssetManager 清除 loadRemote 缓存；
+            // 所有本地图片加载分支统一走这里，避免缓存中残留已销毁对象。
+            assetManager.releaseAsset(imageAsset);
+        } catch (error: unknown) {
+            imageAsset.destroy();
+        }
     }
 
     private createLabel(
