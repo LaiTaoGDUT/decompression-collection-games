@@ -1,30 +1,19 @@
 import type {
     DoodleJumpGameplayConfig,
     DoodleJumpItemType,
-    DoodleJumpPlatformType,
 } from './DoodleJumpConfig';
 import type { DoodleJumpRandomStreams } from './DoodleJumpRandom';
+import type {
+    DoodleJumpWorldIndex,
+    DoodleJumpWorldOccupiedBody,
+    DoodleJumpWorldPlatform,
+} from './DoodleJumpWorld';
 
 export type DoodleJumpFlightPower = 'jetpack' | 'propeller-hat' | 'rocket';
 export type DoodleJumpLandingPower = 'spring' | 'trampoline';
 
-export interface DoodleJumpItemPlatform {
-    readonly id: string;
-    readonly type: DoodleJumpPlatformType;
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly collisionEnabled: boolean;
-    readonly consumed: boolean;
-}
-
-export interface DoodleJumpItemOccupiedBody {
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
-    readonly anchorPlatformId?: string;
-}
+export type DoodleJumpItemPlatform = DoodleJumpWorldPlatform;
+export type DoodleJumpItemOccupiedBody = DoodleJumpWorldOccupiedBody;
 
 export interface DoodleJumpItemSnapshot {
     readonly id: string;
@@ -74,10 +63,40 @@ interface MutableItem {
     anchorOffsetY: number;
 }
 
+interface MutableItemPresentation {
+    id: string;
+    type: DoodleJumpItemType;
+    x: number;
+    y: number;
+    radius: number;
+    anchorPlatformId: string;
+    phase: number;
+}
+
+interface MutableItemStatus {
+    landingPower?: DoodleJumpLandingPower;
+    flightPower?: DoodleJumpFlightPower;
+    flightRemainingSeconds: number;
+    shieldRemainingSeconds: number;
+    trampolineJumpActive: boolean;
+    trampolineJumpProgress: number;
+    headStartRemainingSeconds: number;
+    itemPickupCount: number;
+    usedHeadStart: boolean;
+}
+
 const FLIGHT_TYPES: readonly DoodleJumpFlightPower[] = Object.freeze([
     'jetpack',
     'propeller-hat',
     'rocket',
+]);
+const ITEM_SELECTION_TYPES: readonly DoodleJumpItemType[] = Object.freeze([
+    'spring',
+    'trampoline',
+    'jetpack',
+    'propeller-hat',
+    'rocket',
+    'shield',
 ]);
 
 function isFlightPower(type: DoodleJumpItemType): type is DoodleJumpFlightPower {
@@ -88,6 +107,16 @@ export class DoodleJumpItemSystem {
     private readonly items: MutableItem[] = [];
     private readonly evaluatedPlatformIds = new Set<string>();
     private readonly events: DoodleJumpItemEvent[] = [];
+    private readonly presentationItems: MutableItemPresentation[] = [];
+    private readonly presentationStatus: MutableItemStatus = {
+        flightRemainingSeconds: 0,
+        shieldRemainingSeconds: 0,
+        trampolineJumpActive: false,
+        trampolineJumpProgress: 0,
+        headStartRemainingSeconds: 0,
+        itemPickupCount: 0,
+        usedHeadStart: false,
+    };
     private nextItemId = 1;
     private landingPower?: DoodleJumpLandingPower;
     private flightPower?: DoodleJumpFlightPower;
@@ -135,16 +164,16 @@ export class DoodleJumpItemSystem {
     restore(
         snapshots: readonly DoodleJumpItemSnapshot[],
         status: DoodleJumpItemStatusSnapshot,
-        platformIds: readonly string[],
+        world: DoodleJumpWorldIndex,
     ): void {
         this.reset();
         this.items.length = 0;
         this.events.length = 0;
         this.evaluatedPlatformIds.clear();
-        platformIds.forEach((id) => this.evaluatedPlatformIds.add(id));
+        world.platforms.forEach((platform) => this.evaluatedPlatformIds.add(platform.id));
         let maximumId = 0;
         snapshots.forEach((snapshot) => {
-            if (platformIds.indexOf(snapshot.anchorPlatformId) < 0) return;
+            if (!world.platformById.has(snapshot.anchorPlatformId)) return;
             const parsedId = Number(snapshot.id.replace(/^I/, ''));
             if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
             this.items.push({
@@ -204,18 +233,28 @@ export class DoodleJumpItemSystem {
         this.headStartRemainingSeconds = Math.max(0, this.headStartRemainingSeconds - delta);
     }
 
-    syncWorld(
-        platforms: readonly DoodleJumpItemPlatform[],
+    updateExisting(
+        world: DoodleJumpWorldIndex,
+        cameraBottomY: number,
+    ): void {
+        this.updateAttachedItems(world.platformById);
+        this.recycleItems(cameraBottomY);
+    }
+
+    reconcileWorld(
+        world: DoodleJumpWorldIndex,
         cameraBottomY: number,
         cameraTopY: number,
         occupiedBodies: readonly DoodleJumpItemOccupiedBody[],
     ): void {
-        const platformById = new Map<string, DoodleJumpItemPlatform>();
-        platforms.forEach((platform) => platformById.set(platform.id, platform));
-        this.updateAttachedItems(platformById);
         this.recycleItems(cameraBottomY);
-        this.purgeEvaluatedPlatforms(platformById);
-        this.evaluateNewPlatforms(platforms, cameraBottomY, cameraTopY, occupiedBodies);
+        this.purgeEvaluatedPlatforms(world.platformById);
+        this.evaluateNewPlatforms(
+            world.platforms,
+            cameraBottomY,
+            cameraTopY,
+            occupiedBodies,
+        );
     }
 
     resolvePickups(
@@ -355,6 +394,34 @@ export class DoodleJumpItemSystem {
         })));
     }
 
+    getPresentationItems(): readonly DoodleJumpItemSnapshot[] {
+        for (let index = 0; index < this.items.length; index += 1) {
+            const item = this.items[index];
+            let presentation = this.presentationItems[index];
+            if (!presentation) {
+                presentation = {
+                    id: item.id,
+                    type: item.type,
+                    x: item.x,
+                    y: item.y,
+                    radius: item.radius,
+                    anchorPlatformId: item.anchorPlatformId,
+                    phase: item.phase,
+                };
+                this.presentationItems[index] = presentation;
+            }
+            presentation.id = item.id;
+            presentation.type = item.type;
+            presentation.x = item.x;
+            presentation.y = item.y;
+            presentation.radius = item.radius;
+            presentation.anchorPlatformId = item.anchorPlatformId;
+            presentation.phase = item.phase;
+        }
+        this.presentationItems.length = this.items.length;
+        return this.presentationItems;
+    }
+
     getStatus(): DoodleJumpItemStatusSnapshot {
         return Object.freeze({
             landingPower: this.landingPower,
@@ -375,14 +442,45 @@ export class DoodleJumpItemSystem {
         });
     }
 
-    getOccupiedBodies(): readonly DoodleJumpItemOccupiedBody[] {
-        return Object.freeze(this.items.map((item) => Object.freeze({
-            x: item.x,
-            y: item.y,
-            width: item.radius * 2,
-            height: item.radius * 2,
-            anchorPlatformId: item.anchorPlatformId,
-        })));
+    getPresentationStatus(): DoodleJumpItemStatusSnapshot {
+        this.presentationStatus.landingPower = this.landingPower;
+        this.presentationStatus.flightPower = this.flightPower;
+        this.presentationStatus.flightRemainingSeconds = this.flightRemainingSeconds;
+        this.presentationStatus.shieldRemainingSeconds = this.shieldRemainingSeconds;
+        this.presentationStatus.trampolineJumpActive = this.trampolineJumpActive;
+        this.presentationStatus.trampolineJumpProgress = this.trampolineJumpActive
+            ? Math.min(
+                1,
+                this.trampolineJumpElapsedSeconds
+                    / Math.max(0.001, this.trampolineJumpDurationSeconds),
+            )
+            : 0;
+        this.presentationStatus.headStartRemainingSeconds = this.headStartRemainingSeconds;
+        this.presentationStatus.itemPickupCount = this.itemPickupCount;
+        this.presentationStatus.usedHeadStart = this.usedHeadStart;
+        return this.presentationStatus;
+    }
+
+    writeOccupiedBodies(
+        target: DoodleJumpItemOccupiedBody[],
+        startIndex = 0,
+    ): number {
+        let cursor = startIndex;
+        for (let index = 0; index < this.items.length; index += 1) {
+            const item = this.items[index];
+            let body = target[cursor];
+            if (!body) {
+                body = { x: 0, y: 0, width: 0, height: 0 };
+                target[cursor] = body;
+            }
+            body.x = item.x;
+            body.y = item.y;
+            body.width = item.radius * 2;
+            body.height = item.radius * 2;
+            body.anchorPlatformId = item.anchorPlatformId;
+            cursor += 1;
+        }
+        return cursor;
     }
 
     clearNear(x: number, y: number, radius: number): void {
@@ -461,7 +559,7 @@ export class DoodleJumpItemSystem {
     private purgeEvaluatedPlatforms(
         platformById: ReadonlyMap<string, DoodleJumpItemPlatform>,
     ): void {
-        Array.from(this.evaluatedPlatformIds).forEach((id) => {
+        this.evaluatedPlatformIds.forEach((id) => {
             if (!platformById.has(id)) this.evaluatedPlatformIds.delete(id);
         });
     }
@@ -473,12 +571,9 @@ export class DoodleJumpItemSystem {
         occupiedBodies: readonly DoodleJumpItemOccupiedBody[],
     ): void {
         if (!this.config.items.enabled || this.items.length >= this.config.items.maximumActive) return;
-        const ordered = platforms.slice().sort((left, right) => (
-            left.y !== right.y ? left.y - right.y : left.id.localeCompare(right.id)
-        ));
-        for (let index = 0; index < ordered.length; index += 1) {
+        for (let index = 0; index < platforms.length; index += 1) {
             if (this.items.length >= this.config.items.maximumActive) return;
-            const platform = ordered[index];
+            const platform = platforms[index];
             if (this.evaluatedPlatformIds.has(platform.id)) continue;
             if (platform.y < cameraBottomY
                 || platform.y <= cameraTopY + this.config.items.spawnAboveScreenMargin) {
@@ -512,25 +607,37 @@ export class DoodleJumpItemSystem {
             heightMeters >= candidate.startMeters && heightMeters < candidate.endMeters
         ));
         if (!band) return undefined;
-        const candidates: Array<readonly [DoodleJumpItemType, number]> = [
-            ['spring', band.spring],
-            ['trampoline', band.trampoline],
-            ['jetpack', band.jetpack],
-            ['propeller-hat', band.propellerHat],
-            ['rocket', band.rocket],
-            ['shield', band.shield],
-        ];
-        const weights = candidates.filter((entry) => (
-            entry[1] > 0 && this.isUnlocked(entry[0], heightMeters)
-        ));
-        const total = weights.reduce((sum, entry) => sum + entry[1], 0);
+        let total = 0;
+        let fallback: DoodleJumpItemType | undefined;
+        for (let index = 0; index < ITEM_SELECTION_TYPES.length; index += 1) {
+            const type = ITEM_SELECTION_TYPES[index];
+            const weight = this.itemWeight(type, band);
+            if (weight <= 0 || !this.isUnlocked(type, heightMeters)) continue;
+            total += weight;
+            fallback = type;
+        }
         if (total <= 0) return undefined;
         let roll = this.randomStreams.next('item') * total;
-        for (let index = 0; index < weights.length; index += 1) {
-            roll -= weights[index][1];
-            if (roll < 0) return weights[index][0];
+        for (let index = 0; index < ITEM_SELECTION_TYPES.length; index += 1) {
+            const type = ITEM_SELECTION_TYPES[index];
+            const weight = this.itemWeight(type, band);
+            if (weight <= 0 || !this.isUnlocked(type, heightMeters)) continue;
+            roll -= weight;
+            if (roll < 0) return type;
         }
-        return weights[weights.length - 1][0];
+        return fallback;
+    }
+
+    private itemWeight(
+        type: DoodleJumpItemType,
+        band: DoodleJumpGameplayConfig['items']['weightBands'][number],
+    ): number {
+        if (type === 'spring') return band.spring;
+        if (type === 'trampoline') return band.trampoline;
+        if (type === 'jetpack') return band.jetpack;
+        if (type === 'propeller-hat') return band.propellerHat;
+        if (type === 'rocket') return band.rocket;
+        return band.shield;
     }
 
     private createItem(

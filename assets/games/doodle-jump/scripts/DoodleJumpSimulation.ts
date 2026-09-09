@@ -11,8 +11,6 @@ import {
 import {
     DoodleJumpCombatSystem,
     type DoodleJumpCombatEvent,
-    type DoodleJumpCombatOccupiedBody,
-    type DoodleJumpCombatPlatform,
     type DoodleJumpCombatStats,
     type DoodleJumpEnemySnapshot,
     type DoodleJumpProjectileHitResult,
@@ -21,18 +19,20 @@ import {
     DoodleJumpHazardSystem,
     type DoodleJumpHazardEvent,
     type DoodleJumpHazardFailureReason,
-    type DoodleJumpHazardPlatform,
     type DoodleJumpHazardSnapshot,
     type DoodleJumpHazardStats,
 } from './DoodleJumpHazardSystem';
 import {
     DoodleJumpItemSystem,
     type DoodleJumpItemEvent,
-    type DoodleJumpItemOccupiedBody,
-    type DoodleJumpItemPlatform,
     type DoodleJumpItemSnapshot,
     type DoodleJumpItemStatusSnapshot,
 } from './DoodleJumpItemSystem';
+import type {
+    DoodleJumpWorldIndex,
+    DoodleJumpWorldOccupiedBody,
+    DoodleJumpWorldPlatform,
+} from './DoodleJumpWorld';
 
 export type DoodleJumpFailureReason =
     | 'fall'
@@ -91,6 +91,72 @@ export interface DoodleJumpSimulationSnapshot {
     readonly enemies: readonly DoodleJumpEnemySnapshot[];
 }
 
+export interface DoodleJumpSimulationPresentationView {
+    readonly playerX: number;
+    readonly playerY: number;
+    readonly velocityX: number;
+    readonly velocityY: number;
+    readonly cameraBottomY: number;
+    readonly maxAbsoluteWorldY: number;
+    readonly elapsedSeconds: number;
+    readonly droppedFrameSeconds: number;
+    readonly lastLandedPlatformId?: string;
+    readonly landingCount: number;
+    readonly combat: DoodleJumpCombatStats;
+    readonly hazards: readonly DoodleJumpHazardSnapshot[];
+    readonly hazardStats: DoodleJumpHazardStats;
+    readonly items: readonly DoodleJumpItemSnapshot[];
+    readonly itemStatus: DoodleJumpItemStatusSnapshot;
+    readonly seed: number;
+    readonly generatorCursor: number;
+    readonly degradedGenerationCount: number;
+    readonly itemRandomCursor: number;
+    readonly platforms: readonly DoodleJumpPlatformSnapshot[];
+    readonly enemies: readonly DoodleJumpEnemySnapshot[];
+}
+
+interface MutablePlatformPresentation {
+    id: string;
+    type: DoodleJumpPlatformType;
+    x: number;
+    y: number;
+    baseX: number;
+    baseY: number;
+    width: number;
+    collisionEnabled: boolean;
+    consumed: boolean;
+    warningProgress: number;
+    predecessorId?: string;
+    generationAttempts: number;
+    degraded: boolean;
+    mainRoute: boolean;
+    layerIndex: number;
+}
+
+interface MutableSimulationPresentationView {
+    playerX: number;
+    playerY: number;
+    velocityX: number;
+    velocityY: number;
+    cameraBottomY: number;
+    maxAbsoluteWorldY: number;
+    elapsedSeconds: number;
+    droppedFrameSeconds: number;
+    lastLandedPlatformId?: string;
+    landingCount: number;
+    combat: DoodleJumpCombatStats;
+    hazards: readonly DoodleJumpHazardSnapshot[];
+    hazardStats: DoodleJumpHazardStats;
+    items: readonly DoodleJumpItemSnapshot[];
+    itemStatus: DoodleJumpItemStatusSnapshot;
+    seed: number;
+    generatorCursor: number;
+    degradedGenerationCount: number;
+    itemRandomCursor: number;
+    platforms: readonly DoodleJumpPlatformSnapshot[];
+    enemies: readonly DoodleJumpEnemySnapshot[];
+}
+
 export interface DoodleJumpResurrectionResult {
     readonly platformId: string;
     readonly safePlatformGenerated: boolean;
@@ -112,6 +178,11 @@ interface MutablePlatform {
     degraded: boolean;
     mainRoute: boolean;
     layerIndex: number;
+}
+
+interface IndexedWorldPlatform extends DoodleJumpWorldPlatform {
+    readonly source: MutablePlatform;
+    revision: number;
 }
 
 const LARGE_ENEMY_PLATFORM_EXTRA_WIDTH = 80;
@@ -150,6 +221,14 @@ function shiftingPlatformSegmentAt(elapsedSeconds: number): number {
 
 export class DoodleJumpSimulation {
     private readonly platforms: MutablePlatform[];
+    private readonly worldPlatforms: IndexedWorldPlatform[] = [];
+    private readonly platformById = new Map<string, IndexedWorldPlatform>();
+    private readonly worldIndex: DoodleJumpWorldIndex;
+    private readonly combatOccupiedScratch: DoodleJumpWorldOccupiedBody[] = [];
+    private readonly hazardOccupiedScratch: DoodleJumpWorldOccupiedBody[] = [];
+    private readonly itemOccupiedScratch: DoodleJumpWorldOccupiedBody[] = [];
+    private readonly presentationPlatforms: MutablePlatformPresentation[] = [];
+    private readonly presentationView: MutableSimulationPresentationView;
     private readonly initialSeed: number;
     private readonly randomStreams: DoodleJumpRandomStreams;
     private readonly combat: DoodleJumpCombatSystem;
@@ -175,6 +254,8 @@ export class DoodleJumpSimulation {
     private fatalFocusX?: number;
     private fatalFocusY?: number;
     private monsterContactGraceRemaining = 0;
+    private worldNeedsPreStepReconcile = false;
+    private worldIndexRevision = 0;
 
     constructor(private readonly config: DoodleJumpGameplayConfig, seed: string | number = 1) {
         this.initialSeed = hashDoodleJumpSeed(seed) || 1;
@@ -183,6 +264,32 @@ export class DoodleJumpSimulation {
         this.hazards = new DoodleJumpHazardSystem(config, this.randomStreams);
         this.items = new DoodleJumpItemSystem(config, this.randomStreams);
         this.platforms = [];
+        this.worldIndex = {
+            platforms: this.worldPlatforms,
+            platformById: this.platformById,
+        };
+        this.presentationView = {
+            playerX: this.playerX,
+            playerY: this.playerY,
+            velocityX: this.velocityX,
+            velocityY: this.velocityY,
+            cameraBottomY: this.cameraBottomY,
+            maxAbsoluteWorldY: this.maxAbsoluteWorldY,
+            elapsedSeconds: this.elapsedSeconds,
+            droppedFrameSeconds: this.droppedFrameSeconds,
+            landingCount: this.landingCount,
+            combat: this.combat.getPresentationStats(),
+            hazards: this.hazards.getPresentationHazards(),
+            hazardStats: this.hazards.getPresentationStats(),
+            items: this.items.getPresentationItems(),
+            itemStatus: this.items.getPresentationStatus(),
+            seed: this.initialSeed,
+            generatorCursor: this.generatorCursor,
+            degradedGenerationCount: this.degradedGenerationCount,
+            itemRandomCursor: this.randomStreams.getCursor('item'),
+            platforms: this.presentationPlatforms,
+            enemies: this.combat.getPresentationEnemies(),
+        };
         this.reset();
         this.validateFixedRoute();
     }
@@ -263,30 +370,14 @@ export class DoodleJumpSimulation {
         this.latestMainLayer = fixedMainPlatforms.length > 0
             ? [fixedMainPlatforms[fixedMainPlatforms.length - 1]]
             : [];
-        this.combat.syncWorld(
-            this.elapsedSeconds,
-            this.getCombatPlatforms(),
-            this.cameraBottomY,
-            this.cameraBottomY + this.config.design.height,
-            this.getCombatOccupiedBodies(),
-        );
-        this.applyLargeMonsterPlatformWidths();
-        this.hazards.syncWorld(
+        this.syncWorldIndex();
+        this.updateWorldSystems(
             0,
-            this.elapsedSeconds,
-            this.getHazardPlatforms(),
-            this.playerX,
-            this.playerY,
             this.cameraBottomY,
             this.cameraBottomY + this.config.design.height,
-            this.combat.getSnapshots(),
+            true,
         );
-        this.items.syncWorld(
-            this.getItemPlatforms(),
-            this.cameraBottomY,
-            this.cameraBottomY + this.config.design.height,
-            this.getItemOccupiedBodies(),
-        );
+        this.worldNeedsPreStepReconcile = false;
     }
 
     restore(snapshot: DoodleJumpSimulationSnapshot): void {
@@ -393,26 +484,26 @@ export class DoodleJumpSimulation {
             ? latestMain
             : [this.findHighestPlatform()];
         this.randomStreams.restore(snapshot.randomStreams);
-        const combatPlatforms = this.getCombatPlatforms();
+        this.syncWorldIndex();
         this.combat.restore(
             snapshot.enemies,
             snapshot.combat,
             this.elapsedSeconds,
-            combatPlatforms,
+            this.worldIndex,
         );
         this.applyLargeMonsterPlatformWidths();
-        const hazardPlatforms = this.getHazardPlatforms();
         this.hazards.restore(
             snapshot.hazards,
             snapshot.hazardStats,
             this.elapsedSeconds,
-            hazardPlatforms,
+            this.worldIndex,
         );
         this.items.restore(
             snapshot.items,
             snapshot.itemStatus,
-            this.platforms.map((platform) => platform.config.id),
+            this.worldIndex,
         );
+        this.worldNeedsPreStepReconcile = false;
     }
 
     advance(frameSeconds: number, horizontalInput: number, visibleHeight: number): void {
@@ -442,6 +533,14 @@ export class DoodleJumpSimulation {
 
     getCameraBottomY(): number {
         return this.cameraBottomY;
+    }
+
+    getPlayerX(): number {
+        return this.playerX;
+    }
+
+    getPlayerY(): number {
+        return this.playerY;
     }
 
     hitEnemyByProjectileSweep(
@@ -497,6 +596,8 @@ export class DoodleJumpSimulation {
         const next = this.generateReachablePlatform(highest);
         this.platforms.push(next);
         this.enforcePlatformBudget();
+        this.syncWorldIndex();
+        this.worldNeedsPreStepReconcile = true;
         return true;
     }
 
@@ -573,6 +674,8 @@ export class DoodleJumpSimulation {
             };
             this.platforms.push(target);
             safePlatformGenerated = true;
+            this.syncWorldIndex();
+            this.worldNeedsPreStepReconcile = true;
         }
 
         const targetScreenY = Math.max(1, visibleHeight) * this.config.camera.targetHeightRatio;
@@ -613,6 +716,8 @@ export class DoodleJumpSimulation {
     }
 
     getSnapshot(): DoodleJumpSimulationSnapshot {
+        // Lifecycle and persistence boundary: callers may retain this deeply
+        // frozen value without observing later simulation mutations.
         return Object.freeze({
             playerX: this.playerX,
             playerY: this.playerY,
@@ -656,6 +761,73 @@ export class DoodleJumpSimulation {
         });
     }
 
+    getPresentationView(): DoodleJumpSimulationPresentationView {
+        // Render-frame view: the object, arrays, and records are reused and
+        // must only be consumed synchronously before the next view refresh.
+        for (let index = 0; index < this.platforms.length; index += 1) {
+            const platform = this.platforms[index];
+            let presentation = this.presentationPlatforms[index];
+            if (!presentation) {
+                presentation = {
+                    id: platform.config.id,
+                    type: platform.config.type,
+                    x: platform.x,
+                    y: platform.y,
+                    baseX: platform.config.x,
+                    baseY: platform.config.y,
+                    width: platform.width,
+                    collisionEnabled: platform.collisionEnabled,
+                    consumed: platform.consumed,
+                    warningProgress: platform.warningProgress,
+                    predecessorId: platform.predecessorId,
+                    generationAttempts: platform.generationAttempts,
+                    degraded: platform.degraded,
+                    mainRoute: platform.mainRoute,
+                    layerIndex: platform.layerIndex,
+                };
+                this.presentationPlatforms[index] = presentation;
+            }
+            presentation.id = platform.config.id;
+            presentation.type = platform.config.type;
+            presentation.x = platform.x;
+            presentation.y = platform.y;
+            presentation.baseX = platform.config.x;
+            presentation.baseY = platform.config.y;
+            presentation.width = platform.width;
+            presentation.collisionEnabled = platform.collisionEnabled;
+            presentation.consumed = platform.consumed;
+            presentation.warningProgress = platform.warningProgress;
+            presentation.predecessorId = platform.predecessorId;
+            presentation.generationAttempts = platform.generationAttempts;
+            presentation.degraded = platform.degraded;
+            presentation.mainRoute = platform.mainRoute;
+            presentation.layerIndex = platform.layerIndex;
+        }
+        this.presentationPlatforms.length = this.platforms.length;
+        this.presentationView.playerX = this.playerX;
+        this.presentationView.playerY = this.playerY;
+        this.presentationView.velocityX = this.velocityX;
+        this.presentationView.velocityY = this.velocityY;
+        this.presentationView.cameraBottomY = this.cameraBottomY;
+        this.presentationView.maxAbsoluteWorldY = this.maxAbsoluteWorldY;
+        this.presentationView.elapsedSeconds = this.elapsedSeconds;
+        this.presentationView.droppedFrameSeconds = this.droppedFrameSeconds;
+        this.presentationView.lastLandedPlatformId = this.lastLandedPlatformId;
+        this.presentationView.landingCount = this.landingCount;
+        this.presentationView.combat = this.combat.getPresentationStats();
+        this.presentationView.hazards = this.hazards.getPresentationHazards();
+        this.presentationView.hazardStats = this.hazards.getPresentationStats();
+        this.presentationView.items = this.items.getPresentationItems();
+        this.presentationView.itemStatus = this.items.getPresentationStatus();
+        this.presentationView.seed = this.initialSeed;
+        this.presentationView.generatorCursor = this.generatorCursor;
+        this.presentationView.degradedGenerationCount = this.degradedGenerationCount;
+        this.presentationView.itemRandomCursor = this.randomStreams.getCursor('item');
+        this.presentationView.platforms = this.presentationPlatforms;
+        this.presentationView.enemies = this.combat.getPresentationEnemies();
+        return this.presentationView;
+    }
+
     private step(delta: number, input: number, visibleHeight: number): void {
         this.elapsedSeconds += delta;
         this.monsterContactGraceRemaining = Math.max(
@@ -664,30 +836,13 @@ export class DoodleJumpSimulation {
         );
         this.updatePlatforms(delta);
         this.items.updateTimers(delta, this.playerX, this.playerY, this.velocityY);
-        this.combat.syncWorld(
-            this.elapsedSeconds,
-            this.getCombatPlatforms(),
-            this.cameraBottomY,
-            this.cameraBottomY + visibleHeight,
-            this.getCombatOccupiedBodies(),
-        );
-        this.applyLargeMonsterPlatformWidths();
-        this.hazards.syncWorld(
+        this.updateWorldSystems(
             delta,
-            this.elapsedSeconds,
-            this.getHazardPlatforms(),
-            this.playerX,
-            this.playerY,
             this.cameraBottomY,
             this.cameraBottomY + visibleHeight,
-            this.getHazardOccupiedBodies(),
+            this.worldNeedsPreStepReconcile,
         );
-        this.items.syncWorld(
-            this.getItemPlatforms(),
-            this.cameraBottomY,
-            this.cameraBottomY + visibleHeight,
-            this.getItemOccupiedBodies(),
-        );
+        this.worldNeedsPreStepReconcile = false;
         const player = this.config.player;
         if (Math.abs(input) > 0.0001) {
             this.velocityX = moveTowards(
@@ -793,29 +948,10 @@ export class DoodleJumpSimulation {
         this.cameraBottomY = Math.max(this.cameraBottomY, this.playerY - targetScreenY);
         this.recyclePlatforms();
         this.ensureGenerated(visibleHeight);
-        this.combat.syncWorld(
-            this.elapsedSeconds,
-            this.getCombatPlatforms(),
+        this.syncWorldIndex();
+        this.reconcileWorldSystems(
             this.cameraBottomY,
             this.cameraBottomY + visibleHeight,
-            this.getCombatOccupiedBodies(),
-        );
-        this.applyLargeMonsterPlatformWidths();
-        this.hazards.syncWorld(
-            0,
-            this.elapsedSeconds,
-            this.getHazardPlatforms(),
-            this.playerX,
-            this.playerY,
-            this.cameraBottomY,
-            this.cameraBottomY + visibleHeight,
-            this.getHazardOccupiedBodies(),
-        );
-        this.items.syncWorld(
-            this.getItemPlatforms(),
-            this.cameraBottomY,
-            this.cameraBottomY + visibleHeight,
-            this.getItemOccupiedBodies(),
         );
     }
 
@@ -1228,6 +1364,80 @@ export class DoodleJumpSimulation {
         });
     }
 
+    private updateWorldSystems(
+        delta: number,
+        cameraBottomY: number,
+        cameraTopY: number,
+        reconcile: boolean,
+    ): void {
+        this.combat.updateExisting(this.elapsedSeconds, this.worldIndex, cameraBottomY);
+        if (reconcile) {
+            this.fillCombatOccupiedScratch();
+            this.combat.reconcileWorld(
+                this.worldIndex,
+                cameraBottomY,
+                cameraTopY,
+                this.combatOccupiedScratch,
+            );
+        }
+        this.applyLargeMonsterPlatformWidths();
+        this.hazards.updateExisting(
+            delta,
+            this.elapsedSeconds,
+            this.worldIndex,
+            this.playerX,
+            cameraBottomY,
+        );
+        if (reconcile) {
+            this.fillHazardOccupiedScratch();
+            this.hazards.reconcileWorld(
+                this.worldIndex,
+                this.playerX,
+                this.playerY,
+                cameraBottomY,
+                cameraTopY,
+                this.hazardOccupiedScratch,
+            );
+        }
+        this.items.updateExisting(this.worldIndex, cameraBottomY);
+        if (reconcile) {
+            this.fillItemOccupiedScratch();
+            this.items.reconcileWorld(
+                this.worldIndex,
+                cameraBottomY,
+                cameraTopY,
+                this.itemOccupiedScratch,
+            );
+        }
+    }
+
+    private reconcileWorldSystems(cameraBottomY: number, cameraTopY: number): void {
+        this.fillCombatOccupiedScratch();
+        this.combat.reconcileWorld(
+            this.worldIndex,
+            cameraBottomY,
+            cameraTopY,
+            this.combatOccupiedScratch,
+        );
+        this.applyLargeMonsterPlatformWidths();
+        this.fillHazardOccupiedScratch();
+        this.hazards.reconcileWorld(
+            this.worldIndex,
+            this.playerX,
+            this.playerY,
+            cameraBottomY,
+            cameraTopY,
+            this.hazardOccupiedScratch,
+        );
+        this.fillItemOccupiedScratch();
+        this.items.reconcileWorld(
+            this.worldIndex,
+            cameraBottomY,
+            cameraTopY,
+            this.itemOccupiedScratch,
+        );
+    }
+
     private largeEnemyPlatformWidth(platformId: string): number {
         const minimum = this.config.enemies.large.width + LARGE_ENEMY_PLATFORM_EXTRA_WIDTH;
         const maximum = Math.min(
@@ -1512,84 +1722,64 @@ export class DoodleJumpSimulation {
         return this.randomStreams.next('platform');
     }
 
-    private getCombatPlatforms(): readonly DoodleJumpCombatPlatform[] {
-        return this.platforms.map((platform) => Object.freeze({
-            id: platform.config.id,
-            type: platform.config.type,
-            x: platform.x,
-            y: platform.y,
-            width: platform.width,
-            collisionEnabled: platform.collisionEnabled,
-            consumed: platform.consumed,
-        }));
+    private syncWorldIndex(): void {
+        this.worldIndexRevision += 1;
+        for (let index = 0; index < this.platforms.length; index += 1) {
+            const source = this.platforms[index];
+            const id = source.config.id;
+            let worldPlatform = this.platformById.get(id);
+            if (!worldPlatform || worldPlatform.source !== source) {
+                worldPlatform = {
+                    source,
+                    revision: this.worldIndexRevision,
+                    get id(): string { return source.config.id; },
+                    get type(): DoodleJumpPlatformType { return source.config.type; },
+                    get x(): number { return source.x; },
+                    get y(): number { return source.y; },
+                    get width(): number { return source.width; },
+                    get collisionEnabled(): boolean { return source.collisionEnabled; },
+                    get consumed(): boolean { return source.consumed; },
+                };
+                this.platformById.set(id, worldPlatform);
+            }
+            worldPlatform.revision = this.worldIndexRevision;
+            this.worldPlatforms[index] = worldPlatform;
+        }
+        this.worldPlatforms.length = this.platforms.length;
+        this.platformById.forEach((worldPlatform, id) => {
+            if (worldPlatform.revision !== this.worldIndexRevision) this.platformById.delete(id);
+        });
+        for (let index = 1; index < this.worldPlatforms.length; index += 1) {
+            const value = this.worldPlatforms[index];
+            let cursor = index - 1;
+            while (cursor >= 0) {
+                const candidate = this.worldPlatforms[cursor];
+                if (candidate.y < value.y
+                    || (candidate.y === value.y && candidate.id.localeCompare(value.id) <= 0)) {
+                    break;
+                }
+                this.worldPlatforms[cursor + 1] = candidate;
+                cursor -= 1;
+            }
+            this.worldPlatforms[cursor + 1] = value;
+        }
     }
 
-    private getHazardPlatforms(): readonly DoodleJumpHazardPlatform[] {
-        return this.platforms.map((platform) => Object.freeze({
-            id: platform.config.id,
-            type: platform.config.type,
-            x: platform.x,
-            y: platform.y,
-            width: platform.width,
-            collisionEnabled: platform.collisionEnabled,
-            consumed: platform.consumed,
-        }));
+    private fillCombatOccupiedScratch(): void {
+        let cursor = this.items.writeOccupiedBodies(this.combatOccupiedScratch);
+        cursor = this.hazards.writeOccupiedBodies(this.combatOccupiedScratch, cursor);
+        this.combatOccupiedScratch.length = cursor;
     }
 
-    private getItemPlatforms(): readonly DoodleJumpItemPlatform[] {
-        return this.platforms.map((platform) => Object.freeze({
-            id: platform.config.id,
-            type: platform.config.type,
-            x: platform.x,
-            y: platform.y,
-            width: platform.width,
-            collisionEnabled: platform.collisionEnabled,
-            consumed: platform.consumed,
-        }));
+    private fillHazardOccupiedScratch(): void {
+        let cursor = this.combat.writeOccupiedBodies(this.hazardOccupiedScratch);
+        cursor = this.items.writeOccupiedBodies(this.hazardOccupiedScratch, cursor);
+        this.hazardOccupiedScratch.length = cursor;
     }
 
-    private getHazardOccupiedBodies(): readonly DoodleJumpItemOccupiedBody[] {
-        const occupied: DoodleJumpItemOccupiedBody[] = [];
-        this.combat.getSnapshots().forEach((enemy) => occupied.push(Object.freeze({
-            x: enemy.x,
-            y: enemy.y,
-            width: enemy.width,
-            height: enemy.height,
-            anchorPlatformId: enemy.anchorPlatformId,
-        })));
-        this.items.getOccupiedBodies().forEach((item) => occupied.push(item));
-        return Object.freeze(occupied);
-    }
-
-    private getCombatOccupiedBodies(): readonly DoodleJumpCombatOccupiedBody[] {
-        const occupied: DoodleJumpCombatOccupiedBody[] = [];
-        this.items.getOccupiedBodies().forEach((item) => occupied.push(item));
-        this.hazards.getSnapshots().forEach((hazard) => occupied.push(Object.freeze({
-            x: hazard.x,
-            y: hazard.y,
-            width: hazard.width,
-            height: hazard.height,
-            anchorPlatformId: hazard.anchorPlatformId,
-        })));
-        return Object.freeze(occupied);
-    }
-
-    private getItemOccupiedBodies(): readonly DoodleJumpItemOccupiedBody[] {
-        const occupied: DoodleJumpItemOccupiedBody[] = [];
-        this.combat.getSnapshots().forEach((enemy) => occupied.push(Object.freeze({
-            x: enemy.x,
-            y: enemy.y,
-            width: enemy.width,
-            height: enemy.height,
-            anchorPlatformId: enemy.anchorPlatformId,
-        })));
-        this.hazards.getSnapshots().forEach((hazard) => occupied.push(Object.freeze({
-            x: hazard.x,
-            y: hazard.y,
-            width: hazard.width,
-            height: hazard.height,
-            anchorPlatformId: hazard.anchorPlatformId,
-        })));
-        return Object.freeze(occupied);
+    private fillItemOccupiedScratch(): void {
+        let cursor = this.combat.writeOccupiedBodies(this.itemOccupiedScratch);
+        cursor = this.hazards.writeOccupiedBodies(this.itemOccupiedScratch, cursor);
+        this.itemOccupiedScratch.length = cursor;
     }
 }

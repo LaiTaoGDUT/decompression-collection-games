@@ -177,6 +177,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     private warmLoadToken = 0;
     private variant: 'game' | 'lobby' = 'game';
     private restartMode = false;
+    private lobbyTransitionMode = false;
     private progress = 0;
     private progressTweenState?: { value: number };
     private progressLoadToken = 0;
@@ -201,6 +202,7 @@ export class LoadingView extends Component implements LoadingPresenter {
 
     show(model: LoadingModel): void {
         this.restartMode = false;
+        this.lobbyTransitionMode = false;
         this.node.active = true;
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
         this.node.getComponent(Widget)?.updateAlignment();
@@ -232,11 +234,36 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     /**
+     * 返回大厅时立即展示大厅的纯背景壳层。
+     * 不展示品牌、进度动画、加载文案或其他控件。
+     */
+    showLobbyTransition(): void {
+        this.restartMode = false;
+        this.lobbyTransitionMode = true;
+        this.node.active = true;
+        this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
+        this.node.getComponent(Widget)?.updateAlignment();
+        this.ensureStructure();
+        this.unschedule(this.advanceFakeProgress);
+        this.stopProgressTween();
+        this.releaseCoverFrame();
+        this.variant = 'lobby';
+        this.layoutAndDraw();
+        this.loadStartupArtwork(false);
+    }
+
+    hideLobbyTransition(): void {
+        if (!this.lobbyTransitionMode) return;
+        this.hide();
+    }
+
+    /**
      * 局内重开只需要短暂拦截输入，不应展示完整资源加载面板。
      * 该遮罩复用常驻 LoadingLayer，但不会触发任何资源加载。
      */
     showRestart(message: string): void {
         this.restartMode = true;
+        this.lobbyTransitionMode = false;
         this.node.active = true;
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
         this.ensureStructure();
@@ -244,7 +271,6 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.stopProgressTween();
         this.progressLoadToken += 1;
         this.releaseCoverFrame();
-        this.releaseStartupFrames();
         this.variant = 'game';
         this.layoutRestart();
         this.setMessage(message);
@@ -266,7 +292,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     updateProgress(message: string, progress: number): void {
-        if (!this.node.active || this.restartMode) return;
+        if (!this.node.active || this.restartMode || this.lobbyTransitionMode) return;
         this.setMessage(message);
         this.realProgress = Math.max(this.realProgress, Math.min(1, Math.max(0, progress)));
         if (this.realProgress >= 1) {
@@ -277,17 +303,18 @@ export class LoadingView extends Component implements LoadingPresenter {
 
     hide(): void {
         this.restartMode = false;
+        this.lobbyTransitionMode = false;
         this.progressLoadToken += 1;
         this.unschedule(this.advanceFakeProgress);
         this.stopProgressTween();
         this.releaseCoverFrame();
-        this.releaseStartupFrames();
         this.node.active = false;
     }
 
     protected onDestroy(): void {
         view.off('canvas-resize', this.handleCanvasResize, this);
         this.hide();
+        this.releaseStartupFrames();
         this.warmLoadToken += 1;
         this.ownedWarmFrames.forEach((frame) => frame.destroy());
         this.ownedWarmFrames.length = 0;
@@ -896,6 +923,25 @@ export class LoadingView extends Component implements LoadingPresenter {
         );
         if (!this.progressTrackSprite?.spriteFrame) track.fill();
         this.drawProgressFill();
+        this.applyLobbyTransitionVisibility();
+    }
+
+    private applyLobbyTransitionVisibility(): void {
+        if (!this.lobbyTransitionMode) return;
+        for (const name of [
+            'StartupTitle',
+            'LoadingPanel',
+            'LoadingCoverFrame',
+            'LoadingGameName',
+            'LoadingMessage',
+            'LoadingPercent',
+            'ProgressTrack',
+            'ProgressFill',
+            'LoadingTip',
+        ]) {
+            const node = this.findManagedNode(name);
+            if (node) node.active = false;
+        }
     }
 
     private readonly advanceFakeProgress = (): void => {
@@ -1051,9 +1097,8 @@ export class LoadingView extends Component implements LoadingPresenter {
         });
     }
 
-    private loadStartupArtwork(): void {
+    private loadStartupArtwork(loadTitle = true): void {
         const token = ++this.progressLoadToken;
-        this.releaseStartupFrames();
         const bundle = assetManager.getBundle('resources');
         if (!bundle) return;
 
@@ -1070,8 +1115,12 @@ export class LoadingView extends Component implements LoadingPresenter {
             });
         };
 
-        load(STARTUP_BACKGROUND_PATH, this.startupBackgroundSprite);
-        load(STARTUP_TITLE_PATH, this.startupTitleSprite);
+        if (!this.startupBackgroundSprite?.spriteFrame) {
+            load(STARTUP_BACKGROUND_PATH, this.startupBackgroundSprite);
+        }
+        if (loadTitle && !this.startupTitleSprite?.spriteFrame) {
+            load(STARTUP_TITLE_PATH, this.startupTitleSprite);
+        }
     }
 
     private loadWarmArtwork(): void {

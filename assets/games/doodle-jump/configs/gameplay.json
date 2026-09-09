@@ -5,7 +5,7 @@
     "height": 1334
   },
   "fixedStep": {
-    "seconds": 0.008333333333333333,
+    "seconds": 0.016666666666666666,
     "maxSubSteps": 4
   },
   "player": {
@@ -81,38 +81,38 @@
     "stompBonus": 25,
     "small": {
       "health": 2,
-      "width": 108,
-      "height": 100,
+      "width": 72,
+      "height": 66.6666666667,
       "unlockHeightMeters": 70,
       "horizontalRange": 42,
       "verticalRange": 0,
       "anchorHeight": 0,
       "cycleSeconds": 2.8,
-      "headZoneHeight": 32,
+      "headZoneHeight": 21.3333333333,
       "killScore": 50
     },
     "large": {
       "health": 4,
-      "width": 156,
-      "height": 140,
+      "width": 104,
+      "height": 93.3333333333,
       "unlockHeightMeters": 220,
       "horizontalRange": 28,
       "verticalRange": 0,
       "anchorHeight": 0,
       "cycleSeconds": 3.8,
-      "headZoneHeight": 36,
+      "headZoneHeight": 24,
       "killScore": 100
     },
     "hover": {
       "health": 1,
-      "width": 116,
-      "height": 96,
+      "width": 77.3333333333,
+      "height": 64,
       "unlockHeightMeters": 150,
       "horizontalRange": 70,
       "verticalRange": 18,
       "anchorHeight": 90,
       "cycleSeconds": 3.2,
-      "headZoneHeight": 32,
+      "headZoneHeight": 21.3333333333,
       "killScore": 75
     }
   },

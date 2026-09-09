@@ -59,6 +59,7 @@ import {
 import {
     DoodleJumpSimulation,
     type DoodleJumpFailureReason,
+    type DoodleJumpSimulationPresentationView,
 } from './DoodleJumpSimulation';
 import type {
     DoodleJumpCombatEvent,
@@ -87,7 +88,8 @@ import { DoodleJumpStateMachine } from './DoodleJumpStateMachine';
 
 const { ccclass } = _decorator;
 const RUN_PROGRESS_SAVE_INTERVAL_SECONDS = 3;
-const ENEMY_VISUAL_MARGIN_SCALE = 2;
+const ENEMY_SIZE_SCALE = 2 / 3;
+const ENEMY_VISUAL_MARGIN_SCALE = 2 * ENEMY_SIZE_SCALE;
 // The beam source's top ring is 9.5 px right of its texture canvas center.
 // Offset the runtime node so the visible ring, not the PNG bounds, aligns
 // with the UFO's central lower pod.
@@ -401,7 +403,7 @@ const PLAYER_CONTACT_IMPACT_DURATION = 0.38;
 // their logical top, while normalized enemy frames retain roughly 1.5 units of
 // transparent bottom padding. Compensate both in presentation only so the
 // collision body remains exactly anchored to the physical platform top.
-const GROUND_ENEMY_VISIBLE_SURFACE_OFFSET = -7.5;
+const GROUND_ENEMY_VISIBLE_SURFACE_OFFSET = -7.5 * ENEMY_SIZE_SCALE;
 
 export interface DoodleJumpServices {
     readonly platform: Platform;
@@ -670,7 +672,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             throw new Error(`Cannot begin DoodleJumpGame from ${this.stateMachine.state}.`);
         }
         this.sessionStartedAt = this.activeRoundRestored
-            ? Date.now() - Math.max(0, this.simulation?.getSnapshot().elapsedSeconds ?? 0) * 1000
+            ? Date.now()
+                - Math.max(0, this.simulation?.getPresentationView().elapsedSeconds ?? 0) * 1000
             : Date.now();
         if (this.missingRequiredVisuals.length > 0) {
             this.stateMachine.transition('Error');
@@ -943,11 +946,12 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         // a same-frame bullet hit always has the specified deterministic priority.
         this.updateShooting(deltaTime, visible.height);
         this.simulation.advance(deltaTime, horizontal, visible.height);
-        this.captureLandingEffect(this.simulation.getSnapshot());
-        this.consumeCombatEvents(this.simulation.drainCombatEvents());
+        const presentation = this.simulation.getPresentationView();
+        this.captureLandingEffect(presentation);
+        this.consumeCombatEvents(this.simulation.drainCombatEvents(), presentation);
         this.consumeHazardEvents(this.simulation.drainHazardEvents());
         this.consumeItemEvents(this.simulation.drainItemEvents());
-        this.renderSimulation();
+        this.renderSimulation(presentation);
         this.runProgressSaveElapsed += Math.max(0, deltaTime);
         if (this.runProgressSaveElapsed >= RUN_PROGRESS_SAVE_INTERVAL_SECONDS) {
             // Each checkpoint is rebuilt from the immutable run baseline, so
@@ -1009,7 +1013,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private proceedAfterCalibration(): void {
         if (this.stateMachine.state !== 'SensorCalibrating') return;
         if (this.activeRoundRestored
-            || this.simulation?.getSnapshot().itemStatus.usedHeadStart) {
+            || this.simulation?.getPresentationView().itemStatus.usedHeadStart) {
             this.startPlaying();
         } else if (this.availableHeadStartCount() > 0) {
             this.showHeadStartPrompt();
@@ -1317,7 +1321,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.inputController?.setEnabled(true);
         this.runStarted = true;
         this.runProgressSaveElapsed = 0;
-        const snapshot = this.simulation?.getSnapshot();
+        const snapshot = this.simulation?.getPresentationView();
         this.context?.services.analytics.track('doodle_jump_run_start', {
             sessionId: this.context.sessionId,
             seed: snapshot?.seed ?? 0,
@@ -2222,8 +2226,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         return { root, icon, track, fill };
     }
 
-    private renderSimulation(): void {
-        const snapshot = this.simulation?.getSnapshot();
+    private renderSimulation(
+        presentation?: DoodleJumpSimulationPresentationView,
+    ): void {
+        const snapshot = presentation ?? this.simulation?.getPresentationView();
         const visible = view.getVisibleSize();
         if (!snapshot || !this.config) return;
         const centerX = this.config.design.width / 2;
@@ -2358,14 +2364,14 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             this.debugLabel.string = [
                 `state=${this.stateMachine.state} seed=${snapshot.seed} cursor=${snapshot.generatorCursor} degraded=${snapshot.degradedGenerationCount}`,
                 `platforms=${snapshot.platforms.length}/${this.config.generation.maxActivePlatforms} enemies=${snapshot.enemies.length}/${this.config.enemies.maximumActive} hazards=${snapshot.hazards.length} items=${snapshot.items.length}/${this.config.items.maximumActive} nodes=${this.countDynamicNodes()}`,
-                `kills=${snapshot.combat.killCount} stomps=${snapshot.combat.stompCount} hits=${snapshot.combat.hitCount} ufoStops=${snapshot.hazardStats.ufoInterruptCount} itemRng=${snapshot.randomStreams.item.cursor}`,
+                `kills=${snapshot.combat.killCount} stomps=${snapshot.combat.stompCount} hits=${snapshot.combat.hitCount} ufoStops=${snapshot.hazardStats.ufoInterruptCount} itemRng=${snapshot.itemRandomCursor}`,
                 `listeners=${this.countOwnedListeners()} timers=${(inputDebug?.timerCount ?? 0) + (this.failureDelayPending ? 1 : 0)} dropped=${snapshot.droppedFrameSeconds.toFixed(3)}s`,
             ].join('\n');
         }
     }
 
     private renderRouteDebug(
-        platforms: ReturnType<DoodleJumpSimulation['getSnapshot']>['platforms'],
+        platforms: DoodleJumpSimulationPresentationView['platforms'],
         centerX: number,
         cameraCenterY: number,
     ): void {
@@ -2947,7 +2953,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.flushShotBatchIfDue(false);
     }
 
-    private consumeCombatEvents(events: readonly DoodleJumpCombatEvent[]): void {
+    private consumeCombatEvents(
+        events: readonly DoodleJumpCombatEvent[],
+        presentation: DoodleJumpSimulationPresentationView,
+    ): void {
         const context = this.context;
         events.forEach((event) => {
             this.spawnCombatVisual(event);
@@ -2959,7 +2968,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 context?.services.analytics.track('doodle_jump_monster_hit', {
                     sessionId: context.sessionId,
                     monsterType: event.enemyType,
-                    hitCount: this.simulation?.getSnapshot().combat.hitCount ?? 0,
+                    hitCount: presentation.combat.hitCount,
                 });
             }
             if (event.type === 'kill' || event.type === 'stomp') {
@@ -3299,7 +3308,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state !== 'Playing' || !this.config || !this.simulation) return;
         const now = Date.now();
         if (now < this.nextFireAt) return;
-        const snapshot = this.simulation.getSnapshot();
         const length = Math.sqrt(this.aimX * this.aimX + this.aimY * this.aimY);
         const directionX = length >= 0.0001 ? this.aimX / length : 0;
         const directionY = length >= 0.0001 ? this.aimY / length : 1;
@@ -3307,8 +3315,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const spawnOffset = 34;
         const projectile: DoodleJumpProjectile = {
             node,
-            x: snapshot.playerX + directionX * spawnOffset,
-            y: snapshot.playerY + directionY * spawnOffset,
+            x: this.simulation.getPlayerX() + directionX * spawnOffset,
+            y: this.simulation.getPlayerY() + directionY * spawnOffset,
             velocityX: directionX * this.config.shooting.speed,
             velocityY: directionY * this.config.shooting.speed,
             remainingSeconds: this.config.shooting.lifetimeSeconds,
@@ -3318,7 +3326,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const visible = view.getVisibleSize();
         node.setPosition(
             projectile.x - this.config.design.width / 2,
-            projectile.y - (snapshot.cameraBottomY + visible.height / 2),
+            projectile.y - (this.simulation.getCameraBottomY() + visible.height / 2),
             0,
         );
         this.activeProjectiles.push(projectile);
@@ -3655,7 +3663,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             this.applySpriteVisual(this.playerContactEffectNode, contactFrame);
             this.playerContactEffectNode.active = false;
         }
-        const snapshot = this.simulation?.getSnapshot();
+        const snapshot = this.simulation?.getPresentationView();
         if (snapshot) this.updateParallaxBackground(snapshot.cameraBottomY, view.getVisibleSize());
     }
 
@@ -4244,7 +4252,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     }
 
     private captureLandingEffect(
-        snapshot: ReturnType<DoodleJumpSimulation['getSnapshot']>,
+        snapshot: DoodleJumpSimulationPresentationView,
     ): void {
         if (!this.config || snapshot.landingCount <= this.observedLandingCount) return;
         this.observedLandingCount = snapshot.landingCount;

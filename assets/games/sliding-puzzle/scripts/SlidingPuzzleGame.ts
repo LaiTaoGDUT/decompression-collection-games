@@ -399,11 +399,18 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.resizeListening = true;
         this.buildBackground();
-        // 视觉素材和预置图都异步预热；任一资源缺失都不阻塞进入游戏。
-        void this.trackAssetLoad(this.loadVisualAssets());
+        // 与其他小游戏保持一致：initialize 完成前必须让正式视觉资源加载
+        // 落定，不能把它留成无人等待的后台任务后先进入可交互页面。
+        const visualLoad = this.trackAssetLoad(this.loadVisualAssets());
         if (!await this.restoreActiveRound()) {
             this.showSetup();
             void this.trackAssetLoad(this.loadPresetImage(true));
+        }
+        try {
+            await visualLoad;
+        } catch (error: unknown) {
+            // 正式素材异常时保留程序化界面，但必须留下明确诊断，不能静默。
+            console.error('[SlidingPuzzleGame] Visual initialization failed.', error);
         }
     }
 
@@ -1567,7 +1574,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             'selectedIcon',
             'closeIcon',
         ];
-        const atlasFrames = await loadAutoAtlasFrames(
+        // 图标帧解析与其余视觉素材彼此独立。微信运行时不能因为动态图集
+        // 帧入口未正确交付，就阻断背景、棋盘、木框和弹窗的加载流程。
+        const atlasFramesPromise = loadAutoAtlasFrames(
             bundle,
             SLIDING_PUZZLE_ICON_ATLAS_PATH,
             iconKeys.map((key) => ({
@@ -1575,16 +1584,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 frameName: autoAtlasFrameName(SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key]),
                 fallbackTexturePath: SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key],
             })),
-        );
-        if (token !== this.visualLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
-            Object.keys(atlasFrames).forEach((key) => atlasFrames[key]?.destroy());
-            return;
-        }
-        Object.keys(atlasFrames).forEach((key) => {
-            const frame = atlasFrames[key];
-            if (frame) this.visualFrames.set(key as SlidingPuzzleVisualKey, frame);
+        ).catch((error: unknown) => {
+            console.error('[SlidingPuzzleGame] Icon atlas initialization failed.', error);
+            return Object.freeze({}) as Readonly<Record<string, SpriteFrame>>;
         });
-        const loaded = await Promise.all(entries.map(async ([key, path]) => {
+        const visualTexturesPromise = Promise.all(entries.map(async ([key, path]) => {
             if (iconKeys.indexOf(key) >= 0) {
                 return { key, texture: undefined };
             }
@@ -1593,9 +1597,18 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     bundle.load(
                         path,
                         Texture2D,
-                        (error: Error | null, loadedTexture: Texture2D) => resolve(
-                            error ? undefined : loadedTexture,
-                        ),
+                        (error: Error | null, loadedTexture: Texture2D) => {
+                            if (error || !loadedTexture) {
+                                console.warn(
+                                    '[SlidingPuzzleGame] Visual asset unavailable.',
+                                    path,
+                                    error,
+                                );
+                                resolve(undefined);
+                                return;
+                            }
+                            resolve(loadedTexture);
+                        },
                     );
                 } catch (error: unknown) {
                     console.warn('[SlidingPuzzleGame] Failed to load visual asset.', path, error);
@@ -1604,8 +1617,13 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             });
             return { key, texture };
         }));
+        const [atlasFrames, loaded] = await Promise.all([
+            atlasFramesPromise,
+            visualTexturesPromise,
+        ]);
 
         if (token !== this.visualLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
+            Object.keys(atlasFrames).forEach((key) => atlasFrames[key]?.destroy());
             loaded.forEach(({ texture }) => {
                 if (texture) {
                     this.releaseBundleTexture(texture);
@@ -1614,6 +1632,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
+        Object.keys(atlasFrames).forEach((key) => {
+            const frame = atlasFrames[key];
+            if (frame) this.visualFrames.set(key as SlidingPuzzleVisualKey, frame);
+        });
         loaded.forEach(({ key, texture }) => {
             if (!texture) {
                 return;

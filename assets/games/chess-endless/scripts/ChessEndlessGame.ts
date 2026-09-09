@@ -70,11 +70,10 @@ const RESOURCE_BUNDLE = 'game-chess-endless-assets';
 const CHESS_ICON_ATLAS_PATH = 'visual/icons/chess-icons';
 const CHESS_PIECE_ATLAS_PATH = 'visual/pieces/chess-pieces';
 const CHESS_DATA_VERSION = 2;
-// 棋子在一次紧凑的移动中同步完成抬高与落地，避免串行动画显得拖沓。
-const MOVE_DURATION = 0.28;
-const PIECE_LIFT_DURATION = MOVE_DURATION * 0.5;
-const PIECE_DROP_DURATION = MOVE_DURATION * 0.5;
-const PIECE_MOVE_TOTAL_DURATION = MOVE_DURATION;
+// 棋子移动时长随棋盘距离增长：相邻格保持利落，长距离移动保留足够的视觉可读性。
+const PIECE_MOVE_MIN_DURATION = 0.12;
+const PIECE_MOVE_DURATION_PER_GRID = 0.025;
+const PIECE_MOVE_MAX_DURATION = 0.3;
 const PIECE_LIFT_HEIGHT = 24;
 const PIECE_LIFT_SCALE = 1.08;
 const CAPTURE_DURATION = 0.24;
@@ -686,10 +685,17 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const pauseX = hudWidth / 2 - controlRightPadding - controlSize / 2;
         const rulesX = pauseX - controlSize - controlGap;
         this.createImageButtonOn(hud, 'PauseButton', 'pauseIcon', pauseX, 0, controlSize, () => {
-            if (!this.inputLocked) {
-                this.playSound('uiClick', 0.6);
-                this.context?.requestPause();
+            if (this.lifecycle === 'completed') {
+                if (!this.resultOverlay && this.completedResultModel) {
+                    this.playSound('uiClick', 0.6);
+                    this.showResultView(this.completedResultModel);
+                }
+                return;
             }
+
+            if (this.inputLocked) return;
+            this.playSound('uiClick', 0.6);
+            this.context?.requestPause();
         });
         this.createImageButtonOn(
             hud,
@@ -1294,12 +1300,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.playSound(result.captured ? 'playerCapture' : 'playerMove');
         this.context?.services.feedback.vibrate(result.captured ? 'medium' : 'light');
 
-        if (playerNode) {
-            const point = this.boardPoint(target);
-            await this.animatePieceMove(playerNode, new Vec3(point.x, point.y, 0), Boolean(capturedNode));
-        } else {
-            await this.waitSeconds(PIECE_MOVE_TOTAL_DURATION);
-        }
+        await this.animatePieceMove(
+            playerNode,
+            before.playerPosition,
+            target,
+            Boolean(capturedNode),
+        );
         if (!this.isOperationCurrent(generation)) return;
         if (capturedNode) await this.animateCapture(capturedNode, result.captured);
         if (!this.isOperationCurrent(generation)) return;
@@ -1345,12 +1351,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (result.moved) {
             const moving = this.pieceLayer?.getChildByName(`Enemy-${result.moved.pieceId}`);
             this.playSound(result.killedPlayer ? 'playerKilled' : 'enemyMove', result.killedPlayer ? 1 : 0.72);
-            if (moving) {
-                const point = this.boardPoint(result.moved.to);
-                await this.animatePieceMove(moving, new Vec3(point.x, point.y, 0), result.killedPlayer);
-            } else {
-                await this.waitSeconds(PIECE_MOVE_TOTAL_DURATION);
-            }
+            await this.animatePieceMove(
+                moving,
+                result.moved.from,
+                result.moved.to,
+                result.killedPlayer,
+            );
             if (!this.isOperationCurrent(generation)) return;
         }
         if (result.killedPlayer) {
@@ -1385,14 +1391,24 @@ export class ChessEndlessGame extends Component implements MiniGame {
      * 根节点只负责棋子在棋盘上的移动，Visual/Shadow 子节点负责高度错觉，避免改变逻辑坐标。
      * 吃子时把移动棋子提到同层级最上方，让它在目标格视觉上压住被吃棋子。
      */
-    private async animatePieceMove(node: Node, target: Vec3, targetOccupied = false): Promise<void> {
-        if (!node.isValid) {
-            await this.waitSeconds(PIECE_MOVE_TOTAL_DURATION);
+    private async animatePieceMove(
+        node: Node | undefined,
+        from: BoardPosition,
+        to: BoardPosition,
+        targetOccupied = false,
+    ): Promise<void> {
+        const duration = this.resolvePieceMoveDuration(from, to);
+        if (!node?.isValid) {
+            await this.waitSeconds(duration);
             return;
         }
 
         if (targetOccupied) this.raisePieceAbovePeers(node);
 
+        const targetPoint = this.boardPoint(to);
+        const target = new Vec3(targetPoint.x, targetPoint.y, 0);
+        const liftDuration = duration * 0.5;
+        const dropDuration = duration - liftDuration;
         const visual = node.getChildByName('Visual');
         const shadow = node.getChildByName('Shadow');
         const visualPosition = visual?.position.clone() ?? new Vec3();
@@ -1401,7 +1417,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const shadowScale = shadow?.scale.clone() ?? new Vec3(1, 1, 1);
 
         const moveAnimations: Promise<void>[] = [
-            this.tweenNode(node, MOVE_DURATION, { position: target }, 'quadOut'),
+            this.tweenNode(node, duration, { position: target }, 'quadOut'),
         ];
         if (visual) {
             moveAnimations.push(new Promise((resolve) => {
@@ -1410,7 +1426,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
                     return;
                 }
                 tween(visual)
-                    .to(PIECE_LIFT_DURATION, {
+                    .to(liftDuration, {
                         position: new Vec3(visualPosition.x, visualPosition.y + PIECE_LIFT_HEIGHT, visualPosition.z),
                         scale: new Vec3(
                             visualScale.x * PIECE_LIFT_SCALE,
@@ -1418,7 +1434,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
                             visualScale.z,
                         ),
                     }, { easing: 'quadOut' })
-                    .to(PIECE_DROP_DURATION, { position: visualPosition, scale: visualScale }, { easing: 'quadIn' })
+                    .to(dropDuration, { position: visualPosition, scale: visualScale }, { easing: 'quadIn' })
                     .call(() => resolve())
                     .start();
             }));
@@ -1430,18 +1446,29 @@ export class ChessEndlessGame extends Component implements MiniGame {
                     return;
                 }
                 tween(shadow)
-                    .to(PIECE_LIFT_DURATION, {
+                    .to(liftDuration, {
                         position: new Vec3(shadowPosition.x, shadowPosition.y - 3, shadowPosition.z),
                         scale: new Vec3(shadowScale.x * 0.72, shadowScale.y * 0.72, shadowScale.z),
                     }, { easing: 'quadIn' })
-                    .to(PIECE_DROP_DURATION, { position: shadowPosition, scale: shadowScale }, { easing: 'quadOut' })
+                    .to(dropDuration, { position: shadowPosition, scale: shadowScale }, { easing: 'quadOut' })
                     .call(() => resolve())
                     .start();
             }));
         }
 
-        // 根节点移动与棋面高度曲线同时开始，移动总时长保持在 0.28 秒。
+        // 根节点移动、棋面高度曲线和阴影变化共享同一动态总时长。
         await Promise.all(moveAnimations);
+    }
+
+    private resolvePieceMoveDuration(from: BoardPosition, to: BoardPosition): number {
+        const columnDistance = to.column - from.column;
+        const rowDistance = to.row - from.row;
+        const gridDistance = Math.sqrt(columnDistance * columnDistance + rowDistance * rowDistance);
+        return Math.min(
+            PIECE_MOVE_MAX_DURATION,
+            PIECE_MOVE_MIN_DURATION
+                + Math.max(0, gridDistance - 1) * PIECE_MOVE_DURATION_PER_GRID,
+        );
     }
 
     private raisePieceAbovePeers(node: Node): void {
@@ -1899,7 +1926,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private showRules(): void {
-        if (this.inputLocked) return;
+        const inspectingCompletedBoard = this.lifecycle === 'completed' && !this.resultOverlay;
+        if (this.rulesOverlay || (this.inputLocked && !inspectingCompletedBoard)) return;
         this.playSound('uiPopup', 0.7);
         this.inputLocked = true;
         this.rulesPageIndex = 0;
@@ -1998,8 +2026,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
             () => {
                 this.destroyOverlay(this.rulesOverlay);
                 this.rulesOverlay = undefined;
-                this.inputLocked = false;
-                this.selectedPlayer = true;
+                this.inputLocked = this.lifecycle !== 'playing';
+                this.selectedPlayer = this.lifecycle === 'playing';
                 this.renderAll();
             },
         );

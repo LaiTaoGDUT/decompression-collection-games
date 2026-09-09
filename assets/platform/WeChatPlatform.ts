@@ -99,6 +99,7 @@ interface WeChatOffscreenCanvas {
     height: number;
     getContext(type: '2d'): WeChatCanvas2DContext | null;
     createImage?(): WeChatImage;
+    toDataURL?(type?: string, encoderOptions?: number): string;
     toTempFilePath?(options: {
         x?: number;
         y?: number;
@@ -110,6 +111,16 @@ interface WeChatOffscreenCanvas {
         quality?: number;
         success?: (result: WeChatCanvasFileResult) => void;
         fail?: (error?: WeChatApiError) => void;
+    }): string | void;
+    toTempFilePathSync?(options: {
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+        destWidth?: number;
+        destHeight?: number;
+        fileType?: 'jpg' | 'png';
+        quality?: number;
     }): string | void;
 }
 
@@ -152,6 +163,7 @@ interface WeChatApi {
     getFileSystemManager?(): {
         mkdir(options: { dirPath: string; recursive?: boolean; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
         copyFile(options: { srcPath: string; destPath: string; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
+        writeFile(options: { filePath: string; data: string; encoding: 'base64'; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
         access(options: { path: string; success?: () => void; fail?: () => void }): void;
         unlink(options: { filePath: string; success?: () => void; fail?: () => void }): void;
     };
@@ -383,15 +395,19 @@ export class WeChatPlatform implements Platform {
             canvas.height = outputSize;
             const context = canvas.getContext('2d');
             const image = canvas.createImage?.() ?? api.createImage?.();
-            if (!context || !image || !canvas.toTempFilePath) {
+            if (!context
+                || !image
+                || (!canvas.toTempFilePath && !canvas.toTempFilePathSync)) {
                 return null;
             }
 
             const loaded = await new Promise<boolean>((resolve) => {
                 let settled = false;
+                const timeout = setTimeout(() => finish(false), 8000);
                 const finish = (success: boolean): void => {
                     if (settled) return;
                     settled = true;
+                    clearTimeout(timeout);
                     image.onload = null;
                     image.onerror = null;
                     resolve(success);
@@ -416,27 +432,99 @@ export class WeChatPlatform implements Platform {
                 outputSize,
                 outputSize,
             );
+            const exportOptions = {
+                x: 0,
+                y: 0,
+                width: outputSize,
+                height: outputSize,
+                destWidth: outputSize,
+                destHeight: outputSize,
+                fileType: 'jpg' as const,
+                quality: request.quality,
+            };
+            if (canvas.toTempFilePathSync) {
+                try {
+                    const syncPath = canvas.toTempFilePathSync(exportOptions);
+                    if (typeof syncPath === 'string' && syncPath) {
+                        return Object.freeze({
+                            uri: syncPath,
+                            mimeType: 'image/jpeg',
+                            release: (): void => {},
+                        });
+                    }
+                } catch (error: unknown) {
+                    // 部分基础库只实现异步版本；继续使用下面的回调接口。
+                    console.warn('[WeChatPlatform] Synchronous canvas export failed.', error);
+                }
+            }
+            let dataUrl: string | undefined;
+            try {
+                dataUrl = canvas.toDataURL?.('image/jpeg', request.quality);
+            } catch (error: unknown) {
+                // 部分客户端声明了 toDataURL 但不支持 2D 离屏画布导出；
+                // 继续尝试异步临时文件接口。
+                console.warn('[WeChatPlatform] Canvas data URL export failed.', error);
+            }
+            const dataSeparator = dataUrl?.indexOf(',') ?? -1;
+            const fs = api.getFileSystemManager?.();
+            const userDataRoot = api.env?.USER_DATA_PATH;
+            if (dataUrl
+                && dataSeparator >= 0
+                && fs
+                && userDataRoot) {
+                const filePath = `${userDataRoot}/sliding-puzzle-crop-${Date.now()}.jpg`;
+                const written = await new Promise<boolean>((resolve) => {
+                    try {
+                        fs.writeFile({
+                            filePath,
+                            data: dataUrl.slice(dataSeparator + 1),
+                            encoding: 'base64',
+                            success: () => resolve(true),
+                            fail: (error) => {
+                                console.warn('[WeChatPlatform] Canvas data URL write failed.', error?.errMsg);
+                                resolve(false);
+                            },
+                        });
+                    } catch (error: unknown) {
+                        console.warn('[WeChatPlatform] Canvas data URL write threw.', error);
+                        resolve(false);
+                    }
+                });
+                if (written) {
+                    let released = false;
+                    return Object.freeze({
+                        uri: filePath,
+                        mimeType: 'image/jpeg',
+                        release: (): void => {
+                            if (released) return;
+                            released = true;
+                            fs.unlink({ filePath, success: () => {}, fail: () => {} });
+                        },
+                    });
+                }
+            }
             const uri = await new Promise<string | null>((resolve) => {
                 let settled = false;
+                const timeout = setTimeout(() => {
+                    console.warn('[WeChatPlatform] Canvas export timed out.');
+                    finish(null);
+                }, 8000);
                 const finish = (path: string | null): void => {
                     if (settled) return;
                     settled = true;
+                    clearTimeout(timeout);
                     resolve(path);
                 };
-                const syncPath = canvas.toTempFilePath?.({
-                    x: 0,
-                    y: 0,
-                    width: outputSize,
-                    height: outputSize,
-                    destWidth: outputSize,
-                    destHeight: outputSize,
-                    fileType: 'jpg',
-                    quality: request.quality,
+                const immediatePath = canvas.toTempFilePath?.({
+                    ...exportOptions,
                     success: (result) => finish(result.tempFilePath ?? null),
-                    fail: () => finish(null),
+                    fail: (error) => {
+                        console.warn('[WeChatPlatform] Canvas export failed.', error?.errMsg);
+                        finish(null);
+                    },
                 });
-                if (typeof syncPath === 'string' && syncPath) {
-                    finish(syncPath);
+                if (typeof immediatePath === 'string' && immediatePath) {
+                    finish(immediatePath);
                 }
             });
             if (!uri) {

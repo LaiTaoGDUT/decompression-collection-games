@@ -1,29 +1,18 @@
 import type {
     DoodleJumpGameplayConfig,
     DoodleJumpHazardType,
-    DoodleJumpPlatformType,
 } from './DoodleJumpConfig';
 import type { DoodleJumpRandomStreams } from './DoodleJumpRandom';
+import type {
+    DoodleJumpWorldIndex,
+    DoodleJumpWorldOccupiedBody,
+    DoodleJumpWorldPlatform,
+} from './DoodleJumpWorld';
 
 export type DoodleJumpHazardFailureReason = 'ufo-abduction' | 'black-hole' | 'bear-trap';
 
-export interface DoodleJumpHazardPlatform {
-    readonly id: string;
-    readonly type: DoodleJumpPlatformType;
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly collisionEnabled: boolean;
-    readonly consumed: boolean;
-}
-
-export interface DoodleJumpHazardOccupiedBody {
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
-    readonly anchorPlatformId?: string;
-}
+export type DoodleJumpHazardPlatform = DoodleJumpWorldPlatform;
+export type DoodleJumpHazardOccupiedBody = DoodleJumpWorldOccupiedBody;
 
 export interface DoodleJumpHazardSnapshot {
     readonly id: string;
@@ -90,6 +79,26 @@ interface MutableBearTrap extends MutableHazardBase {
     readonly anchorOffsetX: number;
 }
 
+interface MutableHazardPresentation {
+    id: string;
+    type: DoodleJumpHazardType;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    anchorPlatformId?: string;
+    lockProgress: number;
+    abductionProgress: number;
+    paused: boolean;
+    triggered: boolean;
+    phase: number;
+}
+
+interface MutableHazardStats {
+    ufoInterruptCount: number;
+    score: number;
+}
+
 type MutableHazard = MutableUfo | MutableBlackHole | MutableBearTrap;
 
 interface ProjectileUfoHit {
@@ -140,6 +149,14 @@ export class DoodleJumpHazardSystem {
     private readonly hazards: MutableHazard[] = [];
     private readonly evaluatedPlatformIds = new Set<string>();
     private readonly events: DoodleJumpHazardEvent[] = [];
+    private readonly presentationHazards: MutableHazardPresentation[] = [];
+    private readonly orderedUfos: MutableUfo[] = [];
+    private readonly orderedBlackHoles: MutableBlackHole[] = [];
+    private readonly orderedBearTraps: MutableBearTrap[] = [];
+    private readonly presentationStats: MutableHazardStats = {
+        ufoInterruptCount: 0,
+        score: 0,
+    };
     private nextHazardId = 1;
     private elapsedSeconds = 0;
     private ufoInterruptCount = 0;
@@ -166,15 +183,13 @@ export class DoodleJumpHazardSystem {
         snapshots: readonly DoodleJumpHazardSnapshot[],
         stats: DoodleJumpHazardStats,
         elapsedSeconds: number,
-        platforms: readonly DoodleJumpHazardPlatform[],
+        world: DoodleJumpWorldIndex,
     ): void {
         this.reset();
         this.elapsedSeconds = Math.max(0, elapsedSeconds);
         this.ufoInterruptCount = Math.max(0, Math.floor(stats.ufoInterruptCount));
         this.score = Math.max(0, Math.floor(stats.score));
-        const platformById = new Map<string, DoodleJumpHazardPlatform>();
-        platforms.forEach((platform) => {
-            platformById.set(platform.id, platform);
+        world.platforms.forEach((platform) => {
             this.evaluatedPlatformIds.add(platform.id);
         });
         let maximumId = 0;
@@ -218,7 +233,7 @@ export class DoodleJumpHazardSystem {
                 return;
             }
             const anchorId = snapshot.anchorPlatformId;
-            const platform = anchorId ? platformById.get(anchorId) : undefined;
+            const platform = anchorId ? world.platformById.get(anchorId) : undefined;
             if (!anchorId || !platform) return;
             this.hazards.push({
                 id: snapshot.id,
@@ -238,25 +253,31 @@ export class DoodleJumpHazardSystem {
         this.events.length = 0;
     }
 
-    syncWorld(
+    updateExisting(
         deltaSeconds: number,
         elapsedSeconds: number,
-        platforms: readonly DoodleJumpHazardPlatform[],
+        world: DoodleJumpWorldIndex,
+        playerX: number,
+        cameraBottomY: number,
+    ): void {
+        this.elapsedSeconds = elapsedSeconds;
+        this.updateAttachedTraps(world.platformById);
+        this.updateUfos(Math.max(0, deltaSeconds), playerX);
+        this.recycleHazards(cameraBottomY);
+    }
+
+    reconcileWorld(
+        world: DoodleJumpWorldIndex,
         playerX: number,
         playerY: number,
         cameraBottomY: number,
         cameraTopY: number,
         occupiedBodies: readonly DoodleJumpHazardOccupiedBody[],
     ): void {
-        this.elapsedSeconds = elapsedSeconds;
-        const platformById = new Map<string, DoodleJumpHazardPlatform>();
-        platforms.forEach((platform) => platformById.set(platform.id, platform));
-        this.updateAttachedTraps(platformById);
-        this.updateUfos(Math.max(0, deltaSeconds), playerX);
         this.recycleHazards(cameraBottomY);
-        this.purgeEvaluatedPlatforms(platformById);
+        this.purgeEvaluatedPlatforms(world.platformById);
         this.evaluateNewPlatforms(
-            platforms,
+            world.platforms,
             playerX,
             playerY,
             cameraBottomY,
@@ -285,8 +306,7 @@ export class DoodleJumpHazardSystem {
         }
         let accelerationX = 0;
         let accelerationY = 0;
-        const ufos = this.hazards.filter((hazard): hazard is MutableUfo => hazard.type === 'ufo')
-            .sort((left, right) => left.id.localeCompare(right.id));
+        const ufos = this.collectHazardsByType('ufo', this.orderedUfos);
         for (let index = 0; index < ufos.length; index += 1) {
             const ufo = ufos[index];
             if (playerInvincible) continue;
@@ -333,9 +353,7 @@ export class DoodleJumpHazardSystem {
             }
         }
 
-        const blackHoles = this.hazards
-            .filter((hazard): hazard is MutableBlackHole => hazard.type === 'black-hole')
-            .sort((left, right) => left.id.localeCompare(right.id));
+        const blackHoles = this.collectHazardsByType('black-hole', this.orderedBlackHoles);
         for (let index = 0; index < blackHoles.length; index += 1) {
             const blackHole = blackHoles[index];
             if (blackHole.triggered) continue;
@@ -364,9 +382,7 @@ export class DoodleJumpHazardSystem {
         const playerRight = playerX + playerWidth / 2;
         const playerBottom = playerY - playerHeight / 2;
         const playerTop = playerY + playerHeight / 2;
-        const traps = this.hazards
-            .filter((hazard): hazard is MutableBearTrap => hazard.type === 'bear-trap')
-            .sort((left, right) => left.id.localeCompare(right.id));
+        const traps = this.collectHazardsByType('bear-trap', this.orderedBearTraps);
         for (let index = 0; index < traps.length; index += 1) {
             const trap = traps[index];
             if (trap.triggered) continue;
@@ -409,9 +425,7 @@ export class DoodleJumpHazardSystem {
     ): Readonly<{ accelerationX: number; accelerationY: number }> {
         let accelerationX = 0;
         let accelerationY = 0;
-        const blackHoles = this.hazards
-            .filter((hazard): hazard is MutableBlackHole => hazard.type === 'black-hole')
-            .sort((left, right) => left.id.localeCompare(right.id));
+        const blackHoles = this.collectHazardsByType('black-hole', this.orderedBlackHoles);
         for (let index = 0; index < blackHoles.length; index += 1) {
             const blackHole = blackHoles[index];
             if (blackHole.triggered) continue;
@@ -506,11 +520,118 @@ export class DoodleJumpHazardSystem {
         }));
     }
 
+    getPresentationHazards(): readonly DoodleJumpHazardSnapshot[] {
+        for (let index = 0; index < this.hazards.length; index += 1) {
+            const hazard = this.hazards[index];
+            const ufo = hazard.type === 'ufo' ? hazard : undefined;
+            let presentation = this.presentationHazards[index];
+            if (!presentation) {
+                presentation = {
+                    id: hazard.id,
+                    type: hazard.type,
+                    x: hazard.x,
+                    y: hazard.y,
+                    width: hazard.width,
+                    height: hazard.height,
+                    lockProgress: 0,
+                    abductionProgress: 0,
+                    paused: false,
+                    triggered: hazard.triggered,
+                    phase: hazard.phase,
+                };
+                this.presentationHazards[index] = presentation;
+            }
+            presentation.id = hazard.id;
+            presentation.type = hazard.type;
+            presentation.x = hazard.x;
+            presentation.y = hazard.y;
+            presentation.width = hazard.width;
+            presentation.height = hazard.height;
+            presentation.anchorPlatformId = hazard.type === 'bear-trap'
+                ? hazard.anchorPlatformId
+                : undefined;
+            presentation.lockProgress = ufo
+                ? Math.min(1, ufo.lockSeconds / this.config.hazards.ufo.lockSeconds)
+                : 0;
+            presentation.abductionProgress = ufo
+                ? Math.min(1, ufo.abductionSeconds / this.config.hazards.ufo.abductionSeconds)
+                : 0;
+            presentation.paused = ufo ? ufo.pausedUntil > this.elapsedSeconds : false;
+            presentation.triggered = hazard.triggered;
+            presentation.phase = hazard.phase;
+        }
+        this.presentationHazards.length = this.hazards.length;
+        return this.presentationHazards;
+    }
+
     getStats(): DoodleJumpHazardStats {
         return Object.freeze({
             ufoInterruptCount: this.ufoInterruptCount,
             score: this.score,
         });
+    }
+
+    getPresentationStats(): DoodleJumpHazardStats {
+        this.presentationStats.ufoInterruptCount = this.ufoInterruptCount;
+        this.presentationStats.score = this.score;
+        return this.presentationStats;
+    }
+
+    writeOccupiedBodies(
+        target: DoodleJumpHazardOccupiedBody[],
+        startIndex = 0,
+    ): number {
+        let cursor = startIndex;
+        for (let index = 0; index < this.hazards.length; index += 1) {
+            const hazard = this.hazards[index];
+            let body = target[cursor];
+            if (!body) {
+                body = { x: 0, y: 0, width: 0, height: 0 };
+                target[cursor] = body;
+            }
+            body.x = hazard.x;
+            body.y = hazard.y;
+            body.width = hazard.width;
+            body.height = hazard.height;
+            body.anchorPlatformId = hazard.type === 'bear-trap'
+                ? hazard.anchorPlatformId
+                : undefined;
+            cursor += 1;
+        }
+        return cursor;
+    }
+
+    private collectHazardsByType(
+        type: 'ufo',
+        target: MutableUfo[],
+    ): MutableUfo[];
+    private collectHazardsByType(
+        type: 'black-hole',
+        target: MutableBlackHole[],
+    ): MutableBlackHole[];
+    private collectHazardsByType(
+        type: 'bear-trap',
+        target: MutableBearTrap[],
+    ): MutableBearTrap[];
+    private collectHazardsByType(
+        type: DoodleJumpHazardType,
+        target: MutableHazard[],
+    ): MutableHazard[] {
+        target.length = 0;
+        for (let index = 0; index < this.hazards.length; index += 1) {
+            const hazard = this.hazards[index];
+            if (hazard.type === type) target.push(hazard);
+        }
+        for (let index = 1; index < target.length; index += 1) {
+            const value = target[index];
+            let cursor = index - 1;
+            while (cursor >= 0 && target[cursor].id.localeCompare(value.id) > 0) {
+                target[cursor + 1] = target[cursor];
+                cursor -= 1;
+            }
+            target[cursor + 1] = value;
+        }
+        return target;
     }
 
     clearNear(x: number, y: number, radius: number): void {
@@ -565,11 +686,8 @@ export class DoodleJumpHazardSystem {
         occupiedBodies: readonly DoodleJumpHazardOccupiedBody[],
     ): void {
         if (!this.config.hazards.enabled) return;
-        const ordered = platforms.slice().sort((left, right) => (
-            left.y !== right.y ? left.y - right.y : left.id.localeCompare(right.id)
-        ));
-        for (let index = 0; index < ordered.length; index += 1) {
-            const platform = ordered[index];
+        for (let index = 0; index < platforms.length; index += 1) {
+            const platform = platforms[index];
             if (this.evaluatedPlatformIds.has(platform.id)) continue;
             if (platform.y < cameraBottomY
                 || platform.y <= cameraTopY + this.config.hazards.spawnAboveScreenMargin) {
@@ -641,27 +759,32 @@ export class DoodleJumpHazardSystem {
                         && this.countType(override) < this.config.hazards.bearTrap.maximumActive;
             return unlocked ? override : undefined;
         }
-        const available: Array<readonly [DoodleJumpHazardType, number]> = [];
-        if (heightMeters >= this.config.hazards.ufo.unlockHeightMeters
-            && this.countType('ufo') < this.config.hazards.ufo.maximumActive) {
-            available.push(['ufo', heightMeters < 250 ? 1 : 0.38]);
-        }
-        if (heightMeters >= this.config.hazards.blackHole.unlockHeightMeters
-            && this.countType('black-hole') < this.config.hazards.blackHole.maximumActive) {
-            available.push(['black-hole', 0.3]);
-        }
-        if (heightMeters >= this.config.hazards.bearTrap.unlockHeightMeters
-            && this.countType('bear-trap') < this.config.hazards.bearTrap.maximumActive) {
-            available.push(['bear-trap', heightMeters < 250 ? 0.4 : 0.32]);
-        }
-        if (available.length === 0) return undefined;
-        const total = available.reduce((sum, entry) => sum + entry[1], 0);
+        const ufoWeight = heightMeters >= this.config.hazards.ufo.unlockHeightMeters
+            && this.countType('ufo') < this.config.hazards.ufo.maximumActive
+            ? heightMeters < 250 ? 1 : 0.38
+            : 0;
+        const blackHoleWeight = heightMeters >= this.config.hazards.blackHole.unlockHeightMeters
+            && this.countType('black-hole') < this.config.hazards.blackHole.maximumActive
+            ? 0.3
+            : 0;
+        const bearTrapWeight = heightMeters >= this.config.hazards.bearTrap.unlockHeightMeters
+            && this.countType('bear-trap') < this.config.hazards.bearTrap.maximumActive
+            ? heightMeters < 250 ? 0.4 : 0.32
+            : 0;
+        const total = ufoWeight + blackHoleWeight + bearTrapWeight;
+        if (total <= 0) return undefined;
         let roll = this.randomStreams.next('enemy') * total;
-        for (let index = 0; index < available.length; index += 1) {
-            roll -= available[index][1];
-            if (roll < 0) return available[index][0];
+        if (ufoWeight > 0) {
+            roll -= ufoWeight;
+            if (roll < 0) return 'ufo';
         }
-        return available[available.length - 1][0];
+        if (blackHoleWeight > 0) {
+            roll -= blackHoleWeight;
+            if (roll < 0) return 'black-hole';
+        }
+        return bearTrapWeight > 0 ? 'bear-trap'
+            : blackHoleWeight > 0 ? 'black-hole'
+                : 'ufo';
     }
 
     private createHazard(
@@ -801,13 +924,18 @@ export class DoodleJumpHazardSystem {
     private purgeEvaluatedPlatforms(
         platformById: ReadonlyMap<string, DoodleJumpHazardPlatform>,
     ): void {
-        Array.from(this.evaluatedPlatformIds).forEach((id) => {
+        this.evaluatedPlatformIds.forEach((id) => {
             if (!platformById.has(id)) this.evaluatedPlatformIds.delete(id);
         });
     }
 
     private countType(type: DoodleJumpHazardType): number {
-        return this.hazards.filter((hazard) => hazard.type === type && !hazard.triggered).length;
+        let count = 0;
+        for (let index = 0; index < this.hazards.length; index += 1) {
+            const hazard = this.hazards[index];
+            if (hazard.type === type && !hazard.triggered) count += 1;
+        }
+        return count;
     }
 
     private earliestUnlockHeightMeters(): number {

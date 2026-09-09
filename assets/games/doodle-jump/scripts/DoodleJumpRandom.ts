@@ -52,6 +52,10 @@ class DoodleJumpRandomStream {
         return Object.freeze({ seed: this.seed, cursor: this.cursor });
     }
 
+    getCursor(): number {
+        return this.cursor;
+    }
+
     restore(snapshot: DoodleJumpRandomStreamSnapshot): void {
         if (snapshot.seed !== this.seed
             || !Number.isInteger(snapshot.cursor)
@@ -88,6 +92,10 @@ export class DoodleJumpRandomStreams {
 
     next(name: DoodleJumpRandomStreamName): number {
         return this.streams[name].next();
+    }
+
+    getCursor(name: DoodleJumpRandomStreamName): number {
+        return this.streams[name].getCursor();
     }
 
     getSnapshot(): DoodleJumpRandomStreamsSnapshot {

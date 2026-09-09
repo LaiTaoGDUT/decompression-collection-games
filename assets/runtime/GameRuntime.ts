@@ -1,7 +1,7 @@
 import {
+    Director,
     director,
     type AssetManager,
-    type Director,
     type Scene,
     type SceneAsset,
 } from 'cc';
@@ -38,8 +38,10 @@ export interface LoadingModel {
 
 export interface LoadingPresenter {
     show(model: LoadingModel): void;
+    showLobbyTransition?(): void;
     showRestart?(message: string): void;
     updateProgress(message: string, progress: number): void;
+    hideLobbyTransition?(): void;
     hideRestart?(): void;
     hide(): void;
 }
@@ -587,7 +589,14 @@ export class GameRuntime {
             );
         }
 
+        let lobbyTransitionVisible = false;
+
         try {
+            if (intent !== 'restart') {
+                this.loading?.showLobbyTransition?.();
+                lobbyTransitionVisible = true;
+            }
+
             if (state === 'playing') {
                 try {
                     entry.pause();
@@ -653,8 +662,14 @@ export class GameRuntime {
 
             try {
                 await this.enterLobbyScene();
+                await this.waitForLobbyPresentation();
             } catch (cause: unknown) {
                 throw new GameRuntimeError('lobby', manifest.id, cause);
+            } finally {
+                if (lobbyTransitionVisible) {
+                    this.loading?.hideLobbyTransition?.();
+                    lobbyTransitionVisible = false;
+                }
             }
 
             let releaseError: GameRuntimeError | undefined;
@@ -685,7 +700,36 @@ export class GameRuntime {
             }
 
             throw error;
+        } finally {
+            if (lobbyTransitionVisible) {
+                this.loading?.hideLobbyTransition?.();
+            }
         }
+    }
+
+    /**
+     * runScene() 完成只表示新场景已经接管，并不保证它已经输出首帧。
+     * 常驻大厅壳层至少保留到下一次绘制结束，避免露出大厅 Camera 的清屏色。
+     */
+    private waitForLobbyPresentation(): Promise<void> {
+        const eventDirector = this.sceneDirector as SceneDirector & {
+            once?: (event: string, callback: () => void) => void;
+        };
+        if (!eventDirector.once) {
+            return Promise.resolve();
+        }
+
+        return new Promise<void>((resolve) => {
+            let settled = false;
+            const finish = (): void => {
+                if (settled) return;
+                settled = true;
+                resolve();
+            };
+            eventDirector.once!(Director.EVENT_AFTER_DRAW, finish);
+            // 后台切换期间可能暂时没有绘制事件；不能因此卡住退出事务。
+            setTimeout(finish, 250);
+        });
     }
 
     private clearActiveGame(): void {
