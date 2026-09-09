@@ -1,0 +1,43 @@
+assets/games/chess-endless/scripts/ChessEndlessGame.ts
+  h_293365c3a5ebee 73-76,688-693,695-698,1303-1308,1354-1359,1394-1402,1408-1411,1420,1429,1437,1449,1453,1459,1461-1471,1929-1930,2029-2030
+assets/games/doodle-jump/configs/gameplay.json
+  h_293365c3a5ebee 8,84-85,91,96-97,103,108-109,115
+assets/games/doodle-jump/scripts/DoodleJumpCombatSystem.ts
+  h_293365c3a5ebee 6-10,12-13,77-90,93-102,139-148,185,196,201,229,231-240,246-252,265-268,270,274-283,297-309,405-440,459-491,501-502,565,567-573,575-576,578,672
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  h_293365c3a5ebee 62,91-92,406,675-676,949-951,954,1016,1324,2229-2232,2367,2374,2956-2959,2971,3318-3319,3329,3666,4255
+assets/games/doodle-jump/scripts/DoodleJumpHazardSystem.ts
+  h_293365c3a5ebee 6-10,14-15,80-99,152-159,186,192,236,256,259-270,278,280,309,356,385,428,521-564,572-634,689-690,762-775,777-783,785-787,927,933-938
+assets/games/doodle-jump/scripts/DoodleJumpItemSystem.ts
+  h_293365c3a5ebee 6-10,15-16,64-85,89-95,99,110-119,167,173,176,236-245,251-257,395-422,445-483,562,574,576,610-618,621-626,628-640
+assets/games/doodle-jump/scripts/DoodleJumpRandom.ts
+  h_293365c3a5ebee 55-58,95-98
+assets/games/doodle-jump/scripts/DoodleJumpSimulation.ts
+  h_293365c3a5ebee 31-35,94-159,183-187,224-231,257-258,267-292,373-374,378,380,487,492,499,504,506,536-543,599-600,677-678,719-720,762-828,839,843,845,951-952,1365-1438,1723-1777,1780-1783
+assets/games/doodle-jump/scripts/DoodleJumpWorld.ts
+  h_293365c3a5ebee 1-25
+assets/games/doodle-jump/scripts/DoodleJumpWorld.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  h_293365c3a5ebee 402-404,409-414,1577-1579,1587-1589,1591,1600-1611,1620-1623,1626,1635-1638
+assets/platform/WeChatPlatform.ts
+  h_293365c3a5ebee 102,115-124,166,398-400,406,410,435-505,508-511,515,518-519,521-524,526-527
+assets/runtime/GameRuntime.ts
+  h_293365c3a5ebee 2,41,44,592-593,595-599,665,668-672,703-719,721-732
+assets/shared/components/LoadingView.ts
+  h_293365c3a5ebee 180,205,237-260,266,295,306,317,926,929-946,1100,1118-1123
+docs/games/doodle-jump/DOODLE_JUMP_PERFORMANCE_PLAN.md
+  h_293365c3a5ebee 1,3-6,8,10,12-18,20,22,24-30,32,34,36,38-45,47,49,51,53,55-62,64,66,68,70-76,78,80,82-88,90,92,94-98,100,102,104-110,112,114,116-120,122,124,126,128-132,134,136,138-139,141-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "743cfdbc58ca082202805f84582202d37fdec6b2",
+  "prompts": {},
+  "logical_commit_id": "743cfdbc58ca082202805f84582202d37fdec6b2",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
