@@ -241,6 +241,23 @@ const DOODLE_JUMP_REWARDED_VIDEO_ICON_PATH =
 const DOODLE_JUMP_REWARDED_VIDEO_ICON_ASPECT = 120 / 85;
 const DOODLE_JUMP_HUD_ATLAS_PATH = 'visual/ui/hud/doodle-hud';
 const DOODLE_JUMP_ITEM_ICON_ATLAS_PATH = 'visual/ui/item-icons/doodle-item-icons';
+const DOODLE_JUMP_PLATFORM_ATLAS_PATH = 'visual/platforms/doodle-platforms';
+const DOODLE_JUMP_ENEMY_ATLAS_PATH = 'visual/enemies/doodle-enemies';
+const DOODLE_JUMP_ITEM_ATLAS_PATH = 'visual/items/doodle-items';
+
+const PLATFORM_ATLAS_KEYS: readonly TextureKey[] = Object.freeze([
+    'normalPlatform', 'movingPlatform', 'verticalMovingPlatform', 'spikedPlatform',
+    'breakablePlatform', 'breakableLeft', 'breakableRight', 'disappearingPlatform',
+    'shiftingPlatform', 'explodingPlatform',
+]);
+const ENEMY_ATLAS_KEYS: readonly TextureKey[] = Object.freeze([
+    'enemySmall01', 'enemySmall02', 'enemyLarge01', 'enemyLarge02',
+    'enemyHover01', 'enemyHover02',
+]);
+const ITEM_ATLAS_KEYS: readonly TextureKey[] = Object.freeze([
+    'itemSpring', 'itemTrampoline', 'itemJetpack', 'itemPropellerHat',
+    'itemRocket', 'itemShield',
+]);
 
 type TextureKey = keyof typeof TEXTURE_PATHS;
 
@@ -719,6 +736,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.showLoadingOverlay();
         await this.loadVisualAssets();
         this.applyVisualAssets();
+        this.prewarmPresentationPools();
+        this.renderSimulation();
         this.setGameplayPresentationVisible(true);
         this.audioBank = new BundleAudioBank({
             bundle: DOODLE_JUMP_RESOURCE_BUNDLE,
@@ -849,13 +868,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.missingResourceActive = false;
         this.lastErrorMessage = '';
         this.debugHeadStartRemaining = this.config?.items.debugHeadStartCount ?? 0;
-        this.clearCombatVisuals();
+        this.clearCombatVisuals(false);
         this.lastReportedScore = -1;
         this.activePauseModel = undefined;
         this.activeResultModel = undefined;
         this.destroyOverlay();
         this.destroyPauseOverlay();
-        this.resetShootingRuntime();
+        this.resetShootingRuntime(false);
         this.simulation?.reset();
         this.renderSimulation();
         this.sessionStartedAt = Date.now();
@@ -1658,7 +1677,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state !== 'ResurrectPrompt') return;
         this.stateMachine.transition('Resurrecting');
         this.destroyOverlay();
-        this.resetShootingRuntime();
+        this.resetShootingRuntime(false);
         const failureReason = this.pendingFailure?.reason ?? 'fall';
         const failureHeightMeters = this.calculateHeightMeters(
             this.failureSnapshot?.maxAbsoluteWorldY ?? 0,
@@ -3515,15 +3534,22 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         });
     }
 
-    private clearCombatVisuals(): void {
+    private clearCombatVisuals(destroyNodes: boolean): void {
         this.combatVisuals.forEach((visual) => {
-            if (visual.node.isValid) visual.node.destroy();
+            if (!visual.node.isValid) return;
+            if (destroyNodes) visual.node.destroy();
+            else {
+                this.resetReusableVisualNode(visual.node);
+                this.combatVisualPool.push(visual.node);
+            }
         });
-        this.combatVisualPool.forEach((node) => {
-            if (node.isValid) node.destroy();
-        });
+        if (destroyNodes) {
+            this.combatVisualPool.forEach((node) => {
+                if (node.isValid) node.destroy();
+            });
+        }
         this.combatVisuals = [];
-        this.combatVisualPool = [];
+        if (destroyNodes) this.combatVisualPool = [];
     }
 
     private tryFirePaperPlane(): void {
@@ -3663,19 +3689,41 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.shotBatchStartedAt = 0;
     }
 
-    private resetShootingRuntime(): void {
+    private resetShootingRuntime(destroyNodes: boolean): void {
         this.cancelAttack(true);
         this.activeProjectiles.forEach((projectile) => {
-            if (projectile.node.isValid) projectile.node.destroy();
+            if (!projectile.node.isValid) return;
+            if (destroyNodes) projectile.node.destroy();
+            else {
+                this.resetReusableVisualNode(projectile.node);
+                this.projectilePool.push(projectile.node);
+            }
         });
-        this.projectilePool.forEach((node) => {
-            if (node.isValid) node.destroy();
-        });
+        if (destroyNodes) {
+            this.projectilePool.forEach((node) => {
+                if (node.isValid) node.destroy();
+            });
+        }
         this.activeProjectiles = [];
-        this.projectilePool = [];
+        if (destroyNodes) this.projectilePool = [];
         this.nextFireAt = 0;
         this.aimX = 0;
         this.aimY = 1;
+    }
+
+    private resetReusableVisualNode(node: Node): void {
+        node.active = false;
+        node.setPosition(0, 0, 0);
+        node.setScale(1, 1, 1);
+        node.setRotationFromEuler(0, 0, 0);
+        const resetRenderState = (current: Node): void => {
+            const opacity = current.getComponent(UIOpacity);
+            if (opacity) opacity.opacity = 255;
+            const sprite = current.getComponent(Sprite);
+            if (sprite) sprite.color = COLORS.white;
+            current.children.forEach(resetRenderState);
+        };
+        resetRenderState(node);
     }
 
     private updatePresentationState(message: string): void {
@@ -3708,35 +3756,37 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!resourceBundle) {
             throw new Error(`Bundle ${DOODLE_JUMP_RESOURCE_BUNDLE} is unavailable.`);
         }
-        const [hudFrames, itemIconFrames] = await Promise.all([
+        const atlasGroups = [
+            [DOODLE_JUMP_HUD_ATLAS_PATH, hudKeys],
+            [DOODLE_JUMP_ITEM_ICON_ATLAS_PATH, itemIconKeys],
+            [DOODLE_JUMP_PLATFORM_ATLAS_PATH, PLATFORM_ATLAS_KEYS],
+            [DOODLE_JUMP_ENEMY_ATLAS_PATH, ENEMY_ATLAS_KEYS],
+            [DOODLE_JUMP_ITEM_ATLAS_PATH, ITEM_ATLAS_KEYS],
+        ] as const;
+        const atlasFrameGroups = await Promise.all(atlasGroups.map(([atlasPath, atlasKeys]) => (
             loadAutoAtlasFrames(
                 resourceBundle,
-                DOODLE_JUMP_HUD_ATLAS_PATH,
-                hudKeys.map((key) => ({
+                atlasPath,
+                atlasKeys.map((key) => ({
                     key,
                     frameName: autoAtlasFrameName(TEXTURE_PATHS[key]),
                     fallbackTexturePath: TEXTURE_PATHS[key],
                 })),
-            ),
-            loadAutoAtlasFrames(
-                resourceBundle,
-                DOODLE_JUMP_ITEM_ICON_ATLAS_PATH,
-                itemIconKeys.map((key) => ({
-                    key,
-                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]),
-                    fallbackTexturePath: TEXTURE_PATHS[key],
-                })),
-            ),
-        ]);
-        Object.keys({ ...hudFrames, ...itemIconFrames }).forEach((key) => {
-            const frame = hudFrames[key] ?? itemIconFrames[key];
-            if (frame) {
+            )
+        )));
+        atlasFrameGroups.forEach((group) => {
+            Object.keys(group).forEach((key) => {
+                const frame = group[key];
+                if (!frame) return;
                 this.textureFrames[key as TextureKey] = frame;
                 this.ownedFrames.push(frame);
-            }
+            });
         });
 
-        const atlasKeys = new Set([...hudKeys, ...itemIconKeys]);
+        const atlasKeys = new Set<TextureKey>();
+        atlasGroups.forEach(([, groupKeys]) => {
+            groupKeys.forEach((key) => atlasKeys.add(key));
+        });
         const frames = await Promise.all(keys.filter((key) => !atlasKeys.has(key)).map(async (key) => {
             const existing = this.textureFrames[key];
             if (existing) return [key, existing] as const;
@@ -3908,6 +3958,113 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.fixPlayerVisualOrder();
         const snapshot = this.simulation?.getPresentationView();
         if (snapshot) this.updateParallaxBackground(snapshot.cameraBottomY, this.visibleSize);
+    }
+
+    private prewarmPresentationPools(): void {
+        if (!this.config || !this.worldRoot) return;
+        this.ensurePlatformNodes(this.config.generation.maxActivePlatforms);
+        this.ensureEnemyNodes(this.config.enemies.maximumActive);
+        this.ensureItemNodes(this.config.items.maximumActive);
+        this.ensureHazardNodes(this.config.hazards.maximumActive);
+
+        this.platformNodes.forEach((node, index) => {
+            this.applyPlatformVisual(node, index, 'breakable', 0.42, false, 0);
+            this.applyPlatformVisual(node, index, 'disappearing', 0.55, false, 0);
+            this.applyPlatformVisual(node, index, 'exploding', 1.25, false, 0);
+            this.resetReusableVisualNode(node);
+            this.platformNodeTypes[index] = '';
+        });
+
+        const enemyTypes = ['small', 'large', 'hover'] as const;
+        this.enemyNodes.forEach((node, index) => {
+            enemyTypes.forEach((type, typeIndex) => this.applyEnemyVisual(node, index, {
+                id: `prewarm-enemy-${index}-${type}`,
+                type,
+                x: 0,
+                y: 0,
+                width: type === 'large' ? 104 : 76,
+                height: type === 'large' ? 94 : 70,
+                health: 1,
+                maximumHealth: 1,
+                hurt: typeIndex === 1,
+                animationPhase: typeIndex * 0.2,
+                anchorPlatformId: 'prewarm',
+            }, typeIndex / 6));
+            this.resetReusableVisualNode(node);
+            this.enemyNodeTypes[index] = '';
+        });
+
+        const itemTypes = [
+            'spring', 'trampoline', 'jetpack', 'propeller-hat', 'rocket', 'shield',
+        ] as const;
+        this.itemNodes.forEach((node, index) => {
+            itemTypes.forEach((type, typeIndex) => this.applyItemVisual(node, index, {
+                id: `prewarm-item-${index}-${type}`,
+                type,
+                x: 0,
+                y: 0,
+                radius: 32,
+                anchorPlatformId: 'prewarm',
+                phase: typeIndex / itemTypes.length,
+            }, 0));
+            this.resetReusableVisualNode(node);
+            this.itemNodeTypes[index] = '';
+        });
+
+        const hazardTypes = ['ufo', 'black-hole', 'bear-trap'] as const;
+        this.hazardNodes.forEach((node, index) => {
+            hazardTypes.forEach((type, typeIndex) => this.applyHazardVisual(node, index, {
+                id: `prewarm-hazard-${index}-${type}`,
+                type,
+                x: 0,
+                y: 0,
+                width: 120,
+                height: 100,
+                anchorPlatformId: type === 'bear-trap' ? 'prewarm' : undefined,
+                lockProgress: type === 'ufo' ? 0.7 : 0,
+                abductionProgress: type === 'ufo' ? 0.4 : 0,
+                paused: false,
+                triggered: type === 'bear-trap',
+                phase: typeIndex / hazardTypes.length,
+            }, 0));
+            this.resetReusableVisualNode(node);
+            this.hazardNodeTypes[index] = '';
+        });
+
+        const prewarmCombatEvents: readonly DoodleJumpCombatEvent[] = [
+            { type: 'hit', enemyId: 'prewarm', enemyType: 'small', x: 0, y: 0 },
+            { type: 'kill', enemyId: 'prewarm', enemyType: 'large', x: 0, y: 0 },
+        ];
+        prewarmCombatEvents.forEach((event) => this.spawnCombatVisual(event));
+        this.clearCombatVisuals(false);
+
+        const projectile = this.obtainProjectileNode();
+        this.resetReusableVisualNode(projectile);
+        this.projectilePool.push(projectile);
+
+        const primeFrame = (node: Node | undefined, key: TextureKey): void => {
+            const frame = this.textureFrames[key];
+            if (!node?.isValid || !frame) return;
+            const directSprite = this.getDirectSprite(node);
+            if (directSprite) this.setSpriteFrame(directSprite, frame);
+            else this.applySpriteVisual(node, frame);
+            this.resetReusableVisualNode(node);
+        };
+        primeFrame(this.failureHazardEffectNode, 'failureUfoCapture');
+        primeFrame(this.failureHazardEffectNode, 'failureBlackHoleSuction');
+        primeFrame(this.failureHazardEffectNode, 'failureBearTrapTrigger');
+        primeFrame(this.failureHazardEffectNode, 'failureFalling');
+        primeFrame(this.itemEffectNode, 'itemPickupSparkles');
+        primeFrame(this.itemEffectNode, 'springRebound');
+        primeFrame(this.itemEffectNode, 'trampolineRebound');
+        primeFrame(this.playerMotionEffectNode, 'playerFallDrag');
+        primeFrame(this.playerWrapEffectNode, 'playerScreenWrap');
+        primeFrame(this.shieldPulseNode, 'shieldPulse');
+        primeFrame(this.playerPowerEffectNode, 'jetpackFlames');
+        primeFrame(this.playerPowerSecondaryEffectNode, 'jetpackScraps');
+        primeFrame(this.flightPowerDropBodyNode, 'itemJetpack');
+        primeFrame(this.flightPowerDropCapNode, 'playerPropellerHatCap');
+        primeFrame(this.flightPowerDropBladesNode, 'playerPropellerHatBlades');
     }
 
     private ensureParallaxNodes(): void {
@@ -5260,8 +5417,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     }
 
     private destroyPresentation(): void {
-        this.resetShootingRuntime();
-        this.clearCombatVisuals();
+        this.resetShootingRuntime(true);
+        this.clearCombatVisuals(true);
         this.node.off(Node.EventType.TOUCH_START, this.handleGameplayTouchStart, this);
         this.node.off(Node.EventType.TOUCH_MOVE, this.handleGameplayTouchMove, this);
         this.node.off(Node.EventType.TOUCH_END, this.handleGameplayRelease, this);

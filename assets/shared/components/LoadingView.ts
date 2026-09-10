@@ -13,8 +13,6 @@ import {
     Sprite,
     SpriteFrame,
     Texture2D,
-    tween,
-    Tween,
     UITransform,
     VerticalTextAlignment,
     sys,
@@ -179,7 +177,10 @@ export class LoadingView extends Component implements LoadingPresenter {
     private restartMode = false;
     private lobbyTransitionMode = false;
     private progress = 0;
-    private progressTweenState?: { value: number };
+    private progressTarget = 0;
+    private progressAnimationStart = 0;
+    private progressAnimationElapsed = 0;
+    private progressAnimationDuration = 0;
     private progressLoadToken = 0;
     private realProgress = 0;
     private layoutMetrics?: LoadingLayoutMetrics;
@@ -216,10 +217,13 @@ export class LoadingView extends Component implements LoadingPresenter {
         if (this.nameLabel) {
             this.nameLabel.string = model.gameName ?? '随手玩一把';
         }
+        this.stopProgressAnimation();
         this.progress = 0;
+        this.progressTarget = 0;
         this.realProgress = Math.max(0, Math.min(1, model.progress));
         this.setMessage(model.message);
-        this.setProgress(Math.min(0.08, Math.max(0.03, model.progress)), false);
+        this.drawProgressFill();
+        this.setProgress(Math.min(0.08, Math.max(0.03, model.progress)), true);
         this.unschedule(this.advanceFakeProgress);
         this.schedule(this.advanceFakeProgress, 0.06);
         const coverFrame = this.node.getChildByName('LoadingCoverFrame');
@@ -245,7 +249,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.node.getComponent(Widget)?.updateAlignment();
         this.ensureStructure();
         this.unschedule(this.advanceFakeProgress);
-        this.stopProgressTween();
+        this.stopProgressAnimation();
         this.releaseCoverFrame();
         this.variant = 'lobby';
         this.layoutAndDraw();
@@ -268,7 +272,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
         this.ensureStructure();
         this.unschedule(this.advanceFakeProgress);
-        this.stopProgressTween();
+        this.stopProgressAnimation();
         this.progressLoadToken += 1;
         this.releaseCoverFrame();
         this.variant = 'game';
@@ -295,9 +299,9 @@ export class LoadingView extends Component implements LoadingPresenter {
         if (!this.node.active || this.restartMode || this.lobbyTransitionMode) return;
         this.setMessage(message);
         this.realProgress = Math.max(this.realProgress, Math.min(1, Math.max(0, progress)));
+        this.setProgress(this.realProgress, true);
         if (this.realProgress >= 1) {
             this.unschedule(this.advanceFakeProgress);
-            this.setProgress(1, true);
         }
     }
 
@@ -306,7 +310,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.lobbyTransitionMode = false;
         this.progressLoadToken += 1;
         this.unschedule(this.advanceFakeProgress);
-        this.stopProgressTween();
+        this.stopProgressAnimation();
         this.releaseCoverFrame();
         this.node.active = false;
     }
@@ -945,21 +949,20 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     private readonly advanceFakeProgress = (): void => {
-        if (!this.node.active || this.realProgress >= 1 || this.progress >= 0.99) {
+        if (!this.node.active || this.realProgress >= 1 || this.progressTarget >= 0.99) {
             this.unschedule(this.advanceFakeProgress);
             return;
         }
-        const increment = this.progress < 0.45
+        const increment = this.progressTarget < 0.45
             ? 0.012
-            : this.progress < 0.75
+            : this.progressTarget < 0.75
                 ? 0.008
-                : this.progress < 0.9
+                : this.progressTarget < 0.9
                     ? 0.006
-                    : this.progress < 0.97
+                    : this.progressTarget < 0.97
                         ? 0.003
                         : 0.001;
-        this.progress = Math.min(0.99, this.progress + increment);
-        this.drawProgressFill();
+        this.setProgress(Math.min(0.99, this.progressTarget + increment), true);
     };
 
     private setMessage(message: string): void {
@@ -967,34 +970,45 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     private setProgress(value: number, animated: boolean): void {
-        const target = Math.max(this.progress, Math.min(1, Math.max(0, value)));
+        const target = Math.max(this.progressTarget, Math.min(1, Math.max(0, value)));
+        this.progressTarget = target;
         if (!animated) {
             this.progress = target;
+            this.stopProgressAnimation();
             this.drawProgressFill();
             return;
         }
-        const fillNode = this.findManagedNode('ProgressFill');
-        if (!fillNode) return;
-        Tween.stopAllByTarget(fillNode);
-        const start = this.progress;
-        const state = { value: start };
-        this.progressTweenState = state;
-        tween(state)
-            .to(0.24, { value: target }, {
-                easing: 'quadOut',
-                onUpdate: () => {
-                    this.progress = state.value;
-                    this.drawProgressFill();
-                },
-            })
-            .call(() => {
-                this.progress = target;
-                if (this.progressTweenState === state) {
-                    this.progressTweenState = undefined;
-                }
-                this.drawProgressFill();
-            })
-            .start();
+        if (target <= this.progress) return;
+
+        this.progressAnimationStart = this.progress;
+        this.progressAnimationElapsed = 0;
+        const distance = target - this.progress;
+        // 完成态必须赶在 GameRuntime 的 160/180ms 收尾停留时间内抵达 100%；
+        // 其余阶段按距离调整时长，避免短步进发黏、长跳变突兀。
+        this.progressAnimationDuration = target >= 1
+            ? 0.14
+            : clamp(0.1 + distance * 0.22, 0.1, 0.24);
+    }
+
+    protected update(deltaTime: number): void {
+        if (
+            !this.node.active
+            || this.restartMode
+            || this.lobbyTransitionMode
+            || this.progressAnimationDuration <= 0
+        ) return;
+
+        this.progressAnimationElapsed += Math.max(0, deltaTime);
+        const ratio = Math.min(1, this.progressAnimationElapsed / this.progressAnimationDuration);
+        const eased = 1 - Math.pow(1 - ratio, 3);
+        this.progress = this.progressAnimationStart
+            + (this.progressTarget - this.progressAnimationStart) * eased;
+
+        if (ratio >= 1) {
+            this.progress = this.progressTarget;
+            this.stopProgressAnimation();
+        }
+        this.drawProgressFill();
     }
 
     private drawProgressFill(): void {
@@ -1187,11 +1201,10 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.ownedStartupFrames = [];
     }
 
-    private stopProgressTween(): void {
-        if (this.progressTweenState) {
-            Tween.stopAllByTarget(this.progressTweenState);
-            this.progressTweenState = undefined;
-        }
+    private stopProgressAnimation(): void {
+        this.progressAnimationStart = this.progress;
+        this.progressAnimationElapsed = 0;
+        this.progressAnimationDuration = 0;
     }
 
     private styleLabel(
