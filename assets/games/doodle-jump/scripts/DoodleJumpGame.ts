@@ -5,7 +5,6 @@ import {
     Camera,
     Color,
     Component,
-    DynamicAtlasManager,
     EventMouse,
     EventTouch,
     Graphics,
@@ -623,13 +622,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private ownedFrames: SpriteFrame[] = [];
     private readonly slicedFrames = new Set<SpriteFrame>();
     private audioBank?: BundleAudioBank;
-    private dynamicAtlasBaseline?: Readonly<{
-        enabled: boolean;
-        maxAtlasCount: number;
-        maxFrameSize: number;
-        textureSize: number;
-        textureBleeding: boolean;
-    }>;
     private missingRequiredVisuals: TextureKey[] = [];
     private tutorialActive = false;
     private tutorialStep = 0;
@@ -687,7 +679,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.context = context;
         const gameplayAsset = await this.loadJsonAsset('configs/gameplay');
         this.config = parseDoodleJumpGameplayConfig(gameplayAsset.json);
-        this.configureDynamicAtlas();
         this.debugHeadStartRemaining = this.config.items.debugHeadStartCount;
         const saveLoad = readDoodleJumpSave(context.services.storage);
         this.saveBaseline = saveLoad.save;
@@ -939,7 +930,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.rewardedVideoIconFrame?.destroy();
         this.rewardedVideoIconFrame = undefined;
         this.slicedFrames.clear();
-        this.restoreDynamicAtlas();
         this.textureFrames = {};
         this.context = undefined;
         this.config = undefined;
@@ -1935,7 +1925,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         );
         const frame = this.textureFrames.tutorialSensorTilt;
         if (frame) this.createSpriteNode(overlay, 'CalibrationGuide', frame, 210, 150, 0, -35);
-        this.createLabel(overlay, 'CalibrationHint', '校准期间触摸不会发射纸飞机', 0, -155, 18, COLORS.muted, 410, 38);
         this.createButton(overlay, '返回大厅', 0, -225, 220, 64, () => {
             this.trackExitOnce('calibration-lobby');
             this.context?.requestLobby(Object.freeze({
@@ -4247,39 +4236,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 secondaryEffects: false,
                 effectScale: 0.78,
                 uiMotion: false,
-                dynamicAtlasCount: 2,
-                dynamicAtlasMaxFrameSize: 180,
             });
-    }
-
-    private configureDynamicAtlas(): void {
-        if (this.dynamicAtlasBaseline) return;
-        const manager = DynamicAtlasManager.instance;
-        this.dynamicAtlasBaseline = Object.freeze({
-            enabled: manager.enabled,
-            maxAtlasCount: manager.maxAtlasCount,
-            maxFrameSize: manager.maxFrameSize,
-            textureSize: manager.textureSize,
-            textureBleeding: manager.textureBleeding,
-        });
-        const profile = this.visualQualityProfile();
-        manager.enabled = true;
-        manager.textureSize = 1024;
-        manager.maxAtlasCount = profile.dynamicAtlasCount;
-        manager.maxFrameSize = profile.dynamicAtlasMaxFrameSize;
-        manager.textureBleeding = true;
-    }
-
-    private restoreDynamicAtlas(): void {
-        const baseline = this.dynamicAtlasBaseline;
-        if (!baseline) return;
-        const manager = DynamicAtlasManager.instance;
-        manager.enabled = baseline.enabled;
-        manager.textureSize = baseline.textureSize;
-        manager.maxAtlasCount = baseline.maxAtlasCount;
-        manager.maxFrameSize = baseline.maxFrameSize;
-        manager.textureBleeding = baseline.textureBleeding;
-        this.dynamicAtlasBaseline = undefined;
     }
 
     private updatePlayerVisual(

@@ -61,9 +61,9 @@
     }
   },
   "visualQuality": {
-    "low": { "decorNodeCount": 3, "secondaryEffects": false, "effectScale": 0.78, "uiMotion": false, "dynamicAtlasCount": 2, "dynamicAtlasMaxFrameSize": 180 },
-    "medium": { "decorNodeCount": 4, "secondaryEffects": true, "effectScale": 1.0, "uiMotion": true, "dynamicAtlasCount": 3, "dynamicAtlasMaxFrameSize": 256 },
-    "high": { "decorNodeCount": 5, "secondaryEffects": true, "effectScale": 1.08, "uiMotion": true, "dynamicAtlasCount": 4, "dynamicAtlasMaxFrameSize": 384 }
+    "low": { "decorNodeCount": 3, "secondaryEffects": false, "effectScale": 0.78, "uiMotion": false },
+    "medium": { "decorNodeCount": 4, "secondaryEffects": true, "effectScale": 1.0, "uiMotion": true },
+    "high": { "decorNodeCount": 5, "secondaryEffects": true, "effectScale": 1.08, "uiMotion": true }
   },
   "enemies": {
     "enabled": true,

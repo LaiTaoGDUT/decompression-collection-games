@@ -52,8 +52,6 @@ export interface DoodleJumpVisualQualityProfile {
     readonly secondaryEffects: boolean;
     readonly effectScale: number;
     readonly uiMotion: boolean;
-    readonly dynamicAtlasCount: number;
-    readonly dynamicAtlasMaxFrameSize: number;
 }
 
 export interface DoodleJumpFixedPlatformConfig {
@@ -406,24 +404,11 @@ function parseVisualQualityProfile(
     if (effectScale < 0.5 || effectScale > 1.25) {
         throw new Error(`${path}.effectScale must satisfy 0.5 <= scale <= 1.25.`);
     }
-    const dynamicAtlasCount = positiveInteger(
-        value.dynamicAtlasCount,
-        `${path}.dynamicAtlasCount`,
-    );
-    const dynamicAtlasMaxFrameSize = positiveInteger(
-        value.dynamicAtlasMaxFrameSize,
-        `${path}.dynamicAtlasMaxFrameSize`,
-    );
-    if (dynamicAtlasCount > 4 || dynamicAtlasMaxFrameSize > 512) {
-        throw new Error(`${path} dynamic atlas budget exceeds the stage 10 limit.`);
-    }
     return Object.freeze({
         decorNodeCount,
         secondaryEffects: booleanValue(value.secondaryEffects, `${path}.secondaryEffects`),
         effectScale,
         uiMotion: booleanValue(value.uiMotion, `${path}.uiMotion`),
-        dynamicAtlasCount,
-        dynamicAtlasMaxFrameSize,
     });
 }
 
