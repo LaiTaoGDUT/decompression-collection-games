@@ -1,0 +1,24 @@
+docs/games/bubble-shooter/DECISIONS.md
+  s_46622ed19135b9::t_5e3bdf5efee7f5 1-65
+docs/games/bubble-shooter/art-source/cloud/batch-07-notes.md
+  s_46622ed19135b9::t_037bcdd6023389 1-84
+docs/games/bubble-shooter/art-source/cloud/batch-08-notes.md
+  s_46622ed19135b9::t_205a7f01efb213 1-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "45d78399ef0c60b804d37ae795aa48112ee2d22f",
+  "prompts": {},
+  "logical_commit_id": "45d78399ef0c60b804d37ae795aa48112ee2d22f",
+  "sessions": {
+    "s_46622ed19135b9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "9cc403f8-3cb2-427f-b2c7-aec915bee87c",
+        "model": "composer-2.5"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
