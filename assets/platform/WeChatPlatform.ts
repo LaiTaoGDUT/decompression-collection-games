@@ -94,7 +94,7 @@ interface WeChatCanvasFileResult {
     readonly tempFilePath?: string;
 }
 
-interface WeChatOffscreenCanvas {
+interface WeChatCanvas {
     width: number;
     height: number;
     getContext(type: '2d'): WeChatCanvas2DContext | null;
@@ -154,11 +154,7 @@ interface WeChatApi {
     }): void;
     chooseMedia?(options: WeChatChooseMediaOptions): void;
     createImage?(): WeChatImage;
-    createOffscreenCanvas?(options: {
-        type: '2d';
-        width: number;
-        height: number;
-    }): WeChatOffscreenCanvas;
+    createCanvas?(): WeChatCanvas;
     env?: { readonly USER_DATA_PATH?: string };
     getFileSystemManager?(): {
         mkdir(options: { dirPath: string; recursive?: boolean; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
@@ -380,24 +376,31 @@ export class WeChatPlatform implements Platform {
 
     async cropLocalImage(request: LocalImageCropRequest): Promise<LocalImageSelection | null> {
         const api = this.api;
-        if (!api?.createOffscreenCanvas) {
+        if (typeof api?.createCanvas !== 'function') {
+            console.warn('[WeChatPlatform] Local image crop requires wx.createCanvas.');
             return null;
         }
 
         const outputSize = Math.max(1, Math.floor(request.outputSize));
         try {
-            const canvas = api.createOffscreenCanvas({
-                type: '2d',
-                width: outputSize,
-                height: outputSize,
-            });
+            // 微信小游戏通过 createCanvas 创建画布。Cocos 启动时已创建上屏
+            // 画布，此时新建的是独立离屏画布，不依赖 createOffscreenCanvas。
+            const canvas = api.createCanvas();
             canvas.width = outputSize;
             canvas.height = outputSize;
             const context = canvas.getContext('2d');
             const image = canvas.createImage?.() ?? api.createImage?.();
+            const fs = api.getFileSystemManager?.();
+            const userDataRoot = api.env?.USER_DATA_PATH;
+            // 离屏画布可能只提供 toDataURL；完整计入可写入本地文件的导出路径。
+            const canWriteDataUrl = typeof canvas.toDataURL === 'function' && !!fs && !!userDataRoot;
             if (!context
                 || !image
-                || (!canvas.toTempFilePath && !canvas.toTempFilePathSync)) {
+                || (!canvas.toTempFilePath && !canvas.toTempFilePathSync && !canWriteDataUrl)) {
+                console.warn('[WeChatPlatform] Local image crop capabilities unavailable.', {
+                    context: !!context, image: !!image, canWriteDataUrl,
+                    asyncExport: !!canvas.toTempFilePath, syncExport: !!canvas.toTempFilePathSync,
+                });
                 return null;
             }
 
@@ -417,6 +420,7 @@ export class WeChatPlatform implements Platform {
                 image.src = request.uri;
             });
             if (!loaded) {
+                console.warn('[WeChatPlatform] Local image crop source failed to load or timed out.');
                 return null;
             }
 
@@ -466,8 +470,6 @@ export class WeChatPlatform implements Platform {
                 console.warn('[WeChatPlatform] Canvas data URL export failed.', error);
             }
             const dataSeparator = dataUrl?.indexOf(',') ?? -1;
-            const fs = api.getFileSystemManager?.();
-            const userDataRoot = api.env?.USER_DATA_PATH;
             if (dataUrl
                 && dataSeparator >= 0
                 && fs
@@ -502,6 +504,10 @@ export class WeChatPlatform implements Platform {
                         },
                     });
                 }
+            }
+            if (!canvas.toTempFilePath) {
+                console.warn('[WeChatPlatform] No remaining canvas export method succeeded.');
+                return null;
             }
             const uri = await new Promise<string | null>((resolve) => {
                 let settled = false;

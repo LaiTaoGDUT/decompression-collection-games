@@ -1918,6 +1918,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         );
         const token = ++this.imageLoadToken;
         this.inputLocked = true;
+        const cropHint = this.dynamicNode?.getChildByName('CropBody')?.getComponent(Label);
+        if (cropHint) cropHint.string = '正在处理图片，请稍候…';
 
         try {
             const encodedImage = await this.context.services.platform.cropLocalImage({
@@ -2009,6 +2011,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             // dispose() 会递增 imageLoadToken；令牌仍有效即可确认当前会话存活。
             if (token === this.imageLoadToken) {
                 this.inputLocked = false;
+                if (this.state === 'crop-editing') {
+                    console.warn('[SlidingPuzzleGame] Local image crop did not complete; retry is available.');
+                    const hint = this.dynamicNode?.getChildByName('CropBody')?.getComponent(Label);
+                    if (hint) hint.string = '图片处理失败，请重试或重新选择图片';
+                }
             }
         }
     }
