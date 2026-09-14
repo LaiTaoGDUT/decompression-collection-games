@@ -1,0 +1,15 @@
+docs/games/game2048/T48_AUDIO_PROMPTS.md
+  h_293365c3a5ebee 114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "21a7a17dd99dc762a6d3ae0f605d29963e38f225",
+  "prompts": {},
+  "logical_commit_id": "21a7a17dd99dc762a6d3ae0f605d29963e38f225",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
