@@ -47,6 +47,7 @@ export interface WeChatAdConfig {
     readonly chessEndlessReviveRewarded: AdPlacementConfig;
     readonly desktopCleanupRewarded: AdPlacementConfig;
     readonly doodleJumpReviveRewarded: AdPlacementConfig;
+    readonly bubbleShooterReviveRewarded: AdPlacementConfig;
     readonly game2048ClearSmallTilesRewarded: AdPlacementConfig;
 }
 
@@ -151,6 +152,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             'sliding-puzzle': { enabled: false },
             catch: { enabled: true },
             'doodle-jump': { enabled: true },
+            'bubble-shooter': { enabled: true },
         },
         wechat: {
             watermelonReviveRewarded: {
@@ -163,6 +165,9 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
                 adUnitId: '',
             },
             doodleJumpReviveRewarded: {
+                adUnitId: '',
+            },
+            bubbleShooterReviveRewarded: {
                 adUnitId: '',
             },
             game2048ClearSmallTilesRewarded: {

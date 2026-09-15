@@ -263,6 +263,10 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         errors,
         isResourcePath,
     );
+    const resourceDirectories = value.resourceDirectories === undefined ? undefined : readStringArray(
+        value, 'resourceDirectories', `${prefix}.resourceDirectories`, errors, isResourcePath);
+    if (resourceDirectories && (resourceDirectories.length === 0 || new Set(resourceDirectories).size !== resourceDirectories.length))
+        addError(errors, `${prefix}.resourceDirectories`, 'must contain unique resource directories');
     const tags = readStringArray(value, 'tags', `${prefix}.tags`, errors);
 
     if (id && !ID_PATTERN.test(id)) {
@@ -308,6 +312,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         description: description!,
         bundle: bundle!,
         resourceBundle: resourceBundle!,
+        ...(resourceDirectories ? { resourceDirectories: Object.freeze(Array.from(resourceDirectories)) } : {}),
         scene: scene!,
         entryComponent: entryComponent!,
         cover: cover!,

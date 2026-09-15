@@ -1,0 +1,35 @@
+{
+  "panel": {
+    "width": 512,
+    "height": 498,
+    "border": [
+      44,
+      44,
+      44,
+      44
+    ],
+    "bytes": 201291
+  },
+  "primary": {
+    "width": 512,
+    "height": 121,
+    "border": [
+      36,
+      36,
+      36,
+      36
+    ],
+    "bytes": 51869
+  },
+  "secondary": {
+    "width": 512,
+    "height": 102,
+    "border": [
+      36,
+      36,
+      36,
+      36
+    ],
+    "bytes": 40995
+  }
+}

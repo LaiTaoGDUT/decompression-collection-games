@@ -12,6 +12,16 @@ export interface AudioChannel {
     playOneShot(clip: AudioClip, volumeScale?: number): void;
 }
 
+export interface AudioEffectScope {
+    play(clip: AudioClip, volume: number): void;
+    stop(): void;
+    dispose(): void;
+}
+export interface ScopedAudioChannel {
+    channel: AudioChannel;
+    dispose(): void;
+}
+
 /** 背景音乐与单次音效的公共边界。 */
 export class AudioService {
     private musicEnabled = true;
@@ -19,11 +29,13 @@ export class AudioService {
     private pausedByBackground = false;
     private pausedByGame = false;
     private currentMusic?: AudioClip;
+    private readonly effectScopes = new Set<AudioEffectScope>();
 
     constructor(
         private readonly musicChannel: AudioChannel | AudioSource,
         private readonly effectChannel: AudioChannel | AudioSource,
         private readonly storage: StorageService,
+        private readonly createEffectChannel?: () => ScopedAudioChannel,
     ) {}
 
     initialize(): void {
@@ -81,6 +93,31 @@ export class AudioService {
         );
     }
 
+    /** Owned, stoppable effects for games whose sounds must not outlive their session. */
+    createEffectScope(): AudioEffectScope | undefined {
+        const create = this.createEffectChannel;
+        if (!create) return undefined;
+        const voices: ScopedAudioChannel[] = [];
+        let cursor = 0, disposed = false;
+        const scope: AudioEffectScope = {
+            play: (clip, volume) => {
+                if (disposed || !this.soundEnabled || this.pausedByBackground) return;
+                if (voices.length < 6) voices.push(create());
+                const voice = voices[cursor++ % voices.length]!.channel;
+                voice.stop(); voice.clip = clip; voice.loop = false;
+                voice.volume = Math.max(0, Math.min(1, volume)); voice.play();
+            },
+            stop: () => voices.forEach(v => { v.channel.stop(); v.channel.clip = null; }),
+            dispose: () => {
+                if (disposed) return;
+                disposed = true; scope.stop(); voices.forEach(v => v.dispose()); voices.length = 0;
+                this.effectScopes.delete(scope);
+            },
+        };
+        this.effectScopes.add(scope);
+        return scope;
+    }
+
     setEnabled(enabled: boolean): void {
         this.setMusicEnabled(enabled, false);
         this.setSoundEnabled(enabled, false);
@@ -114,6 +151,7 @@ export class AudioService {
         }
 
         this.soundEnabled = enabled;
+        if (!enabled) this.effectScopes.forEach(scope => scope.stop());
 
         if (persist) {
             this.persistSettings();
@@ -126,6 +164,7 @@ export class AudioService {
         }
 
         this.pausedByBackground = true;
+        this.effectScopes.forEach(scope => scope.stop());
 
         if (this.musicChannel.playing) {
             this.musicChannel.pause();
@@ -156,6 +195,7 @@ export class AudioService {
     }
 
     dispose(): void {
+        Array.from(this.effectScopes).forEach(scope => scope.dispose());
         this.stopMusic();
         this.effectChannel.stop();
     }

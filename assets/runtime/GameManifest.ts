@@ -20,6 +20,9 @@ export interface GameManifest {
     /** 进入游戏前必须完整加载的远程资源 Asset Bundle 名称。 */
     readonly resourceBundle: string;
 
+    /** Startup resource groups. Omitted means the legacy complete visual directory. */
+    readonly resourceDirectories?: readonly string[];
+
     /** Bundle 内的入口场景路径。 */
     readonly scene: string;
 

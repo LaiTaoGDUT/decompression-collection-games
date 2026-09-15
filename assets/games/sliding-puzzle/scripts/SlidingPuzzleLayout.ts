@@ -75,7 +75,7 @@ export function calculateSlidingPuzzleLayout(
     // 决定棋盘大小；只有矮屏会额外缩小棋盘，确保切换控件不越过底部安全区。
     const boardBottomLimit = height - safeBottom - 230;
     const boardAvailableHeight = Math.max(180, boardBottomLimit - boardTopFromTop);
-    const boardMaxByWidth = Math.max(180, width - 48);
+    const boardMaxByWidth = Math.max(180, width - 16);
     const board = Math.min(
         Math.max(180, boardAvailableHeight),
         boardMaxByWidth,
@@ -145,17 +145,19 @@ export function calculateSlidingPuzzleTileSourceRect(
     cropSize: number,
     boardSize: number,
     tileIndex: number,
+    visibleInsetRatio = 0,
 ): SlidingPuzzleTileSourceRect {
     const size = Math.max(1, Math.floor(boardSize));
     const index = Math.max(0, Math.min(size * size - 1, Math.floor(tileIndex)));
     const cellSize = cropSize / size;
     const row = Math.floor(index / size);
     const column = index % size;
+    const inset = cellSize * clamp(visibleInsetRatio, 0, 0.49);
 
     return Object.freeze({
-        x: cropX + column * cellSize,
-        y: cropY + row * cellSize,
-        width: cellSize,
-        height: cellSize,
+        x: cropX + column * cellSize + inset,
+        y: cropY + row * cellSize + inset,
+        width: cellSize - inset * 2,
+        height: cellSize - inset * 2,
     });
 }

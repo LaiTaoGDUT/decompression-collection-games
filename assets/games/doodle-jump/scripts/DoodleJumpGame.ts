@@ -4598,7 +4598,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 : status.flightPower === 'propeller-hat'
                     ? this.config?.items.propellerHat.minimumVerticalVelocity ?? 0
                     : this.config?.items.rocket.verticalVelocity ?? 0;
-            const gravityMagnitude = Math.max(1, Math.abs(this.config?.player.gravity ?? -1590));
+            const gravityMagnitude = Math.max(1, Math.abs(this.config?.player.gravity ?? -2289.6));
             const coastSeconds = coastVelocity / gravityMagnitude;
             const completeAscentSeconds = duration + coastSeconds;
             const displayRemainingSeconds = status.flightRemainingSeconds > 0

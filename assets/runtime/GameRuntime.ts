@@ -466,17 +466,17 @@ export class GameRuntime {
 
         try {
             try {
-                await this.assets.prepareBundle(
-                    manifest.resourceBundle,
-                    'visual',
-                    (finished, total) => {
-                        const ratio = total > 0 ? finished / total : 0;
-                        this.loading?.updateProgress(
-                            '正在完整加载游戏资源',
-                            0.08 + Math.min(Math.max(ratio, 0), 1) * 0.48,
-                        );
-                    },
-                );
+                const directories = manifest.resourceDirectories ?? ['visual'];
+                for (let index = 0; index < directories.length; index++) {
+                    await this.assets.prepareBundle(
+                        manifest.resourceBundle, directories[index]!,
+                        (finished, total) => {
+                            const ratio = total > 0 ? finished / total : 0;
+                            this.loading?.updateProgress('正在加载游戏资源',
+                                0.08 + (index + Math.min(Math.max(ratio, 0), 1)) / directories.length * 0.48);
+                        },
+                    );
+                }
                 this.loading?.updateProgress('游戏资源完整加载完成', 0.56);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('resources', manifest.id, cause);

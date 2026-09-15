@@ -30,3 +30,30 @@ approval_mode = "approve"
 
 [mcp_servers.cocos-creator-stdio.tools.assetAdvanced_asset_query]
 approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.assetAdvanced_asset_operations]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.scene_scene_management]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.scene_scene_query_system]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.scene_scene_hierarchy]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.node_node_lifecycle]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.node_node_transform]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.component_component_query]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.component_set_component_property]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.node_node_script_management]
+approval_mode = "approve"

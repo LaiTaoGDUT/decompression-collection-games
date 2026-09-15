@@ -210,6 +210,14 @@ for (const game of manifest.games) {
         resourceRoot,
         `${game.id} resourceBundle ${game.resourceBundle} must be registered as a remote resource Bundle.`,
     );
+    if (game.resourceDirectories !== undefined) {
+        assert(Array.isArray(game.resourceDirectories) && game.resourceDirectories.length > 0);
+        assert.strictEqual(new Set(game.resourceDirectories).size, game.resourceDirectories.length);
+        for (const directory of game.resourceDirectories) {
+            assert(typeof directory === 'string' && !directory.split('/').some(p => p === '..' || p === '.' || !p));
+            assert(fs.statSync(path.join(resourceRoot, directory)).isDirectory(), `${game.id}: missing resource group ${directory}`);
+        }
+    }
     assert.notStrictEqual(game.bundle, game.resourceBundle, `${game.id} code and resource Bundles must differ.`);
     assertSceneCameraBindings(
         path.join(gameRoot, `${game.scene}.scene`),

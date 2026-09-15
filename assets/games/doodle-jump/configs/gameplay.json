@@ -9,8 +9,8 @@
     "maxSubSteps": 4
   },
   "player": {
-    "gravity": -1590,
-    "bounceVelocity": 940,
+    "gravity": -2289.6,
+    "bounceVelocity": 1128,
     "horizontalAcceleration": 2100,
     "horizontalDeceleration": 1500,
     "maxHorizontalSpeed": 420,
@@ -173,8 +173,8 @@
     "pickupRadius": 28,
     "minimumAbovePlatform": 20,
     "maximumAbovePlatform": 70,
-    "spring": { "unlockHeightMeters": 0, "bounceVelocity": 1450 },
-    "trampoline": { "unlockHeightMeters": 70, "bounceVelocity": 1800 },
+    "spring": { "unlockHeightMeters": 0, "bounceVelocity": 1740 },
+    "trampoline": { "unlockHeightMeters": 70, "bounceVelocity": 2160 },
     "jetpack": { "unlockHeightMeters": 120, "durationSeconds": 1.8, "verticalVelocity": 1666.6666666666667 },
     "propellerHat": { "unlockHeightMeters": 120, "durationSeconds": 1.8, "gravity": 1000, "minimumVerticalVelocity": 871.7797887081347 },
     "rocket": { "unlockHeightMeters": 180, "durationSeconds": 1.8, "verticalVelocity": 2222.222222222222 },
@@ -193,7 +193,7 @@
     "placement": "doodle-jump-revive",
     "maximumSuccessfulRevives": 1,
     "shieldSeconds": 3,
-    "launchVelocity": 940,
+    "launchVelocity": 1128,
     "safeHorizontalRadius": 160,
     "forceGeneratedSafePlatform": false,
     "debugRewardedOutcome": "auto"

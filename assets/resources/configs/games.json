@@ -140,6 +140,33 @@
         "tilt",
         "relaxing"
       ]
+    },
+    {
+      "id": "bubble-shooter",
+      "version": "0.1.0",
+      "name": "泡泡龙",
+      "description": "瞄准发射彩色泡泡，消除云端糖果阵列",
+      "bundle": "game-bubble-shooter",
+      "resourceBundle": "game-bubble-shooter-assets",
+      "scene": "scenes/BubbleShooter",
+      "entryComponent": "BubbleShooterGame",
+      "cover": "visual/covers/bubble-shooter/bubble-shooter-cover-v1/texture",
+      "orientation": "portrait",
+      "renderMode": "2d",
+      "minimumDeviceTier": "low",
+      "minAppVersion": "0.1.0",
+      "enabled": true,
+      "visibility": "public",
+      "preload": [],
+      "tags": [
+        "bubble-shooter",
+        "aiming",
+        "relaxing"
+      ],
+      "resourceDirectories": [
+        "visual/common",
+        "visual/regions/cloud"
+      ]
     }
   ]
 }

@@ -161,6 +161,10 @@ const CROP_PREVIEW_FRAME_GAP = 12;
 // 用素材比例计算，确保不同屏幕尺寸下拼图外沿仍与内槽边界对齐。
 const BOARD_INNER_INSET_RATIO = 32 / 512;
 
+function getBoardTileAreaSize(boardSize: number): number {
+    return Math.max(1, boardSize * (1 - BOARD_INNER_INSET_RATIO * 2) - TILE_EDGE_INSET * 2);
+}
+
 export const SLIDING_PUZZLE_BACKGROUND_ASSET_PATH =
     'visual/backgrounds/sliding-puzzle-background-v1/texture';
 
@@ -1775,12 +1779,17 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private rebuildTileFrames(): void {
         this.destroyTileFrames();
-        if (!this.imageTexture) {
+        const metrics = this.layout;
+        if (!this.imageTexture || !metrics) {
             return;
         }
 
-        const boardSize = this.selectedSize;
+        const boardSize = this.model.boardSize;
         const cropRect = this.getCropRect(this.imageTexture, this.getActiveCrop());
+        const tileSize = getBoardTileAreaSize(metrics.boardSize) / boardSize;
+        const imageInset = clamp(tileSize * TILE_SKIN_INSET_RATIO, 2, 4);
+        // 图像先按完整格子的尺寸对齐，再从源图裁掉被木片边框遮住的边缘。
+        // 可见图片仍绘制在内框大小的节点上，拼接时不会把整格图压缩进内框。
         for (let index = 0; index < boardSize * boardSize - 1; index += 1) {
             const sourceRect = calculateSlidingPuzzleTileSourceRect(
                 cropRect.x,
@@ -1788,6 +1797,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 cropRect.width,
                 boardSize,
                 index,
+                imageInset / tileSize,
             );
             const frame = new SpriteFrame();
             frame.texture = this.imageTexture;
@@ -2324,8 +2334,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             boardSprite.sizeMode = Sprite.SizeMode.CUSTOM;
             boardSprite.spriteFrame = boardFrame;
         }
-        const innerSize = boardSize * (1 - BOARD_INNER_INSET_RATIO * 2);
-        const tileAreaSize = Math.max(1, innerSize - TILE_EDGE_INSET * 2);
+        const tileAreaSize = getBoardTileAreaSize(boardSize);
         const size = this.model.boardSize;
         const cellSize = tileAreaSize / size;
         // 方块之间完全贴合，网格外沿向内槽四边各收 2px。
@@ -2610,8 +2619,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const size = this.model.boardSize;
-        const innerSize = metrics.boardSize * (1 - BOARD_INNER_INSET_RATIO * 2);
-        const tileAreaSize = Math.max(1, innerSize - TILE_EDGE_INSET * 2);
+        const tileAreaSize = getBoardTileAreaSize(metrics.boardSize);
         const tileSize = tileAreaSize / size;
         const row = Math.floor(targetIndex / size);
         const column = targetIndex % size;
@@ -2811,8 +2819,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
-        const innerSize = metrics.boardSize * (1 - BOARD_INNER_INSET_RATIO * 2);
-        const imageSize = Math.max(1, innerSize - TILE_EDGE_INSET * 2);
+        const imageSize = getBoardTileAreaSize(metrics.boardSize);
         const frame = this.createPreviewFrame();
         if (!frame) {
             return;

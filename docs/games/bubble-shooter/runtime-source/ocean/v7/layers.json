@@ -1,0 +1,92 @@
+{
+  "boss-body": {
+    "source": "docs/games/bubble-shooter/art-source/ocean/v7/boss-body-raw.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "crop": [
+      26,
+      27,
+      1233,
+      1210
+    ],
+    "size": [
+      768,
+      753
+    ],
+    "status": "pending-assembly"
+  },
+  "boss-staff-arm": {
+    "source": "docs/games/bubble-shooter/art-source/ocean/v7/boss-staff-arm-raw.png",
+    "sourceSize": [
+      1024,
+      1536
+    ],
+    "crop": [
+      199,
+      19,
+      767,
+      1521
+    ],
+    "size": [
+      290,
+      768
+    ],
+    "status": "pending-assembly"
+  },
+  "boss-right-arm": {
+    "source": "docs/games/bubble-shooter/art-source/ocean/v7/boss-right-arm-raw.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "crop": [
+      32,
+      281,
+      1222,
+      971
+    ],
+    "size": [
+      384,
+      223
+    ],
+    "status": "pending-assembly"
+  },
+  "boss-grab-arm": {
+    "source": "docs/games/bubble-shooter/art-source/ocean/v7/boss-grab-arm-raw.png",
+    "sourceSize": [
+      1024,
+      1536
+    ],
+    "crop": [
+      139,
+      8,
+      895,
+      1505
+    ],
+    "size": [
+      259,
+      512
+    ],
+    "status": "pending-assembly"
+  },
+  "boss-crown": {
+    "source": "docs/games/bubble-shooter/art-source/ocean/v7/boss-crown-raw.png",
+    "sourceSize": [
+      1254,
+      1254
+    ],
+    "crop": [
+      49,
+      215,
+      1217,
+      999
+    ],
+    "size": [
+      384,
+      258
+    ],
+    "status": "pending-assembly"
+  }
+}

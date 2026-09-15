@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "4ad85975-5389-4717-bad1-e124e306e3c2",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "4ad85975-5389-4717-bad1-e124e306e3c2@6c48a",
+      "displayName": "boss-pudding-fist-left",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "4ad85975-5389-4717-bad1-e124e306e3c2",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "4ad85975-5389-4717-bad1-e124e306e3c2@f9941",
+      "displayName": "boss-pudding-fist-left",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 8,
+        "trimY": 19,
+        "width": 368,
+        "height": 282,
+        "rawWidth": 384,
+        "rawHeight": 320,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -184,
+            -141,
+            0,
+            184,
+            -141,
+            0,
+            -184,
+            141,
+            0,
+            184,
+            141,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            8,
+            301,
+            376,
+            301,
+            8,
+            19,
+            376,
+            19
+          ],
+          "nuv": [
+            0.020833333333333332,
+            0.059375,
+            0.9791666666666666,
+            0.059375,
+            0.020833333333333332,
+            0.940625,
+            0.9791666666666666,
+            0.940625
+          ],
+          "minPos": [
+            -184,
+            -141,
+            0
+          ],
+          "maxPos": [
+            184,
+            141,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "4ad85975-5389-4717-bad1-e124e306e3c2@6c48a",
+        "atlasUuid": "",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": true,
+    "hasAlpha": true,
+    "redirect": "4ad85975-5389-4717-bad1-e124e306e3c2@6c48a"
+  }
+}

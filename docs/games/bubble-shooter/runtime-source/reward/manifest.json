@@ -1,0 +1,86 @@
+{
+  "panel": {
+    "width": 768,
+    "height": 460,
+    "border": [
+      68,
+      68,
+      68,
+      68
+    ],
+    "bytes": 266952,
+    "bundle": "assets/game-assets/bubble-shooter/visual/common/reward-common/reward-panel.png"
+  },
+  "card": {
+    "width": 256,
+    "height": 428,
+    "border": [
+      46,
+      46,
+      46,
+      46
+    ],
+    "bytes": 84090,
+    "bundle": "assets/game-assets/bubble-shooter/visual/common/reward-common/reward-card.png"
+  },
+  "button": {
+    "width": 512,
+    "height": 126,
+    "border": [
+      63,
+      63,
+      0,
+      0
+    ],
+    "bytes": 59604,
+    "bundle": "assets/game-assets/bubble-shooter/visual/common/reward-common/reward-button.png"
+  },
+  "selection": {
+    "width": 192,
+    "height": 322,
+    "border": [
+      44,
+      44,
+      44,
+      44
+    ],
+    "bytes": 32315,
+    "bundle": "assets/game-assets/bubble-shooter/visual/common/reward-common/reward-selection.png"
+  },
+  "check": {
+    "width": 96,
+    "height": 94,
+    "border": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 13217,
+    "bundle": "assets/game-assets/bubble-shooter/visual/common/reward-common/reward-check.png"
+  },
+  "subtitle": {
+    "width": 512,
+    "height": 91,
+    "border": [
+      45,
+      45,
+      0,
+      0
+    ],
+    "bytes": 34408,
+    "bundle": "assets/game-assets/bubble-shooter/visual/common/reward-common/reward-subtitle.png"
+  },
+  "cloud-title": {
+    "width": 768,
+    "height": 198,
+    "border": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 192847,
+    "bundle": "assets/game-assets/bubble-shooter/visual/regions/cloud/reward-cloud/reward-cloud-title.png"
+  }
+}

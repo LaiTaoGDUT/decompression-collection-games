@@ -157,10 +157,15 @@ export class App extends Component {
 
         const musicSource = this.createAudioSource(audioRoot, 'MusicChannel');
         const effectSource = this.createAudioSource(audioRoot, 'EffectChannel');
+        let effectVoiceSequence = 0;
         const audioService = new AudioService(
             musicSource,
             effectSource,
             storageService,
+            () => {
+                const source = this.createAudioSource(audioRoot, `ScopedEffect-${effectVoiceSequence++}`);
+                return { channel: source, dispose: () => { source.stop(); source.clip = null; source.node.destroy(); } };
+            },
         );
         const feedbackService = new FeedbackService(
             audioService,
@@ -337,6 +342,12 @@ export class App extends Component {
                 placement: AD_PLACEMENTS.doodleJumpRevive,
                 adUnitId: wechatAds.doodleJumpReviveRewarded.adUnitId,
                 logName: 'Doodle Jump revive',
+            }),
+            Object.freeze({
+                gameId: 'bubble-shooter',
+                placement: AD_PLACEMENTS.bubbleShooterRevive,
+                adUnitId: wechatAds.bubbleShooterReviveRewarded.adUnitId,
+                logName: 'Bubble shooter revive',
             }),
             Object.freeze({
                 gameId: 'game2048',

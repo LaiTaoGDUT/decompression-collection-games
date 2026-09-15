@@ -60,6 +60,9 @@
       },
       "doodle-jump": {
         "enabled": true
+      },
+      "bubble-shooter": {
+        "enabled": true
       }
     },
     "wechat": {
@@ -76,6 +79,9 @@
         "adUnitId": ""
       },
       "game2048ClearSmallTilesRewarded": {
+        "adUnitId": ""
+      },
+      "bubbleShooterReviveRewarded": {
         "adUnitId": ""
       }
     }
