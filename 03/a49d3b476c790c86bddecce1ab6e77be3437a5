@@ -1,0 +1,33 @@
+assets/games/doodle-jump/configs/gameplay.json
+  h_293365c3a5ebee 29,188-189
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  h_293365c3a5ebee 353,477,479-481,1110,1112-1114,1119-1135
+assets/games/doodle-jump/scripts/DoodleJumpItemSystem.ts
+  h_293365c3a5ebee 334
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  h_293365c3a5ebee 2443,2648-2651,2686-2698
+assets/games/twenty48/scripts/Game2048Game.ts
+  h_293365c3a5ebee 77,79-80,240-252,1662,1691,1704,1736,1800,1861,1933,1976,1985
+assets/games/watermelon/configs/gameplay.json
+  h_293365c3a5ebee 5
+assets/games/watermelon/scripts/WatermelonFluidWorld.ts
+  h_293365c3a5ebee 2,35-36,204-239,244-245,253,264-267,269-273,276,279-282,295,332,412,471-475,483-490,503-515,565,568
+assets/games/watermelon/scripts/WatermelonGame.ts
+  h_293365c3a5ebee 292,924
+assets/games/watermelon/scripts/WatermelonGameplayConfig.ts
+  h_293365c3a5ebee 12,34,40,197-205,233
+docs/games/game2048/T48_AUDIO_PROMPTS.md
+  h_293365c3a5ebee 7,141,158,168,171,219,228-233
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "03a49d3b476c790c86bddecce1ab6e77be3437a5",
+  "prompts": {},
+  "logical_commit_id": "03a49d3b476c790c86bddecce1ab6e77be3437a5",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
