@@ -1,4 +1,5 @@
 import { WATERMELON_SEMI_FLUID } from './WatermelonSemiFluid';
+import { DEFAULT_WATERMELON_MERGE_COOLDOWN_SECONDS } from './WatermelonGameplayConfig';
 
 const POINT_COUNT = 18;
 const TAU = Math.PI * 2;
@@ -31,6 +32,8 @@ export interface WatermelonFluidBody {
     ageSeconds: number;
     dangerSeconds: number;
     noImpulseCorrectionSeconds: number;
+    /** Remaining merge lock; same-level contact is depenetrated without bounce. */
+    mergeCooldownSeconds: number;
     mergeReboundScale: number;
     mergeReboundSeconds: number;
 }
@@ -198,11 +201,48 @@ function resolveOverlap(
     }
 }
 
+/** Translate a body without changing its Verlet velocity. */
+function translateBody(
+    body: WatermelonFluidBody,
+    directionX: number,
+    directionY: number,
+    distance: number,
+): void {
+    const offsetX = directionX * distance;
+    const offsetY = directionY * distance;
+    for (const point of body.points) {
+        point.x += offsetX;
+        point.y += offsetY;
+        point.px += offsetX;
+        point.py += offsetY;
+    }
+    body.x += offsetX;
+    body.y += offsetY;
+}
+
+/** Remove only velocity travelling out of a deferred merge contact. */
+function removeOutwardVelocity(
+    body: WatermelonFluidBody,
+    sign: number,
+    nx: number,
+    ny: number,
+): void {
+    for (const point of body.points) {
+        const velocityX = point.x - point.px;
+        const velocityY = point.y - point.py;
+        const outward = sign * (velocityX * nx + velocityY * ny);
+        if (outward <= 0) continue;
+        point.px += sign * nx * outward;
+        point.py += sign * ny * outward;
+    }
+}
+
 /**
  * Cocos-coordinate port of melon-lab's point/constraint solver. It adapts
  * Y-up gravity/floor handling and scales reference-space motion to the current
  * playfield width. Restored bodies get a short position-only depenetration
- * window; newly merged bodies rebound immediately like the reference game.
+ * window; newly merged bodies rebound immediately like the reference game, but
+ * wait for a short merge cooldown before they can trigger another merge.
  */
 export class WatermelonFluidWorld {
     readonly bodies: WatermelonFluidBody[] = [];
@@ -210,6 +250,7 @@ export class WatermelonFluidWorld {
     tilt = 0;
 
     private nextId = 1;
+    private mergeCooldownSeconds: number;
     private readonly activeBodies = new Set<WatermelonFluidBody>();
     private readonly lockedBodies = new Set<number>();
     private readonly mergeFirst: WatermelonFluidBody[] = [];
@@ -220,11 +261,23 @@ export class WatermelonFluidWorld {
         private radii: readonly number[],
         private bounds: WatermelonFluidBounds,
         private readonly onMerge: (event: WatermelonFluidMergeEvent) => void = () => {},
-    ) {}
+        mergeCooldownSeconds = DEFAULT_WATERMELON_MERGE_COOLDOWN_SECONDS,
+    ) {
+        this.mergeCooldownSeconds = this.normalizeMergeCooldown(mergeCooldownSeconds);
+    }
 
-    configure(radii: readonly number[], bounds: WatermelonFluidBounds): void {
+    configure(
+        radii: readonly number[],
+        bounds: WatermelonFluidBounds,
+        mergeCooldownSeconds = this.mergeCooldownSeconds,
+    ): void {
         this.radii = radii;
         this.bounds = bounds;
+        this.mergeCooldownSeconds = this.normalizeMergeCooldown(mergeCooldownSeconds);
+    }
+
+    private normalizeMergeCooldown(seconds: number): number {
+        return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
     }
 
     private get coordinateScale(): number {
@@ -239,6 +292,7 @@ export class WatermelonFluidWorld {
         velocityX = 0,
         velocityY = 0,
         noImpulseCorrectionSeconds = 0,
+        mergeCooldownSeconds = 0,
     ): WatermelonFluidBody {
         const radius = this.radii[level];
         if (!Number.isFinite(radius) || radius <= 0) {
@@ -275,6 +329,7 @@ export class WatermelonFluidWorld {
             pressureGradientY: new Array<number>(POINT_COUNT).fill(0),
             dangerSeconds: 0,
             noImpulseCorrectionSeconds: Math.max(0, noImpulseCorrectionSeconds),
+            mergeCooldownSeconds: this.normalizeMergeCooldown(mergeCooldownSeconds),
             mergeReboundScale: 1,
             mergeReboundSeconds: 0,
         };
@@ -354,6 +409,7 @@ export class WatermelonFluidWorld {
                 0,
                 body.noImpulseCorrectionSeconds - delta,
             );
+            body.mergeCooldownSeconds = Math.max(0, body.mergeCooldownSeconds - delta);
             body.mergeReboundSeconds = Math.max(0, body.mergeReboundSeconds - delta);
             for (let pointIndex = 0; pointIndex < POINT_COUNT; pointIndex += 1) {
                 const point = body.points[pointIndex];
@@ -412,7 +468,11 @@ export class WatermelonFluidWorld {
                         this.overlapScratch,
                     );
                     if (!overlaps) continue;
-                    if (first.level === second.level && !locked.has(first.id) && !locked.has(second.id)) {
+                    if (first.level === second.level
+                        && first.mergeCooldownSeconds <= 0
+                        && second.mergeCooldownSeconds <= 0
+                        && !locked.has(first.id)
+                        && !locked.has(second.id)) {
                         locked.add(first.id);
                         locked.add(second.id);
                         mergeFirst.push(first);
@@ -420,7 +480,14 @@ export class WatermelonFluidWorld {
                     }
                     const firstWeight = second.targetArea / (first.targetArea + second.targetArea);
                     const secondWeight = 1 - firstWeight;
-                    const isPositionOnlyCorrection = first.noImpulseCorrectionSeconds > 0
+                    const isMergeCooldownContact = first.level === second.level
+                        && (first.mergeCooldownSeconds > 0 || second.mergeCooldownSeconds > 0);
+                    const isPositionOnlyCorrection = isMergeCooldownContact
+                        // A result in its presentation cooldown must still be
+                        // separated from an overlapping same-level partner,
+                        // but moving x and px together prevents that correction
+                        // from becoming an outward bounce on the next step.
+                        || first.noImpulseCorrectionSeconds > 0
                         || second.noImpulseCorrectionSeconds > 0
                         // A body already locked for merge disappears at the
                         // end of this step. Let it depenetrate geometrically,
@@ -433,6 +500,19 @@ export class WatermelonFluidWorld {
                     // Lifecycle topology correction remains position-only.
                     resolveOverlap(first, -1, firstWeight, this.overlapScratch, isPositionOnlyCorrection);
                     resolveOverlap(second, 1, secondWeight, this.overlapScratch, isPositionOnlyCorrection);
+                    if (isMergeCooldownContact) {
+                        const contactNx = this.overlapScratch.nx;
+                        const contactNy = this.overlapScratch.ny;
+                        updateCenter(first);
+                        updateCenter(second);
+                        if (findOverlap(first, second, 0, this.overlapScratch)) {
+                            const residualDepth = this.overlapScratch.depth;
+                            translateBody(first, -contactNx, -contactNy, residualDepth * firstWeight);
+                            translateBody(second, contactNx, contactNy, residualDepth * secondWeight);
+                        }
+                        removeOutwardVelocity(first, -1, contactNx, contactNy);
+                        removeOutwardVelocity(second, 1, contactNx, contactNy);
+                    }
                 }
             }
 
@@ -484,6 +564,8 @@ export class WatermelonFluidWorld {
                         Math.max(y, this.bounds.bottom + radius),
                         0,
                         0,
+                        0,
+                        this.mergeCooldownSeconds,
                     );
                     result.mergeReboundScale = MERGED_BODY_REBOUND_SCALE;
                     result.mergeReboundSeconds = MERGED_BODY_REBOUND_SECONDS;

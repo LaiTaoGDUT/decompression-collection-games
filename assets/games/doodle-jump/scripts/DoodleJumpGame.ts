@@ -350,7 +350,7 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.
             '可拾取道具带有常驻纸片星芒。主角碰到道具即可获得，纸飞机穿过道具不会触发拾取。',
             '',
             '· 弹簧：保存到下一次有效落地，使该次反弹明显升高。',
-            '· 蹦床：同样在下一次有效落地触发，弹跳高度高于弹簧；蹦床会覆盖尚未使用的弹簧，起跳后主角翻滚两圈且在该次跳跃期间无敌。',
+            '· 蹦床：同样在下一次有效落地触发，弹跳高度高于弹簧；蹦床会覆盖尚未使用的弹簧，起跳后主角翻滚一圈且在该次跳跃期间无敌。',
             '· 喷气背包：短时间保持向上飞行并穿过平台。',
             '· 竹蜻蜓：持续向上飞行，但仍保留平台碰撞。',
             '· 火箭：短时间高速向上冲刺并穿过平台。',
@@ -474,8 +474,11 @@ function createDoodleJumpVisualSlotState(): DoodleJumpVisualSlotState {
 }
 
 const LANDING_DEBRIS_DURATION = 0.42;
-const TRAMPOLINE_ROTATION_TURNS = 2;
+const TRAMPOLINE_ROTATION_TURNS = 1;
 const PLAYER_CONTACT_IMPACT_DURATION = 0.38;
+// 运行层在 begin() 返回后还需要一小段时间切换到 playing；恢复局暂停请求
+// 若恰好早于这次切换，使用一次受生命周期管理的重试，避免恢复局直接开跑。
+const RESTORED_ROUND_PAUSE_RETRY_SECONDS = 0.2;
 // Baked platform textures place the actual paper surface about 6 units below
 // their logical top, while normalized enemy frames retain roughly 1.5 units of
 // transparent bottom padding. Compensate both in presentation only so the
@@ -1104,13 +1107,32 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
 
     private proceedAfterCalibration(): void {
         if (this.stateMachine.state !== 'SensorCalibrating') return;
-        if (this.activeRoundRestored
-            || this.simulation?.getPresentationView().itemStatus.usedHeadStart) {
+        if (this.activeRoundRestored) {
+            this.startPlaying();
+            this.pauseRestoredRound();
+        } else if (this.simulation?.getPresentationView().itemStatus.usedHeadStart) {
             this.startPlaying();
         } else if (this.availableHeadStartCount() > 0) {
             this.showHeadStartPrompt();
         } else {
             this.startPlaying();
+        }
+    }
+
+    private pauseRestoredRound(): void {
+        if (this.stateMachine.state !== 'Playing') return;
+        const generation = this.lifecycleGeneration;
+        const requestPause = (): void => {
+            if (!this.isGenerationCurrent(generation)
+                || this.stateMachine.state !== 'Playing') return;
+            this.context?.requestPause();
+        };
+
+        // 通常陀螺仪校准会晚于运行层进入 playing；先立即请求，避免用户看到
+        // 恢复局短暂自动运行。若是浏览器键盘降级模式或极快校准，再补一次请求。
+        requestPause();
+        if (this.stateMachine.state === 'Playing') {
+            this.scheduleOnce(requestPause, RESTORED_ROUND_PAUSE_RETRY_SECONDS);
         }
     }
 

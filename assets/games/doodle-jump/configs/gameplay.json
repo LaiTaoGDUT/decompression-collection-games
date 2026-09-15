@@ -26,7 +26,7 @@
     "timeoutMs": 1500,
     "staleTimeoutMs": 1500,
     "deadZone": 0.04,
-    "fullTilt": 0.2,
+    "fullTilt": 0.18,
     "smoothingSeconds": 0.08
   },
   "camera": {
@@ -185,8 +185,8 @@
       { "startMeters": 70, "endMeters": 120, "spring": 55, "trampoline": 30, "jetpack": 0, "propellerHat": 0, "rocket": 0, "shield": 15 },
       { "startMeters": 120, "endMeters": 150, "spring": 30, "trampoline": 20, "jetpack": 20, "propellerHat": 15, "rocket": 0, "shield": 15 },
       { "startMeters": 150, "endMeters": 180, "spring": 30, "trampoline": 20, "jetpack": 20, "propellerHat": 15, "rocket": 0, "shield": 15 },
-      { "startMeters": 180, "endMeters": 250, "spring": 20, "trampoline": 15, "jetpack": 20, "propellerHat": 15, "rocket": 10, "shield": 15 },
-      { "startMeters": 250, "endMeters": 1000000, "spring": 15, "trampoline": 10, "jetpack": 20, "propellerHat": 15, "rocket": 12, "shield": 20 }
+      { "startMeters": 180, "endMeters": 250, "spring": 20, "trampoline": 15, "jetpack": 20, "propellerHat": 15, "rocket": 8, "shield": 15 },
+      { "startMeters": 250, "endMeters": 1000000, "spring": 15, "trampoline": 10, "jetpack": 20, "propellerHat": 15, "rocket": 10, "shield": 20 }
     ]
   },
   "resurrection": {

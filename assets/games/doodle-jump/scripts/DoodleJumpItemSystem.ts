@@ -331,7 +331,7 @@ export class DoodleJumpItemSystem {
             const bounceVelocity = this.config.items.trampoline.bounceVelocity;
             const gravityMagnitude = Math.max(1, Math.abs(this.config.player.gravity));
             this.trampolineJumpActive = true;
-            // Complete both visual turns exactly at the ballistic apex. The
+            // Complete the visual turn exactly at the ballistic apex. The
             // fixed-step velocity crosses from positive to non-positive in the
             // same step that this elapsed duration reaches one.
             this.trampolineJumpDurationSeconds = bounceVelocity / gravityMagnitude;

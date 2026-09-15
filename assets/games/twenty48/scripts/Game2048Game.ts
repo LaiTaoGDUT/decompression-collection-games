@@ -74,7 +74,10 @@ const TILE_SETTLE_DURATION = 0.06;
 const MERGE_CELEBRATION_DELAY = 0.55;
 // 高阶合成的光晕会越出棋子边缘，但仍限制在相邻一格内快速消散。
 const HIGH_MERGE_EFFECT_SCALE = 1.56;
+// 以 128 为高阶合成的基础时长；棋子每翻一倍，所有合成层再延长一档。
 const HIGH_MERGE_EFFECT_DURATION_SCALE = 1.15;
+const HIGH_MERGE_EFFECT_DURATION_LEVEL_STEP = 0.16;
+const HIGH_MERGE_EFFECT_MIN_VALUE = 128;
 const GAME_2048_DATA_VERSION = 4;
 const GAME_2048_RESOURCE_BUNDLE = 'game-2048-assets';
 const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
@@ -232,6 +235,19 @@ const TILE_MATERIALS: Readonly<Record<number, TileMaterial>> = Object.freeze({
 
 function colorWithAlpha(rgb: Rgb, alpha: number): Color {
     return new Color(rgb[0], rgb[1], rgb[2], alpha);
+}
+
+/**
+ * 合成特效的持续时间以最终生成的棋子为准，而不是以某一层材质为准。
+ * 这样即使以后出现 8192 等未配置材质的棋子，特效仍会随棋子等级自然延长。
+ */
+function getHighMergeEffectDurationScale(value: number): number {
+    if (!Number.isFinite(value) || value < HIGH_MERGE_EFFECT_MIN_VALUE) {
+        return HIGH_MERGE_EFFECT_DURATION_SCALE;
+    }
+
+    const level = Math.max(0, Math.log2(value / HIGH_MERGE_EFFECT_MIN_VALUE));
+    return HIGH_MERGE_EFFECT_DURATION_SCALE + level * HIGH_MERGE_EFFECT_DURATION_LEVEL_STEP;
 }
 
 export interface HighTierTileRect {
@@ -1643,6 +1659,7 @@ export class Game2048Game extends Component implements MiniGame {
         const accent: Rgb = material?.accent ?? rgb;
         const level = Math.min(5, Math.max(1, Math.log2(value) - 6));
         const tier = HIGH_TIER_LEVELS[value] ?? 0;
+        const durationScale = getHighMergeEffectDurationScale(value);
         const eliteBoost = (level >= 3 ? 1 + (level - 2) * 0.05 : 1) + tier * 0.025;
         const ringCount = Math.min(4, level);
 
@@ -1671,7 +1688,7 @@ export class Game2048Game extends Component implements MiniGame {
         flash.setScale(0.84 * HIGH_MERGE_EFFECT_SCALE, 0.84 * HIGH_MERGE_EFFECT_SCALE, 1);
         tween(flash)
             .to(
-                (0.11 + level * 0.01 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE,
+                (0.11 + level * 0.01 + tier * 0.012) * durationScale,
                 {
                     scale: new Vec3(
                         (1.04 + level * 0.015 + tier * 0.025) * eliteBoost * HIGH_MERGE_EFFECT_SCALE,
@@ -1684,7 +1701,7 @@ export class Game2048Game extends Component implements MiniGame {
             .start();
         tween(flashOpacity)
             .to(
-                (0.12 + level * 0.012 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE,
+                (0.12 + level * 0.012 + tier * 0.012) * durationScale,
                 { opacity: 0 },
             )
             .call(() => this.destroyNodeWithTweens(flash))
@@ -1716,7 +1733,7 @@ export class Game2048Game extends Component implements MiniGame {
             }
             const startScale = (0.82 + ringIndex * 0.04) * HIGH_MERGE_EFFECT_SCALE;
             const duration = (0.13 + level * 0.015 + ringIndex * 0.01 + tier * 0.012)
-                * HIGH_MERGE_EFFECT_DURATION_SCALE;
+                * durationScale;
             const endScale = (1.03 + level * 0.03 + ringIndex * 0.025 + tier * 0.02)
                 * eliteBoost * HIGH_MERGE_EFFECT_SCALE;
             ring.setScale(startScale, startScale, 1);
@@ -1780,7 +1797,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.close();
         graphics.stroke();
 
-        const duration = (0.2 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE;
+        const duration = (0.2 + tier * 0.012) * getHighMergeEffectDurationScale(value);
         const endScale = (1.22 + tier * 0.045) * HIGH_MERGE_EFFECT_SCALE;
         aura.setScale(0.55, 0.55, 1);
         tween(aura)
@@ -1841,7 +1858,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.circle(0, 0, tileSize * 0.32);
         graphics.stroke();
 
-        const duration = (0.18 + tier * 0.014) * HIGH_MERGE_EFFECT_DURATION_SCALE;
+        const duration = (0.18 + tier * 0.014) * getHighMergeEffectDurationScale(value);
         burst.setScale(0.42, 0.42, 1);
         tween(burst)
             .to(duration, {
@@ -1913,7 +1930,7 @@ export class Game2048Game extends Component implements MiniGame {
             }
         }
 
-        const duration = (0.22 + tier * 0.012) * HIGH_MERGE_EFFECT_DURATION_SCALE;
+        const duration = (0.22 + tier * 0.012) * getHighMergeEffectDurationScale(value);
         const endScale = 1.08 + tier * 0.032;
         tween(sparks)
             .to(duration, {
@@ -1956,7 +1973,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.stroke();
         core.setScale(0.72 * HIGH_MERGE_EFFECT_SCALE, 0.72 * HIGH_MERGE_EFFECT_SCALE, 1);
         tween(core)
-            .to((0.12 + tier * 0.02) * HIGH_MERGE_EFFECT_DURATION_SCALE, {
+            .to((0.12 + tier * 0.02) * getHighMergeEffectDurationScale(value), {
                 scale: new Vec3(
                     (1.02 + tier * 0.025) * HIGH_MERGE_EFFECT_SCALE,
                     (1.02 + tier * 0.025) * HIGH_MERGE_EFFECT_SCALE,
@@ -1965,7 +1982,7 @@ export class Game2048Game extends Component implements MiniGame {
             }, { easing: 'backOut' })
             .start();
         tween(opacity)
-            .to((0.15 + tier * 0.02) * HIGH_MERGE_EFFECT_DURATION_SCALE, { opacity: 0 })
+            .to((0.15 + tier * 0.02) * getHighMergeEffectDurationScale(value), { opacity: 0 })
             .call(() => this.destroyNodeWithTweens(core))
             .start();
     }

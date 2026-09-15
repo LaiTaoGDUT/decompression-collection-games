@@ -9,6 +9,7 @@ export interface WatermelonGameplayConfig {
     readonly schemaVersion: 1;
     readonly initialSpawnWeights: readonly number[];
     readonly dropCooldownSeconds: number;
+    readonly mergeCooldownSeconds: number;
     readonly dropEdgePadding: number;
     readonly dangerStableSpeedSquared: number;
     readonly dangerOverflowSeconds: number;
@@ -30,11 +31,13 @@ export interface GameplayConfigValidationResult {
 
 const EXPECTED_FRUIT_COUNT = 11;
 const EXPECTED_INITIAL_COUNT = 5;
+export const DEFAULT_WATERMELON_MERGE_COOLDOWN_SECONDS = 0.2;
 
 export const DEFAULT_WATERMELON_GAMEPLAY_CONFIG: WatermelonGameplayConfig = deepFreeze({
     schemaVersion: 1,
     initialSpawnWeights: [30, 25, 20, 15, 10],
     dropCooldownSeconds: 0.42,
+    mergeCooldownSeconds: DEFAULT_WATERMELON_MERGE_COOLDOWN_SECONDS,
     dropEdgePadding: 2,
     dangerStableSpeedSquared: 0.25,
     dangerOverflowSeconds: 3,
@@ -191,6 +194,15 @@ export function validateWatermelonGameplayConfig(
 
     const configValues = {
         dropCooldownSeconds: readNumber(value, 'dropCooldownSeconds', errors, { min: 0, max: 2 }),
+        // Keep older locally-authored configs valid while making the merge
+        // pacing explicit for newly generated gameplay data.
+        mergeCooldownSeconds: value.mergeCooldownSeconds === undefined
+            ? DEFAULT_WATERMELON_MERGE_COOLDOWN_SECONDS
+            : readNumber(value, 'mergeCooldownSeconds', errors, {
+                min: 0,
+                max: 1,
+                allowZero: true,
+            }),
         dropEdgePadding: readNumber(value, 'dropEdgePadding', errors, { min: 0, max: 40, allowZero: true }),
         dangerStableSpeedSquared: readNumber(value, 'dangerStableSpeedSquared', errors, { min: 0, max: 9 }),
         dangerOverflowSeconds: readNumber(value, 'dangerOverflowSeconds', errors, { min: 0, max: 10 }),
@@ -218,6 +230,7 @@ export function validateWatermelonGameplayConfig(
             schemaVersion: 1 as const,
             initialSpawnWeights: [...initialSpawnWeights],
             dropCooldownSeconds: configValues.dropCooldownSeconds!,
+            mergeCooldownSeconds: configValues.mergeCooldownSeconds!,
             dropEdgePadding: configValues.dropEdgePadding!,
             dangerStableSpeedSquared: configValues.dangerStableSpeedSquared!,
             dangerOverflowSeconds: configValues.dangerOverflowSeconds!,

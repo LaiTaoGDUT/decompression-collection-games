@@ -4,7 +4,7 @@
 >
 > 运行时目录：`assets/games/twenty48/visual/audio/`
 >
-> 状态：A03、A05 音效已完成生成、试听确认和运行时接入；A04 及其余 8 条音频仍需重新生成、试听、确认来源与许可后，才能替换运行时资源。
+> 状态：A03、A04、A05 音效已完成生成、试听确认和运行时接入；A06–A11 共 6 条音效仍需生成、试听、确认来源与许可后，才能替换运行时资源。
 
 本文按照当前 `Game2048Game` 的实际加载和播放逻辑编写，覆盖 2 条游戏内循环音乐与 9 条音效。提示词可直接复制到音频生成平台；平台、模型、生成日期、输出 ID、许可条款、选用版本和后处理记录，需在人工生成后补齐并随对应音频交付物保留。
 
@@ -138,7 +138,7 @@
 - 不要做成 `milestone` 或 `record` 的奖励音；UI 音只负责“操作被接受”。
 - 检查连续点击时是否刺耳、是否产生明显尾音堆积。
 
-## 7. A04｜有效移动音：数字方块位移
+## 7. A04｜有效移动音：数字方块位移（done）
 
 ### 音频资产
 
@@ -155,7 +155,7 @@
 ~~~text
 为原创手机休闲游戏《霓虹 2048》生成一条“数字方块滑行”游戏音效。当玩家完成一次有效的上下左右移动、但没有发生合成时播放。重点表现一次短距离的数字手势：发光方块沿电路网格平移一格；它不是按钮确认音、音乐音符或持续鸣响。整体要有清楚、克制的 T48-N1「霓虹数字电路」辨识度，能够高频重复播放。
 
-只使用干净、确定的合成波形和短包络。这必须听起来像位移而不是 click 或 hit：用一个平滑的青蓝合成音，在约 90 ms 内明确地从 1100 Hz 连续下滑到 350 Hz；然后以非常轻的 10 ms 紫色电路锁定 blip 收尾，表现方块落位。只用正弦/三角波、柔和边缘和连续衰减；可以有极低调、低调制深度的相位调制来增加赛博感，但不能变成金属音。
+只使用干净、确定的合成波形和短包络。这必须听起来像位移而不是 click 或 hit：用一个温和的低中频青蓝正弦，在约 80 ms 内明确、连续地从 700 Hz 下滑到 280 Hz；然后以非常轻的 12 ms、约 420 Hz 的暗紫色电路节点音收尾，表现方块落位。霓虹感来自柔和的滤波色彩和双颜色层次，不靠高频亮度。只用正弦/三角波、圆润起音、安静衰减和严格低通；不要尖锐高频或共振。
 
 这是一个独立 one-shot，目标时长约 0.12–0.18 秒，开头立即起音，结尾快速干净。输出居中、干声或极轻近场空间感，在手机小音量下仍能听见但不刺耳，适合快速连续移动和背景音乐同时播放。严格不要加入任何噪声或砂砾质感：不要 white noise、pink noise、whoosh、hiss、bit-crush、颗粒、宽带噪声、风声、现实材质摩擦、click、chime、奖励感、音乐、旋律段落、人声、对白、尖锐高频、金属或玻璃振铃、警报、多个移动事件、长混响、现成采样、品牌声音、水印或对任何现有作品的模仿。
 ~~~
@@ -165,10 +165,10 @@
 - 必须明显弱于 `t48-merge-v1` 和 `t48-combo-v1`，否则普通移动会掩盖真正的进度反馈。
 - 连续滑动试听至少 20 次，确认不会因高频重复而疲劳。
 
-#### English version (copy-ready; 447 characters)
+#### English version (copy-ready; 441 characters)
 
 ~~~text
-One clean digital slide-down for a valid 2048 tile move, no merge. It must sound like motion, not a click or hit: a smooth cyan synth tone clearly glides downward from 1100 Hz to 350 Hz over 90 ms. Finish with a very quiet 10 ms violet circuit-lock blip. Pure sine/triangle synthesis, soft edges, dry, centered, repeat-safe, total 0.14–0.18 s. No noise, hiss, static, grit, distortion, impact, click, chime, melody, music, voice, alarm, or reverb.
+Soft non-piercing neon UI slide for a 2048 tile move, no merge. Warm low-mid cyan sine glides smoothly from 700 Hz to 280 Hz over 80 ms; add a muted violet node tone at 420 Hz for 12 ms. Neon color comes from gentle filtering, not brightness. Rounded attack, quiet decay, dry, centered, repeat-safe, 0.14–0.18 s. Strict low-pass; no sharp highs, resonance, noise, hiss, grit, distortion, whoosh, click, chime, music, voice, alarm, or reverb.
 ~~~
 
 ## 8. A05｜无效操作音：收住的数字错误（done）
@@ -216,7 +216,7 @@ One clean digital slide-down for a valid 2048 tile move, no merge. It must sound
 ~~~text
 为原创手机游戏《霓虹 2048》生成一条“高阶数字折叠”游戏音效。当较高数值的数字方块完成合成、需要额外表现能量升级时播放。运行时文件名为 t48-spawn-v1，但它不是普通新方块生成声；它要表达的是数字层级被折叠、压缩并释放出更高能量。
 
-使用一个快速收拢的蓝紫 gated pulse，接一个短促的相位折叠 snap 和很小的高频数字亮点，形成“压缩—折叠—弹开”的单一事件。能量比普通移动和单次合成更高，但不要盖过连锁、里程碑和新纪录；不要加入完整旋律、爆炸或科幻武器音。
+使用两个明显音高阶段组成一个连续的折叠动作：青蓝低中频 chirp 先在约 90 ms 内向下滑音，随后更低、暗紫的锁定音出现约 45 ms 并衰减。必须清楚听到音高下滑和第二个锁定音，不能变成通知音式单音、持续平音或 drone；两段仍属于同一次事件，边缘圆润、无沙声。能量比普通移动和单次合成更高，但不要盖过连锁、里程碑和新纪录；霓虹感来自蓝紫滤波和音调层次，不靠尖锐高频；不要加入完整旋律、爆炸或科幻武器音。
 
 这是一个独立 one-shot，目标时长约 0.18–0.30 秒，开头立即起音，中间折叠瞬态清楚，尾音短而可控。输出居中、干声或极轻空间感，适合高频与其他合成音同时播放。不要包含音乐、歌词、人声、对白、多个事件、木质、纸张、猫咪、水果、象棋、警报、激光、爆炸、现成采样、品牌声音、水印或对任何现有游戏和艺术家的模仿。
 ~~~
@@ -225,6 +225,12 @@ One clean digital slide-down for a valid 2048 tile move, no merge. It must sound
 
 - 文件名中的 `spawn` 是历史命名；验收时以“高阶合成强化音”而不是“普通生成音”判断。
 - 检查它与 `t48-merge-v1`、`t48-combo-v1` 的层级关系，不能只靠调大音量制造高级感。
+
+#### English version (copy-ready; 439 characters)
+
+~~~text
+Short neon 2048 tile fusion sound. Two distinct tonal phases in one connected gesture: a soft cyan low-mid chirp descends in pitch for 90 ms, then a lower muted violet lock tone arrives for 45 ms and fades. Clearly hear the pitch drop and second tone; no sustained note or notification beep. Clean rounded synth, dry centered, 0.18–0.26 s. No noise, hiss, grit, harsh highs, click, chime, melody, music, voice, alarm, explosion, or reverb.
+~~~
 
 ## 10. A07｜单次合成音：两个节点合一
 

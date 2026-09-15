@@ -2440,7 +2440,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 overlaySize - 12,
             );
             numberLabel.isBold = true;
-            overlay.active = this.showTileNumbers;
+            overlay.active = this.shouldShowTileNumberOverlay();
 
             const bevel = new Node('TileBevel');
             bevel.layer = this.node.layer;
@@ -2645,6 +2645,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         if (this.displayModeSwitchNode?.isValid) {
             this.displayModeSwitchNode.active = false;
         }
+        // 完成特效需要直接作用在已经还原的图片上；序号模式的数字和半透明
+        // 蒙层属于操作辅助信息，必须在特效创建前一起撤掉，避免它们被闪耀效果
+        // 继续叠在棋盘上。completionRequested 同时让后续画布重建保持隐藏。
+        this.setTileNumberOverlaysVisible(false);
         if (this.pauseButtonNode?.isValid) {
             this.pauseButtonNode.active = true;
         }
@@ -2679,6 +2683,19 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.destroyCompletionEffect();
             this.context?.requestExit(result);
         }, COMPLETION_CELEBRATION_DURATION);
+    }
+
+    private shouldShowTileNumberOverlay(): boolean {
+        return this.showTileNumbers && !this.completionRequested;
+    }
+
+    private setTileNumberOverlaysVisible(visible: boolean): void {
+        this.tileIndexByNode.forEach((_tileIndex, tile) => {
+            const overlay = tile.getChildByName('TileNumberOverlay');
+            if (overlay?.isValid) {
+                overlay.active = visible;
+            }
+        });
     }
 
     private showCompletionEffect(): void {

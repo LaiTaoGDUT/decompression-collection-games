@@ -289,6 +289,7 @@ export class WatermelonGame extends Component implements MiniGame {
             dangerLine: WATERMELON_BOARD_HEIGHT / 2 - 145,
         },
         (event) => this.handleFluidMerge(event),
+        DEFAULT_WATERMELON_GAMEPLAY_CONFIG.mergeCooldownSeconds,
     );
     private readonly fluidBodies = new Map<Node, WatermelonFluidBody>();
     private readonly fluidNodes = new Map<number, Node>();
@@ -920,6 +921,7 @@ export class WatermelonGame extends Component implements MiniGame {
                 bottom: -size.height / 2 + WATERMELON_BOARD_BOTTOM_PADDING,
                 dangerLine,
             },
+            this.gameplay.mergeCooldownSeconds,
         );
     }
 
