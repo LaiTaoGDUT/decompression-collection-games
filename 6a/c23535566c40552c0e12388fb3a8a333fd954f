@@ -1,0 +1,333 @@
+assets/resources/configs/games.json
+  h_293365c3a5ebee 143-164,169
+  h_293365c3a5ebee 165-168
+assets/runtime/GameRuntime.ts
+  h_293365c3a5ebee 469-470,472,475-476,479
+  h_293365c3a5ebee 471,473-474,477-478
+.codex/config.toml
+  h_293365c3a5ebee 33-59
+assets/app/App.ts
+  h_293365c3a5ebee 160,165-168,345-350
+assets/app/AppConfig.ts
+  h_293365c3a5ebee 50,155,168-170
+assets/game-assets/bubble-shooter.meta
+  h_293365c3a5ebee 1-17
+assets/game-assets/bubble-shooter/visual.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/common.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/common/dialog-common.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/common/dialog-common/dialog-panel.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/dialog-common/dialog-primary.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/dialog-common/dialog-secondary.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/reward-common.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/common/reward-common/reward-button.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/reward-common/reward-card.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/reward-common/reward-check.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/reward-common/reward-panel.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/reward-common/reward-selection.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/reward-common/reward-subtitle.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/transition.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/common/transition/boss-alert.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/common/transition/cloud-curtain.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/backgrounds.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/backgrounds/background.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/backgrounds/cloud-transition.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/backgrounds/foreground-bottom.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/backgrounds/island-left.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/backgrounds/island-right.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/boss.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/boss/boss-pudding-body.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/boss/boss-pudding-crown.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/boss/boss-pudding-fist-left.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/boss/boss-pudding-fist-right.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-blue.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-purple.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-red.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-yellow.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/cloud-bubbles.pac
+  h_293365c3a5ebee 1-3
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/cloud-bubbles.pac.meta
+  h_293365c3a5ebee 1-36
+assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/frosting-overlay.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/cloud-hud.pac
+  h_293365c3a5ebee 1-3
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/cloud-hud.pac.meta
+  h_293365c3a5ebee 1-36
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-boss-health-fill.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-boss-health-track.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-counter-bead.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-counter-slot-empty.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-down-arrow.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-frosting-skill.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/hud/hud-pause-button.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/items.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/cloud-items.pac
+  h_293365c3a5ebee 1-3
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/cloud-items.pac.meta
+  h_293365c3a5ebee 1-36
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-bomb.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-button-base.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-clear-bottom.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-count-badge.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-wildcard.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/cloud-launcher.pac
+  h_293365c3a5ebee 1-3
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/cloud-launcher.pac.meta
+  h_293365c3a5ebee 1-36
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/launcher-connector.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/launcher-head.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/launcher-pedestal.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/launcher-turret.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/swap-icon.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/reward-cloud.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/reward-cloud/reward-cloud-title.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/blue-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/blue-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/purple-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/purple-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/red-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/red-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/yellow-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-candy-shards/yellow-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/attack-energy-heart.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/cloud-vfx.pac
+  h_293365c3a5ebee 1-3
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/cloud-vfx.pac.meta
+  h_293365c3a5ebee 1-36
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-03.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-04.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-05.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-06.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/vfx/frosting-debris/fragment-07.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/ocean/boss.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/ocean/boss/boss-body.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/boss/boss-crown.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/boss/boss-grab-arm.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/boss/boss-right-arm.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/boss/boss-staff-arm.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/reward.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/ocean/reward/celebration.png.meta
+  h_293365c3a5ebee 1-134
+assets/games/bubble-shooter.meta
+  h_293365c3a5ebee 1-17
+assets/games/bubble-shooter/scenes.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scenes/BubbleShooter.scene
+  h_293365c3a5ebee 1-26011
+assets/games/bubble-shooter/scenes/BubbleShooter.scene.meta
+  h_293365c3a5ebee 1-11
+assets/games/bubble-shooter/scripts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterAudio.ts
+  h_293365c3a5ebee 1-3,5-8,10-16,18-25,27-63
+assets/games/bubble-shooter/scripts/BubbleShooterAudio.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterDifficulty.ts
+  h_293365c3a5ebee 1-13
+assets/games/bubble-shooter/scripts/BubbleShooterDifficulty.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterEndView.ts
+  h_293365c3a5ebee 1-238
+assets/games/bubble-shooter/scripts/BubbleShooterEndView.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterGame.ts
+  h_293365c3a5ebee 1-1140
+assets/games/bubble-shooter/scripts/BubbleShooterGame.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterLayout.ts
+  h_293365c3a5ebee 1-37
+assets/games/bubble-shooter/scripts/BubbleShooterLayout.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterModalMotion.ts
+  h_293365c3a5ebee 1-49
+assets/games/bubble-shooter/scripts/BubbleShooterModalMotion.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterModel.ts
+  h_293365c3a5ebee 1-234
+assets/games/bubble-shooter/scripts/BubbleShooterModel.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterOceanBoss.ts
+  h_293365c3a5ebee 1-205
+assets/games/bubble-shooter/scripts/BubbleShooterOceanBoss.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterParticles.ts
+  h_293365c3a5ebee 1-50
+assets/games/bubble-shooter/scripts/BubbleShooterParticles.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterRemovalMotion.ts
+  h_293365c3a5ebee 1-43
+assets/games/bubble-shooter/scripts/BubbleShooterRemovalMotion.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterRewardView.ts
+  h_293365c3a5ebee 1-168
+assets/games/bubble-shooter/scripts/BubbleShooterRewardView.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterRound.ts
+  h_293365c3a5ebee 1-462
+assets/games/bubble-shooter/scripts/BubbleShooterRound.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/bubble-shooter/scripts/BubbleShooterTransitionView.ts
+  h_293365c3a5ebee 1-170
+assets/games/bubble-shooter/scripts/BubbleShooterTransitionView.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/doodle-jump/configs/gameplay.json
+  h_293365c3a5ebee 12-13,176-177,196
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  h_293365c3a5ebee 4601
+assets/games/sliding-puzzle/scripts/SlidingPuzzleGame.ts
+  h_293365c3a5ebee 164-167,1782-1783,1787,1789-1792,1800,2337,2622,2822
+assets/games/sliding-puzzle/scripts/SlidingPuzzleLayout.ts
+  h_293365c3a5ebee 78,148,155,158-161
+assets/lobby/visual/covers/bubble-shooter.meta
+  h_293365c3a5ebee 1-9
+assets/lobby/visual/covers/bubble-shooter/bubble-shooter-cover-v1.jpg.meta
+  h_293365c3a5ebee 1-42
+assets/resources/configs/app.json
+  h_293365c3a5ebee 63-65,82-84
+assets/runtime/GameManifest.ts
+  h_293365c3a5ebee 23-25
+assets/runtime/GameManifestValidator.ts
+  h_293365c3a5ebee 266-269,315
+assets/services/ads/AdService.ts
+  h_293365c3a5ebee 9
+assets/services/audio/AudioService.ts
+  h_293365c3a5ebee 15-24,32,38,94-118,154,167,198
+docs/games/bubble-shooter/AUDIO_PROMPTS.md
+  h_293365c3a5ebee 1-496
+docs/games/bubble-shooter/DECISIONS.md
+  h_293365c3a5ebee 30,52,54,65-144
+docs/games/bubble-shooter/DESIGN.md
+  h_293365c3a5ebee 132,142,146-149
+docs/games/bubble-shooter/INTEGRATION.md
+  h_293365c3a5ebee 1-172
+docs/games/bubble-shooter/OCEAN_REVIEW.md
+  h_293365c3a5ebee 1-121
+docs/games/bubble-shooter/README.md
+  h_293365c3a5ebee 3,5-8,11,13,16-19,21,23-24,27,32-33,49,55-60,62
+docs/games/bubble-shooter/SINGLE_SCENE_STATUS.md
+  h_293365c3a5ebee 1-104
+docs/games/bubble-shooter/VISUAL.md
+  h_293365c3a5ebee 11-18,83,100,102,108-109,112,116,122,124,126-140
+docs/games/bubble-shooter/runtime-source/README.md
+  h_293365c3a5ebee 5,15,24-29,36-37,41-43,45,47,49-55,57-58,67
+docs/games/bubble-shooter/runtime-source/dialog/manifest.json
+  h_293365c3a5ebee 1-35
+docs/games/bubble-shooter/runtime-source/ocean/README.md
+  h_293365c3a5ebee 1-7
+docs/games/bubble-shooter/runtime-source/ocean/v7/layers.json
+  h_293365c3a5ebee 1-92
+docs/games/bubble-shooter/runtime-source/reward/README.md
+  h_293365c3a5ebee 1-30
+docs/games/bubble-shooter/runtime-source/reward/manifest.json
+  h_293365c3a5ebee 1-86
+docs/games/game2048/T48_AUDIO_PROMPTS.md
+  h_293365c3a5ebee 7,150,156,158,160,168-174
+tools/verify-game-bundles.js
+  h_293365c3a5ebee 213-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6ac23535566c40552c0e12388fb3a8a333fd954f",
+  "prompts": {},
+  "logical_commit_id": "6ac23535566c40552c0e12388fb3a8a333fd954f",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
