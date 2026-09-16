@@ -27,22 +27,21 @@ export class BubbleShooterModalMotion {
     update(dt: number): void {
         if (!this.root.active || this.phase === 'still') return;
         this.elapsed += Math.max(0, Math.min(dt, .05)); this.draw();
-        const duration = this.phase === 'open' ? .3 : .18;
+        const duration = this.phase === 'open' ? .24 : .18;
         if (this.elapsed < duration) return;
         const resolve = this.resolve; this.resolve = undefined; this.phase = 'still'; resolve?.(true);
     }
     private draw(): void {
-        let size = 1, offset = 0, alpha = 1;
+        let sx = 1, sy = 1, offset = 0, alpha = 1;
         if (this.phase === 'open') {
-            const t = Math.min(1, this.elapsed / .3), u = 1 - t;
-            // Slightly under full size throughout: short-screen safe bounds remain intact.
-            size = 1 - .1 * u * u + Math.sin(t * Math.PI * 2) * .012 * u;
-            offset = -12 * u * u; alpha = Math.min(1, t * 2.5);
+            const t = Math.min(1, this.elapsed / .24), u=t-1;
+            const back=1+2.70158*u*u*u+1.70158*u*u;
+            sx=.88+.12*back; sy=.74+.26*back; alpha=Math.min(1,t*3);
         } else if (this.phase === 'close') {
-            const t = Math.min(1, this.elapsed / .18);
-            size = 1 - .06 * t * t; offset = -10 * t * t; alpha = 1 - t * t;
+            const t = Math.min(1, this.elapsed / .18), ease=t*t;
+            sx=1-.12*ease; sy=1-.26*ease; alpha=1-ease;
         }
-        this.content.setScale(this.scale * size, this.scale * size, 1);
+        this.content.setScale(this.scale * sx, this.scale * sy, 1);
         this.content.setPosition(0, this.y + offset * this.scale);
         this.opacity.opacity = 255 * alpha;
     }

@@ -6,16 +6,16 @@ export interface Bubble extends Cell { color: BubbleColor; frosted: boolean; sup
 export interface Point { x: number; y: number; }
 export interface Shot { points: Point[]; cell: Cell; }
 export interface ShotResult { removed: Bubble[]; dropped: Bubble[]; thawed: Bubble[]; }
-export const COLUMNS = 15;
-export const DIAMETER = 48;
+export const COLUMNS = 14;
+export const DIAMETER = 720 / COLUMNS;
 export const ROW_HEIGHT = DIAMETER * Math.sqrt(3) / 2;
 export const BOARD_WIDTH = COLUMNS * DIAMETER;
 // Center limit: the projectile outer edge touches the same boundary as a full row.
 export const WALL = (BOARD_WIDTH - DIAMETER) / 2;
 export const TOP = 410;
-export const DANGER = -330;
+export const DANGER = -305;
 export const MAX_ROW = Math.ceil((TOP - DANGER - DIAMETER / 2) / ROW_HEIGHT);
-export const PIVOT = { x: 0, y: -404 };
+export const PIVOT = { x: 0, y: -398 };
 export const MUZZLE_OFFSET = 0;
 export const COLORS: readonly BubbleColor[] = ['red', 'yellow', 'blue', 'purple'];
 const key = (c: Cell): string => `${c.row}:${c.col}`;

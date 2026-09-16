@@ -4,7 +4,7 @@
 >
 > 运行时目录：`assets/games/twenty48/visual/audio/`
 >
-> 状态：A03、A04、A05 音效已完成生成、试听确认和运行时接入；A06–A11 共 6 条音效仍需生成、试听、确认来源与许可后，才能替换运行时资源。
+> 状态：A03、A05 音效已完成生成、试听确认和运行时接入；A04、A06–A11 共 7 条音效仍需生成、试听、确认来源与许可后，才能替换运行时资源。
 
 本文按照当前 `Game2048Game` 的实际加载和播放逻辑编写，覆盖 2 条游戏内循环音乐与 9 条音效。提示词可直接复制到音频生成平台；平台、模型、生成日期、输出 ID、许可条款、选用版本和后处理记录，需在人工生成后补齐并随对应音频交付物保留。
 
@@ -138,7 +138,7 @@
 - 不要做成 `milestone` 或 `record` 的奖励音；UI 音只负责“操作被接受”。
 - 检查连续点击时是否刺耳、是否产生明显尾音堆积。
 
-## 7. A04｜有效移动音：数字方块位移（done）
+## 7. A04｜有效移动音：数字方块位移
 
 ### 音频资产
 
@@ -147,17 +147,17 @@
 - 类型：玩法 one-shot。
 - 建议时长：0.12–0.20 秒。
 - 循环：否；适合高频重复播放。
-- 声音身份：纯净青蓝数字滑移脉冲、柔和合成包络、稳定落位。
+- 声音身份：短促青蓝滑移脉冲、轻微数字边缘摩擦、稳定落位。
 - 变体数量：1 条运行时音效。
 
 ### 外部平台生成提示词
 
 ~~~text
-为原创手机休闲游戏《霓虹 2048》生成一条“数字方块滑行”游戏音效。当玩家完成一次有效的上下左右移动、但没有发生合成时播放。重点表现一次短距离的数字手势：发光方块沿电路网格平移一格；它不是按钮确认音、音乐音符或持续鸣响。整体要有清楚、克制的 T48-N1「霓虹数字电路」辨识度，能够高频重复播放。
+为原创手机休闲游戏《霓虹 2048》生成一条“数字方块有效移动”游戏音效。当玩家完成一次有效的上下左右移动、但没有任何两个方块合成时播放。反馈要让玩家听到方块确实移动并完成落位，轻快、清楚、低刺激，不要有奖励或失败意味。
 
-只使用干净、确定的合成波形和短包络。这必须听起来像位移而不是 click 或 hit：用一个温和的低中频青蓝正弦，在约 80 ms 内明确、连续地从 700 Hz 下滑到 280 Hz；然后以非常轻的 12 ms、约 420 Hz 的暗紫色电路节点音收尾，表现方块落位。霓虹感来自柔和的滤波色彩和双颜色层次，不靠高频亮度。只用正弦/三角波、圆润起音、安静衰减和严格低通；不要尖锐高频或共振。
+使用一个很短的青蓝合成脉冲滑移声，带一点窄带数字噪声或玻璃边缘擦过的细节，随后用一个小而稳定的落位 click 收束。声音像发光数字方块沿电路网格平移一格，而不是金属、木块或塑料方块在桌面上摩擦；瞬态要圆润，不能刺耳。
 
-这是一个独立 one-shot，目标时长约 0.12–0.18 秒，开头立即起音，结尾快速干净。输出居中、干声或极轻近场空间感，在手机小音量下仍能听见但不刺耳，适合快速连续移动和背景音乐同时播放。严格不要加入任何噪声或砂砾质感：不要 white noise、pink noise、whoosh、hiss、bit-crush、颗粒、宽带噪声、风声、现实材质摩擦、click、chime、奖励感、音乐、旋律段落、人声、对白、尖锐高频、金属或玻璃振铃、警报、多个移动事件、长混响、现成采样、品牌声音、水印或对任何现有作品的模仿。
+这是一个独立 one-shot，目标时长约 0.12–0.20 秒，开头立即起音，尾音短而干净，适合连续快速播放。输出居中、干声或极轻空间感，不能与正常 BGM、合成音和危险音乐争抢频段。不要包含音乐、旋律段落、人声、对白、多个移动事件、木质滑槽、纸张、猫咪、水果、象棋、警报、现成采样、品牌声音、水印或对任何现有作品的模仿。
 ~~~
 
 ### 手动制作与验收备注
@@ -165,10 +165,10 @@
 - 必须明显弱于 `t48-merge-v1` 和 `t48-combo-v1`，否则普通移动会掩盖真正的进度反馈。
 - 连续滑动试听至少 20 次，确认不会因高频重复而疲劳。
 
-#### English version (copy-ready; 441 characters)
+#### English version (copy-ready; 447 characters)
 
 ~~~text
-Soft non-piercing neon UI slide for a 2048 tile move, no merge. Warm low-mid cyan sine glides smoothly from 700 Hz to 280 Hz over 80 ms; add a muted violet node tone at 420 Hz for 12 ms. Neon color comes from gentle filtering, not brightness. Rounded attack, quiet decay, dry, centered, repeat-safe, 0.14–0.18 s. Strict low-pass; no sharp highs, resonance, noise, hiss, grit, distortion, whoosh, click, chime, music, voice, alarm, or reverb.
+One clean digital slide-down for a valid 2048 tile move, no merge. It must sound like motion, not a click or hit: a smooth cyan synth tone clearly glides downward from 1100 Hz to 350 Hz over 90 ms. Finish with a very quiet 10 ms violet circuit-lock blip. Pure sine/triangle synthesis, soft edges, dry, centered, repeat-safe, total 0.14–0.18 s. No noise, hiss, static, grit, distortion, impact, click, chime, melody, music, voice, alarm, or reverb.
 ~~~
 
 ## 8. A05｜无效操作音：收住的数字错误（done）

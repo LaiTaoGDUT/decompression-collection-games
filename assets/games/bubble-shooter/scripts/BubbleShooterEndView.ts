@@ -129,7 +129,7 @@ export class BubbleShooterEndView {
         back.getChildByName('Crown')!.setPosition(0, compact ? 469 : 495);
         const front = this.content.getChildByName('RegionFront')!;
         front.children.filter(n => n.name === 'LeftFist' || n.name === 'RightFist').forEach((fist, index) => {
-            fist.setPosition((index === 0 ? -1 : 1) * (compact ? 220 : 253), 259);
+            fist.setPosition((index === 0 ? -1 : 1) * (compact ? 238 : 253), 259);
             fist.setScale(compact ? .69 : .78, compact ? .69 : .78, 1);
         });
         // Preserve the approved button-to-panel width ratio when narrowing the pause panel.

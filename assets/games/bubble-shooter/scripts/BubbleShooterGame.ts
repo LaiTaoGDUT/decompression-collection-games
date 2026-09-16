@@ -89,6 +89,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private hitFlash?: Node;
     private flashMaterial?: Material;
     private skillNode?: Node;
+    private rowBirths: { node: Node; elapsed: number; delay: number; y: number }[] = [];
+    private turretReturn?: { from: number; elapsed: number };
     private selectedItem?: BubbleItem;
     private readonly itemFrames = new Map<BubbleItem, SpriteFrame>();
     private readonly itemKeys: readonly BubbleItem[] = ['bomb', 'wildcard', 'clear-bottom'];
@@ -229,9 +231,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         play.setScale(layout.scale, layout.scale, 1);
         play.setPosition(0, layout.playY);
         play.getChildByName('DangerLine')!.setPosition(0, DANGER);
-        play.getChildByName('Counter')!.setPosition(0, CLOUD_COUNTER_Y);
+        this.centerCounter();
         const launcher = play.getChildByName('Launcher')!;
+        launcher.getChildByName('FixedConnector')!.active = false;
         const pivot = launcher.getChildByName('TurretPivot')!;
+        pivot.getChildByName('TurretArtwork')!.setPosition(0,-52);
         launcher.setPosition(PIVOT.x - pivot.position.x, PIVOT.y - pivot.position.y);
         this.node.getChildByName('Background')!.getComponent(UITransform)!
             .setContentSize(layout.backgroundWidth, layout.backgroundHeight);
@@ -292,6 +296,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const dx = local.x - PIVOT.x;
         const dy = local.y - PIVOT.y;
         const angle = Math.max(-70, Math.min(70, -Math.atan2(dx, dy) * 180 / Math.PI));
+        this.turretReturn = undefined;
         pivot.angle = angle;
         pivot.getChildByName('CurrentBall')!.angle = 0;
         const radians = -angle * Math.PI / 180;
@@ -307,7 +312,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.clearAim();
         const pivot = this.node.getChildByPath('Playfield/Launcher/TurretPivot');
         if (!pivot) return;
-        pivot.angle = 0;
+        if (Math.abs(pivot.angle) > .01 && !this.turretReturn) this.turretReturn = { from: pivot.angle, elapsed: 0 };
         pivot.getChildByName('CurrentBall')!.angle = 0;
     }
 
@@ -366,12 +371,13 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.syncItems();
         projectile.setPosition(shot.points[0]!.x,shot.points[0]!.y);
         this.flight={shot,node:projectile,segment:1,travelled:0,kind};
+        this.cancelAim();
         this.node.getChildByPath('Playfield/Launcher/TurretPivot/CurrentBall')!.active=false;
     }
 
     protected update(dt: number): void {
         if (this.state === 'disposed') return;
-        this.pauseView?.motion.update(dt); this.endView?.motion.update(dt); this.rewardView?.motion.update(dt);
+        this.pauseView?.motion.update(dt); this.endView?.motion.update(dt); this.rewardView?.update(dt);
         if (this.state === 'paused') return;
         if (this.transitionView?.active) { this.transitionView.update(dt); return; }
         if (this.rewardView?.visible || this.endView?.visible || this.pauseView?.visible) return;
@@ -393,6 +399,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const board = this.node.getChildByPath('Playfield/Board')!;
             board.setPosition(0, this.transitionOffset * (this.transition / 0.3) ** 2);
         }
+        this.updatePresentation(Math.min(dt, .05));
         this.pulseTime += Math.min(dt, 0.05);
         const activeCount = this.round.stage === 'boss' ? this.round.bossShots : this.round.accumulatedMisses;
         const limit = this.round.stage === 'boss' ? BOSS_TUNING.shotsPerAction : ORDINARY_TUNING.missesPerRow;
@@ -482,7 +489,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i));
         result.thawed.forEach(b =>
             this.particles?.burst(b, position(b, result.phaseBefore), true));
-        this.syncBoard();
+        this.syncBoard(result.inserted);
         if (this.bossCast > 0) this.updateBoss(0);
         if (result.damage > 0) this.startAttack(result);
         this.syncBoss();
@@ -534,19 +541,26 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         return ball;
     }
 
-    private syncBoard(): void {
+    private syncBoard(birthRow = false): void {
+        this.rowBirths = [];
         const board=this.node.getChildByPath('Playfield/Board')!;
         board.children.slice().forEach(child=>{ child.removeFromParent(); child.destroy(); });
         this.model.bubbles.forEach(b=>{
             const node=this.createBall(board,b.color,b.frosted);
             const point=this.model.position(b);
             node.setPosition(point.x,point.y);
+            if (birthRow && b.row === 0) {
+                node.addComponent(UIOpacity).opacity = 0; node.setScale(.05,.05,1);
+                this.rowBirths.push({node, elapsed:0, delay:Math.abs(point.x) / BOARD_WIDTH * .08, y:point.y});
+            }
         });
     }
 
     private syncSupply(): void {
         const current=this.node.getChildByPath('Playfield/Launcher/TurretPivot/CurrentBall')!;
         current.active = !this.flight;
+        current.getComponent(UITransform)!.setContentSize(DIAMETER, DIAMETER);
+        this.node.getChildByPath('Playfield/Launcher/NextBall')!.getComponent(UITransform)!.setContentSize(DIAMETER, DIAMETER);
         current.getComponent(Sprite)!.spriteFrame = this.selectedItem === 'bomb' || this.selectedItem === 'wildcard'
             ? this.itemFrames.get(this.selectedItem)! : this.frames.get(this.currentColor)!;
         this.node.getChildByPath('Playfield/Launcher/NextBall')!.getComponent(Sprite)!.spriteFrame=this.frames.get(this.nextColor)!;
@@ -586,6 +600,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     private resetRound(): void {
+        this.rowBirths=[]; this.turretReturn=undefined;
         this.transitionView?.cancel();
         this.runFinished = false; this.restored = false; this.checkpoint = undefined;
         this.particles?.clear();
@@ -620,6 +635,38 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.syncBoard();
         this.syncCounter();
         this.syncSupply();
+    }
+
+    private updatePresentation(dt: number): void {
+        if (this.turretReturn) {
+            const motion = this.turretReturn; motion.elapsed += dt;
+            const t = Math.min(1, motion.elapsed / .24);
+            this.node.getChildByPath('Playfield/Launcher/TurretPivot')!.angle = motion.from * Math.pow(1-t,3);
+            if (t === 1) this.turretReturn = undefined;
+        }
+        this.rowBirths = this.rowBirths.filter(b => {
+            if (!b.node.isValid) return false;
+            b.elapsed += dt; const t = Math.max(0, Math.min(1,(b.elapsed-b.delay)/.32));
+            const u=t-1, ease=1+2.70158*u*u*u+1.70158*u*u;
+            b.node.setScale(.05+.95*ease,.05+.95*ease,1);
+            b.node.getComponent(UIOpacity)!.opacity=255*Math.min(1,t*2);
+            // Cancel parent insertion translation for the newborn row: grow at its own center.
+            const boardY=this.node.getChildByPath('Playfield/Board')!.position.y;
+            b.node.setPosition(b.node.position.x,b.y-boardY);
+            return t<1 || this.transition>0;
+        });
+    }
+
+    private centerCounter(): void {
+        const counter=this.node.getChildByPath('Playfield/Counter')!;
+        let left=Infinity,right=-Infinity;
+        counter.children.forEach(n=>{
+            if (!n.active) return;
+            const ui=n.getComponent(UITransform); if(!ui)return;
+            left=Math.min(left,n.position.x-ui.width*ui.anchorX);
+            right=Math.max(right,n.position.x+ui.width*(1-ui.anchorX));
+        });
+        counter.setPosition(Number.isFinite(left)?-(left+right)/2:0,CLOUD_COUNTER_Y);
     }
 
     private buildCounter(): void {
@@ -657,6 +704,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             bead.active = index < count;
             bead.setScale(1, 1, 1);
         });
+        this.centerCounter();
     }
 
     private buildRefreshNotice(): void {
@@ -732,6 +780,13 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 ? (key === 'clear-bottom' ? '确认清底' : '取消选择') : names[key];
             const opacity = button.getComponent(UIOpacity) ?? button.addComponent(UIOpacity);
             opacity.opacity = this.round.inventory[key] > 0 ? 255 : 120;
+            const icon=button.getChildByName('Icon')!;
+            if(key==='wildcard')icon.setScale(.82,.82,1);
+            if(key==='clear-bottom')icon.angle=-45;
+            const name=button.getChildByName('Name')!;
+            name.getComponent(UITransform)!.setContentSize(132,44);
+            name.getComponent(Label)!.fontSize=23;
+            button.getChildByName('Count')!.getComponent(Label)!.color=Color.WHITE;
             const selected = this.selectedItem === key;
             button.setScale(selected ? 1.04 : 1, selected ? 1.04 : 1, 1);
         }
@@ -1068,6 +1123,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     async dispose(): Promise<void> {
+        this.rowBirths=[];this.turretReturn=undefined;
         if (this.state === 'disposed') return;
         this.persistCheckpoint();
         this.sound.dispose(); this.particles?.dispose(); this.particles = undefined;
@@ -1105,6 +1161,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     protected onDestroy(): void {
+        this.rowBirths=[];this.turretReturn=undefined;
         this.persistCheckpoint();
         this.sound.dispose(); this.particles?.dispose(); this.particles = undefined;
         this.audioSlots.forEach(slot => slot.clips = []);

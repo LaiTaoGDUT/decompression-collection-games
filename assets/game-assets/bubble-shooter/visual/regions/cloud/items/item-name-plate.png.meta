@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "597ad206-a271-4a43-b628-ec5bad4cfe18",
+  "uuid": "c4e86958-148a-429e-9d64-b65b2460c11b",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "597ad206-a271-4a43-b628-ec5bad4cfe18@6c48a",
-      "displayName": "launcher-head",
+      "uuid": "c4e86958-148a-429e-9d64-b65b2460c11b@6c48a",
+      "displayName": "item-name-plate",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "597ad206-a271-4a43-b628-ec5bad4cfe18",
+        "imageUuidOrDatabaseUri": "c4e86958-148a-429e-9d64-b65b2460c11b",
         "visible": false
       },
       "ver": "1.0.22",
@@ -34,43 +34,47 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "597ad206-a271-4a43-b628-ec5bad4cfe18@f9941",
-      "displayName": "launcher-head",
+      "uuid": "c4e86958-148a-429e-9d64-b65b2460c11b@f9941",
+      "displayName": "item-name-plate",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
         "trimThreshold": 1,
         "rotated": false,
         "offsetX": 0,
-        "offsetY": 2,
-        "trimX": 6,
-        "trimY": 8,
-        "width": 180,
-        "height": 216,
-        "rawWidth": 192,
-        "rawHeight": 236,
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "width": 204,
+        "height": 73,
+        "rawWidth": 204,
+        "rawHeight": 73,
+        "borderTop": 25,
+        "borderBottom": 25,
+        "borderLeft": 35,
+        "borderRight": 35,
         "packable": true,
         "pixelsToUnit": 100,
         "pivotX": 0.5,
         "pivotY": 0.5,
         "meshType": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c4e86958-148a-429e-9d64-b65b2460c11b@6c48a",
+        "atlasUuid": "",
+        "trimType": "custom",
         "vertices": {
           "rawPosition": [
-            -90,
-            -108,
+            -102,
+            -36.5,
             0,
-            90,
-            -108,
+            102,
+            -36.5,
             0,
-            -90,
-            108,
+            -102,
+            36.5,
             0,
-            90,
-            108,
+            102,
+            36.5,
             0
           ],
           "indexes": [
@@ -82,40 +86,36 @@
             3
           ],
           "uv": [
-            6,
-            228,
-            186,
-            228,
-            6,
-            12,
-            186,
-            12
+            0,
+            73,
+            204,
+            73,
+            0,
+            0,
+            204,
+            0
           ],
           "nuv": [
-            0.03125,
-            0.05084745762711865,
-            0.96875,
-            0.05084745762711865,
-            0.03125,
-            0.9661016949152542,
-            0.96875,
-            0.9661016949152542
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1
           ],
           "minPos": [
-            -90,
-            -108,
+            -102,
+            -36.5,
             0
           ],
           "maxPos": [
-            90,
-            108,
+            102,
+            36.5,
             0
           ]
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "597ad206-a271-4a43-b628-ec5bad4cfe18@6c48a",
-        "atlasUuid": "",
-        "trimType": "auto"
+        }
       },
       "ver": "1.0.12",
       "imported": true,
@@ -127,8 +127,8 @@
   },
   "userData": {
     "type": "sprite-frame",
-    "fixAlphaTransparencyArtifacts": false,
+    "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "597ad206-a271-4a43-b628-ec5bad4cfe18@6c48a"
+    "redirect": "c4e86958-148a-429e-9d64-b65b2460c11b@6c48a"
   }
 }

@@ -14,6 +14,8 @@ export class BubbleShooterRewardView {
     readonly content: Node;
     readonly motion: BubbleShooterModalMotion;
     private celebration?: Node;
+    private header: Node;
+    private headerAge = 1;
     private selected?: BubbleItem;
     private round?: BubbleShooterRound;
     private confirm?: (item?: BubbleItem) => void;
@@ -58,7 +60,7 @@ export class BubbleShooterRewardView {
             const badge = this.label('Gain', card, '', 0, -119, 170, 38, 30, Color.WHITE);
             card.addComponent(UIOpacity);
             this.listen(card, () => {
-                if (this.motion.moving || !this.enabled || !this.round?.rewardAvailable || this.round.inventory[key] >= 3) return;
+                if (this.motion.moving || this.headerAge < .72 || !this.enabled || !this.round?.rewardAvailable || this.round.inventory[key] >= 3) return;
                 this.onSound(); this.selected = key; this.sync();
             });
             this.cards.push({ key, node: card, count, badge, badgeBase, base, frame, check });
@@ -68,31 +70,37 @@ export class BubbleShooterRewardView {
         this.button.setScale(0.8, 0.8, 1); this.button.addComponent(UIOpacity);
         this.buttonText = this.label('Text', this.button, '', 0, 0, 580, 60, 43, Color.WHITE);
         this.listen(this.button, () => {
-            if (this.motion.moving || !this.enabled || !this.round?.rewardAvailable || (!this.selected && !this.round.inventoryFull)) return;
+            if (this.motion.moving || this.headerAge < .72 || !this.enabled || !this.round?.rewardAvailable || (!this.selected && !this.round.inventoryFull)) return;
             this.enabled = false;
             this.confirm?.(this.selected);
         });
         this.label('Capacity', this.content, '每种最多持有 3 个', 0, -489, 620, 34, 25);
+        this.header=this.node('CelebrationMotion',this.content,710,500,0,215);
+        this.header.setSiblingIndex(0);
+        for(const name of ['RegionBoss','RegionTitle']) {
+            const n=this.content.getChildByName(name)!;const y=n.position.y;
+            n.setParent(this.header);n.setPosition(n.position.x,y-215);
+        }
         this.root.active = false;
     }
 
     /** One region-owned Boss + victory-title illustration; common controls never move. */
     setCelebration(frame?: SpriteFrame): void {
-        this.content.getChildByName('RegionBoss')!.active = !frame;
-        this.content.getChildByName('RegionTitle')!.active = !frame;
+        this.header.getChildByName('RegionBoss')!.active = !frame;
+        this.header.getChildByName('RegionTitle')!.active = !frame;
         if (!frame) {
             if (this.celebration) { this.celebration.getComponent(Sprite)!.spriteFrame = null; this.celebration.active = false; }
             return;
         }
         if (!this.celebration) {
-            this.celebration = this.sprite('RegionCelebration', this.content, frame, 0, 385, 1, 1, false);
-            this.celebration.setSiblingIndex(this.content.getChildByName('Panel')!.getSiblingIndex());
+            this.celebration = this.sprite('RegionCelebration', this.header, frame, 0, 385, 1, 1, false);
+
         }
         const panel = this.content.getChildByName('Panel')!;
         const panelUI = panel.getComponent(UITransform)!;
         const scale = panelUI.width / frame.originalSize.width;
         const pictureHeight = frame.originalSize.height * scale;
-        this.celebration.setPosition(0, panel.position.y + panelUI.height / 2 + 8 + pictureHeight / 2);
+        this.celebration.setPosition(0, panel.position.y + panelUI.height / 2 + 8 + pictureHeight / 2 - 215);
         this.celebration.getComponent(Sprite)!.spriteFrame = frame;
         this.celebration.getComponent(Sprite)!.trim = false;
         this.celebration.getComponent(UITransform)!.setContentSize(frame.originalSize.width * scale, frame.originalSize.height * scale);
@@ -103,7 +111,23 @@ export class BubbleShooterRewardView {
 
     show(round: BubbleShooterRound, confirm: (item?: BubbleItem) => void): void {
         this.round = round; this.confirm = confirm; this.selected = undefined; this.enabled = true;
-        this.root.active = true; this.motion.open(); this.sync();
+        this.headerAge=0;
+        this.root.active = true; this.motion.open(); this.updateHeader(); this.sync();
+    }
+
+    update(dt: number): void {
+        this.motion.update(dt);
+        if(!this.visible)return;
+        this.headerAge=Math.min(.72,this.headerAge+Math.max(0,Math.min(dt,.05)));
+        this.updateHeader();
+    }
+    private updateHeader(): void {
+        const t=this.headerAge;let sx=1,sy=1,offset=0;
+        if(t<.32) { const u=1-t/.32;offset=900*u*u; }
+        else if(t<.44) { const u=(t-.32)/.12;sx=1+.06*u;sy=1-.16*u; }
+        else if(t<.56) { const u=(t-.44)/.12;sx=1.06-.08*u;sy=.84+.22*u; }
+        else if(t<.72) { const u=(t-.56)/.16;sx=.98+.02*u;sy=1.06-.06*u; }
+        this.header.setPosition(0,215+offset);this.header.setScale(sx,sy,1);
     }
 
     setEnabled(enabled: boolean): void { this.enabled = enabled; }
@@ -116,7 +140,7 @@ export class BubbleShooterRewardView {
         this.root.getComponent(UITransform)!.setContentSize(width, height);
         const safe = calculateVerticalSafeBounds(height, platform);
         const top = this.celebration?.active
-            ? Math.max(560, this.celebration.position.y + this.celebration.getComponent(UITransform)!.height / 2) : 560;
+            ? Math.max(560, 215 + this.celebration.position.y + this.celebration.getComponent(UITransform)!.height / 2) : 560;
         const bottom = -560;
         const scale = Math.max(0.001, Math.min(1, width / 750, (safe.topY - safe.bottomY - 28) / (top - bottom)));
         this.motion.layout(scale, (safe.topY + safe.bottomY) / 2 - (top + bottom) / 2 * scale);
