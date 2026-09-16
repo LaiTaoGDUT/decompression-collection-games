@@ -1,0 +1,111 @@
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-name-plate.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/cloud/launcher/launcher-head.png.meta
+  h_293365c3a5ebee 44-47,49,64,67,70,73,85-92,95-102,106,111
+assets/games/bubble-shooter/scenes/BubbleShooter.scene
+  h_293365c3a5ebee 10199-10201,10262-10263,10442,10480-10481,10746-10748,10804-10806,10869-10870,11049,11087-11088,11353-11355,11411-11413,11476-11477,11656,11694-11695,11960-11962,25593,26019-26345
+assets/games/bubble-shooter/scripts/BubbleShooterEndView.ts
+  h_293365c3a5ebee 132
+assets/games/bubble-shooter/scripts/BubbleShooterGame.ts
+  h_293365c3a5ebee 92-93,234,236,238,299,315,374,380,402,492,544-545,552-555,562-563,603,638-669,707,783-789,1126,1164
+assets/games/bubble-shooter/scripts/BubbleShooterModalMotion.ts
+  h_293365c3a5ebee 30,35,37-39,41-42,44
+assets/games/bubble-shooter/scripts/BubbleShooterModel.ts
+  h_293365c3a5ebee 9-10,16,18
+assets/games/bubble-shooter/scripts/BubbleShooterRewardView.ts
+  h_293365c3a5ebee 17-18,63,73,78-83,89-90,96-97,103,114-130,143
+assets/games/bubble-shooter/scripts/BubbleShooterRound.ts
+  h_293365c3a5ebee 13,16,49,69-70,84-87,90,93,101,103,108-113,115,127,131-161,170,187,257,345,351,357,362,381-396,402,502,512
+docs/games/bubble-shooter/DECISIONS.md
+  h_293365c3a5ebee 145-148
+docs/games/bubble-shooter/EXPERIENCE_REVIEW.md
+  h_293365c3a5ebee 1-28
+docs/games/game2048/T48_AUDIO_PROMPTS.md
+  h_293365c3a5ebee 7,141,150,156,158,160,168,171
+tools/bubble-shooter/add-reward-dependencies.py
+  h_293365c3a5ebee 1-15
+tools/bubble-shooter/build-cloud-scene.py
+  h_293365c3a5ebee 1-110
+tools/bubble-shooter/prepare-clean-launcher.py
+  h_293365c3a5ebee 1-26
+tools/bubble-shooter/prepare-cloud-transition.py
+  h_293365c3a5ebee 1-23
+tools/bubble-shooter/prepare-dialog-assets.py
+  h_293365c3a5ebee 1-37
+tools/bubble-shooter/prepare-item-name-plate.py
+  h_293365c3a5ebee 1-15
+tools/bubble-shooter/prepare-ocean-celebration.py
+  h_293365c3a5ebee 1-25
+tools/bubble-shooter/prepare-ocean-v7.py
+  h_293365c3a5ebee 1-103
+tools/bubble-shooter/prepare-reward-assets.py
+  h_293365c3a5ebee 1-141
+tools/bubble-shooter/prepare-transition-assets.py
+  h_293365c3a5ebee 1-31
+tools/bubble-shooter/verification-artifacts.cjs
+  h_293365c3a5ebee 1-22
+tools/bubble-shooter/verify-board-migration.cjs
+  h_293365c3a5ebee 1-29
+tools/bubble-shooter/verify-boss-motion-browser.cjs
+  h_293365c3a5ebee 1-58
+tools/bubble-shooter/verify-boss.cjs
+  h_293365c3a5ebee 1-45
+tools/bubble-shooter/verify-cloud-browser.cjs
+  h_293365c3a5ebee 1-105
+tools/bubble-shooter/verify-cloud-complete.cjs
+  h_293365c3a5ebee 1-51
+tools/bubble-shooter/verify-cloud-endurance.cjs
+  h_293365c3a5ebee 1-61
+tools/bubble-shooter/verify-cloud-runtime.cjs
+  h_293365c3a5ebee 1-67
+tools/bubble-shooter/verify-dense-browser.cjs
+  h_293365c3a5ebee 1-91
+tools/bubble-shooter/verify-end-browser.cjs
+  h_293365c3a5ebee 1-65
+tools/bubble-shooter/verify-experience-browser.cjs
+  h_293365c3a5ebee 1-62
+tools/bubble-shooter/verify-experience-motion.cjs
+  h_293365c3a5ebee 1-31
+tools/bubble-shooter/verify-feedback-browser.cjs
+  h_293365c3a5ebee 1-69
+tools/bubble-shooter/verify-items.cjs
+  h_293365c3a5ebee 1-40
+tools/bubble-shooter/verify-layout.cjs
+  h_293365c3a5ebee 1-36
+tools/bubble-shooter/verify-modal-motion-browser.cjs
+  h_293365c3a5ebee 1-51
+tools/bubble-shooter/verify-model.cjs
+  h_293365c3a5ebee 1-58
+tools/bubble-shooter/verify-ocean-boss-browser.cjs
+  h_293365c3a5ebee 1-92
+tools/bubble-shooter/verify-ocean-round.cjs
+  h_293365c3a5ebee 1-70
+tools/bubble-shooter/verify-ocean-support.cjs
+  h_293365c3a5ebee 1-31
+tools/bubble-shooter/verify-pause-browser.cjs
+  h_293365c3a5ebee 1-50
+tools/bubble-shooter/verify-removal-motion.cjs
+  h_293365c3a5ebee 1-27
+tools/bubble-shooter/verify-revive.cjs
+  h_293365c3a5ebee 1-31
+tools/bubble-shooter/verify-reward.cjs
+  h_293365c3a5ebee 1-23
+tools/bubble-shooter/verify-round.cjs
+  h_293365c3a5ebee 1-76
+tools/bubble-shooter/verify-transition-browser.cjs
+  h_293365c3a5ebee 1-69
+tools/bubble-shooter/verify-transition-layout-browser.cjs
+  h_293365c3a5ebee 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "526f2a9200153d80e08b6d101660ec667d9d37fb",
+  "prompts": {},
+  "logical_commit_id": "526f2a9200153d80e08b6d101660ec667d9d37fb",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
