@@ -223,8 +223,7 @@ export class BubbleShooterRound {
     /** Only called after a completed rewarded ad. Clearing grants neither progress nor damage. */
     revive(): boolean {
         if (!this.canRevive) return false;
-        this.board.clearTargets(this.board.bubbles.filter(b =>
-            this.board.position(b).y - DIAMETER / 2 < DANGER + 2 * ROW_HEIGHT));
+        this.board.clearTargets(this.board.bottomTargets());
         this.accumulatedMisses = this.consecutiveMisses = this.bossShots = 0;
         this.frostTargets = [];
         this.reviveUsed = true;
@@ -367,7 +366,8 @@ export class BubbleShooterRound {
             if (this.region === 'cloud' && this.stage === 'boss' && countsAsShot && this.bossShots === BOSS_TUNING.shotsPerAction - 1 && !this.ended) {
                 if (!this.frostTargets.length) {
                     this.frostTargets = this.board.bubbles.filter(b => !b.frosted)
-                        .sort((a,b) => b.row-a.row || a.col-b.col).slice(0,this.difficulty.frostTargets)
+                        .map(b => ({bubble:b, key:-Math.log(Math.max(1e-9,this.random())) / (1 + b.row * .35)}))
+                        .sort((a,b) => a.key-b.key).slice(0,this.difficulty.frostTargets).map(entry=>entry.bubble)
                         .map(b=>({row:b.row,col:b.col}));
                 }
             }

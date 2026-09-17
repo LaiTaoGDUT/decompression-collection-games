@@ -27,6 +27,11 @@ try {
         }
         assert(geometry.trace({x:0,y:1}), 'Trace must stay valid after parity reversal.');
     }
+    const revived = new BubbleShooterRound(()=>.25);revived.reset();
+    revived.board.reset(Array.from({length:17},(_,row)=>b(row,4)));revived.ended=true;
+    const reviveProgress=revived.regionProgress,reviveHealth=revived.bossHealth;
+    assert(revived.revive());assert(!revived.board.danger);assert.equal(Math.max(...revived.board.bubbles.map(b=>b.row)),14);
+    assert.equal(revived.regionProgress,reviveProgress);assert.equal(revived.bossHealth,reviveHealth);assert(!revived.revive());
     const round = new BubbleShooterRound(()=>.25);
     round.reset();
     round.board.reset([b(0,4), b(0,5), b(0,9,'blue')]);

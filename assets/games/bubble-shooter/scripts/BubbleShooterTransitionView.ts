@@ -14,6 +14,7 @@ export class BubbleShooterTransitionView {
     private phase: Phase = 'idle';
     private elapsed = 0;
     private alertTime = -1;
+    private bannerScale = 1;
     private alertDone?: () => void;
     private generation = 0;
     private ready = false;
@@ -68,7 +69,7 @@ export class BubbleShooterTransitionView {
         });
         const native = this.banner.getComponent(Sprite)!.spriteFrame!.originalSize;
         const scale = Math.min(width * .96 / native.width, height * .32 / native.height);
-        this.banner.getComponent(UITransform)!.setContentSize(native.width, native.height); this.banner.setScale(scale, scale, 1);
+        this.banner.getComponent(UITransform)!.setContentSize(native.width, native.height); this.bannerScale=scale; this.banner.setScale(scale, scale, 1);
         this.errorRoot.setScale(Math.min(1, width / 750), Math.min(1, width / 750), 1);
         this.errorRoot.setPosition(0, centerY);
         this.draw();
@@ -103,7 +104,7 @@ export class BubbleShooterTransitionView {
         const step = Math.max(0, Math.min(.05, dt));
         if (this.alertTime >= 0) {
             this.alertTime += step;
-            if (this.alertTime >= 1.45) {
+            if (this.alertTime >= 1.9) {
                 const done = this.alertDone; this.alertDone = undefined; this.alertTime = -1;
                 this.bannerRoot.active = false; done?.();
             }
@@ -143,8 +144,13 @@ export class BubbleShooterTransitionView {
         this.clouds[1]!.setPosition(this.width / 2 + this.cloudWidth * travel, 0);
         if (this.alertTime >= 0) {
             const t = this.alertTime;
-            const x = t < .25 ? -(this.width + 30) * Math.pow(1 - t / .25, 3) : t > 1.15 ? (this.width + 30) * Math.pow((t - 1.15) / .3, 2) : 0;
-            const alpha = Math.min(1, t / .18, (1.45 - t) / .2);
+            const x = t < .25 ? -(this.width + 30) * Math.pow(1 - t / .25, 3) : t > 1.55 ? (this.width + 30) * Math.pow((t - 1.55) / .35, 2) : 0;
+            let sx=1, sy=1;
+            if(t>=.25 && t<.36) { const u=(t-.25)/.11; sx=1-.23*u; sy=1+.16*u; }
+            else if(t>=.36 && t<.51) { const u=(t-.36)/.15; sx=.77+.41*u; sy=1.16+.02*u; }
+            else if(t>=.51 && t<.68) { const u=(t-.51)/.17; sx=1.18-.18*u; sy=1.18-.18*u; }
+            this.banner.setScale(this.bannerScale*sx,this.bannerScale*sy,1);
+            const alpha = Math.min(1, t / .18, (1.9 - t) / .25);
             this.banner.setPosition(x, this.bannerY); this.banner.getComponent(UIOpacity)!.opacity = 255 * Math.max(0, alpha);
             this.shade.clear(); this.shade.fillColor = new Color(30, 13, 46, 115 * Math.max(0, alpha));
             this.shade.rect(-this.width / 2, -this.height / 2, this.width, this.height); this.shade.fill();

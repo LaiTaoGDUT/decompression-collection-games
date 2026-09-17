@@ -182,11 +182,11 @@ export class BubbleShooterEndView {
         const generation = this.generation;
         this.setBusy();
         try {
-            if (!await this.motion.close() || generation !== this.generation) return;
+            if (!await this.close() || generation !== this.generation) return;
             await [model.resume, model.restart, model.exit][index]!();
         } catch {
-            if (generation === this.generation && this.visible)
-                { this.motion.open(); this.detail.string = '操作未完成，请重试'; }
+            if (generation === this.generation && this.root.isValid)
+                { this.root.active=true; this.motion.open(); this.detail.string = '操作未完成，请重试'; }
         } finally {
             if (generation === this.generation && this.visible) {
                 this.busy = false;
@@ -198,9 +198,9 @@ export class BubbleShooterEndView {
         const action = this.action, generation = this.generation;
         if (this.page === 'offer' && primary) { action?.(true); return; }
         this.setBusy();
-        if (await this.motion.close() && generation === this.generation) action?.(primary);
+        if (await this.close() && generation === this.generation) action?.(primary);
     }
-    async close(): Promise<boolean> { this.setBusy(); return this.motion.close(); }
+    async close(): Promise<boolean> { this.setBusy(); this.motion.cancel(); this.root.active=false; return true; }
     setEnabled(enabled: boolean): void { this.enabled = enabled; this.syncEnabled(); }
     setBusy(): void { this.busy = true; this.syncEnabled(); }
     private syncEnabled(): void {

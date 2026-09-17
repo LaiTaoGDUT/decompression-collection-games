@@ -43,10 +43,10 @@
         "rotated": false,
         "offsetX": 0,
         "offsetY": 0,
-        "trimX": 8,
-        "trimY": 8,
-        "width": 176,
-        "height": 176,
+        "trimX": 0,
+        "trimY": 0,
+        "width": 192,
+        "height": 192,
         "rawWidth": 192,
         "rawHeight": 192,
         "borderTop": 0,
@@ -58,19 +58,23 @@
         "pivotX": 0.5,
         "pivotY": 0.5,
         "meshType": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "6287f651-f66e-425e-b769-d0e5a5a14d20@6c48a",
+        "atlasUuid": "",
+        "trimType": "custom",
         "vertices": {
           "rawPosition": [
-            -88,
-            -88,
+            -96,
+            -96,
             0,
-            88,
-            -88,
+            96,
+            -96,
             0,
-            -88,
-            88,
+            -96,
+            96,
             0,
-            88,
-            88,
+            96,
+            96,
             0
           ],
           "indexes": [
@@ -82,40 +86,36 @@
             3
           ],
           "uv": [
-            8,
-            184,
-            184,
-            184,
-            8,
-            8,
-            184,
-            8
+            0,
+            192,
+            192,
+            192,
+            0,
+            0,
+            192,
+            0
           ],
           "nuv": [
-            0.041666666666666664,
-            0.041666666666666664,
-            0.9583333333333334,
-            0.041666666666666664,
-            0.041666666666666664,
-            0.9583333333333334,
-            0.9583333333333334,
-            0.9583333333333334
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1
           ],
           "minPos": [
-            -88,
-            -88,
+            -96,
+            -96,
             0
           ],
           "maxPos": [
-            88,
-            88,
+            96,
+            96,
             0
           ]
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "6287f651-f66e-425e-b769-d0e5a5a14d20@6c48a",
-        "atlasUuid": "",
-        "trimType": "auto"
+        }
       },
       "ver": "1.0.12",
       "imported": true,

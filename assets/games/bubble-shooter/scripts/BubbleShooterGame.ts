@@ -60,6 +60,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private set nextColor(color: BubbleColor) { this.round.next = color; }
     private pendingShot?: Shot;
     private activeTouch?: number;
+    private heldTouch?: { id: number; x: number; y: number };
     private flight?: { shot: Shot; node: Node; segment: number; travelled: number; kind: ShotKind };
     private effects: { node: Node; elapsed: number; falling: boolean; motion: RemovalMotion; bubble: Bubble; burst: boolean; ring?: Graphics }[] = [];
     private fallingRoot?: Node;
@@ -161,7 +162,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 && this.round.restore(record.round, ['cloud'])) {
                 this.elapsed = record.elapsed; this.restored = true;
                 this.healthVisible = this.healthTarget = this.round.bossHealth;
-                this.syncBoss(); this.syncBoard(); this.syncItems(); this.syncCounter(); this.syncSupply();
+                this.syncBoss(); this.syncBoard(false, true); this.syncItems(); this.syncCounter(); this.syncSupply();
             }
         }
         this.commitCheckpoint();
@@ -266,11 +267,16 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private canInteract(): boolean {
         // Direct scene preview exercises the prototype without creating a global Session.
-        return !this.transitionView?.active && this.bossCast === 0 && !this.attack && this.hitTime === 0 && !this.rewardView?.visible && !this.endView?.visible && !this.pauseView?.visible && this.round.stage !== 'boss-entry' && this.bossReveal >= 1 && !this.flight && this.transition === 0 && !this.effects.some(e => !e.falling) && this.effects.length < 285 && (this.state === 'playing' || (this.state === 'idle' && !this.context));
+        return !this.transitionView?.active && this.bossCast === 0 && !this.attack && this.hitTime === 0 && !this.rewardView?.visible && !this.endView?.visible && !this.pauseView?.visible && this.round.stage !== 'boss-entry' && this.bossReveal >= 1 && !this.flight && this.transition === 0 && this.rowBirths.length === 0 && !this.effects.some(e => !e.falling) && this.effects.length < 285 && (this.state === 'playing' || (this.state === 'idle' && !this.context));
     }
 
     private startAim(event: EventTouch): void {
-        if (!this.canInteract() || this.activeTouch !== undefined) return;
+        if (this.activeTouch !== undefined || this.heldTouch) return;
+        if (this.state !== 'playing' && !(this.state === 'idle' && !this.context)) return;
+        if (this.pauseView?.visible || this.endView?.visible || this.rewardView?.visible) return;
+        const point = event.getUILocation();
+        this.heldTouch = {id:event.getID(),x:point.x,y:point.y};
+        if (!this.canInteract()) return;
         if (this.selectedItem === 'clear-bottom') {
             this.selectedItem = undefined;
             this.cancelAim();
@@ -283,10 +289,15 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     private aim(event: EventTouch): void {
-        if (!this.canInteract() || event.getID() !== this.activeTouch) return;
-        const play = this.node.getChildByName('Playfield')!;
         const point = event.getUILocation();
-        const local = play.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(point.x, point.y, 0));
+        if (this.heldTouch?.id === event.getID()) { this.heldTouch.x=point.x; this.heldTouch.y=point.y; }
+        if (!this.canInteract() || event.getID() !== this.activeTouch) return;
+        this.aimAt(point.x, point.y);
+    }
+
+    private aimAt(x: number, y: number): void {
+        const play = this.node.getChildByName('Playfield')!;
+        const local = play.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(x, y, 0));
         if (local.y < DANGER) {
             this.pendingShot = undefined;
             this.clearAim();
@@ -305,8 +316,9 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.drawAim();
     }
 
-    private cancelAim(event?: EventTouch): void {
-        if (event && event.getID() !== this.activeTouch) return;
+    private cancelAim(event?: EventTouch, preserveHeld = false): void {
+        if (event && event.getID() !== this.activeTouch && event.getID() !== this.heldTouch?.id) return;
+        if (!preserveHeld) this.heldTouch = undefined;
         this.activeTouch = undefined;
         this.pendingShot = undefined;
         this.clearAim();
@@ -355,7 +367,9 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     private fire(event: EventTouch): void {
-        if (!this.canInteract() || event.getID() !== this.activeTouch) return;
+        if (event.getID() !== this.heldTouch?.id && event.getID() !== this.activeTouch) return;
+        if (!this.canInteract()) { this.cancelAim(event); return; }
+        if (this.activeTouch === undefined) this.activeTouch=event.getID();
         this.aim(event);
         const shot=this.pendingShot;
         this.activeTouch=undefined;
@@ -366,7 +380,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const kind: ShotKind = this.selectedItem === 'bomb' || this.selectedItem === 'wildcard' ? this.selectedItem : 'normal';
         if (kind !== 'normal') this.round.consumeProjectile(kind);
         const projectile=this.createBall(this.node.getChildByPath('Playfield/Vfx')!, this.currentColor);
-        if (kind !== 'normal') projectile.getComponent(Sprite)!.spriteFrame = this.itemFrames.get(kind)!;
+        this.setProjectileAppearance(projectile,kind,this.currentColor);
         this.selectedItem = undefined;
         this.syncItems();
         projectile.setPosition(shot.points[0]!.x,shot.points[0]!.y);
@@ -400,7 +414,12 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             board.setPosition(0, this.transitionOffset * (this.transition / 0.3) ** 2);
         }
         this.updatePresentation(Math.min(dt, .05));
+        if (this.heldTouch && this.canInteract()) {
+            this.activeTouch=this.heldTouch.id;
+            this.aimAt(this.heldTouch.x,this.heldTouch.y);
+        }
         this.pulseTime += Math.min(dt, 0.05);
+        if(this.selectedItem==='clear-bottom')this.drawTargets(this.model.bottomTargets(),true);
         const activeCount = this.round.stage === 'boss' ? this.round.bossShots : this.round.accumulatedMisses;
         const limit = this.round.stage === 'boss' ? BOSS_TUNING.shotsPerAction : ORDINARY_TUNING.missesPerRow;
         const critical = activeCount === limit - 1;
@@ -416,7 +435,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 this.round.beginBoss();
                 this.sound.music('boss-music'); this.commitCheckpoint();
                 this.bossReveal = 0; this.transition = 0.3; this.transitionOffset = 28;
-                this.syncBoard(); this.syncCounter(); this.syncSupply(); this.syncBoss(); this.updateBoss(0);
+                this.syncBoard(false, true); this.syncCounter(); this.syncSupply(); this.syncBoss(); this.updateBoss(0);
             });
             return;
         }
@@ -489,7 +508,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i));
         result.thawed.forEach(b =>
             this.particles?.burst(b, position(b, result.phaseBefore), true));
-        this.syncBoard(result.inserted);
+        this.syncBoard(result.inserted, result.refilled);
         if (this.bossCast > 0) this.updateBoss(0);
         if (result.damage > 0) this.startAttack(result);
         this.syncBoss();
@@ -501,7 +520,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.syncCounter();
         this.syncItems();
         this.syncSupply();
-        this.cancelAim();
+        this.cancelAim(undefined, !result.danger && !result.victory);
         if (result.danger || result.victory) {
             // Freeze input immediately; the overlay waits for the complete turn animation.
             this.state = 'completed';
@@ -541,7 +560,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         return ball;
     }
 
-    private syncBoard(birthRow = false): void {
+    private syncBoard(birthRow = false, wholeBoard = false): void {
         this.rowBirths = [];
         const board=this.node.getChildByPath('Playfield/Board')!;
         board.children.slice().forEach(child=>{ child.removeFromParent(); child.destroy(); });
@@ -549,20 +568,29 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const node=this.createBall(board,b.color,b.frosted);
             const point=this.model.position(b);
             node.setPosition(point.x,point.y);
-            if (birthRow && b.row === 0) {
+            if (wholeBoard || (birthRow && b.row === 0)) {
                 node.addComponent(UIOpacity).opacity = 0; node.setScale(.05,.05,1);
-                this.rowBirths.push({node, elapsed:0, delay:Math.abs(point.x) / BOARD_WIDTH * .08, y:point.y});
+                this.rowBirths.push({node, elapsed:0, delay:wholeBoard ? b.row * .055 + b.col * .008 : b.col * .006, y:point.y});
             }
         });
+    }
+
+    /** Toolbar padding must not shrink loaded items; flight uses the same visual size. */
+    private setProjectileAppearance(node: Node, kind: ShotKind, color: BubbleColor): void {
+        const sprite=node.getComponent(Sprite)!;
+        sprite.spriteFrame=kind==='normal' ? this.frames.get(color)! : this.itemFrames.get(kind)!;
+        sprite.sizeMode=Sprite.SizeMode.CUSTOM;
+        sprite.trim=false;
+        const size=DIAMETER * (kind==='bomb' ? 1.32 : kind==='wildcard' ? 1.4 : 1);
+        node.getComponent(UITransform)!.setContentSize(size,size);
     }
 
     private syncSupply(): void {
         const current=this.node.getChildByPath('Playfield/Launcher/TurretPivot/CurrentBall')!;
         current.active = !this.flight;
-        current.getComponent(UITransform)!.setContentSize(DIAMETER, DIAMETER);
+        const kind = this.selectedItem === 'bomb' || this.selectedItem === 'wildcard' ? this.selectedItem : 'normal';
+        this.setProjectileAppearance(current,kind,this.currentColor);
         this.node.getChildByPath('Playfield/Launcher/NextBall')!.getComponent(UITransform)!.setContentSize(DIAMETER, DIAMETER);
-        current.getComponent(Sprite)!.spriteFrame = this.selectedItem === 'bomb' || this.selectedItem === 'wildcard'
-            ? this.itemFrames.get(this.selectedItem)! : this.frames.get(this.currentColor)!;
         this.node.getChildByPath('Playfield/Launcher/NextBall')!.getComponent(Sprite)!.spriteFrame=this.frames.get(this.nextColor)!;
         if (this.notice) this.notice.active = !this.round.ended && (this.round.staleCurrent || this.round.staleNext);
     }
@@ -592,7 +620,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 this.node.getChildByPath('Playfield/Board')!.setPosition(0, 0);
                 this.healthVisible = this.healthTarget = BOSS_TUNING.health;
                 this.hitTime = 0; this.transition = 0; this.transitionOffset = 0;
-                this.syncBoss(); this.syncBoard(); this.syncCounter(); this.syncItems(); this.syncSupply(); this.applyLayout();
+                this.syncBoss(); this.syncBoard(false, true); this.syncCounter(); this.syncItems(); this.syncSupply(); this.applyLayout();
                 this.state = 'playing'; this.sound.music('normal-music'); this.commitCheckpoint();
             });
         });
@@ -632,7 +660,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.healthVisible = this.healthTarget = BOSS_TUNING.health;
         this.syncBoss();
         this.syncItems();
-        this.syncBoard();
+        this.syncBoard(false, true);
         this.syncCounter();
         this.syncSupply();
     }
@@ -650,9 +678,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const u=t-1, ease=1+2.70158*u*u*u+1.70158*u*u;
             b.node.setScale(.05+.95*ease,.05+.95*ease,1);
             b.node.getComponent(UIOpacity)!.opacity=255*Math.min(1,t*2);
-            // Cancel parent insertion translation for the newborn row: grow at its own center.
-            const boardY=this.node.getChildByPath('Playfield/Board')!.position.y;
-            b.node.setPosition(b.node.position.x,b.y-boardY);
+            // Keep local coordinates: newborns travel with the descending board.
+            b.node.setPosition(b.node.position.x,b.y);
             return t<1 || this.transition>0;
         });
     }
@@ -761,7 +788,22 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private drawTargets(targets: readonly Bubble[], clear: boolean): void {
         const root = this.node.getChildByPath('Playfield/AimFeedback')!;
         const graphics = root.getComponent(Graphics) ?? root.addComponent(Graphics);
-        if (clear) graphics.clear();
+        if (clear) {
+            graphics.clear();
+            const pulse=.5+.5*Math.sin(this.pulseTime*4);
+            for(const target of targets) {
+                const point=this.model.position(target),radius=DIAMETER/2-1;
+                graphics.fillColor=new Color(255,232,246,48+24*pulse);
+                graphics.circle(point.x,point.y,radius);graphics.fill();
+                graphics.lineWidth=6;
+                graphics.strokeColor=new Color(255,69,164,140+55*pulse);
+                graphics.circle(point.x,point.y,radius);graphics.stroke();
+                graphics.lineWidth=2.5;
+                graphics.strokeColor=new Color(255,251,235,225+30*pulse);
+                graphics.circle(point.x,point.y,radius-1);graphics.stroke();
+            }
+            return;
+        }
         graphics.lineWidth = 5;
         graphics.strokeColor = new Color(255, 144, 67, 255);
         for (const target of targets) {
@@ -781,7 +823,14 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const opacity = button.getComponent(UIOpacity) ?? button.addComponent(UIOpacity);
             opacity.opacity = this.round.inventory[key] > 0 ? 255 : 120;
             const icon=button.getChildByName('Icon')!;
-            if(key==='wildcard')icon.setScale(.82,.82,1);
+            icon.setScale(1,1,1);
+            icon.getComponent(UITransform)!.setContentSize(96,96);
+            icon.getComponent(Sprite)!.trim=false;
+            const plate=button.getChildByName('NamePlate')!.getComponent(Sprite)!;
+            plate.type=Sprite.Type.SLICED;
+            const plateScale=48/73;
+            plate.node.setScale(plateScale,plateScale,1);
+            plate.node.getComponent(UITransform)!.setContentSize(144/plateScale,73);
             if(key==='clear-bottom')icon.angle=-45;
             const name=button.getChildByName('Name')!;
             name.getComponent(UITransform)!.setContentSize(132,44);
@@ -1040,7 +1089,12 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 gameId: context.gameId, sessionId: context.sessionId,
             });
             if (generation !== this.operationGeneration || this.context !== context) return;
+            const beforeRevive=this.model.bubbles.map(b=>({...b}));
+            const revivePhase=this.model.rowPhase;
             if (result.outcome === 'completed' && this.round.revive()) {
+                const surviving=new Set(this.model.bubbles.map(b=>`${b.row}:${b.col}`));
+                beforeRevive.filter(b=>!surviving.has(`${b.row}:${b.col}`))
+                    .forEach((b,i)=>this.animateRemoval(b,false,revivePhase,i));
                 this.commitCheckpoint();
                 this.syncBoard(); this.syncCounter(); this.syncBoss(); this.syncItems(); this.syncSupply();
                 if (this.endView && !await this.endView.close()) return;
@@ -1110,6 +1164,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     private detach(): void {
+        this.heldTouch=undefined; this.activeTouch=undefined;
         if (!this.listening) return;
         view.off('canvas-resize', this.applyLayout, this);
         const play = this.node.getChildByName('Playfield');

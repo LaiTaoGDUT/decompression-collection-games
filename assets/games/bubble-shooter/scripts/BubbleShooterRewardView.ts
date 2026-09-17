@@ -25,12 +25,13 @@ export class BubbleShooterRewardView {
     private buttonText: Label;
     private status: Label;
     private readonly listeners: Node[] = [];
+    private readonly resetPresses: (() => void)[] = [];
 
     constructor(parent: Node, frames: ReadonlyMap<string, SpriteFrame>, icons: ReadonlyMap<BubbleItem, SpriteFrame>, boss: Node, private readonly onSound: () => void = () => {}) {
         this.root = this.node('RewardOverlay', parent, 750, 1334);
         this.root.addComponent(BlockInputEvents);
         this.content = this.node('RewardContent', this.root, 720, 1120);
-        this.motion = new BubbleShooterModalMotion(this.root, this.content);
+        this.motion = new BubbleShooterModalMotion(this.root, this.content, .82, .68, true);
         // Region-owned decoration sits outside the reusable body.
         const decoration = instantiate(boss);
         decoration.name = 'RegionBoss'; decoration.setParent(this.content); decoration.active = true;
@@ -133,6 +134,7 @@ export class BubbleShooterRewardView {
     setEnabled(enabled: boolean): void { this.enabled = enabled; }
 
     hide(): void {
+        this.resetPresses.forEach(reset=>reset());
         this.motion.cancel(); this.root.active = false; this.round = undefined; this.confirm = undefined; this.selected = undefined;
     }
 
@@ -162,13 +164,29 @@ export class BubbleShooterRewardView {
     }
 
     dispose(): void {
-        this.hide(); this.listeners.forEach(node => node.targetOff(this)); this.listeners.length = 0;
+        this.hide(); this.listeners.forEach(node => node.targetOff(this)); this.listeners.length = 0; this.resetPresses.length=0;
         this.cards = []; this.root.getComponentsInChildren(Sprite).forEach(s => s.spriteFrame = null);
         this.root.destroy();
     }
 
     private listen(node: Node, callback: () => void): void {
-        node.on(Node.EventType.TOUCH_END, (event: EventTouch) => { event.propagationStopped = true; callback(); }, this);
+        const baseX=node.scale.x, baseY=node.scale.y;
+        let touch: number | undefined;
+        const reset=() => { touch=undefined;node.setScale(baseX,baseY,1); };
+        node.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
+            event.propagationStopped=true;
+            if(touch!==undefined || this.motion.moving || this.headerAge<.72 || !this.enabled || !this.round?.rewardAvailable) return;
+            if(node===this.button && !this.selected && !this.round.inventoryFull) return;
+            const card=this.cards.find(c=>c.node===node);
+            if(card && this.round.inventory[card.key]>=3)return;
+            touch=event.getID();
+            if(node===this.button)node.setScale(baseX*.94,baseY*.92,1);
+        },this);
+        node.on(Node.EventType.TOUCH_CANCEL, (event: EventTouch) => { if(event.getID()===touch)reset(); },this);
+        node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
+            event.propagationStopped=true;if(event.getID()!==touch)return;reset();callback();
+        }, this);
+        this.resetPresses.push(reset);
         this.listeners.push(node);
     }
 
