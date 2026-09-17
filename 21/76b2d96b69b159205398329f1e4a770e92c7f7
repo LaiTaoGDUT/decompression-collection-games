@@ -1,0 +1,29 @@
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-bomb.png.meta
+  s_06f4d30c492a69::t_e56d6eb7ef4fd7 44,46-49,61-64,67-68,70-71,73-74,76-77,89-96,99-106,109-110,114-115,118
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-clear-bottom.png.meta
+  s_06f4d30c492a69::t_2684673ff0f0ad 45-49,61-64,67-68,70-71,73-74,76-77,89-96,99-106,109-110,114-115,118
+assets/game-assets/bubble-shooter/visual/regions/cloud/items/item-wildcard.png.meta
+  s_06f4d30c492a69::t_0e88d42b09663d 46-49,61-64,67-68,70-71,73-74,76-77,89-96,99-106,109-110,114-115,118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2176b2d96b69b159205398329f1e4a770e92c7f7",
+  "prompts": {},
+  "logical_commit_id": "2176b2d96b69b159205398329f1e4a770e92c7f7",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_06f4d30c492a69": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "100b4e93-7545-4cf6-9360-99a757683a50",
+        "model": "composer-2.5"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
