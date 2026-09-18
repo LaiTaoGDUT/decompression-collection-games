@@ -100,6 +100,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
  await e.dispose();window.saved.custom.activeRound={elapsed:1,round:{version:999}};return 'restart checkpoint passed';
  }));
  await reload();
- console.log(await page.evaluate(async()=>{const e=window.testEntry;window.check(e.round.board.bubbles.length===135&&e.state==='playing','corrupt save starts safely');await e.dispose();return 'corrupt save fallback passed';}));
+ console.log(await page.evaluate(async()=>{const e=window.testEntry;window.check(e.round.board.bubbles.length===125&&e.state==='playing','corrupt save starts safely');await e.dispose();return 'corrupt save fallback passed';}));
  console.log('pageErrors',errors);if(errors.length)throw Error(errors.join('\n'));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});

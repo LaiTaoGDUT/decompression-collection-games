@@ -21,8 +21,8 @@ const {execFileSync}=require('node:child_process');
   cc.view.setFrameSize(750,1334);cc.view.setDesignResolutionSize(750,1334,cc.ResolutionPolicy.FIXED_WIDTH);
   e.context.services.platform.getLayoutInfo=()=>({safeArea:{left:0,right:750,top:44,bottom:1286,width:750,height:1242},topRightReservedArea:{left:500,right:730,top:50,bottom:110,width:230,height:60}});e.applyLayout();
   window.test={cc,e,runtime};const check=(a,m)=>{if(!a)throw Error(m)};window.check=check;
-  const balls=e.model.bubbles.filter(b=>b.row===0);check(balls.length===14,'14 column board');
-  const diameter=e.node.getChildByPath('Playfield/Board').children[0].getComponent(cc.UITransform).width;check(Math.abs(diameter*14-720)<.001,'board width stable');
+  const balls=e.model.bubbles.filter(b=>b.row===0);check(balls.length===13,'13 column board');
+  const diameter=e.node.getChildByPath('Playfield/Board').children[0].getComponent(cc.UITransform).width;check(Math.abs(diameter*13-720)<.001,'board width stable');
   const counter=e.node.getChildByPath('Playfield/Counter');
   const bounds=()=>{let l=Infinity,r=-Infinity;counter.children.filter(n=>n.active).forEach(n=>{const u=n.getComponent(cc.UITransform);l=Math.min(l,n.position.x-u.width*u.anchorX);r=Math.max(r,n.position.x+u.width*(1-u.anchorX));});return counter.position.x+(l+r)/2;};
   check(Math.abs(bounds())<.01,'ordinary indicator centered');e.round.stage='boss';e.syncCounter();check(Math.abs(bounds())<.01,'boss indicator centered');e.round.stage='ordinary';e.syncCounter();
@@ -30,14 +30,14 @@ const {execFileSync}=require('node:child_process');
   const pivot=e.node.getChildByPath('Playfield/Launcher/TurretPivot');pivot.angle=60;e.cancelAim();check(pivot.angle===60,'return should not snap');e.updatePresentation(.12);check(pivot.angle>0&&pivot.angle<60,'return interpolates');e.updatePresentation(.12);check(pivot.angle===0,'return completes');
   const items=e.node.getChildByPath('Playfield/Items');items.children.forEach(n=>{check(n.getChildByName('Count').getComponent(cc.Label).color.equals(cc.Color.WHITE),'white badge');check(n.getChildByName('NamePlate').getComponent(cc.UITransform).width>=4*23,'four character plaque');});
   check(items.getChildByName('Item-clear-bottom').getChildByName('Icon').angle===-45,'clear tilt');
-  return '14/13 columns, 720 width, centered indicators, smooth turret return, item layout passed';
+  return '13/12 columns, 720 width, centered indicators, smooth turret return, item layout passed';
  }));
  await page.locator('#GameCanvas').screenshot({path:path.resolve(__dirname,'../../docs/games/bubble-shooter/references/experience-board-live.png')});
  console.log(await page.evaluate(()=>{
   const {e,cc}=window.test;e.round.accumulatedMisses=2;e.round.current='purple';
   e.model.reset([{row:0,col:0,color:'red',frosted:false}]);
   const result=e.round.settle({row:0,col:1});check(result.inserted,'fixture inserts');e.presentResult(result);
-  check(e.rowBirths.length>=13,'new row births');check(e.rowBirths.every(b=>b.node.scale.x===.05&&b.node.getComponent(cc.UIOpacity).opacity===0),'born transparent at own center');
+  check(e.rowBirths.length>=12,'new row births');check(e.rowBirths.every(b=>b.node.scale.x===.05&&b.node.getComponent(cc.UIOpacity).opacity===0),'born transparent at own center');
   return 'new-row birth state initialized';
  }));
  for(let i=0;i<110;i++){

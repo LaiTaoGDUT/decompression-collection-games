@@ -11,7 +11,7 @@ try {
         const r = new BubbleShooterRound(random); r.reset(); r.completedRegions = level;
         r.stage = 'victory'; r.ended = true; r.bossHealth = 0;
         assert(r.claimReward('bomb')); assert(r.continueCloud());
-        assert(!r.board.danger); assert.equal(r.board.bubbles.length, 135);
+        assert(!r.board.danger); assert.equal(r.board.bubbles.length, 125);
         const frost = r.board.bubbles.filter(b => b.frosted);
         assert(frost.length >= 2 && frost.length <= 8);
         assert(frost.every(b => b.row >= 2));
@@ -24,8 +24,8 @@ try {
         const restored = new BubbleShooterRound();
         assert(restored.restore(JSON.parse(JSON.stringify(r.snapshot()))));
         assert.deepEqual(restored.snapshot(),r.snapshot());
-        r.stage='boss-entry';r.regionProgress=r.difficulty.progressRequired;r.beginBoss();
-        assert.equal(r.board.bubbles.length,125);assert(!r.board.danger);
+        r.futureRows=[];r.stage='boss-entry';r.regionProgress=r.difficulty.progressRequired;r.beginBoss();
+        assert.equal(r.board.bubbles.length,115);assert(!r.board.danger);
         r.bossHealth=17;r.bossShots=2;r.frostTargets=r.board.bubbles.filter(b=>!b.frosted).slice(0,2);
         assert(restored.restore(r.snapshot()));assert.deepEqual(restored.snapshot(),r.snapshot());
     }
@@ -37,15 +37,15 @@ try {
     for(const bad of malformed){assert(!r.restore(bad));assert.deepEqual(r.snapshot(),s,'Invalid save must not partially mutate state');}
     const old = { ...s, version: 1, bubbles: [{row:0,col:4,color:'red',frosted:false}, {row:1,col:4,color:'blue',frosted:false}], frostTargets: [{row:1,col:4}], regionProgress:43 };
     const migrated = new BubbleShooterRound(); assert(migrated.restore(old));
-    assert.equal(migrated.snapshot().version,5); assert.equal(migrated.regionProgress,43);
-    assert.deepEqual(migrated.board.bubbles,old.bubbles.map(b=>({...b,col:b.col+2})));
-    assert.deepEqual(migrated.frostTargets,[{row:1,col:6}]);
+    assert.equal(migrated.snapshot().version,7); assert.equal(migrated.regionProgress,43);
+    assert.deepEqual(migrated.board.bubbles,old.bubbles.map(b=>({...b,col:5})));
+    assert.deepEqual(migrated.frostTargets,[{row:1,col:5}]);
     assert.deepEqual(migrated.inventory,old.inventory); assert.equal(migrated.current,old.current);
     const v2 = { ...s, version:2, ended:true, bubbles:Array.from({length:17},(_,row)=>({row,col:4,color:'red',frosted:false})), frostTargets:[] };
     assert(migrated.restore(v2)); assert(!migrated.ended); assert.equal(migrated.board.bubbles.length,17);
     const oldFailure = {...old,ended:true,reviveUsed:true,bubbles:Array.from({length:11},(_,row)=>({row,col:4,color:'red',frosted:false}))};
     assert(migrated.restore(oldFailure)); assert(!migrated.ended); assert(migrated.snapshot().reviveUsed);
     assert(!migrated.restore({...old,frostTargets:[null]}));
-    r.stage='victory';r.ended=true;r.bossHealth=0;r.board.reset([]);assert(new BubbleShooterRound().restore(r.snapshot()));
+    r.futureRows=[];r.stage='victory';r.ended=true;r.bossHealth=0;r.board.reset([]);assert(new BubbleShooterRound().restore(r.snapshot()));
     console.log('Cloud: varied reachable layouts, bounded progression, ordinary/Boss save roundtrip, empty victory and corrupt-save atomic rejection passed.');
 } finally {fs.rmSync(out,{recursive:true,force:true});}

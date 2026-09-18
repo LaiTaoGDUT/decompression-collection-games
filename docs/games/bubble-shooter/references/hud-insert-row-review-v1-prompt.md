@@ -1,0 +1,7 @@
+# 补行图标 v1 效果确认
+
+生成方式：内置 imagegen。参考现有 hud-down-arrow 的粉色糖果质感。当前仅为效果确认图，尚未替换运行时图标。正式目标显示尺寸42×42，与下降图标一致；确认后清理透明边缘并缩尺寸。
+
+## 实际提示词
+
+Create ONE standalone polished raster HUD icon for a candy bubble-shooter game, representing INSERT ONE NEW ROW OF BUBBLES FROM ABOVE. Match the established reference style: glossy hot-pink candy/jelly, rounded chunky silhouette, white upper-left highlights, softly shaded magenta lower edges, delicate creamy pink rim. Square composition designed to be readable at only 42x42 pixels, with a tightly grouped silhouette filling 88% of canvas. Pictogram: three equal round pink glossy bubbles in one perfectly straight horizontal row in the LOWER HALF, with ONE short broad downward candy-pink arrow centered ABOVE the row, clearly pointing into the incoming row. Arrow and row are visually distinct with a narrow transparent gap. This must communicate a NEW ROW ENTERING, rather than just generic downward movement. Row of bubbles is prominent and the arrow is large enough to read. All three bubbles entirely visible, equally sized, no faces or engraved symbols. No letters, no numbers, no text, no plus signs, no UI panel, no cloud, no frame, no extra sparkles, no floating cast shadow. True transparent RGBA background, never a painted checkerboard. Front view, clean production-ready mobile game icon, restrained three-dimensional candy rendering. Output only this single icon, not a comparison sheet.

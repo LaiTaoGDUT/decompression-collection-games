@@ -28,6 +28,8 @@ const { ccclass, property } = _decorator;
 type BubbleShooterState = 'idle' | 'ready' | 'playing' | 'paused' | 'completed' | 'disposed';
 interface BubbleShooterServices { readonly assets?: AssetService; readonly platform: Platform; readonly ads: AdService; readonly audio: AudioService; readonly storage: StorageService; readonly feedback: FeedbackService; }
 
+const COUNTER_DECOR_GAP = 45;
+
 /** Cloud prototype with a shared deterministic trace for aiming and flight. */
 @ccclass('BubbleShooterGame')
 export class BubbleShooterGame extends Component implements MiniGame<BubbleShooterServices> {
@@ -77,6 +79,9 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private bossClock = 0;
     private bossCast = 0;
     private skillImpact?: Graphics;
+    private dangerGlow?: Graphics;
+    private atmosphereClock = 0;
+    private islands: {node: Node; x: number; y: number; scale: number}[] = [];
     private castImpactPlayed = false;
     private readonly castFrozen = new Set<string>();
     private bossHealthRoot?: Node;
@@ -110,6 +115,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.node.getChildByName('Pause')!.on(Node.EventType.TOUCH_END, this.requestPause, this);
         this.listening = true;
         this.drawDangerLine();
+        const glow=new Node('DangerEdgeGlow');glow.layer=this.node.layer;glow.setParent(this.node);
+        glow.addComponent(UITransform);this.dangerGlow=glow.addComponent(Graphics);
         const board = play.getChildByName('Board')!;
         board.children.forEach(ball => {
             const sprite = ball.getComponent(Sprite);
@@ -241,9 +248,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.node.getChildByName('Background')!.getComponent(UITransform)!
             .setContentSize(layout.backgroundWidth, layout.backgroundHeight);
         this.node.getChildByName('Foreground')!.setPosition(0, -height / 2);
+        this.islands=[];
         this.node.getChildByName('Environment')!.children.forEach((island) => {
             island.setPosition(island.position.x, layout.decorationTop);
             island.setScale(layout.islandScale, layout.islandScale, 1);
+            this.islands.push({node:island,x:island.position.x,y:layout.decorationTop,scale:layout.islandScale});
         });
         this.node.getChildByName('Pause')!.setPosition(layout.pauseX, layout.pauseY);
         const cloud = this.node.getChildByName('CloudTransition');
@@ -392,6 +401,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     protected update(dt: number): void {
         if (this.state === 'disposed') return;
         this.pauseView?.motion.update(dt); this.endView?.motion.update(dt); this.rewardView?.update(dt);
+        this.updateAtmosphere(Math.max(0,Math.min(dt,.05)));
         if (this.state === 'paused') return;
         if (this.transitionView?.active) { this.transitionView.update(dt); return; }
         if (this.rewardView?.visible || this.endView?.visible || this.pauseView?.visible) return;
@@ -497,11 +507,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if (result.thawed.length) this.cue('thaw');
         if (result.frosted.length && this.round.stage !== 'boss') this.cue('frost');
         if (this.round.stage === 'boss' && (result.frosted.length || result.inserted)) {
-            this.bossCast = .95; this.castImpactPlayed = false;
+            this.bossCast = 2.05; this.castImpactPlayed = false;
             this.castFrozen.clear();
             result.frosted.forEach(b => this.castFrozen.add(`${b.row}:${b.col}`));
         }
-        if (result.inserted || result.refilled) this.cue('row');
+        if (result.inserted || result.descended || result.refilled) this.cue('row');
         if ((this.round.stage === 'boss' && this.round.bossShots === BOSS_TUNING.shotsPerAction - 1)
             || (this.round.stage === 'ordinary' && this.round.accumulatedMisses === ORDINARY_TUNING.missesPerRow - 1)) this.cue('warning');
         result.removed.forEach((b, i) => this.animateRemoval(b, false, result.phaseBefore, i));
@@ -512,9 +522,9 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if (this.bossCast > 0) this.updateBoss(0);
         if (result.damage > 0) this.startAttack(result);
         this.syncBoss();
-        if (result.inserted || result.refilled) {
+        if (result.inserted || result.descended || result.refilled) {
             this.transition = 0.3;
-            this.transitionOffset = result.inserted ? ROW_HEIGHT : 36;
+            this.transitionOffset = (result.inserted || result.descended) ? ROW_HEIGHT : 36;
             this.node.getChildByPath('Playfield/Board')!.setPosition(0, this.transitionOffset);
         }
         this.syncCounter();
@@ -665,6 +675,32 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.syncSupply();
     }
 
+    private updateAtmosphere(dt: number): void {
+        const blocked=this.state==='paused' || this.endView?.visible || this.pauseView?.visible || this.rewardView?.visible || this.transitionView?.active;
+        if(!blocked)this.atmosphereClock+=dt;
+        this.islands.forEach((island,i)=>{
+            if(!island.node.isValid)return;
+            const phase=this.atmosphereClock*1.08+i*2.2;
+            // Drift inward/downward from the safe layout anchor, never above it.
+            island.node.setPosition(island.x+(i===0?1:-1)*(1+Math.sin(phase*.7))*2,
+                island.y-(1+Math.sin(phase))*4);
+            const scale=island.scale*(.992+.008*Math.sin(phase+.8));
+            island.node.setScale(scale,scale,1);
+        });
+        const g=this.dangerGlow;if(!g)return;g.clear();
+        if(blocked || this.round.ended || this.round.stage==='boss-entry' || !this.model.nearDanger)return;
+        const {width,height}=view.getVisibleSize(),thickness=44;
+        const strength=.35+.65*(.5+.5*Math.sin(this.atmosphereClock*3.2));
+        for(let i=0;i<16;i++) {
+            const inset=i*thickness/16,band=thickness/16+.2;
+            g.fillColor=new Color(255,65,100,65*strength*Math.pow(1-i/16,1.7));
+            g.rect(-width/2+inset,-height/2,band,height);
+            g.rect(width/2-inset-band,-height/2,band,height);
+            g.rect(-width/2+thickness,-height/2+inset,width-2*thickness,band);
+            g.rect(-width/2+thickness,height/2-inset-band,width-2*thickness,band);g.fill();
+        }
+    }
+
     private updatePresentation(dt: number): void {
         if (this.turretReturn) {
             const motion = this.turretReturn; motion.elapsed += dt;
@@ -703,7 +739,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const originals = counter.children.slice();
         const width = ORDINARY_TUNING.missesPerRow * 42;
         counter.getComponent(UITransform)!.setContentSize(width + 60, 48);
-        originals.forEach(child => { if (child.name === 'DownArrow') child.setPosition(-width / 2 - 18, 0); });
+        this.positionCounterDecor(ORDINARY_TUNING.missesPerRow);
         for (let i = 0; i < ORDINARY_TUNING.missesPerRow; i++) {
             const x = (i - (ORDINARY_TUNING.missesPerRow - 1) / 2) * 42 + 12;
             const slot = instantiate(slotTemplate);
@@ -717,11 +753,16 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             this.counterBeads.push(bead);
         }
         originals.forEach(child => {
-            if (child.name !== 'DownArrow' && child.name !== 'BossSkill') { child.removeFromParent(); child.destroy(); }
+            if (child.name !== 'DownArrow' && child.name !== 'BossSkill' && child.name !== 'PendingRow') {
+                child.removeFromParent(); child.destroy();
+            }
         });
     }
 
     private syncCounter(): void {
+        const counter=this.node.getChildByPath('Playfield/Counter')!;
+        const pending=counter.getChildByName('PendingRow');
+        if (pending) pending.active=this.round.stage==='ordinary' && this.round.remainingRows>0;
         const limit = this.round.stage === 'boss' ? BOSS_TUNING.shotsPerAction : ORDINARY_TUNING.missesPerRow;
         const count = this.round.stage === 'boss' ? this.round.bossShots : this.round.accumulatedMisses;
         this.node.getChildByPath('Playfield/Counter')!.active = true;
@@ -855,7 +896,18 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             this.counterBeads.push(bead);
         }
         slots.concat(beads).forEach(n => { n.removeFromParent(); n.destroy(); });
-        counter.getChildByName('DownArrow')!.setPosition(-limit * 21 - 18, 0);
+        this.positionCounterDecor(limit);
+    }
+
+    private positionCounterDecor(limit: number): void {
+        const counter = this.node.getChildByPath('Playfield/Counter')!;
+        const downArrow = counter.getChildByName('DownArrow');
+        if (!downArrow) return;
+        const downX = -limit * 21 - 18;
+        downArrow.setPosition(downX, 0);
+        const statusX = downX - COUNTER_DECOR_GAP;
+        counter.getChildByName('BossSkill')?.setPosition(statusX, 0);
+        counter.getChildByName('PendingRow')?.setPosition(statusX, 0);
     }
 
     private setupBoss(): void {
@@ -967,11 +1019,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const entryLift = 1 - Math.pow(1 - entry, 3);
         const landing = Math.sin(entry * Math.PI * 3) * (1 - entry);
         const idle = Math.sin(this.bossClock * 2.4);
-        const castAge = .95 - this.bossCast;
+        const castAge = (2.05 - this.bossCast) * 1.25 / 2.05;
         const cast = this.bossCast > 0 ? (castAge < .34 ? Math.pow(castAge / .34, 2)
             : castAge < .44 ? 1 - (castAge - .34) / .10 * 1.25
-            : -.25 * Math.pow(1 - (castAge - .44) / .51, 2)) : 0;
-        const impactAge = castAge - .4;
+            : -.25 * Math.pow(Math.max(0,1 - (castAge - .44) / .81), 2)) : 0;
+        const impactAge = castAge - .68;
         const recoil = this.bossCast > 0 && impactAge >= 0 ? Math.sin(impactAge * 35) * Math.max(0, 1 - impactAge / .35) : 0;
         if (this.bossCast > 0 && impactAge >= 0 && !this.castImpactPlayed) {
             this.castImpactPlayed = true; this.cue('frost', 'medium');
@@ -985,12 +1037,12 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.bossRoot.getComponent(UIOpacity)!.opacity = 255 * Math.min(1, entry * 4) * (1 - exitDrop);
         this.bossHealthRoot!.getComponent(UIOpacity)!.opacity = 255 * Math.min(1, entry * 4) * (1 - exitDrop);
         const body = this.bossRoot.getChildByName('Body')!;
-        body.setScale(1 + pulse + idle * .012 + cast * .035 + landing * .04,
-            1 - pulse - idle * .009 - cast * .045 - landing * .035, 1);
+        body.setScale(1 + pulse + idle * .012 + cast * .065 + landing * .04,
+            1 - pulse - idle * .009 - cast * .085 - landing * .035, 1);
         body.setPosition(0, 30 + recoil * 7);
         const left = this.bossRoot.getChildByName('LeftFist')!, right = this.bossRoot.getChildByName('RightFist')!;
-        left.setPosition(-200 - cast * 12, 175 + Math.sin(this.bossClock * 2.4 + .8) * 6 + cast * 52);
-        right.setPosition(200 + cast * 12, 175 + Math.sin(this.bossClock * 2.4 - .8) * 6 + cast * 52);
+        left.setPosition(-200 - cast * 12, 175 + Math.sin(this.bossClock * 2.4 + .8) * 6 + cast * 72);
+        right.setPosition(200 + cast * 12, 175 + Math.sin(this.bossClock * 2.4 - .8) * 6 + cast * 72);
         left.angle = -idle * 2.5 - cast * 16; right.angle = idle * 2.5 + cast * 16;
         const crown = this.bossRoot.getChildByName('Crown')!;
         crown.setPosition(0, 240 + Math.sin(this.bossClock * 2.4 - .6) * 3 + cast * 5);
@@ -1005,20 +1057,47 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             frost.setScale(size, size, 1);
         });
         const impact = this.skillImpact!; impact.clear();
-        if (this.bossCast > 0 && impactAge >= 0 && impactAge < .5) {
-            const strength = 1 - impactAge / .5;
-            const y = 410 - impactAge * 420;
-            impact.lineWidth = 10 * strength + 2; impact.strokeColor = new Color(170, 246, 255, 210 * strength);
-            impact.ellipse(0, y, BOARD_WIDTH * .48, 14 + impactAge * 55); impact.stroke();
-            impact.lineWidth = 4; impact.strokeColor = new Color(255, 255, 255, 240 * strength);
-            for (const bubble of bubbles) {
-                if (!this.castFrozen.has(`${bubble.row}:${bubble.col}`)) continue;
-                const p = this.model.position(bubble);
-                impact.moveTo(p.x * .2, 440); impact.lineTo(p.x * .55 - 15, (440 + p.y) / 2);
-                impact.lineTo(p.x * .55 + 12, (440 + p.y) / 2 - 18); impact.lineTo(p.x, p.y);
-                impact.circle(p.x, p.y, 26 + impactAge * 85);
+        if (this.bossCast > 0) {
+            const play=this.node.getChildByName('Playfield')!.getComponent(UITransform)!;
+            const origins=[left,right].map(fist=>play.convertToNodeSpaceAR(fist.getComponent(UITransform)!.convertToWorldSpaceAR(new Vec3())));
+            // Charging motes orbit the actual fists; no target markers before impact.
+            if(castAge<.44) origins.forEach((origin,j)=>{
+                const charge=Math.min(1,castAge/.34);
+                impact.lineWidth=3;impact.strokeColor=new Color(184,242,255,200*charge);
+                impact.circle(origin.x,origin.y,12+22*charge);impact.stroke();
+                for(let i=0;i<7;i++) {
+                    const angle=i*Math.PI*2/7+castAge*9+j, radius=48-25*charge;
+                    impact.fillColor=new Color(225,253,255,220*charge);
+                    impact.circle(origin.x+Math.cos(angle)*radius,origin.y+Math.sin(angle)*radius,3+4*charge);impact.fill();
+                }
+            });
+            const targets=bubbles.filter(b=>this.castFrozen.has(`${b.row}:${b.col}`));
+            if(castAge>=.4 && castAge<.68) targets.forEach((bubble,index)=>{
+                const target=this.model.position(bubble),origin=origins[index%2]!;
+                const travel=Math.min(1,(castAge-.4)/.28);
+                for(let tail=9;tail>=0;tail--) {
+                    const t=Math.max(0,travel-tail*.025),arc=Math.sin(t*Math.PI)*(index%2===0?-45:45);
+                    impact.fillColor=new Color(170+tail*10,240,255,240-tail*22);
+                    impact.circle(origin.x+(target.x-origin.x)*t+arc,origin.y+(target.y-origin.y)*t,14-tail*1.05);impact.fill();
+                }
+            });
+            if(impactAge>=0 && impactAge<.55) {
+                const t=impactAge/.55,strength=1-t;
+                impact.lineWidth=5*strength+1;impact.strokeColor=new Color(194,248,255,170*strength);
+                impact.ellipse(0,410-t*110,BOARD_WIDTH*.48,12+t*45);impact.stroke();
+                targets.forEach(bubble=>{
+                    const p=this.model.position(bubble);
+                    impact.lineWidth=3*strength+1;impact.strokeColor=new Color(235,255,255,250*strength);
+                    impact.circle(p.x,p.y,DIAMETER*.4+t*32);impact.stroke();
+                    for(let i=0;i<8;i++) {
+                        const a=i*Math.PI/4+Math.PI/8,r=DIAMETER*.35+t*45;
+                        const x=p.x+Math.cos(a)*r,y=p.y+Math.sin(a)*r;
+                        impact.fillColor=new Color(195,246,255,240*strength);
+                        const size=5*strength+1;
+                        impact.moveTo(x,y+size);impact.lineTo(x+size*.55,y);impact.lineTo(x,y-size);impact.lineTo(x-size*.55,y);impact.close();impact.fill();
+                    }
+                });
             }
-            impact.stroke();
         }
         if (this.bossCast === 0) this.castFrozen.clear();
         if (this.hitFlash) {
@@ -1207,6 +1286,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.bossHealthRoot?.destroy(); this.bossHealthRoot = undefined;
         this.bossClip?.destroy(); this.bossClip = undefined;
         this.skillImpact = undefined; this.castFrozen.clear();
+        this.dangerGlow?.node.destroy();this.dangerGlow=undefined;this.islands=[];
         this.skillNode = undefined;
         this.counterBeads = [];
         this.notice = undefined;
@@ -1242,6 +1322,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.bossHealthRoot?.destroy(); this.bossHealthRoot = undefined;
         this.bossClip?.destroy(); this.bossClip = undefined;
         this.skillImpact = undefined; this.castFrozen.clear();
+        this.dangerGlow?.node.destroy();this.dangerGlow=undefined;this.islands=[];
         this.skillNode = undefined;
         this.counterBeads = [];
         this.notice = undefined;

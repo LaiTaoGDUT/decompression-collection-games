@@ -28,9 +28,9 @@ try {
                 const a=angle*Math.PI/180,shot=r.board.trace({x:Math.sin(a),y:Math.cos(a)});if(!shot)continue;
                 for(const swap of [false,true]) {
                     const color=swap?r.next:r.current;
-                    const model=new BubbleShooterModel();model.reset(r.board.bubbles,r.board.rowPhase);
+                    const model=new BubbleShooterModel();model.reset(r.board.bubbles,r.board.rowPhase,r.board.ceilingRow);
                     const result=model.settle(shot.cell,color);
-                    const value=(result.removed.length+result.dropped.length)*5+result.thawed.length*2-shot.cell.row*.015;
+                    const value=(result.removed.length+result.dropped.length)*5+result.thawed.length*2+(result.removed.length===0 ? r.board.matchingCount(shot.cell,color)*2 : 0)-shot.cell.row*.015;
                     if(!best||value>best.value)best={value,swap,shot};
                 }
             }
@@ -54,6 +54,7 @@ try {
         }
     }
     assert(blindFailures>=6&&blindRevives===6,'Poor aim exercises one revive then terminal failure');
+    console.log(JSON.stringify({wins,failures,ordinaryEntries:stages.ordinary.length,totalShots}));
     assert(wins>=12,'Aimed play should be able to reach and defeat the cloud Boss repeatedly');
     assert(totalShots>500);
     const median=xs=>xs.slice().sort((a,b)=>a-b)[Math.floor(xs.length/2)];

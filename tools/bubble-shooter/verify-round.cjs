@@ -9,6 +9,7 @@ try {
     const { BubbleShooterRound, ORDINARY_TUNING } = require(path.join(out, 'BubbleShooterRound.js'));
     const { BubbleShooterModel, ROW_HEIGHT, COLUMNS, MAX_ROW } = require(path.join(out, 'BubbleShooterModel.js'));
     const b = (row, col, color = 'red', frosted = false) => ({ row, col, color, frosted });
+    const warning=new BubbleShooterModel([b(MAX_ROW-2,4)]);assert(!warning.nearDanger);warning.reset([b(MAX_ROW-1,4)]);assert(warning.nearDanger&&!warning.danger);warning.reset([b(MAX_ROW,4)]);assert(warning.danger&&!warning.nearDanger);warning.reset([]);assert(!warning.nearDanger);
     const geometry = new BubbleShooterModel(Array.from({length:COLUMNS}, (_,col)=>b(0,col)));
     for (let insertion = 0; insertion < 4; insertion++) {
         const before = geometry.bubbles;
@@ -28,32 +29,16 @@ try {
         assert(geometry.trace({x:0,y:1}), 'Trace must stay valid after parity reversal.');
     }
     const revived = new BubbleShooterRound(()=>.25);revived.reset();
-    revived.board.reset(Array.from({length:17},(_,row)=>b(row,4)));revived.ended=true;
+    revived.board.reset(Array.from({length:MAX_ROW+1},(_,row)=>b(row,4)));revived.ended=true;
     const reviveProgress=revived.regionProgress,reviveHealth=revived.bossHealth;
-    assert(revived.revive());assert(!revived.board.danger);assert.equal(Math.max(...revived.board.bubbles.map(b=>b.row)),14);
+    assert(revived.revive());assert(!revived.board.danger);assert.equal(Math.max(...revived.board.bubbles.map(b=>b.row)),MAX_ROW-2);
     assert.equal(revived.regionProgress,reviveProgress);assert.equal(revived.bossHealth,reviveHealth);assert(!revived.revive());
     const round = new BubbleShooterRound(()=>.25);
-    round.reset();
-    round.board.reset([b(0,4), b(0,5), b(0,9,'blue')]);
-    round.current='blue';round.next='purple';
-    let result=round.settle({row:0,col:3});
-    assert.equal(round.accumulatedMisses,1);assert.equal(round.consecutiveMisses,1);
-    assert.equal(round.current,'purple','Displayed next must be preserved.');
-    round.current='red';result=round.settle({row:0,col:6});
-    assert.equal(result.removed.length,3);
-    assert.equal(round.accumulatedMisses,1,'Successful clear must not erase accumulated misses.');
-    assert.equal(round.consecutiveMisses,0);
-    round.current='yellow';round.settle({row:0,col:2});
-    round.current='purple';result=round.settle({row:0,col:1});
-    assert(result.inserted);assert.equal(round.accumulatedMisses,0);assert.equal(round.consecutiveMisses,2);
-    assert.equal(round.board.rowPhase,1);
-    assert(round.board.bubbles.some(x=>x.row===1&&x.col===9),'Right edge survives insertion.');
-    const snapshot=[round.accumulatedMisses,round.consecutiveMisses,round.cleared,JSON.stringify(round.board.bubbles)];
-    const shown=[round.current,round.next];round.swap();round.swap();
-    assert.deepEqual([round.current,round.next],shown);
-    assert.deepEqual([round.accumulatedMisses,round.consecutiveMisses,round.cleared,JSON.stringify(round.board.bubbles)],snapshot);
-
-    round.reset();round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);
+    round.reset();round.futureRows=[];round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);round.accumulatedMisses=2;
+    round.current='red';let result=round.settle({row:0,col:3});assert.equal(round.accumulatedMisses,0);assert(!result.enteredBoss);
+    round.current='yellow';result=round.settle({row:0,col:2});assert(!result.inserted);assert.equal(round.accumulatedMisses,1);
+    const paletteBoard=new BubbleShooterModel([b(0,4,'blue')]);paletteBoard.insertRow(()=>.99,['blue']);assert(paletteBoard.bubbles.every(x=>x.color==='blue'));
+    round.reset();round.futureRows=[];round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);
     round.current='red';round.next='red';result=round.settle({row:0,col:3});
     assert(round.staleCurrent);assert.equal(round.current,'red');assert.equal(round.next,'blue');
     const counts=[round.accumulatedMisses,round.consecutiveMisses,round.cleared];
@@ -61,21 +46,24 @@ try {
     assert.deepEqual([round.accumulatedMisses,round.consecutiveMisses,round.cleared],counts);
     assert.equal(round.refreshStale(),0);
 
-    round.reset();round.board.reset([b(0,4),b(0,5)]);round.current='red';round.next='purple';round.accumulatedMisses=2;
+    round.reset();round.futureRows=[];round.board.reset([b(0,4),b(0,5)]);round.current='red';round.next='purple';round.accumulatedMisses=2;
     result=round.settle({row:0,col:3});
-    assert(result.refilled&&!result.inserted&&!result.danger);
-    assert.equal(round.board.bubbles.length,81);
-    assert.equal(round.accumulatedMisses,2);assert.equal(round.current,'purple');assert.equal(round.cleared,3);
+    assert(result.enteredBoss&&!result.refilled&&!result.inserted&&!result.danger);
+    assert.equal(round.board.bubbles.length,0);
+    const savedEntry=new BubbleShooterRound(()=>.25);assert(savedEntry.restore(round.snapshot()));assert.equal(savedEntry.stage,'boss-entry');
+    assert.equal(round.accumulatedMisses,0);assert.equal(round.current,'purple');assert.equal(round.cleared,3);
+    round.reset();round.futureRows=[];round.regionProgress=999;round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);round.current='red';
+    const highProgress=round.settle({row:0,col:3});assert(!highProgress.enteredBoss);assert.equal(round.stage,'ordinary');
     round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);round.consecutiveMisses=0;
     const plain=round.supplyWeights();round.consecutiveMisses=ORDINARY_TUNING.protectionAfter;
     const boosted=round.supplyWeights();
     assert(boosted.get('red')>plain.get('red'));assert.equal(boosted.get('blue'),plain.get('blue'));
     assert(!boosted.has('yellow')&&!boosted.has('purple'));
-    round.board.reset(Array.from({length:MAX_ROW},(_,row)=>b(row,4)));
+    round.board.reset(Array.from({length:MAX_ROW},(_,row)=>[b(row,3),b(row,4),b(row,6)]).flat());
     round.accumulatedMisses=2;round.current='blue';result=round.settle({row:MAX_ROW-1,col:5});
-    assert(result.inserted&&result.danger);assert(round.ended);
+    assert(result.descended&&!result.inserted&&result.danger);assert(round.ended);
     assert.throws(()=>round.settle({row:0,col:0}));
-    round.reset();assert(!round.ended);assert.equal(round.accumulatedMisses,0);assert.equal(round.consecutiveMisses,0);
+    round.reset();round.futureRows=[];assert(!round.ended);assert.equal(round.accumulatedMisses,0);assert.equal(round.consecutiveMisses,0);
     round.clear();assert.equal(round.board.bubbles.length,0);
-    console.log('Round passed: parity/vertical insertion, miss counters, preserved previews, explicit stale refresh, refill, bounded supply bias, danger, reset.');
+    console.log('Round passed: parity/vertical insertion, miss counters, preserved previews, explicit stale refresh, empty-board Boss entry/save, near-danger boundary, bounded supply bias, danger, reset.');
 } finally { fs.rmSync(out, {recursive:true, force:true}); }

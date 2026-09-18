@@ -9,7 +9,7 @@ try {
     const {BubbleShooterRound} = require(path.join(out,'BubbleShooterRound.js'));
     const b = (row,col,color='red',frosted=false)=>({row,col,color,frosted});
     const r = new BubbleShooterRound(()=>.3);
-    r.reset();
+    r.reset();r.futureRows=[];
     assert.deepEqual(r.inventory,{bomb:1,wildcard:1,'clear-bottom':1});
     r.board.reset([b(0,4,'blue'),b(1,4,'red',true),b(2,4,'yellow'),b(3,4,'purple')]);
     const targets=r.board.bombTargets({row:1,col:3});assert.equal(targets.length,3);
@@ -19,22 +19,23 @@ try {
     assert.throws(()=>r.consumeProjectile('bomb'));
     let result=r.settle({row:1,col:3},'bomb');
     assert.equal(result.removed.length,3);assert.equal(result.dropped.length,1);assert.equal(result.thawed.length,0);
-    assert(result.refilled);assert.equal(r.current,'yellow');assert.equal(r.next,'purple');
-    assert.equal(r.accumulatedMisses,1);assert.equal(r.consecutiveMisses,0);
-    r.reset();r.board.reset([b(0,4),b(0,5),b(0,7,'blue'),b(0,8,'blue')]);
+    assert(result.enteredBoss && !result.refilled);assert.equal(r.current,'yellow');assert.equal(r.next,'purple');
+    assert.equal(r.accumulatedMisses,0);assert.equal(r.consecutiveMisses,0);
+    r.reset();r.futureRows=[];r.board.reset([b(0,4),b(0,5),b(0,7,'blue'),b(0,8,'blue')]);
     assert.equal(r.board.wildcardColor({row:0,col:6},'yellow'),'red','Equal clusters use stable color ordering.');
     r.current='purple';r.next='yellow';r.consumeProjectile('wildcard');result=r.settle({row:0,col:6},'wildcard');
     assert.equal(result.removed.length,3);assert.equal(r.inventory.wildcard,0);
     assert.equal(r.current,'purple');assert.equal(r.next,'yellow');
-    r.reset();r.board.reset([b(0,4,'red',true)]);
+    r.reset();r.futureRows=[];r.board.reset([b(0,4,'red',true)]);
     assert.equal(r.board.wildcardColor({row:0,col:3},'blue'),'blue','Frost must not attract matching.');
     r.board.reset([b(0,4,'blue'),b(2,4,'red',true),b(4,4,'yellow')]);
     assert.deepEqual(r.board.bottomTargets().map(x=>x.row),[2,4]);
     r.accumulatedMisses=2;r.consecutiveMisses=2;r.current='red';r.next='blue';
     result=r.clearBottom();assert.equal(result.removed.length,2);assert.equal(result.thawed.length,0);
     assert.equal(r.inventory['clear-bottom'],0);assert.throws(()=>r.clearBottom());
-    assert.equal(r.accumulatedMisses,2);assert.equal(r.consecutiveMisses,2);
+    assert.equal(r.accumulatedMisses,0);assert.equal(r.consecutiveMisses,2);
     assert.equal(r.current,'red');assert.equal(r.next,'blue');assert(!result.inserted);
-    r.reset();assert.deepEqual(r.inventory,{bomb:1,wildcard:1,'clear-bottom':1});
+    r.reset();r.futureRows=[];r.board.reset([b(0,4),b(1,4)]);const clearWin=r.clearBottom();assert(clearWin.enteredBoss&&!clearWin.refilled);assert.equal(r.board.bubbles.length,0);
+    r.reset();r.futureRows=[];assert.deepEqual(r.inventory,{bomb:1,wildcard:1,'clear-bottom':1});
     console.log('Items passed: bomb radius/frost/drop, launch consumption, wildcard tie/no frost match, ordinary queue preservation, sparse bottom rows, clear-bottom counters, stock/reset.');
 } finally {fs.rmSync(out,{recursive:true,force:true});}

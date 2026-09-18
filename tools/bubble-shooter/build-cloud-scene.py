@@ -62,6 +62,7 @@ play=node('Playfield',3)
 # This is a visual fixture, not a generated round or balance configuration.
 counter=node('Counter',play,0,478,200,48)
 sprite('DownArrow',counter,'hud/hud-down-arrow',-72,0,42,42)
+sprite('PendingRow',counter,'hud/hud-insert-row',-126,0,42,42)
 skill=sprite('BossSkill',counter,'hud/hud-frosting-skill',-126,0,36,40)
 objects[skill]['_active']=False
 for i in range(3):

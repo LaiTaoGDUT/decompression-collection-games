@@ -1,4 +1,4 @@
-import { cloudDifficulty } from './BubbleShooterDifficulty';
+import { cloudDifficulty, MAX_SAVED_FUTURE_ROWS } from './BubbleShooterDifficulty';
 import { Bubble, BubbleColor, BubbleShooterModel, Cell, neighbors, COLORS, ShotResult, DANGER, ROW_HEIGHT, DIAMETER, COLUMNS, MAX_ROW } from './BubbleShooterModel';
 
 /** Gameplay tuning, independently adjustable from the counter artwork. */
@@ -10,7 +10,9 @@ export type CloudStage = 'ordinary' | 'boss-entry' | 'boss' | 'victory';
 export type BubbleItem = 'bomb' | 'wildcard' | 'clear-bottom';
 export type ShotKind = 'normal' | 'bomb' | 'wildcard';
 export interface CloudSnapshot {
-    version: 1 | 2 | 3 | 4 | 5;
+    version: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    ceilingRow?: number;
+    futureRows?: BubbleColor[][];
     region?: BubbleRegion;
     bubbles: Bubble[];
     migrationReserve?: Bubble[];
@@ -33,6 +35,7 @@ export interface CloudSnapshot {
 export interface OrdinaryResult extends ShotResult {
     phaseBefore: number;
     inserted: boolean;
+    descended: boolean;
     refilled: boolean;
     danger: boolean;
     enteredBoss: boolean;
@@ -63,10 +66,16 @@ export class BubbleShooterRound {
     private reviveUsed = false;
     private rewardClaimed = false;
     readonly inventory: Record<BubbleItem, number> = { bomb: 1, wildcard: 1, 'clear-bottom': 1 };
+    private futureRows: BubbleColor[][] = [];
+    get remainingRows(): number {
+        let count=this.futureRows.length, remaining=this.migrationReserve.length, phase=this.board.rowPhase;
+        while(remaining>0) {phase=1-phase;remaining-=COLUMNS-phase;count++;}
+        return count;
+    }
     private readonly random: () => number;
 
     snapshot(): CloudSnapshot {
-        return { version: 5, region: this.region, bubbles: this.board.bubbles,
+        return { version: 7, ceilingRow:this.board.ceilingRow, futureRows:this.futureRows.map(row=>row.slice()), region: this.region, bubbles: this.board.bubbles,
             ...(this.migrationReserve.length ? {migrationReserve:this.migrationReserve.map(b=>({...b}))} : {}), phase: this.board.rowPhase,
             stage: this.stage, current: this.current, next: this.next,
             accumulatedMisses: this.accumulatedMisses, consecutiveMisses: this.consecutiveMisses,
@@ -81,16 +90,16 @@ export class BubbleShooterRound {
         if (!value || typeof value !== 'object') return false;
         let s = value as CloudSnapshot;
         const legacy = s.version === 1;
-        const oldGrid = s.version !== 5;
-        const savedMaxRow=oldGrid ? 18 : MAX_ROW;
-        const savedColumns=oldGrid ? 15 : COLUMNS;
+        const oldGrid = s.version < 6;
+        const savedMaxRow=oldGrid ? (s.version===5 ? 16 : 18) : MAX_ROW;
+        const savedColumns=oldGrid ? (s.version===5 ? 14 : 15) : COLUMNS;
         const region: BubbleRegion = s.version >= 4 ? s.region! : 'cloud';
         if (availableRegions.indexOf(region) < 0) return false;
         if ((region !== 'cloud' && region !== 'ocean')
             || (s.version < 4 && s.region !== undefined && s.region !== 'cloud')) return false;
         const integer = (n: unknown, max: number): boolean => typeof n === 'number'
             && Number.isInteger(n) && n >= 0 && n <= max;
-        if ((s.version !== 1 && s.version !== 2 && s.version !== 3 && s.version !== 4 && s.version !== 5) || [0, 1].indexOf(s.phase) < 0
+        if ((s.version !== 1 && s.version !== 2 && s.version !== 3 && s.version !== 4 && s.version !== 5 && s.version !== 6 && s.version !== 7) || [0, 1].indexOf(s.phase) < 0
             || ['ordinary', 'boss-entry', 'boss', 'victory'].indexOf(s.stage) < 0
             || COLORS.indexOf(s.current) < 0 || COLORS.indexOf(s.next) < 0
             || !integer(s.accumulatedMisses, 3) || !integer(s.consecutiveMisses, 1000000)
@@ -107,12 +116,17 @@ export class BubbleShooterRound {
             || !Array.isArray(s.frostTargets) || s.frostTargets.length > 3
             || !s.frostTargets.every(c => c && integer(c.row, legacy ? 10 : savedMaxRow)
                 && integer(c.col, legacy ? 9 : savedColumns - 1))) return false;
-        if(s.migrationReserve!==undefined && (s.version!==5 || !Array.isArray(s.migrationReserve)
+        if(s.migrationReserve!==undefined && ((s.version!==5 && s.version!==6 && s.version!==7) || !Array.isArray(s.migrationReserve)
             || s.migrationReserve.length>285 || !s.migrationReserve.every(b=>b && COLORS.indexOf(b.color)>=0
                 && Number.isInteger(b.row) && b.row>=0 && b.row<=18 && Number.isInteger(b.col) && b.col>=0 && b.col<15
                 && typeof b.frosted==='boolean' && (region==='cloud' ? b.support===undefined : !b.frosted && (b.support===undefined || b.support===(s.stage==='ordinary'||s.stage==='boss-entry'?'seaweed':'tentacle'))))))return false;
+        if(s.version===7 && (!integer(s.ceilingRow,MAX_ROW) || !Array.isArray(s.futureRows)
+            || s.futureRows.length>MAX_SAVED_FUTURE_ROWS || (s.futureRows.length>0 && (s.migrationReserve?.length??0)>0) || !s.futureRows.every((row,i)=>Array.isArray(row) && row.length===COLUMNS-(s.phase+i+1)%2 && row.every(color=>COLORS.indexOf(color)>=0))
+            || (s.stage!=='ordinary' && (s.futureRows.length>0 || (s.ceilingRow!==0 && s.stage!=='boss-entry')))
+            || (s.ceilingRow!>0 && (s.futureRows.length>0 || (s.migrationReserve?.length??0)>0))))return false;
         if (region === 'ocean' && (s.frostTargets.length > 0
             || (s.bubbles.filter(b => b.support !== undefined).length + (s.migrationReserve??[]).filter(b=>b.support!==undefined).length) > OCEAN_TUNING.supportCap)) return false;
+        if(s.version<7)s={...s,ceilingRow:0,futureRows:[]};
         if (legacy) {
             // Keep the old cells/queue/inventory; center them in the wider board.
             // The expanded runway can make an old danger crossing playable again.
@@ -133,42 +147,43 @@ export class BubbleShooterRound {
             const occupied=new Set<string>();
             if (!s.bubbles.every(b=> {
                 const key=`${b.row}:${b.col}`;
-                if(b.col>=15-(b.row+s.phase)%2 || occupied.has(key))return false;
+                if(b.col>=savedColumns-(b.row+s.phase)%2 || occupied.has(key))return false;
                 occupied.add(key);return true;
             })) return false;
             if(!s.frostTargets.every(c=>s.bubbles.some(b=>b.row===c.row&&b.col===c.col&&!b.frosted))
                 || new Set(s.frostTargets.map(c=>`${c.row}:${c.col}`)).size!==s.frostTargets.length)return false;
             if(value && (value as CloudSnapshot).version >= 3 && (s.stage==='ordinary'||s.stage==='boss')
-                && s.ended!==s.bubbles.some(b=>410-b.row*48*Math.sqrt(3)/2-24<=-330))return false;
+                && s.ended!==s.bubbles.some(b=>{const d=720/savedColumns;return 410-b.row*d*Math.sqrt(3)/2-d/2<=((value as CloudSnapshot).version===5 ? -305 : -330);}))return false;
             const free: Cell[]=[];
             // Live saves stay live during geometry migration; terminal saves may retain danger cells.
             for(let row=0;row<=MAX_ROW;row++)for(let col=0;col<COLUMNS-(row+s.phase)%2;col++) {
                 if(!s.ended && 410-row*ROW_HEIGHT-DIAMETER/2<=DANGER)continue;
                 free.push({row,col});
             }
-            const reserve: Bubble[]=[];
+            const reserve: Bubble[]=(s.migrationReserve??[]).map(b=>({...b}));
             const remap=new Map<string,Cell>();
             const migrated=s.bubbles.map(b=>{
                 if(!free.length){reserve.push({...b});return undefined;}
-                const desiredCol=b.col*(COLUMNS-1)/14;
+                const desiredCol=b.col*(COLUMNS-1)/(savedColumns-1);
                 let best=0,bestCost=Infinity;
                 free.forEach((c,i)=>{const cost=Math.pow(c.row-b.row,2)*4+Math.pow(c.col-desiredCol,2);if(cost<bestCost){best=i;bestCost=cost;}});
                 const target=free.splice(best,1)[0]!;remap.set(`${b.row}:${b.col}`,target);
                 return {...b,...target};
             }).filter((b): b is Bubble => !!b);
-            s={...s,version:5,region,bubbles:migrated,migrationReserve:reserve,frostTargets:s.frostTargets.filter(c=>remap.has(`${c.row}:${c.col}`)).map(c=>({...remap.get(`${c.row}:${c.col}`)!}))};
+            s={...s,version:6,region,bubbles:migrated,migrationReserve:reserve,frostTargets:s.frostTargets.filter(c=>remap.has(`${c.row}:${c.col}`)).map(c=>({...remap.get(`${c.row}:${c.col}`)!}))};
             if(s.stage==='ordinary'||s.stage==='boss')s={...s,ended:migrated.some(b=>410-b.row*ROW_HEIGHT-DIAMETER/2<=DANGER)};
         }
         let model: BubbleShooterModel;
-        try { model = new BubbleShooterModel(); model.reset(s.bubbles, s.phase); } catch { return false; }
+        try { model = new BubbleShooterModel(); model.reset(s.bubbles, s.phase,s.ceilingRow??0); } catch { return false; }
         if (!s.frostTargets.every(c => c && s.bubbles.some(b => b.row === c.row && b.col === c.col && !b.frosted))
             || new Set(s.frostTargets.map(c => `${c.row}:${c.col}`)).size !== s.frostTargets.length
             || (s.stage === 'victory' && (!s.ended || s.bossHealth !== 0))
-            || (s.stage === 'boss-entry' && (s.ended || s.regionProgress < cloudDifficulty(s.completedRegions).progressRequired))
+            || (s.stage === 'boss-entry' && (s.ended || (s.bubbles.length > 0 && s.regionProgress < cloudDifficulty(s.completedRegions).progressRequired)))
             || ((s.stage === 'ordinary' || s.stage === 'boss') && (s.ended !== model.danger || s.bossHealth === 0))) return false;
         this.activeRegion = region;
         this.migrationReserve=(s.migrationReserve??[]).map(b=>({...b}));
-        this.board.reset(s.bubbles, s.phase);
+        this.board.reset(s.bubbles, s.phase,s.ceilingRow??0);
+        this.futureRows=(s.futureRows??[]).map(row=>row.slice());
         this.stage = s.stage; this.current = s.current; this.next = s.next;
         this.accumulatedMisses = s.accumulatedMisses; this.consecutiveMisses = s.consecutiveMisses;
         this.regionProgress = s.regionProgress; this.bossHealth = s.bossHealth; this.bossShots = s.bossShots;
@@ -184,7 +199,7 @@ export class BubbleShooterRound {
     reset(region: BubbleRegion = 'cloud'): void {
         if (region !== 'cloud' && region !== 'ocean') throw new Error('Unknown region.');
         this.activeRegion = region;
-        this.migrationReserve=[];
+        this.migrationReserve=[];this.futureRows=[];
         this.reviveUsed = false;
         this.completedRegions = 0;
         this.rewardClaimed = false;
@@ -201,6 +216,7 @@ export class BubbleShooterRound {
         this.cleared = 0;
         this.ended = false;
         this.board.reset(this.generate(ORDINARY_TUNING.initialRows));
+        this.planFutureRows();
         const weights = this.supplyWeights();
         this.current = this.choose(weights);
         this.next = this.choose(weights);
@@ -253,7 +269,7 @@ export class BubbleShooterRound {
         if (region !== 'cloud' && region !== 'ocean') return false;
         if (this.stage !== 'victory' || !this.rewardClaimed) return false;
         this.activeRegion = region;
-        this.migrationReserve=[];
+        this.migrationReserve=[];this.futureRows=[];
         this.stage = 'ordinary';
         this.rewardClaimed = false;
         this.regionProgress = 0;
@@ -264,6 +280,7 @@ export class BubbleShooterRound {
         this.frostTargets = [];
         this.ended = false;
         this.board.reset(this.generate(ORDINARY_TUNING.initialRows));
+        this.planFutureRows();
         return true;
     }
 
@@ -303,6 +320,11 @@ export class BubbleShooterRound {
         return this.complete(result, phaseBefore, true, kind === 'normal');
     }
 
+    private planFutureRows(): void {
+        const palette=this.shuffle(COLORS);
+        this.futureRows=Array.from({length:this.difficulty.futureRows},(_,row)=>Array.from({length:COLUMNS-(row+1)%2},(_,col)=>palette[(Math.floor(col/3)+row)%palette.length]!));
+    }
+
     private complete(result: ShotResult, phaseBefore: number, countsAsShot: boolean, advanceSupply: boolean): OrdinaryResult {
         const matched = result.removed.length > 0;
         const count = result.removed.length + result.dropped.length;
@@ -312,15 +334,16 @@ export class BubbleShooterRound {
         if (countsAsShot) {
             if (matched) this.consecutiveMisses = 0;
             else this.consecutiveMisses++;
-            if (this.stage === 'ordinary' && !matched) this.accumulatedMisses++;
+            if (this.stage === 'ordinary') this.accumulatedMisses = matched ? 0 : this.accumulatedMisses + 1;
             if (this.stage === 'boss') this.bossShots++;
         }
-        let inserted = false, refilled = false, enteredBoss = false, victory = false, damage = 0;
+        if(this.stage==='ordinary' && matched)this.accumulatedMisses=0;
+        let inserted = false, descended = false, refilled = false, enteredBoss = false, victory = false, damage = 0;
         let frosted: Bubble[] = [], supported: Bubble[] = [];
         if (this.stage === 'ordinary') {
             this.regionProgress += count;
-            if (this.regionProgress >= this.difficulty.progressRequired) {
-                // Progress wins over refill, ordinary row insertion and danger for this shot.
+            if (this.board.bubbles.length === 0 && this.remainingRows===0) {
+                // Clearing the whole board wins over row insertion and danger; no ordinary refill.
                 this.stage = 'boss-entry';
                 enteredBoss = true;
             }
@@ -336,7 +359,8 @@ export class BubbleShooterRound {
         }
         if (!enteredBoss && !victory) {
             if (this.board.bubbles.length === 0) {
-                this.board.reset(this.stage === 'boss' ? this.generateBoss() : this.generate(ORDINARY_TUNING.refillRows));
+                if(this.stage==='ordinary') {this.insertPressureRow();inserted=true;this.accumulatedMisses=0;}
+                else this.board.reset(this.generateBoss());
                 refilled = true;
             }
             if (this.stage === 'boss' && countsAsShot && this.bossShots >= BOSS_TUNING.shotsPerAction) {
@@ -352,15 +376,15 @@ export class BubbleShooterRound {
                 }
                 this.bossShots = 0;
                 this.frostTargets = [];
-            } else if (this.stage === 'ordinary' && countsAsShot && !this.board.danger && this.accumulatedMisses >= ORDINARY_TUNING.missesPerRow) {
-                this.insertPressureRow();
+            } else if (this.stage === 'ordinary' && !inserted && countsAsShot && !this.board.danger && this.accumulatedMisses >= ORDINARY_TUNING.missesPerRow) {
+                if(this.remainingRows>0) {this.insertPressureRow();inserted=true;}
+                else {this.board.descend();descended=true;}
                 this.accumulatedMisses = 0;
                 // Region effects belong to the inserted row and commit before danger checking.
-                const top = this.board.bubbles.filter(b => b.row === 0 && b.col > 0 && b.col < COLUMNS - 2);
+                const top = inserted ? this.board.bubbles.filter(b => b.row === 0 && b.col > 0 && b.col < COLUMNS - 2) : [];
                 const selected = this.shuffle(top).slice(0, this.difficulty.insertedFrost);
                 if (this.region === 'ocean') supported = this.board.applySupport(selected, 'seaweed', this.availableSupportCap);
                 else frosted = this.board.applyFrost(selected);
-                inserted = true;
             }
             this.ended = this.board.danger;
             if (this.region === 'cloud' && this.stage === 'boss' && countsAsShot && this.bossShots === BOSS_TUNING.shotsPerAction - 1 && !this.ended) {
@@ -376,7 +400,7 @@ export class BubbleShooterRound {
             this.current = this.next;
             this.next = this.choose(this.supplyWeights());
         }
-        return { ...result, phaseBefore, inserted, refilled, danger: this.ended && !victory,
+        return { ...result, phaseBefore, inserted, descended, refilled, danger: this.ended && !victory,
             enteredBoss, victory, damage, frosted, supported };
     }
 
@@ -385,21 +409,27 @@ export class BubbleShooterRound {
     }
 
     private insertPressureRow(): void {
-        this.board.insertRow(this.random);
-        if(!this.migrationReserve.length)return;
-        const bubbles=this.board.bubbles;
-        for(const bubble of bubbles.filter(b=>b.row===0)) {
-            const queued=this.migrationReserve.shift();if(!queued)break;
-            bubble.color=queued.color;bubble.frosted=queued.frosted;
-            if(queued.support)bubble.support=queued.support;
+        if(this.stage!=='ordinary') {
+            this.board.insertRow(this.random);
+            if(this.migrationReserve.length) {
+                const bubbles=this.board.bubbles;
+                for(const b of bubbles.filter(b=>b.row===0)) {const queued=this.migrationReserve.shift();if(!queued)break;Object.assign(b,{...queued,row:0,col:b.col});}
+                this.board.reset(bubbles,this.board.rowPhase);
+            }
+            return;
         }
-        this.board.reset(bubbles,this.board.rowPhase);
+        const phase=1-this.board.rowPhase, width=COLUMNS-phase;
+        const row: Bubble[]=this.migrationReserve.length
+            ? this.migrationReserve.splice(0,width).map((b,col)=>({...b,row:0,col}))
+            : (this.futureRows.shift()??[]).slice(0,width).map((color,col)=>({row:0,col,color,frosted:false}));
+        // A partially populated migrated row is still finite; never fill it with fresh random bubbles.
+        this.board.reset(this.board.bubbles.map(b=>({...b,row:b.row+1})).concat(row),phase);
     }
 
     /** Invoked only after the preceding shot's effects finish; never resets inventory or queue. */
     beginBoss(): void {
         if (this.stage !== 'boss-entry' || this.ended) throw new Error('Boss entry is not pending.');
-        this.migrationReserve=[];
+        this.migrationReserve=[];this.futureRows=[];
         this.board.reset(this.generateBoss());
         this.accumulatedMisses = 0;
         this.consecutiveMisses = 0;
@@ -509,7 +539,7 @@ export class BubbleShooterRound {
     }
 
     clear(): void {
-        this.migrationReserve=[];
+        this.migrationReserve=[];this.futureRows=[];
         this.board.reset([]);
         this.frostTargets = [];
         this.inventory.bomb = 0;
