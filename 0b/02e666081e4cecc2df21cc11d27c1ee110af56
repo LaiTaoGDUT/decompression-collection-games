@@ -1,0 +1,33 @@
+docs/games/bubble-shooter/art-source/cloud/launcher-clean/prompt.md
+  h_293365c3a5ebee 1-5
+docs/games/bubble-shooter/art-source/ocean-octopus-v7-prompt.md
+  h_293365c3a5ebee 1-3
+docs/games/bubble-shooter/art-source/ocean-pause-v2-prompt.md
+  h_293365c3a5ebee 1-6
+docs/games/bubble-shooter/art-source/ocean-reward-celebration-v1-prompt.md
+  h_293365c3a5ebee 1-3
+docs/games/bubble-shooter/art-source/ocean/reward/celebration-split-prompt.md
+  h_293365c3a5ebee 1
+docs/games/bubble-shooter/art-source/ocean/v7/body-prompt.md
+  h_293365c3a5ebee 1
+docs/games/bubble-shooter/art-source/ocean/v7/crown-prompt.md
+  h_293365c3a5ebee 1
+docs/games/bubble-shooter/art-source/ocean/v7/grab-arm-prompt.md
+  h_293365c3a5ebee 1
+docs/games/bubble-shooter/art-source/ocean/v7/right-arm-prompt.md
+  h_293365c3a5ebee 1
+docs/games/bubble-shooter/art-source/ocean/v7/staff-arm-prompt.md
+  h_293365c3a5ebee 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0b02e666081e4cecc2df21cc11d27c1ee110af56",
+  "prompts": {},
+  "logical_commit_id": "0b02e666081e4cecc2df21cc11d27c1ee110af56",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
