@@ -1,0 +1,25 @@
+docs/games/bubble-shooter/art-source/bubbles-hd/ocean/red-prompt.md
+  s_7ec70c775017ba::t_692b8dfffbfe1f 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "78432c62df6286b86dfce77296d802614e1f4489",
+  "prompts": {},
+  "logical_commit_id": "78432c62df6286b86dfce77296d802614e1f4489",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_7ec70c775017ba": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "94802ea3-5a12-4eff-b8b0-88a7751ca162",
+        "model": "grok-4.6"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
