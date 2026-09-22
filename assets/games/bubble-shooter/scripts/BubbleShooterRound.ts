@@ -5,12 +5,12 @@ import { Bubble, BubbleColor, BubbleShooterModel, Cell, neighbors, COLORS, ShotR
 export const ORDINARY_TUNING = Object.freeze({ missesPerRow: 3, protectionAfter: 3, initialRows: 10, refillRows: 6 });
 export const BOSS_TUNING = Object.freeze({ progressRequired: 90, health: 60, shotsPerAction: 3, frostTargets: 2 });
 export type BubbleRegion = 'cloud' | 'ocean';
-export const OCEAN_TUNING = Object.freeze({ ordinaryAnchors: 4, supportCap: 6, grabTargets: 2 });
+export const OCEAN_TUNING = Object.freeze({ ordinaryAnchors: 4, supportCap: 6, convertTargets: 2 });
 export type CloudStage = 'ordinary' | 'boss-entry' | 'boss' | 'victory';
 export type BubbleItem = 'bomb' | 'wildcard' | 'clear-bottom';
 export type ShotKind = 'normal' | 'bomb' | 'wildcard';
 export interface CloudSnapshot {
-    version: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
     ceilingRow?: number;
     futureRows?: BubbleColor[][];
     region?: BubbleRegion;
@@ -75,7 +75,7 @@ export class BubbleShooterRound {
     private readonly random: () => number;
 
     snapshot(): CloudSnapshot {
-        return { version: 7, ceilingRow:this.board.ceilingRow, futureRows:this.futureRows.map(row=>row.slice()), region: this.region, bubbles: this.board.bubbles,
+        return { version: 9, ceilingRow:0, futureRows:this.futureRows.map(row=>row.slice()), region: this.region, bubbles: this.board.bubbles,
             ...(this.migrationReserve.length ? {migrationReserve:this.migrationReserve.map(b=>({...b}))} : {}), phase: this.board.rowPhase,
             stage: this.stage, current: this.current, next: this.next,
             accumulatedMisses: this.accumulatedMisses, consecutiveMisses: this.consecutiveMisses,
@@ -99,7 +99,7 @@ export class BubbleShooterRound {
             || (s.version < 4 && s.region !== undefined && s.region !== 'cloud')) return false;
         const integer = (n: unknown, max: number): boolean => typeof n === 'number'
             && Number.isInteger(n) && n >= 0 && n <= max;
-        if ((s.version !== 1 && s.version !== 2 && s.version !== 3 && s.version !== 4 && s.version !== 5 && s.version !== 6 && s.version !== 7) || [0, 1].indexOf(s.phase) < 0
+        if ((s.version !== 1 && s.version !== 2 && s.version !== 3 && s.version !== 4 && s.version !== 5 && s.version !== 6 && s.version !== 7 && s.version !== 8 && s.version !== 9) || [0, 1].indexOf(s.phase) < 0
             || ['ordinary', 'boss-entry', 'boss', 'victory'].indexOf(s.stage) < 0
             || COLORS.indexOf(s.current) < 0 || COLORS.indexOf(s.next) < 0
             || !integer(s.accumulatedMisses, 3) || !integer(s.consecutiveMisses, 1000000)
@@ -111,21 +111,38 @@ export class BubbleShooterRound {
             || (!s.bubbles.length && s.stage !== 'victory' && s.stage !== 'boss-entry')
             || !s.bubbles.every(b => b && integer(b.row, legacy ? 10 : savedMaxRow) && integer(b.col, legacy ? 9 : savedColumns - 1)
                 && COLORS.indexOf(b.color) >= 0 && typeof b.frosted === 'boolean'
+                && (b.indestructible === undefined || (s.version >= 8 && b.indestructible === true && !b.frosted && b.support === undefined))
+                && (b.solidKind === undefined || (s.version===9 && region==='ocean' && b.solidKind==='ocean' && b.indestructible===true))
+                && (s.version<9 || b.support===undefined)
                 && (region === 'cloud' ? b.support === undefined
                     : !b.frosted && (b.support === undefined || b.support === (s.stage === 'ordinary' || s.stage === 'boss-entry' ? 'seaweed' : 'tentacle'))))
             || !Array.isArray(s.frostTargets) || s.frostTargets.length > 3
             || !s.frostTargets.every(c => c && integer(c.row, legacy ? 10 : savedMaxRow)
                 && integer(c.col, legacy ? 9 : savedColumns - 1))) return false;
-        if(s.migrationReserve!==undefined && ((s.version!==5 && s.version!==6 && s.version!==7) || !Array.isArray(s.migrationReserve)
+        if(s.migrationReserve!==undefined && ((s.version!==5 && s.version!==6 && s.version!==7 && s.version!==8 && s.version!==9) || !Array.isArray(s.migrationReserve)
             || s.migrationReserve.length>285 || !s.migrationReserve.every(b=>b && COLORS.indexOf(b.color)>=0
                 && Number.isInteger(b.row) && b.row>=0 && b.row<=18 && Number.isInteger(b.col) && b.col>=0 && b.col<15
-                && typeof b.frosted==='boolean' && (region==='cloud' ? b.support===undefined : !b.frosted && (b.support===undefined || b.support===(s.stage==='ordinary'||s.stage==='boss-entry'?'seaweed':'tentacle'))))))return false;
-        if(s.version===7 && (!integer(s.ceilingRow,MAX_ROW) || !Array.isArray(s.futureRows)
+                && ((b.indestructible === undefined && b.solidKind===undefined) || (s.version===9 && region==='ocean' && b.indestructible===true && b.solidKind==='ocean' && !b.frosted && b.support===undefined))
+                && (s.version<9 || b.support===undefined) && typeof b.frosted==='boolean' && (region==='cloud' ? b.support===undefined : !b.frosted && (b.support===undefined || b.support===(s.stage==='ordinary'||s.stage==='boss-entry'?'seaweed':'tentacle'))))))return false;
+        if(s.version>=7 && (!integer(s.ceilingRow,MAX_ROW) || !Array.isArray(s.futureRows)
             || s.futureRows.length>MAX_SAVED_FUTURE_ROWS || (s.futureRows.length>0 && (s.migrationReserve?.length??0)>0) || !s.futureRows.every((row,i)=>Array.isArray(row) && row.length===COLUMNS-(s.phase+i+1)%2 && row.every(color=>COLORS.indexOf(color)>=0))
             || (s.stage!=='ordinary' && (s.futureRows.length>0 || (s.ceilingRow!==0 && s.stage!=='boss-entry')))
             || (s.ceilingRow!>0 && (s.futureRows.length>0 || (s.migrationReserve?.length??0)>0))))return false;
+        if (s.version >= 8) {
+            if (s.ceilingRow !== 0) return false;
+            const solids = s.bubbles.filter(b => b.indestructible && !b.solidKind);
+            if (solids.length) {
+                if ((s.stage !== 'ordinary' && s.stage !== 'boss-entry') || s.futureRows!.length || s.migrationReserve?.length) return false;
+                const last = Math.max(...solids.map(b => b.row));
+                const occupied = new Set(solids.map(b => `${b.row}:${b.col}`));
+                for (let row = 0; row <= last; row++) for (let col = 0; col < COLUMNS - (row + s.phase) % 2; col++) {
+                    if (!occupied.has(`${row}:${col}`)) return false;
+                }
+                if (s.stage === 'ordinary' && !s.bubbles.some(b => !b.indestructible)) return false;
+            }
+        }
         if (region === 'ocean' && (s.frostTargets.length > 0
-            || (s.bubbles.filter(b => b.support !== undefined).length + (s.migrationReserve??[]).filter(b=>b.support!==undefined).length) > OCEAN_TUNING.supportCap)) return false;
+            || (s.bubbles.filter(b => b.support !== undefined || b.solidKind==='ocean').length + (s.migrationReserve??[]).filter(b=>b.support!==undefined || b.solidKind==='ocean').length) > OCEAN_TUNING.supportCap)) return false;
         if(s.version<7)s={...s,ceilingRow:0,futureRows:[]};
         if (legacy) {
             // Keep the old cells/queue/inventory; center them in the wider board.
@@ -173,16 +190,31 @@ export class BubbleShooterRound {
             s={...s,version:6,region,bubbles:migrated,migrationReserve:reserve,frostTargets:s.frostTargets.filter(c=>remap.has(`${c.row}:${c.col}`)).map(c=>({...remap.get(`${c.row}:${c.col}`)!}))};
             if(s.stage==='ordinary'||s.stage==='boss')s={...s,ended:migrated.some(b=>410-b.row*ROW_HEIGHT-DIAMETER/2<=DANGER)};
         }
+        if(region==='ocean' && s.version<9){
+            const migrate=(b: Bubble): Bubble=>{
+                if(!b.support)return {...b};
+                const stone: Bubble={...b,color:'red',frosted:false,indestructible:true,solidKind:'ocean'};
+                delete stone.support;return stone;
+            };
+            s={...s,bubbles:s.bubbles.map(migrate),migrationReserve:s.migrationReserve?.map(migrate)};
+        }
         let model: BubbleShooterModel;
         try { model = new BubbleShooterModel(); model.reset(s.bubbles, s.phase,s.ceilingRow??0); } catch { return false; }
-        if (!s.frostTargets.every(c => c && s.bubbles.some(b => b.row === c.row && b.col === c.col && !b.frosted))
+        if (!s.frostTargets.every(c => c && s.bubbles.some(b => b.row === c.row && b.col === c.col && !b.indestructible && !b.frosted))
             || new Set(s.frostTargets.map(c => `${c.row}:${c.col}`)).size !== s.frostTargets.length
             || (s.stage === 'victory' && (!s.ended || s.bossHealth !== 0))
-            || (s.stage === 'boss-entry' && (s.ended || (s.bubbles.length > 0 && s.regionProgress < cloudDifficulty(s.completedRegions).progressRequired)))
-            || ((s.stage === 'ordinary' || s.stage === 'boss') && (s.ended !== model.danger || s.bossHealth === 0))) return false;
+            || (s.stage === 'boss-entry' && (s.ended || (model.removableBubbles.length > 0
+                && (s.version >= 8 || s.regionProgress < cloudDifficulty(s.completedRegions).progressRequired))))
+            || ((s.stage === 'ordinary' || s.stage === 'boss') && (s.ended !== model.danger || s.bossHealth === 0))
+            || (s.version===9 && s.stage==='ordinary' && !model.removableBubbles.length)) return false;
+        if(region==='ocean' && s.version<9 && s.stage==='ordinary' && !model.removableBubbles.length)
+            s={...s,stage:'boss-entry',ended:false,futureRows:[],migrationReserve:[],accumulatedMisses:0};
         this.activeRegion = region;
         this.migrationReserve=(s.migrationReserve??[]).map(b=>({...b}));
-        this.board.reset(s.bubbles, s.phase,s.ceilingRow??0);
+        // Legacy progress-based saves could enter Boss with colored cells still present.
+        // Their entry already replaces the old board; canonicalize it for v8 roundtrips.
+        if (s.version < 8 && s.stage === 'boss-entry') model.reset([], s.phase);
+        this.board.reset(model.bubbles, s.phase);
         this.futureRows=(s.futureRows??[]).map(row=>row.slice());
         this.stage = s.stage; this.current = s.current; this.next = s.next;
         this.accumulatedMisses = s.accumulatedMisses; this.consecutiveMisses = s.consecutiveMisses;
@@ -191,26 +223,29 @@ export class BubbleShooterRound {
         this.completedRegions = s.completedRegions;
         for (const k of ['bomb', 'wildcard', 'clear-bottom'] as BubbleItem[]) this.inventory[k] = s.inventory[k];
         this.ended = s.ended; this.reviveUsed = s.reviveUsed; this.rewardClaimed = false;
+        if(this.stage==='boss' && !this.ended && !this.board.removableBubbles.length)this.refillBossColors();
         return true;
     }
 
     constructor(random: () => number = Math.random) { this.random = random; }
 
-    reset(region: BubbleRegion = 'cloud'): void {
+    reset(region: BubbleRegion = 'cloud', keepProgress = false): void {
         if (region !== 'cloud' && region !== 'ocean') throw new Error('Unknown region.');
         this.activeRegion = region;
         this.migrationReserve=[];this.futureRows=[];
         this.reviveUsed = false;
-        this.completedRegions = 0;
+        if (!keepProgress) this.completedRegions = 0;
         this.rewardClaimed = false;
         this.stage = 'ordinary';
         this.regionProgress = 0;
         this.bossHealth = BOSS_TUNING.health;
         this.bossShots = 0;
         this.frostTargets = [];
-        this.inventory.bomb = 1;
-        this.inventory.wildcard = 1;
-        this.inventory['clear-bottom'] = 1;
+        if (!keepProgress) {
+            this.inventory.bomb = 1;
+            this.inventory.wildcard = 1;
+            this.inventory['clear-bottom'] = 1;
+        }
         this.accumulatedMisses = 0;
         this.consecutiveMisses = 0;
         this.cleared = 0;
@@ -243,7 +278,12 @@ export class BubbleShooterRound {
         this.accumulatedMisses = this.consecutiveMisses = this.bossShots = 0;
         this.frostTargets = [];
         this.reviveUsed = true;
-        this.ended = false;
+        if (!this.board.removableBubbles.length) {
+            if (this.stage === 'ordinary') {
+                this.enterBossAfterClear();
+            } else this.refillBossColors();
+        }
+        this.ended = this.board.danger;
         return true;
     }
     get inventoryFull(): boolean {
@@ -284,8 +324,8 @@ export class BubbleShooterRound {
         return true;
     }
 
-    get staleCurrent(): boolean { return !this.board.bubbles.some(b => b.color === this.current); }
-    get staleNext(): boolean { return !this.board.bubbles.some(b => b.color === this.next); }
+    get staleCurrent(): boolean { return !this.board.removableBubbles.some(b => b.color === this.current); }
+    get staleNext(): boolean { return !this.board.removableBubbles.some(b => b.color === this.next); }
 
     /** Explicit free refresh, only replacing displayed colors which have disappeared. */
     refreshStale(): number {
@@ -320,6 +360,12 @@ export class BubbleShooterRound {
         return this.complete(result, phaseBefore, true, kind === 'normal');
     }
 
+    private enterBossAfterClear(): void {
+        this.futureRows=[]; this.migrationReserve=[]; this.frostTargets=[];
+        this.accumulatedMisses=0;
+        this.stage='boss-entry';
+    }
+
     private planFutureRows(): void {
         const palette=this.shuffle(COLORS);
         this.futureRows=Array.from({length:this.difficulty.futureRows},(_,row)=>Array.from({length:COLUMNS-(row+1)%2},(_,col)=>palette[(Math.floor(col/3)+row)%palette.length]!));
@@ -334,17 +380,16 @@ export class BubbleShooterRound {
         if (countsAsShot) {
             if (matched) this.consecutiveMisses = 0;
             else this.consecutiveMisses++;
-            if (this.stage === 'ordinary') this.accumulatedMisses = matched ? 0 : this.accumulatedMisses + 1;
+            if (this.stage === 'ordinary' && !matched) this.accumulatedMisses++;
             if (this.stage === 'boss') this.bossShots++;
         }
-        if(this.stage==='ordinary' && matched)this.accumulatedMisses=0;
         let inserted = false, descended = false, refilled = false, enteredBoss = false, victory = false, damage = 0;
         let frosted: Bubble[] = [], supported: Bubble[] = [];
         if (this.stage === 'ordinary') {
             this.regionProgress += count;
-            if (this.board.bubbles.length === 0 && this.remainingRows===0) {
+            if (this.board.removableBubbles.length === 0) {
                 // Clearing the whole board wins over row insertion and danger; no ordinary refill.
-                this.stage = 'boss-entry';
+                this.enterBossAfterClear();
                 enteredBoss = true;
             }
         } else if (this.stage === 'boss') {
@@ -358,32 +403,31 @@ export class BubbleShooterRound {
             }
         }
         if (!enteredBoss && !victory) {
-            if (this.board.bubbles.length === 0) {
-                if(this.stage==='ordinary') {this.insertPressureRow();inserted=true;this.accumulatedMisses=0;}
-                else this.board.reset(this.generateBoss());
+            if (this.board.removableBubbles.length === 0) {
+                this.refillBossColors();
                 refilled = true;
             }
             if (this.stage === 'boss' && countsAsShot && this.bossShots >= BOSS_TUNING.shotsPerAction) {
                 if (!this.board.danger) {
                     this.insertPressureRow();
                     inserted = true;
-                    // Cloud targets follow inserted cells; ocean grabs select surviving bubbles.
+                    // Cloud targets follow inserted cells; ocean transforms surviving colored cells.
                     if (this.region === 'ocean') {
-                        const targets = this.shuffle(this.board.bubbles.filter(b => b.row >= 2 && !b.support))
-                            .sort((a, b) => b.row - a.row).slice(0, OCEAN_TUNING.grabTargets);
-                        supported = this.board.applySupport(targets, 'tentacle', this.availableSupportCap);
+                        const targets = this.shuffle(this.board.removableBubbles.filter(b => b.row >= 2))
+                            .slice(0, OCEAN_TUNING.convertTargets);
+                        supported = this.board.petrify(targets, this.availableSupportCap);
                     } else if (!refilled) frosted = this.board.applyFrost(this.frostTargets.map(c => ({row:c.row+1,col:c.col})));
                 }
                 this.bossShots = 0;
                 this.frostTargets = [];
             } else if (this.stage === 'ordinary' && !inserted && countsAsShot && !this.board.danger && this.accumulatedMisses >= ORDINARY_TUNING.missesPerRow) {
                 if(this.remainingRows>0) {this.insertPressureRow();inserted=true;}
-                else {this.board.descend();descended=true;}
+                else {this.board.insertSupportRow();descended=true;}
                 this.accumulatedMisses = 0;
                 // Region effects belong to the inserted row and commit before danger checking.
                 const top = inserted ? this.board.bubbles.filter(b => b.row === 0 && b.col > 0 && b.col < COLUMNS - 2) : [];
                 const selected = this.shuffle(top).slice(0, this.difficulty.insertedFrost);
-                if (this.region === 'ocean') supported = this.board.applySupport(selected, 'seaweed', this.availableSupportCap);
+                if (this.region === 'ocean') supported = this.board.petrify(selected, this.availableSupportCap);
                 else frosted = this.board.applyFrost(selected);
             }
             this.ended = this.board.danger;
@@ -405,7 +449,7 @@ export class BubbleShooterRound {
     }
 
     private get availableSupportCap(): number {
-        return Math.max(0,OCEAN_TUNING.supportCap-this.migrationReserve.filter(b=>b.support!==undefined).length);
+        return Math.max(0,OCEAN_TUNING.supportCap-this.migrationReserve.filter(b=>b.solidKind==='ocean').length);
     }
 
     private insertPressureRow(): void {
@@ -439,6 +483,15 @@ export class BubbleShooterRound {
         this.stage = 'boss';
     }
 
+    /** Keep permanent stones while replenishing playable colors when Boss HP remains. */
+    private refillBossColors(): void {
+        const solids=this.board.bubbles.filter(b=>b.indestructible);
+        const occupied=new Set(solids.map(b=>`${b.row}:${b.col}`));
+        const phase=this.board.rowPhase;
+        const colors=this.generateBoss().filter(b=>b.col<COLUMNS-(b.row+phase)%2 && !occupied.has(`${b.row}:${b.col}`));
+        this.board.reset(solids.concat(colors),phase);
+    }
+
     private generateBoss(): Bubble[] {
         const shift = this.completedRegions === 0 ? 0 : Math.floor(this.random() * 3) - 1;
         const board = this.generate(10, false).filter(b => b.row < 8
@@ -451,9 +504,10 @@ export class BubbleShooterRound {
     /** Counts plus exposed edges, with a bounded bias toward sampled reachable matches. */
     supplyWeights(): ReadonlyMap<BubbleColor, number> {
         const bubbles = this.board.bubbles;
-        const normal = bubbles.filter(b => !b.frosted);
+        const removable = bubbles.filter(b => !b.indestructible);
+        const normal = removable.filter(b => !b.frosted);
         // If every ball is frosted, retain visible colors so play can continue to strip frost.
-        const source = normal.length ? normal : bubbles;
+        const source = normal.length ? normal : removable;
         const occupied = new Set(bubbles.map(b => `${b.row}:${b.col}`));
         const weights = new Map<BubbleColor, number>();
         for (const b of source) {
@@ -531,7 +585,7 @@ export class BubbleShooterRound {
                 for (const bubble of this.shuffle(bubbles.filter(b => b.row >= 2 && b.row < rows - 1))) {
                     if (anchors.length >= Math.min(OCEAN_TUNING.ordinaryAnchors,this.availableSupportCap)) break;
                     if (anchors.some(b => Math.abs(b.row - bubble.row) <= 1 && Math.abs(b.col - bubble.col) <= 1)) continue;
-                    bubble.support = 'seaweed'; anchors.push(bubble);
+                    bubble.indestructible=true; bubble.solidKind='ocean'; bubble.color='red'; anchors.push(bubble);
                 }
             }
         }

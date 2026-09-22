@@ -13,7 +13,7 @@ GENERATED = Path(
     "exec-9bde68bf-3586-4258-b320-7ed213a99eda.png"
 )
 SOURCE_DIR = ROOT / "docs/games/bubble-shooter/art-source/cloud/hud"
-ASSET_DIR = ROOT / "assets/game-assets/bubble-shooter/visual/regions/cloud/hud"
+ASSET_DIR = ROOT / "assets/game-assets/bubble-shooter/visual/common/hud"
 SOURCE = SOURCE_DIR / "hud-insert-row-v2-raw.png"
 TARGET = ASSET_DIR / "hud-insert-row.png"
 
@@ -89,7 +89,7 @@ def attach_scene(uid: str) -> None:
     sprite = copy.deepcopy(down_sprite)
     sprite["node"] = {"__id__": node_id}
     sprite["_id"] = str(uuid.uuid4())
-    sprite["_spriteFrame"]["__uuid__"] = uid + "@f9941"
+    sprite["_spriteFrame"] = None  # Runtime SceneBindings resolves the common icon.
     scene.extend([node, transform, sprite])
     counter["_children"].append({"__id__": node_id})
     scene_path.write_text(json.dumps(scene, ensure_ascii=False, indent=2) + "\n")

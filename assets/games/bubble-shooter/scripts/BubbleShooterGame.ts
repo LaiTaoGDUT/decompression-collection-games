@@ -1,3 +1,10 @@
+import { BUBBLE_SCENE_SPRITES } from './BubbleShooterSceneBindings';
+import { loadBubbleRegion, type BubbleRegionAssets } from './BubbleShooterRegionAssets';
+import { BubbleShooterOceanBoss } from './BubbleShooterOceanBoss';
+import type { BubbleRegion } from './BubbleShooterRound';
+import { BubbleShooterForeground } from './BubbleShooterForeground';
+import { BubbleShooterOceanAmbient } from './BubbleShooterOceanAmbient';
+import { BubbleShooterJuice } from './BubbleShooterJuice';
 import { BubbleShooterTransitionView } from './BubbleShooterTransitionView';
 import type { AssetService } from '../../../services/asset/AssetService';
 import {
@@ -12,7 +19,7 @@ import { BubbleShooterEndView, type EndPage } from './BubbleShooterEndView';
 import { BubbleShooterRewardView } from './BubbleShooterRewardView';
 import { calculateBubbleShooterLayout, CLOUD_COUNTER_Y } from './BubbleShooterLayout';
 
-import { Bubble, BubbleColor, COLORS, PIVOT, position, ROW_HEIGHT, Shot, DIAMETER, DANGER, BOARD_WIDTH } from './BubbleShooterModel';
+import { Bubble, BubbleColor, COLORS, PIVOT, position, ROW_HEIGHT, Shot, SHOT_SPEED, MAX_AIM_ANGLE, DIAMETER, DANGER, BOARD_WIDTH } from './BubbleShooterModel';
 
 import { BubbleShooterRound, BubbleItem, OrdinaryResult, ShotKind, ORDINARY_TUNING, BOSS_TUNING } from './BubbleShooterRound';
 
@@ -34,8 +41,21 @@ const COUNTER_DECOR_GAP = 45;
 @ccclass('BubbleShooterGame')
 export class BubbleShooterGame extends Component implements MiniGame<BubbleShooterServices> {
     @property({ type: [BubbleShooterAudioSlot] }) audioSlots: BubbleShooterAudioSlot[] = [];
+    @property({ type: SpriteFrame }) supportFrame: SpriteFrame | null = null;
+    private regionAssets?: BubbleRegionAssets;
+    private sceneSprites: {path:string;sprite:Sprite}[]=[];
+    private oceanBoss?: BubbleShooterOceanBoss;
+    private oceanBossNode?: Node;
+    private oceanCastAge = -1;
+    private oceanTargets: {bubble:Bubble;color:BubbleColor}[]=[];
+    private oceanDefeating = false;
+    private viewBuilt = false;
     private readonly sound = new BubbleShooterAudio();
     private particles?: BubbleShooterParticles;
+    private juice?: BubbleShooterJuice;
+    private foreground?: BubbleShooterForeground;
+    private oceanAmbient?: BubbleShooterOceanAmbient;
+    @property({ type: [SpriteFrame] }) foregroundFrames: SpriteFrame[] = [];
     private transitionView?: BubbleShooterTransitionView;
     private checkpoint?: { round: CloudSnapshot; elapsed: number };
     private runFinished = false;
@@ -47,6 +67,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private endView?: BubbleShooterEndView;
     private pauseView?: BubbleShooterEndView;
     private operationGeneration = 0;
+    private restartPending = false;
+    private restartCurrentRound = false;
     private revivePending = false;
     private elapsed = 0;
     private finalResult?: GameResult;
@@ -63,14 +85,13 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private pendingShot?: Shot;
     private activeTouch?: number;
     private heldTouch?: { id: number; x: number; y: number };
-    private flight?: { shot: Shot; node: Node; segment: number; travelled: number; kind: ShotKind };
+    private flight?: { shot: Shot; node: Node; segment: number; travelled: number; kind: ShotKind; age: number; trailClock: number };
     private effects: { node: Node; elapsed: number; falling: boolean; motion: RemovalMotion; bubble: Bubble; burst: boolean; ring?: Graphics }[] = [];
     private fallingRoot?: Node;
     private get cleared(): number { return this.round.cleared; }
     private counterBeads: Node[] = [];
     private transition = 0;
     private transitionOffset = 0;
-    private notice?: Node;
     private pulseTime = 0;
     private bossRoot?: Node;
     private bossClip?: Node;
@@ -102,7 +123,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private readonly itemKeys: readonly BubbleItem[] = ['bomb', 'wildcard', 'clear-bottom'];
 
     protected onLoad(): void {
-        view.setDesignResolutionSize(750, 1334, ResolutionPolicy.FIXED_WIDTH);
+        view.setDesignResolutionSize(750,1334,ResolutionPolicy.FIXED_WIDTH);
+    }
+
+    private buildView(): void {
         this.applyLayout();
         view.on('canvas-resize', this.applyLayout, this);
         const play = this.node.getChildByName('Playfield')!;
@@ -126,7 +150,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const frost = ball.getChildByName('Frosting')?.getComponent(Sprite)?.spriteFrame;
             if (frost) this.frostFrame = frost;
         });
-        if (this.frames.size !== 4 || !this.frostFrame) throw new Error('Cloud scene is missing bubble SpriteFrames.');
+        if (this.frames.size !== 4 || (this.round.region==='cloud' && !this.frostFrame) || !this.supportFrame) throw new Error('Cloud scene is missing bubble SpriteFrames.');
         for (const key of this.itemKeys) {
             const button = play.getChildByPath('Items/Item-' + key)!;
             this.itemFrames.set(key, button.getChildByName('Icon')!.getComponent(Sprite)!.spriteFrame!);
@@ -134,7 +158,6 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             button.on(Node.EventType.TOUCH_END, this.selectItem, this);
         }
         this.buildCounter();
-        this.buildRefreshNotice();
         this.setupBoss();
         const rewardFrames = new Map<string, SpriteFrame>();
         this.node.getChildByName('RewardAssets')!.children.forEach(n => {
@@ -144,17 +167,15 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.fallingRoot = new Node('FallingBubbles'); this.fallingRoot.layer = playfield.layer;
         this.fallingRoot.setParent(playfield); this.fallingRoot.addComponent(UITransform);
         this.fallingRoot.setSiblingIndex(playfield.getChildByName('Launcher')!.getSiblingIndex());
-        this.particles = new BubbleShooterParticles(this.node.getChildByPath('Playfield/Vfx')!, rewardFrames);
-        this.attackFrame = rewardFrames.get('attack-heart')!;
-        this.rewardView = new BubbleShooterRewardView(this.node, rewardFrames, this.itemFrames, this.bossRoot!, () => this.cue('select'));
-        this.endView = new BubbleShooterEndView(this.node, rewardFrames, this.bossRoot!, () => this.cue('ui'));
-        this.pauseView = new BubbleShooterEndView(this.node, rewardFrames, this.bossRoot!, () => this.cue('ui'));
-        this.pauseView.root.name = 'PauseOverlay';
+        this.foreground = new BubbleShooterForeground(this.node);
+        this.foreground.register('cloud',{frames:this.foregroundFrames,
+            width:250,opacity:230,duration:11,interval:9,bob:12});
+        this.juice = new BubbleShooterJuice(this.node.getChildByPath('Playfield/Vfx')!);
         this.transitionView = new BubbleShooterTransitionView(this.node, rewardFrames.get('cloud-curtain')!,
             rewardFrames.get('boss-alert')!, rewardFrames.get('button')!, () => {
                 if (this.context) this.context.requestLobby(); else this.transitionView?.cancel();
             });
-        this.resetRound();
+        this.viewBuilt=true;
         this.applyLayout();
     }
 
@@ -162,26 +183,100 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if (this.state !== 'idle') throw new Error(`Cannot initialize BubbleShooterGame from ${this.state}.`);
         this.context = context;
         this.sound.bind(context.services.audio, this.audioSlots);
+        this.round.reset('ocean');
         const saved = context.services.storage?.getGameData(context.gameId)?.custom?.activeRound;
         if (saved && typeof saved === 'object') {
-            const record = saved as { round?: unknown; elapsed?: unknown };
-            if (typeof record.elapsed === 'number' && Number.isFinite(record.elapsed) && record.elapsed >= 0
-                && this.round.restore(record.round, ['cloud'])) {
-                this.elapsed = record.elapsed; this.restored = true;
-                this.healthVisible = this.healthTarget = this.round.bossHealth;
-                this.syncBoss(); this.syncBoard(false, true); this.syncItems(); this.syncCounter(); this.syncSupply();
+            const record=saved as {round?:unknown;elapsed?:unknown};
+            if(typeof record.elapsed==='number' && Number.isFinite(record.elapsed) && record.elapsed>=0 && this.round.restore(record.round,['cloud','ocean'])) {
+                this.elapsed=record.elapsed;this.restored=true;
             }
         }
+        if(!context.services.assets)throw new Error('Bubble Shooter requires session AssetService.');
+        const generation=this.operationGeneration;
+        const pack=await loadBubbleRegion(context.services.assets,this.round.region);
+        if(generation!==this.operationGeneration || !this.node.isValid)throw new Error('Game initialization cancelled.');
+        this.sceneSprites=BUBBLE_SCENE_SPRITES.map(([path])=>({path,sprite:this.node.getChildByPath(path)!.getComponent(Sprite)!}));
+        this.applyRegionFrames(pack);
+        this.buildView();
+        this.applyRegionView(pack);
+        this.healthVisible=this.healthTarget=this.round.bossHealth;
+        this.syncBoss();this.syncBoard(false,true);this.syncItems();this.syncCounter();this.syncSupply();
         this.commitCheckpoint();
         this.applyLayout();
         this.state = 'ready';
+    }
+
+    private applyRegionFrames(pack: BubbleRegionAssets): void {
+        this.regionAssets=pack;
+        const paths=new Map(BUBBLE_SCENE_SPRITES);
+        this.sceneSprites.forEach(({path,sprite})=>{
+            if(!sprite.isValid)return;
+            sprite.spriteFrame=pack.sceneFrame(paths.get(path)!);
+        });
+        this.frames.clear();COLORS.forEach(color=>this.frames.set(color,pack.regional(`bubbles/bubble-${color}`)));
+        this.supportFrame=pack.regional('bubbles/bubble-support');
+        this.frostFrame=pack.region==='cloud'?pack.regional('bubbles/frosting-overlay'):undefined;
+        this.foregroundFrames=pack.region==='cloud'?['a','b','c'].map(key=>pack.regional(`foreground/cloud-${key}`)):[];
+    }
+
+    private applyRegionView(pack: BubbleRegionAssets): void {
+        this.oceanAmbient?.dispose();this.oceanAmbient=undefined;
+        this.oceanBoss?.dispose();this.oceanBossNode?.destroy();this.oceanBoss=undefined;this.oceanBossNode=undefined;
+        this.oceanCastAge=-1;this.oceanTargets=[];this.oceanDefeating=false;this.bossCast=0;this.castFrozen.clear();
+        for (const key of this.itemKeys) {
+            const button=this.node.getChildByPath(`Playfield/Items/Item-${key}`)!;
+            button.getComponent(Sprite)!.enabled=pack.region==='cloud';
+            let base=button.getChildByName('OceanItemBase');
+            if (pack.region==='ocean') {
+                if(!base){base=new Node('OceanItemBase');base.layer=button.layer;base.setParent(button);base.addComponent(UITransform);base.addComponent(Sprite);}
+                base.active=true;base.setSiblingIndex(0);base.setPosition(0,22);
+                const frame=pack.regional('hud/item-base');
+                const sprite=base.getComponent(Sprite)!;sprite.sizeMode=Sprite.SizeMode.CUSTOM;sprite.trim=false;sprite.spriteFrame=frame;
+                base.getComponent(UITransform)!.setContentSize(120,120*frame.originalSize.height/frame.originalSize.width);
+            } else if(base) {base.active=false;base.getComponent(Sprite)!.spriteFrame=null;}
+        }
+        this.node.getChildByPath('Playfield/Counter/BossSkill')!.getComponent(UITransform)!.setContentSize(36,pack.region==='ocean'?36:40);
+        this.foreground?.clearStyles();
+        if(pack.region==='ocean') {
+            this.oceanAmbient=new BubbleShooterOceanAmbient(this.node,pack.regional('decoration/fish'),pack.regional('decoration/seaweed'));
+            this.foreground?.register('ocean',{frames:[pack.regional('foreground/water-bubble-single')],
+                width:84,opacity:190,duration:3.8,interval:2.5,bob:7,rise:220,motion:'bubbles'});
+        } else this.foreground?.register('cloud',{frames:this.foregroundFrames,width:250,opacity:230,duration:11,interval:9,bob:12});
+        const rewards=new Map<string,SpriteFrame>();
+        this.node.getChildByName('RewardAssets')!.children.forEach(n=>{const f=n.getComponent(Sprite)?.spriteFrame;if(f)rewards.set(n.name,f);});
+        this.attackFrame=rewards.get('attack-heart');
+        this.particles?.dispose();this.particles=new BubbleShooterParticles(this.node.getChildByPath('Playfield/Vfx')!,rewards);
+        this.particles.theme=pack.region;if(this.juice)this.juice.theme=pack.region;
+        this.rewardView?.dispose();this.endView?.dispose();this.pauseView?.dispose();
+        this.rewardView=new BubbleShooterRewardView(this.node,rewards,this.itemFrames,this.bossRoot!,()=>this.cue('select'));
+        this.endView=new BubbleShooterEndView(this.node,rewards,this.bossRoot!,()=>this.cue('ui'));
+        this.pauseView=new BubbleShooterEndView(this.node,rewards,this.bossRoot!,()=>this.cue('ui'));this.pauseView.root.name='PauseOverlay';
+        if(pack.region==='ocean'){
+            const node=new Node('OceanBoss');node.layer=this.node.layer;node.setParent(this.bossClip!);
+            node.addComponent(UITransform);this.oceanBossNode=node;
+            const boss=node.addComponent(BubbleShooterOceanBoss);boss.enabled=false;
+            const parts=['body','crown','staff-arm','right-arm'] as const;
+            boss.initialize(new Map(parts.map(part=>[part,pack.regional(`boss/boss-${part}`)])));boss.paused=false;
+            this.oceanBoss=boss;
+            if(this.round.stage==='boss' || this.round.stage==='victory')boss.showIdle();
+            this.endView.setRegionDecoration(boss.modalFactory());this.pauseView.setRegionDecoration(boss.modalFactory());
+            this.rewardView.setCelebration(pack.regional('reward/celebration'));
+        }
+        if(this.hitFlash)this.hitFlash.getComponent(Sprite)!.spriteFrame=this.bossRoot!.getChildByName('Body')!.getComponent(Sprite)!.spriteFrame;
+        this.transitionView?.bannerRoot.setSiblingIndex(this.node.children.length-1);
+        this.transitionView?.root.setSiblingIndex(this.node.children.length-1);
+        this.syncBoss();this.applyLayout();
+        for(const [name,key] of [['HealthTrack','health-track'],['HealthFill','health-fill']]) {
+            this.bossHealthRoot!.getChildByName(name)!.getComponent(Sprite)!.spriteFrame = pack.region==='ocean'
+                ? pack.regional(`hud/${key}`) : pack.sceneFrame(`visual/common/hud/hud-boss-${key}`);
+        }
     }
 
     begin(): void {
         if (this.state !== 'ready') throw new Error(`Cannot begin BubbleShooterGame from ${this.state}.`);
         this.state = this.round.ended ? 'completed' : 'playing';
         if (this.restored && this.round.rewardAvailable) this.showReward();
-        else this.sound.music(this.round.stage === 'boss' ? 'boss-music' : 'normal-music');
+        else this.music(this.round.stage === 'boss' ? 'boss-music' : 'normal-music');
         this.restored = false;
         this.transitionView?.revealPrepared();
     }
@@ -207,7 +302,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     showPauseMenu(model: MiniGamePauseModel): void {
         if (this.state === 'paused') {
-            this.pauseView?.showPause(model);
+            this.pauseView?.showPause(model, async () => {
+                this.restartCurrentRound = true;
+                try { await model.restart(); }
+                finally { this.restartCurrentRound = false; }
+            });
         }
     }
 
@@ -218,12 +317,34 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             throw new Error(`Cannot restart BubbleShooterGame from ${this.state}.`);
         }
         if (context) this.context = context;
-        this.resetRound();
-        this.applyLayout();
+        if (this.restartPending) return;
+        const keepProgress = this.restartCurrentRound;
+        const startRegion = keepProgress ? this.round.region : 'ocean';
+        const generation = this.operationGeneration;
+        let prepared: BubbleRegionAssets;
+        let committed = false;
+        const started = this.transitionView!.start(async () => {
+            prepared = this.round.region === startRegion ? this.regionAssets!
+                : await loadBubbleRegion(this.context!.services.assets!, startRegion);
+            if (generation !== this.operationGeneration && !committed) throw new Error('Restart cancelled.');
+        }, () => {
+            if (!committed) {
+                this.resetRound(keepProgress, true);
+                committed = true;
+            }
+            this.applyRegionFrames(prepared);
+            this.applyRegionView(prepared);
+            this.syncBoard(false, true);this.syncSupply();this.syncItems();this.syncCounter();
+            this.applyLayout();
+            this.sound.reset();this.music('normal-music');
+            this.commitCheckpoint();
+            this.restartPending = false;
+        });
+        if (!started) throw new Error('A transition is already active.');
+        this.restartPending = true;
+        // The application can finish its restart operation; the cloud layer locks gameplay
+        // until preparation, commit and two rendered frames have completed.
         this.state = 'playing';
-        this.sound.reset(); this.sound.music('normal-music');
-        this.commitCheckpoint();
-        this.transitionView?.revealPrepared();
     }
 
     private applyLayout(): void {
@@ -238,15 +359,32 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const play = this.node.getChildByName('Playfield')!;
         play.setScale(layout.scale, layout.scale, 1);
         play.setPosition(0, layout.playY);
+        this.foreground?.layout(0,layout.playY,layout.scale);
+        this.oceanAmbient?.layout(width,height,layout.playY,layout.scale);
         play.getChildByName('DangerLine')!.setPosition(0, DANGER);
         this.centerCounter();
         const launcher = play.getChildByName('Launcher')!;
         launcher.getChildByName('FixedConnector')!.active = false;
         const pivot = launcher.getChildByName('TurretPivot')!;
-        pivot.getChildByName('TurretArtwork')!.setPosition(0,-52);
+        const art=pivot.getChildByName('TurretArtwork')!,ocean=this.round.region==='ocean';
+        // Region-specific spacing must be absolute so resize/region changes never accumulate it.
+        launcher.getChildByName('NextBall')!.setPosition(ocean ? 191 : 173, 70);
+        const artUI=art.getComponent(UITransform)!;
+        // Approved world-v1 cutout: loading-hole centre is 34.3% up from its bottom.
+        artUI.setAnchorPoint(.5,ocean?.343:0);
+        if(ocean){const frame=art.getComponent(Sprite)!.spriteFrame;artUI.setContentSize(128,frame?128*frame.originalSize.height/frame.originalSize.width:150);}
+        else artUI.setContentSize(96,118);
+        art.setPosition(0,ocean?0:-52);
+        pivot.getChildByName('CurrentBall')!.setSiblingIndex(ocean ? pivot.children.length-1 : 0);
+        const pedestal=launcher.getChildByName('Pedestal')!;
+        const baseFrame=pedestal.getComponent(Sprite)!.spriteFrame;
+        pedestal.getComponent(UITransform)!.setContentSize(ocean?123:192,ocean&&baseFrame?123*baseFrame.originalSize.height/baseFrame.originalSize.width:128);
+        pedestal.getComponent(UITransform)!.setAnchorPoint(.5,ocean?.5:.125);
+        pedestal.setPosition(ocean?pivot.position.x:0,ocean?pivot.position.y-54:0);
         launcher.setPosition(PIVOT.x - pivot.position.x, PIVOT.y - pivot.position.y);
-        this.node.getChildByName('Background')!.getComponent(UITransform)!
-            .setContentSize(layout.backgroundWidth, layout.backgroundHeight);
+        const background=this.node.getChildByName('Background')!,frame=background.getComponent(Sprite)?.spriteFrame;
+        const cover=frame?Math.max(width/frame.originalSize.width,height/frame.originalSize.height):1;
+        background.getComponent(UITransform)!.setContentSize(frame?frame.originalSize.width*cover:layout.backgroundWidth,frame?frame.originalSize.height*cover:layout.backgroundHeight);
         this.node.getChildByName('Foreground')!.setPosition(0, -height / 2);
         this.islands=[];
         this.node.getChildByName('Environment')!.children.forEach((island) => {
@@ -257,13 +395,20 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.node.getChildByName('Pause')!.setPosition(layout.pauseX, layout.pauseY);
         const cloud = this.node.getChildByName('CloudTransition');
         cloud?.setPosition(0, layout.cloudY);
-        cloud?.getComponent(UITransform)?.setContentSize(width, layout.cloudHeight);
+        cloud?.getComponent(UITransform)?.setContentSize(width,this.round.region==='ocean'?width*(cloud.getComponent(Sprite)?.spriteFrame?.originalSize.height??100)/(cloud.getComponent(Sprite)?.spriteFrame?.originalSize.width??1024):layout.cloudHeight);
+        const clipBottom = layout.cloudY + (ocean ? (cloud?.getComponent(UITransform)?.height??0)*.18 : -layout.cloudHeight*.12);
         this.bossHealthRoot?.setPosition(0, layout.healthY);
         this.bossHealthRoot?.setScale(layout.scale * .48, layout.scale * .48, 1);
+        if(this.oceanBossNode){
+            const available=Math.max(1,height/2-20-clipBottom);
+            // Fit crown (y=240) through chest/hand (y=-140) above the ledge.
+            const scale=Math.min(width/600,available/390);
+            this.oceanBossNode.setScale(scale,scale,1);
+            this.oceanBossNode.setPosition(0,145*scale);
+        }
         if (this.bossRoot) {
             this.bossScale = layout.bossScale;
-            // Clip at the opaque middle of the cloud bank so entrance/exit cannot leak onto the board.
-            const clipBottom = layout.cloudY - layout.cloudHeight * .12;
+            // Clip inside the region's opaque ledge so lower body/entrance never leaks below it.
             this.bossClip?.setPosition(0, clipBottom);
             this.bossClip?.getComponent(UITransform)?.setContentSize(width, height / 2 - clipBottom);
             this.bossBaseY = layout.bossY - clipBottom;
@@ -276,7 +421,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private canInteract(): boolean {
         // Direct scene preview exercises the prototype without creating a global Session.
-        return !this.transitionView?.active && this.bossCast === 0 && !this.attack && this.hitTime === 0 && !this.rewardView?.visible && !this.endView?.visible && !this.pauseView?.visible && this.round.stage !== 'boss-entry' && this.bossReveal >= 1 && !this.flight && this.transition === 0 && this.rowBirths.length === 0 && !this.effects.some(e => !e.falling) && this.effects.length < 285 && (this.state === 'playing' || (this.state === 'idle' && !this.context));
+        return this.viewBuilt && !this.transitionView?.active && this.oceanCastAge<0 && !this.oceanBoss?.busy && this.bossCast === 0 && !this.attack && this.hitTime === 0 && !this.rewardView?.visible && !this.endView?.visible && !this.pauseView?.visible && this.round.stage !== 'boss-entry' && this.bossReveal >= 1 && !this.flight && this.transition === 0 && this.rowBirths.length === 0 && !this.effects.some(e => !e.falling) && this.effects.length < 285 && (this.state === 'playing' || (this.state === 'idle' && !this.context));
     }
 
     private startAim(event: EventTouch): void {
@@ -315,7 +460,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const pivot = play.getChildByPath('Launcher/TurretPivot')!;
         const dx = local.x - PIVOT.x;
         const dy = local.y - PIVOT.y;
-        const angle = Math.max(-70, Math.min(70, -Math.atan2(dx, dy) * 180 / Math.PI));
+        const angle = Math.max(-MAX_AIM_ANGLE, Math.min(MAX_AIM_ANGLE, -Math.atan2(dx, dy) * 180 / Math.PI));
         this.turretReturn = undefined;
         pivot.angle = angle;
         pivot.getChildByName('CurrentBall')!.angle = 0;
@@ -341,7 +486,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         event.propagationStopped = true;
         if (!this.canInteract()) return;
         this.selectedItem = undefined;
-        this.round.swap();
+        if (this.round.refreshStale() === 0) this.round.swap();
         this.cue('swap'); this.commitCheckpoint();
         this.syncItems();
         this.cancelAim();
@@ -357,19 +502,28 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const g = root.getComponent(Graphics) ?? root.addComponent(Graphics);
         g.clear();
         if (!this.pendingShot) return;
-        g.fillColor = new Color(237, 105, 153, 200);
+        const ocean = this.round.region === 'ocean';
         const points = this.pendingShot.points;
-        for (let i=1; i<points.length; i++) {
-            const a=points[i-1]!, b=points[i]!;
-            const length=Math.hypot(b.x-a.x,b.y-a.y);
-            for(let t=12;t<length;t+=24) {
-                g.circle(a.x+(b.x-a.x)*t/length,a.y+(b.y-a.y)*t/length,4);
+        const dots = (radius: number, color: Color): void => {
+            g.fillColor = color;
+            for (let i=1; i<points.length; i++) {
+                const a=points[i-1]!, b=points[i]!;
+                const length=Math.hypot(b.x-a.x,b.y-a.y);
+                for(let t=12;t<length;t+=24) {
+                    g.circle(a.x+(b.x-a.x)*t/length,a.y+(b.y-a.y)*t/length,radius);
+                }
             }
-        }
-        g.fill();
+            g.fill();
+        };
+        if (ocean) dots(6, new Color(13, 43, 66, 245));
+        dots(ocean ? 4.2 : 4, ocean ? new Color(255, 246, 214, 255) : new Color(237, 105, 153, 200));
         const end=this.model.position(this.pendingShot.cell);
+        if (ocean) {
+            g.lineWidth=6; g.strokeColor=new Color(13,43,66,245);
+            g.circle(end.x,end.y,DIAMETER / 2 - 2); g.stroke();
+        }
         g.lineWidth=3;
-        g.strokeColor=new Color(237,105,153,220);
+        g.strokeColor=ocean ? new Color(255,246,214,255) : new Color(237,105,153,220);
         g.circle(end.x,end.y,DIAMETER / 2 - 2);
         g.stroke();
         if (this.selectedItem === 'bomb') this.drawTargets(this.model.bombTargets(this.pendingShot.cell), false);
@@ -393,22 +547,27 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.selectedItem = undefined;
         this.syncItems();
         projectile.setPosition(shot.points[0]!.x,shot.points[0]!.y);
-        this.flight={shot,node:projectile,segment:1,travelled:0,kind};
+        this.flight={shot,node:projectile,segment:1,travelled:0,kind,age:0,trailClock:0};
+        if(this.juice){this.juice.theme=this.round.region;
+            this.juice.launch(this.node.getChildByPath('Playfield/Launcher/TurretPivot/TurretArtwork')!,shot.points[0]!);}
         this.cancelAim();
         this.node.getChildByPath('Playfield/Launcher/TurretPivot/CurrentBall')!.active=false;
     }
 
     protected update(dt: number): void {
-        if (this.state === 'disposed') return;
+        if (this.state === 'disposed' || !this.viewBuilt) return;
         this.pauseView?.motion.update(dt); this.endView?.motion.update(dt); this.rewardView?.update(dt);
         this.updateAtmosphere(Math.max(0,Math.min(dt,.05)));
         if (this.state === 'paused') return;
         if (this.transitionView?.active) { this.transitionView.update(dt); return; }
         if (this.rewardView?.visible || this.endView?.visible || this.pauseView?.visible) return;
+        this.oceanAmbient?.update(dt);
         if (this.state === 'playing' || this.state === 'idle') this.elapsed += Math.max(0, dt);
         this.particles?.update(Math.min(dt, .05));
+        this.juice?.update(Math.min(dt,.05));
+        this.foreground?.update(Math.min(dt,.05),this.round.region,!this.round.ended && this.round.stage!=='boss-entry');
         if (this.round.ended && this.round.stage !== 'victory' && !this.flight && !this.attack
-            && this.hitTime === 0 && this.effects.length === 0 && this.transition === 0) {
+            && this.hitTime === 0 && this.effects.length === 0 && this.transition === 0 && this.oceanCastAge<0 && !this.oceanBoss?.busy) {
             const ads = this.context?.services.ads;
             const available = !ads || ads.isEnabledForGame(this.context!.gameId);
             this.showEnd(this.round.canRevive && available ? 'offer' : 'result');
@@ -443,7 +602,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             this.cue('boss-enter');
             this.transitionView!.showAlert(() => {
                 this.round.beginBoss();
-                this.sound.music('boss-music'); this.commitCheckpoint();
+                if(this.round.region==='ocean'){this.oceanBoss?.resetPose();this.oceanBoss?.enter();}
+                this.music('boss-music'); this.commitCheckpoint();
                 this.bossReveal = 0; this.transition = 0.3; this.transitionOffset = 28;
                 this.syncBoard(false, true); this.syncCounter(); this.syncSupply(); this.syncBoss(); this.updateBoss(0);
             });
@@ -451,7 +611,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         }
         const flight=this.flight;
         if (flight) {
-            let remaining=1100*Math.min(dt,0.05);
+            flight.age+=Math.min(dt,.05); flight.trailClock+=Math.min(dt,.05);
+            let remaining=SHOT_SPEED*Math.min(dt,0.05);
             while (this.flight && remaining>0) {
                 const a=flight.shot.points[flight.segment-1]!, b=flight.shot.points[flight.segment]!;
                 const length=Math.hypot(b.x-a.x,b.y-a.y);
@@ -460,9 +621,13 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 remaining-=step;
                 const t=length>0?flight.travelled/length:1;
                 flight.node.setPosition(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t);
+                const stretch=.2*Math.exp(-flight.age*7)+.045;
+                flight.node.angle=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI-90;
+                flight.node.setScale(1-stretch*.55,1+stretch,1);
+                if(flight.trailClock>=.025){this.juice?.trail(flight.node.position);flight.trailClock=0;}
                 if(t<1) break;
                 flight.segment++;
-                if (flight.segment < flight.shot.points.length) this.cue('bounce');
+                if (flight.segment < flight.shot.points.length) {this.cue('bounce');this.juice?.ripple(b,.35);}
                 flight.travelled=0;
                 if(flight.segment>=flight.shot.points.length) {
                     flight.node.destroy();
@@ -497,16 +662,36 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private finishShot(shot: Shot, kind: ShotKind = 'normal'): void {
         if (kind !== 'normal') this.cue(kind);
-        this.presentResult(this.round.settle(shot.cell, kind));
+        const point=this.model.position(shot.cell);
+        const before=this.model.bubbles;
+        const result=this.round.settle(shot.cell, kind);
+        if(this.round.region==='ocean' && this.round.stage==='boss' && result.supported.length)
+            this.oceanTargets=result.supported.map(bubble=>({bubble,color:before.find(b=>b.row===bubble.row-(result.inserted?1:0)&&b.col===bubble.col)?.color??this.currentColor}));
+        // Propagate the pop from the contact point, not model iteration order.
+        result.removed.sort((a,b)=>{
+            const pa=position(a,result.phaseBefore),pb=position(b,result.phaseBefore);
+            return Math.hypot(pa.x-point.x,pa.y-point.y)-Math.hypot(pb.x-point.x,pb.y-point.y);
+        });
+        this.presentResult(result);
+        if(!result.refilled) {
+            const contact={x:point.x,y:point.y-((result.inserted||result.descended)?ROW_HEIGHT:0)};
+            const newborns=new Set(this.rowBirths.map(b=>b.node));
+            this.juice?.attach(this.node.getChildByPath('Playfield/Board')!.children.filter(n=>!newborns.has(n)),contact,point);
+        }
     }
 
     private presentResult(result: OrdinaryResult): void {
         this.commitCheckpoint();
+        if(this.particles)this.particles.theme=this.round.region;
+        if(this.juice)this.juice.theme=this.round.region;
         if (result.removed.length) this.cue('pop', 'light'); else this.cue('attach');
         if (result.dropped.length) this.cue('drop');
         if (result.thawed.length) this.cue('thaw');
         if (result.frosted.length && this.round.stage !== 'boss') this.cue('frost');
-        if (this.round.stage === 'boss' && (result.frosted.length || result.inserted)) {
+        if (this.round.region==='ocean' && this.round.stage==='boss' && result.inserted) {
+            this.oceanCastAge=0;this.oceanBoss?.cast();this.cue('ocean-cast');
+        }
+        if (this.round.region==='cloud' && this.round.stage === 'boss' && (result.frosted.length || result.inserted)) {
             this.bossCast = 2.05; this.castImpactPlayed = false;
             this.castFrozen.clear();
             result.frosted.forEach(b => this.castFrozen.add(`${b.row}:${b.col}`));
@@ -518,7 +703,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i));
         result.thawed.forEach(b =>
             this.particles?.burst(b, position(b, result.phaseBefore), true));
-        this.syncBoard(result.inserted, result.refilled);
+        this.syncBoard(result.inserted || result.descended, result.refilled);
         if (this.bossCast > 0) this.updateBoss(0);
         if (result.damage > 0) this.startAttack(result);
         this.syncBoss();
@@ -538,7 +723,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     }
 
     private animateRemoval(bubble: Bubble, falling: boolean, phase: number, order = 0): void {
-        const ball = this.createBall(falling ? this.fallingRoot! : this.node.getChildByPath('Playfield/Vfx')!, bubble.color, bubble.frosted);
+        const ball = this.createBall(falling ? this.fallingRoot! : this.node.getChildByPath('Playfield/Vfx')!, bubble.color, bubble.frosted, bubble.indestructible);
         const point = position(bubble, phase);
         ball.setPosition(point.x, point.y);
         ball.addComponent(UIOpacity);
@@ -550,14 +735,15 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.effects.push({ node: ball, elapsed: 0, falling, motion: removalMotion(bubble, point, falling, order), bubble, burst: false, ring });
     }
 
-    private createBall(parent: Node, color: BubbleColor, frosted=false): Node {
-        const ball=new Node('Bubble');
+    private createBall(parent: Node, color: BubbleColor, frosted=false, indestructible=false): Node {
+        const ball=new Node(indestructible ? 'SupportBubble' : 'Bubble');
         ball.layer=parent.layer;
         ball.setParent(parent);
         ball.addComponent(UITransform).setContentSize(DIAMETER,DIAMETER);
         const sprite=ball.addComponent(Sprite);
         sprite.sizeMode=Sprite.SizeMode.CUSTOM;
-        sprite.spriteFrame=this.frames.get(color)!;
+        sprite.trim=false;
+        sprite.spriteFrame=indestructible ? this.supportFrame : this.frames.get(color)!;
         if(frosted) {
             const frost=new Node('Frosting');
             frost.layer=parent.layer;
@@ -572,10 +758,12 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private syncBoard(birthRow = false, wholeBoard = false): void {
         this.rowBirths = [];
+        this.juice?.clear();
         const board=this.node.getChildByPath('Playfield/Board')!;
         board.children.slice().forEach(child=>{ child.removeFromParent(); child.destroy(); });
         this.model.bubbles.forEach(b=>{
-            const node=this.createBall(board,b.color,b.frosted);
+            const pending=this.oceanCastAge>=0 && this.oceanCastAge<1.2?this.oceanTargets.find(t=>t.bubble.row===b.row&&t.bubble.col===b.col):undefined;
+            const node=this.createBall(board,pending?.color??b.color,b.frosted,!!b.indestructible&&!pending);
             const point=this.model.position(b);
             node.setPosition(point.x,point.y);
             if (wholeBoard || (birthRow && b.row === 0)) {
@@ -602,28 +790,36 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.setProjectileAppearance(current,kind,this.currentColor);
         this.node.getChildByPath('Playfield/Launcher/NextBall')!.getComponent(UITransform)!.setContentSize(DIAMETER, DIAMETER);
         this.node.getChildByPath('Playfield/Launcher/NextBall')!.getComponent(Sprite)!.spriteFrame=this.frames.get(this.nextColor)!;
-        if (this.notice) this.notice.active = !this.round.ended && (this.round.staleCurrent || this.round.staleNext);
     }
 
     private showReward(): void {
-        this.particles?.clear();
-        this.cue('reward'); this.sound.music();
+        this.particles?.clear(); this.juice?.clear();
+        this.cue('reward'); this.music();
         this.node.getChildByName('Playfield')!.active = false;
         this.node.getChildByName('Pause')!.active = false;
         this.node.getChildByName('Environment')!.active = false;
         this.bossRoot!.active = false;
+        if(this.oceanBossNode)this.oceanBossNode.active=false;
+        this.foreground?.update(0,this.round.region,false);
         this.bossHealthRoot!.active = false;
         this.node.getChildByName('CloudTransition')!.active = false;
         this.rewardView!.show(this.round, item => {
             if (!this.round.rewardAvailable || this.transitionView!.active) return;
             this.cue('confirm');
+            const next:BubbleRegion=this.round.region==='cloud'?'ocean':'cloud';
+            const generation=this.operationGeneration;let prepared:BubbleRegionAssets;let committed=false;
             this.transitionView!.start(async () => {
-                // Current release has only cloud. Future region entries supply their own resource group here.
-                await this.context?.services.assets?.prepareBundle('game-bubble-shooter-assets', 'visual/regions/cloud');
+                prepared=await loadBubbleRegion(this.context!.services.assets!,next);
+                if(generation!==this.operationGeneration)throw new Error('Region transition cancelled.');
             }, () => {
-                if (!this.round.claimReward(item)) throw new Error('Reward is no longer available.');
-                if (!this.round.continueCloud()) throw new Error('Reward continuation was not committed.');
+                // A presentation failure can retry without claiming a reward or advancing twice.
+                if (!committed) {
+                    if (!this.round.claimReward(item)) throw new Error('Reward is no longer available.');
+                    if (!this.round.continueRegion(next)) throw new Error('Reward continuation was not committed.');
+                    committed=true;
+                }
                 this.clearAttack(); this.rewardView!.hide();
+                this.applyRegionFrames(prepared);this.applyRegionView(prepared);
                 this.node.getChildByName('Playfield')!.active = true;
                 this.node.getChildByName('Pause')!.active = true;
                 this.node.getChildByName('CloudTransition')!.active = true;
@@ -631,17 +827,18 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 this.healthVisible = this.healthTarget = BOSS_TUNING.health;
                 this.hitTime = 0; this.transition = 0; this.transitionOffset = 0;
                 this.syncBoss(); this.syncBoard(false, true); this.syncCounter(); this.syncItems(); this.syncSupply(); this.applyLayout();
-                this.state = 'playing'; this.sound.music('normal-music'); this.commitCheckpoint();
+                this.state = 'playing'; this.music('normal-music'); this.commitCheckpoint();
             });
         });
         this.applyLayout();
     }
 
-    private resetRound(): void {
+    private resetRound(keepProgress = false, keepTransition = false): void {
+        this.foreground?.reset();
         this.rowBirths=[]; this.turretReturn=undefined;
-        this.transitionView?.cancel();
+        if (!keepTransition) this.transitionView?.cancel();
         this.runFinished = false; this.restored = false; this.checkpoint = undefined;
-        this.particles?.clear();
+        this.particles?.clear(); this.juice?.clear();
         this.operationGeneration++;
         this.revivePending = false;
         this.elapsed = 0;
@@ -664,7 +861,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.pulseTime = 0;
         this.node.getChildByPath('Playfield/Board')!.setPosition(0, 0);
         this.selectedItem = undefined;
-        this.round.reset();
+        this.round.reset(keepProgress ? this.round.region : 'ocean', keepProgress);
+        this.oceanBoss?.resetPose();this.oceanCastAge=-1;this.oceanTargets=[];this.oceanDefeating=false;
         this.bossReveal = 1;
         this.hitTime = 0;
         this.healthVisible = this.healthTarget = BOSS_TUNING.health;
@@ -775,36 +973,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.centerCounter();
     }
 
-    private buildRefreshNotice(): void {
-        const launcher = this.node.getChildByPath('Playfield/Launcher')!;
-        const notice = new Node('RefreshExpiredColor');
-        notice.layer = launcher.layer;
-        notice.setParent(launcher);
-        notice.setPosition(152, 2);
-        notice.addComponent(UITransform).setContentSize(126, 54);
-        const label = notice.addComponent(Label);
-        label.string = '颜色已清空\n免费换球';
-        label.fontSize = 18;
-        label.lineHeight = 24;
-        label.horizontalAlign = Label.HorizontalAlign.CENTER;
-        label.verticalAlign = Label.VerticalAlign.CENTER;
-        label.overflow = Label.Overflow.CLAMP;
-        label.color = new Color(115, 49, 108, 255);
-        notice.on(Node.EventType.TOUCH_START, this.blockNoticeTouch, this);
-        notice.on(Node.EventType.TOUCH_END, this.refreshStale, this);
-        this.notice = notice;
-    }
-
     private blockNoticeTouch(event: EventTouch): void { event.propagationStopped = true; }
-
-    private refreshStale(event: EventTouch): void {
-        event.propagationStopped = true;
-        if (!this.canInteract()) return;
-        if (this.round.refreshStale() === 0) return;
-        this.cue('swap'); this.commitCheckpoint();
-        this.cancelAim();
-        this.syncSupply();
-    }
 
     private selectItem(event: EventTouch): void {
         event.propagationStopped = true;
@@ -868,6 +1037,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             icon.getComponent(UITransform)!.setContentSize(96,96);
             icon.getComponent(Sprite)!.trim=false;
             const plate=button.getChildByName('NamePlate')!.getComponent(Sprite)!;
+            plate.node.active=this.round.region!=='ocean';
             plate.type=Sprite.Type.SLICED;
             const plateScale=48/73;
             plate.node.setScale(plateScale,plateScale,1);
@@ -948,8 +1118,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     private syncBoss(): void {
         if (!this.bossRoot) return;
         const visible = this.round.stage === 'boss' || this.round.stage === 'victory';
-        this.bossRoot.active = visible;
-        this.node.getChildByName('Environment')!.active = true;
+        this.bossRoot.active = visible && this.round.region==='cloud';
+        if(this.oceanBossNode)this.oceanBossNode.active=visible;
+        this.node.getChildByName('Environment')!.active = this.round.region==='cloud';
+        this.node.getChildByName('Foreground')!.active = this.round.region==='cloud';
         if (this.bossHealthRoot) this.bossHealthRoot.active = visible;
         if (this.skillNode) this.skillNode.active = this.round.stage === 'boss';
 
@@ -960,6 +1132,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const p = position(b, result.phaseBefore); return new Vec3(p.x, p.y, 0);
         });
         const node = new Node('BossAttackEnergy'); node.layer = this.node.layer; node.setParent(this.node);
+        this.foreground?.putBehind(node);
         // Aggregate into at most three hearts; damage remains the model's exact result.
         for (let i = 0; i < Math.min(3, sources.length); i++) {
             const heart = new Node('EnergyHeart'); heart.layer = node.layer; heart.setParent(node);
@@ -976,7 +1149,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         attack.elapsed += dt;
         const rootTransform = this.node.getComponent(UITransform)!;
         const playTransform = this.node.getChildByName('Playfield')!.getComponent(UITransform)!;
-        const bossTransform = this.bossRoot!.getComponent(UITransform)!;
+        const bossTransform = (this.round.region==='ocean'?this.oceanBossNode!:this.bossRoot!).getComponent(UITransform)!;
         const target = rootTransform.convertToNodeSpaceAR(bossTransform.convertToWorldSpaceAR(new Vec3(0, 160, 0)));
         attack.node.children.forEach((heart, i) => {
             const source = attack.sources[Math.floor(i * attack.sources.length / attack.node.children.length)]!;
@@ -992,6 +1165,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         });
         if (attack.elapsed >= 0.54 + (attack.node.children.length - 1) * 0.06) {
             this.cue('boss-hit', 'light');
+            this.oceanBoss?.hit();
             this.healthTarget = attack.targetHealth; this.hitTime = 0.35;
             attack.node.destroy(); this.attack = undefined;
         }
@@ -1003,7 +1177,58 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if (this.hitFlash) this.hitFlash.getComponent(UIOpacity)!.opacity = 0;
     }
 
+    private updateOceanBoss(dt:number):void {
+        if(!this.oceanBossNode?.active)return;
+        this.oceanBoss!.update(dt);
+        this.bossReveal=Math.min(1,this.bossReveal+dt/.9);
+        this.hitTime=Math.max(0,this.hitTime-dt);
+        this.healthVisible+=(this.healthTarget-this.healthVisible)*Math.min(1,dt*12);
+        if(Math.abs(this.healthVisible-this.healthTarget)<.01)this.healthVisible=this.healthTarget;
+        const fill=this.bossHealthRoot!.getChildByName('HealthFill')!,fraction=this.healthVisible/BOSS_TUNING.health;
+        const width=Math.max(64,810*fraction);fill.active=fraction>0;
+        fill.getComponent(UITransform)!.setContentSize(width,64);fill.setScale(.5,.5,1);fill.setPosition(-202.5+width/4,0);
+        this.bossHealthRoot!.getComponent(UIOpacity)!.opacity=255;
+        const ink=this.skillImpact!;ink.clear();
+        if(this.oceanCastAge>=0){
+            const previous=this.oceanCastAge;this.oceanCastAge+=dt;const age=this.oceanCastAge;
+            const play=this.node.getChildByName('Playfield')!.getComponent(UITransform)!;
+            const staff=this.oceanBoss!.getSkillOrigin();
+            const source=staff?play.convertToNodeSpaceAR(staff.getComponent(UITransform)!.convertToWorldSpaceAR(new Vec3(0,0))):new Vec3(0,510);
+            const charge=Math.min(1,age/.65);
+            if(age<.75){ink.lineWidth=3;ink.strokeColor=new Color(158,248,255,220*charge);ink.circle(source.x,source.y,10+charge*26);ink.stroke();}
+            this.oceanTargets.forEach(({bubble})=>{
+                const target=this.model.position(bubble);
+                if(age>=.65 && age<1.2){
+                    const travel=Math.min(1,(age-.65)/.55);
+                    for(let i=0;i<9;i++){
+                        const t=Math.max(0,travel-i*.025);ink.fillColor=new Color(150,246,255,230-i*23);
+                        ink.circle(source.x+(target.x-source.x)*t+Math.sin(t*Math.PI)*30,source.y+(target.y-source.y)*t,12-i);ink.fill();
+                    }
+                }
+                if(age>=1.2 && age<1.85){
+                    const t=(age-1.2)/.65;ink.lineWidth=3*(1-t)+1;ink.strokeColor=new Color(175,255,255,230*(1-t));
+                    ink.circle(target.x,target.y,DIAMETER*(.45+t*.5));ink.stroke();
+                    ink.circle(target.x,target.y,DIAMETER*(.3+t*.35));ink.stroke();
+                }
+            });
+            if(previous<1.2 && age>=1.2){
+                this.cue('ocean-convert','medium');
+                const bubbles=this.model.bubbles;
+                this.node.getChildByPath('Playfield/Board')!.children.forEach((node,i)=>{
+                    const bubble=bubbles[i];if(!bubble || !this.oceanTargets.some(t=>t.bubble.row===bubble.row&&t.bubble.col===bubble.col))return;
+                    node.getComponent(Sprite)!.spriteFrame=this.supportFrame;node.name='SupportBubble';
+                    this.juice?.ripple(this.model.position(bubble));
+                });
+            }
+            if(age>=1.9){this.oceanCastAge=-1;this.oceanTargets=[];ink.clear();}
+        }
+        if(this.round.stage==='victory' && !this.attack && this.hitTime===0 && this.healthVisible===0){
+            if(!this.oceanDefeating){this.oceanDefeating=true;this.cue('victory','medium');this.oceanBoss!.defeat(()=>{this.defeatElapsed=1.2;});}
+        }
+    }
+
     private updateBoss(dt: number): void {
+        if(this.round.region==='ocean'){this.updateOceanBoss(dt);return;}
         if (!this.bossRoot?.active) return;
         this.bossReveal = Math.min(1, this.bossReveal + dt / .9);
         this.hitTime = Math.max(0, this.hitTime - dt);
@@ -1122,9 +1347,9 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private showEnd(page: EndPage, message = ''): void {
         if (!this.endView?.visible && (page === 'offer' || page === 'result')) this.cue('failure', 'medium');
-        if (page === 'offer' || page === 'result') this.sound.music();
+        if (page === 'offer' || page === 'result') this.music();
         if (page === 'result') this.discardSavedProgress();
-        this.particles?.clear();
+        this.particles?.clear(); this.juice?.clear();
         if (this.state !== 'paused') this.state = 'completed';
         else this.pausedFrom = 'completed';
         this.cancelAim();
@@ -1180,7 +1405,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 if (generation !== this.operationGeneration || this.context !== context) return;
                 this.endView?.hide();
                 this.cue('revive');
-                this.sound.music(this.round.stage === 'boss' ? 'boss-music' : 'normal-music');
+                this.music(this.round.stage === 'boss' ? 'boss-music' : 'normal-music');
                 this.commitCheckpoint();
                 // The ad may finish while the app is still in the background.
                 if (this.state === 'paused') this.pausedFrom = 'playing';
@@ -1195,6 +1420,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         } finally {
             if (generation === this.operationGeneration) this.revivePending = false;
         }
+    }
+
+    private music(cue?: 'normal-music' | 'boss-music'): void {
+        this.sound.music(cue && this.round.region==='ocean' ? (cue==='boss-music'?'ocean-boss-music':'ocean-normal-music') : cue);
     }
 
     private cue(cue: CloudCue, vibration?: 'light' | 'medium'): void {
@@ -1251,7 +1480,6 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         play?.getChildByPath('Launcher/NextBall')?.targetOff(this);
         play?.getChildByPath('Launcher/Swap')?.targetOff(this);
         this.node.getChildByName('Pause')?.targetOff(this);
-        this.notice?.targetOff(this);
         for (const key of this.itemKeys) this.node.getChildByPath('Playfield/Items/Item-' + key)?.targetOff(this);
         this.listening = false;
     }
@@ -1260,6 +1488,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.rowBirths=[];this.turretReturn=undefined;
         if (this.state === 'disposed') return;
         this.persistCheckpoint();
+        this.viewBuilt=false;this.oceanBoss?.dispose();this.oceanBoss=undefined;this.oceanBossNode?.destroy();this.oceanBossNode=undefined;
+        this.sceneSprites=[];this.regionAssets=undefined;this.oceanTargets=[];
+        this.foreground?.dispose(); this.foreground=undefined;this.foregroundFrames=[];
+        this.oceanAmbient?.dispose();this.oceanAmbient=undefined;
+        this.juice?.dispose(); this.juice=undefined;
         this.sound.dispose(); this.particles?.dispose(); this.particles = undefined;
         this.audioSlots.forEach(slot => slot.clips = []);
         this.detach();
@@ -1280,7 +1513,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.frames.clear();
         this.itemFrames.clear();
         this.selectedItem = undefined;
-        this.frostFrame=undefined;
+        this.frostFrame=undefined; this.supportFrame=null;
         this.round.clear();
         this.bossRoot = undefined;
         this.bossHealthRoot?.destroy(); this.bossHealthRoot = undefined;
@@ -1289,7 +1522,6 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.dangerGlow?.node.destroy();this.dangerGlow=undefined;this.islands=[];
         this.skillNode = undefined;
         this.counterBeads = [];
-        this.notice = undefined;
         this.transition = 0;
         this.context = undefined;
         this.state = 'disposed';
@@ -1298,6 +1530,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
     protected onDestroy(): void {
         this.rowBirths=[];this.turretReturn=undefined;
         this.persistCheckpoint();
+        this.viewBuilt=false;this.oceanBoss?.dispose();this.oceanBoss=undefined;this.oceanBossNode?.destroy();this.oceanBossNode=undefined;
+        this.sceneSprites=[];this.regionAssets=undefined;this.oceanTargets=[];
+        this.foreground?.dispose(); this.foreground=undefined;this.foregroundFrames=[];
+        this.oceanAmbient?.dispose();this.oceanAmbient=undefined;
+        this.juice?.dispose(); this.juice=undefined;
         this.sound.dispose(); this.particles?.dispose(); this.particles = undefined;
         this.audioSlots.forEach(slot => slot.clips = []);
         this.detach();
@@ -1316,7 +1553,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.frames.clear();
         this.itemFrames.clear();
         this.selectedItem = undefined;
-        this.frostFrame=undefined;
+        this.frostFrame=undefined; this.supportFrame=null;
         this.round.clear();
         this.bossRoot = undefined;
         this.bossHealthRoot?.destroy(); this.bossHealthRoot = undefined;
@@ -1325,7 +1562,6 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.dangerGlow?.node.destroy();this.dangerGlow=undefined;this.islands=[];
         this.skillNode = undefined;
         this.counterBeads = [];
-        this.notice = undefined;
         this.transition = 0;
         this.context = undefined;
         this.state = 'disposed';

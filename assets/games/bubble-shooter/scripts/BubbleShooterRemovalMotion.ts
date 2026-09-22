@@ -7,7 +7,7 @@ export interface RemovalMotion {
 }
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const smooth = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
-export const POP_BURST_TIME = .09;
+export const POP_BURST_TIME = .14;
 export const FALL_FADE_Y = DANGER + DIAMETER * 1.25;
 
 /** Reproducible variation affects presentation only, never the round's random stream. */
@@ -17,7 +17,7 @@ export function removalMotion(bubble: Bubble, point: Point, falling: boolean, or
     const speed = 20 + unit(8) * 75, gravity = 850 + unit(16) * 380;
     const distance = Math.max(0, point.y - FALL_FADE_Y);
     return { falling, x: point.x, y: point.y,
-        delay: falling ? .13 + unit(0) * .15 : Math.min(.12, order * .018),
+        delay: falling ? .13 + unit(0) * .15 : Math.min(.20, order * .025),
         vx: (unit(0) - .5) * 76, speed, gravity, spin: (unit(16) - .5) * 150,
         fadeAt: (Math.sqrt(speed * speed + 2 * gravity * distance) - speed) / gravity,
         fadeDuration: .46 + unit(8) * .16 };
@@ -26,11 +26,11 @@ export function removalMotion(bubble: Bubble, point: Point, falling: boolean, or
 export function sampleRemoval(m: RemovalMotion, elapsed: number) {
     const age = Math.max(0, elapsed - m.delay);
     if (!m.falling) {
-        const squash = clamp(age / .065), release = clamp((age - .065) / .055), collapse = smooth((age - .12) / .13);
-        const sx = age < .065 ? 1 + .10 * squash : (1.10 + .15 * release) * (1 - .90 * collapse);
-        const sy = age < .065 ? 1 - .12 * squash : (.88 + .37 * release) * (1 - .90 * collapse);
+        const squash = smooth(age / .075), release = smooth((age - .075) / .065), collapse = smooth((age - .14) / .16);
+        const sx = age < .075 ? 1 + .20 * squash : (1.20 + .12 * release) * (1 - .85 * collapse);
+        const sy = age < .075 ? 1 - .23 * squash : (.77 + .55 * release) * (1 - .85 * collapse);
         return { x: m.x, y: m.y, sx, sy, angle: 0,
-            opacity: 255 * (1 - smooth((age - .12) / .11)), done: age >= .25, age };
+            opacity: 255 * (1 - smooth((age - .14) / .14)), done: age >= .30, age };
     }
     const fallTime = Math.min(age, m.fadeAt);
     const fade = clamp((age - m.fadeAt) / m.fadeDuration);

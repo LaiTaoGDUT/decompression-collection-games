@@ -17,7 +17,8 @@ try {
         assert(r.board.danger); assert(r.canRevive); assert(r.revive());
         assert(!r.ended); assert(!r.board.danger); assert(!r.canRevive);
         assert(r.board.bubbles.length > 0);
-        assert(r.board.bubbles.every(b => r.board.position(b).y - DIAMETER / 2 >= DANGER + 2 * ROW_HEIGHT));
+        assert(r.board.bubbles.every(b => b.row <= MAX_ROW - 2), 'The final two occupied rows were removed');
+        assert(r.board.bubbles.every(b => r.board.position(b).y - DIAMETER / 2 > DANGER + ROW_HEIGHT));
         assert.equal(r.board.rowPhase, phase);
         assert.deepEqual([r.regionProgress, r.bossHealth, r.cleared, r.inventory.bomb, r.current, r.next], [42,17,88,2,'blue','purple']);
         assert.deepEqual([r.accumulatedMisses,r.consecutiveMisses,r.bossShots,r.frostTargets.length], [0,0,0,0]);

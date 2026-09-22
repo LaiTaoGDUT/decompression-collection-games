@@ -268,6 +268,11 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
     if (resourceDirectories && (resourceDirectories.length === 0 || new Set(resourceDirectories).size !== resourceDirectories.length))
         addError(errors, `${prefix}.resourceDirectories`, 'must contain unique resource directories');
     const tags = readStringArray(value, 'tags', `${prefix}.tags`, errors);
+    const initializeTimeoutMs = value.initializeTimeoutMs;
+    if (initializeTimeoutMs !== undefined && (typeof initializeTimeoutMs !== 'number'
+        || !Number.isInteger(initializeTimeoutMs) || initializeTimeoutMs < 1000 || initializeTimeoutMs > 120000)) {
+        addError(errors, `${prefix}.initializeTimeoutMs`, 'must be an integer between 1000 and 120000');
+    }
 
     if (id && !ID_PATTERN.test(id)) {
         addError(errors, `${prefix}.id`, 'must use lowercase letters, numbers, and hyphens');
@@ -313,6 +318,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         bundle: bundle!,
         resourceBundle: resourceBundle!,
         ...(resourceDirectories ? { resourceDirectories: Object.freeze(Array.from(resourceDirectories)) } : {}),
+        ...(typeof initializeTimeoutMs === 'number' ? { initializeTimeoutMs } : {}),
         scene: scene!,
         entryComponent: entryComponent!,
         cover: cover!,

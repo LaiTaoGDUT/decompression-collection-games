@@ -11,6 +11,9 @@ export class BubbleShooterTransitionView {
     private readonly banner: Node;
     private readonly shade: Graphics;
     private readonly errorRoot: Node;
+    private readonly loadingRoot: Node;
+    private readonly loadingDots: Label;
+    private coveredWait = 0;
     private phase: Phase = 'idle';
     private elapsed = 0;
     private alertTime = -1;
@@ -37,6 +40,15 @@ export class BubbleShooterTransitionView {
         this.root.addComponent(BlockInputEvents);
         this.backing = this.root.addComponent(Graphics);
         for (const side of [-1, 1]) this.clouds.push(this.sprite(side < 0 ? 'LeftCloud' : 'RightCloud', this.root, cloud));
+        this.loadingRoot = this.node('TransitionLoading', this.root);
+        const loadingTitle = this.label('加载中', this.loadingRoot, 0, 28);
+        loadingTitle.node.setPosition(-18, 0);
+        loadingTitle.node.getComponent(UITransform)!.setContentSize(84, 42);
+        this.loadingDots = this.label('.', this.loadingRoot, 0, 28);
+        this.loadingDots.node.setPosition(24, 0);
+        this.loadingDots.node.getComponent(UITransform)!.setAnchorPoint(0, .5);
+        this.loadingDots.node.getComponent(UITransform)!.setContentSize(42, 42);
+        this.loadingDots.horizontalAlign = Label.HorizontalAlign.LEFT;
         this.errorRoot = this.node('TransitionError', this.root);
         this.label('资源加载未完成', this.errorRoot, 65, 34);
         this.label('请重试，当前进度仍保留', this.errorRoot, 13, 25);
@@ -72,6 +84,7 @@ export class BubbleShooterTransitionView {
         this.banner.getComponent(UITransform)!.setContentSize(native.width, native.height); this.bannerScale=scale; this.banner.setScale(scale, scale, 1);
         this.errorRoot.setScale(Math.min(1, width / 750), Math.min(1, width / 750), 1);
         this.errorRoot.setPosition(0, centerY);
+        this.loadingRoot.setPosition(0, centerY - height * .12);
         this.draw();
     }
     showAlert(done: () => void): void {
@@ -83,13 +96,14 @@ export class BubbleShooterTransitionView {
         if (this.active) return false;
         this.prepare = prepare; this.commit = commit; this.elapsed = 0; this.phase = 'closing';
         this.root.active = true; this.root.setSiblingIndex(this.root.parent!.children.length - 1);
-        this.launchPrepare(); this.draw(); return true;
+        this.ready = this.failed = false; this.draw(); return true;
     }
     revealPrepared(): void {
         this.cancel(); this.phase = 'rendering'; this.rendered = 0; this.root.active = true;
         this.root.setSiblingIndex(this.root.parent!.children.length - 1); this.draw();
     }
     private launchPrepare(): void {
+        this.coveredWait = 0;
         const generation = ++this.generation; this.ready = false; this.failed = false;
         const prepare = this.prepare;
         Promise.resolve().then(() => generation === this.generation ? prepare?.() : undefined).then(() => {
@@ -101,6 +115,8 @@ export class BubbleShooterTransitionView {
         });
     }
     update(dt: number): void {
+        // Waiting uses real frame time; animation clamping must not stretch the one-second delay.
+        if (this.phase === 'covered' || this.phase === 'rendering') this.coveredWait += Math.max(0, dt);
         const step = Math.max(0, Math.min(.05, dt));
         if (this.alertTime >= 0) {
             this.alertTime += step;
@@ -111,7 +127,7 @@ export class BubbleShooterTransitionView {
         }
         if (this.phase === 'closing') {
             this.elapsed += step;
-            if (this.elapsed >= .55) { this.phase = 'covered'; this.elapsed = 0; }
+            if (this.elapsed >= .55) { this.phase = 'covered'; this.elapsed = 0; this.draw(); this.launchPrepare(); }
         }
         if (this.phase === 'covered') {
             if (this.failed) this.phase = 'error';
@@ -130,9 +146,12 @@ export class BubbleShooterTransitionView {
     cancel(): void {
         this.generation++; this.phase = 'idle'; this.alertTime = -1; this.alertDone = undefined;
         this.prepare = undefined; this.commit = undefined; this.ready = this.failed = false;
+        this.coveredWait = 0; this.loadingRoot.active = false;
         this.root.active = false; this.bannerRoot.active = false; this.errorRoot.active = false;
     }
     private draw(): void {
+        this.loadingRoot.active = (this.phase === 'covered' || this.phase === 'rendering') && this.coveredWait > 1;
+        if (this.loadingRoot.active) this.loadingDots.string = '.'.repeat(1 + Math.floor(this.coveredWait - 1) % 3);
         this.errorRoot.active = this.phase === 'error';
         this.backing.clear();
         if (this.phase === 'covered' || this.phase === 'rendering' || this.phase === 'error') {
@@ -168,9 +187,10 @@ export class BubbleShooterTransitionView {
     private sprite(name: string, parent: Node, frame: SpriteFrame): Node {
         const n = this.node(name, parent), s = n.addComponent(Sprite); s.sizeMode = Sprite.SizeMode.CUSTOM; s.trim = false; s.spriteFrame = frame; return n;
     }
-    private label(text: string, parent: Node, y: number, size: number, color = new Color(75, 65, 88)): void {
+    private label(text: string, parent: Node, y: number, size: number, color = new Color(75, 65, 88)): Label {
         const n = this.node(text, parent); n.setPosition(0, y); n.getComponent(UITransform)!.setContentSize(580, 48);
         const label = n.addComponent(Label); label.string = text; label.fontSize = size; label.lineHeight = size + 5;
         label.horizontalAlign = Label.HorizontalAlign.CENTER; label.verticalAlign = Label.VerticalAlign.CENTER; label.color = color;
+        return label;
     }
 }

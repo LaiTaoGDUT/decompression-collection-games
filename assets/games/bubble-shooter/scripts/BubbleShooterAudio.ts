@@ -4,7 +4,7 @@ const { ccclass, property } = _decorator;
 
 export const CLOUD_CUES = ['normal-music', 'boss-music', 'shot', 'bounce', 'attach', 'pop', 'drop',
     'thaw', 'frost', 'row', 'warning', 'boss-enter', 'boss-hit', 'victory', 'reward', 'select',
-    'confirm', 'bomb', 'wildcard', 'clear-bottom', 'swap', 'revive', 'failure', 'ui'] as const;
+    'confirm', 'bomb', 'wildcard', 'clear-bottom', 'swap', 'revive', 'failure', 'ui', 'ocean-normal-music', 'ocean-boss-music', 'ocean-cast', 'ocean-convert'] as const;
 export type CloudCue = typeof CLOUD_CUES[number];
 
 /** Inspector slots remain empty until approved audio is supplied. No dummy files or network loads. */
@@ -44,7 +44,7 @@ export class BubbleShooterAudio {
             this.sequence.set(cue, index + 1);
         }
     }
-    music(cue?: 'normal-music' | 'boss-music'): void {
+    music(cue?: 'normal-music' | 'boss-music' | 'ocean-normal-music' | 'ocean-boss-music'): void {
         if (this.musicCue === cue) return;
         this.musicCue = cue;
         const slot = cue ? this.slots.get(cue) : undefined, clip = slot?.clips[0];

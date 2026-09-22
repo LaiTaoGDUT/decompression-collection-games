@@ -5,15 +5,15 @@ try{
  execFileSync('tsc',['assets/games/bubble-shooter/scripts/BubbleShooterRound.ts','--module','commonjs','--target','es2020','--outDir',out,'--skipLibCheck'],{cwd:path.resolve(__dirname,'../..')});
  const {BubbleShooterRound,BOSS_TUNING}=require(path.join(out,'BubbleShooterRound.js'));
  const b=(row,col,color='red',frosted=false)=>({row,col,color,frosted});
- const r=new BubbleShooterRound(()=>.2);r.reset();
+ const r=new BubbleShooterRound(()=>.2);r.reset();r.futureRows=[];
  r.regionProgress=BOSS_TUNING.progressRequired-3;r.accumulatedMisses=2;
- r.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);r.current='red';r.next='purple';
+ r.board.reset([b(0,4),b(0,5)]);r.current='red';r.next='purple';
  let result=r.settle({row:0,col:3});
  assert(result.enteredBoss&&!result.inserted&&!result.refilled&&!result.danger);
- assert.equal(r.stage,'boss-entry');assert.equal(r.board.bubbles.length,1,'Keep settled ordinary board until effects finish.');
+ assert.equal(r.stage,'boss-entry');assert.equal(r.board.bubbles.length,0,'All finite ordinary content must be cleared before entry.');
  assert.throws(()=>r.settle({row:0,col:8}));
  const queue=[r.current,r.next], stock={...r.inventory}, clear=r.cleared;
- r.beginBoss();assert.equal(r.board.bubbles.length,135);assert.equal(r.bossHealth,BOSS_TUNING.health);
+ r.beginBoss();assert.equal(r.board.bubbles.length,115);assert.equal(r.bossHealth,BOSS_TUNING.health);
  assert.deepEqual([r.current,r.next],queue);assert.deepEqual(r.inventory,stock);assert.equal(r.cleared,clear);
  assert.throws(()=>r.beginBoss());
  r.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);r.current='red';result=r.settle({row:0,col:3});
@@ -41,5 +41,5 @@ try{
  r.reset();r.stage='boss';r.board.reset([b(0,4,'red',true)]);r.current='blue';
  result=r.settle({row:0,col:3});assert.equal(result.damage,0);assert.equal(r.bossHealth,BOSS_TUNING.health);
  r.reset();assert.equal(r.stage,'ordinary');assert.equal(r.regionProgress,0);assert.equal(r.bossShots,0);assert.equal(r.frostTargets.length,0);
- console.log('Boss passed: progress priority/deferred entry, dedicated board, queue/stock preservation, damage, shot counter, frost targets, clear-bottom, lethal priority, reset.');
+ console.log('Boss passed: finite-clear/deferred entry, dedicated board, queue/stock preservation, damage, shot counter, frost targets, clear-bottom, lethal priority, reset.');
 }finally{fs.rmSync(out,{recursive:true,force:true});}

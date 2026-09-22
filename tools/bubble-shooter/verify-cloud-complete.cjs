@@ -37,7 +37,7 @@ try {
     for(const bad of malformed){assert(!r.restore(bad));assert.deepEqual(r.snapshot(),s,'Invalid save must not partially mutate state');}
     const old = { ...s, version: 1, bubbles: [{row:0,col:4,color:'red',frosted:false}, {row:1,col:4,color:'blue',frosted:false}], frostTargets: [{row:1,col:4}], regionProgress:43 };
     const migrated = new BubbleShooterRound(); assert(migrated.restore(old));
-    assert.equal(migrated.snapshot().version,7); assert.equal(migrated.regionProgress,43);
+    assert.equal(migrated.snapshot().version,9); assert.equal(migrated.regionProgress,43);
     assert.deepEqual(migrated.board.bubbles,old.bubbles.map(b=>({...b,col:5})));
     assert.deepEqual(migrated.frostTargets,[{row:1,col:5}]);
     assert.deepEqual(migrated.inventory,old.inventory); assert.equal(migrated.current,old.current);

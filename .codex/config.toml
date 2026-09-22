@@ -1,11 +1,3 @@
-# The bundled Cocos MCP 1.5.4 server uses a legacy HTTP request/response
-# transport. The platform bridge detects Windows versus macOS/Linux: Windows
-# delegates to the PowerShell bridge, while macOS/Linux use Node directly.
-# Keep the command and script path relative so this project config works from
-# different checkout locations on both operating systems.
-
-model_reasoning_summary = "detailed"
-model_verbosity = "high"
 [mcp_servers.cocos-creator-stdio]
 command = "node"
 args = ["tools/cocos-mcp-platform-bridge.js"]

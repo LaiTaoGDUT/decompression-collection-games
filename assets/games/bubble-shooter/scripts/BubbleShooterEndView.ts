@@ -25,6 +25,8 @@ export class BubbleShooterEndView {
     private readonly primary: Node;
     private readonly secondary: Node;
     private readonly tertiary: Node;
+    private readonly roundRestart: Node;
+    private onRoundRestart?: () => Promise<void>;
     private pauseModel?: MiniGamePauseModel;
     private generation = 0;
     private readonly primaryText: Label;
@@ -88,7 +90,10 @@ export class BubbleShooterEndView {
         this.tertiary = this.sprite('Exit', this.content, frames.get('dialog-secondary')!, 0, -325, 552, 92);
         this.label('Text', '返回大厅', this.tertiary, 0, 0, 510, 60, 38);
         this.tertiary.active = false;
-        [this.primary, this.secondary, this.tertiary].forEach((node, i) => {
+        this.roundRestart = this.sprite('RestartRound', this.content, frames.get('dialog-secondary')!, 0, -200, 480, 92);
+        this.label('Text', '重新开始本轮', this.roundRestart, 0, 0, 448, 60, 34);
+        this.roundRestart.active = false;
+        [this.primary, this.secondary, this.tertiary, this.roundRestart].forEach((node, i) => {
             node.addComponent(UIOpacity);
             node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
                 event.propagationStopped = true;
@@ -147,6 +152,8 @@ export class BubbleShooterEndView {
         this.title.node.getComponent(UITransform)!.setContentSize(compact ? 532 : 580, 78);
         this.note.node.getComponent(UITransform)!.setContentSize(compact ? 540 : 614, 50);
         this.tertiary.active = pause;
+        this.roundRestart.active = pause && !!this.onRoundRestart;
+        this.roundRestart.getComponent(UITransform)!.setContentSize(buttonWidth,92);
         this.title.string = pause ? '暂停一下' : result ? '本局结束' : '再试一次？';
         this.title.node.setPosition(0, result ? 120 : 161);
         this.detail.string = pause ? '准备好了就继续吧' : result ? '休息一下，再来挑战' : '看完视频，清出安全空间\n进度和道具都会保留';
@@ -162,14 +169,16 @@ export class BubbleShooterEndView {
         this.primaryText.node.parent!.getComponent(UITransform)!.setContentSize(totalWidth, 62);
         this.video.setPosition(-totalWidth / 2 + iconWidth / 2, 0);
         this.primaryText.node.setPosition((iconWidth + gap) / 2, 0);
-        this.secondaryText.string = pause ? '重新开始' : result ? '返回大厅' : '结束本局';
+        this.secondaryText.string = pause ? '从头开始' : result ? '返回大厅' : '结束本局';
         this.note.string = message || (result || pause ? '' : '本局可复活 1 次');
-        this.primary.setPosition(0, pause ? -45 : result ? -149 : -173);
-        this.secondary.setPosition(0, pause ? -170 : result ? -288 : -334);
-        this.tertiary.setPosition(0, -286);
+        this.primary.setPosition(0, pause ? -20 : result ? -149 : -173);
+        this.secondary.setPosition(0, pause ? -140 : result ? -288 : -334);
+        this.roundRestart.setPosition(0,-248);
+        this.tertiary.setPosition(0, this.roundRestart.active ? -356 : -256);
         this.syncEnabled();
     }
-    showPause(model: MiniGamePauseModel): void {
+    showPause(model: MiniGamePauseModel, restartRound?: () => Promise<void>): void {
+        this.onRoundRestart = restartRound;
         this.generation++;
         this.pauseModel = model;
         this.enabled = true;
@@ -183,7 +192,7 @@ export class BubbleShooterEndView {
         this.setBusy();
         try {
             if (!await this.close() || generation !== this.generation) return;
-            await [model.resume, model.restart, model.exit][index]!();
+            await [model.resume, model.restart, model.exit, this.onRoundRestart][index]!();
         } catch {
             if (generation === this.generation && this.root.isValid)
                 { this.root.active=true; this.motion.open(); this.detail.string = '操作未完成，请重试'; }
@@ -204,9 +213,9 @@ export class BubbleShooterEndView {
     setEnabled(enabled: boolean): void { this.enabled = enabled; this.syncEnabled(); }
     setBusy(): void { this.busy = true; this.syncEnabled(); }
     private syncEnabled(): void {
-        [this.primary, this.secondary, this.tertiary].forEach(n => n.getComponent(UIOpacity)!.opacity = this.enabled && !this.busy ? 255 : 155);
+        [this.primary, this.secondary, this.tertiary, this.roundRestart].forEach(n => n.getComponent(UIOpacity)!.opacity = this.enabled && !this.busy ? 255 : 155);
     }
-    hide(): void { this.motion.cancel(); this.generation++; this.pauseModel = undefined; this.root.active = false; this.action = undefined; this.busy = false; }
+    hide(): void { this.motion.cancel(); this.generation++; this.pauseModel = undefined; this.onRoundRestart = undefined; this.root.active = false; this.action = undefined; this.busy = false; }
     layout(width: number, height: number, platform?: PlatformLayoutInfo): void {
         this.root.getComponent(UITransform)!.setContentSize(width, height);
         this.shade.clear(); this.shade.fillColor = new Color(36, 17, 51, 145);
@@ -217,7 +226,7 @@ export class BubbleShooterEndView {
     }
     dispose(): void {
         this.decoration?.dispose(); this.decoration = undefined;
-        this.hide(); this.primary.targetOff(this); this.secondary.targetOff(this); this.tertiary.targetOff(this);
+        this.hide(); this.primary.targetOff(this); this.secondary.targetOff(this); this.tertiary.targetOff(this); this.roundRestart.targetOff(this);
         this.root.getComponentsInChildren(Sprite).forEach(s => s.spriteFrame = null);
         this.root.destroy();
     }

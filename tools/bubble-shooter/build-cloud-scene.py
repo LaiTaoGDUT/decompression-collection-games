@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SCENE = ROOT / 'assets/games/bubble-shooter/scenes/BubbleShooter.scene'
 ASSETS = ROOT / 'assets/game-assets/bubble-shooter/visual'
+bindings = []
 objects = json.loads(SCENE.read_text())
 assert not objects[3]['_children'], 'Scene already populated; edit existing nodes in Cocos.'
 node_template = copy.deepcopy(objects[3])
@@ -40,10 +41,16 @@ def node(name, parent, x=0, y=0, width=750, height=1140, anchor=(.5,.5)):
 
 def sprite(name,parent,path,x,y,width,height,anchor=(.5,.5),sliced=False):
     idx=node(name,parent,x,y,width,height,anchor)
+    common = path.startswith('items/') or path in ['hud/hud-counter-slot-empty','hud/hud-counter-bead','hud/hud-boss-health-track','hud/hud-boss-health-fill','hud/hud-insert-row']
+    path = ('common/' if common else 'regions/cloud/') + path
     meta=json.loads((ASSETS/(path+'.png.meta')).read_text())
     frame=next(v for v in meta['subMetas'].values() if v['importer']=='sprite-frame')
     sp=add_component(idx,sprite_template)
-    sp.update(_spriteFrame={'__uuid__':frame['uuid'],'__expectedType__':'cc.SpriteFrame'},_type=1 if sliced else 0,_sizeMode=0,_isTrimmedMode=False)
+    parts=[name]; ancestor=parent
+    while ancestor != 3:
+        parts.insert(0,objects[ancestor]['_name']); ancestor=objects[ancestor]['_parent']['__id__']
+    bindings.append(['/'.join(parts),'visual/'+path])
+    sp.update(_spriteFrame=None,_type=1 if sliced else 0,_sizeMode=0,_isTrimmedMode=False)
     return idx
 
 def label(name,parent,text,x,y,size=24):
@@ -85,8 +92,8 @@ sprite('Pedestal',launcher,'launcher/launcher-pedestal',0,0,192,128,(.5,.125))
 pivot=node('TurretPivot',launcher,0,42,96,160,(.5,.1))
 sprite('CurrentBall',pivot,'bubbles/bubble-red',0,72,72,72)
 sprite('TurretArtwork',pivot,'launcher/launcher-turret',0,0,96,160,(.5,.1))
-sprite('NextBall',launcher,'bubbles/bubble-blue',150,65,64,64)
-sprite('Swap',launcher,'launcher/swap-icon',102,78,44,44)
+sprite('NextBall',launcher,'bubbles/bubble-blue',168,65,64,64)
+sprite('Swap',launcher,'launcher/swap-icon',120,78,44,44)
 items=node('Items',play,0,-506,620,128)
 for i,(key,text) in enumerate([('bomb','炸弹球'),('wildcard','万能球'),('clear-bottom','清底')]):
     base=sprite('Item-'+key,items,'items/item-button-base',(i-1)*205,0,144,130)
@@ -107,5 +114,9 @@ sprite('Crown',boss,'boss/boss-pudding-crown',0,240,128,102,(.5,.08))
 for name,path,width,height in [('HealthTrack','track',850,96),('HealthFill','fill',810,64)]:
     bar=sprite(name,boss,'hud/hud-boss-health-'+path,0,0,width,height,sliced=True)
     objects[bar]['_lscale'].update(x=.5,y=.5)
+component=next(o for o in objects if 'audioSlots' in o)
+component['supportFrame']=None
+component['foregroundFrames']=[]
+(ROOT/'assets/games/bubble-shooter/scripts/BubbleShooterSceneBindings.ts').write_text('export const BUBBLE_SCENE_SPRITES: readonly (readonly [string,string])[] = '+json.dumps(bindings,indent=2)+';\n')
 SCENE.write_text(json.dumps(objects,ensure_ascii=False,indent=2)+'\n')
 print(f'Built {sum(o["__type__"]=="cc.Node" for o in objects)} scene nodes.')

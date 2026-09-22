@@ -164,9 +164,9 @@
         "relaxing"
       ],
       "resourceDirectories": [
-        "visual/common",
-        "visual/regions/cloud"
-      ]
+        "visual/common"
+      ],
+      "initializeTimeoutMs": 75000
     }
   ]
 }

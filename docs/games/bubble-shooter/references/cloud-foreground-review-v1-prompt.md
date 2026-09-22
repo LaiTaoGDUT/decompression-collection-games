@@ -1,0 +1,9 @@
+# 独立前景云朵 v1 效果图
+
+使用内置 imagegen；参考旧版棋盘截图仅用于构图和云端色调。右侧不是实际运行截图，不代表当前珠子素材和布局变更。
+
+状态：用户已确认，三朵独立透明图已制作并接入。前景应位于游戏元素、瞄准线和玩法特效上方，弹窗下方，不拦截触摸。示意图同时展示两个位置，运行时采用低频、低密度飘过。
+
+## Prompt
+
+Create a polished art direction approval sheet for NEW independent drifting foreground cloud sprites for the candy-sky bubble shooter in reference image. Reference image is ONLY gameplay style/composition context; do not reuse its existing long top cloud bank. Wide sheet, left 45% three NEW fully separate complete cloud designs on a muted lavender background arranged vertically with ample space: A small fluffy asymmetric rounded cloud, B graceful elongated cloud with airy tapered ends, C wispy broken small cluster. Ivory white, faint peach sunlight and lavender shading, fresh modern softly rendered 3D cloud puffs, graceful feathered edges, lightweight not heavy solid clay, no faces, sparkles, hearts or extra objects. Each independent cloud has a complete rounded underside, no cut horizontal edge, not a continuous cloud bank. Label only A / B / C. On the right show a portrait gameplay example inspired by the reference with red yellow blue purple bubble grid and cannon at bottom. Show TWO subtle examples of these NEW clouds rendered semitransparent IN FRONT OF the colored bubbles and the lower cannon area, visually overlapping their surfaces (gameplay remains readable through translucent clouds). They are a foreground overlay, NOT behind game pieces, NOT clouds only at borders. About 20-25% opacity gameplay clouds, stronger opacity on standalone cloud design swatches for judging shapes. The mockup represents two possible positions during drift, not dense simultaneous clouds. No arrows, no unrelated redesign of UI. Top title Chinese “独立前景云朵 · 效果预览”. Small text below gameplay “半透明覆盖在游戏元素上方”. This is a concept review sheet, not final sprite atlas or actual screenshot. Elegant clear readable presentation.

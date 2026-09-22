@@ -1,0 +1,67 @@
+[
+  {
+    "key": "red",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/ocean/red.png",
+    "crop": [
+      61,
+      58,
+      1189,
+      1163
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/ocean/bubbles/bubble-red.png",
+    "size": 256,
+    "bytes": 115139
+  },
+  {
+    "key": "yellow",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/ocean/yellow.png",
+    "crop": [
+      62,
+      60,
+      1191,
+      1174
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/ocean/bubbles/bubble-yellow.png",
+    "size": 256,
+    "bytes": 110825
+  },
+  {
+    "key": "blue",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/ocean/blue.png",
+    "crop": [
+      67,
+      71,
+      1187,
+      1183
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/ocean/bubbles/bubble-blue.png",
+    "size": 256,
+    "bytes": 104909
+  },
+  {
+    "key": "purple",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/ocean/purple.png",
+    "crop": [
+      93,
+      100,
+      1160,
+      1149
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/ocean/bubbles/bubble-purple.png",
+    "size": 256,
+    "bytes": 110770
+  },
+  {
+    "key": "support",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/ocean/support.png",
+    "crop": [
+      68,
+      71,
+      1185,
+      1172
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/ocean/bubbles/bubble-support.png",
+    "size": 256,
+    "bytes": 126128
+  }
+]

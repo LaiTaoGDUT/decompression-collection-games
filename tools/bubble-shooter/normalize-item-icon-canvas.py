@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 import json
 root=Path(__file__).resolve().parents[2]
-assets=root/'assets/game-assets/bubble-shooter/visual/regions/cloud/items'
+assets=root/'assets/game-assets/bubble-shooter/visual/common/items'
 source=root/'docs/games/bubble-shooter/art-source/cloud/item-icon-sizing'
 source.mkdir(parents=True,exist_ok=True)
 for key,extent in [('bomb',192),('wildcard',160),('clear-bottom',160)]:

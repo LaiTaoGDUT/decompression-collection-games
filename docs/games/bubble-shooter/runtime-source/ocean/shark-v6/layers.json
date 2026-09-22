@@ -1,0 +1,87 @@
+{
+  "body": {
+    "source": "body-raw.png",
+    "crop": [
+      68,
+      46,
+      941,
+      1516
+    ],
+    "sourceSize": [
+      1024,
+      1536
+    ],
+    "size": [
+      456,
+      768
+    ]
+  },
+  "staff-arm": {
+    "source": "staff-arm-rear-grip-raw.png",
+    "crop": [
+      126,
+      20,
+      901,
+      1474
+    ],
+    "sourceSize": [
+      1024,
+      1536
+    ],
+    "size": [
+      409,
+      768
+    ]
+  },
+  "right-arm": {
+    "source": "right-arm-raw.png",
+    "crop": [
+      342,
+      32,
+      1237,
+      999
+    ],
+    "sourceSize": [
+      1536,
+      1024
+    ],
+    "size": [
+      355,
+      384
+    ]
+  },
+  "crown": {
+    "source": "crown-raw.png",
+    "crop": [
+      322,
+      35,
+      1426,
+      989
+    ],
+    "sourceSize": [
+      1536,
+      1024
+    ],
+    "size": [
+      256,
+      221
+    ]
+  },
+  "celebration": {
+    "source": "celebration-rear-grip-raw.png",
+    "crop": [
+      31,
+      25,
+      1494,
+      996
+    ],
+    "sourceSize": [
+      1536,
+      1024
+    ],
+    "size": [
+      1024,
+      680
+    ]
+  }
+}

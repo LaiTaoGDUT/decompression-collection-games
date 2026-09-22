@@ -1,0 +1,67 @@
+[
+  {
+    "key": "red",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/toy/red.png",
+    "crop": [
+      45,
+      46,
+      1206,
+      1191
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/toy/bubbles/bubble-red.png",
+    "size": 256,
+    "bytes": 90462
+  },
+  {
+    "key": "yellow",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/toy/yellow.png",
+    "crop": [
+      55,
+      59,
+      1198,
+      1191
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/toy/bubbles/bubble-yellow.png",
+    "size": 256,
+    "bytes": 88026
+  },
+  {
+    "key": "blue",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/toy/blue.png",
+    "crop": [
+      70,
+      75,
+      1184,
+      1180
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/toy/bubbles/bubble-blue.png",
+    "size": 256,
+    "bytes": 82540
+  },
+  {
+    "key": "purple",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/toy/purple.png",
+    "crop": [
+      68,
+      78,
+      1185,
+      1169
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/toy/bubbles/bubble-purple.png",
+    "size": 256,
+    "bytes": 95892
+  },
+  {
+    "key": "support",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/toy/support.png",
+    "crop": [
+      76,
+      75,
+      1176,
+      1165
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/toy/bubbles/bubble-support.png",
+    "size": 256,
+    "bytes": 99473
+  }
+]

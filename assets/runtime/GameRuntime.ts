@@ -591,7 +591,7 @@ export class GameRuntime {
             try {
                 await this.withTimeout(
                     entry.initialize(context),
-                    this.timeouts.initializeMs,
+                    manifest.initializeTimeoutMs ?? this.timeouts.initializeMs,
                     'game initialization',
                 );
                 this.loading?.updateProgress('马上就可以开始啦', 0.96);

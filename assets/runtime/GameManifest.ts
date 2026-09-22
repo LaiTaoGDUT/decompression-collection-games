@@ -23,6 +23,9 @@ export interface GameManifest {
     /** Startup resource groups. Omitted means the legacy complete visual directory. */
     readonly resourceDirectories?: readonly string[];
 
+    /** Optional initialization budget for games loading save-dependent assets. */
+    readonly initializeTimeoutMs?: number;
+
     /** Bundle 内的入口场景路径。 */
     readonly scene: string;
 

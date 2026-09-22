@@ -35,8 +35,17 @@ try {
     assert.equal(revived.regionProgress,reviveProgress);assert.equal(revived.bossHealth,reviveHealth);assert(!revived.revive());
     const round = new BubbleShooterRound(()=>.25);
     round.reset();round.futureRows=[];round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);round.accumulatedMisses=2;
-    round.current='red';let result=round.settle({row:0,col:3});assert.equal(round.accumulatedMisses,0);assert(!result.enteredBoss);
-    round.current='yellow';result=round.settle({row:0,col:2});assert(!result.inserted);assert.equal(round.accumulatedMisses,1);
+    round.current='red';let result=round.settle({row:0,col:3});assert.equal(round.accumulatedMisses,2);assert(!result.enteredBoss);
+    round.current='yellow';result=round.settle({row:0,col:2});assert(result.descended);assert.equal(round.accumulatedMisses,0);
+    for (const region of ['cloud','ocean']) {
+        const r=new BubbleShooterRound(()=>.25);r.reset(region);
+        r.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);r.accumulatedMisses=2;r.current='red';
+        const match=r.settle({row:0,col:3});assert(match.removed.length===3);assert(!match.inserted&&!match.descended);
+        assert.equal(r.accumulatedMisses,2,'matching preserves accumulated descent progress');
+        const restored=new BubbleShooterRound();assert(restored.restore(r.snapshot()));assert.equal(restored.accumulatedMisses,2);
+        restored.current='yellow';const miss=restored.settle({row:0,col:8});
+        assert(miss.inserted,'next miss uses the previously accumulated progress');assert.equal(restored.accumulatedMisses,0);
+    }
     const paletteBoard=new BubbleShooterModel([b(0,4,'blue')]);paletteBoard.insertRow(()=>.99,['blue']);assert(paletteBoard.bubbles.every(x=>x.color==='blue'));
     round.reset();round.futureRows=[];round.board.reset([b(0,4),b(0,5),b(0,9,'blue')]);
     round.current='red';round.next='red';result=round.settle({row:0,col:3});

@@ -1,0 +1,67 @@
+[
+  {
+    "key": "red",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/cloud/red.png",
+    "crop": [
+      57,
+      66,
+      1193,
+      1176
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-red.png",
+    "size": 256,
+    "bytes": 68987
+  },
+  {
+    "key": "yellow",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/cloud/yellow.png",
+    "crop": [
+      74,
+      83,
+      1174,
+      1163
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-yellow.png",
+    "size": 256,
+    "bytes": 77060
+  },
+  {
+    "key": "blue",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/cloud/blue.png",
+    "crop": [
+      83,
+      96,
+      1169,
+      1180
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-blue.png",
+    "size": 256,
+    "bytes": 70035
+  },
+  {
+    "key": "purple",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/cloud/purple.png",
+    "crop": [
+      66,
+      70,
+      1188,
+      1182
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-purple.png",
+    "size": 256,
+    "bytes": 74428
+  },
+  {
+    "key": "support",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/cloud/support.png",
+    "crop": [
+      74,
+      95,
+      1176,
+      1177
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/cloud/bubbles/bubble-support.png",
+    "size": 256,
+    "bytes": 59082
+  }
+]

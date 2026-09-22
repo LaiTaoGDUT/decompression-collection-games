@@ -1,0 +1,70 @@
+{
+  "red": {
+    "source": "red.png",
+    "prompt": "Production sprite extraction based on APPROVED reference. One single opaque CORAL RED pearl enamel game ball, exact red ball from reference with small same-red raised seashell emblem. Strict geometrically perfect sphere / circular silhouette viewed front on, NOT an oval, centered square composition. Keep colored surface dominant, only one compact soft white highlight at top left. Tiny simple color-on-color sculpted emblem under 40% diameter, except support anchor at 55%. Clean polished rounded 3D pearl ENAMEL, opaque solid center alpha 255, no glass transparency, no internal caustics or bubbles, no ornate rim, no glow, no drop shadow. Outside circle genuinely transparent alpha. Exactly ONE circle, no scenery, UI, text, other balls. High resolution for downsampling to 256px."
+  },
+  "yellow": {
+    "source": "yellow.png",
+    "prompt": "Production sprite extraction based on APPROVED reference. One single opaque GOLDEN YELLOW pearl enamel game ball, exact yellow ball from reference with small same-yellow starfish emblem. Strict geometrically perfect sphere / circular silhouette viewed front on, NOT an oval, centered square composition. Keep colored surface dominant, only one compact soft white highlight at top left. Tiny simple color-on-color sculpted emblem under 40% diameter, except support anchor at 55%. Clean polished rounded 3D pearl ENAMEL, opaque solid center alpha 255, no glass transparency, no internal caustics or bubbles, no ornate rim, no glow, no drop shadow. Outside circle genuinely transparent alpha. Exactly ONE circle, no scenery, UI, text, other balls. High resolution for downsampling to 256px."
+  },
+  "blue": {
+    "source": "blue.png",
+    "prompt": "Production sprite extraction based on APPROVED reference. One single opaque ROYAL BLUE pearl enamel game ball, exact blue ball from reference with small same-blue wave emblem. Strict geometrically perfect sphere / circular silhouette viewed front on, NOT an oval, centered square composition. Keep colored surface dominant, only one compact soft white highlight at top left. Tiny simple color-on-color sculpted emblem under 40% diameter, except support anchor at 55%. Clean polished rounded 3D pearl ENAMEL, opaque solid center alpha 255, no glass transparency, no internal caustics or bubbles, no ornate rim, no glow, no drop shadow. Outside circle genuinely transparent alpha. Exactly ONE circle, no scenery, UI, text, other balls. High resolution for downsampling to 256px."
+  },
+  "purple": {
+    "source": "purple.png",
+    "prompt": "Production sprite extraction based on APPROVED reference. One single opaque VIOLET PURPLE pearl enamel game ball, exact purple ball from reference with small same-purple simplified jellyfish emblem. Strict geometrically perfect sphere / circular silhouette viewed front on, NOT an oval, centered square composition. Keep colored surface dominant, only one compact soft white highlight at top left. Tiny simple color-on-color sculpted emblem under 40% diameter, except support anchor at 55%. Clean polished rounded 3D pearl ENAMEL, opaque solid center alpha 255, no glass transparency, no internal caustics or bubbles, no ornate rim, no glow, no drop shadow. Outside circle genuinely transparent alpha. Exactly ONE circle, no scenery, UI, text, other balls. High resolution for downsampling to 256px."
+  },
+  "support": {
+    "source": "support.png",
+    "prompt": "Production sprite extraction based on APPROVED reference. One single opaque dark SLATE BLUE GRAY pearl enamel game ball with clean ivory anchor emblem, matching support ball in reference. Strict geometrically perfect sphere / circular silhouette viewed front on, NOT an oval, centered square composition. Keep colored surface dominant, only one compact soft white highlight at top left. Tiny simple color-on-color sculpted emblem under 40% diameter, except support anchor at 55%. Clean polished rounded 3D pearl ENAMEL, opaque solid center alpha 255, no glass transparency, no internal caustics or bubbles, no ornate rim, no glow, no drop shadow. Outside circle genuinely transparent alpha. Exactly ONE circle, no scenery, UI, text, other balls. High resolution for downsampling to 256px."
+  },
+  "background": {
+    "source": "background.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Full portrait 750:1800 background ONLY. Remove ALL shark, staff, UI, balls, cannon, hud, health, top reef ledge, aiming dots, foreground bubbles, fish and foreground seaweed (these become separate animated assets). Keep rounded distant arches and smooth pastel coral confined far left/right and very bottom, central 80 percent uncluttered desaturated medium-dark teal water with very low contrast, soft light only at top, no bright caustics, no hard texture. Opaque full bleed portrait. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "reef": {
+    "source": "reef.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only long narrow gently curved teal coral-stone ledge below shark in reference, simple chunky smooth rounded forms and 2 small warm gold accents. Horizontal ratio 10:1, flat horizontal lower silhouette, shallow curve, no underside teeth or jagged hanging cliffs. No boss, HUD health, coral gardens or background. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "turret": {
+    "source": "turret.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only ROTATING cannon HEAD from reference bottom centre. Teal enamel barrel with gold mouth rim pointing straight up, wide circular gold framed hollow loading port at lower body, its INSIDE transparent so separately rendered ball shows through. Front-on symmetric compact head. No loaded ball, no pedestal/base, no environment, no shells. Circular port centre at approximately lower third is rotation pivot. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "base": {
+    "source": "base.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only FIXED cannon pedestal from bottom centre reference. Low squat teal enamel base with warm gold rim, central small ivory pearl and two gold rounded feet. Front-on symmetric, no cannon barrel/head/ball, no tall handle, no background. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "pause": {
+    "source": "pause.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only circular pause HUD button from reference, dark teal opaque enamel disc, thin warm gold rounded rim, two simple ivory vertical pause bars. Front on, no background. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "down": {
+    "source": "down.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only circular descent HUD icon from reference, dark teal opaque enamel disc thin warm gold rim, centred simple bold ivory down arrow. Front on, no background. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "swap": {
+    "source": "swap.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only compact two curved ivory exchange arrows outlined deep navy, matching reference beside cannon. One points upper-right and other lower-left, balanced two-arrow swap symbol. No disc or background. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "item-base": {
+    "source": "item-base.png",
+    "prompt": "Production Cocos sprite extraction from approved image. Match premium friendly rounded stylized 3D teal enamel/warm gold/ivory materials and light direction. Only EMPTY circular item socket from reference: dark teal opaque enamel disc with narrow warm gold rounded rim, clean recessed middle to host item icon. No item, no symbol, no text, no feet. One isolated asset centred, entire object visible, genuinely transparent RGBA outside object, NO glow or shadows outside silhouette, no checkerboard. No labels, no watermark. Preserve approved simple shape and proportions; do not add ornament."
+  },
+  "fish": {
+    "source": "fish.png",
+    "prompt": "Use approved underwater world reference for friendly rounded polished 3D art direction. Production independent animated decoration sprite: One small friendly stylized blue-teal reef fish in SIDE PROFILE swimming to the RIGHT, plump smooth body, small fin and tail, simple eye, subdued blue teal silhouette with soft dimensional shading, no stripes, no scales, no bright color accents. For distant background slow swimming. GENUINELY transparent RGBA outside object, single asset centred with margins, NO black rectangle, no checkerboard baked in, no scenery or UI, no text. Soft material consistent with shark king world."
+  },
+  "seaweed": {
+    "source": "seaweed.png",
+    "prompt": "Use approved underwater world reference for friendly rounded polished 3D art direction. Production independent animated decoration sprite: One small tuft of 3 long curving smooth rounded green-teal seaweed blades attached together at bottom base, gently S-curved upright; dimensional stylized rendering, low contrast, no rock, no sand, no bubbles, no coral. For bottom-anchored swaying at side margins. GENUINELY transparent RGBA outside object, single asset centred with margins, NO black rectangle, no checkerboard baked in, no scenery or UI, no text. Soft material consistent with shark king world."
+  },
+  "water-bubbles": {
+    "source": "water-bubbles.png",
+    "prompt": "Use approved underwater world reference for friendly rounded polished 3D art direction. Production independent animated decoration sprite: One sparse loose group of THREE clear water bubbles, different sizes, spaced apart on a rising diagonal, thin soft aqua rims and small ivory highlights, centres mostly transparent. No rainbow, no opaque white interiors, no glow or broad haze. Compact near-camera foreground decoration. GENUINELY transparent RGBA outside object, single asset centred with margins, NO black rectangle, no checkerboard baked in, no scenery or UI, no text. Soft material consistent with shark king world."
+  },
+  "water-current": {
+    "source": "water-current.png",
+    "prompt": "Use approved underwater world reference for friendly rounded polished 3D art direction. Production independent animated decoration sprite: One SHORT soft aqua underwater current wisp, very thin gently curving translucent ribbon with just two tiny bubbles alongside, horizontal composition 3:1, understated soft edge, limited area, no dense fog, no huge glow, no foam or waves. For sparse foreground drifting. GENUINELY transparent RGBA outside object, single asset centred with margins, NO black rectangle, no checkerboard baked in, no scenery or UI, no text. Soft material consistent with shark king world."
+  }
+}

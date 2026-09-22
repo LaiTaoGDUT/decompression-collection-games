@@ -29,7 +29,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
  storage:{getGameData:()=>window.saved,writeGameData:(_id,value)=>window.saved=JSON.parse(JSON.stringify(value))},
  audio:{playMusic:(clip)=>window.audioEvents.push('music:'+clip.name),stopMusic:()=>window.audioEvents.push('stop'),pauseMusic:()=>window.audioEvents.push('pause'),resumeMusic:()=>window.audioEvents.push('resume'),playEffect:clip=>window.audioEvents.push('sfx:'+clip.name)},
  feedback:{vibrate:()=>{}},ads:{isEnabledForGame:()=>true,showRewarded:async()=>({outcome:'completed'})}},requestPause:()=>{},requestRestart:()=>{},requestLobby:()=>{}};
- check(e.audioSlots.length===24&&e.audioSlots.every(s=>s.clips.length===0),'24 empty serialized slots');
+ check(e.audioSlots.length===28&&e.audioSlots.every(s=>s.clips.length===0),'28 empty serialized slots');
  await e.initialize(window.context);e.begin();await new Promise(r=>setTimeout(r,1000));check(window.saved.custom.activeRound,'initial checkpoint');
  const before=JSON.stringify(e.round.snapshot());
  e.round.current='red';e.round.next='blue';e.commitCheckpoint();

@@ -2,7 +2,15 @@
 export type BubbleColor = 'red' | 'yellow' | 'blue' | 'purple';
 export interface Cell { row: number; col: number; }
 export type BubbleSupport = 'seaweed' | 'tentacle';
-export interface Bubble extends Cell { color: BubbleColor; frosted: boolean; support?: BubbleSupport; }
+export interface Bubble extends Cell {
+    color: BubbleColor;
+    frosted: boolean;
+    support?: BubbleSupport;
+    /** Neutral solid cells retain a legacy color field, but never participate in color logic. */
+    indestructible?: true;
+    /** Scattered ocean stones, distinct from complete pressure support rows. */
+    solidKind?: 'ocean';
+}
 export interface Point { x: number; y: number; }
 export interface Shot { points: Point[]; cell: Cell; }
 export interface ShotResult { removed: Bubble[]; dropped: Bubble[]; thawed: Bubble[]; }
@@ -17,6 +25,8 @@ export const DANGER = -280;
 export const MAX_ROW = Math.ceil((TOP - DANGER - DIAMETER / 2) / ROW_HEIGHT);
 export const PIVOT = { x: 0, y: -398 };
 export const MUZZLE_OFFSET = 0;
+export const SHOT_SPEED = 1550;
+export const MAX_AIM_ANGLE = 70;
 export const COLORS: readonly BubbleColor[] = ['red', 'yellow', 'blue', 'purple'];
 const key = (c: Cell): string => `${c.row}:${c.col}`;
 export function position(c: Cell, phase = 0): Point {
@@ -38,30 +48,40 @@ const distance = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y
 export class BubbleShooterModel {
     private readonly cells = new Map<string, Bubble>();
     private phase = 0;
-    private ceiling = 0;
-    get ceilingRow(): number { return this.ceiling; }
+    get ceilingRow(): number { return 0; }
     get rowPhase(): number { return this.phase; }
     position(cell: Cell): Point { return position(cell, this.phase); }
-    neighbors(cell: Cell): Cell[] { return neighbors(cell, this.phase).filter(c=>c.row>=this.ceiling); }
+    neighbors(cell: Cell): Cell[] { return neighbors(cell, this.phase); }
     constructor(bubbles: readonly Bubble[] = []) { this.reset(bubbles); }
     reset(bubbles: readonly Bubble[], phase = 0, ceiling = 0): void {
         if(!Number.isInteger(ceiling) || ceiling<0 || ceiling>MAX_ROW)throw new Error('Invalid ceiling.');
-        this.ceiling=ceiling;
-        this.phase = phase;
-        this.cells.clear();
+        if (phase !== 0 && phase !== 1) throw new Error('Invalid row phase.');
+        const next = new Map<string, Bubble>();
         bubbles.forEach(b => {
-            if (b.row<this.ceiling || !valid(b, this.phase) || this.cells.has(key(b))
+            if (b.row<ceiling || !Number.isInteger(b.row) || !Number.isInteger(b.col) || !valid(b, phase) || next.has(key(b))
+                || COLORS.indexOf(b.color) < 0 || typeof b.frosted !== 'boolean'
+                || (b.indestructible !== undefined && b.indestructible !== true)
+                || (b.solidKind !== undefined && (b.solidKind !== 'ocean' || !b.indestructible))
+                || (b.indestructible && (b.frosted || b.support !== undefined))
                 || (b.support !== undefined && b.support !== 'seaweed' && b.support !== 'tentacle')) throw new Error('Invalid or duplicate bubble cell.');
-            this.cells.set(key(b), { ...b });
+            next.set(key(b), { ...b });
         });
+        // v7 saves used an invisible moving ceiling. Fill its empty rows with real support cells.
+        for (let row = 0; row < ceiling; row++) for (let col = 0; col < COLUMNS - (row + phase) % 2; col++) {
+            const b: Bubble = { row, col, color: 'red', frosted: false, indestructible: true };
+            next.set(key(b), b);
+        }
+        this.phase = phase;
+        this.cells.clear(); next.forEach((b, k) => this.cells.set(k, b));
     }
     get bubbles(): Bubble[] { return Array.from(this.cells.values(), b => ({ ...b })); }
+    get removableBubbles(): Bubble[] { return this.bubbles.filter(b => !b.indestructible); }
     get nearDanger(): boolean {
         return !this.danger && this.bubbles.some(b => this.position(b).y - DIAMETER / 2 - ROW_HEIGHT <= DANGER);
     }
     get danger(): boolean { return this.bubbles.some(b => this.position(b).y - DIAMETER / 2 <= DANGER); }
     supply(random: () => number = Math.random): BubbleColor {
-        const choices = this.bubbles.map(b => b.color);
+        const choices = this.removableBubbles.map(b => b.color);
         return choices.length ? choices[Math.min(choices.length - 1, Math.floor(random() * choices.length))]! : 'red';
     }
 
@@ -75,28 +95,35 @@ export class BubbleShooterModel {
         this.reset(shifted, nextPhase);
     }
 
-    descend(): void {
-        if(this.danger || this.ceiling>=MAX_ROW)throw new Error('Cannot descend after danger.');
-        this.reset(this.bubbles.map(b=>({...b,row:b.row+1})),1-this.phase,this.ceiling+1);
+    insertSupportRow(): void {
+        if (this.danger) throw new Error('Cannot insert support after danger.');
+        const phase = 1 - this.phase;
+        const shifted = this.bubbles.map(b => ({ ...b, row: b.row + 1 }));
+        for (let col = 0; col < COLUMNS - phase; col++) {
+            shifted.push({ row: 0, col, color: 'red', frosted: false, indestructible: true });
+        }
+        this.reset(shifted, phase);
     }
 
     matchingCount(cell: Cell, color: BubbleColor): number {
-        return this.flood(this.neighbors(cell), b => !b.frosted && b.color === color).size;
+        return this.flood(this.neighbors(cell), b => !b.indestructible && !b.frosted && b.color === color).size;
     }
 
-    /** Continuous ray / expanded-circle intersection. One reflection in this prototype. */
+    /** Continuous ray / expanded-circle intersection. All wall reflections up to the ceiling within the supported aim cone. */
     trace(direction: Point): Shot | undefined {
         const length = Math.hypot(direction.x, direction.y);
-        if (!Number.isFinite(length) || length === 0 || direction.y <= 0) return undefined;
+        if (!Number.isFinite(length) || length === 0 || direction.y <= 0 || Math.abs(direction.x) > direction.y * Math.tan(MAX_AIM_ANGLE * Math.PI / 180) + 1e-8) return undefined;
         let dx = direction.x / length;
         const dy = direction.y / length;
         let origin = { x: PIVOT.x + dx * MUZZLE_OFFSET, y: PIVOT.y + dy * MUZZLE_OFFSET };
         const points: Point[] = [{ ...origin }];
         const bubbles = this.bubbles;
         if (bubbles.some(b => distance(this.position(b), origin) < DIAMETER - 1e-6)) return undefined;
-        for (let bounce = 0; bounce <= 1; bounce++) {
+        // Bound by total horizontal travel before TOP; include the first partial wall span.
+        const maxBounces = Math.ceil((TOP-origin.y) * Math.abs(dx) / (dy * WALL * 2)) + 1;
+        for (let bounce = 0; bounce <= maxBounces; bounce++) {
             const wallTime = Math.abs(dx) < 1e-10 ? Infinity : ((dx > 0 ? WALL : -WALL) - origin.x) / dx;
-            const topTime = (TOP - this.ceiling*ROW_HEIGHT - origin.y) / dy;
+            const topTime = (TOP - origin.y) / dy;
             let time = topTime;
             let hit: Bubble | undefined;
             for (const b of bubbles) {
@@ -109,14 +136,13 @@ export class BubbleShooterModel {
                 if (t >= -1e-7 && t < time) { time = Math.max(0, t); hit = b; }
             }
             if (wallTime < time - 1e-7) {
-                if (bounce === 1) return undefined;
                 origin = { x: origin.x + dx * wallTime, y: origin.y + dy * wallTime };
                 points.push({ ...origin });
                 dx = -dx;
                 continue;
             }
             const contact = { x: origin.x + dx * time, y: origin.y + dy * time };
-            const candidates = hit ? this.neighbors(hit) : Array.from({ length: COLUMNS - (this.ceiling+this.phase)%2 }, (_, col) => ({ row: this.ceiling, col }));
+            const candidates = hit ? this.neighbors(hit) : Array.from({ length: COLUMNS - this.phase }, (_, col) => ({ row: 0, col }));
             const reachable = candidates.filter(c => {
                 if (this.cells.has(key(c))) return false;
                 const target = this.position(c);
@@ -139,10 +165,10 @@ export class BubbleShooterModel {
     }
 
     settle(cell: Cell, color: BubbleColor): ShotResult {
-        if (cell.row<this.ceiling || !valid(cell, this.phase) || this.cells.has(key(cell))) throw new Error('Cannot settle into occupied/invalid cell.');
-        if (cell.row !== this.ceiling && !this.neighbors(cell).some(c => this.cells.has(key(c)))) throw new Error('Bubble requires support on landing.');
+        if (!valid(cell, this.phase) || this.cells.has(key(cell))) throw new Error('Cannot settle into occupied/invalid cell.');
+        if (cell.row !== 0 && !this.neighbors(cell).some(c => this.cells.has(key(c)))) throw new Error('Bubble requires support on landing.');
         this.cells.set(key(cell), { ...cell, color, frosted: false });
-        const group = this.flood([cell], b => !b.frosted && b.color === color);
+        const group = this.flood([cell], b => !b.indestructible && !b.frosted && b.color === color);
         const result: ShotResult = { removed: [], dropped: [], thawed: [] };
         if (group.size < 3) return result;
         group.forEach(k => {
@@ -164,19 +190,20 @@ export class BubbleShooterModel {
         const changed: Bubble[] = [];
         targets.forEach(cell => {
             const bubble = this.cells.get(key(cell));
-            if (bubble && !bubble.frosted) { bubble.frosted = true; changed.push({ ...bubble }); }
+            if (bubble && !bubble.indestructible && !bubble.frosted) { bubble.frosted = true; changed.push({ ...bubble }); }
         });
         return changed;
     }
 
     bombTargets(cell: Cell): Bubble[] {
         const targets = new Set(this.neighbors(cell).map(key));
-        return this.bubbles.filter(b => targets.has(key(b)));
+        return this.removableBubbles.filter(b => targets.has(key(b)));
     }
 
     bottomTargets(): Bubble[] {
-        const rows = Array.from(new Set(this.bubbles.map(b => b.row))).sort((a, b) => b - a).slice(0, 2);
-        return this.bubbles.filter(b => rows.indexOf(b.row) >= 0);
+        const removable = this.removableBubbles;
+        const rows = Array.from(new Set(removable.map(b => b.row))).sort((a, b) => b - a).slice(0, 2);
+        return removable.filter(b => rows.indexOf(b.row) >= 0);
     }
 
     wildcardColor(cell: Cell, fallback: BubbleColor): BubbleColor {
@@ -193,10 +220,25 @@ export class BubbleShooterModel {
         const removed: Bubble[] = [];
         for (const cell of targets) {
             const bubble = this.cells.get(key(cell));
-            if (bubble) { removed.push({ ...bubble }); this.cells.delete(key(cell)); }
+            if (bubble && !bubble.indestructible) { removed.push({ ...bubble }); this.cells.delete(key(cell)); }
         }
         if (!removed.length) return { removed: [], dropped: [], thawed: [] };
         return { removed, dropped: this.collectUnsupported(), thawed: [] };
+    }
+
+    /** Convert existing colored cells into permanent neutral support, without moving the grid. */
+    petrify(targets: readonly Cell[], cap: number): Bubble[] {
+        if (!Number.isInteger(cap) || cap < 0) throw new Error('Invalid ocean stone cap.');
+        let count=this.bubbles.filter(b=>b.solidKind==='ocean').length;
+        const changed: Bubble[]=[];
+        for(const target of targets){
+            if(count>=cap)break;
+            const bubble=this.cells.get(key(target));
+            if(!bubble || bubble.indestructible)continue;
+            bubble.indestructible=true; bubble.solidKind='ocean'; bubble.color='red'; bubble.frosted=false;
+            delete bubble.support;count++;changed.push({...bubble});
+        }
+        return changed;
     }
 
     /** Ocean roots remain normal matching bubbles. Roots cannot attach to empty cells or exceed the cap. */
@@ -208,7 +250,7 @@ export class BubbleShooterModel {
         for (const target of targets) {
             if (count >= cap) break;
             const bubble = this.cells.get(key(target));
-            if (!bubble || bubble.frosted || bubble.support) continue;
+            if (!bubble || bubble.indestructible || bubble.frosted || bubble.support) continue;
             bubble.support = support; count++; changed.push({ ...bubble });
         }
         return changed;
@@ -225,7 +267,10 @@ export class BubbleShooterModel {
     }
 
     private collectUnsupported(): Bubble[] {
-        const supported = this.flood(this.bubbles.filter(b => b.row === this.ceiling || b.support !== undefined), () => true);
+        // Scattered ocean stones conduct support through neighbors; they are not floating roots.
+        // Pressure rows and legacy support markers retain their existing root semantics.
+        const supported = this.flood(this.bubbles.filter(b => b.row === 0
+            || (b.indestructible && b.solidKind !== 'ocean') || b.support !== undefined), () => true);
         const dropped = this.bubbles.filter(b => !supported.has(key(b)));
         dropped.forEach(b => this.cells.delete(key(b)));
         return dropped;

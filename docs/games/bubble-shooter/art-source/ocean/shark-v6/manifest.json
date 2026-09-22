@@ -1,0 +1,22 @@
+{
+  "body": {
+    "source": "body-raw.png",
+    "prompt": "Use case: background-extraction / precise-object-edit. Production Cocos game sprite. Reference is approved design; strictly preserve identity and polished bright 3D rendering. Extract the large left hero shark BODY ONLY. Remove both lateral arms/flippers, wrist cuffs, entire staff, and crown. Keep exact face, dorsal fin, necklace pendant, ivory belly, curved lower body and complete tail. Reconstruct small hidden shoulder areas cleanly so detached arms can overlap there. Upright legless shark. One body sprite centered full height. Genuine transparent RGBA background, no checkerboard drawn into pixels, no shadows outside object, no text except existing title if present, generous clean margins, high resolution."
+  },
+  "staff-arm": {
+    "source": "staff-arm-raw.png",
+    "prompt": "Use case: background-extraction / precise-object-edit. Production Cocos game sprite. Reference is approved design; strictly preserve identity and polished bright 3D rendering. Extract ONLY large left hero viewer-left arm and its held staff as ONE connected sprite. Full complete gold crescent aqua orb scepter with teal shaft, smooth oval BLUE FINGERLESS fin palm occluding shaft, gold cuff, short upperarm extending horizontally right to shoulder root. Keep exact original staff design, pose, proportions. No body face crown tail or free arm. Entire shaft down to gold end cap visible; aqua orb no floating particles outside it. Genuine transparent RGBA background, no checkerboard drawn into pixels, no shadows outside object, no text except existing title if present, generous clean margins, high resolution."
+  },
+  "right-arm": {
+    "source": "right-arm-raw.png",
+    "prompt": "Use case: background-extraction / precise-object-edit. Production Cocos game sprite. Reference is approved design; strictly preserve identity and polished bright 3D rendering. Extract ONLY large left hero viewer-right short shark arm/flipper with gold aqua jewel cuff. Root upperleft, smooth pointed fin tip down-right. Complete upperarm with overlap margin at shoulder. No fingers. Keep exact shape material colors proportions. No body or other objects. Genuine transparent RGBA background, no checkerboard drawn into pixels, no shadows outside object, no text except existing title if present, generous clean margins, high resolution."
+  },
+  "crown": {
+    "source": "crown-raw.png",
+    "prompt": "Use case: background-extraction / precise-object-edit. Production Cocos game sprite. Reference is approved design; strictly preserve identity and polished bright 3D rendering. Extract ONLY the large left hero small gold crown with turquoise gem and subtle pink coral at base. Same angle as worn on hero, exact gold curved base. No head, no other object. Genuine transparent RGBA background, no checkerboard drawn into pixels, no shadows outside object, no text except existing title if present, generous clean margins, high resolution."
+  },
+  "celebration": {
+    "source": "celebration-raw.png",
+    "prompt": "Use case: background-extraction / precise-object-edit. Production Cocos game sprite. Reference is approved design; strictly preserve identity and polished bright 3D rendering. Extract ONLY entire top celebration illustration: exact shark with crown, staff, smooth fingerless hand, free fin, and integrated ornate teal gold title plaque reading exactly 深海凯旋. Retain wave coral pearl decorations attached to plaque. Remove all sea background, distant ruins, loose bubbles, and ALL UI below illustration (cards panel buttons text). Preserve entire existing celebration as single cohesive sprite; no restyling. Genuine transparent RGBA background, no checkerboard drawn into pixels, no shadows outside object, no text except existing title if present, generous clean margins, high resolution."
+  }
+}

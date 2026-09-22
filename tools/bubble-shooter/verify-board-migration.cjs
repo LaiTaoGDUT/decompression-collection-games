@@ -10,10 +10,10 @@ try{
  for(const version of [3,4]){
   const old={...base,version,region:version===4?'ocean':undefined,bubbles:balls.map(b=>({...b,frosted:version===3?b.frosted:false})),regionProgress:37,inventory:{bomb:2,wildcard:0,'clear-bottom':3},reviveUsed:true};
   if(version===4)old.bubbles[60].support='seaweed';
-  assert(r.restore(old));assert.equal(r.snapshot().version,7);assert.equal(r.board.bubbles.length,145);assert(!r.board.danger);
+  assert(r.restore(old));assert.equal(r.snapshot().version,9);assert.equal(r.board.bubbles.length,145);assert(!r.board.danger);
   assert.deepEqual(r.inventory,old.inventory);assert.equal(r.regionProgress,37);assert(r.snapshot().reviveUsed);
-  for(const color of ['red','blue','yellow','purple'])assert.equal(r.board.bubbles.filter(b=>b.color===color).length,old.bubbles.filter(b=>b.color===color).length);
-  assert.equal(r.board.bubbles.filter(b=>b.support).length,version===4?1:0);
+  for(const color of ['red','blue','yellow','purple'])assert.equal(r.board.removableBubbles.filter(b=>b.color===color).length,old.bubbles.filter(b=>b.color===color&&!b.support).length);
+  assert.equal(r.board.bubbles.filter(b=>b.solidKind).length,version===4?1:0);
   const save=r.snapshot();const copy=new BubbleShooterRound();assert(copy.restore(save));assert.deepEqual(copy.snapshot(),save);
   assert(!r.restore({...old,bubbles:[old.bubbles[0],old.bubbles[0]]}));assert.deepEqual(r.snapshot(),save);
  }

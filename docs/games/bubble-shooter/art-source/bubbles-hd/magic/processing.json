@@ -1,0 +1,67 @@
+[
+  {
+    "key": "red",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/magic/red.png",
+    "crop": [
+      56,
+      57,
+      1193,
+      1173
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/magic/bubbles/bubble-red.png",
+    "size": 256,
+    "bytes": 100031
+  },
+  {
+    "key": "yellow",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/magic/yellow.png",
+    "crop": [
+      65,
+      69,
+      1187,
+      1172
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/magic/bubbles/bubble-yellow.png",
+    "size": 256,
+    "bytes": 102399
+  },
+  {
+    "key": "blue",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/magic/blue.png",
+    "crop": [
+      79,
+      90,
+      1174,
+      1167
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/magic/bubbles/bubble-blue.png",
+    "size": 256,
+    "bytes": 105703
+  },
+  {
+    "key": "purple",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/magic/purple.png",
+    "crop": [
+      59,
+      61,
+      1195,
+      1186
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/magic/bubbles/bubble-purple.png",
+    "size": 256,
+    "bytes": 101653
+  },
+  {
+    "key": "support",
+    "source": "docs/games/bubble-shooter/art-source/bubbles-hd/magic/support.png",
+    "crop": [
+      62,
+      61,
+      1190,
+      1166
+    ],
+    "runtime": "assets/game-assets/bubble-shooter/visual/regions/magic/bubbles/bubble-support.png",
+    "size": 256,
+    "bytes": 114769
+  }
+]
