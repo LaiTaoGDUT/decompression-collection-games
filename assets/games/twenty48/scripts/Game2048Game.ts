@@ -28,6 +28,7 @@ import {
 } from 'cc';
 import type {
     MiniGame,
+    MiniGameBackgroundPausePolicy,
     MiniGameContext,
     MiniGamePauseModel,
     MiniGameResultModel,
@@ -69,8 +70,10 @@ import {
 
 const { ccclass } = _decorator;
 
-const TILE_SLIDE_DURATION = 0.1;
-const TILE_SETTLE_DURATION = 0.06;
+// 一次移动的动画节奏：滑动 + 落位合计就是输入锁窗口（0.08 + 0.04 = 0.12 秒），
+// 也是连续滑动的手感上限。缩短时必须保证棋子仍然在落位前完整播完滑动。
+const TILE_SLIDE_DURATION = 0.08;
+const TILE_SETTLE_DURATION = 0.04;
 const MERGE_CELEBRATION_DELAY = 0.55;
 // 高阶合成的光晕会越出棋子边缘，但仍限制在相邻一格内快速消散。
 const HIGH_MERGE_EFFECT_SCALE = 1.56;
@@ -268,6 +271,13 @@ export function calculateHighTierTileRect(tileSize: number, layer: number): High
 
 @ccclass('Game2048Game')
 export class Game2048Game extends Component implements MiniGame {
+    /**
+     * 切后台只冻结本局，不弹出暂停界面。
+     * 退出 App 或接电话是玩家的常规操作，回到前台应直接继续，
+     * 而不是先让玩家关掉一层自动弹出的暂停界面。
+     */
+    readonly backgroundPausePolicy: MiniGameBackgroundPausePolicy = 'silent';
+
     private state: Game2048State = 'idle';
     private context?: MiniGameContext<Game2048Services>;
     private readonly model = new Game2048Model();
@@ -312,6 +322,8 @@ export class Game2048Game extends Component implements MiniGame {
     private inputLocked = false;
     private touchStartX = 0;
     private touchStartY = 0;
+    /** 本次触摸起手落在底部手势保护带内，抬手时不参与合成。 */
+    private touchStartIgnored = false;
     private playCount = 0;
     private bestScore = 0;
     private historicalHighestTile = 0;
@@ -655,9 +667,13 @@ export class Game2048Game extends Component implements MiniGame {
         const location = event.getUILocation();
         this.touchStartX = location.x;
         this.touchStartY = location.y;
+        // 屏幕底部是系统上滑退出手势的起手区，落在保护带内的触摸不参与合成，
+        // 避免玩家准备退出时意外滑动棋盘。保护带高度由布局按屏幕高度算出。
+        this.touchStartIgnored = location.y < (this.layoutMetrics?.bottomSwipeExclusion ?? 0);
     };
 
     private readonly handleTouchEnd = (event: EventTouch): void => {
+        if (this.touchStartIgnored) return;
         const location = event.getUILocation();
         const deltaX = location.x - this.touchStartX;
         const deltaY = location.y - this.touchStartY;
@@ -1574,7 +1590,7 @@ export class Game2048Game extends Component implements MiniGame {
             if (result?.spawned?.index === index) {
                 view.node.setScale(0.45, 0.45, 1);
                 tween(view.node)
-                    .to(0.14, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+                    .to(0.11, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
                     .start();
             } else if ((result?.mergedIndices.indexOf(index) ?? -1) >= 0) {
                 const effectLevel = value >= 128
@@ -1585,17 +1601,17 @@ export class Game2048Game extends Component implements MiniGame {
                     const peakScale = 1.09 + tier * 0.012;
                     view.node.setScale(0.74, 0.74, 1);
                     tween(view.node)
-                        .to(0.06, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'backOut' })
-                        .to(0.04, { scale: new Vec3(0.97, 0.97, 1) }, { easing: 'quadIn' })
-                        .to(0.05, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
+                        .to(0.05, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'backOut' })
+                        .to(0.03, { scale: new Vec3(0.97, 0.97, 1) }, { easing: 'quadIn' })
+                        .to(0.04, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
                         .start();
                 } else {
                     const peakScale = 1.04 + effectLevel * 0.008;
                     const startScale = effectLevel > 0 ? 0.82 : 0.8;
                     view.node.setScale(startScale, startScale, 1);
                     tween(view.node)
-                        .to(0.07, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'quadOut' })
-                        .to(0.06, { scale: new Vec3(1, 1, 1) })
+                        .to(0.06, { scale: new Vec3(peakScale, peakScale, 1) }, { easing: 'quadOut' })
+                        .to(0.045, { scale: new Vec3(1, 1, 1) })
                         .start();
                 }
             }

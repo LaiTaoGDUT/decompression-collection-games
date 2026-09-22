@@ -3,6 +3,16 @@ import type {
     GameServices,
 } from '../core/types/CommonTypes';
 
+/**
+ * 平台切到后台时小游戏的自动暂停策略。
+ *
+ * - `menu`（默认）：冻结本局并展示暂停界面，回到前台后由玩家显式继续。
+ * - `silent`：只冻结本局，不展示暂停界面；回到前台由运行层自动继续。
+ *
+ * 策略只约束平台触发的暂停；玩家点按暂停入口时始终展示暂停界面。
+ */
+export type MiniGameBackgroundPausePolicy = 'menu' | 'silent';
+
 export interface MiniGamePauseModel {
     readonly resume: () => Promise<void>;
     readonly restart: () => Promise<void>;
@@ -52,6 +62,11 @@ export interface MiniGame<TServices extends object = object> {
     pause(): boolean;
     resume(): void;
     restart(context?: MiniGameContext<TServices>): Promise<void>;
+    /**
+     * 平台切后台时的自动暂停策略，缺省为 `menu`。
+     * 静态声明而不是运行时切换，保证运行层的暂停/恢复流程可以提前确定。
+     */
+    readonly backgroundPausePolicy?: MiniGameBackgroundPausePolicy;
     /** 运行层准备执行“重新开局”时，清除当前局的可恢复标记。 */
     discardSavedProgress?(): void;
     dispose(): Promise<void>;

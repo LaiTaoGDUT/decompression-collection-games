@@ -19,7 +19,7 @@ import { WeChatRewardedAdProvider } from '../platform/WeChatAdProvider';
 import { WeChatPlatform } from '../platform/WeChatPlatform';
 import { GameRegistry } from '../runtime/GameRegistry';
 import { GameLoader } from '../runtime/GameLoader';
-import { GameRuntime } from '../runtime/GameRuntime';
+import { GameRuntime, type PlatformSuspension } from '../runtime/GameRuntime';
 import { AssetService } from '../services/asset/AssetService';
 import { AudioService } from '../services/audio/AudioService';
 import {
@@ -97,7 +97,8 @@ export class App extends Component {
     private readonly lifecycleUnsubscribes: Unsubscribe[] = [];
     private startupInitialization?: Promise<void>;
     private platformHidden = false;
-    private pausedByPlatform = false;
+    /** 最近一次切后台时运行层的处理结果，回到前台按它决定是否自动继续。 */
+    private platformSuspension: PlatformSuspension = 'none';
     private startupFailure?: AppStartupFailure;
 
     static get instance(): App {
@@ -451,6 +452,7 @@ export class App extends Component {
 
     private readonly handlePlatformHide = (): void => {
         this.platformHidden = true;
+        this.platformSuspension = 'none';
         this.services.get(AD_SERVICE).onHide();
         const audio = this.services.get(AUDIO_SERVICE);
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
@@ -461,23 +463,26 @@ export class App extends Component {
             return;
         }
 
-        try {
-            // Platform suspension asks the active MiniGame to freeze itself,
-            // not only the global state.  A preparation screen may decline the
-            // pause; an accepted pause preserves a recoverable foreground UI.
-            this.pausedByPlatform = this.services
-                .get(GAME_RUNTIME_SERVICE)
-                .openPauseMenu();
-        } catch (error: unknown) {
-            this.pausedByPlatform = false;
-            console.error('[App] Platform safety pause failed.', error);
-        } finally {
-            // Pause the MiniGame first so AudioService records the game-owned
-            // pause.  Otherwise onShow could restart music under the pause UI.
-            this.flushStorage('platform hide');
-            audio.onHide();
-        }
+        // 平台暂停要求当前 MiniGame 自行冻结，而不只是切换全局状态：
+        // 小游戏可以拒绝暂停；一旦接受，运行层要么保留玩家可恢复的暂停界面，
+        // 要么对声明 `backgroundPausePolicy === 'silent'` 的小游戏做无界面冻结，
+        // 回到前台后由运行层自动继续。
+        this.platformSuspension = this.suspendActiveGame('platform hide');
+
+        // 先暂停 MiniGame，让 AudioService 记录“游戏自身暂停”的来源，
+        // 否则 onShow 会在暂停界面之下直接恢复音乐。
+        this.flushStorage('platform hide');
+        audio.onHide();
     };
+
+    private suspendActiveGame(reason: string): PlatformSuspension {
+        try {
+            return this.services.get(GAME_RUNTIME_SERVICE).suspendForPlatform();
+        } catch (error: unknown) {
+            console.error(`[App] Platform safety pause failed at ${reason}.`, error);
+            return 'none';
+        }
+    }
 
     private readonly handlePlatformShow = (): void => {
         const wasHidden = this.platformHidden;
@@ -485,33 +490,31 @@ export class App extends Component {
         const audio = this.services.get(AUDIO_SERVICE);
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
 
-        // A game can finish loading after the hide event. In that case there
-        // was no entry to pause at hide time, so enforce the same recoverable
-        // pause before foreground audio is allowed to resume.
+        // 小游戏可能在切后台之后才加载完成：此时 hide 阶段没有可暂停的入口，
+        // 因此要在前台音频恢复之前补做一次同样的安全暂停。
         if (wasHidden
-            && !this.pausedByPlatform
+            && this.platformSuspension === 'none'
             && stateMachine.currentState === 'playing') {
+            this.platformSuspension = this.suspendActiveGame('deferred platform hide');
+        }
+
+        const suspension = this.platformSuspension;
+        this.platformSuspension = 'none';
+
+        // 静默冻结的对局没有可见的暂停界面，回到前台必须由运行层直接继续，
+        // 否则玩家会看到一局无法操作的棋盘。
+        if (suspension === 'suspended') {
             try {
-                this.pausedByPlatform = this.services
-                    .get(GAME_RUNTIME_SERVICE)
-                    .openPauseMenu();
+                this.services.get(GAME_RUNTIME_SERVICE).resumeFromPlatformSuspension();
             } catch (error: unknown) {
-                console.error('[App] Deferred platform safety pause failed.', error);
+                console.error('[App] Silent platform resume failed.', error);
             }
         }
 
+        // 玩家可见的暂停界面保留到玩家显式继续：前台恢复不关闭它，
+        // 防止敌人、计时器或合成决策在屏幕就绪前推进。
         audio.onShow();
         this.services.get(AD_SERVICE).onShow();
-        const shouldRemainPaused = this.pausedByPlatform;
-        this.pausedByPlatform = false;
-
-        if (!shouldRemainPaused) {
-            return;
-        }
-
-        // Returning to the app intentionally remains on the pause surface.
-        // The player explicitly resumes, preventing enemies, timers or merge
-        // decisions from advancing before the screen is ready.
     };
 
     private clearLifecycleListeners(): void {
@@ -519,7 +522,7 @@ export class App extends Component {
             unsubscribe();
         }
 
-        this.pausedByPlatform = false;
+        this.platformSuspension = 'none';
     }
 
     private flushStorage(reason: string): void {

@@ -114,9 +114,11 @@ export interface MiniGameContext<TServices extends object = object> {
 export interface MiniGame<TServices extends object = object> {
   initialize(context: MiniGameContext<TServices>): Promise<void>;
   begin(): void;
-  pause(): void;
+  pause(): boolean;
   resume(): void;
   restart(context?: MiniGameContext<TServices>): Promise<void>;
+  /** 平台切后台时的自动暂停策略，缺省 `menu`；`silent` 表示静默冻结并允许回到前台后自动继续。 */
+  readonly backgroundPausePolicy?: 'menu' | 'silent';
   discardSavedProgress?(): void;
   dispose(): Promise<void>;
   showPauseMenu?(model: MiniGamePauseModel): void;
@@ -156,6 +158,15 @@ pause
 → 切离小游戏场景
 → 释放代码 Bundle 与资源 Bundle
 → 返回大厅
+```
+
+平台暂停协议：
+
+```text
+切后台 → 冻结公共服务 → GameRuntime.suspendForPlatform()
+       → 'paused'（默认策略）：冻结对局并展示暂停界面，回到前台由玩家显式继续
+       → 'suspended'（backgroundPausePolicy = 'silent'）：只冻结对局，回到前台自动继续
+回到前台 → 仅当上一次后台冻结的结果是 'suspended' 时才自动 resume，其余情况保持玩家可见的暂停界面
 ```
 
 局内重开可以复用已加载的场景和 Bundle，但必须使用新的 `GameSession`/`sessionId` 并只重置本局状态。重开失败时回退到完整退出并重新进入，不能继续使用半重置实例。

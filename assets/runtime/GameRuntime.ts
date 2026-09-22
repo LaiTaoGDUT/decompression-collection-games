@@ -70,6 +70,15 @@ export interface PausePresenter {
     hide(): void;
 }
 
+/** 平台切后台时运行层的处理结果，决定回到前台后如何恢复。 */
+export type PlatformSuspension =
+    /** 运行层没有冻结对局：小游戏不在可暂停阶段或小游戏拒绝了暂停。 */
+    | 'none'
+    /** 已冻结对局并展示了暂停界面，回到前台后必须由玩家显式继续。 */
+    | 'paused'
+    /** 已静默冻结对局（`backgroundPausePolicy === 'silent'`），回到前台后自动继续。 */
+    | 'suspended';
+
 export interface ResultViewModel extends MiniGameResultModel {}
 
 export interface ResultPresenter {
@@ -129,6 +138,8 @@ export class GameRuntime {
     private score = 0;
     private completedResult?: GameResult;
     private failedManifest?: GameManifest;
+    /** 记录当前对局是否正被平台静默冻结，用于判断回到前台时能否自动继续。 */
+    private suspendedSilently = false;
 
     constructor(
         private readonly stateMachine: AppStateMachine,
@@ -248,6 +259,53 @@ export class GameRuntime {
     }
 
     openPauseMenu(): boolean {
+        return this.pauseGame('user');
+    }
+
+    /**
+     * 平台切到后台时的安全暂停。
+     * 运行层只负责冻结对局，不改变小游戏自身对暂停界面的选择：
+     * 声明 `backgroundPausePolicy === 'silent'` 的小游戏不展示暂停界面，
+     * 回到前台时由 `resumeFromPlatformSuspension()` 直接继续。
+     */
+    suspendForPlatform(): PlatformSuspension {
+        const entry = this.entry;
+        const silent = entry?.backgroundPausePolicy === 'silent';
+
+        if (!this.pauseGame(silent ? 'platform-silent' : 'platform')) {
+            return 'none';
+        }
+
+        this.suspendedSilently = silent;
+        return silent ? 'suspended' : 'paused';
+    }
+
+    /**
+     * 回到前台时继续被静默冻结的对局。
+     * 只有 `suspendForPlatform()` 判定为静默冻结的对局会被自动继续：
+     * 玩家可见的暂停界面必须由玩家自己关闭，否则会在玩家看不到时推进对局。
+     * 返回是否接管了本次恢复。
+     */
+    resumeFromPlatformSuspension(): boolean {
+        if (!this.suspendedSilently) {
+            return false;
+        }
+
+        this.suspendedSilently = false;
+
+        if (this.stateMachine.currentState !== 'paused') {
+            return false;
+        }
+
+        void this.resumeFromPause().catch((error: unknown) => {
+            // 静默恢复失败时必须回到可见的暂停界面，否则对局会停在没有入口的冻结态。
+            console.error('[GameRuntime] Silent platform resume failed.', error);
+            this.presentPauseMenu();
+        });
+        return true;
+    }
+
+    private pauseGame(origin: 'user' | 'platform' | 'platform-silent'): boolean {
         const entry = this.entry;
         const manifest = this.manifest;
         const state = this.stateMachine.currentState;
@@ -291,6 +349,20 @@ export class GameRuntime {
             this.flushStorage('pause');
         }
 
+        // 静默策略只跳过暂停界面，对局状态、存档和状态机仍然按标准暂停流程处理。
+        if (origin !== 'platform-silent') {
+            this.presentPauseMenu();
+        }
+        return true;
+    }
+
+    private presentPauseMenu(): void {
+        const entry = this.entry;
+
+        if (!entry) {
+            return;
+        }
+
         const model = Object.freeze({
             resume: this.resumeFromPause,
             restart: this.restartFromPause,
@@ -302,7 +374,6 @@ export class GameRuntime {
         } else {
             this.pauseMenu?.show(model);
         }
-        return true;
     }
 
     finishGame(result: GameResult): GameResult {
@@ -369,6 +440,9 @@ export class GameRuntime {
     private readonly resumeFromPause = async (): Promise<void> => {
         const entry = this.entry;
         const manifest = this.manifest;
+
+        // 无论是玩家点击继续还是平台回到前台，暂停态一旦结束就不再是静默冻结。
+        this.suspendedSilently = false;
 
         if (!entry || !manifest || this.stateMachine.currentState !== 'paused') {
             throw new GameRuntimeError(
@@ -450,6 +524,8 @@ export class GameRuntime {
     };
 
     private async performEnter(manifest: GameManifest): Promise<void> {
+        // 新对局开始前清空上一局可能遗留的平台静默冻结标记。
+        this.suspendedSilently = false;
         this.loading?.show({
             gameName: manifest.name,
             cover: manifest.loadingCover === undefined
@@ -570,6 +646,9 @@ export class GameRuntime {
         const entry = this.entry;
         const session = this.session;
         const manifest = this.manifest;
+
+        // 退出后不再存在被冻结的对局，回到前台也不应再自动继续。
+        this.suspendedSilently = false;
 
         if (!entry || !session || !manifest) {
             throw new GameRuntimeError(
@@ -834,6 +913,9 @@ export class GameRuntime {
         const entry = this.entry;
         const previousSession = this.session;
         const manifest = this.manifest;
+
+        // 重开后是新一局，旧的静默冻结标记必须失效。
+        this.suspendedSilently = false;
 
         if (!entry || !previousSession || !manifest) {
             throw new GameRuntimeError(

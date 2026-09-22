@@ -17,6 +17,8 @@ export const GAME_2048_PAUSE_EDGE_INSET = 24;
 export const GAME_2048_CHEAT_BUTTON_WIDTH = 104;
 export const GAME_2048_CHEAT_BUTTON_HEIGHT = 52;
 export const GAME_2048_CHEAT_BUTTON_GAP = 8;
+// 屏幕底部避让系统上滑退出手势的保护带（设计像素）：起点落在其中的滑动不再参与合成。
+export const GAME_2048_BOTTOM_SWIPE_EXCLUSION = 128;
 
 export interface Game2048LayoutInsets {
     readonly safeTop?: number;
@@ -55,6 +57,8 @@ export interface Game2048LayoutMetrics {
     readonly hintHeight: number;
     readonly backgroundWidth: number;
     readonly backgroundHeight: number;
+    /** 屏幕底部不参与棋盘滑动的高度，避免与系统上滑退出手势抢事件。 */
+    readonly bottomSwipeExclusion: number;
 }
 
 export function calculateGame2048BackgroundCover(
@@ -174,6 +178,16 @@ export function calculateGame2048Layout(
     const boardY = height / 2 - boardTopFromTop - boardOuterHalf * boardScale;
     const hintX = contentX;
     const hintY = boardY - boardSurfaceHalf * boardScale - hintBelowBoard;
+    // 底部手势保护带从屏幕下沿向上计算，且不允许越过棋盘下沿：
+    // 矮屏上棋盘会被压缩，保护带必须同步收窄，保证最后一排棋子仍可正常滑动。
+    const boardBottomGap = Math.max(
+        0,
+        height - (boardTopFromTop + GAME_2048_BOARD_NODE_SIZE * boardScale),
+    );
+    const bottomSwipeExclusion = Math.min(
+        GAME_2048_BOTTOM_SWIPE_EXCLUSION * fitScale,
+        boardBottomGap,
+    );
 
     const background = calculateGame2048BackgroundCover(width, height);
     return Object.freeze({
@@ -202,6 +216,7 @@ export function calculateGame2048Layout(
         hintHeight,
         backgroundWidth: background.width,
         backgroundHeight: background.height,
+        bottomSwipeExclusion,
     });
 }
 
