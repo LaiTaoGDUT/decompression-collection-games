@@ -1,0 +1,25 @@
+assets/app/App.ts
+  h_293365c3a5ebee 22,100-101,455,466-478,480,482-483,485,493-494,496,498-506,508,510,514-515,525
+assets/games/twenty48/scripts/Game2048Game.ts
+  h_293365c3a5ebee 31,73-76,274-280,325-326,670-672,676,1593,1604-1606,1613-1614
+assets/games/twenty48/scripts/Game2048Layout.ts
+  h_293365c3a5ebee 20-21,60-61,181-190,219
+assets/runtime/GameRuntime.ts
+  h_293365c3a5ebee 73-81,141-142,262-308,350-363,444-446,527-528,650-652,916-918
+assets/runtime/MiniGame.ts
+  h_293365c3a5ebee 6-15,65-69
+docs/common/ARCHITECTURE.md
+  h_293365c3a5ebee 117,120-121,161-169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4575223193e04dbf3a9dfae3fb9e6c6e63907ba4",
+  "prompts": {},
+  "logical_commit_id": "4575223193e04dbf3a9dfae3fb9e6c6e63907ba4",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
