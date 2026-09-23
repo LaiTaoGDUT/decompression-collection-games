@@ -1,0 +1,13 @@
+{
+  "crop": [
+    25,
+    276,
+    2150,
+    447
+  ],
+  "size": [
+    1024,
+    82
+  ],
+  "target": "assets/game-assets/bubble-shooter/visual/regions/ocean/backgrounds/reef.png"
+}

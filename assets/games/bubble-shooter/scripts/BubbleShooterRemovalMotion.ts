@@ -7,6 +7,7 @@ export interface RemovalMotion {
 }
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const smooth = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
+export const POP_SPEED = 1.2;
 export const POP_BURST_TIME = .14;
 export const POP_CHAIN_INTERVAL = .055;
 export const FALL_FADE_Y = DANGER + DIAMETER * 1.25;
@@ -18,7 +19,7 @@ export function removalMotion(bubble: Bubble, point: Point, falling: boolean, or
     const speed = 20 + unit(8) * 75, gravity = 850 + unit(16) * 380;
     const distance = Math.max(0, point.y - FALL_FADE_Y);
     return { falling, x: point.x, y: point.y,
-        delay: falling ? .13 + unit(0) * .15 : order * POP_CHAIN_INTERVAL,
+        delay: falling ? 0 : order * POP_CHAIN_INTERVAL,
         vx: (unit(0) - .5) * 76, speed, gravity, spin: (unit(16) - .5) * 150,
         fadeAt: (Math.sqrt(speed * speed + 2 * gravity * distance) - speed) / gravity,
         fadeDuration: .46 + unit(8) * .16 };

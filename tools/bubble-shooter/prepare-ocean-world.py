@@ -47,3 +47,6 @@ for key,(name,width) in jobs.items():
     report.append({'key':key,'crop':bounds,'size':im.size,'bytes':target.stat().st_size})
 (SOURCE/'processing.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))
+
+# The approved water divider supersedes the original carved reef.
+runpy.run_path(str(ROOT/'tools/bubble-shooter/prepare-ocean-water-divider.py'))

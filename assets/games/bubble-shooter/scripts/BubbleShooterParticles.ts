@@ -10,19 +10,22 @@ export class BubbleShooterParticles {
     constructor(private readonly parent: Node, private readonly frames: ReadonlyMap<string, SpriteFrame>) {}
     get count(): number { return this.active.length; }
     burst(bubble: Bubble, point: Point, frost = false): void {
-        const count = frost ? 5 : 5;
+        const ocean = this.theme === 'ocean' && !frost;
+        const count = ocean ? 8 : 5;
         for (let i = 0; i < count && this.active.length < 64; i++) {
             const key = frost ? `frost-${1 + i % 7}` : `shard-${bubble.color}-${1 + i % 2}`;
-            const water=this.theme==='ocean' && !frost;
+            const water = ocean && i >= 5;
             const frame = this.frames.get(key); if (!water && !frame) continue;
             const node = this.pool.pop() ?? this.create(); node.active = true;
             node.setSiblingIndex(this.parent.children.length - 1);
             const sprite = node.getComponent(Sprite)!; sprite.spriteFrame = frame ?? null;
             sprite.enabled=!water;
-            const ink=node.getComponent(Graphics) ?? node.addComponent(Graphics);ink.clear();
-            if(water){ink.lineWidth=1.8;ink.strokeColor=new Color(160,245,255,210);ink.circle(0,0,6+i%3);ink.stroke();
+            // Separate renderers: Sprite and Graphics cannot share one UI render node.
+            const waterNode = node.getChildByName('Water');
+            const ink = waterNode!.getComponent(Graphics)!; waterNode!.active = water; ink.clear();
+            if(water){ink.lineWidth=2.5;ink.strokeColor=new Color(190,250,255,255);ink.fillColor=new Color(65,190,235,150);ink.circle(0,0,7+i%3);ink.fill();ink.stroke();
                 ink.fillColor=new Color(230,255,255,220);ink.circle(-2,3,1.5);ink.fill();}
-            const size = frost ? 22 : 14 + i % 3 * 4;
+            const size = frost ? 22 : (ocean ? 20 : 14) + i % 3 * 4;
             const width=frame?.rect.width??size,height=frame?.rect.height??size,ratio=size/Math.max(width,height);
             node.getComponent(UITransform)!.setContentSize(width * ratio, height * ratio);
             node.setPosition(point.x, point.y); node.setScale(1, 1, 1); node.angle = i * 83;
@@ -52,6 +55,9 @@ export class BubbleShooterParticles {
     private create(): Node {
         const node = new Node('CandyFragment'); node.layer = this.parent.layer; node.setParent(this.parent);
         node.addComponent(UITransform); const sprite = node.addComponent(Sprite); sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        node.addComponent(UIOpacity); return node;
+        node.addComponent(UIOpacity);
+        const water = new Node('Water'); water.layer = node.layer; water.setParent(node);
+        water.addComponent(UITransform); water.addComponent(Graphics); water.active = false;
+        return node;
     }
 }

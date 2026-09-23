@@ -5,7 +5,7 @@ import type { BubbleRegion } from './BubbleShooterRound';
 
 const OCEAN_REPLACEMENTS: Readonly<Record<string,string>> = {
     'backgrounds/background':'backgrounds/background',
-    'backgrounds/cloud-transition':'backgrounds/reef-ceiling-v2',
+    'backgrounds/cloud-transition':'backgrounds/reef',
     'launcher/launcher-head':'launcher/turret',
     'launcher/launcher-turret':'launcher/turret',
     'launcher/launcher-pedestal':'launcher/base',
@@ -29,7 +29,7 @@ export async function loadBubbleRegion(assets: AssetService, region: BubbleRegio
     const regional=(path:string)=>get(`visual/regions/${region}/${path}`);
     // Validate critical assets before a transition commits gameplay/reward state.
     ['bubbles/bubble-red','bubbles/bubble-yellow','bubbles/bubble-blue','bubbles/bubble-purple','bubbles/bubble-support','backgrounds/background'].forEach(regional);
-    if(region==='ocean') ['backgrounds/reef-ceiling-v2','vfx/attack-pearl-v1','launcher/turret','launcher/base','hud/health-track','hud/health-fill','hud/pause','hud/down','hud/swap','hud/item-base',
+    if(region==='ocean') ['backgrounds/reef','vfx/attack-pearl-v1','launcher/turret','launcher/base','hud/health-track','hud/health-fill','hud/pause','hud/down','hud/swap','hud/item-base',
         'boss/boss-body','boss/boss-crown','boss/boss-staff-arm','boss/boss-right-arm','reward/celebration',
         'decoration/fish','decoration/seaweed','foreground/water-bubble-single'].forEach(regional);
     const pack = {region,regional,sceneFrame(path:string):SpriteFrame|null {
@@ -38,6 +38,7 @@ export async function loadBubbleRegion(assets: AssetService, region: BubbleRegio
         const local=path.replace('visual/regions/cloud/','');
         if(region==='cloud')return regional(local);
         if(local.startsWith('bubbles/') && local!=='bubbles/frosting-overlay')return regional(local);
+        if(local.startsWith('vfx/attack-candy-shards/'))return regional(local.replace('vfx/attack-candy-shards/','vfx/pop-fragments/'));
         const replacement=OCEAN_REPLACEMENTS[local];
         if(local.startsWith('vfx/') && !replacement)return null;
         return replacement?regional(replacement):null;

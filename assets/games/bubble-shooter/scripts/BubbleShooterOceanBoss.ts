@@ -45,11 +45,11 @@ function clear(root: Node): void {
 }
 
 /** One assembly for gameplay and dialogs: shoulder roots overlap beneath the torso. */
-function buildShark(parent: Node, frames: OceanBossFrames): {body: Node; crown: Node; staff: Node; arm: Node} {
-    const staff = sprite(parent, 'StaffArm', frames.get('staff-arm')!, 225, -45, -45, .96, .51);
-    const arm = sprite(parent, 'RightArm', frames.get('right-arm')!, 170, 170, -50, .12, .82);
-    const body = sprite(parent, 'Body', frames.get('body')!, 400, 25, -160);
-    const crown = sprite(body, 'Crown', frames.get('crown')!, 110, 50, 347);
+function buildShark(parent: Node, frames: OceanBossFrames, battle = false): {body: Node; crown: Node; staff: Node; arm: Node} {
+    const staff = sprite(parent, 'StaffArm', frames.get('staff-arm')!, battle ? 300 : 225, battle ? -95 : -45, -45, .96, .51);
+    const arm = sprite(parent, 'RightArm', frames.get('right-arm')!, battle ? 240 : 170, battle ? 185 : 170, battle ? -30 : -50, .12, .82);
+    const body = sprite(parent, 'Body', frames.get('body')!, battle ? 430 : 400, 25, battle ? -175 : -160);
+    const crown = sprite(body, 'Crown', frames.get('crown')!, 110, 50, battle ? 365 : 347);
     return {body, crown, staff, arm};
 }
 
@@ -72,6 +72,7 @@ export class BubbleShooterOceanBoss extends Component {
     private impactPlayed = false;
     private disposed = false;
     private skillOrigin?: Node;
+    private hitTarget?: Node;
     paused = true;
     get busy(): boolean { return this.phase === 'entry' || this.phase === 'cast' || this.phase === 'exit'; }
 
@@ -81,8 +82,12 @@ export class BubbleShooterOceanBoss extends Component {
         this.frames = new Map(frames);
         this.figure = new Node('OceanFigure'); this.figure.layer = this.node.layer; this.figure.setParent(this.node);
         this.opacity = this.figure.addComponent(UIOpacity);
-        const rig = buildShark(this.figure, frames);
+        const rig = buildShark(this.figure, frames, true);
         this.staff = rig.staff; this.arm = rig.arm; this.body = rig.body; this.crown = rig.crown;
+        this.hitTarget = new Node('ChestHitTarget');
+        this.hitTarget.layer = this.node.layer; this.hitTarget.setParent(this.body);
+        this.hitTarget.addComponent(UITransform);
+        this.hitTarget.setPosition(0, 130);
         this.skillOrigin = new Node('StaffOrbOrigin');
         this.skillOrigin.layer = this.node.layer; this.skillOrigin.setParent(this.staff);
         this.skillOrigin.addComponent(UITransform);
@@ -100,6 +105,7 @@ export class BubbleShooterOceanBoss extends Component {
         if(!this.figure || this.disposed)return;
         this.phase='idle';this.age=0;this.figure.active=true;this.pose();
     }
+    getHitTarget(): Node | undefined { return this.hitTarget; }
     getSkillOrigin(): Node | undefined {return this.skillOrigin;}
     hit(): void { if (!this.disposed) this.hitAge=0; }
     enter(done?: () => void): boolean {
@@ -180,7 +186,7 @@ export class BubbleShooterOceanBoss extends Component {
         this.disposed = true; this.paused = true; this.impact = this.complete = undefined;
         if (this.figure) clear(this.figure);
         this.frames = undefined;
-        this.figure = this.body = this.crown = this.staff = this.arm = this.skillOrigin = undefined;
+        this.figure = this.body = this.crown = this.staff = this.arm = this.skillOrigin = this.hitTarget = undefined;
         this.opacity = undefined;
     }
     onDestroy(): void { this.dispose(); }

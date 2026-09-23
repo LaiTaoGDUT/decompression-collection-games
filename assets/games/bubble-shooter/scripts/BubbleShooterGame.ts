@@ -28,7 +28,7 @@ import type { StorageService } from '../../../services/storage/StorageService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import { BubbleShooterAudio, BubbleShooterAudioSlot, type CloudCue } from './BubbleShooterAudio';
 import { BubbleShooterParticles } from './BubbleShooterParticles';
-import { removalMotion, sampleRemoval, POP_BURST_TIME, POP_CHAIN_INTERVAL, type RemovalMotion } from './BubbleShooterRemovalMotion';
+import { removalMotion, sampleRemoval, POP_SPEED, POP_BURST_TIME, POP_CHAIN_INTERVAL, type RemovalMotion } from './BubbleShooterRemovalMotion';
 import type { CloudSnapshot } from './BubbleShooterRound';
 
 const { ccclass, property } = _decorator;
@@ -378,10 +378,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         pivot.getChildByName('CurrentBall')!.setSiblingIndex(ocean ? pivot.children.length-1 : 0);
         const pedestal=launcher.getChildByName('Pedestal')!;
         const baseFrame=pedestal.getComponent(Sprite)!.spriteFrame;
-        pedestal.getComponent(UITransform)!.setContentSize(ocean?146:192,ocean&&baseFrame?146*baseFrame.originalSize.height/baseFrame.originalSize.width:128);
+        pedestal.getComponent(UITransform)!.setContentSize(ocean?128:192,ocean&&baseFrame?128*baseFrame.originalSize.height/baseFrame.originalSize.width:128);
         pedestal.getComponent(UITransform)!.setAnchorPoint(.5,ocean?.5:.125);
-        // The socket overlaps the circular lower housing throughout the full ±70° aim arc.
-        pedestal.setPosition(ocean?pivot.position.x:0,ocean?pivot.position.y-38:0);
+        // Keep the pedestal below the transparent loading port, with overlap at the lower rim.
+        pedestal.setPosition(ocean?pivot.position.x:0,ocean?pivot.position.y-65:0);
         launcher.setPosition(PIVOT.x - pivot.position.x, PIVOT.y - pivot.position.y);
         const background=this.node.getChildByName('Background')!,frame=background.getComponent(Sprite)?.spriteFrame;
         const cover=frame?Math.max(width/frame.originalSize.width,height/frame.originalSize.height):1;
@@ -398,18 +398,18 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         const ledgeSprite=cloud?.getComponent(Sprite),ledgeFrame=ledgeSprite?.spriteFrame;
         if(ledgeSprite)ledgeSprite.trim=ocean;
         const ledgeHeight=ocean&&ledgeFrame?width*ledgeFrame.rect.height/ledgeFrame.rect.width:layout.cloudHeight;
-        const ledgeY=ocean?layout.playY+(TOP+DIAMETER*.08)*layout.scale+ledgeHeight/2:layout.cloudY;
+        const ledgeY=ocean?layout.playY+526*layout.scale:layout.cloudY;
         cloud?.setPosition(0,ledgeY);
         cloud?.getComponent(UITransform)?.setContentSize(width,ledgeHeight);
-        const clipBottom = ledgeY + (ocean ? 0 : -layout.cloudHeight*.12);
-        this.bossHealthRoot?.setPosition(0, layout.healthY);
+        const clipBottom = ledgeY - (ocean ? ledgeHeight*.14 : layout.cloudHeight*.12);
+        this.bossHealthRoot?.setPosition(0, ocean ? ledgeY+8*layout.scale : layout.healthY);
         this.bossHealthRoot?.setScale(layout.scale * .48, layout.scale * .48, 1);
         if(this.oceanBossNode){
             const available=Math.max(1,height/2-20-clipBottom);
-            // Fit crown (y=240) through chest/hand (y=-140) above the ledge.
-            const scale=Math.min(width/600,available/390);
+            // Fit crown and upper torso; reserve the top margin while increasing shoulder width.
+            const scale=Math.min(width*.90/810,available/320);
             this.oceanBossNode.setScale(scale,scale,1);
-            this.oceanBossNode.setPosition(0,145*scale);
+            this.oceanBossNode.setPosition(0,75*scale);
         }
         if (this.bossRoot) {
             this.bossScale = layout.bossScale;
@@ -642,7 +642,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             }
         }
         this.effects = this.effects.filter(effect => {
-            effect.elapsed += Math.min(dt, .05);
+            effect.elapsed += Math.min(dt, .05) * (effect.falling ? 1 : POP_SPEED);
             const pose = sampleRemoval(effect.motion, effect.elapsed);
             effect.node.setPosition(pose.x, pose.y); effect.node.setScale(pose.sx, pose.sy, 1);
             effect.node.angle = pose.angle; effect.node.getComponent(UIOpacity)!.opacity = pose.opacity;
@@ -705,8 +705,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if ((this.round.stage === 'boss' && this.round.bossShots === BOSS_TUNING.shotsPerAction - 1)
             || (this.round.stage === 'ordinary' && this.round.accumulatedMisses === ORDINARY_TUNING.missesPerRow - 1)) this.cue('warning');
         result.removed.forEach((b, i) => this.animateRemoval(b, false, result.phaseBefore, i));
-        const chainEnd=result.removed.length? (result.removed.length-1)*POP_CHAIN_INTERVAL+POP_BURST_TIME : 0;
-        result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i, chainEnd));
+        result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i));
         result.thawed.forEach(b =>
             this.particles?.burst(b, position(b, result.phaseBefore), true));
         this.syncBoard(result.inserted || result.descended, result.refilled);
@@ -728,7 +727,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         }
     }
 
-    private animateRemoval(bubble: Bubble, falling: boolean, phase: number, order = 0, startDelay = 0): void {
+    private animateRemoval(bubble: Bubble, falling: boolean, phase: number, order = 0): void {
         const ball = this.createBall(falling ? this.fallingRoot! : this.node.getChildByPath('Playfield/Vfx')!, bubble.color, bubble.frosted, bubble.indestructible);
         const point = position(bubble, phase);
         ball.setPosition(point.x, point.y);
@@ -738,7 +737,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const rim = new Node('PopRim'); rim.layer = ball.layer; rim.setParent(ball);
             rim.addComponent(UITransform); ring = rim.addComponent(Graphics);
         }
-        const motion=removalMotion(bubble, point, falling, order);motion.delay+=startDelay;
+        const motion=removalMotion(bubble, point, falling, order);
         this.effects.push({ node: ball, elapsed: 0, falling, motion, bubble, burst: false, ring });
     }
 
@@ -934,7 +933,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             left=Math.min(left,n.position.x-ui.width*ui.anchorX);
             right=Math.max(right,n.position.x+ui.width*(1-ui.anchorX));
         });
-        counter.setPosition(Number.isFinite(left)?-(left+right)/2:0,CLOUD_COUNTER_Y);
+        counter.setPosition(Number.isFinite(left)?-(left+right)/2:0,this.round.region === 'ocean' ? 468 : CLOUD_COUNTER_Y);
     }
 
     private buildCounter(): void {
@@ -1152,7 +1151,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             sprite.spriteFrame = this.attackFrame!; heart.addComponent(UIOpacity);
         }
         const chainEnd=result.removed.length?(result.removed.length-1)*POP_CHAIN_INTERVAL+POP_BURST_TIME:0;
-        this.attack = { node, sources, elapsed: -chainEnd, targetHealth: this.round.bossHealth };
+        this.attack = { node, sources, elapsed: -chainEnd / POP_SPEED, targetHealth: this.round.bossHealth };
         this.updateAttack(0);
     }
 
@@ -1161,8 +1160,9 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         attack.elapsed += dt;
         const rootTransform = this.node.getComponent(UITransform)!;
         const playTransform = this.node.getChildByName('Playfield')!.getComponent(UITransform)!;
-        const bossTransform = (this.round.region==='ocean'?this.oceanBossNode!:this.bossRoot!).getComponent(UITransform)!;
-        const target = rootTransform.convertToNodeSpaceAR(bossTransform.convertToWorldSpaceAR(new Vec3(0, 160, 0)));
+        const ocean = this.round.region === 'ocean';
+        const bossTransform = (ocean ? this.oceanBoss!.getHitTarget()! : this.bossRoot!).getComponent(UITransform)!;
+        const target = rootTransform.convertToNodeSpaceAR(bossTransform.convertToWorldSpaceAR(new Vec3(0, ocean ? 0 : 160, 0)));
         attack.node.children.forEach((heart, i) => {
             const source = attack.sources[Math.floor(i * attack.sources.length / attack.node.children.length)]!;
             // Resolve both endpoints on every frame so resize cannot leave a stale world target.
