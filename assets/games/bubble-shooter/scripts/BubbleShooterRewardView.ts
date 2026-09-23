@@ -58,7 +58,7 @@ export class BubbleShooterRewardView {
             const count = this.label('Count', card, '', 0, -66, 190, 34, 26);
             const badgeBase = this.sprite('GainBase', card, frames.get('button')!, 0, -119, 415, 126);
             badgeBase.setScale(0.34, 0.34, 1);
-            const badge = this.label('Gain', card, '', 0, -119, 170, 38, 30, Color.WHITE);
+            const badge = this.label('Gain', card, '', 0, -119, 170, 38, 23, Color.WHITE);
             card.addComponent(UIOpacity);
             this.listen(card, () => {
                 if (this.motion.moving || this.headerAge < .72 || !this.enabled || !this.round?.rewardAvailable || this.round.inventory[key] >= 3) return;

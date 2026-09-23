@@ -5,7 +5,7 @@ import type { BubbleRegion } from './BubbleShooterRound';
 
 const OCEAN_REPLACEMENTS: Readonly<Record<string,string>> = {
     'backgrounds/background':'backgrounds/background',
-    'backgrounds/cloud-transition':'backgrounds/reef',
+    'backgrounds/cloud-transition':'backgrounds/reef-ceiling-v2',
     'launcher/launcher-head':'launcher/turret',
     'launcher/launcher-turret':'launcher/turret',
     'launcher/launcher-pedestal':'launcher/base',
@@ -14,7 +14,7 @@ const OCEAN_REPLACEMENTS: Readonly<Record<string,string>> = {
     'hud/hud-down-arrow':'hud/down',
     'hud/hud-frosting-skill':'bubbles/bubble-support',
     'reward-cloud/reward-cloud-title':'reward/celebration',
-    'vfx/attack-energy-heart':'bubbles/bubble-blue',
+    'vfx/attack-energy-heart':'vfx/attack-pearl-v1',
 };
 
 /** A validated set of frames acquired exclusively through the session AssetService. */
@@ -29,7 +29,7 @@ export async function loadBubbleRegion(assets: AssetService, region: BubbleRegio
     const regional=(path:string)=>get(`visual/regions/${region}/${path}`);
     // Validate critical assets before a transition commits gameplay/reward state.
     ['bubbles/bubble-red','bubbles/bubble-yellow','bubbles/bubble-blue','bubbles/bubble-purple','bubbles/bubble-support','backgrounds/background'].forEach(regional);
-    if(region==='ocean') ['backgrounds/reef','launcher/turret','launcher/base','hud/health-track','hud/health-fill','hud/pause','hud/down','hud/swap','hud/item-base',
+    if(region==='ocean') ['backgrounds/reef-ceiling-v2','vfx/attack-pearl-v1','launcher/turret','launcher/base','hud/health-track','hud/health-fill','hud/pause','hud/down','hud/swap','hud/item-base',
         'boss/boss-body','boss/boss-crown','boss/boss-staff-arm','boss/boss-right-arm','reward/celebration',
         'decoration/fish','decoration/seaweed','foreground/water-bubble-single'].forEach(regional);
     const pack = {region,regional,sceneFrame(path:string):SpriteFrame|null {
@@ -38,8 +38,8 @@ export async function loadBubbleRegion(assets: AssetService, region: BubbleRegio
         const local=path.replace('visual/regions/cloud/','');
         if(region==='cloud')return regional(local);
         if(local.startsWith('bubbles/') && local!=='bubbles/frosting-overlay')return regional(local);
-        if(local.startsWith('vfx/'))return regional('bubbles/bubble-blue');
         const replacement=OCEAN_REPLACEMENTS[local];
+        if(local.startsWith('vfx/') && !replacement)return null;
         return replacement?regional(replacement):null;
     }};
     BUBBLE_SCENE_SPRITES.forEach(([,path])=>pack.sceneFrame(path));

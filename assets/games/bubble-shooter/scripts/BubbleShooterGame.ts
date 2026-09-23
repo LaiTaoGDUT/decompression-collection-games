@@ -19,7 +19,7 @@ import { BubbleShooterEndView, type EndPage } from './BubbleShooterEndView';
 import { BubbleShooterRewardView } from './BubbleShooterRewardView';
 import { calculateBubbleShooterLayout, CLOUD_COUNTER_Y } from './BubbleShooterLayout';
 
-import { Bubble, BubbleColor, COLORS, PIVOT, position, ROW_HEIGHT, Shot, SHOT_SPEED, MAX_AIM_ANGLE, DIAMETER, DANGER, BOARD_WIDTH } from './BubbleShooterModel';
+import { Bubble, BubbleColor, COLORS, PIVOT, position, ROW_HEIGHT, Shot, SHOT_SPEED, MAX_AIM_ANGLE, DIAMETER, DANGER, BOARD_WIDTH, TOP } from './BubbleShooterModel';
 
 import { BubbleShooterRound, BubbleItem, OrdinaryResult, ShotKind, ORDINARY_TUNING, BOSS_TUNING } from './BubbleShooterRound';
 
@@ -28,7 +28,7 @@ import type { StorageService } from '../../../services/storage/StorageService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import { BubbleShooterAudio, BubbleShooterAudioSlot, type CloudCue } from './BubbleShooterAudio';
 import { BubbleShooterParticles } from './BubbleShooterParticles';
-import { removalMotion, sampleRemoval, POP_BURST_TIME, type RemovalMotion } from './BubbleShooterRemovalMotion';
+import { removalMotion, sampleRemoval, POP_BURST_TIME, POP_CHAIN_INTERVAL, type RemovalMotion } from './BubbleShooterRemovalMotion';
 import type { CloudSnapshot } from './BubbleShooterRound';
 
 const { ccclass, property } = _decorator;
@@ -378,9 +378,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         pivot.getChildByName('CurrentBall')!.setSiblingIndex(ocean ? pivot.children.length-1 : 0);
         const pedestal=launcher.getChildByName('Pedestal')!;
         const baseFrame=pedestal.getComponent(Sprite)!.spriteFrame;
-        pedestal.getComponent(UITransform)!.setContentSize(ocean?123:192,ocean&&baseFrame?123*baseFrame.originalSize.height/baseFrame.originalSize.width:128);
+        pedestal.getComponent(UITransform)!.setContentSize(ocean?146:192,ocean&&baseFrame?146*baseFrame.originalSize.height/baseFrame.originalSize.width:128);
         pedestal.getComponent(UITransform)!.setAnchorPoint(.5,ocean?.5:.125);
-        pedestal.setPosition(ocean?pivot.position.x:0,ocean?pivot.position.y-54:0);
+        // The socket overlaps the circular lower housing throughout the full ±70° aim arc.
+        pedestal.setPosition(ocean?pivot.position.x:0,ocean?pivot.position.y-38:0);
         launcher.setPosition(PIVOT.x - pivot.position.x, PIVOT.y - pivot.position.y);
         const background=this.node.getChildByName('Background')!,frame=background.getComponent(Sprite)?.spriteFrame;
         const cover=frame?Math.max(width/frame.originalSize.width,height/frame.originalSize.height):1;
@@ -394,9 +395,13 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         });
         this.node.getChildByName('Pause')!.setPosition(layout.pauseX, layout.pauseY);
         const cloud = this.node.getChildByName('CloudTransition');
-        cloud?.setPosition(0, layout.cloudY);
-        cloud?.getComponent(UITransform)?.setContentSize(width,this.round.region==='ocean'?width*(cloud.getComponent(Sprite)?.spriteFrame?.originalSize.height??100)/(cloud.getComponent(Sprite)?.spriteFrame?.originalSize.width??1024):layout.cloudHeight);
-        const clipBottom = layout.cloudY + (ocean ? (cloud?.getComponent(UITransform)?.height??0)*.18 : -layout.cloudHeight*.12);
+        const ledgeSprite=cloud?.getComponent(Sprite),ledgeFrame=ledgeSprite?.spriteFrame;
+        if(ledgeSprite)ledgeSprite.trim=ocean;
+        const ledgeHeight=ocean&&ledgeFrame?width*ledgeFrame.rect.height/ledgeFrame.rect.width:layout.cloudHeight;
+        const ledgeY=ocean?layout.playY+(TOP+DIAMETER*.08)*layout.scale+ledgeHeight/2:layout.cloudY;
+        cloud?.setPosition(0,ledgeY);
+        cloud?.getComponent(UITransform)?.setContentSize(width,ledgeHeight);
+        const clipBottom = ledgeY + (ocean ? 0 : -layout.cloudHeight*.12);
         this.bossHealthRoot?.setPosition(0, layout.healthY);
         this.bossHealthRoot?.setScale(layout.scale * .48, layout.scale * .48, 1);
         if(this.oceanBossNode){
@@ -651,7 +656,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
                 ring.clear();
                 if (pose.age >= POP_BURST_TIME && t < 1) {
                     ring.lineWidth = 2 * (1 - t);
-                    ring.strokeColor = new Color(255, 237, 246, 210 * (1 - t));
+                    ring.strokeColor = this.round.region==='ocean'?new Color(158,245,255,210*(1-t)):new Color(255, 237, 246, 210 * (1 - t));
                     ring.circle(0, 0, DIAMETER * (.45 + .28 * t)); ring.stroke();
                 }
             }
@@ -700,7 +705,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if ((this.round.stage === 'boss' && this.round.bossShots === BOSS_TUNING.shotsPerAction - 1)
             || (this.round.stage === 'ordinary' && this.round.accumulatedMisses === ORDINARY_TUNING.missesPerRow - 1)) this.cue('warning');
         result.removed.forEach((b, i) => this.animateRemoval(b, false, result.phaseBefore, i));
-        result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i));
+        const chainEnd=result.removed.length? (result.removed.length-1)*POP_CHAIN_INTERVAL+POP_BURST_TIME : 0;
+        result.dropped.forEach((b, i) => this.animateRemoval(b, true, result.phaseBefore, i, chainEnd));
         result.thawed.forEach(b =>
             this.particles?.burst(b, position(b, result.phaseBefore), true));
         this.syncBoard(result.inserted || result.descended, result.refilled);
@@ -722,7 +728,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         }
     }
 
-    private animateRemoval(bubble: Bubble, falling: boolean, phase: number, order = 0): void {
+    private animateRemoval(bubble: Bubble, falling: boolean, phase: number, order = 0, startDelay = 0): void {
         const ball = this.createBall(falling ? this.fallingRoot! : this.node.getChildByPath('Playfield/Vfx')!, bubble.color, bubble.frosted, bubble.indestructible);
         const point = position(bubble, phase);
         ball.setPosition(point.x, point.y);
@@ -732,7 +738,8 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const rim = new Node('PopRim'); rim.layer = ball.layer; rim.setParent(ball);
             rim.addComponent(UITransform); ring = rim.addComponent(Graphics);
         }
-        this.effects.push({ node: ball, elapsed: 0, falling, motion: removalMotion(bubble, point, falling, order), bubble, burst: false, ring });
+        const motion=removalMotion(bubble, point, falling, order);motion.delay+=startDelay;
+        this.effects.push({ node: ball, elapsed: 0, falling, motion, bubble, burst: false, ring });
     }
 
     private createBall(parent: Node, color: BubbleColor, frosted=false, indestructible=false): Node {
@@ -1037,7 +1044,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             icon.getComponent(UITransform)!.setContentSize(96,96);
             icon.getComponent(Sprite)!.trim=false;
             const plate=button.getChildByName('NamePlate')!.getComponent(Sprite)!;
-            plate.node.active=this.round.region!=='ocean';
+            plate.node.active=true;
             plate.type=Sprite.Type.SLICED;
             const plateScale=48/73;
             plate.node.setScale(plateScale,plateScale,1);
@@ -1075,9 +1082,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         if (!downArrow) return;
         const downX = -limit * 21 - 18;
         downArrow.setPosition(downX, 0);
+        downArrow.getComponent(UITransform)?.setContentSize(28,28);
         const statusX = downX - COUNTER_DECOR_GAP;
         counter.getChildByName('BossSkill')?.setPosition(statusX, 0);
         counter.getChildByName('PendingRow')?.setPosition(statusX, 0);
+        counter.getChildByName('PendingRow')?.getComponent(UITransform)?.setContentSize(32,32);
     }
 
     private setupBoss(): void {
@@ -1133,14 +1142,17 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         });
         const node = new Node('BossAttackEnergy'); node.layer = this.node.layer; node.setParent(this.node);
         this.foreground?.putBehind(node);
-        // Aggregate into at most three hearts; damage remains the model's exact result.
+        // Region-owned energy sprites; damage remains the model's exact result.
         for (let i = 0; i < Math.min(3, sources.length); i++) {
             const heart = new Node('EnergyHeart'); heart.layer = node.layer; heart.setParent(node);
-            heart.addComponent(UITransform).setContentSize(46, 46);
+            const size=this.round.region==='ocean'?64:46;
+            const ratio=this.round.region==='ocean'?this.attackFrame!.rect.width/this.attackFrame!.rect.height:1;
+            heart.addComponent(UITransform).setContentSize(size*ratio, size);
             const sprite = heart.addComponent(Sprite); sprite.sizeMode = Sprite.SizeMode.CUSTOM;
             sprite.spriteFrame = this.attackFrame!; heart.addComponent(UIOpacity);
         }
-        this.attack = { node, sources, elapsed: 0, targetHealth: this.round.bossHealth };
+        const chainEnd=result.removed.length?(result.removed.length-1)*POP_CHAIN_INTERVAL+POP_BURST_TIME:0;
+        this.attack = { node, sources, elapsed: -chainEnd, targetHealth: this.round.bossHealth };
         this.updateAttack(0);
     }
 
@@ -1159,9 +1171,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const eased = t * t * (3 - 2 * t);
             heart.setPosition(start.x + (target.x - start.x) * eased + Math.sin(t * Math.PI) * (i - 1) * 32,
                 start.y + (target.y - start.y) * eased);
+            heart.angle=this.round.region==='ocean'?-Math.atan2(target.x-start.x,target.y-start.y)*180/Math.PI:0;
             const scale = this.node.getChildByName('Playfield')!.scale.x * (0.65 + 0.5 * Math.sin(t * Math.PI));
             heart.setScale(scale, scale, 1);
-            heart.getComponent(UIOpacity)!.opacity = t >= 1 ? 0 : Math.min(1, attack.elapsed / 0.12) * 255;
+            heart.getComponent(UIOpacity)!.opacity = t >= 1 ? 0 : Math.max(0,Math.min(1, attack.elapsed / 0.12)) * 255;
         });
         if (attack.elapsed >= 0.54 + (attack.node.children.length - 1) * 0.06) {
             this.cue('boss-hit', 'light');

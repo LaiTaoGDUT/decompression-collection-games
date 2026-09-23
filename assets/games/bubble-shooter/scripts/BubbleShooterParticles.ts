@@ -13,17 +13,18 @@ export class BubbleShooterParticles {
         const count = frost ? 5 : 5;
         for (let i = 0; i < count && this.active.length < 64; i++) {
             const key = frost ? `frost-${1 + i % 7}` : `shard-${bubble.color}-${1 + i % 2}`;
-            const frame = this.frames.get(key); if (!frame) continue;
+            const water=this.theme==='ocean' && !frost;
+            const frame = this.frames.get(key); if (!water && !frame) continue;
             const node = this.pool.pop() ?? this.create(); node.active = true;
             node.setSiblingIndex(this.parent.children.length - 1);
-            const sprite = node.getComponent(Sprite)!; sprite.spriteFrame = frame;
-            const water=this.theme==='ocean' && !frost;
+            const sprite = node.getComponent(Sprite)!; sprite.spriteFrame = frame ?? null;
             sprite.enabled=!water;
             const ink=node.getComponent(Graphics) ?? node.addComponent(Graphics);ink.clear();
             if(water){ink.lineWidth=1.8;ink.strokeColor=new Color(160,245,255,210);ink.circle(0,0,6+i%3);ink.stroke();
                 ink.fillColor=new Color(230,255,255,220);ink.circle(-2,3,1.5);ink.fill();}
-            const size = frost ? 22 : 14 + i % 3 * 4, ratio = size / Math.max(frame.rect.width, frame.rect.height);
-            node.getComponent(UITransform)!.setContentSize(frame.rect.width * ratio, frame.rect.height * ratio);
+            const size = frost ? 22 : 14 + i % 3 * 4;
+            const width=frame?.rect.width??size,height=frame?.rect.height??size,ratio=size/Math.max(width,height);
+            node.getComponent(UITransform)!.setContentSize(width * ratio, height * ratio);
             node.setPosition(point.x, point.y); node.setScale(1, 1, 1); node.angle = i * 83;
             node.getComponent(UIOpacity)!.opacity = 255;
             const variation = ((bubble.row ?? 0) * 17 + (bubble.col ?? 0) * 31 + i * 13) % 23 / 23;

@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "16bd7541-489d-414d-89a9-75c49346c169",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "16bd7541-489d-414d-89a9-75c49346c169@6c48a",
+      "displayName": "reef-ceiling-v2",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "16bd7541-489d-414d-89a9-75c49346c169",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "16bd7541-489d-414d-89a9-75c49346c169@f9941",
+      "displayName": "reef-ceiling-v2",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 10,
+        "rotated": false,
+        "offsetX": 0.5,
+        "offsetY": 50,
+        "trimX": 10,
+        "trimY": 98,
+        "width": 2153,
+        "height": 428,
+        "rawWidth": 2172,
+        "rawHeight": 724,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -1076.5,
+            -214,
+            0,
+            1076.5,
+            -214,
+            0,
+            -1076.5,
+            214,
+            0,
+            1076.5,
+            214,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            10,
+            626,
+            2163,
+            626,
+            10,
+            198,
+            2163,
+            198
+          ],
+          "nuv": [
+            0.004604051565377533,
+            0.27348066298342544,
+            0.9958563535911602,
+            0.27348066298342544,
+            0.004604051565377533,
+            0.8646408839779005,
+            0.9958563535911602,
+            0.8646408839779005
+          ],
+          "minPos": [
+            -1076.5,
+            -214,
+            0
+          ],
+          "maxPos": [
+            1076.5,
+            214,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "16bd7541-489d-414d-89a9-75c49346c169@6c48a",
+        "atlasUuid": "",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": true,
+    "redirect": "16bd7541-489d-414d-89a9-75c49346c169@6c48a"
+  }
+}
