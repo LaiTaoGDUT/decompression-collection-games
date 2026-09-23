@@ -1,0 +1,55 @@
+assets/game-assets/bubble-shooter/visual/regions/ocean/backgrounds/reef.png.meta
+  h_293365c3a5ebee 49,51,68,71,74,77,90,92,110,115
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/blue-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/blue-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/purple-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/purple-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/red-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/red-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/yellow-01.png.meta
+  h_293365c3a5ebee 1-134
+assets/game-assets/bubble-shooter/visual/regions/ocean/vfx/pop-fragments/yellow-02.png.meta
+  h_293365c3a5ebee 1-134
+assets/games/bubble-shooter/scripts/BubbleShooterGame.ts
+  h_293365c3a5ebee 31,381,383-384,401,404-405,409-410,412,645,708,730,740,936,1154,1163-1165
+assets/games/bubble-shooter/scripts/BubbleShooterOceanBoss.ts
+  h_293365c3a5ebee 48-52,75,85,87-90,108,189
+assets/games/bubble-shooter/scripts/BubbleShooterParticles.ts
+  h_293365c3a5ebee 13-14,17,23-26,28,58-61
+assets/games/bubble-shooter/scripts/BubbleShooterRegionAssets.ts
+  h_293365c3a5ebee 8,32,41
+assets/games/bubble-shooter/scripts/BubbleShooterRemovalMotion.ts
+  h_293365c3a5ebee 10,22
+docs/games/bubble-shooter/art-source/ocean/water-divider-v3/processing.json
+  h_293365c3a5ebee 1-13
+tools/bubble-shooter/prepare-item-name-plate.py
+  h_293365c3a5ebee 2,6-12
+tools/bubble-shooter/prepare-ocean-water-divider.py
+  h_293365c3a5ebee 1-21
+tools/bubble-shooter/prepare-ocean-world.py
+  h_293365c3a5ebee 50-52
+tools/bubble-shooter/verify-regions-browser.cjs
+  h_293365c3a5ebee 11-21
+tools/bubble-shooter/verify-removal-motion.cjs
+  h_293365c3a5ebee 9-10,28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f7d22a2afb0c80bd4cc750eac0bd314dea9ac8ac",
+  "prompts": {},
+  "logical_commit_id": "f7d22a2afb0c80bd4cc750eac0bd314dea9ac8ac",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
