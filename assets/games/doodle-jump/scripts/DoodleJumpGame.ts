@@ -86,6 +86,7 @@ import {
 import { DoodleJumpStateMachine } from './DoodleJumpStateMachine';
 
 const { ccclass } = _decorator;
+const RUN_PROGRESS_SAVE_INTERVAL_SECONDS = 10;
 const ENEMY_SIZE_SCALE = 2 / 3;
 const ENEMY_VISUAL_MARGIN_SCALE = 2 * ENEMY_SIZE_SCALE;
 // The beam source's top ring is 9.5 px right of its texture canvas center.
@@ -521,6 +522,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private debugHeadStartRemaining = 0;
     private runStarted = false;
     private runShotCount = 0;
+    private runProgressSaveElapsed = 0;
     private runExitTracked = false;
     private rewardedVideoIconFrame?: SpriteFrame;
     private hideUnsubscribe?: Unsubscribe;
@@ -823,6 +825,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.runStarted = false;
         this.activeRoundRestored = false;
         this.runShotCount = 0;
+        this.runProgressSaveElapsed = 0;
         this.runExitTracked = false;
         this.failureLocked = false;
         this.settlementCommitted = false;
@@ -1046,10 +1049,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.consumeHazardEvents(this.simulation.drainHazardEvents());
         this.consumeItemEvents(this.simulation.drainItemEvents());
         this.renderSimulation(presentation);
-        // No storage writes happen during play: serializing the round and the
-        // synchronous platform storage write cost whole frames on device.
-        // The active round is persisted at every lifecycle boundary instead
-        // (pause, hide, failure, revive, restart and dispose).
+        this.runProgressSaveElapsed += Math.max(0, deltaTime);
+        if (this.runProgressSaveElapsed >= RUN_PROGRESS_SAVE_INTERVAL_SECONDS) {
+            // Crash-recovery checkpoint. Each checkpoint is rebuilt from the
+            // immutable run baseline, so repeated writes replace one another
+            // instead of double-counting. Serializing the round and the
+            // synchronous platform storage write cost frames on device, so the
+            // interval stays long; lifecycle boundaries (pause, hide, failure,
+            // revive, restart and dispose) still persist immediately.
+            this.runProgressSaveElapsed = 0;
+            this.persistCurrentRunHistory(false, false);
+        }
         if (this.context?.services.platform.id === 'wechat'
             && this.inputController?.hasStaleSensor()) {
             this.enterSensorError('1500ms 内没有新的重力感应数据');
@@ -1430,6 +1440,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.stateMachine.transition('Playing');
         this.inputController?.setEnabled(true);
         this.runStarted = true;
+        this.runProgressSaveElapsed = 0;
         const snapshot = this.simulation?.getPresentationView();
         this.context?.services.analytics.track('doodle_jump_run_start', {
             sessionId: this.context.sessionId,
@@ -1457,9 +1468,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             (snapshot?.combat.score ?? 0) + (snapshot?.hazardStats.score ?? 0),
         );
         // 失败快照是跨生命周期边界的关键状态：先在仍可构建 activeRound 的
-        // Playing 状态同步写盘，再切换到 Failing，避免死亡后立即退出时丢失
-        // 本局进度。
+        // Playing 状态同步写盘，再切换到 Failing，避免死亡后立即退出时只剩
+        // 上一次 10 秒检查点。
         this.persistCurrentRunHistory(false, true, undefined, snapshot);
+        this.runProgressSaveElapsed = 0;
         this.stateMachine.transition('Failing');
         this.context?.services.feedback.play('failure');
         this.updatePresentationState(this.failureReasonText(reason));
@@ -1706,9 +1718,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             platformId: resurrection?.platformId ?? '',
         });
         this.stateMachine.transition('Playing');
+        this.runProgressSaveElapsed = 0;
         const revived = this.simulation?.getSnapshot();
         // 复活会重置位置、速度、附近危险物和护盾，必须把这个新局面立即
-        // 固化。
+        // 固化，不能等下一次 10 秒检查点。
         this.persistCurrentRunHistory(false, true, undefined, revived);
         this.inputController?.setEnabled(true);
         this.context.services.feedback.play('continue');
