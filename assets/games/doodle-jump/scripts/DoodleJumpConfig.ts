@@ -114,6 +114,10 @@ export interface DoodleJumpGameplayConfig {
         poolSoftTarget: number;
     }>;
     readonly platformBehavior: Readonly<{
+        /** Every platform except the starter floor uses this width. */
+        standardWidth: number;
+        /** The only widened platform: a normal platform carrying a large monster. */
+        largeMonsterWidth: number;
         explodingDelaySeconds: number;
         verticalMoving: Readonly<{
             unlockHeightMeters: number;
@@ -256,7 +260,6 @@ export interface DoodleJumpGameplayConfig {
         recoveryLayerInterval: number;
         maxHorizontalGap: number;
         preloadAboveScreen: number;
-        normalFallbackWidth: number;
         maxCandidateAttempts: number;
         maxActivePlatforms: number;
     }>;
@@ -439,18 +442,28 @@ function parseItemWeightBand(value: unknown, index: number): DoodleJumpItemWeigh
     return band;
 }
 
-function parsePlatform(value: unknown, index: number): DoodleJumpFixedPlatformConfig {
+function parsePlatform(
+    value: unknown,
+    index: number,
+    starterFloorWidth: number,
+    standardWidth: number,
+): DoodleJumpFixedPlatformConfig {
     const path = `fixedPlatforms[${index}]`;
     const record = asRecord(value, path);
     const type = nonEmptyString(record.type, `${path}.type`) as DoodleJumpPlatformType;
     if (PLATFORM_TYPES.indexOf(type) < 0) {
         throw new Error(`${path}.type is unsupported: ${type}.`);
     }
+    if (record.width !== undefined) {
+        throw new Error(`${path}.width is derived from platformBehavior.standardWidth.`);
+    }
     return Object.freeze({
         id: nonEmptyString(record.id, `${path}.id`),
         x: finiteNumber(record.x, `${path}.x`),
         y: finiteNumber(record.y, `${path}.y`),
-        width: positiveNumber(record.width, `${path}.width`),
+        // P0 is the starter floor spanning the design width; every other
+        // platform shares one width so the route reads consistently.
+        width: index === 0 ? starterFloorWidth : standardWidth,
         type,
     });
 }
@@ -495,7 +508,27 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     if (!Array.isArray(root.fixedPlatforms) || root.fixedPlatforms.length !== 8) {
         throw new Error('fixedPlatforms must contain exactly P0-P7.');
     }
-    const platforms = root.fixedPlatforms.map(parsePlatform);
+    const designWidth = positiveNumber(design.width, 'design.width');
+    const standardPlatformWidth = positiveNumber(
+        platformBehavior.standardWidth,
+        'platformBehavior.standardWidth',
+    );
+    const largeMonsterPlatformWidth = positiveNumber(
+        platformBehavior.largeMonsterWidth,
+        'platformBehavior.largeMonsterWidth',
+    );
+    if (standardPlatformWidth > designWidth || largeMonsterPlatformWidth > designWidth) {
+        throw new Error('Platform widths must fit within design.width.');
+    }
+    if (largeMonsterPlatformWidth < standardPlatformWidth) {
+        throw new Error('platformBehavior.largeMonsterWidth must not be narrower than standardWidth.');
+    }
+    const platforms = root.fixedPlatforms.map((platform, index) => parsePlatform(
+        platform,
+        index,
+        designWidth,
+        standardPlatformWidth,
+    ));
     const ids = new Set<string>();
     platforms.forEach((platform) => {
         if (ids.has(platform.id)) throw new Error(`Duplicate platform id: ${platform.id}.`);
@@ -661,6 +694,9 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         || largeEnemy.unlockHeightMeters !== 220
         || hoverEnemy.unlockHeightMeters !== 150) {
         throw new Error('Enemy unlock heights must remain Small 70m, Large 220m, Hover 150m.');
+    }
+    if (largeMonsterPlatformWidth < largeEnemy.width + 16) {
+        throw new Error('platformBehavior.largeMonsterWidth must leave standing room for a large monster.');
     }
     const maximumActiveEnemies = positiveInteger(
         enemies.maximumActive,
@@ -919,7 +955,7 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     return Object.freeze({
         schemaVersion,
         design: Object.freeze({
-            width: positiveNumber(design.width, 'design.width'),
+            width: designWidth,
             height: positiveNumber(design.height, 'design.height'),
         }),
         fixedStep: Object.freeze({
@@ -961,6 +997,8 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             poolSoftTarget: positiveInteger(shooting.poolSoftTarget, 'shooting.poolSoftTarget'),
         }),
         platformBehavior: Object.freeze({
+            standardWidth: standardPlatformWidth,
+            largeMonsterWidth: largeMonsterPlatformWidth,
             explodingDelaySeconds: positiveNumber(
                 platformBehavior.explodingDelaySeconds,
                 'platformBehavior.explodingDelaySeconds',
@@ -1225,10 +1263,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             preloadAboveScreen: positiveNumber(
                 generation.preloadAboveScreen,
                 'generation.preloadAboveScreen',
-            ),
-            normalFallbackWidth: positiveNumber(
-                generation.normalFallbackWidth,
-                'generation.normalFallbackWidth',
             ),
             maxCandidateAttempts,
             maxActivePlatforms,

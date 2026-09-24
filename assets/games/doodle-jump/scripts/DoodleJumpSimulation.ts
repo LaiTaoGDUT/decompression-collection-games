@@ -185,8 +185,18 @@ interface IndexedWorldPlatform extends DoodleJumpWorldPlatform {
     revision: number;
 }
 
-const LARGE_ENEMY_PLATFORM_EXTRA_WIDTH = 80;
-const LARGE_ENEMY_PLATFORM_WIDTH_VARIATION = 44;
+interface InterpolationOrigin {
+    x: number;
+    y: number;
+    stamp: number;
+}
+
+interface PresentedPosition {
+    readonly id: string;
+    x: number;
+    y: number;
+}
+
 const SHIFTING_PLATFORM_HOLD_SECONDS = 0.65;
 const SHIFTING_PLATFORM_TRANSITION_SECONDS = 0.28;
 const SHIFTING_PLATFORM_CYCLE_SECONDS = SHIFTING_PLATFORM_HOLD_SECONDS * 4
@@ -256,6 +266,19 @@ export class DoodleJumpSimulation {
     private monsterContactGraceRemaining = 0;
     private worldNeedsPreStepReconcile = false;
     private worldIndexRevision = 0;
+    // Render interpolation: the fixed-step state before the latest step. The
+    // presentation view blends it with the current state by the leftover
+    // accumulator, so display frames that run 0 or 2 fixed steps still move
+    // smoothly instead of freezing and then jumping.
+    private interpolationReady = false;
+    private interpolationStamp = 0;
+    private previousPlayerX = 0;
+    private previousPlayerY = 0;
+    private previousCameraBottomY = 0;
+    private readonly previousPlatformPositions = new Map<string, InterpolationOrigin>();
+    private readonly previousEnemyPositions = new Map<string, InterpolationOrigin>();
+    private readonly previousItemPositions = new Map<string, InterpolationOrigin>();
+    private readonly previousHazardPositions = new Map<string, InterpolationOrigin>();
 
     constructor(private readonly config: DoodleJumpGameplayConfig, seed: string | number = 1) {
         this.initialSeed = hashDoodleJumpSeed(seed) || 1;
@@ -296,6 +319,7 @@ export class DoodleJumpSimulation {
 
     reset(): void {
         this.accumulator = 0;
+        this.interpolationReady = false;
         this.elapsedSeconds = 0;
         this.droppedFrameSeconds = 0;
         const start = this.config.fixedPlatforms[0];
@@ -391,6 +415,7 @@ export class DoodleJumpSimulation {
             throw new Error('Invalid Doodle Jump active-round snapshot.');
         }
         this.accumulator = 0;
+        this.interpolationReady = false;
         this.elapsedSeconds = Math.max(0, finite(snapshot.elapsedSeconds, 'elapsedSeconds'));
         this.droppedFrameSeconds = Math.max(
             0,
@@ -426,10 +451,10 @@ export class DoodleJumpSimulation {
             );
             const restoredX = finite(platform.x, `platform ${platform.id} x`);
             const restoredY = finite(platform.y, `platform ${platform.id} y`);
-            const restoredWidth = Math.max(
-                1,
-                finite(platform.width, `platform ${platform.id} width`),
-            );
+            // Width is a rule, not per-platform state: older saves may carry
+            // legacy random widths, so every restored platform is normalized.
+            // Large-monster widening is re-applied after combat is restored.
+            const restoredWidth = this.baseWidthFor(platform.id);
             const zeroOriginConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
                 id: platform.id,
                 x: 0,
@@ -516,6 +541,7 @@ export class DoodleJumpSimulation {
         while (this.accumulator >= fixedDelta
             && steps < this.config.fixedStep.maxSubSteps
             && !this.fatalReason) {
+            this.captureInterpolationOrigin();
             this.step(fixedDelta, Math.max(-1, Math.min(1, horizontalInput)), visibleHeight);
             this.accumulator -= fixedDelta;
             steps += 1;
@@ -526,6 +552,24 @@ export class DoodleJumpSimulation {
         }
     }
 
+    /**
+     * Builds the round's initial world for the real viewport before play
+     * starts. Without this the first gameplay step would generate every layer
+     * above the fixed route and spawn its monsters, hazards and items in one
+     * frame, which is the hitch on the first jump after spawning.
+     */
+    prepareWorld(visibleHeight: number): void {
+        const safeVisibleHeight = Math.max(1, visibleHeight);
+        this.recyclePlatforms();
+        this.ensureGenerated(safeVisibleHeight);
+        this.syncWorldIndex();
+        this.reconcileWorldSystems(
+            this.cameraBottomY,
+            this.cameraBottomY + safeVisibleHeight,
+        );
+        this.worldNeedsPreStepReconcile = false;
+    }
+
     isBelowDeathLine(visibleHeight: number): boolean {
         const playerTopY = this.playerY + this.config.player.collisionHeight / 2;
         return playerTopY < this.cameraBottomY && visibleHeight > 0;
@@ -533,14 +577,6 @@ export class DoodleJumpSimulation {
 
     getCameraBottomY(): number {
         return this.cameraBottomY;
-    }
-
-    getPlayerX(): number {
-        return this.playerX;
-    }
-
-    getPlayerY(): number {
-        return this.playerY;
     }
 
     hitEnemyByProjectileSweep(
@@ -652,7 +688,7 @@ export class DoodleJumpSimulation {
                 y: latticeOriginY + Math.ceil(
                     (minimumSafeY - latticeOriginY) / verticalStep,
                 ) * verticalStep,
-                width: 190,
+                width: this.config.platformBehavior.standardWidth,
                 type: 'normal',
             });
             target = {
@@ -685,6 +721,7 @@ export class DoodleJumpSimulation {
         this.velocityX = 0;
         this.velocityY = this.config.resurrection.launchVelocity;
         this.accumulator = 0;
+        this.interpolationReady = false;
         this.items.cancelTrampolineJump();
         this.lastLandedPlatformId = target.config.id;
         this.maxAbsoluteWorldY = Math.max(this.maxAbsoluteWorldY, this.playerY);
@@ -825,7 +862,137 @@ export class DoodleJumpSimulation {
         this.presentationView.itemRandomCursor = this.randomStreams.getCursor('item');
         this.presentationView.platforms = this.presentationPlatforms;
         this.presentationView.enemies = this.combat.getPresentationEnemies();
+        this.applyPresentationInterpolation();
         return this.presentationView;
+    }
+
+    private captureInterpolationOrigin(): void {
+        this.interpolationStamp += 1;
+        const stamp = this.interpolationStamp;
+        this.previousPlayerX = this.playerX;
+        this.previousPlayerY = this.playerY;
+        this.previousCameraBottomY = this.cameraBottomY;
+        for (let index = 0; index < this.platforms.length; index += 1) {
+            const platform = this.platforms[index];
+            this.recordInterpolationOrigin(
+                this.previousPlatformPositions,
+                platform.config.id,
+                platform.x,
+                platform.y,
+                stamp,
+            );
+        }
+        this.recordInterpolationOrigins(
+            this.previousEnemyPositions,
+            this.combat.getPresentationEnemies(),
+            stamp,
+        );
+        this.recordInterpolationOrigins(
+            this.previousItemPositions,
+            this.items.getPresentationItems(),
+            stamp,
+        );
+        this.recordInterpolationOrigins(
+            this.previousHazardPositions,
+            this.hazards.getPresentationHazards(),
+            stamp,
+        );
+        this.pruneInterpolationOrigins(this.previousPlatformPositions, stamp);
+        this.pruneInterpolationOrigins(this.previousEnemyPositions, stamp);
+        this.pruneInterpolationOrigins(this.previousItemPositions, stamp);
+        this.pruneInterpolationOrigins(this.previousHazardPositions, stamp);
+        this.interpolationReady = true;
+    }
+
+    private recordInterpolationOrigins(
+        origins: Map<string, InterpolationOrigin>,
+        entities: readonly { readonly id: string; readonly x: number; readonly y: number }[],
+        stamp: number,
+    ): void {
+        for (let index = 0; index < entities.length; index += 1) {
+            const entity = entities[index];
+            this.recordInterpolationOrigin(origins, entity.id, entity.x, entity.y, stamp);
+        }
+    }
+
+    private recordInterpolationOrigin(
+        origins: Map<string, InterpolationOrigin>,
+        id: string,
+        x: number,
+        y: number,
+        stamp: number,
+    ): void {
+        const origin = origins.get(id);
+        if (origin) {
+            origin.x = x;
+            origin.y = y;
+            origin.stamp = stamp;
+            return;
+        }
+        origins.set(id, { x, y, stamp });
+    }
+
+    private pruneInterpolationOrigins(
+        origins: Map<string, InterpolationOrigin>,
+        stamp: number,
+    ): void {
+        origins.forEach((origin, id) => {
+            if (origin.stamp !== stamp) origins.delete(id);
+        });
+    }
+
+    private applyPresentationInterpolation(): void {
+        if (!this.interpolationReady) return;
+        const alpha = Math.max(0, Math.min(1, this.accumulator / this.config.fixedStep.seconds));
+        if (alpha >= 1) return;
+        const view = this.presentationView;
+        view.playerX = this.interpolateContinuous(this.previousPlayerX, this.playerX, alpha);
+        view.playerY = this.interpolateContinuous(this.previousPlayerY, this.playerY, alpha);
+        view.cameraBottomY = this.interpolateContinuous(
+            this.previousCameraBottomY,
+            this.cameraBottomY,
+            alpha,
+        );
+        this.interpolatePositions(this.presentationPlatforms, this.previousPlatformPositions, alpha);
+        // Subsystem presentation records are rebuilt from simulation state on
+        // every view refresh, so blending their positions here is render-only.
+        this.interpolatePositions(
+            view.enemies as unknown as PresentedPosition[],
+            this.previousEnemyPositions,
+            alpha,
+        );
+        this.interpolatePositions(
+            view.items as unknown as PresentedPosition[],
+            this.previousItemPositions,
+            alpha,
+        );
+        this.interpolatePositions(
+            view.hazards as unknown as PresentedPosition[],
+            this.previousHazardPositions,
+            alpha,
+        );
+    }
+
+    private interpolatePositions(
+        entities: readonly PresentedPosition[],
+        origins: ReadonlyMap<string, InterpolationOrigin>,
+        alpha: number,
+    ): void {
+        for (let index = 0; index < entities.length; index += 1) {
+            const entity = entities[index];
+            const origin = origins.get(entity.id);
+            // Entities spawned during the latest step have no origin yet and
+            // are shown at their current position.
+            if (!origin) continue;
+            entity.x = this.interpolateContinuous(origin.x, entity.x, alpha);
+            entity.y = this.interpolateContinuous(origin.y, entity.y, alpha);
+        }
+    }
+
+    private interpolateContinuous(from: number, to: number, alpha: number): number {
+        // Screen wrap and other teleports are shown immediately, never swept.
+        if (Math.abs(to - from) > this.config.design.width / 2) return to;
+        return from + (to - from) * alpha;
     }
 
     private step(delta: number, input: number, visibleHeight: number): void {
@@ -1089,7 +1256,6 @@ export class DoodleJumpSimulation {
             ? 0
             : generation.maxCandidateAttempts;
         for (let attempt = 1; attempt <= candidateAttemptLimit; attempt += 1) {
-            const widened = attempt > 8 ? Math.min(42, (attempt - 8) * 4.2) : 0;
             const lowered = attempt > 8 ? Math.min(24, (attempt - 8) * 2.4) : 0;
             const difficulty = this.generationDifficulty(routePrevious.config.y);
             const verticalGap = generation.verticalStep * generation.mainRouteStepCount;
@@ -1102,11 +1268,7 @@ export class DoodleJumpSimulation {
                 ? 'normal'
                 : this.pickAnchorPlatformType(heightMeters);
             const candidateY = layerBaseY + verticalGap;
-            const widthRange = this.anchorWidthRange(routeType, difficulty, recoveryLayer);
-            const width = Math.min(
-                recoveryLayer ? 230 : 220,
-                widthRange[0] + this.nextPlatformRandom() * (widthRange[1] - widthRange[0]) + widened,
-            );
+            const width = this.config.platformBehavior.standardWidth;
             const baseHorizontalRange = recoveryLayer
                 ? 95
                 : 112 + difficulty * Math.max(0, generation.maxHorizontalGap - 112);
@@ -1155,7 +1317,7 @@ export class DoodleJumpSimulation {
 
         const fallbackGap = generation.verticalStep * generation.mainRouteStepCount;
         const fallbackY = routePrevious.config.y + fallbackGap;
-        const fallbackWidth = Math.max(175, Math.min(210, generation.normalFallbackWidth));
+        const fallbackWidth = this.config.platformBehavior.standardWidth;
         const fallbackX = this.clampPlatformX(
             routePrevious.x + (this.nextPlatformRandom() * 2 - 1) * 120,
             fallbackWidth,
@@ -1279,9 +1441,7 @@ export class DoodleJumpSimulation {
                 (y - this.config.fixedPlatforms[0].y) / 100,
             );
             const type = this.pickInsertedPlatformType(heightMeters);
-            const widthRange = this.widthRange(type);
-            const width = widthRange[0]
-                + this.nextPlatformRandom() * (widthRange[1] - widthRange[0]);
+            const width = this.config.platformBehavior.standardWidth;
             let config: DoodleJumpFixedPlatformConfig | undefined;
             let predecessor: MutablePlatform | undefined;
             for (let attempt = 0; attempt < 14; attempt += 1) {
@@ -1359,7 +1519,7 @@ export class DoodleJumpSimulation {
                 || !this.combat.hasLargeMonsterOnPlatform(platform.config.id)) return;
             platform.width = Math.max(
                 platform.width,
-                this.largeEnemyPlatformWidth(platform.config.id),
+                this.config.platformBehavior.largeMonsterWidth,
             );
         });
     }
@@ -1438,14 +1598,9 @@ export class DoodleJumpSimulation {
         );
     }
 
-    private largeEnemyPlatformWidth(platformId: string): number {
-        const minimum = this.config.enemies.large.width + LARGE_ENEMY_PLATFORM_EXTRA_WIDTH;
-        const maximum = Math.min(
-            this.config.design.width,
-            minimum + LARGE_ENEMY_PLATFORM_WIDTH_VARIATION,
-        );
-        const hash = hashDoodleJumpSeed(`${platformId}:large-enemy-platform`);
-        return minimum + (hash % 1001) / 1000 * (maximum - minimum);
+    private baseWidthFor(platformId: string): number {
+        const fixed = this.config.fixedPlatforms.find((platform) => platform.id === platformId);
+        return fixed ? fixed.width : this.config.platformBehavior.standardWidth;
     }
 
     private isCandidateReachable(
@@ -1670,26 +1825,6 @@ export class DoodleJumpSimulation {
         ));
         return settings.spawnChanceAtUnlock
             + (settings.spawnChanceAtCap - settings.spawnChanceAtUnlock) * progress;
-    }
-
-    private anchorWidthRange(
-        type: 'normal' | 'moving' | 'shifting',
-        difficulty: number,
-        recoveryLayer: boolean,
-    ): readonly [number, number] {
-        if (recoveryLayer) return [185, 215];
-        if (type === 'moving') return [135 - difficulty * 10, 180 - difficulty * 8];
-        if (type === 'shifting') return [125 - difficulty * 8, 165 - difficulty * 8];
-        return [155 - difficulty * 25, 210 - difficulty * 20];
-    }
-
-    private widthRange(type: DoodleJumpPlatformType): readonly [number, number] {
-        if (type === 'normal') return [125, 210];
-        if (type === 'moving' || type === 'vertical-moving') return [120, 180];
-        if (type === 'breakable' || type === 'disappearing') return [110, 160];
-        if (type === 'shifting') return [110, 150];
-        if (type === 'spiked') return [125, 180];
-        return [105, 150];
     }
 
     private recyclePlatforms(): void {

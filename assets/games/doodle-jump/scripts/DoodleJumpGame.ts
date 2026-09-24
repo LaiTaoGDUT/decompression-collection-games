@@ -86,7 +86,6 @@ import {
 import { DoodleJumpStateMachine } from './DoodleJumpStateMachine';
 
 const { ccclass } = _decorator;
-const RUN_PROGRESS_SAVE_INTERVAL_SECONDS = 3;
 const ENEMY_SIZE_SCALE = 2 / 3;
 const ENEMY_VISUAL_MARGIN_SCALE = 2 * ENEMY_SIZE_SCALE;
 // The beam source's top ring is 9.5 px right of its texture canvas center.
@@ -522,7 +521,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private debugHeadStartRemaining = 0;
     private runStarted = false;
     private runShotCount = 0;
-    private runProgressSaveElapsed = 0;
     private runExitTracked = false;
     private rewardedVideoIconFrame?: SpriteFrame;
     private hideUnsubscribe?: Unsubscribe;
@@ -730,6 +728,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.showLoadingOverlay();
         await this.loadVisualAssets();
         this.applyVisualAssets();
+        this.simulation.prepareWorld(this.visibleSize.height);
         this.prewarmPresentationPools();
         this.renderSimulation();
         this.setGameplayPresentationVisible(true);
@@ -824,7 +823,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.runStarted = false;
         this.activeRoundRestored = false;
         this.runShotCount = 0;
-        this.runProgressSaveElapsed = 0;
         this.runExitTracked = false;
         this.failureLocked = false;
         this.settlementCommitted = false;
@@ -870,6 +868,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.destroyPauseOverlay();
         this.resetShootingRuntime(false);
         this.simulation?.reset();
+        this.simulation?.prepareWorld(this.visibleSize.height);
         this.renderSimulation();
         this.sessionStartedAt = Date.now();
         this.inputController?.setEnabled(false);
@@ -1047,13 +1046,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.consumeHazardEvents(this.simulation.drainHazardEvents());
         this.consumeItemEvents(this.simulation.drainItemEvents());
         this.renderSimulation(presentation);
-        this.runProgressSaveElapsed += Math.max(0, deltaTime);
-        if (this.runProgressSaveElapsed >= RUN_PROGRESS_SAVE_INTERVAL_SECONDS) {
-            // Each checkpoint is rebuilt from the immutable run baseline, so
-            // repeated writes replace one another instead of double-counting.
-            this.runProgressSaveElapsed = 0;
-            this.persistCurrentRunHistory(false, false);
-        }
+        // No storage writes happen during play: serializing the round and the
+        // synchronous platform storage write cost whole frames on device.
+        // The active round is persisted at every lifecycle boundary instead
+        // (pause, hide, failure, revive, restart and dispose).
         if (this.context?.services.platform.id === 'wechat'
             && this.inputController?.hasStaleSensor()) {
             this.enterSensorError('1500ms 内没有新的重力感应数据');
@@ -1434,7 +1430,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.stateMachine.transition('Playing');
         this.inputController?.setEnabled(true);
         this.runStarted = true;
-        this.runProgressSaveElapsed = 0;
         const snapshot = this.simulation?.getPresentationView();
         this.context?.services.analytics.track('doodle_jump_run_start', {
             sessionId: this.context.sessionId,
@@ -1462,10 +1457,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             (snapshot?.combat.score ?? 0) + (snapshot?.hazardStats.score ?? 0),
         );
         // 失败快照是跨生命周期边界的关键状态：先在仍可构建 activeRound 的
-        // Playing 状态同步写盘，再切换到 Failing，避免死亡后立即退出时只剩
-        // 上一次 3 秒检查点。
+        // Playing 状态同步写盘，再切换到 Failing，避免死亡后立即退出时丢失
+        // 本局进度。
         this.persistCurrentRunHistory(false, true, undefined, snapshot);
-        this.runProgressSaveElapsed = 0;
         this.stateMachine.transition('Failing');
         this.context?.services.feedback.play('failure');
         this.updatePresentationState(this.failureReasonText(reason));
@@ -1500,10 +1494,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.failureDelayPending = true;
         this.failureDropElapsed = 0;
         this.failureAnimationReason = reason;
-        this.failureDropWorldX = snapshot?.playerX ?? this.config.design.width / 2;
-        this.failureDropWorldY = snapshot?.playerY
-            ?? this.simulation?.getCameraBottomY()
-            ?? 0;
+        // The drop continues from what was on screen: the interpolated render
+        // position, not the fixed-step state that may be up to one step ahead.
+        const presented = this.simulation?.getPresentationView();
+        this.failureDropWorldX = presented?.playerX ?? this.config.design.width / 2;
+        this.failureDropWorldY = presented?.playerY ?? 0;
         this.failureStartWorldX = this.failureDropWorldX;
         this.failureStartWorldY = this.failureDropWorldY;
         // Contact while rising must still turn into an immediate downward fall.
@@ -1538,7 +1533,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.updatePlayerContactEffect(safeDelta);
         this.updateHazardFailureEffect();
         const visible = this.visibleSize;
-        const cameraBottomY = this.simulation.getCameraBottomY();
+        const cameraBottomY = this.simulation.getPresentationView().cameraBottomY;
         const cameraCenterY = cameraBottomY + visible.height / 2;
         const playerOpacity = this.playerNode?.isValid
             ? this.ensureVisualOpacity(this.playerNode)
@@ -1711,10 +1706,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             platformId: resurrection?.platformId ?? '',
         });
         this.stateMachine.transition('Playing');
-        this.runProgressSaveElapsed = 0;
         const revived = this.simulation?.getSnapshot();
         // 复活会重置位置、速度、附近危险物和护盾，必须把这个新局面立即
-        // 固化，不能等下一次 3 秒检查点。
+        // 固化。
         this.persistCurrentRunHistory(false, true, undefined, revived);
         this.inputController?.setEnabled(true);
         this.context.services.feedback.play('continue');
@@ -3572,10 +3566,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const directionY = length >= 0.0001 ? this.aimY / length : 1;
         const node = this.obtainProjectileNode();
         const spawnOffset = 34;
+        // Launch from where the player is drawn (the interpolated render
+        // position) so the paper plane leaves the character's hand.
+        const presented = this.simulation.getPresentationView();
         const projectile: DoodleJumpProjectile = {
             node,
-            x: this.simulation.getPlayerX() + directionX * spawnOffset,
-            y: this.simulation.getPlayerY() + directionY * spawnOffset,
+            x: presented.playerX + directionX * spawnOffset,
+            y: presented.playerY + directionY * spawnOffset,
             velocityX: directionX * this.config.shooting.speed,
             velocityY: directionY * this.config.shooting.speed,
             remainingSeconds: this.config.shooting.lifetimeSeconds,
@@ -3585,7 +3582,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const visible = this.visibleSize;
         node.setPosition(
             projectile.x - this.config.design.width / 2,
-            projectile.y - (this.simulation.getCameraBottomY() + visible.height / 2),
+            projectile.y - (presented.cameraBottomY + visible.height / 2),
             0,
         );
         this.activeProjectiles.push(projectile);
