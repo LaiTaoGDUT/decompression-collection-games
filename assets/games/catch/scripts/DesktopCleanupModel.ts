@@ -142,9 +142,9 @@ interface DesktopCleanupToolEffect {
     readonly removedItemIds?: readonly string[];
 }
 
-// Keep the visible pile footprint unchanged while using 32 depth layers.
-// Six items per layer gives a 192-item board without making the playmat too
-// dense to read.
+// 32 depth layers with six items each give a 192-item board. Every layer
+// keeps the same item count, so the per-layer footprint below decides how
+// dense that layer looks.
 const LAYER_COUNT = 32;
 const GROUPS_PER_LAYER = 2;
 const ITEMS_PER_LAYER = GROUPS_PER_LAYER * 3;
@@ -174,6 +174,11 @@ const PHYSICS_SETTLE_SPEED = 0.006;
 const PHYSICS_DEPTH_COLLISION_RANGE = 0.35;
 const PHYSICS_COVER_RADIUS = PHYSICS_ITEM_RADIUS * 0.72;
 const PHYSICS_EPSILON = 0.0001;
+// The bottom layer may only use this fraction of the playmat's safe placement
+// range; the range grows linearly back to the full playmat at the top layer.
+// Since every layer holds the same number of items, lower layers are both
+// narrower and denser, so the pile reads as a mound instead of a flat sheet.
+const STACK_BOTTOM_LAYER_FOOTPRINT = 0.42;
 // The initial cloud is random and may clamp against the playmat edge. Extra
 // sweeps keep each six-item layer clear before the round starts.
 const INITIAL_POSITION_RELAXATION_PASSES = 256;
@@ -201,6 +206,23 @@ function visibleCenterLimit(
                 + STACK_EDGE_OVERSCAN,
         ),
     );
+}
+
+function layerFootprintScale(layer: number, layerCount: number): number {
+    if (layerCount <= 1) return 1;
+    const progress = clamp(layer / (layerCount - 1), 0, 1);
+    return STACK_BOTTOM_LAYER_FOOTPRINT + (1 - STACK_BOTTOM_LAYER_FOOTPRINT) * progress;
+}
+
+/** Placement bound for one layer: the rotated playmat bound narrowed by depth. */
+function layerCenterLimit(
+    layer: number,
+    layerCount: number,
+    angle: number,
+    type: DesktopCleanupItemType | undefined,
+    theme: DesktopCleanupThemeDefinition,
+): number {
+    return visibleCenterLimit(angle, 0, type, theme) * layerFootprintScale(layer, layerCount);
 }
 
 function renderDepth(item: Pick<DesktopCleanupItemSnapshot, 'layer' | 'elevation'>): number {
@@ -309,21 +331,23 @@ function stackedPositions(
         // Every layer gets its own irregular cloud. There are deliberately
         // no reusable anchors or sinusoidal waves: those create a visible
         // ring/flower silhouette even when the item order is shuffled.
-        const layerOffsetX = (random() - 0.5) * 0.12;
-        const layerOffsetY = (random() - 0.5) * 0.12;
-        // Fill the playmat with one broad irregular cloud per layer. The
+        // The whole cloud (offset, spread and hard bound) shrinks with depth.
+        const footprint = layerFootprintScale(layer, layerCount);
+        const layerOffsetX = (random() - 0.5) * 0.12 * footprint;
+        const layerOffsetY = (random() - 0.5) * 0.12 * footprint;
+        // Fill this layer's footprint with one broad irregular cloud. The
         // final rotated-item bound below still owns the hard edge; these
         // larger spreads only make reaching that safe edge common enough that
-        // a freshly spawned pile does not collapse into the center.
-        const layerSpreadX = 0.37 + random() * 0.09;
-        const layerSpreadY = 0.39 + random() * 0.09;
+        // a freshly spawned layer does not collapse into its center.
+        const layerSpreadX = (0.37 + random() * 0.09) * footprint;
+        const layerSpreadY = (0.39 + random() * 0.09) * footprint;
         const layerPositionKeys = new Set<string>();
         const count = Math.min(ITEMS_PER_LAYER, itemCount - positions.length);
         for (let index = 0; index < count; index += 1) {
             const spreadX = layerSpreadX * (0.88 + random() * 0.12);
             const spreadY = layerSpreadY * (0.88 + random() * 0.12);
             const angle = Math.round(-38 + random() * 76);
-            const centerLimit = visibleCenterLimit(angle, 0, undefined, theme);
+            const centerLimit = layerCenterLimit(layer, layerCount, angle, undefined, theme);
             let x = 0;
             let y = 0;
             let key = '';
@@ -358,10 +382,12 @@ function stackedPositions(
 
 function clampGeneratedPosition(
     position: DesktopCleanupGeneratedPosition,
+    layer: number,
+    layerCount: number,
     type: DesktopCleanupItemType,
     theme: DesktopCleanupThemeDefinition,
 ): void {
-    const centerLimit = visibleCenterLimit(position.angle, 0, type, theme);
+    const centerLimit = layerCenterLimit(layer, layerCount, position.angle, type, theme);
     position.x = clamp(position.x, -centerLimit, centerLimit);
     position.y = clamp(position.y, -centerLimit, centerLimit);
 }
@@ -373,6 +399,8 @@ function relaxInitialLayerPositions(
 ): readonly DesktopCleanupGeneratedPosition[] {
     // Only same-layer items participate in runtime collision resolution. The
     // overlap between different layers is intentional and creates the pile.
+    // Separation is bounded by each layer's own footprint, so narrow bottom
+    // layers stay tightly packed instead of being pushed back out to the edge.
     const relaxed = positions.map((position) => ({ ...position }));
     for (let pass = 0; pass < INITIAL_POSITION_RELAXATION_PASSES; pass += 1) {
         let changed = false;
@@ -404,8 +432,8 @@ function relaxInitialLayerPositions(
                     left.y -= normalY * correction;
                     right.x += normalX * correction;
                     right.y += normalY * correction;
-                    clampGeneratedPosition(left, leftType, theme);
-                    clampGeneratedPosition(right, rightType, theme);
+                    clampGeneratedPosition(left, layer, layerItems.length, leftType, theme);
+                    clampGeneratedPosition(right, layer, layerItems.length, rightType, theme);
                     changed = true;
                 }
             }
@@ -488,6 +516,11 @@ export function verifyDesktopCleanupLayout(
         if (Math.abs(item.x) > centerLimit + PHYSICS_EPSILON
             || Math.abs(item.y) > centerLimit + PHYSICS_EPSILON) {
             errors.push(`item ${item.id} exceeds rotated playmat bounds`);
+        }
+        const layerLimit = layerCenterLimit(item.layer, LAYER_COUNT, item.angle, item.type, theme);
+        if (Math.abs(item.x) > layerLimit + PHYSICS_EPSILON
+            || Math.abs(item.y) > layerLimit + PHYSICS_EPSILON) {
+            errors.push(`item ${item.id} exceeds layer ${item.layer} footprint`);
         }
     });
     totals.forEach((count, type) => {
