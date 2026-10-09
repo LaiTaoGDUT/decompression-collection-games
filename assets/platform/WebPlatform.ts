@@ -18,6 +18,8 @@ interface WebPlatformEvents {
 
 export interface WebPlatformOptions {
     readonly safeArea?: SafeArea;
+    /** 普通预览使用当前设计画布尺寸；显式注入 safeArea 时优先保留测试安全区。 */
+    readonly getViewportSize?: () => { readonly width: number; readonly height: number };
     /** 浏览器预览胶囊避让效果时可注入模拟区域。 */
     readonly topRightReservedArea?: PlatformUiRect;
     readonly launchOptions?: LaunchOptions;
@@ -48,16 +50,20 @@ export class WebPlatform implements Platform {
 
     private readonly events = new EventBus<WebPlatformEvents>();
     private readonly safeArea: SafeArea;
+    private readonly getViewportSize?: WebPlatformOptions['getViewportSize'];
     private readonly layoutInfo: PlatformLayoutInfo;
     private readonly launchOptions: LaunchOptions;
     private readonly deviceProfile: DeviceProfile;
     private initialized = false;
     private visible = true;
+    private toastElement?: HTMLDivElement;
+    private toastTimer?: ReturnType<typeof setTimeout>;
     private activeImagePicker?: {
         readonly cancel: () => void;
     };
 
     constructor(options: WebPlatformOptions = {}) {
+        this.getViewportSize = options.safeArea ? undefined : options.getViewportSize;
         this.safeArea = Object.freeze({
             ...(options.safeArea ?? DEFAULT_SAFE_AREA),
         });
@@ -90,6 +96,7 @@ export class WebPlatform implements Platform {
 
     dispose(): void {
         this.cancelLocalImagePicker();
+        this.clearToast();
 
         if (this.initialized && typeof document !== 'undefined') {
             document.removeEventListener(
@@ -103,11 +110,16 @@ export class WebPlatform implements Platform {
     }
 
     getSafeArea(): SafeArea {
+        const size = this.getViewportSize?.();
+        if (size && Number.isFinite(size.width) && Number.isFinite(size.height) && size.width > 0 && size.height > 0) {
+            return Object.freeze({ left: 0, top: 0, right: size.width, bottom: size.height, width: size.width, height: size.height });
+        }
         return this.safeArea;
     }
 
     getLayoutInfo(): PlatformLayoutInfo {
-        return this.layoutInfo;
+        const safeArea = this.getSafeArea();
+        return safeArea === this.safeArea ? this.layoutInfo : Object.freeze({ ...this.layoutInfo, safeArea });
     }
 
     getDeviceProfile(): DeviceProfile {
@@ -246,7 +258,7 @@ export class WebPlatform implements Platform {
                 },
             });
         } catch (error: unknown) {
-            console.warn('[WebPlatform] Failed to crop local image.', error);
+            // TODO: console.warn('[WebPlatform] Failed to crop local image.', error);
             return null;
         }
     }
@@ -266,7 +278,7 @@ export class WebPlatform implements Platform {
             localStorage.setItem(key, dataUrl);
             return key;
         } catch (error: unknown) {
-            console.warn('[WebPlatform] Failed to persist local image.', error);
+            // TODO: console.warn('[WebPlatform] Failed to persist local image.', error);
             return null;
         }
     }
@@ -308,6 +320,44 @@ export class WebPlatform implements Platform {
 
     onAccelerometerChange(_callback: (sample: AccelerometerSample) => void): () => void {
         return () => {};
+    }
+
+    showToast(message: string): void {
+        if (typeof document === 'undefined') return;
+        const host = document.body ?? document.documentElement;
+        if (!host) return;
+
+        this.clearToast();
+        const toast = document.createElement('div');
+        toast.dataset.platformToast = '';
+        toast.textContent = message;
+        toast.setAttribute('role', 'status');
+        Object.assign(toast.style, {
+            position: 'fixed',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: '2147483647',
+            maxWidth: 'calc(100vw - 48px)',
+            boxSizing: 'border-box',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            background: 'rgba(0, 0, 0, 0.78)',
+            color: '#ffffff',
+            font: '16px/1.5 sans-serif',
+            textAlign: 'center',
+            pointerEvents: 'none',
+        });
+        host.appendChild(toast);
+        this.toastElement = toast;
+        this.toastTimer = setTimeout(() => this.clearToast(), 2000);
+    }
+
+    private clearToast(): void {
+        if (this.toastTimer !== undefined) clearTimeout(this.toastTimer);
+        this.toastTimer = undefined;
+        this.toastElement?.remove();
+        this.toastElement = undefined;
     }
 
     showShareMenu(): void {

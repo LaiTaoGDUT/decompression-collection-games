@@ -1,23 +1,18 @@
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
 import { _decorator, Component, Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
 import type { AssetService } from '../../../services/asset/AssetService';
 const { ccclass } = _decorator;
-export const OCEAN_BOSS_PARTS = ['body', 'crown', 'staff-arm', 'right-arm'] as const;
+export const OCEAN_BOSS_PARTS = ['reclining-body', 'reclining-staff', 'reclining-arm'] as const;
 const PARTS = OCEAN_BOSS_PARTS;
 type Part = typeof PARTS[number];
 export type OceanBossFrames = ReadonlyMap<Part, SpriteFrame>;
-export interface BubbleShooterModalDecoration {
-    layout(panelWidth: number): void;
-    dispose(): void;
-}
-export type BubbleShooterModalDecorationFactory = (back: Node, front: Node) => BubbleShooterModalDecoration;
-
 /** Load only Ocean Boss assets through the application's resource owner. */
 export async function loadOceanBossFrames(assets: AssetService): Promise<OceanBossFrames> {
     const directory = 'visual/regions/ocean/boss';
-    const bundle = await assets.prepareBundle('game-bubble-shooter-assets', directory);
+    const bundle = await assets.prepareBundle('game-bubble-shooter-assets', directory, undefined, { excludeAudio: true });
     const frames = new Map<Part, SpriteFrame>();
     for (const part of PARTS) {
-        const frame = bundle.get(`${directory}/boss-${part}/spriteFrame`, SpriteFrame);
+        const frame = bundle.get(PACKED_SPRITE_PATHS[`${directory}/boss-${part}/spriteFrame`], SpriteFrame);
         if (!frame) throw new Error(`Ocean Boss SpriteFrame missing: ${part}`);
         frames.set(part, frame);
     }
@@ -26,7 +21,7 @@ export async function loadOceanBossFrames(assets: AssetService): Promise<OceanBo
 
 export async function loadOceanCelebration(assets: AssetService): Promise<SpriteFrame> {
     const directory = 'visual/regions/ocean/reward';
-    const bundle = await assets.prepareBundle('game-bubble-shooter-assets', directory);
+    const bundle = await assets.prepareBundle('game-bubble-shooter-assets', directory, undefined, { excludeAudio: true });
     const frame = bundle.get(`${directory}/celebration/spriteFrame`, SpriteFrame);
     if (!frame) throw new Error('Ocean celebration SpriteFrame missing.');
     return frame;
@@ -44,22 +39,12 @@ function clear(root: Node): void {
     root.removeFromParent(); root.destroy();
 }
 
-/** One assembly for gameplay and dialogs: shoulder roots overlap beneath the torso. */
-function buildShark(parent: Node, frames: OceanBossFrames, battle = false): {body: Node; crown: Node; staff: Node; arm: Node} {
-    const staff = sprite(parent, 'StaffArm', frames.get('staff-arm')!, battle ? 300 : 225, battle ? -95 : -45, -45, .96, .51);
-    const arm = sprite(parent, 'RightArm', frames.get('right-arm')!, battle ? 240 : 170, battle ? 185 : 170, battle ? -30 : -50, .12, .82);
-    const body = sprite(parent, 'Body', frames.get('body')!, battle ? 430 : 400, 25, battle ? -175 : -160);
-    const crown = sprite(body, 'Crown', frames.get('crown')!, 110, 50, battle ? 365 : 347);
-    return {body, crown, staff, arm};
-}
-
 /** Independent art layers. The host controls pause and invokes enter/cast/defeat. */
 @ccclass('BubbleShooterOceanBoss')
 export class BubbleShooterOceanBoss extends Component {
     private frames?: OceanBossFrames;
     private figure?: Node;
     private body?: Node;
-    private crown?: Node;
     private staff?: Node;
     private arm?: Node;
     private opacity?: UIOpacity;
@@ -82,20 +67,24 @@ export class BubbleShooterOceanBoss extends Component {
         this.frames = new Map(frames);
         this.figure = new Node('OceanFigure'); this.figure.layer = this.node.layer; this.figure.setParent(this.node);
         this.opacity = this.figure.addComponent(UIOpacity);
-        const rig = buildShark(this.figure, frames, true);
-        this.staff = rig.staff; this.arm = rig.arm; this.body = rig.body; this.crown = rig.crown;
+        // Rear shoulder stays hidden behind the torso; front shoulder has a feathered overlap.
+        // Both rotate about fixed shoulder roots under one shared breathing transform.
+        this.staff = sprite(this.figure, 'RecliningStaff', frames.get('reclining-staff')!, 200, -185, 45, .86, .18);
+        this.body = sprite(this.figure, 'RecliningBody', frames.get('reclining-body')!, 720, 0, 0, .5, 0);
+        this.arm = sprite(this.figure, 'RecliningArm', frames.get('reclining-arm')!, 112, -5, 103, .30, .85);
         this.hitTarget = new Node('ChestHitTarget');
         this.hitTarget.layer = this.node.layer; this.hitTarget.setParent(this.body);
         this.hitTarget.addComponent(UITransform);
-        this.hitTarget.setPosition(0, 130);
+        const ui = this.body.getComponent(UITransform)!;
+        this.hitTarget.setPosition(-ui.width * .17, ui.height * .27);
         this.skillOrigin = new Node('StaffOrbOrigin');
         this.skillOrigin.layer = this.node.layer; this.skillOrigin.setParent(this.staff);
         this.skillOrigin.addComponent(UITransform);
-        // Orb centre in the trimmed staff sprite, measured from the approved cutout.
         const staffUI = this.staff.getComponent(UITransform)!;
-        this.skillOrigin.setPosition((.18 - .96) * staffUI.width, (.88 - .51) * staffUI.height);
+        this.skillOrigin.setPosition((.26-.86)*staffUI.width, (.77-.18)*staffUI.height);
         this.figure.active = false;
     }
+    get battleHeight(): number { return this.body?.getComponent(UITransform)?.height ?? 270; }
     resetPose(): void {
         if(this.disposed)return;
         this.phase='hidden';this.age=0;this.clock=0;this.impact=undefined;this.complete=undefined;
@@ -142,20 +131,22 @@ export class BubbleShooterOceanBoss extends Component {
     private pose(): void {
         if (!this.figure) return;
         const breathing = Math.sin(this.clock * 2.1);
-        this.figure.setPosition(0, 3 * breathing); this.figure.angle = 0; this.opacity!.opacity = 255;
-        // Breathe as one rig so the arm roots stay attached.
-        this.crown!.angle = 1.7 * Math.sin(this.clock * 1.6);
-        this.staff!.angle = 2 * Math.sin(this.clock * 1.7 + .7);
-        this.arm!.angle = 4 * Math.sin(this.clock * 1.9 + 1.1);
+        // Breathing scales around the feet; the body stays seated on the board ledge.
+        this.figure.setPosition(0, 0); this.figure.angle = 0; this.opacity!.opacity = 255;
+        this.figure.angle = .6 * Math.sin(this.clock * 1.7);
+        this.staff!.angle = 1.5 * Math.sin(this.clock * 1.7 + .7);
+        this.arm!.angle = 2 * Math.sin(this.clock * 1.9 + 1.1);
         if (this.phase === 'entry') {
             const t = Math.min(1, this.age / .9), eased = 1 - Math.pow(1 - t, 3);
-            this.figure.setPosition(0, -180 * (1 - eased) + Math.sin(t * Math.PI) * 12);
+            this.figure.setPosition(0, Math.min(0,-180 * (1 - eased) + Math.sin(t * Math.PI) * 12));
             this.opacity!.opacity = Math.round(255 * Math.min(1, t * 3));
         } else if (this.phase === 'cast') {
             const age=this.age/1.8;
             const lift = age < .35 ? age / .35 : age < .45 ? 1 - 1.45 * (age - .35) / .1 : -.45 * (1 - (age - .45) / .55);
-            this.staff!.angle = -28 * lift; this.arm!.angle = 18 * lift;
-            this.figure.setPosition(0, 12 * lift); this.crown!.angle = -4 * lift;
+            this.figure.angle = -1.2 * lift;
+            this.figure.setPosition(0, 0);
+            this.staff!.angle = -12 * lift;
+            this.arm!.angle = 8 * lift;
         } else if (this.phase === 'exit') {
             const t = Math.min(1, this.age / 1.15);
             this.figure.setPosition(0, -230 * t * t); this.figure.angle = 7 * Math.sin(t * 15) * t;
@@ -164,29 +155,12 @@ export class BubbleShooterOceanBoss extends Component {
         const recoil=Math.sin(Math.min(1,this.hitAge/.3)*Math.PI);
         this.figure.setScale(1+.007*breathing+.035*recoil,1+.012*breathing-.04*recoil,1);
     }
-    /** Same connected shark rig behind the shared panel; its lower body is occluded. */
-    modalFactory(): BubbleShooterModalDecorationFactory {
-        if (!this.frames) throw new Error('Ocean Boss not initialized.');
-        const frames = this.frames;
-        return (back, _front) => {
-            const rear = new Node('OceanModalBack'); rear.layer = back.layer; rear.setParent(back);
-            buildShark(rear, frames);
-            return {
-                layout: (width: number) => {
-                    const scale = width / 660;
-                    rear.setScale(scale, scale, 1);
-                    rear.setPosition(0, 240 + 85 * scale);
-                },
-                dispose: () => { clear(rear); },
-            };
-        };
-    }
     dispose(): void {
         if (this.disposed) return;
         this.disposed = true; this.paused = true; this.impact = this.complete = undefined;
         if (this.figure) clear(this.figure);
         this.frames = undefined;
-        this.figure = this.body = this.crown = this.staff = this.arm = this.skillOrigin = this.hitTarget = undefined;
+        this.figure = this.body = this.staff = this.arm = this.skillOrigin = this.hitTarget = undefined;
         this.opacity = undefined;
     }
     onDestroy(): void { this.dispose(); }

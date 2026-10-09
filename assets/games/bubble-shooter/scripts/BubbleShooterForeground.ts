@@ -3,7 +3,7 @@ import { BOARD_WIDTH, TOP, DANGER, DIAMETER } from './BubbleShooterModel';
 
 export interface BoardForegroundStyle {
     frames: readonly SpriteFrame[]; width: number; opacity: number;
-    duration: number; interval: number; bob: number; rise?: number; motion?: 'bubbles';
+    duration: number; interval: number; bob: number; rise?: number; motion?: 'bubbles' | 'flutter';
 }
 /** Region-owned foreground above all playfield children, clipped to the gameplay area. No input listeners. */
 export class BubbleShooterForeground {
@@ -59,7 +59,8 @@ export class BubbleShooterForeground {
         const extent=(BOARD_WIDTH+style.width)/2;
         const band=[.27,-.02,.14,-.20][this.pass%4]!;
         this.cloud.setPosition(direction*(-extent+extent*2*t),this.height*band+Math.sin(t*Math.PI*2)*style.bob+(t-.5)*(style.rise??0));
-        this.cloud.setScale(direction,1,1);
+        this.cloud.setScale(direction*(style.motion==='flutter'?.6+.4*Math.abs(Math.sin(this.age*8)):1),1,1);
+        this.cloud.angle=style.motion==='flutter'?Math.sin(this.age*2)*10:0;
         this.opacity.opacity=style.opacity*Math.min(1,t/.18,(1-t)/.18);
         if(t===1){this.cloud.active=false;this.age=-1;this.wait=style.interval+(this.pass%3)*1.5;}
     }

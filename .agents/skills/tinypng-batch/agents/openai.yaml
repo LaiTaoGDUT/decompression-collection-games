@@ -1,0 +1,4 @@
+interface:
+  display_name: "TinyPNG 批量压缩"
+  short_description: "批量压缩图片，支持多个 API Key、额度切换、轮询与缓存"
+  default_prompt: "使用 $tinypng-batch 批量压缩我指定的图片目录，复用本地配置的 API Key，并汇报节省的体积。"

@@ -1,0 +1,155 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "a21b2": {
+      "importer": "sprite-frame",
+      "uuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2@a21b2",
+      "displayName": "",
+      "id": "a21b2",
+      "name": "boss-reclining-arm",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 782,
+        "trimY": 284,
+        "width": 121,
+        "height": 139,
+        "rawWidth": 121,
+        "rawHeight": 139,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "a0d8540a-2501-523c-b263-18abaddb09f1@6c48a",
+        "atlasUuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9ed0": {
+      "importer": "sprite-frame",
+      "uuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2@f9ed0",
+      "displayName": "",
+      "id": "f9ed0",
+      "name": "boss-reclining-body",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 776,
+        "height": 290,
+        "rawWidth": 776,
+        "rawHeight": 290,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "a0d8540a-2501-523c-b263-18abaddb09f1@6c48a",
+        "atlasUuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "0a728": {
+      "importer": "sprite-frame",
+      "uuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2@0a728",
+      "displayName": "",
+      "id": "0a728",
+      "name": "boss-reclining-staff",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 782,
+        "trimY": 2,
+        "width": 215,
+        "height": 278,
+        "rawWidth": 215,
+        "rawHeight": 278,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "a0d8540a-2501-523c-b263-18abaddb09f1@6c48a",
+        "atlasUuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "ocean-boss.png",
+    "format": 2,
+    "uuid": "cfb039f4-56a2-57e6-8cb0-aa719bc415f2",
+    "textureUuid": "a0d8540a-2501-523c-b263-18abaddb09f1@6c48a"
+  }
+}

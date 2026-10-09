@@ -145,6 +145,8 @@ function segmentAabbTime(
     return entry >= 0 && entry <= 1 ? entry : undefined;
 }
 
+const EMPTY_EVENTS: readonly DoodleJumpHazardEvent[] = Object.freeze([]);
+
 export class DoodleJumpHazardSystem {
     private readonly hazards: MutableHazard[] = [];
     private readonly evaluatedPlatformIds = new Set<string>();
@@ -490,7 +492,7 @@ export class DoodleJumpHazardSystem {
     }
 
     drainEvents(): readonly DoodleJumpHazardEvent[] {
-        if (this.events.length === 0) return Object.freeze([]);
+        if (this.events.length === 0) return EMPTY_EVENTS;
         return Object.freeze(this.events.splice(0, this.events.length));
     }
 
@@ -704,21 +706,14 @@ export class DoodleJumpHazardSystem {
                 heightMeters < this.config.hazards.twoActiveHeightMeters ? 1
                     : 2,
             );
-            if (this.hazards.length >= activeLimit) continue;
             this.evaluatedPlatformIds.add(platform.id);
-            if (!platform.collisionEnabled || platform.consumed) continue;
-            if (platform.id === 'P0' || platform.id === 'P1' || platform.id === 'P2') continue;
+            if (platform.spawnPlan?.content !== 'hazard' || this.hazards.length >= activeLimit
+                || !platform.collisionEnabled || platform.consumed) continue;
             const difficulty = this.hazardDifficultyProgress(heightMeters);
-            const spawnChance = this.config.hazards.spawnChanceAtUnlock
-                + (this.config.hazards.spawnChancePerPlatform
-                    - this.config.hazards.spawnChanceAtUnlock) * difficulty;
             const minimumSeparation = this.config.hazards.minimumVerticalSeparationAtUnlock
                 + (this.config.hazards.minimumVerticalSeparation
                     - this.config.hazards.minimumVerticalSeparationAtUnlock) * difficulty;
             if (platform.y - this.lastSpawnAnchorY < minimumSeparation) continue;
-            if (this.randomStreams.next('enemy') >= spawnChance) {
-                continue;
-            }
             const type = this.pickHazardType(heightMeters);
             const hazard = type
                 ? this.createHazard(
@@ -841,7 +836,7 @@ export class DoodleJumpHazardSystem {
                             * (platform.width / 2 + settings.outerRadius * 0.62),
                     ),
                 );
-                const y = platform.y + this.config.generation.verticalStep * candidates[index][1];
+                const y = platform.y + 60 * candidates[index][1];
                 if (!this.isBlackHolePlacementClear(x, y, platforms, occupiedBodies)) continue;
                 placement = [x, y];
                 break;

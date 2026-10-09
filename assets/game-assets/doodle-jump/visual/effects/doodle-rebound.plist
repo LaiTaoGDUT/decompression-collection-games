@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>spring-rebound</key>
+		<dict>
+			<key>frame</key>
+			<string>{{300,2},{254,179}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{254,179}}</string>
+			<key>sourceSize</key>
+			<string>{254,179}</string>
+		</dict>
+		<key>trampoline-rebound</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{294,228}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{294,228}}</string>
+			<key>sourceSize</key>
+			<string>{294,228}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-rebound.png</string>
+		<key>size</key>
+		<string>{556,232}</string>
+		<key>textureFileName</key>
+		<string>doodle-rebound.png</string>
+	</dict>
+</dict>
+</plist>

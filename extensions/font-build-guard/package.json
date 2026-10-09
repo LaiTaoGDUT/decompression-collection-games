@@ -1,0 +1,11 @@
+{
+  "name": "font-build-guard",
+  "title": "字体覆盖检查",
+  "package_version": 2,
+  "version": "1.0.0",
+  "description": "字体开启时在构建前检查静态文案覆盖，缺字时终止构建。",
+  "editor": ">=3.8.8",
+  "contributions": {
+    "builder": "./builder.js"
+  }
+}

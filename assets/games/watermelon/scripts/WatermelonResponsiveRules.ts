@@ -1,12 +1,12 @@
 import { Node, sys, UITransform, view } from 'cc';
+import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
+import { calculateVerticalSafeBounds } from '../../../shared/ui/PlatformSafeLayout';
 
 export interface WatermelonViewportMetrics {
     readonly width: number;
     readonly height: number;
     readonly safeTop: number;
     readonly safeBottom: number;
-    readonly safeLeft: number;
-    readonly safeRight: number;
     readonly contentWidth: number;
     readonly contentX: number;
 }
@@ -29,16 +29,12 @@ export function calculateWatermelonOverlayMetrics(
     safeTop = 0,
     safeBottom = 0,
     preferredPanelHeight = 650,
-    safeLeft = 0,
-    safeRight = 0,
 ): WatermelonOverlayMetrics {
     const width = Math.max(1, canvasWidth);
     const height = Math.max(1, canvasHeight);
     const clampedTop = Math.max(0, Math.min(height * 0.45, safeTop));
     const clampedBottom = Math.max(0, Math.min(height * 0.45, safeBottom));
-    const clampedLeft = Math.max(0, Math.min(width * 0.45, safeLeft));
-    const clampedRight = Math.max(0, Math.min(width * 0.45, safeRight));
-    const contentWidth = Math.max(1, width - clampedLeft - clampedRight);
+    const contentWidth = width;
     const availableHeight = Math.max(1, height - clampedTop - clampedBottom - 48);
     const panelWidth = 650;
     const panelHeight = Math.max(1, preferredPanelHeight);
@@ -56,10 +52,8 @@ export function calculateWatermelonOverlayMetrics(
         height,
         safeTop: clampedTop,
         safeBottom: clampedBottom,
-        safeLeft: clampedLeft,
-        safeRight: clampedRight,
         contentWidth,
-        contentX: (clampedLeft - clampedRight) / 2,
+        contentX: 0,
         panelWidth,
         panelHeight,
         panelY: (clampedBottom - clampedTop) / 2,
@@ -69,27 +63,24 @@ export function calculateWatermelonOverlayMetrics(
     });
 }
 
-export function readWatermelonViewport(owner: Node): WatermelonViewportMetrics {
+export function readWatermelonViewport(owner: Node, platformLayout?: PlatformLayoutInfo): WatermelonViewportMetrics {
     const ownerSize = owner.getComponent(UITransform)?.contentSize
         ?? owner.parent?.getComponent(UITransform)?.contentSize
         ?? { width: 750, height: 1334 };
     const visible = view.getVisibleSize();
     const safeRect = sys.getSafeAreaRect();
-    const scaleX = visible.width > 0 ? ownerSize.width / visible.width : 1;
     const scaleY = visible.height > 0 ? ownerSize.height / visible.height : 1;
-    const safeTop = Math.max(0, visible.height - safeRect.y - safeRect.height) * scaleY;
-    const safeBottom = Math.max(0, safeRect.y) * scaleY;
-    const safeLeft = Math.max(0, safeRect.x) * scaleX;
-    const safeRight = Math.max(0, visible.width - safeRect.x - safeRect.width) * scaleX;
+    const platformBounds = calculateVerticalSafeBounds(ownerSize.height, platformLayout);
+    const safeTop = Math.max(platformBounds.topInset,
+        Math.max(0, visible.height - safeRect.y - safeRect.height) * scaleY);
+    const safeBottom = Math.max(platformBounds.bottomInset, Math.max(0, safeRect.y) * scaleY);
 
     return Object.freeze({
         width: ownerSize.width,
         height: ownerSize.height,
         safeTop,
         safeBottom,
-        safeLeft,
-        safeRight,
-        contentWidth: Math.max(1, ownerSize.width - safeLeft - safeRight),
-        contentX: (safeLeft - safeRight) / 2,
+        contentWidth: ownerSize.width,
+        contentX: 0,
     });
 }

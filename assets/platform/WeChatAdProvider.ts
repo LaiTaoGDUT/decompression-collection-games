@@ -178,7 +178,7 @@ export class WeChatRewardedAdProvider extends WeChatAdPlacement
     dispose(): void {
         if (this.disposed) return;
         this.disposed = true;
-        for (const fail of [...this.pendingFailures]) {
+        for (const fail of Array.from(this.pendingFailures)) {
             fail('WeChat rewarded ad provider was disposed.');
         }
         this.pendingFailures.clear();

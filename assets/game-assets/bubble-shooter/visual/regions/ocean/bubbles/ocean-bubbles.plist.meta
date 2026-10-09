@@ -1,0 +1,247 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "ad2d8": {
+      "importer": "sprite-frame",
+      "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324@ad2d8",
+      "displayName": "",
+      "id": "ad2d8",
+      "name": "bubble-blue",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 160,
+        "trimY": 2,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7d6a170-823f-54df-a206-2ee35fcbd344@6c48a",
+        "atlasUuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "8736f": {
+      "importer": "sprite-frame",
+      "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324@8736f",
+      "displayName": "",
+      "id": "8736f",
+      "name": "bubble-purple",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 296,
+        "trimY": 2,
+        "width": 61,
+        "height": 61,
+        "rawWidth": 61,
+        "rawHeight": 61,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7d6a170-823f-54df-a206-2ee35fcbd344@6c48a",
+        "atlasUuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "88d06": {
+      "importer": "sprite-frame",
+      "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324@88d06",
+      "displayName": "",
+      "id": "88d06",
+      "name": "bubble-red",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 83,
+        "trimY": 2,
+        "width": 73,
+        "height": 73,
+        "rawWidth": 73,
+        "rawHeight": 73,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7d6a170-823f-54df-a206-2ee35fcbd344@6c48a",
+        "atlasUuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "09843": {
+      "importer": "sprite-frame",
+      "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324@09843",
+      "displayName": "",
+      "id": "09843",
+      "name": "bubble-support",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 77,
+        "height": 77,
+        "rawWidth": 77,
+        "rawHeight": 77,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7d6a170-823f-54df-a206-2ee35fcbd344@6c48a",
+        "atlasUuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "0ca78": {
+      "importer": "sprite-frame",
+      "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324@0ca78",
+      "displayName": "",
+      "id": "0ca78",
+      "name": "bubble-yellow",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 228,
+        "trimY": 2,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7d6a170-823f-54df-a206-2ee35fcbd344@6c48a",
+        "atlasUuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "ocean-bubbles.png",
+    "format": 2,
+    "uuid": "e1609eaf-508b-5a0a-8943-7a67ebfb7324",
+    "textureUuid": "d7d6a170-823f-54df-a206-2ee35fcbd344@6c48a"
+  }
+}

@@ -14,9 +14,6 @@ export const GAME_2048_SCORE_CARD_HEIGHT = 104;
 export const GAME_2048_PAUSE_TOUCH_SIZE = 88;
 export const GAME_2048_PAUSE_ICON_SIZE = 64;
 export const GAME_2048_PAUSE_EDGE_INSET = 24;
-export const GAME_2048_CHEAT_BUTTON_WIDTH = 104;
-export const GAME_2048_CHEAT_BUTTON_HEIGHT = 52;
-export const GAME_2048_CHEAT_BUTTON_GAP = 8;
 // 屏幕底部避让系统上滑退出手势的保护带（设计像素）：起点落在其中的滑动不再参与合成。
 export const GAME_2048_BOTTOM_SWIPE_EXCLUSION = 128;
 
@@ -42,8 +39,6 @@ export interface Game2048LayoutMetrics {
     readonly titleY: number;
     readonly pauseX: number;
     readonly pauseY: number;
-    readonly cheatX: number;
-    readonly cheatY: number;
     readonly scoreLeftX: number;
     readonly scoreRightX: number;
     readonly scoreY: number;
@@ -142,10 +137,6 @@ export function calculateGame2048Layout(
     const pauseX = contentX + contentWidth / 2
         - pauseWidth / 2
         - GAME_2048_PAUSE_EDGE_INSET * fitScale;
-    const cheatHeight = GAME_2048_CHEAT_BUTTON_HEIGHT * fitScale;
-    const cheatGap = GAME_2048_CHEAT_BUTTON_GAP * fitScale;
-    const cheatCenterFromTop = pauseCenterFromTop + pauseHeight / 2 + cheatGap + cheatHeight / 2;
-    const cheatY = height / 2 - cheatCenterFromTop;
 
     const topBlockBottomFromTop = Math.max(
         titleCenterFromTop + titleHeight / 2,
@@ -201,8 +192,6 @@ export function calculateGame2048Layout(
         titleY,
         pauseX,
         pauseY,
-        cheatX: pauseX,
-        cheatY,
         scoreLeftX,
         scoreRightX,
         scoreY,

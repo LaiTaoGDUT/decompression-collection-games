@@ -5,8 +5,13 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "verify:game-bundles": "node tools/verify-game-bundles.js",
-    "verify:wechat-package-size": "node tools/verify-wechat-package-size.js"
+    "verify:tap": "node tests/tap/platform.cjs && node tests/tap/build-hooks.cjs",
+    "verify:tap-package": "node tests/tap/package.cjs",
+    "copy:review": "node project-scripts/copy-review/server.cjs",
+    "verify:copy-review": "node project-scripts/copy-review/verify.cjs",
+    "verify:game-bundles": "node project-scripts/verify-game-bundles.js",
+    "verify:wechat-package-size": "node project-scripts/verify-wechat-package-size.js",
+    "verify:fonts": "node project-scripts/verify-fonts.cjs && node project-scripts/fonts/verify-coverage.cjs"
   },
   "devDependencies": {
     "lamejs": "^1.2.1"

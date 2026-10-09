@@ -5,6 +5,8 @@
 library/
 temp/
 local/
+# Tinify API credentials
+/local/tinypng-batch/keys.json
 build/
 profiles/
 native
@@ -34,3 +36,6 @@ tmp/
 .DS_Store
 __pycache__/
 *.pyc
+output/
+tinypng-output/
+tools_copy/

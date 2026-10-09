@@ -163,10 +163,10 @@ export const DESKTOP_CLEANUP_STACK_RENDER_SCALE = 0.96;
 /** Base normalized half-size; type multipliers are applied by visibleCenterLimit. */
 const STACK_ITEM_BASE_HALF_EXTENT = 0.15;
 /**
- * Allow the item footprint to reach the playmat edge, with only a tiny
- * overscan so the pile does not look inset from the panel artwork.
+ * Allow item edges to extend up to 5% of the rendered playmat width/height
+ * beyond its visible edge. Convert this margin to model coordinates below.
  */
-const STACK_EDGE_OVERSCAN = 0.02;
+const STACK_EDGE_OVERSCAN = 0.05;
 const PHYSICS_ITEM_RADIUS = 0.125;
 const PHYSICS_MAX_ELEVATION = 0.30;
 const PHYSICS_ITEM_SCALE_PER_ELEVATION = 0.14;
@@ -178,7 +178,10 @@ const PHYSICS_EPSILON = 0.0001;
 // range; the range grows linearly back to the full playmat at the top layer.
 // Since every layer holds the same number of items, lower layers are both
 // narrower and denser, so the pile reads as a mound instead of a flat sheet.
-const STACK_BOTTOM_LAYER_FOOTPRINT = 0.42;
+const STACK_BOTTOM_LAYER_FOOTPRINT = 0.38;
+// Spread every depth band more broadly to expose more of the lower pile.
+// Saturate at the existing rotated-item bound instead of extending the tray.
+const STACK_LAYER_FOOTPRINT_EXPANSION = 1.25;
 // The initial cloud is random and may clamp against the playmat edge. Extra
 // sweeps keep each six-item layer clear before the round starts.
 const INITIAL_POSITION_RELAXATION_PASSES = 256;
@@ -201,9 +204,8 @@ function visibleCenterLimit(
         Math.min(
             STACK_X_LIMIT,
             STACK_Y_LIMIT,
-            0.5 / DESKTOP_CLEANUP_STACK_RENDER_SCALE
-                - rotatedHalfExtent
-                + STACK_EDGE_OVERSCAN,
+            (0.5 + STACK_EDGE_OVERSCAN) / DESKTOP_CLEANUP_STACK_RENDER_SCALE
+                - rotatedHalfExtent,
         ),
     );
 }
@@ -211,7 +213,8 @@ function visibleCenterLimit(
 function layerFootprintScale(layer: number, layerCount: number): number {
     if (layerCount <= 1) return 1;
     const progress = clamp(layer / (layerCount - 1), 0, 1);
-    return STACK_BOTTOM_LAYER_FOOTPRINT + (1 - STACK_BOTTOM_LAYER_FOOTPRINT) * progress;
+    const footprint = STACK_BOTTOM_LAYER_FOOTPRINT + (1 - STACK_BOTTOM_LAYER_FOOTPRINT) * progress;
+    return Math.min(1, footprint * STACK_LAYER_FOOTPRINT_EXPANSION);
 }
 
 /** Placement bound for one layer: the rotated playmat bound narrowed by depth. */
@@ -580,6 +583,9 @@ export function runDesktopCleanupLayoutSelfCheck(
 
 export class DesktopCleanupModel {
     private readonly items = new Map<string, MutableItem>();
+    private activeItems: MutableItem[] = [];
+    private readonly movingItems = new Set<MutableItem>();
+    private cachedItemSnapshots?: readonly DesktopCleanupItemSnapshot[];
     private slots: MutableSlot[] = [];
     private currentPhase: DesktopCleanupPhase = 'playing';
     private currentFailure?: DesktopCleanupFailureReason;
@@ -628,22 +634,33 @@ export class DesktopCleanupModel {
         return this.timeLeftMs;
     }
 
+    get score(): number {
+        return this.currentScore;
+    }
+
+    /** Item data changes independently of the timer, tray and score. */
+    get itemSnapshots(): readonly DesktopCleanupItemSnapshot[] {
+        return this.cachedItemSnapshots ??= Object.freeze(
+            Array.from(this.items.values(), (item) => Object.freeze({ ...item })),
+        );
+    }
+
     isItemActive(itemId: string): boolean {
         return this.items.get(itemId)?.active === true;
     }
 
     get snapshot(): DesktopCleanupSnapshot {
-        const items = Array.from(this.items.values()).map((item) => Object.freeze({ ...item }));
+        const items = this.itemSnapshots;
         return Object.freeze({
             phase: this.currentPhase,
             ...(this.currentFailure ? { failureReason: this.currentFailure } : {}),
             remainingMs: this.timeLeftMs,
             score: this.currentScore,
-            itemsRemaining: items.filter((item) => item.active).length,
+            itemsRemaining: this.activeItems.length,
             collectedBadges: this.initialBadgeCount - items.filter(
                 (item) => item.active && item.type === this.theme.targetType,
             ).length - this.slots.filter((slot) => slot.type === this.theme.targetType).length,
-            items: Object.freeze(items),
+            items,
             slots: Object.freeze(this.slots.map((slot) => Object.freeze({ ...slot }))),
             toolCharges: Object.freeze({ ...this.charges }),
             boostAdAttempted: this.boostAttempted,
@@ -935,10 +952,13 @@ export class DesktopCleanupModel {
     }
 
     private stepPhysics(deltaSeconds: number): boolean {
-        const active = Array.from(this.items.values()).filter((item) => item.active);
+        const active = this.activeItems;
         if (active.length === 0) return false;
         let changed = false;
-        const movingItems = new Set<MutableItem>();
+        const movingItems = this.movingItems;
+        movingItems.clear();
+        const linearDamping = Math.exp(-this.config.physicsDamping * deltaSeconds);
+        const angularDamping = Math.exp(-this.config.physicsAngularDamping * deltaSeconds);
         active.forEach((item) => {
             const speed = Math.hypot(item.velocityX, item.velocityY);
             const angularSpeed = Math.abs(item.angularVelocity);
@@ -951,8 +971,6 @@ export class DesktopCleanupModel {
             item.angle += item.angularVelocity * deltaSeconds;
             this.resolveBoundary(item);
 
-            const linearDamping = Math.exp(-this.config.physicsDamping * deltaSeconds);
-            const angularDamping = Math.exp(-this.config.physicsAngularDamping * deltaSeconds);
             item.velocityX *= linearDamping;
             item.velocityY *= linearDamping;
             item.angularVelocity *= angularDamping;
@@ -964,6 +982,9 @@ export class DesktopCleanupModel {
             if (Math.abs(item.angularVelocity) < 0.5) item.angularVelocity = 0;
         });
 
+        // A settled pile cannot collide without an integrated moving item.
+        // Keep the scan above so future impulses wake physics immediately.
+        if (movingItems.size === 0) return false;
         for (let leftIndex = 0; leftIndex < active.length; leftIndex += 1) {
             const left = active[leftIndex];
             if (!left) continue;
@@ -1031,18 +1052,24 @@ export class DesktopCleanupModel {
     }
 
     private refreshExposure(): void {
-        const active = Array.from(this.items.values())
-            .filter((item) => item.active)
-            .sort((left, right) => compareDesktopCleanupItems(left, right));
+        // Every item mutation converges here. Keep collision traversal in Map
+        // insertion order, and sort a separate array only for visual coverage.
+        this.cachedItemSnapshots = undefined;
+        this.activeItems = Array.from(this.items.values()).filter((item) => item.active);
+        const active = this.activeItems.slice().sort(compareDesktopCleanupItems);
         active.forEach((item, index) => {
-            item.free = !active.some((candidate, candidateIndex) => {
-                if (candidateIndex <= index) return false;
+            item.free = true;
+            for (let candidateIndex = index + 1; candidateIndex < active.length; candidateIndex += 1) {
+                const candidate = active[candidateIndex];
                 const distance = Math.hypot(candidate.x - item.x, candidate.y - item.y);
                 const coverageScale = (
                     itemSizeMultiplier(item.type, this.theme) + itemSizeMultiplier(candidate.type, this.theme)
                 ) / 2;
-                return distance < PHYSICS_COVER_RADIUS * coverageScale;
-            });
+                if (distance < PHYSICS_COVER_RADIUS * coverageScale) {
+                    item.free = false;
+                    break;
+                }
+            }
         });
     }
 

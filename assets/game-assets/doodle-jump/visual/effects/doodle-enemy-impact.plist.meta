@@ -1,0 +1,155 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "c7954802-8084-58d8-9ef2-330eac6f58a4",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "3de8d": {
+      "importer": "sprite-frame",
+      "uuid": "c7954802-8084-58d8-9ef2-330eac6f58a4@3de8d",
+      "displayName": "",
+      "id": "3de8d",
+      "name": "enemy-defeat-fragments",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 388,
+        "trimY": 2,
+        "width": 292,
+        "height": 265,
+        "rawWidth": 292,
+        "rawHeight": 265,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "edf9552f-74d6-552a-8faf-6c992abffb62@6c48a",
+        "atlasUuid": "c7954802-8084-58d8-9ef2-330eac6f58a4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "d052f": {
+      "importer": "sprite-frame",
+      "uuid": "c7954802-8084-58d8-9ef2-330eac6f58a4@d052f",
+      "displayName": "",
+      "id": "d052f",
+      "name": "enemy-hit-scratch",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 684,
+        "trimY": 2,
+        "width": 231,
+        "height": 147,
+        "rawWidth": 231,
+        "rawHeight": 147,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "edf9552f-74d6-552a-8faf-6c992abffb62@6c48a",
+        "atlasUuid": "c7954802-8084-58d8-9ef2-330eac6f58a4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "7936e": {
+      "importer": "sprite-frame",
+      "uuid": "c7954802-8084-58d8-9ef2-330eac6f58a4@7936e",
+      "displayName": "",
+      "id": "7936e",
+      "name": "player-enemy-contact-impact",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 382,
+        "height": 301,
+        "rawWidth": 382,
+        "rawHeight": 301,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "edf9552f-74d6-552a-8faf-6c992abffb62@6c48a",
+        "atlasUuid": "c7954802-8084-58d8-9ef2-330eac6f58a4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-enemy-impact.png",
+    "format": 2,
+    "uuid": "c7954802-8084-58d8-9ef2-330eac6f58a4",
+    "textureUuid": "edf9552f-74d6-552a-8faf-6c992abffb62@6c48a"
+  }
+}

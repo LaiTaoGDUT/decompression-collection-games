@@ -191,7 +191,7 @@ export class SlidingPuzzleCropController {
         try {
             selection?.release();
         } catch (error: unknown) {
-            console.warn('[SlidingPuzzleCropController] Failed to release image.', error);
+            // TODO: console.warn('[SlidingPuzzleCropController] Failed to release image.', error);
         }
     }
 }

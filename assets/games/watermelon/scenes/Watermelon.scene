@@ -663,7 +663,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "下一个",
+    "_string": "下个水果",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 28,
@@ -1183,7 +1183,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "左右移动，松手投放，摇晃搅动",
+    "_string": "左右拖动，松手投放；摇晃手机搅动",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 26,
@@ -1379,7 +1379,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "⚠ ┄ ┄ ┄ 失败警戒线 ┄ ┄ ┄",
+    "_string": "⚠ ┄ ┄ ┄ 水果警戒线 ┄ ┄ ┄",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 28,
@@ -2092,7 +2092,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "左右移动，松手投放，摇晃搅动",
+    "_string": "左右拖动，松手投放；摇晃手机搅动水果",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 26,

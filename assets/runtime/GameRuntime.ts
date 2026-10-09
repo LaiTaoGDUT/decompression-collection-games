@@ -10,6 +10,7 @@ import type { GameResult } from '../core/types/CommonTypes';
 import type { AssetService } from '../services/asset/AssetService';
 import type { AnalyticsService } from '../services/analytics/AnalyticsService';
 import type { StorageService } from '../services/storage/StorageService';
+import type { AchievementService } from '../services/achievements/AchievementService';
 import type { GameLoader } from './GameLoader';
 import type { GameManifest } from './GameManifest';
 import type {
@@ -31,6 +32,7 @@ export interface SceneDirector {
 export interface LoadingModel {
     readonly variant?: 'game' | 'lobby';
     readonly gameName?: string;
+    readonly gameDescription?: string;
     readonly cover?: string | null;
     readonly message: string;
     readonly progress: number;
@@ -94,11 +96,13 @@ export interface GameRuntimeTimeouts {
 interface GameRuntimeServices {
     readonly assets?: AssetService;
     readonly storage?: StorageService;
+    readonly achievements?: AchievementService;
 }
 
 const DEFAULT_RUNTIME_TIMEOUTS: GameRuntimeTimeouts = Object.freeze({
     sceneLoadMs: 15000,
-    initializeMs: 10000,
+    // initialize 现在包含按设置选择的远程音频下载，为弱网保留与资源准备相当的时间。
+    initializeMs: 75000,
 });
 
 export class GameRuntimeError extends Error {
@@ -140,6 +144,7 @@ export class GameRuntime {
     private failedManifest?: GameManifest;
     /** 记录当前对局是否正被平台静默冻结，用于判断回到前台时能否自动继续。 */
     private suspendedSilently = false;
+    private achievementPresentationSession?: GameSession;
 
     constructor(
         private readonly stateMachine: AppStateMachine,
@@ -186,6 +191,12 @@ export class GameRuntime {
 
         try {
             const bundle = await this.assets.loadBundle('lobby');
+            await this.assets.prepareBundle('lobby-covers', 'visual', (finished, total) => {
+                this.loading?.updateProgress(
+                    '正在加载大厅资源',
+                    0.12 + 0.56 * (total > 0 ? finished / total : 0),
+                );
+            });
             this.loading?.updateProgress('大厅资源准备完成', 0.68);
             await this.loadAndLaunchBundleScene(bundle, 'scenes/Lobby');
             this.loading?.updateProgress('欢迎回来，马上开始放松', 1);
@@ -202,6 +213,7 @@ export class GameRuntime {
     }
 
     private async enterLobbyScene(): Promise<void> {
+        await this.assets.prepareBundle('lobby-covers', 'visual');
         await this.loadAndLaunchScene('lobby', 'scenes/Lobby');
 
         if (!this.stateMachine.transition('lobby')) {
@@ -214,6 +226,12 @@ export class GameRuntime {
     enterGame(manifest: GameManifest): Promise<void> {
         if (this.entering) {
             return this.entering;
+        }
+
+        // 大厅画面会先于旧局 Bundle 释放完成。此时收到的新入口请求
+        // 必须等完整离场结束，否则旧局的卸包和清理会覆盖新 Session。
+        if (this.leaving) {
+            return this.leaving.then(() => this.enterGame(manifest));
         }
 
         if (!this.stateMachine.transition('loading-game')) {
@@ -262,6 +280,26 @@ export class GameRuntime {
         return this.pauseGame('user');
     }
 
+    /** 全屏领奖复用状态机暂停流程，不展示局内暂停菜单，也不创建新 Session。 */
+    beginAchievementPresentation(): boolean {
+        if (this.stateMachine.currentState === 'paused') return true;
+        if (this.stateMachine.currentState !== 'playing' || !this.session) return false;
+        try {
+            if (!this.pauseGame('achievement')) return false;
+            this.achievementPresentationSession = this.session;
+            return true;
+        } catch { return false; }
+    }
+
+    endAchievementPresentation(): void {
+        const ownedSession = this.achievementPresentationSession;
+        this.achievementPresentationSession = undefined;
+        if (ownedSession && ownedSession === this.session && !this.completedResult
+            && this.stateMachine.currentState === 'paused') {
+            void this.resumeFromPause().catch(() => this.presentPauseMenu());
+        }
+    }
+
     /**
      * 平台切到后台时的安全暂停。
      * 运行层只负责冻结对局，不改变小游戏自身对暂停界面的选择：
@@ -299,13 +337,13 @@ export class GameRuntime {
 
         void this.resumeFromPause().catch((error: unknown) => {
             // 静默恢复失败时必须回到可见的暂停界面，否则对局会停在没有入口的冻结态。
-            console.error('[GameRuntime] Silent platform resume failed.', error);
+            // TODO: console.error('[GameRuntime] Silent platform resume failed.', error);
             this.presentPauseMenu();
         });
         return true;
     }
 
-    private pauseGame(origin: 'user' | 'platform' | 'platform-silent'): boolean {
+    private pauseGame(origin: 'user' | 'platform' | 'platform-silent' | 'achievement'): boolean {
         const entry = this.entry;
         const manifest = this.manifest;
         const state = this.stateMachine.currentState;
@@ -350,7 +388,7 @@ export class GameRuntime {
         }
 
         // 静默策略只跳过暂停界面，对局状态、存档和状态机仍然按标准暂停流程处理。
-        if (origin !== 'platform-silent') {
+        if (origin !== 'platform-silent' && origin !== 'achievement') {
             this.presentPauseMenu();
         }
         return true;
@@ -528,6 +566,7 @@ export class GameRuntime {
         this.suspendedSilently = false;
         this.loading?.show({
             gameName: manifest.name,
+            gameDescription: manifest.description,
             cover: manifest.loadingCover === undefined
                 ? manifest.cover
                 : manifest.loadingCover,
@@ -551,9 +590,10 @@ export class GameRuntime {
                             this.loading?.updateProgress('正在加载游戏资源',
                                 0.08 + (index + Math.min(Math.max(ratio, 0), 1)) / directories.length * 0.48);
                         },
+                        { excludeAudio: true },
                     );
                 }
-                this.loading?.updateProgress('游戏资源完整加载完成', 0.56);
+                this.loading?.updateProgress("游戏画面准备完成", 0.56);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('resources', manifest.id, cause);
             }
@@ -562,7 +602,7 @@ export class GameRuntime {
 
             try {
                 bundle = await this.assets.loadBundle(manifest.bundle);
-                this.loading?.updateProgress('游戏代码准备完成', 0.66);
+                this.loading?.updateProgress("游戏准备完成", 0.66);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('bundle', manifest.id, cause);
             }
@@ -581,7 +621,7 @@ export class GameRuntime {
             try {
                 entry = this.loader.locateEntry(scene, manifest);
                 this.entry = entry;
-                this.loading?.updateProgress('正在启动游戏组件', 0.86);
+                this.loading?.updateProgress("正在启动游戏", 0.86);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('entry', manifest.id, cause);
             }
@@ -616,6 +656,24 @@ export class GameRuntime {
                     manifest.id,
                     new Error('Cannot transition to playing.'),
                 );
+            }
+
+            // Record successful entry centrally, including games left before a round ends.
+            // Preserve each game's schema and progress; history persistence must not fail entry.
+            try {
+                const storage = this.services.storage;
+                if (storage) {
+                    const previous = storage.getGameData(manifest.id);
+                    storage.writeGameData(manifest.id, {
+                        dataVersion: 1,
+                        playCount: 0,
+                        ...previous,
+                        lastPlayedAt: Date.now(),
+                    });
+                    this.flushStorage('game history');
+                }
+            } catch (error: unknown) {
+                // TODO: console.warn('[GameRuntime] Failed to record recent game.', error);
             }
 
             this.failedManifest = undefined;
@@ -719,10 +777,10 @@ export class GameRuntime {
                     entry.discardSavedProgress?.();
                 } catch (cause: unknown) {
                     if (options.bestEffortDiscard) {
-                        console.warn(
-                            '[GameRuntime] Failed to discard progress during restart fallback.',
-                            cause,
-                        );
+                        // TODO: console.warn(
+                        //     '[GameRuntime] Failed to discard progress during restart fallback.',
+                        //     cause,
+                        // );
                     } else {
                         throw new GameRuntimeError('restart', manifest.id, cause);
                     }
@@ -812,6 +870,7 @@ export class GameRuntime {
     }
 
     private clearActiveGame(): void {
+        this.achievementPresentationSession = undefined;
         this.entry = undefined;
         this.session = undefined;
         this.manifest = undefined;
@@ -824,10 +883,10 @@ export class GameRuntime {
             try {
                 await entry.dispose();
             } catch (error: unknown) {
-                console.warn(
-                    '[GameRuntime] Failed entry disposal did not block load recovery.',
-                    error,
-                );
+                // TODO: console.warn(
+                //     '[GameRuntime] Failed entry disposal did not block load recovery.',
+                //     error,
+                // );
             } finally {
                 this.flushStorage('failed game dispose');
             }
@@ -837,20 +896,20 @@ export class GameRuntime {
             try {
                 await this.enterLobbyScene();
             } catch (error: unknown) {
-                console.warn(
-                    '[GameRuntime] Failed lobby recovery did not skip bundle cleanup.',
-                    error,
-                );
+                // TODO: console.warn(
+                //     '[GameRuntime] Failed lobby recovery did not skip bundle cleanup.',
+                //     error,
+                // );
             }
         }
 
         try {
             await this.releaseGameBundles(manifest);
         } catch (error: unknown) {
-            console.warn(
-                '[GameRuntime] Failed bundle cleanup did not block retry UI.',
-                error,
-            );
+            // TODO: console.warn(
+            //     '[GameRuntime] Failed bundle cleanup did not block retry UI.',
+            //     error,
+            // );
         }
 
         this.clearActiveGame();
@@ -879,7 +938,7 @@ export class GameRuntime {
         } catch (error: unknown) {
             // 存储失败不能阻断暂停、退出、重开或 Bundle 释放；服务会保留
             // pending 快照，后续普通写入或下一次关键 flush 继续重试。
-            console.error(`[GameRuntime] Storage flush failed at ${reason}.`, error);
+            // TODO: console.error(`[GameRuntime] Storage flush failed at ${reason}.`, error);
         }
     }
 
@@ -987,10 +1046,10 @@ export class GameRuntime {
                 sessionId: nextSession.id,
             });
         } catch (error: unknown) {
-            console.warn(
-                '[GameRuntime] In-place restart failed; falling back to full reload.',
-                error,
-            );
+            // TODO: console.warn(
+            //     '[GameRuntime] In-place restart failed; falling back to full reload.',
+            //     error,
+            // );
 
             // The entry may have been partially reset. The standard exit path
             // disposes that instance and releases the Bundle before retrying.
@@ -1016,6 +1075,10 @@ export class GameRuntime {
         const reportScore = (score: number): void => {
             if (isCurrentSession()) this.handleScore(score);
         };
+        const reportAchievementProgress = (metric: string, value: number): void => {
+            if (!isCurrentSession() || session.state !== 'active') return;
+            this.services.achievements?.report(manifest, metric, value);
+        };
         const requestPause = (): void => {
             if (isCurrentSession()) this.handlePauseRequest();
         };
@@ -1034,6 +1097,17 @@ export class GameRuntime {
             sessionId: session.id,
             services: this.services,
             reportScore,
+            reportAchievementProgress,
+            reportEvent: (name, properties, eventId) => {
+                if (!isCurrentSession()) return;
+                const fields = { ...properties, gameId: manifest.id, sessionId: session.id };
+                try {
+                    if (eventId) this.analytics?.trackOnce(eventId, name, fields);
+                    else this.analytics?.track(name, fields);
+                } catch {
+                    // A transport failure must never undo an already committed game result.
+                }
+            },
             requestPause,
             requestExit,
             requestRestart,
@@ -1085,10 +1159,10 @@ export class GameRuntime {
                 try {
                     await this.releaseGameBundles(manifest);
                 } catch (releaseError: unknown) {
-                    console.warn(
-                        '[GameRuntime] Failed bundle cleanup did not block lobby recovery.',
-                        releaseError,
-                    );
+                    // TODO: console.warn(
+                    //     '[GameRuntime] Failed bundle cleanup did not block lobby recovery.',
+                    //     releaseError,
+                    // );
                 }
             }
         } catch (error: unknown) {
@@ -1180,11 +1254,11 @@ export class GameRuntime {
         const messages: Readonly<Record<string, string>> = {
             resources: '游戏资源下载未完成，请检查网络后重试。',
             bundle: '游戏资源暂时不可用，请检查网络后重试。',
-            scene: '游戏场景没有完整加载，请稍后重试。',
-            entry: '游戏内容校验失败，请返回大厅。',
-            initialize: '游戏初始化未完成，请重试。',
+            scene: "游戏画面加载失败，请重试。",
+            entry: "游戏暂时无法启动，请返回大厅。",
+            initialize: "游戏准备失败，请重试。",
             begin: '游戏启动失败，请重试。',
-            state: '当前操作尚未完成，请稍后重试。',
+            state: "上一项操作还未完成，请稍后再试。",
         };
         return Object.freeze({
             message: messages[stage] ?? '游戏暂时无法进入，请稍后重试。',
@@ -1197,11 +1271,11 @@ export class GameRuntime {
             this.score = score;
         }
 
-        console.info('[GameRuntime] Score reported.', {
-            gameId: this.manifest?.id,
-            sessionId: this.session?.id,
-            score,
-        });
+        // TODO: console.info('[GameRuntime] Score reported.', {
+        //     gameId: this.manifest?.id,
+        //     sessionId: this.session?.id,
+        //     score,
+        // });
     };
 
     private trackRestart(source: 'pause' | 'result' | 'direct'): void {
@@ -1251,7 +1325,7 @@ export class GameRuntime {
         try {
             this.openPauseMenu();
         } catch (error: unknown) {
-            console.error('[GameRuntime] Pause request failed.', error);
+            // TODO: console.error('[GameRuntime] Pause request failed.', error);
         }
     };
 
@@ -1260,14 +1334,14 @@ export class GameRuntime {
             try {
                 this.finishGame(result);
             } catch (error: unknown) {
-                console.error('[GameRuntime] Finish request failed.', error);
+                // TODO: console.error('[GameRuntime] Finish request failed.', error);
             }
 
             return;
         }
 
         void this.exitGame(result).catch((error: unknown) => {
-            console.error('[GameRuntime] Exit request failed.', error);
+            // TODO: console.error('[GameRuntime] Exit request failed.', error);
         });
     };
 
@@ -1280,7 +1354,7 @@ export class GameRuntime {
             result ?? { score: this.score, duration: 0, completed: false },
         )
             .catch((error: unknown) => {
-                console.error('[GameRuntime] In-place restart request failed.', error);
+                // TODO: console.error('[GameRuntime] In-place restart request failed.', error);
             });
     };
 
@@ -1289,7 +1363,7 @@ export class GameRuntime {
         this.hideResultPresenter();
         void this.exitGame(result, result?.completed ? 'completed' : 'exit')
             .catch((error: unknown) => {
-                console.error('[GameRuntime] Direct lobby request failed.', error);
+                // TODO: console.error('[GameRuntime] Direct lobby request failed.', error);
             });
     };
 

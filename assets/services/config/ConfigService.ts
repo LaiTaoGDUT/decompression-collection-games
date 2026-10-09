@@ -34,10 +34,10 @@ export class ConfigService {
             this.currentConfig = normalizeAppConfig(asset.json);
         } catch (error: unknown) {
             this.currentConfig = DEFAULT_APP_CONFIG;
-            console.warn(
-                '[ConfigService] Local config load failed; using defaults.',
-                error,
-            );
+            // TODO: console.warn(
+            //     '[ConfigService] Local config load failed; using defaults.',
+            //     error,
+            // );
         }
 
         return this.currentConfig;

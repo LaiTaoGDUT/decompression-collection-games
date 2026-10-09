@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "cocos_creator_stdio": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["project-scripts/cocos-mcp-platform-bridge.js"],
+      "env": {
+        "COCOS_MCP_HTTP_URL": "http://127.0.0.1:3001/mcp",
+        "COCOS_MCP_HTTP_TIMEOUT_MS": "180000"
+      }
+    }
+  }
+}

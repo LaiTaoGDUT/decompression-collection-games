@@ -55,6 +55,26 @@ export interface WatermelonFluidMergeEvent {
     readonly cleared: boolean;
 }
 
+/**
+ * A fresh contact between two jellies, or a jelly landing on the floor, with
+ * the approach speed in reference (450-wide) units per second. Resting contacts
+ * and the jiggle inside a pile do not produce events.
+ */
+export interface WatermelonFluidImpactEvent {
+    readonly level: number;
+    /** Level of the other jelly; undefined when the jelly hit the floor. */
+    readonly otherLevel?: number;
+    readonly speed: number;
+    readonly x: number;
+    readonly y: number;
+}
+
+/** A pair (or a jelly and the floor) must stay apart this long before touching again counts as a new impact. */
+const IMPACT_REARM_SECONDS = 0.25;
+/** Below this approach speed a contact is treated as resting, not an impact. */
+const IMPACT_MIN_REFERENCE_SPEED = 120;
+const IMPACT_FLOOR_KEY_OFFSET = 0x40000000;
+
 interface FluidOverlap {
     depth: number;
     nx: number;
@@ -108,6 +128,7 @@ function constrainPressure(body: WatermelonFluidBody, stiffness: number): void {
     const gradientX = body.pressureGradientX;
     const gradientY = body.pressureGradientY;
     let norm = 0;
+    let area = 0;
     for (let index = 0; index < POINT_COUNT; index += 1) {
         const before = body.points[index === 0 ? POINT_COUNT - 1 : index - 1];
         const after = body.points[index + 1 === POINT_COUNT ? 0 : index + 1];
@@ -116,16 +137,27 @@ function constrainPressure(body: WatermelonFluidBody, stiffness: number): void {
         gradientX[index] = gx;
         gradientY[index] = gy;
         norm += gx * gx + gy * gy;
+        const point = body.points[index];
+        area += point.x * after.y - after.x * point.y;
     }
     const delta = clamp(
-        (body.targetArea - polygonArea(body.points)) / (norm || 1),
+        (body.targetArea - area * 0.5) / (norm || 1),
         -0.16,
         0.16,
     ) * stiffness;
+    // Accumulate the corrected centre in the same order as updateCenter.
+    // Combining these passes avoids two extra point walks per constraint round.
+    let x = 0;
+    let y = 0;
     for (let index = 0; index < POINT_COUNT; index += 1) {
-        body.points[index].x += gradientX[index] * delta;
-        body.points[index].y += gradientY[index] * delta;
+        const point = body.points[index];
+        point.x += gradientX[index] * delta;
+        point.y += gradientY[index] * delta;
+        x += point.x;
+        y += point.y;
     }
+    body.x = x / POINT_COUNT;
+    body.y = y / POINT_COUNT;
 }
 
 /**
@@ -256,12 +288,19 @@ export class WatermelonFluidWorld {
     private readonly mergeFirst: WatermelonFluidBody[] = [];
     private readonly mergeSecond: WatermelonFluidBody[] = [];
     private readonly overlapScratch: FluidOverlap = { depth: 0, nx: 0, ny: 0 };
+    /** Centre velocity (per step) of each body before this step's solver, indexed like `bodies`. */
+    private readonly preStepVx: number[] = [];
+    private readonly preStepVy: number[] = [];
+    /** Last time each pair / floor contact was seen touching (pair key -> world time). */
+    private readonly lastContactAt = new Map<number, number>();
+    private impactPruneCounter = 0;
 
     constructor(
         private radii: readonly number[],
         private bounds: WatermelonFluidBounds,
         private readonly onMerge: (event: WatermelonFluidMergeEvent) => void = () => {},
         mergeCooldownSeconds = DEFAULT_WATERMELON_MERGE_COOLDOWN_SECONDS,
+        private readonly onImpact: (event: WatermelonFluidImpactEvent) => void = () => {},
     ) {
         this.mergeCooldownSeconds = this.normalizeMergeCooldown(mergeCooldownSeconds);
     }
@@ -274,6 +313,68 @@ export class WatermelonFluidWorld {
         this.radii = radii;
         this.bounds = bounds;
         this.mergeCooldownSeconds = this.normalizeMergeCooldown(mergeCooldownSeconds);
+    }
+
+    /**
+     * Report fresh contacts after this step's solver. A pair counts as a new
+     * impact only if it had not touched for IMPACT_REARM_SECONDS and the two
+     * centres were approaching faster than IMPACT_MIN_REFERENCE_SPEED before
+     * the step; bodies about to merge, freshly merged or restored bodies are
+     * skipped (their own cues cover them). Speeds use the reference width.
+     */
+    private detectImpacts(locked: ReadonlySet<number>, coordinateScale: number): void {
+        const now = this.timeSeconds;
+        const toReference = WATERMELON_SEMI_FLUID.simulationHz / Math.max(1e-6, coordinateScale);
+        const quiet = (body: WatermelonFluidBody): boolean => locked.has(body.id)
+            || body.noImpulseCorrectionSeconds > 0
+            || body.mergeReboundSeconds > 0;
+        const isFresh = (key: number): boolean => {
+            const last = this.lastContactAt.get(key);
+            this.lastContactAt.set(key, now);
+            return last === undefined || now - last > IMPACT_REARM_SECONDS;
+        };
+        for (let firstIndex = 0; firstIndex < this.bodies.length; firstIndex += 1) {
+            const first = this.bodies[firstIndex];
+            for (let secondIndex = firstIndex + 1; secondIndex < this.bodies.length; secondIndex += 1) {
+                const second = this.bodies[secondIndex];
+                if (!findOverlap(first, second, REFERENCE_SEPARATION_SLOP * coordinateScale, this.overlapScratch)) continue;
+                const low = Math.min(first.id, second.id);
+                const high = Math.max(first.id, second.id);
+                if (!isFresh(high * 65536 + low) || quiet(first) || quiet(second)) continue;
+                // overlap normal points from first towards second
+                const approach = ((this.preStepVx[firstIndex] - this.preStepVx[secondIndex]) * this.overlapScratch.nx
+                    + (this.preStepVy[firstIndex] - this.preStepVy[secondIndex]) * this.overlapScratch.ny) * toReference;
+                if (approach < IMPACT_MIN_REFERENCE_SPEED) continue;
+                const bigger = first.level >= second.level ? first : second;
+                const other = bigger === first ? second : first;
+                this.onImpact({
+                    level: bigger.level,
+                    otherLevel: other.level,
+                    speed: approach,
+                    x: (first.x + second.x) / 2,
+                    y: (first.y + second.y) / 2,
+                });
+            }
+        }
+        for (let bodyIndex = 0; bodyIndex < this.bodies.length; bodyIndex += 1) {
+            const body = this.bodies[bodyIndex];
+            let onFloor = false;
+            for (let pointIndex = 0; pointIndex < POINT_COUNT && !onFloor; pointIndex += 1) {
+                onFloor = body.points[pointIndex].y <= this.bounds.bottom + 0.5;
+            }
+            if (!onFloor || !isFresh(IMPACT_FLOOR_KEY_OFFSET + body.id) || quiet(body)) continue;
+            const speed = -this.preStepVy[bodyIndex] * toReference;
+            if (speed < IMPACT_MIN_REFERENCE_SPEED) continue;
+            this.onImpact({ level: body.level, speed, x: body.x, y: body.y - body.radius });
+        }
+        // Forget contacts that ended long ago so the map stays small.
+        this.impactPruneCounter += 1;
+        if (this.impactPruneCounter >= 120) {
+            this.impactPruneCounter = 0;
+            this.lastContactAt.forEach((time, key) => {
+                if (now - time > 2) this.lastContactAt.delete(key);
+            });
+        }
     }
 
     private normalizeMergeCooldown(seconds: number): number {
@@ -369,11 +470,15 @@ export class WatermelonFluidWorld {
         this.bodies.length = 0;
         this.activeBodies.clear();
         this.lockedBodies.clear();
+        this.lastContactAt.clear();
         this.mergeFirst.length = 0;
         this.mergeSecond.length = 0;
         this.timeSeconds = 0;
         this.tilt = 0;
         this.nextId = 1;
+        this.preStepVx.length = 0;
+        this.preStepVy.length = 0;
+        this.impactPruneCounter = 0;
     }
 
     /**
@@ -411,6 +516,8 @@ export class WatermelonFluidWorld {
             );
             body.mergeCooldownSeconds = Math.max(0, body.mergeCooldownSeconds - delta);
             body.mergeReboundSeconds = Math.max(0, body.mergeReboundSeconds - delta);
+            let sumVx = 0;
+            let sumVy = 0;
             for (let pointIndex = 0; pointIndex < POINT_COUNT; pointIndex += 1) {
                 const point = body.points[pointIndex];
                 const velocityX = clamp(
@@ -423,6 +530,8 @@ export class WatermelonFluidWorld {
                     -maxPointSpeed,
                     maxPointSpeed,
                 );
+                sumVx += velocityX;
+                sumVy += velocityY;
                 point.px = point.x;
                 point.py = point.y;
                 point.x += velocityX + this.tilt
@@ -431,6 +540,8 @@ export class WatermelonFluidWorld {
                 point.y += velocityY - WATERMELON_SEMI_FLUID.gravity
                     * coordinateScale * delta * delta;
             }
+            this.preStepVx[bodyIndex] = sumVx / POINT_COUNT;
+            this.preStepVy[bodyIndex] = sumVy / POINT_COUNT;
         }
 
         const locked = this.lockedBodies;
@@ -454,7 +565,6 @@ export class WatermelonFluidWorld {
                     }
                 }
                 constrainPressure(body, WATERMELON_SEMI_FLUID.pressure);
-                updateCenter(body);
             }
 
             for (let firstIndex = 0; firstIndex < this.bodies.length; firstIndex += 1) {
@@ -536,6 +646,8 @@ export class WatermelonFluidWorld {
                 }
             }
         }
+
+        this.detectImpacts(locked, coordinateScale);
 
         if (mergeFirst.length > 0) {
             let survivorCount = 0;

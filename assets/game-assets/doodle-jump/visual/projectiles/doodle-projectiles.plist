@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>aim-reticle-trimmed</key>
+		<dict>
+			<key>frame</key>
+			<string>{{674,2},{233,237}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{233,237}}</string>
+			<key>sourceSize</key>
+			<string>{233,237}</string>
+		</dict>
+		<key>paper-plane-trail</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{353,79}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{353,79}}</string>
+			<key>sourceSize</key>
+			<string>{353,79}</string>
+		</dict>
+		<key>paper-plane-trimmed</key>
+		<dict>
+			<key>frame</key>
+			<string>{{359,2},{311,219}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{311,219}}</string>
+			<key>sourceSize</key>
+			<string>{311,219}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-projectiles.png</string>
+		<key>size</key>
+		<string>{909,241}</string>
+		<key>textureFileName</key>
+		<string>doodle-projectiles.png</string>
+	</dict>
+</dict>
+</plist>

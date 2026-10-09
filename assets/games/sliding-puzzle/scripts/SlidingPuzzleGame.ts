@@ -1,3 +1,5 @@
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
+import { setLabelBold } from '../../../services/font/FontBinding';
 import {
     assetManager,
     _decorator,
@@ -33,20 +35,22 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import type { AudioService } from '../../../services/audio/AudioService';
+import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { AssetService } from '../../../services/asset/AssetService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
 import type { GameResult, LocalImageSelection } from '../../../core/types/CommonTypes';
-import {
-    autoAtlasFrameName,
-    loadAutoAtlasFrames,
-} from '../../../services/asset/AutoAtlasLoader';
 import { SlidingPuzzleCropController } from './SlidingPuzzleCropController';
 import { SlidingPuzzleModel } from './SlidingPuzzleModel';
 import {
     calculateSlidingPuzzleBackgroundCover,
     calculateSlidingPuzzleLayout,
+    calculateSlidingPuzzleSetupStack,
     calculateSlidingPuzzleTileSourceRect,
+    SLIDING_PUZZLE_DISPLAY_SWITCH_HEIGHT,
+    SLIDING_PUZZLE_DISPLAY_SWITCH_WIDTH,
+    SLIDING_PUZZLE_FOOTER_BUTTON_HEIGHT,
+    SLIDING_PUZZLE_HUD_HEIGHT,
     SLIDING_PUZZLE_TOUCH_SIZE,
     type SlidingPuzzleLayoutMetrics,
 } from './SlidingPuzzleLayout';
@@ -60,7 +64,19 @@ import {
 
 const { ccclass } = _decorator;
 const SLIDING_PUZZLE_RESOURCE_BUNDLE = 'game-sliding-puzzle-assets';
-const SLIDING_PUZZLE_ICON_ATLAS_PATH = 'visual/icons/sliding-icons';
+/** PZ1「暖木纸卡」声音：音乐与音效都归本 Bundle 所有，生成脚本见 tools/audio/sliding-puzzle。 */
+const SLIDING_PUZZLE_AUDIO = Object.freeze({
+    music: 'visual/audio/sp-wooden-toy-loop-v1',
+    cues: Object.freeze({
+        uiButton: 'visual/audio/sp-ui-button-v1',
+        toggle: 'visual/audio/sp-ui-select-v1',
+        // 高频操作：三条真实木敲轮换，避免重复疲劳。
+        drop: Object.freeze(['visual/audio/sp-piece-move-1-v1', 'visual/audio/sp-piece-move-2-v1', 'visual/audio/sp-piece-move-3-v1']),
+        collision: 'visual/audio/sp-invalid-v1',
+        popup: 'visual/audio/sp-preview-v1',
+        milestone: 'visual/audio/sp-complete-v1',
+    }),
+});
 
 type SlidingPuzzleState =
     | 'idle'
@@ -124,32 +140,40 @@ const POPUP_CONTENT_PADDING_X = 72;
 const POPUP_CONTENT_PADDING_TOP = 72;
 const POPUP_CONTENT_PADDING_BOTTOM = 96;
 const POPUP_BUTTON_FONT_SIZE = 28;
-const REFERENCE_PREVIEW_SIZE = 360;
-const REFERENCE_PREVIEW_TOP_GAP = 24;
+const POPUP_PRIMARY_BUTTON_FONT_SIZE = 32;
+const POPUP_TITLE_FONT_SIZE = 40;
+const POPUP_TITLE_HEIGHT = 64;
+const POPUP_PRIMARY_BUTTON_HEIGHT = 96;
+const POPUP_BUTTON_HEIGHT = 84;
+const POPUP_BUTTON_GAP = 16;
+const POPUP_CLOSE_ICON_SIZE = 52;
+// 结算页完成图只做回顾，控制尺寸让弹窗整体保持紧凑。
+const RESULT_PREVIEW_SIZE = 320;
+// 参考图直接铺在遮罩上，不再套弹窗木框；图片与棋盘同宽，左右至少各留 32。
+const REFERENCE_PREVIEW_SIDE_MARGIN = 32;
+const REFERENCE_PREVIEW_TITLE_GAP = 20;
+const REFERENCE_PREVIEW_VERTICAL_MARGIN = 48;
 const CROP_PREVIEW_MAX_SIZE = 560;
 const CROP_PREVIEW_MIN_SIZE = 240;
 const SETUP_BACK_ICON_SIZE = 68;
 const SETUP_TITLE_FONT_SIZE = 42;
 const CROP_TITLE_FONT_SIZE = 42;
 const CROP_HINT_FONT_SIZE = 26;
-const SETUP_PREVIEW_MAX_SIZE = 320;
-const SETUP_COMPACT_PREVIEW_MAX_SIZE = 240;
 const SETUP_SIZE_BUTTON_FONT_SIZE = 30;
 const SETUP_COMPACT_SIZE_BUTTON_FONT_SIZE = 28;
+const SETUP_ROW_GAP = 12;
+const SETUP_HINT_FONT_SIZE = 22;
+const SETUP_SECTION_CAPTION_FONT_SIZE = 26;
 const SETUP_SOURCE_ACTION_FONT_SIZE = 26;
 const SETUP_SOURCE_ACTION_CONTENT_GAP = 8;
 const SETUP_SOURCE_ACTION_SUBTITLE_FONT_SIZE = 17;
 const SETUP_START_BUTTON_FONT_SIZE = 36;
-const SETUP_COMPACT_START_BUTTON_FONT_SIZE = 34;
-const PLAY_HUD_FONT_SIZE = 34;
-const PLAY_HUD_INFO_COLUMN_WIDTH = 180;
-const PLAY_HUD_INFO_COLUMN_GAP = 30;
-const PLAY_HUD_INFO_OFFSET_Y = 72;
+const SETUP_START_BUTTON_MAX_WIDTH = 480;
+const PLAY_HUD_CAPTION_FONT_SIZE = 20;
+const PLAY_HUD_VALUE_FONT_SIZE = 34;
 const PLAY_SIDE_ICON_SIZE = 70;
-const DISPLAY_MODE_SWITCH_WIDTH = 360;
-// 素材画布为 720 × 220，运行时按 1:2 等比缩放，禁止单独拉伸宽或高。
-const DISPLAY_MODE_SWITCH_HEIGHT = 110;
-const DISPLAY_MODE_SWITCH_GAP = 24;
+const DISPLAY_MODE_SWITCH_WIDTH = SLIDING_PUZZLE_DISPLAY_SWITCH_WIDTH;
+const DISPLAY_MODE_SWITCH_HEIGHT = SLIDING_PUZZLE_DISPLAY_SWITCH_HEIGHT;
 const TILE_NUMBER_OVERLAY_ALPHA = 120;
 const IMAGE_PREVIEW_CORNER_RADIUS = 8;
 const PRESET_LIBRARY_CARD_CORNER_RADIUS = 12;
@@ -173,8 +197,12 @@ export const SLIDING_PUZZLE_BOARD_ASSET_PATH =
 
 const SLIDING_PUZZLE_PRESET_ASSET_PATHS: readonly string[] = Object.freeze([
     // 当前仓库已实际交付的预置图；后续新增图片进入 Bundle 后只需在这里登记。
-    'visual/presets/preset-08-bedroom-night-v1/texture',
-    'visual/presets/preset-09-newspaper-v1/texture',
+    'visual/presets/preset-10-window-cats-v2/texture',
+    'visual/presets/preset-12-anime-mage-v2/texture',
+    'visual/presets/preset-13-greenhouse-v1/texture',
+    'visual/presets/preset-14-space-observatory-v1/texture',
+    'visual/presets/preset-15-rainy-tram-v1/texture',
+    'visual/presets/preset-16-anime-violinist-v1/texture',
 ]);
 
 export const SLIDING_PUZZLE_POPUP_BACKGROUND_ASSET_PATH =
@@ -266,6 +294,10 @@ interface PuzzleLibrarySource {
     readonly selected: boolean;
 }
 
+function puzzleLibrarySourceKey(source: PuzzleLibrarySource): string {
+    return source.kind === 'preset' ? `preset:${source.path}` : `local:${source.id ?? source.path}`;
+}
+
 interface SlidingPuzzleSavedImage {
     readonly kind: 'preset' | 'local';
     readonly id?: string;
@@ -292,6 +324,7 @@ interface SlidingPuzzleActiveRound {
 @ccclass('SlidingPuzzleGame')
 export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzzleServices> {
     private state: SlidingPuzzleState = 'idle';
+    private audioBank?: BundleAudioBank;
     private context?: MiniGameContext<SlidingPuzzleServices>;
     private readonly model = new SlidingPuzzleModel();
     private readonly cropController = new SlidingPuzzleCropController();
@@ -303,6 +336,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         imageSource: 'preset',
         presetAssetPath: SLIDING_PUZZLE_PRESET_ASSET_PATHS[this.selectedPresetIndex],
     });
+    /** 随机换图按洗牌队列逐张取；图片库变化时开始新一轮。 */
+    private randomPuzzleQueue: PuzzleLibrarySource[] = [];
+    private randomPuzzleSourceKeys: string[] = [];
     private elapsedSeconds = 0;
     private inputLocked = false;
     private completionRequested = false;
@@ -344,12 +380,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     /** 当前纹理对应的预置图路径；换图加载期间旧图仍保持可见。 */
     private loadedPresetAssetPath?: string;
     /** 预置图异步加载中的目标路径，用于使连续点击正确失效旧请求。 */
-    private loadingPresetAssetPath?: string;
     private pendingImageTexture?: Texture2D;
     private pendingImageAsset?: ImageAsset;
     private pendingImageTextureOwned = false;
     private imageLoadToken = 0;
-    private readonly visualTextures = new Map<SlidingPuzzleVisualKey, Texture2D>();
     private readonly visualFrames = new Map<SlidingPuzzleVisualKey, SpriteFrame>();
     private visualLoadToken = 0;
     private presetLibraryLoadToken = 0;
@@ -396,7 +430,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 try {
                     context.services.storage.flush();
                 } catch (error: unknown) {
-                    console.warn('[SlidingPuzzleGame] Failed to flush progress while hiding.', error);
+                    // TODO: console.warn('[SlidingPuzzleGame] Failed to flush progress while hiding.', error);
                 }
             }
         });
@@ -414,8 +448,22 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             await visualLoad;
         } catch (error: unknown) {
             // 正式素材异常时保留程序化界面，但必须留下明确诊断，不能静默。
-            console.error('[SlidingPuzzleGame] Visual initialization failed.', error);
+            // TODO: console.error('[SlidingPuzzleGame] Visual initialization failed.', error);
         }
+        await this.initializeAudio(context);
+    }
+
+    /** 资源 Bundle 已由 loadVisualAssets 加载；音频失败只影响声音，不阻塞进入游戏。 */
+    private async initializeAudio(context: MiniGameContext<SlidingPuzzleServices>): Promise<void> {
+        if (this.state === 'disposed' || !assetManager.getBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE)) return;
+        this.audioBank = new BundleAudioBank({
+            bundle: SLIDING_PUZZLE_RESOURCE_BUNDLE,
+            music: SLIDING_PUZZLE_AUDIO.music,
+            cues: SLIDING_PUZZLE_AUDIO.cues,
+        }, context.services.audio, context.services.feedback, context.services.assets);
+        await this.audioBank.initialize().catch((error: unknown) => {
+            // TODO: console.error('[SlidingPuzzleGame] Audio initialization failed.', error);
+        });
     }
 
     begin(): void {
@@ -445,6 +493,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.inputLocked = true;
         this.pauseButtonNode && (this.pauseButtonNode.active = false);
         this.persistProgress();
+        this.context?.services.audio.pauseMusic();
         return true;
     }
 
@@ -459,6 +508,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.pauseButtonNode.active = true;
         }
         this.hidePauseMenu();
+        this.context?.services.audio.resumeMusic();
     }
 
     async restart(context?: MiniGameContext<SlidingPuzzleServices>): Promise<void> {
@@ -524,11 +574,15 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.visualLoadToken += 1;
         this.presetLibraryLoadToken += 1;
         this.uiActionPending = true;
+        this.randomPuzzleQueue = [];
+        this.randomPuzzleSourceKeys = [];
 
         this.unsubscribeShow?.();
         this.unsubscribeHide?.();
         this.unsubscribeShow = undefined;
         this.unsubscribeHide = undefined;
+        this.audioBank?.dispose();
+        this.audioBank = undefined;
         if (this.resizeListening) {
             view.off('canvas-resize', this.handleCanvasResize, this);
             this.resizeListening = false;
@@ -550,7 +604,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 await load;
             } catch (error: unknown) {
                 // 单个资源失败不应阻断其余资源的释放和返回大厅。
-                console.warn('[SlidingPuzzleGame] Pending asset load finished with an error during dispose.', error);
+                // TODO: console.warn('[SlidingPuzzleGame] Pending asset load finished with an error during dispose.', error);
             }
         }));
 
@@ -577,51 +631,47 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const overlay = this.createOverlay('SlidingPuzzlePauseOverlay');
         const panelWidth = 640;
         const contentWidth = this.getPopupContentWidth(panelWidth);
-        const titleHeight = 58;
-        const bodyHeight = 94;
-        const buttonHeight = 84;
-        const titleBodyGap = 14;
-        const bodyButtonGap = 24;
-        const buttonGap = 16;
+        const titleStatsGap = 20;
+        const statsActionsGap = 28;
+        // 层级：继续拼图为唯一主按钮；重开与换图并排作为次要操作；
+        // 返回大厅降为浅色按钮放在最下方。
         const panelHeight = this.getPopupHeight(
-            titleHeight
-            + titleBodyGap
-            + bodyHeight
-            + bodyButtonGap
-            + buttonHeight * 4
-            + buttonGap * 3,
+            POPUP_TITLE_HEIGHT
+            + titleStatsGap
+            + SLIDING_PUZZLE_HUD_HEIGHT
+            + statsActionsGap
+            + POPUP_PRIMARY_BUTTON_HEIGHT
+            + POPUP_BUTTON_HEIGHT * 2
+            + POPUP_BUTTON_GAP * 2,
         );
         const panel = this.createPopupPanel(overlay, 'PausePanel', panelWidth, panelHeight);
         panel.setPosition(0, this.getPopupCenterY(), 0);
         this.setPopupScale(panel, panelWidth, panelHeight);
         let cursorY = panelHeight / 2 - POPUP_CONTENT_PADDING_TOP;
-        const titleY = cursorY - titleHeight / 2;
-        cursorY -= titleHeight + titleBodyGap;
-        const bodyY = cursorY - bodyHeight / 2;
-        cursorY -= bodyHeight + bodyButtonGap;
-        let buttonY = cursorY - buttonHeight / 2;
-
-        this.createLabel(panel, 'PauseKicker', '拼图暂停', 0, titleY, 40, COLORS.tealDark, contentWidth, titleHeight);
-        this.createLabel(
+        this.createPopupTitle(panel, 'PauseTitle', '拼图暂停', cursorY - POPUP_TITLE_HEIGHT / 2, contentWidth);
+        cursorY -= POPUP_TITLE_HEIGHT + titleStatsGap;
+        this.createStatStrip(
             panel,
-            'PauseBody',
-            '棋盘和计时已停住\n回来后继续寻找下一块空位',
+            'PauseStats',
             0,
-            bodyY,
-            24,
-            COLORS.ink,
+            cursorY - SLIDING_PUZZLE_HUD_HEIGHT / 2,
             contentWidth,
-            bodyHeight,
+            SLIDING_PUZZLE_HUD_HEIGHT,
         );
-        this.createButton(panel, 'ResumeButton', '继续拼图', 0, buttonY, contentWidth, buttonHeight, COLORS.teal, () => {
+        cursorY -= SLIDING_PUZZLE_HUD_HEIGHT + statsActionsGap;
+
+        this.createButton(panel, 'ResumeButton', '继续拼图', 0, cursorY - POPUP_PRIMARY_BUTTON_HEIGHT / 2, contentWidth, POPUP_PRIMARY_BUTTON_HEIGHT, COLORS.teal, () => {
             this.runUiAction('resume', model.resume);
-        }, POPUP_BUTTON_FONT_SIZE);
-        buttonY -= buttonHeight + buttonGap;
-        this.createButton(panel, 'RestartButton', '重新开局', 0, buttonY, contentWidth, buttonHeight, COLORS.wood, () => {
+        }, POPUP_PRIMARY_BUTTON_FONT_SIZE);
+        cursorY -= POPUP_PRIMARY_BUTTON_HEIGHT + POPUP_BUTTON_GAP;
+
+        const halfWidth = (contentWidth - POPUP_BUTTON_GAP) / 2;
+        const halfOffset = (halfWidth + POPUP_BUTTON_GAP) / 2;
+        const secondaryY = cursorY - POPUP_BUTTON_HEIGHT / 2;
+        this.createButton(panel, 'RestartButton', "重新开始", -halfOffset, secondaryY, halfWidth, POPUP_BUTTON_HEIGHT, COLORS.wood, () => {
             this.runUiAction('restart', model.restart);
         }, POPUP_BUTTON_FONT_SIZE);
-        buttonY -= buttonHeight + buttonGap;
-        this.createButton(panel, 'ChooseImageButton', '重新选图', 0, buttonY, contentWidth, buttonHeight, COLORS.teal, () => {
+        this.createButton(panel, 'ChooseImageButton', '重新选图', halfOffset, secondaryY, halfWidth, POPUP_BUTTON_HEIGHT, COLORS.wood, () => {
             this.runUiAction('choose-image', async () => {
                 this.restartToSetupAfterRuntimeRestart = true;
                 try {
@@ -631,10 +681,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 }
             });
         }, POPUP_BUTTON_FONT_SIZE);
-        buttonY -= buttonHeight + buttonGap;
-        this.createButton(panel, 'LobbyButton', '返回大厅', 0, buttonY, contentWidth, buttonHeight, COLORS.red, () => {
+        cursorY -= POPUP_BUTTON_HEIGHT + POPUP_BUTTON_GAP;
+
+        this.createButton(panel, 'LobbyButton', '返回大厅', 0, cursorY - POPUP_BUTTON_HEIGHT / 2, contentWidth, POPUP_BUTTON_HEIGHT, COLORS.paperLight, () => {
             this.runUiAction('exit', model.exit);
-        }, POPUP_BUTTON_FONT_SIZE);
+        }, POPUP_BUTTON_FONT_SIZE, COLORS.woodDark);
     }
 
     hidePauseMenu(): void {
@@ -661,48 +712,38 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const overlay = this.createOverlay('SlidingPuzzleResultOverlay');
         const panelWidth = 640;
         const contentWidth = this.getPopupContentWidth(panelWidth);
-        const titleHeight = 56;
-        const closeIconSize = 50;
-        const closeButtonSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, closeIconSize + 28);
+        const closeButtonSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, POPUP_CLOSE_ICON_SIZE + 28);
         // 标题栏按关闭按钮的完整触控高度占位，让标题与按钮共用中心线，
         // 同时保证下方统计信息不会侵入关闭按钮的点击区域。
         const titleRowHeight = closeButtonSize;
-        const statsHeight = 84;
-        const previewSize = 280;
-        const buttonHeight = 84;
-        const titleStatsGap = 16;
-        const statsPreviewGap = 20;
-        const previewButtonGap = 24;
-        const buttonGap = 16;
+        const previewSize = RESULT_PREVIEW_SIZE;
+        const titleStatsGap = 12;
+        const statsPreviewGap = 24;
+        const previewButtonGap = 28;
         const panelHeight = this.getPopupHeight(
             titleRowHeight
             + titleStatsGap
-            + statsHeight
+            + SLIDING_PUZZLE_HUD_HEIGHT
             + statsPreviewGap
             + previewSize
             + previewButtonGap
-            + buttonHeight * 2
-            + buttonGap,
+            + POPUP_PRIMARY_BUTTON_HEIGHT
+            + POPUP_BUTTON_GAP
+            + POPUP_BUTTON_HEIGHT,
         );
         const panel = this.createPopupPanel(overlay, 'ResultPanel', panelWidth, panelHeight);
         panel.setPosition(0, this.getPopupCenterY(), 0);
         this.setPopupScale(panel, panelWidth, panelHeight);
         let cursorY = panelHeight / 2 - POPUP_CONTENT_PADDING_TOP;
         const titleY = cursorY - titleRowHeight / 2;
-        cursorY -= titleRowHeight + titleStatsGap;
-        const statsY = cursorY - statsHeight / 2;
-        cursorY -= statsHeight + statsPreviewGap;
-        const previewY = cursorY - previewSize / 2;
-        cursorY -= previewSize + previewButtonGap;
-        let buttonY = cursorY - buttonHeight / 2;
 
         const closeResultButton = this.createIconButton(
             panel,
             'CloseResult',
             panelWidth / 2 - POPUP_CONTENT_PADDING_X - closeButtonSize / 2,
-            panelHeight / 2 - POPUP_CONTENT_PADDING_TOP - closeButtonSize / 2,
+            titleY,
             'closeIcon',
-            closeIconSize,
+            POPUP_CLOSE_ICON_SIZE,
             () => {
                 this.runUiAction('close-result', async () => {
                     this.hideResultView();
@@ -723,64 +764,35 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             );
         }
 
-        const title = model.result.completed ? '拼图完成' : '本局结束';
         // 左右对称地为关闭按钮留位，标题才能以弹窗本身为基准真正居中。
-        const titleWidth = Math.max(1, contentWidth - (closeButtonSize + 24) * 2);
-        this.createLabel(
+        this.createPopupTitle(
             panel,
             'ResultTitle',
-            title,
-            0,
+            model.result.completed ? '拼图完成' : '本局结束',
             titleY,
-            36,
-            COLORS.woodDark,
-            titleWidth,
-            titleHeight,
+            Math.max(1, contentWidth - (closeButtonSize + 24) * 2),
         );
-        const resultStatWidth = (contentWidth - 32) / 3;
-        const resultStatStep = resultStatWidth + 16;
-        const resultStatY = statsY - 8;
-        this.createLabel(
+        cursorY -= titleRowHeight + titleStatsGap;
+        this.createStatStrip(
             panel,
-            'ResultSize',
-            `规格：${this.model.boardSize}x${this.model.boardSize}`,
-            -resultStatStep,
-            resultStatY,
-            26,
-            COLORS.ink,
-            resultStatWidth,
-            statsHeight,
-        );
-        this.createLabel(
-            panel,
-            'ResultTime',
-            `用时 ${this.formatDuration(this.elapsedSeconds)}`,
+            'ResultStats',
             0,
-            resultStatY,
-            26,
-            COLORS.ink,
-            resultStatWidth,
-            statsHeight,
+            cursorY - SLIDING_PUZZLE_HUD_HEIGHT / 2,
+            contentWidth,
+            SLIDING_PUZZLE_HUD_HEIGHT,
         );
-        this.createLabel(
-            panel,
-            'ResultMoves',
-            `步数 ${this.model.moves}`,
-            resultStatStep,
-            resultStatY,
-            26,
-            COLORS.ink,
-            resultStatWidth,
-            statsHeight,
-        );
+        cursorY -= SLIDING_PUZZLE_HUD_HEIGHT + statsPreviewGap;
+        const previewY = cursorY - previewSize / 2;
         if (this.imageTexture) {
-            this.createImagePreview(panel, 0, previewY, previewSize, previewSize, '');
+            this.createImagePreview(panel, 0, previewY, previewSize, previewSize, '', false, IMAGE_PREVIEW_CORNER_RADIUS);
         } else {
             this.createPlaceholderPreview(panel, 0, previewY, previewSize, previewSize, '');
         }
-        this.createButton(panel, 'RestartButton', '再来一局', 0, buttonY, contentWidth, buttonHeight, COLORS.teal, () => {
+        cursorY -= previewSize + previewButtonGap;
+
+        // 结算后按产品流程回到选图页，文案与实际去向保持一致。
+        this.createButton(panel, 'RestartButton', '再拼一张', 0, cursorY - POPUP_PRIMARY_BUTTON_HEIGHT / 2, contentWidth, POPUP_PRIMARY_BUTTON_HEIGHT, COLORS.teal, () => {
             this.runUiAction('restart', async () => {
-                // 结算页的“再来一局”按产品流程回到选图页，
                 // 由运行层注入新会话后再展示 setup，而不是直接开新盘。
                 this.restartToSetupAfterRuntimeRestart = true;
                 try {
@@ -789,11 +801,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     this.restartToSetupAfterRuntimeRestart = false;
                 }
             });
-        }, POPUP_BUTTON_FONT_SIZE);
-        buttonY -= buttonHeight + buttonGap;
-        this.createButton(panel, 'LobbyButton', '返回大厅', 0, buttonY, contentWidth, buttonHeight, COLORS.red, () => {
+        }, POPUP_PRIMARY_BUTTON_FONT_SIZE);
+        cursorY -= POPUP_PRIMARY_BUTTON_HEIGHT + POPUP_BUTTON_GAP;
+        this.createButton(panel, 'LobbyButton', '返回大厅', 0, cursorY - POPUP_BUTTON_HEIGHT / 2, contentWidth, POPUP_BUTTON_HEIGHT, COLORS.paperLight, () => {
             this.runUiAction('exit', model.returnToLobby);
-        }, POPUP_BUTTON_FONT_SIZE);
+        }, POPUP_BUTTON_FONT_SIZE, COLORS.woodDark);
     }
 
     hideResultView(): void {
@@ -845,6 +857,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private showSetup(): void {
+        // 从暂停重开或完成后回到开局页时，音乐仍处于游戏暂停状态。
+        this.context?.services.audio.resumeMusic();
         if (this.state === 'disposed') {
             return;
         }
@@ -881,48 +895,62 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             460,
             64,
         );
-        setupTitle.isBold = true;
+        setLabelBold(setupTitle, true);
 
         // 选择页直接落在木桌背景上，保留图片框和按钮层级，去掉整块浅色底板。
+        // 所有纵向位置来自 calculateSlidingPuzzleSetupStack：内容整体居中，
+        // 预览图随可用高度伸缩，矮屏自动切换紧凑排布。
+        const stack = calculateSlidingPuzzleSetupStack(metrics);
         const content = new Node('SetupContent');
         content.layer = this.node.layer;
         content.setParent(root);
-        content.setPosition(0, metrics.setupPanelCenterY, 0);
-        const panelTop = metrics.setupPanelHeight / 2;
-        const compact = metrics.setupPanelHeight < 760;
-        const previewSize = clamp(
-            Math.min(
-                compact ? SETUP_COMPACT_PREVIEW_MAX_SIZE : SETUP_PREVIEW_MAX_SIZE,
-                metrics.setupPanelHeight * 0.36,
-            ),
-            compact ? 180 : 240,
-            compact ? SETUP_COMPACT_PREVIEW_MAX_SIZE : SETUP_PREVIEW_MAX_SIZE,
-        );
-        const previewY = panelTop - (compact ? 142 : 220);
+        const onRandomPuzzle = (): void => {
+            void this.trackAssetLoad(this.selectRandomPuzzle());
+        };
+        let preview: Node;
         if (this.imageTexture) {
-            this.createImagePreview(
+            preview = this.createImagePreview(
                 content,
                 0,
-                previewY,
-                previewSize,
-                previewSize,
+                stack.previewY,
+                stack.previewSize,
+                stack.previewSize,
                 '',
                 false,
                 IMAGE_PREVIEW_CORNER_RADIUS,
             );
         } else {
-            this.createPlaceholderPreview(content, 0, previewY, previewSize, previewSize, '正在准备图片');
+            preview = this.createPlaceholderPreview(
+                content,
+                0,
+                stack.previewY,
+                stack.previewSize,
+                stack.previewSize,
+                '正在准备图片',
+            );
+        }
+        this.bindButtonInteraction(preview, onRandomPuzzle);
+        if (stack.hintY !== undefined) {
+            this.createLabel(
+                content,
+                'PreviewHint',
+                "点击图片换一张",
+                0,
+                stack.hintY,
+                SETUP_HINT_FONT_SIZE,
+                colorWithAlpha(COLORS.paper, 200),
+                stack.contentWidth,
+                30,
+            );
         }
 
-        const sizeCaptionY = previewY - previewSize / 2 - (compact ? 28 : 36);
+        if (stack.sizeCaptionY !== undefined) {
+            this.createSectionCaption(content, 'SizeCaption', "拼图难度", stack.sizeCaptionY, stack.contentWidth);
+        }
         const boardSizeOptionCount = SLIDING_PUZZLE_BOARD_SIZES.length;
-        const sizeButtonWidth = Math.min(
-            compact ? 106 : 120,
-            Math.max(64, (metrics.setupPanelWidth - 64) / boardSizeOptionCount - 4),
-        );
-        const sizeButtonHeight = compact ? 80 : 86;
-        const sizeSpacing = sizeButtonWidth + 10;
-        const sizeY = sizeCaptionY - (compact ? 56 : 66);
+        const sizeButtonWidth = (stack.contentWidth - SETUP_ROW_GAP * (boardSizeOptionCount - 1))
+            / boardSizeOptionCount;
+        const sizeSpacing = sizeButtonWidth + SETUP_ROW_GAP;
         SLIDING_PUZZLE_BOARD_SIZES.forEach((size, index) => {
             const x = (index - (boardSizeOptionCount - 1) / 2) * sizeSpacing;
             this.createButton(
@@ -930,9 +958,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 `Size${size}`,
                 `${size} × ${size}`,
                 x,
-                sizeY,
+                stack.sizeRowY,
                 sizeButtonWidth,
-                sizeButtonHeight,
+                stack.rowHeight,
                 size === this.selectedSize ? COLORS.teal : COLORS.wood,
                 () => {
                     this.selectedSize = size;
@@ -943,47 +971,62 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     this.context?.services.feedback.play('toggle');
                     this.showSetup();
                 },
-                compact ? SETUP_COMPACT_SIZE_BUTTON_FONT_SIZE : SETUP_SIZE_BUTTON_FONT_SIZE,
+                stack.compact ? SETUP_COMPACT_SIZE_BUTTON_FONT_SIZE : SETUP_SIZE_BUTTON_FONT_SIZE,
             );
         });
 
-        const sourceButtonGap = 12;
-        const sourceButtonWidth = Math.min(
-            240,
-            Math.max(176, (metrics.setupPanelWidth - 48 - sourceButtonGap) / 2),
-        );
-        const sourceButtonHeight = compact ? 76 : 86;
-        const sourceRowGap = 12;
-        const sourceRowWidth = sourceButtonWidth * 2 + sourceButtonGap;
-        const sourceColumnX = (sourceButtonWidth + sourceButtonGap) / 2;
-        const defaultSourceY = sizeY - (compact ? 108 : 128);
-        const startHeight = compact ? 80 : 100;
-        const startGap = 24;
-        // 相册按钮独占第二行。最小纵向位置按“开始拼图”按钮上沿反推，
-        // 保证矮屏下两行来源按钮仍完整位于底部安全区之上。
-        const minimumSourceY = metrics.footerY
-            - metrics.setupPanelCenterY
-            + startHeight / 2
-            + startGap
-            + sourceButtonHeight * 1.5
-            + sourceRowGap;
-        const sourceY = Math.max(defaultSourceY, minimumSourceY);
-        const albumSourceY = sourceY - sourceButtonHeight - sourceRowGap;
-        this.createButton(content, 'PresetButton', '随机一张', -sourceColumnX, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.wood, () => {
-            void this.trackAssetLoad(this.selectRandomPuzzle());
-        }, SETUP_SOURCE_ACTION_FONT_SIZE);
-        this.createButton(content, 'PresetLibraryButton', '选择拼图', sourceColumnX, sourceY, sourceButtonWidth, sourceButtonHeight, COLORS.teal, () => {
+        if (stack.sourceCaptionY !== undefined) {
+            this.createSectionCaption(content, 'SourceCaption', '选择图片', stack.sourceCaptionY, stack.contentWidth);
+        }
+        const sourceButtonWidth = (stack.contentWidth - SETUP_ROW_GAP) / 2;
+        const sourceColumnX = (sourceButtonWidth + SETUP_ROW_GAP) / 2;
+        this.createButton(content, 'PresetButton', '随机一张', -sourceColumnX, stack.sourceRowY, sourceButtonWidth, stack.rowHeight, COLORS.wood, onRandomPuzzle, SETUP_SOURCE_ACTION_FONT_SIZE);
+        this.createButton(content, 'PresetLibraryButton', '选择拼图', sourceColumnX, stack.sourceRowY, sourceButtonWidth, stack.rowHeight, COLORS.teal, () => {
             this.context?.services.feedback.play('uiButton');
             this.showPresetLibrary();
         }, SETUP_SOURCE_ACTION_FONT_SIZE);
-        this.createButton(content, 'ImageButton', '从相册选择', 0, albumSourceY, sourceRowWidth, sourceButtonHeight, COLORS.paperLight, () => {
+        this.createButton(content, 'ImageButton', '从相册选择', 0, stack.albumRowY, stack.contentWidth, stack.rowHeight, COLORS.paperLight, () => {
             void this.pickLocalImage();
-        }, SETUP_SOURCE_ACTION_FONT_SIZE, COLORS.woodDark, '（仅本地使用）');
+        }, SETUP_SOURCE_ACTION_FONT_SIZE, COLORS.woodDark, "（图片仅在本机使用）");
 
-        const startWidth = Math.min(compact ? 440 : 480, metrics.setupPanelWidth - 32);
-        this.createButton(root, 'StartButton', '开始拼图', 0, metrics.footerY, startWidth, startHeight, COLORS.red, () => {
+        const startWidth = Math.min(SETUP_START_BUTTON_MAX_WIDTH, stack.contentWidth);
+        this.createButton(root, 'StartButton', '开始拼图', 0, metrics.footerY, startWidth, SLIDING_PUZZLE_FOOTER_BUTTON_HEIGHT, COLORS.red, () => {
+            this.context?.services.feedback.play('uiButton');
             void this.startRound();
-        }, compact ? SETUP_COMPACT_START_BUTTON_FONT_SIZE : SETUP_START_BUTTON_FONT_SIZE);
+        }, SETUP_START_BUTTON_FONT_SIZE);
+    }
+
+    /** 开局页分区标题：左对齐文字，右侧一条淡色细线延伸到内容宽度边缘。 */
+    private createSectionCaption(parent: Node, name: string, text: string, y: number, width: number): void {
+        const caption = new Node(name);
+        caption.layer = this.node.layer;
+        caption.setParent(parent);
+        caption.setPosition(0, y, 0);
+        caption.addComponent(UITransform).setContentSize(width, 34);
+        const textWidth = SETUP_SECTION_CAPTION_FONT_SIZE * text.length + 4;
+        const label = this.createLabel(
+            caption,
+            'Label',
+            text,
+            -width / 2 + textWidth / 2,
+            0,
+            SETUP_SECTION_CAPTION_FONT_SIZE,
+            COLORS.paperLight,
+            textWidth,
+            34,
+        );
+        setLabelBold(label, true);
+        const ruleLeft = -width / 2 + textWidth + 16;
+        if (ruleLeft < width / 2) {
+            const rule = new Node('Rule');
+            rule.layer = this.node.layer;
+            rule.setParent(caption);
+            rule.addComponent(UITransform).setContentSize(width, 4);
+            const graphics = rule.addComponent(Graphics);
+            graphics.fillColor = colorWithAlpha(COLORS.paper, 72);
+            graphics.roundRect(ruleLeft, -1.5, width / 2 - ruleLeft, 3, 1.5);
+            graphics.fill();
+        }
     }
 
     private showPresetLibrary(): void {
@@ -1027,7 +1070,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             460,
             64,
         );
-        title.isBold = true;
+        setLabelBold(title, true);
         this.createLabel(
             root,
             'SortHint',
@@ -1074,7 +1117,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.createLabel(
             content,
             'Loading',
-            '正在整理拼图库…',
+            "正在加载拼图库…",
             0,
             -80,
             26,
@@ -1095,19 +1138,19 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             if (!loaded) {
                 const loadingLabel = content.getChildByName('Loading')?.getComponent(Label);
                 if (loadingLabel) {
-                    loadingLabel.string = '拼图库加载失败，请返回重试';
+                    loadingLabel.string = "拼图库加载失败，请返回后重新打开";
                 }
                 return;
             }
             this.renderPresetLibraryGrid(content, viewportWidth, viewportHeight);
         }).catch((error: unknown) => {
-            console.warn('[SlidingPuzzleGame] Failed to build preset library.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to build preset library.', error);
             if (token === this.presetLibraryLoadToken
                 && this.state === 'preset-library'
                 && content.isValid) {
                 const loadingLabel = content.getChildByName('Loading')?.getComponent(Label);
                 if (loadingLabel) {
-                    loadingLabel.string = '拼图库加载失败，请返回重试';
+                    loadingLabel.string = "拼图库加载失败，请返回后重新打开";
                 }
             }
         });
@@ -1150,7 +1193,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     return Object.freeze({ ...source, imageAsset, texture, releaseOnClose: true });
                 } catch (error: unknown) {
                     this.releaseRemoteImageAsset(imageAsset);
-                    console.warn('[SlidingPuzzleGame] Failed to create local library texture.', source.path, error);
+                    // TODO: console.warn('[SlidingPuzzleGame] Failed to create local library texture.', source.path, error);
                     return Object.freeze({ ...source, releaseOnClose: false });
                 }
             }
@@ -1165,7 +1208,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                         ),
                     );
                 } catch (error: unknown) {
-                    console.warn('[SlidingPuzzleGame] Failed to load preset library image.', source.path, error);
+                    // TODO: console.warn('[SlidingPuzzleGame] Failed to load preset library image.', source.path, error);
                     resolve(undefined);
                 }
             });
@@ -1317,7 +1360,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     badgeWidth - 12,
                     badgeHeight,
                 );
-                badgeLabel.isBold = true;
+                setLabelBold(badgeLabel, true);
             }
 
             if (entry.texture) {
@@ -1389,7 +1432,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         } catch (error: unknown) {
             // 平台选图接口偶发抛错时也要回到可重试的选择页，不能让
             // picking-image 状态和已销毁的动态节点一起卡住入口。
-            console.warn('[SlidingPuzzleGame] Failed to pick local image.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to pick local image.', error);
         }
 
         this.inputLocked = false;
@@ -1446,7 +1489,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     (error: Error | null, asset: ImageAsset) => resolve(error ? undefined : asset),
                 );
             } catch (error: unknown) {
-                console.warn('[SlidingPuzzleGame] Failed to load local image.', error);
+                // TODO: console.warn('[SlidingPuzzleGame] Failed to load local image.', error);
                 resolve(undefined);
             }
         });
@@ -1470,7 +1513,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.pendingImageTextureOwned = true;
             return true;
         } catch (error: unknown) {
-            console.warn('[SlidingPuzzleGame] Failed to create local texture.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to create local texture.', error);
             this.releaseRemoteImageAsset(imageAsset);
             return false;
         }
@@ -1494,7 +1537,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         this.imageLoadToken += 1;
         const token = this.imageLoadToken;
-        this.loadingPresetAssetPath = path;
         this.releasePendingImageResources();
         // 不要在异步加载开始前释放当前纹理。选图页需要继续显示旧图，
         // 待新纹理准备好后再切换，避免出现一帧空白或占位图。
@@ -1511,14 +1553,13 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     ),
                 );
             } catch (error: unknown) {
-                console.warn('[SlidingPuzzleGame] Failed to load preset image.', path, error);
+                // TODO: console.warn('[SlidingPuzzleGame] Failed to load preset image.', path, error);
                 resolve(undefined);
             }
         });
 
         if (token !== this.imageLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
             if (token === this.imageLoadToken) {
-                this.loadingPresetAssetPath = undefined;
             }
             if (texture) {
                 // 这次请求已经拿到 Bundle 资源，但所属局面已经失效，
@@ -1531,7 +1572,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         if (!texture) {
             // 加载失败时继续保留旧图，选图页仍可操作和重试，
             // 不要把当前预览替换成空白占位。
-            this.loadingPresetAssetPath = undefined;
             return false;
         }
 
@@ -1542,7 +1582,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.localImageSelection = undefined;
         this.localPuzzleRecordId = undefined;
         this.loadedPresetAssetPath = path;
-        this.loadingPresetAssetPath = undefined;
         if (refreshSetup && this.state === 'setup') {
             this.showSetup();
         } else {
@@ -1557,114 +1596,30 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private async loadVisualAssets(): Promise<void> {
         const bundle = await this.loadResourceBundle();
-        if (!bundle || this.state === 'disposed') {
-            return;
-        }
-
+        if (!bundle || this.state === 'disposed') return;
+        const assets = this.context!.services.assets;
         const token = ++this.visualLoadToken;
-        const entries = (Object.keys(SLIDING_PUZZLE_VISUAL_ASSET_PATHS) as SlidingPuzzleVisualKey[])
-            .map((key): [SlidingPuzzleVisualKey, string] => [
-                key,
-                SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key],
-            ]);
-        const iconKeys: SlidingPuzzleVisualKey[] = [
-            'backIcon',
-            'pauseIcon',
-            'cropIcon',
-            'referenceIcon',
-            'randomIcon',
-            'libraryIcon',
-            'albumIcon',
-            'selectedIcon',
-            'closeIcon',
-        ];
-        // 图标帧解析与其余视觉素材彼此独立。微信运行时不能因为动态图集
-        // 帧入口未正确交付，就阻断背景、棋盘、木框和弹窗的加载流程。
-        const atlasFramesPromise = loadAutoAtlasFrames(
-            bundle,
-            SLIDING_PUZZLE_ICON_ATLAS_PATH,
-            iconKeys.map((key) => ({
-                key,
-                frameName: autoAtlasFrameName(SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key]),
-                fallbackTexturePath: SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key],
-            })),
-        ).catch((error: unknown) => {
-            console.error('[SlidingPuzzleGame] Icon atlas initialization failed.', error);
-            return Object.freeze({}) as Readonly<Record<string, SpriteFrame>>;
-        });
-        const visualTexturesPromise = Promise.all(entries.map(async ([key, path]) => {
-            if (iconKeys.indexOf(key) >= 0) {
-                return { key, texture: undefined };
-            }
-            const texture = await new Promise<Texture2D | undefined>((resolve) => {
-                try {
-                    bundle.load(
-                        path,
-                        Texture2D,
-                        (error: Error | null, loadedTexture: Texture2D) => {
-                            if (error || !loadedTexture) {
-                                console.warn(
-                                    '[SlidingPuzzleGame] Visual asset unavailable.',
-                                    path,
-                                    error,
-                                );
-                                resolve(undefined);
-                                return;
-                            }
-                            resolve(loadedTexture);
-                        },
-                    );
-                } catch (error: unknown) {
-                    console.warn('[SlidingPuzzleGame] Failed to load visual asset.', path, error);
-                    resolve(undefined);
-                }
-            });
-            return { key, texture };
+        const keys = Object.keys(SLIDING_PUZZLE_VISUAL_ASSET_PATHS) as SlidingPuzzleVisualKey[];
+        const frames = await assets.loadSpriteFrames(SLIDING_PUZZLE_RESOURCE_BUNDLE, keys.map(key => {
+            const source = SLIDING_PUZZLE_VISUAL_ASSET_PATHS[key];
+            const packed = PACKED_SPRITE_PATHS[source];
+            return { key, path: packed ?? source, type: packed ? 'frame' as const : 'texture' as const };
         }));
-        const [atlasFrames, loaded] = await Promise.all([
-            atlasFramesPromise,
-            visualTexturesPromise,
-        ]);
-
         if (token !== this.visualLoadToken || (this.state as SlidingPuzzleState) === 'disposed') {
-            Object.keys(atlasFrames).forEach((key) => atlasFrames[key]?.destroy());
-            loaded.forEach(({ texture }) => {
-                if (texture) {
-                    this.releaseBundleTexture(texture);
-                }
-            });
+            Object.keys(frames).forEach(key => assets.releaseRuntimeAsset(frames[key]));
             return;
         }
-
-        Object.keys(atlasFrames).forEach((key) => {
-            const frame = atlasFrames[key];
-            if (frame) this.visualFrames.set(key as SlidingPuzzleVisualKey, frame);
-        });
-        loaded.forEach(({ key, texture }) => {
-            if (!texture) {
-                return;
-            }
-            const frame = new SpriteFrame();
-            frame.texture = texture;
-            frame.originalSize = new Size(texture.width, texture.height);
-            this.visualTextures.set(key, texture);
-            this.visualFrames.set(key, frame);
-        });
-
+        keys.forEach(key => this.visualFrames.set(key, frames[key]));
         if (this.state === 'ready' || this.state === 'picking-image' || this.state === 'starting') {
             this.buildBackground();
-            return;
-        }
-        if ((this.state as SlidingPuzzleState) !== 'disposed') {
+        } else if ((this.state as SlidingPuzzleState) !== 'disposed') {
             this.handleCanvasResize();
         }
     }
 
     private releaseVisualAssets(): void {
-        this.visualFrames.forEach((frame) => frame.destroy());
+        this.visualFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.visualFrames.clear();
-        this.visualTextures.forEach((texture) => this.releaseBundleTexture(texture));
-        this.visualTextures.clear();
     }
 
     private trackAssetLoad<T>(load: Promise<T>): Promise<T> {
@@ -1702,7 +1657,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.localImageSelection = undefined;
         this.localPuzzleRecordId = undefined;
         this.loadedPresetAssetPath = undefined;
-        this.loadingPresetAssetPath = undefined;
 
         this.releaseImageResourceSet(imageAsset, texture, ownsTexture);
     }
@@ -1863,11 +1817,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             680,
             68,
         );
-        cropTitle.isBold = true;
+        setLabelBold(cropTitle, true);
         this.createLabel(
             root,
             'CropBody',
-            '拖动图片调整位置，双指操作放大缩小',
+            "拖动图片调整位置，双指捏合缩放",
             0,
             metrics.titleY - 68,
             CROP_HINT_FONT_SIZE,
@@ -1876,7 +1830,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             54,
         );
         const actionHeight = 88;
-        const actionY = metrics.footerY + 38;
+        const actionY = metrics.footerY;
         const bodyY = metrics.titleY - 68;
         const bodyHeight = 54;
         const previewTop = bodyY - bodyHeight / 2 - 28;
@@ -1961,7 +1915,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                         ),
                     );
                 } catch (error: unknown) {
-                    console.warn('[SlidingPuzzleGame] Failed to decode cropped JPEG.', error);
+                    // TODO: console.warn('[SlidingPuzzleGame] Failed to decode cropped JPEG.', error);
                     resolve(undefined);
                 }
             });
@@ -1985,7 +1939,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 encodedImage.release();
                 croppedTexture?.destroy();
                 this.releaseRemoteImageAsset(croppedImageAsset);
-                console.warn('[SlidingPuzzleGame] Failed to create cropped local texture.', error);
+                // TODO: console.warn('[SlidingPuzzleGame] Failed to create cropped local texture.', error);
                 this.context.services.feedback.play('collision');
                 return;
             }
@@ -2013,7 +1967,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             this.context.services.feedback.play('uiButton');
             this.showSetup();
         } catch (error: unknown) {
-            console.warn('[SlidingPuzzleGame] Failed to crop local image.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to crop local image.', error);
             if (token === this.imageLoadToken && this.state === 'crop-editing') {
                 this.context.services.feedback.play('collision');
             }
@@ -2022,7 +1976,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             if (token === this.imageLoadToken) {
                 this.inputLocked = false;
                 if (this.state === 'crop-editing') {
-                    console.warn('[SlidingPuzzleGame] Local image crop did not complete; retry is available.');
+                    // TODO: console.warn('[SlidingPuzzleGame] Local image crop did not complete; retry is available.');
                     const hint = this.dynamicNode?.getChildByName('CropBody')?.getComponent(Label);
                     if (hint) hint.string = '图片处理失败，请重试或重新选择图片';
                 }
@@ -2070,7 +2024,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.inputLocked = false;
         this.showPlay();
         this.persistProgress();
-        this.context?.services.feedback.play('uiButton');
+        // 按钮音由发起开局的点击（开始拼图 / 弹窗按钮）即时播放，这里不再延迟补播。
+        this.context?.services.audio.resumeMusic();
     }
 
     private showPlay(): void {
@@ -2081,53 +2036,23 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         root.setParent(this.node);
         this.dynamicNode = root;
         const metrics = this.layout;
-        const hudInfoStep = PLAY_HUD_INFO_COLUMN_WIDTH + PLAY_HUD_INFO_COLUMN_GAP;
-        const hudInfoY = metrics.headerY - PLAY_HUD_INFO_OFFSET_Y;
-        this.createLabel(
-            root,
-            'BoardSize',
-            `规格：${this.model.boardSize}x${this.model.boardSize}`,
-            -hudInfoStep,
-            hudInfoY,
-            PLAY_HUD_FONT_SIZE,
-            COLORS.paperLight,
-            PLAY_HUD_INFO_COLUMN_WIDTH,
-            52,
-        );
-        this.timerLabel = this.createLabel(
-            root,
-            'Timer',
-            '用时 00:00',
-            0,
-            hudInfoY,
-            PLAY_HUD_FONT_SIZE,
-            COLORS.paperLight,
-            PLAY_HUD_INFO_COLUMN_WIDTH,
-            52,
-        );
-        this.movesLabel = this.createLabel(
-            root,
-            'Moves',
-            '步数 000',
-            hudInfoStep,
-            hudInfoY,
-            PLAY_HUD_FONT_SIZE,
-            COLORS.paperLight,
-            PLAY_HUD_INFO_COLUMN_WIDTH,
-            52,
-        );
+        this.createPlayHud(root, metrics);
         this.createIconButton(
             root,
             'ReferenceButton',
-            -metrics.viewportWidth / 2 + 64,
+            -metrics.headerIconX,
             metrics.headerY,
             'referenceIcon',
             PLAY_SIDE_ICON_SIZE,
             () => {
+                // 只在玩家操作时发声；画布重建恢复参考图时不重复播放。
+                if (this.state === 'playing' || this.state === 'paused' || this.state === 'completed') {
+                    this.context?.services.feedback.play('popup');
+                }
                 this.showReferencePreview();
             },
         );
-        this.pauseButtonNode = this.createIconButton(root, 'PauseButton', metrics.pauseX, metrics.pauseY, 'pauseIcon', PLAY_SIDE_ICON_SIZE, () => {
+        this.pauseButtonNode = this.createIconButton(root, 'PauseButton', metrics.headerIconX, metrics.headerY, 'pauseIcon', PLAY_SIDE_ICON_SIZE, () => {
             if (this.state === 'playing') {
                 this.context?.services.feedback.play('uiButton');
                 this.context?.requestPause();
@@ -2165,16 +2090,82 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.refreshHud();
     }
 
+    /** 顶栏中间的纸卡信息条，与左右两个图标按钮同处一行，把纵向空间留给棋盘。 */
+    private createPlayHud(parent: Node, metrics: SlidingPuzzleLayoutMetrics): void {
+        const [, timer, moves] = this.createStatStrip(
+            parent,
+            'Hud',
+            0,
+            metrics.headerY,
+            metrics.hudWidth,
+            SLIDING_PUZZLE_HUD_HEIGHT,
+        );
+        this.timerLabel = timer;
+        this.movesLabel = moves;
+    }
+
+    /**
+     * 规格 / 用时 / 步数三栏纸卡：小字说明在上、数值在下。对局顶栏、暂停和
+     * 结算弹窗共用同一样式，返回三栏数值 Label 以便调用方刷新。
+     */
+    private createStatStrip(
+        parent: Node,
+        name: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+    ): readonly [Label, Label, Label] {
+        const strip = this.createPanel(parent, name, width, height, COLORS.paper, 24);
+        strip.setPosition(x, y, 0);
+        const columnWidth = width / 3;
+        const graphics = strip.getComponent(Graphics)!;
+        graphics.fillColor = colorWithAlpha(COLORS.woodDark, 56);
+        [-1, 1].forEach((side) => {
+            graphics.rect(side * columnWidth / 2 - 1, -height / 2 + 22, 2, height - 44);
+        });
+        graphics.fill();
+
+        const createColumn = (columnName: string, caption: string, value: string, columnX: number): Label => {
+            this.createLabel(
+                strip,
+                `${columnName}Caption`,
+                caption,
+                columnX,
+                20,
+                PLAY_HUD_CAPTION_FONT_SIZE,
+                COLORS.muted,
+                columnWidth - 12,
+                26,
+            );
+            const label = this.createLabel(
+                strip,
+                columnName,
+                value,
+                columnX,
+                -13,
+                PLAY_HUD_VALUE_FONT_SIZE,
+                COLORS.woodDark,
+                columnWidth - 12,
+                44,
+            );
+            label.isBold = true;
+            return label;
+        };
+        const size = this.model.boardSize;
+        return [
+            createColumn('BoardSize', "网格", `${size}×${size}`, -columnWidth),
+            createColumn('Timer', '用时', this.formatDuration(this.elapsedSeconds), 0),
+            createColumn('Moves', '步数', `${this.model.moves}`, columnWidth),
+        ];
+    }
+
     private createDisplayModeSwitch(parent: Node): void {
         const metrics = this.layout;
         if (!metrics) {
             return;
         }
 
-        const boardBottom = metrics.boardCenterY - metrics.boardSize / 2;
-        const safeBottom = -metrics.viewportHeight / 2 + metrics.safeBottom;
-        const desiredY = boardBottom - DISPLAY_MODE_SWITCH_GAP - DISPLAY_MODE_SWITCH_HEIGHT / 2;
-        const minimumY = safeBottom + DISPLAY_MODE_SWITCH_HEIGHT / 2 + 24;
         const switchFrame = this.visualFrames.get(
             this.showTileNumbers ? 'displayModeNumber' : 'displayModeOriginal',
         );
@@ -2206,7 +2197,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             sprite.sizeMode = Sprite.SizeMode.CUSTOM;
             sprite.spriteFrame = switchFrame;
         }
-        switchRoot.setPosition(0, Math.max(minimumY, desiredY), 0);
+        switchRoot.setPosition(0, metrics.displaySwitchY, 0);
         this.displayModeSwitchNode = switchRoot;
 
         const segmentWidth = DISPLAY_MODE_SWITCH_WIDTH / 2 - 6;
@@ -2252,7 +2243,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 segmentWidth - 20,
                 segmentHeight,
             );
-            label.isBold = selected;
+            setLabelBold(label, selected);
             this.bindButtonInteraction(segment, onClick, false);
         };
 
@@ -2439,7 +2430,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 overlaySize - 12,
                 overlaySize - 12,
             );
-            numberLabel.isBold = true;
+            setLabelBold(numberLabel, true);
             overlay.active = this.shouldShowTileNumberOverlay();
 
             const bevel = new Node('TileBevel');
@@ -2652,6 +2643,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         if (this.pauseButtonNode?.isValid) {
             this.pauseButtonNode.active = true;
         }
+        // 音乐先收住，让完成和弦单独成立；再来一局 / 回到开局页时恢复。
+        this.context?.services.audio.pauseMusic();
         this.context?.services.feedback.play('milestone');
         const score = Math.max(1, Math.round(100000 - this.elapsedSeconds * 20 - this.model.moves * 45));
         const result: GameResult = Object.freeze({
@@ -2665,6 +2658,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             }),
         });
         this.context?.reportScore(score);
+        if (this.model.boardSize === 7) this.context?.reportAchievementProgress('completed-7x7', 1);
         this.showCompletionEffect();
         // 闪耀先给最后一块一个完整的“拼上去”反馈，随后用同一裁剪参数的
         // 原图覆盖棋盘内槽；弹窗仍等整段庆祝动画结束后再出现。
@@ -2961,66 +2955,92 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.inputLocked = true;
         this.destroyOverlay();
         const overlay = this.createOverlay('SlidingPuzzleReferenceOverlay');
-        const panelWidth = 640;
-        const closeIconSize = 56;
-        const closeButtonSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, closeIconSize + 28);
-        const panelHeight = this.getPopupHeight(
-            closeButtonSize + REFERENCE_PREVIEW_TOP_GAP + REFERENCE_PREVIEW_SIZE,
-        );
-        const panel = this.createPopupPanel(overlay, 'ReferencePanel', panelWidth, panelHeight);
-        panel.setPosition(0, this.getPopupCenterY(), 0);
-        this.setPopupScale(panel, panelWidth, panelHeight);
-        const titleHeight = 52;
-        const headerY = panelHeight / 2 - POPUP_CONTENT_PADDING_TOP - closeButtonSize / 2;
-        const titleWidth = Math.max(
+        const metrics = this.layout ?? this.getLayout();
+        // 参考图不套弹窗木框，直接铺在遮罩上并与棋盘同宽，方便对照细节；
+        // 矮屏按上下安全区等比缩小。点击遮罩任意位置即可关闭。
+        const closeButtonSize = Math.max(SLIDING_PUZZLE_TOUCH_SIZE, POPUP_CLOSE_ICON_SIZE + 28);
+        const availableHeight = metrics.viewportHeight
+            - metrics.topReserved
+            - metrics.safeBottom
+            - REFERENCE_PREVIEW_VERTICAL_MARGIN * 2
+            - closeButtonSize
+            - REFERENCE_PREVIEW_TITLE_GAP;
+        const previewSize = Math.max(
             1,
-            this.getPopupContentWidth(panelWidth) - closeButtonSize - 40,
+            Math.min(
+                metrics.boardSize,
+                metrics.viewportWidth - REFERENCE_PREVIEW_SIDE_MARGIN * 2,
+                availableHeight,
+            ),
         );
-        this.createLabel(
-            panel,
+        const groupHeight = closeButtonSize + REFERENCE_PREVIEW_TITLE_GAP + previewSize;
+        const groupTop = metrics.safeContentCenterY + groupHeight / 2;
+        const headerY = groupTop - closeButtonSize / 2;
+        const previewY = groupTop - groupHeight + previewSize / 2;
+
+        const closeReference = (): void => {
+            if (this.state !== 'reference-preview') {
+                return;
+            }
+            this.context?.services.feedback.play('popup');
+            this.hideReferencePreview();
+        };
+        this.bindButtonInteraction(overlay, closeReference, false);
+        const title = this.createPopupTitle(
+            overlay,
             'ReferenceTitle',
             '参考图',
-            0,
             headerY,
-            34,
-            COLORS.woodDark,
-            titleWidth,
-            titleHeight,
+            Math.max(1, previewSize - closeButtonSize * 2),
         );
-        const previewY = panelHeight / 2
-            - POPUP_CONTENT_PADDING_TOP
-            - closeButtonSize
-            - REFERENCE_PREVIEW_TOP_GAP
-            - REFERENCE_PREVIEW_SIZE / 2;
-
+        title.color = COLORS.paperLight;
         this.createIconButton(
-            panel,
+            overlay,
             'CloseReference',
-            panelWidth / 2 - POPUP_CONTENT_PADDING_X - closeButtonSize / 2,
+            previewSize / 2 - closeButtonSize / 2,
             headerY,
             'closeIcon',
-            closeIconSize,
-            () => this.hideReferencePreview(),
+            POPUP_CLOSE_ICON_SIZE,
+            closeReference,
         );
         if (this.imageTexture) {
             this.createImagePreview(
-                panel,
+                overlay,
                 0,
                 previewY,
-                REFERENCE_PREVIEW_SIZE,
-                REFERENCE_PREVIEW_SIZE,
+                previewSize,
+                previewSize,
                 '',
+                false,
+                IMAGE_PREVIEW_CORNER_RADIUS,
             );
         } else {
             this.createPlaceholderPreview(
-                panel,
+                overlay,
                 0,
                 previewY,
-                REFERENCE_PREVIEW_SIZE,
-                REFERENCE_PREVIEW_SIZE,
+                previewSize,
+                previewSize,
                 '图片准备中',
             );
         }
+    }
+
+    /** 弹窗统一标题样式：深木色粗体，居中。 */
+    private createPopupTitle(parent: Node, name: string, text: string, y: number, width: number): Label {
+        const title = this.createLabel(
+            parent,
+            name,
+            text,
+            0,
+            y,
+            POPUP_TITLE_FONT_SIZE,
+            COLORS.woodDark,
+            width,
+            POPUP_TITLE_HEIGHT,
+        );
+        title.isBold = true;
+        return title;
     }
 
     private hideReferencePreview(): void {
@@ -3761,6 +3781,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
+        // 暂停弹窗、结算弹窗的按钮都经由这里：接受点击的同时给出按钮音。
+        this.context?.services.feedback.play('uiButton');
         this.uiActionPending = true;
         // 延迟到当前触摸/鼠标事件完成后再切换场景、销毁弹窗或重建动态节点，
         // 避免 Cocos 在事件传播期间重排节点导致偶发的点击无效。
@@ -3773,7 +3795,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     }
                 },
                 (error: unknown) => {
-                    console.error(`[SlidingPuzzleGame] ${label} action failed.`, error);
+                    // TODO: console.error(`[SlidingPuzzleGame] ${label} action failed.`, error);
                     if (this.state !== 'disposed') {
                         this.uiActionPending = false;
                     }
@@ -3804,7 +3826,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 }
             }, 1.5);
         } catch (error: unknown) {
-            console.error('[SlidingPuzzleGame] Failed to return to lobby from setup.', error);
+            // TODO: console.error('[SlidingPuzzleGame] Failed to return to lobby from setup.', error);
             this.uiActionPending = false;
             this.inputLocked = false;
         }
@@ -3813,7 +3835,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private async restoreActiveRound(): Promise<boolean> {
         const context = this.context;
         if (!context) return false;
-        const raw = context.services.storage.getGameData(context.gameId)?.custom?.activeRound;
+        const raw = this.currentSave()?.custom?.activeRound;
         if (raw === undefined) return false;
 
         try {
@@ -3883,7 +3905,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             if ((this.state as SlidingPuzzleState) === 'disposed') {
                 return false;
             }
-            console.warn('[SlidingPuzzleGame] Invalid active round was discarded.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Invalid active round was discarded.', error);
             this.writeActiveRound(undefined);
             this.releaseImageResources();
             this.selectedSize = 4;
@@ -3982,11 +4004,18 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }));
     }
 
+    private currentSave(): GameSaveData | undefined {
+        const context = this.context;
+        if (!context) return undefined;
+        const data = context.services.storage.getGameData(context.gameId);
+        return data?.dataVersion === SLIDING_PUZZLE_DATA_VERSION ? data : undefined;
+    }
+
     private writeActiveRound(activeRound: SlidingPuzzleActiveRound | undefined): void {
         const context = this.context;
         if (!context) return;
         const storage = context.services.storage;
-        const previous = storage.getGameData(context.gameId);
+        const previous = this.currentSave();
         const previousCustom = isRecordValue(previous?.custom) ? previous.custom : {};
         const custom: Record<string, unknown> = {};
         Object.keys(previousCustom).forEach((key) => {
@@ -3996,14 +4025,14 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         try {
             storage.writeGameData(context.gameId, Object.freeze({
-                dataVersion: Math.max(SLIDING_PUZZLE_DATA_VERSION, previous?.dataVersion ?? 1),
+                dataVersion: SLIDING_PUZZLE_DATA_VERSION,
                 playCount: previous?.playCount ?? 0,
                 ...(previous?.highScore === undefined ? {} : { highScore: previous.highScore }),
                 ...(previous?.lastPlayedAt === undefined ? {} : { lastPlayedAt: previous.lastPlayedAt }),
                 custom: Object.freeze(custom),
             }));
         } catch (error: unknown) {
-            console.warn('[SlidingPuzzleGame] Failed to update active round save.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to update active round save.', error);
         }
     }
 
@@ -4024,7 +4053,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                     (error, asset) => resolve(error ? undefined : asset),
                 );
             } catch (error: unknown) {
-                console.warn('[SlidingPuzzleGame] Failed to decode persisted local image.', error);
+                // TODO: console.warn('[SlidingPuzzleGame] Failed to decode persisted local image.', error);
                 resolve(undefined);
             }
         });
@@ -4041,7 +4070,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         } catch (error: unknown) {
             texture?.destroy();
             this.releaseRemoteImageAsset(imageAsset);
-            console.warn('[SlidingPuzzleGame] Failed to create persisted local texture.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to create persisted local texture.', error);
             return false;
         }
 
@@ -4055,26 +4084,51 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private async selectRandomPuzzle(): Promise<void> {
         if (this.state !== 'setup' || this.inputLocked) return;
-        const allSources = Array.from(this.getSortedPuzzleLibrarySources());
+        const seenKeys = new Set<string>();
+        const allSources = this.getSortedPuzzleLibrarySources().filter((source) => {
+            const key = puzzleLibrarySourceKey(source);
+            if (seenKeys.has(key)) return false;
+            seenKeys.add(key);
+            return true;
+        });
         if (allSources.length === 0) return;
 
+        const sourceKeys = allSources.map(puzzleLibrarySourceKey);
+        if (sourceKeys.length !== this.randomPuzzleSourceKeys.length
+            || sourceKeys.some((key) => this.randomPuzzleSourceKeys.indexOf(key) < 0)) {
+            this.randomPuzzleSourceKeys = sourceKeys;
+            this.randomPuzzleQueue = [];
+        }
         const isCurrent = (source: PuzzleLibrarySource): boolean => source.kind === 'preset'
             ? this.selectedConfig.imageSource === 'preset'
                 && this.selectedConfig.presetAssetPath === source.path
             : this.selectedConfig.imageSource === 'local'
                 && this.localPuzzleRecordId === source.id;
-        const candidates = allSources.length > 1
-            ? allSources.filter((source) => !isCurrent(source))
-            : allSources;
         this.inputLocked = true;
         this.cropController.cancel();
 
         try {
-            // 本地文件可能被浏览器或系统清理。随机命中失效记录时继续尝试
-            // 其余候选项，不能因为一张坏记录让整个随机按钮失效。
-            while (candidates.length > 0 && this.state === 'setup') {
-                const randomIndex = Math.floor(Math.random() * candidates.length);
-                const source = candidates.splice(randomIndex, 1)[0];
+            // 一轮里每张图最多抽到一次；失效的本地文件或加载失败的预置图
+            // 在本次点击中跳过，继续尝试队列里的其他图片。
+            const attempted = new Set<string>();
+            while (attempted.size < allSources.length && this.state === 'setup') {
+                if (this.randomPuzzleQueue.length === 0) {
+                    this.shuffleRandomPuzzleQueue(allSources);
+                }
+                const queue = this.randomPuzzleQueue;
+                const lastIndex = queue.length - 1;
+                if (queue.length > 1 && isCurrent(queue[lastIndex])) {
+                    const alternativeIndex = queue.findIndex((source) => !isCurrent(source));
+                    if (alternativeIndex >= 0) {
+                        [queue[lastIndex], queue[alternativeIndex]] = [queue[alternativeIndex], queue[lastIndex]];
+                    }
+                }
+                const source = queue.pop()!;
+                const key = puzzleLibrarySourceKey(source);
+                if (attempted.has(key)) continue;
+                attempted.add(key);
+                if (allSources.length > 1 && isCurrent(source)) continue;
+
                 if (source.kind === 'local' && source.id) {
                     const record = this.getLocalPuzzleRecords().find((item) => item.id === source.id);
                     if (!record || !await this.loadPersistedLocalPuzzleImage(record)) {
@@ -4095,6 +4149,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 if (source.kind === 'preset') {
                     const presetIndex = SLIDING_PUZZLE_PRESET_ASSET_PATHS.indexOf(source.path);
                     if (presetIndex < 0) continue;
+                    const previousConfig = this.selectedConfig;
+                    const previousPresetIndex = this.selectedPresetIndex;
                     this.selectedPresetIndex = presetIndex;
                     this.selectedConfig = Object.freeze({
                         boardSize: this.selectedSize,
@@ -4102,6 +4158,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                         presetAssetPath: source.path,
                     });
                     if (!await this.loadPresetImage(true)) {
+                        this.selectedConfig = previousConfig;
+                        this.selectedPresetIndex = previousPresetIndex;
                         continue;
                     }
                     this.context?.services.feedback.play('uiButton');
@@ -4114,20 +4172,28 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
     }
 
+    private shuffleRandomPuzzleQueue(sources: readonly PuzzleLibrarySource[]): void {
+        const queue = Array.from(sources);
+        for (let index = queue.length - 1; index > 0; index -= 1) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [queue[index], queue[swapIndex]] = [queue[swapIndex], queue[index]];
+        }
+        this.randomPuzzleQueue = queue;
+    }
+
     private async loadResourceBundle() {
         const assets = this.context?.services.assets;
         if (!assets || this.state === 'disposed') return undefined;
         try {
             return await assets.loadBundle(SLIDING_PUZZLE_RESOURCE_BUNDLE);
         } catch (error: unknown) {
-            console.warn('[SlidingPuzzleGame] Failed to load resource bundle.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to load resource bundle.', error);
             return undefined;
         }
     }
 
     private getLocalPuzzleRecords(): LocalPuzzleRecord[] {
-        const context = this.context;
-        const value = context?.services.storage.getGameData(context.gameId)?.custom?.localPuzzleLibrary;
+        const value = this.currentSave()?.custom?.localPuzzleLibrary;
         if (!Array.isArray(value)) return [];
         const records: LocalPuzzleRecord[] = [];
         value.forEach((item) => {
@@ -4151,8 +4217,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private getSortedPuzzleLibrarySources(): readonly PuzzleLibrarySource[] {
-        const context = this.context;
-        const previous = context?.services.storage.getGameData(context.gameId);
+        const previous = this.currentSave();
         const historyValue = previous?.custom?.presetLastPlayedAt;
         const history = isRecordValue(historyValue) ? historyValue : {};
         const selectedPresetPath = this.selectedConfig.imageSource === 'preset'
@@ -4229,10 +4294,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             ));
             records = retained;
             const storage = context.services.storage;
-            const previous = storage.getGameData(context.gameId);
+            const previous = this.currentSave();
             const previousCustom = isRecordValue(previous?.custom) ? previous.custom : {};
             storage.writeGameData(context.gameId, Object.freeze({
-                dataVersion: Math.max(SLIDING_PUZZLE_DATA_VERSION, previous?.dataVersion ?? 1),
+                dataVersion: SLIDING_PUZZLE_DATA_VERSION,
                 playCount: (previous?.playCount ?? 0) + 1,
                 ...(previous?.highScore === undefined ? {} : { highScore: previous.highScore }),
                 lastPlayedAt: now,
@@ -4249,7 +4314,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 this.localPuzzleRecordId = undefined;
                 this.selectedConfig = previousConfig;
             }
-            console.warn('[SlidingPuzzleGame] Failed to update local puzzle library.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to update local puzzle library.', error);
         }
     }
 
@@ -4260,7 +4325,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         }
 
         const storage = context.services.storage;
-        const previous = storage.getGameData(context.gameId);
+        const previous = this.currentSave();
         const previousCustom = isRecordValue(previous?.custom) ? previous.custom : {};
         const historyValue = previousCustom.presetLastPlayedAt;
         const previousHistory = isRecordValue(historyValue) ? historyValue : {};
@@ -4274,7 +4339,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         const now = Date.now();
         history[path] = now;
         const save: GameSaveData = Object.freeze({
-            dataVersion: Math.max(SLIDING_PUZZLE_DATA_VERSION, previous?.dataVersion ?? 1),
+            dataVersion: SLIDING_PUZZLE_DATA_VERSION,
             playCount: (previous?.playCount ?? 0) + 1,
             ...(previous?.highScore === undefined ? {} : { highScore: previous.highScore }),
             lastPlayedAt: now,
@@ -4287,7 +4352,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             storage.writeGameData(context.gameId, save);
         } catch (error: unknown) {
             // 最近游玩记录失败不能阻断开局；下次仍按已有顺序展示。
-            console.warn('[SlidingPuzzleGame] Failed to save preset play history.', error);
+            // TODO: console.warn('[SlidingPuzzleGame] Failed to save preset play history.', error);
         }
     }
 
@@ -4348,10 +4413,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
     private refreshHud(): void {
         if (this.timerLabel) {
-            this.timerLabel.string = `用时 ${this.formatDuration(this.elapsedSeconds)}`;
+            this.timerLabel.string = this.formatDuration(this.elapsedSeconds);
         }
         if (this.movesLabel) {
-            this.movesLabel.string = `步数 ${this.padThree(this.model.moves)}`;
+            this.movesLabel.string = `${this.model.moves}`;
         }
     }
 
@@ -4375,11 +4440,6 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private padTwo(value: number): string {
         const text = Math.max(0, Math.floor(value)).toString();
         return text.length >= 2 ? text : `0${text}`;
-    }
-
-    private padThree(value: number): string {
-        const text = Math.max(0, Math.floor(value)).toString();
-        return text.length >= 3 ? text : `${'0'.repeat(3 - text.length)}${text}`;
     }
 
     private drawBackground(graphics: Graphics, width: number, height: number): void {

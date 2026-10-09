@@ -1,8 +1,13 @@
-import { getFruitConfig } from './FruitCatalog';
+import { FRUIT_LEVELS, getFruitConfig } from './FruitCatalog';
+
+/** 最高一级果冻即大西瓜。 */
+const WATERMELON_LEVEL = FRUIT_LEVELS.length - 1;
 
 export interface WatermelonProgressSnapshot {
     readonly score: number;
     readonly maxFruitLevel: number;
+    /** 本局合成出的大西瓜果冻个数。 */
+    readonly watermelons: number;
 }
 
 export interface WatermelonMergeScoreEvent {
@@ -21,11 +26,13 @@ export interface WatermelonMergeScoreEvent {
 export class WatermelonRoundProgress {
     private currentScore = 0;
     private currentMaxLevel = 0;
+    private currentWatermelons = 0;
 
     get snapshot(): WatermelonProgressSnapshot {
         return Object.freeze({
             score: this.currentScore,
             maxFruitLevel: this.currentMaxLevel,
+            watermelons: this.currentWatermelons,
         });
     }
 
@@ -40,6 +47,7 @@ export class WatermelonRoundProgress {
         const previousMaxLevel = this.currentMaxLevel;
         this.currentScore += config.score;
         this.currentMaxLevel = Math.max(this.currentMaxLevel, resultLevel);
+        if (resultLevel === WATERMELON_LEVEL) this.currentWatermelons++;
 
         return Object.freeze({
             resultLevel,
@@ -54,6 +62,7 @@ export class WatermelonRoundProgress {
     reset(): WatermelonProgressSnapshot {
         this.currentScore = 0;
         this.currentMaxLevel = 0;
+        this.currentWatermelons = 0;
         return this.snapshot;
     }
 
@@ -61,11 +70,13 @@ export class WatermelonRoundProgress {
         if (!Number.isInteger(snapshot.score) || snapshot.score < 0
             || !Number.isInteger(snapshot.maxFruitLevel)
             || snapshot.maxFruitLevel < 0
-            || snapshot.maxFruitLevel > 10) {
+            || snapshot.maxFruitLevel > 10
+            || !Number.isInteger(snapshot.watermelons) || snapshot.watermelons < 0) {
             throw new Error('Invalid watermelon progress snapshot.');
         }
         this.currentScore = snapshot.score;
         this.currentMaxLevel = snapshot.maxFruitLevel;
+        this.currentWatermelons = snapshot.watermelons;
         return this.snapshot;
     }
 }

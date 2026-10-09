@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "6fc59bad-7385-47a0-a26b-4cda13725c08",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isSubpackage": true,
+    "isBundle": true,
+    "bundleName": "shared-fonts",
+    "priority": 3,
+    "compressionType": {},
+    "isRemoteBundle": {},
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L"
+  }
+}

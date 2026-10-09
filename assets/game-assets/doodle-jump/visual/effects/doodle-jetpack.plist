@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>jetpack-flames</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,279},{179,209}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{179,209}}</string>
+			<key>sourceSize</key>
+			<string>{179,209}</string>
+		</dict>
+		<key>jetpack-paper-scraps</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{197,273}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{197,273}}</string>
+			<key>sourceSize</key>
+			<string>{197,273}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-jetpack.png</string>
+		<key>size</key>
+		<string>{201,490}</string>
+		<key>textureFileName</key>
+		<string>doodle-jetpack.png</string>
+	</dict>
+</dict>
+</plist>

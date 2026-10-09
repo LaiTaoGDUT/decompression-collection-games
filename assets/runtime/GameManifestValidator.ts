@@ -1,4 +1,4 @@
-import type { GameManifest } from './GameManifest';
+import { TROPHY_STYLES, type AchievementDefinition, type GameManifest } from './GameManifest';
 import { isSemanticVersion } from '../core/version/SemanticVersion';
 
 const SUPPORTED_SCHEMA_VERSION = 3;
@@ -268,6 +268,28 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
     if (resourceDirectories && (resourceDirectories.length === 0 || new Set(resourceDirectories).size !== resourceDirectories.length))
         addError(errors, `${prefix}.resourceDirectories`, 'must contain unique resource directories');
     const tags = readStringArray(value, 'tags', `${prefix}.tags`, errors);
+    let achievement: AchievementDefinition | undefined;
+    if (value.achievement !== undefined) {
+        const raw = value.achievement;
+        if (!isRecord(raw)) addError(errors, `${prefix}.achievement`, 'must be an object');
+        else {
+            for (const key of ['id', 'name', 'description', 'metric']) {
+                if (typeof raw[key] !== 'string' || !(raw[key] as string).trim())
+                    addError(errors, `${prefix}.achievement.${key}`, 'must be a non-empty string');
+            }
+            if (typeof raw.id === 'string' && !ID_PATTERN.test(raw.id))
+                addError(errors, `${prefix}.achievement.id`, 'must be a stable identifier');
+            if (typeof raw.target !== 'number' || !Number.isFinite(raw.target) || raw.target <= 0)
+                addError(errors, `${prefix}.achievement.target`, 'must be a positive finite number');
+            if (typeof raw.unit !== 'string') addError(errors, `${prefix}.achievement.unit`, 'must be a string');
+            if (TROPHY_STYLES.indexOf(raw.trophy as AchievementDefinition['trophy']) < 0)
+                addError(errors, `${prefix}.achievement.trophy`, 'must be a supported trophy style');
+            if (typeof raw.color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(raw.color))
+                addError(errors, `${prefix}.achievement.color`, 'must be a six-digit hex color');
+            achievement = Object.freeze({ id: raw.id, name: raw.name, description: raw.description,
+                metric: raw.metric, target: raw.target, unit: raw.unit, trophy: raw.trophy, color: raw.color }) as AchievementDefinition;
+        }
+    }
     const initializeTimeoutMs = value.initializeTimeoutMs;
     if (initializeTimeoutMs !== undefined && (typeof initializeTimeoutMs !== 'number'
         || !Number.isInteger(initializeTimeoutMs) || initializeTimeoutMs < 1000 || initializeTimeoutMs > 120000)) {
@@ -312,6 +334,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
 
     const manifest: GameManifest = Object.freeze({
         id: id!,
+        ...(achievement ? { achievement } : {}),
         version: version!,
         name: name!,
         description: description!,

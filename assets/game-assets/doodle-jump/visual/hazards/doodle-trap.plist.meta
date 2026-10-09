@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "3ead84ef-3261-5231-aa3e-0651e00c1112",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "2cb2c": {
+      "importer": "sprite-frame",
+      "uuid": "3ead84ef-3261-5231-aa3e-0651e00c1112@2cb2c",
+      "displayName": "",
+      "id": "2cb2c",
+      "name": "bear-trap",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 242,
+        "height": 151,
+        "rawWidth": 242,
+        "rawHeight": 151,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b6fed7f0-92cf-57f9-bc68-b7000240527a@6c48a",
+        "atlasUuid": "3ead84ef-3261-5231-aa3e-0651e00c1112",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "9a136": {
+      "importer": "sprite-frame",
+      "uuid": "3ead84ef-3261-5231-aa3e-0651e00c1112@9a136",
+      "displayName": "",
+      "id": "9a136",
+      "name": "bear-trap-flash",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 248,
+        "trimY": 2,
+        "width": 221,
+        "height": 177,
+        "rawWidth": 221,
+        "rawHeight": 177,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b6fed7f0-92cf-57f9-bc68-b7000240527a@6c48a",
+        "atlasUuid": "3ead84ef-3261-5231-aa3e-0651e00c1112",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-trap.png",
+    "format": 2,
+    "uuid": "3ead84ef-3261-5231-aa3e-0651e00c1112",
+    "textureUuid": "b6fed7f0-92cf-57f9-bc68-b7000240527a@6c48a"
+  }
+}

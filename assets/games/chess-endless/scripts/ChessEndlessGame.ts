@@ -1,3 +1,5 @@
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
+import { setLabelBold } from '../../../services/font/FontBinding';
 import {
     _decorator,
     assetManager,
@@ -23,7 +25,6 @@ import {
     UIOpacity,
     UITransform,
     Vec3,
-    view,
 } from 'cc';
 import { DEV } from 'cc/env';
 import type { Platform } from '../../../platform/Platform';
@@ -34,13 +35,10 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
+import type { AssetService } from '../../../services/asset/AssetService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
-import {
-    autoAtlasFrameName,
-    loadAutoAtlasFrames,
-} from '../../../services/asset/AutoAtlasLoader';
 import { ChessEndlessLayout } from './ChessEndlessLayout';
 import {
     chessEndlessModalContentRect,
@@ -60,15 +58,12 @@ import {
     type EnemyPieceType,
     type ItemType,
     type KillRecord,
-    type PlayerMoveResult,
 } from './ChessEndlessModel';
 
 const { ccclass } = _decorator;
 
 const GAME_ID = 'chess-endless';
 const RESOURCE_BUNDLE = 'game-chess-endless-assets';
-const CHESS_ICON_ATLAS_PATH = 'visual/icons/chess-icons';
-const CHESS_PIECE_ATLAS_PATH = 'visual/pieces/chess-pieces';
 const CHESS_DATA_VERSION = 2;
 // 棋子移动时长随棋盘距离增长：相邻格保持利落，长距离移动保留足够的视觉可读性。
 const PIECE_MOVE_MIN_DURATION = 0.12;
@@ -77,12 +72,23 @@ const PIECE_MOVE_MAX_DURATION = 0.3;
 const PIECE_LIFT_HEIGHT = 24;
 const PIECE_LIFT_SCALE = 1.08;
 const CAPTURE_DURATION = 0.24;
-const CHESS_MUSIC_VOLUME = 0.5;
+/**
+ * 背景音乐文件本身约 -12 LUFS，比合集其他游戏的音乐素材响得多；这里把实际播放响度
+ * 压到约 -37.7 LUFS，与滑块拼图、桌面大清理、跳跃游戏、合成大西瓜一致（-25.8 dB）。
+ * 在播放音量上调整而不重新编码，避免对 24 kHz / 64 kbps 的文件再做一次有损压缩。
+ */
+const CHESS_MUSIC_VOLUME = 0.051;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
 const REINFORCEMENT_PIECE_GAP = 0;
 const PIECE_DIAMETER_SCALE = 1.24;
 const GENERAL_PIECE_DIAMETER_SCALE = 1.29;
+// 弹窗底图使用半尺寸资源，卡片保持基准屏幕 1:1；整个舞台等比适配，卡片和文字不单独挤压。
+const REWARD_PANEL_WIDTH = 736;
+const REWARD_PANEL_HEIGHT = 904;
+const REWARD_CARD_WIDTH = 184;
+const REWARD_CARD_HEIGHT = 362;
+const REWARD_REVEAL_DURATION = 0.58;
 const PIECE_SHADOW_X_SCALE = 0.06;
 const PIECE_SHADOW_WIDTH_SCALE = 0.88;
 const PIECE_SHADOW_HEIGHT_SCALE = 0.30;
@@ -95,6 +101,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 type LifecycleState = 'idle' | 'ready' | 'playing' | 'paused' | 'completed' | 'disposed';
 
 export interface ChessEndlessServices {
+    readonly assets: AssetService;
     readonly audio: AudioService;
     readonly feedback: FeedbackService;
     readonly storage: StorageService;
@@ -141,7 +148,6 @@ const VFX_TEXT_OUTLINE = new Color(64, 64, 64, 230);
 const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     background: 'visual/backgrounds/img_home_background/texture',
     board: 'visual/boards/img_board_main/texture',
-    boardFrame: 'visual/boards/img_board_frame/texture',
     boardBackplate: 'visual/boards/img_board_backplate/texture',
     piecePlayer: 'visual/pieces/piece_player_rook/texture',
     piecePawn: 'visual/pieces/piece_enemy_pawn/texture',
@@ -153,16 +159,14 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     pieceGeneral: 'visual/pieces/piece_enemy_general/texture',
     logo: 'visual/ui/img_logo/texture',
     reinforcementV1: 'visual/ui/ui_reinforcement_panel_v1/texture',
-    hudRibbon: 'visual/ui/ui_hud_ribbon/texture',
     modalPanel: 'visual/ui/ui_modal_panel/texture',
-    rewardCard: 'visual/ui/ui_reward_card/texture',
+    rewardPanel: 'visual/ui/ui_reward_panel_v2/texture',
+    rewardCard: 'visual/ui/ui_reward_card_v2/texture',
     rulesIcon: 'visual/ui/icon_rules/texture',
     pauseIcon: 'visual/ui/icon_pause/texture',
     helpIcon: 'visual/ui/icon_help/texture',
     closeIcon: 'visual/ui/icon_close/texture',
     rewardedVideoIcon: 'visual/ui/chess-endless-rewarded-video-icon-v1/texture',
-    itemCard: 'visual/ui/ui_item_card_bg/texture',
-    itemSlot: 'visual/ui/ui_item_slot/texture',
     crossSlash: 'visual/icons/icon_item_cross_slash/texture',
     freeze: 'visual/icons/icon_item_freeze/texture',
     delay: 'visual/icons/icon_item_delay/texture',
@@ -177,7 +181,6 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     comboBurst: 'visual/vfx/vfx_combo_burst/texture',
     generalArrivalVfx: 'visual/vfx/vfx_general_arrival/texture',
     generalKillVfx: 'visual/vfx/vfx_general_kill/texture',
-    generalGuardVfx: 'visual/vfx/vfx_general_guard/texture',
     crossSlashVfx: 'visual/vfx/vfx_cross_slash/texture',
     spawnShadow: 'visual/vfx/vfx_spawn_shadow/texture',
     dangerMarker: 'visual/vfx/vfx_danger_marker/texture',
@@ -267,7 +270,6 @@ const AUDIO_PATHS: Readonly<Record<string, string>> = Object.freeze({
     itemDelay: 'visual/audio/chess-item-delay-v1',
     itemBanish: 'visual/audio/chess-item-banish-v1',
     itemTeleport: 'visual/audio/chess-item-teleport-v1',
-    itemHelp: 'visual/audio/chess-item-help-v1',
     rewardClose: 'visual/audio/chess-reward-close-v1',
     revive: 'visual/audio/chess-revive-v1',
     gameOver: 'visual/audio/chess-game-over-v1',
@@ -298,6 +300,14 @@ const ITEM_ICON_KEY: Readonly<Record<ItemType, string>> = Object.freeze({
     teleport: 'teleport',
 });
 
+const REWARD_ITEM_COPY: Readonly<Record<ItemType, { readonly tag: string; readonly effect: string }>> = Object.freeze({
+    crossSlash: { tag: '攻势', effect: '清除横竖敌棋\n行动后生效' },
+    freeze: { tag: '控场', effect: '封住普通敌棋\n跳过一回合' },
+    delay: { tag: '缓兵', effect: '增援倒计时\n延后 2 回合' },
+    banish: { tag: '解围', effect: '移走普通敌棋\n不计击杀得分' },
+    teleport: { tag: '身法', effect: '传送任意空格\n随后继续行动' },
+});
+
 const PIECE_TEXTURE_KEY: Readonly<Record<EnemyPieceType, string>> = Object.freeze({
     pawn: 'piecePawn',
     advisor: 'pieceAdvisor',
@@ -309,47 +319,47 @@ const PIECE_TEXTURE_KEY: Readonly<Record<EnemyPieceType, string>> = Object.freez
 });
 
 const PIECE_RULES: Readonly<Record<EnemyPieceType, string>> = Object.freeze({
-    pawn: '卒：上下左右移动 1 格。相邻时可吃车。',
-    advisor: '士：全棋盘斜走 1 格，不受九宫限制。',
-    elephant: '象：斜走 2 格；象眼被棋子挡住时不能走。',
-    horse: '马：走日字；对应方向的马腿被挡时不能走。',
-    cannon: '炮：平时同车；吃车时中间必须恰有 1 枚炮架。',
-    rook: '敌车：横竖任意格，路径不可有棋。',
-    general: '将：上下左右 1 格。斩将得 300 分并三选一道具。',
+    pawn: "卒：可直线走 1 格。",
+    advisor: "士：可斜走 1 格。",
+    elephant: "象：按田字斜走 2 格；象眼（田字中心）被棋子挡住时不能走。",
+    horse: "马：按日字斜走；对应方向的马腿被挡住时不能走。",
+    cannon: "炮：可直线行走任意格；中间隔着 1 枚棋子时可吃车。",
+    rook: "敌车：可直线行走任意格。",
+    general: "将：可直线走 1 格。",
 });
 
 const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.freeze([
     Object.freeze({
         title: '玩法规则',
         body: [
-            '目标：操控绿色「車」在 9 × 10 棋盘上尽可能久地生存并取得高分。',
+            "目标：操控绿色「車」，吃子得分，尽可能多地生存。",
             '',
-            '· 玩家回合开始时会自动选中己方車并显示合法落点。車只能横向或纵向移动，路径不能跨过棋子；落到敌棋位置即完成击杀。',
-            '· 每个玩家回合最多先使用 1 件道具，使用后仍必须完成一次正常走車。',
-            '· 敌方回合只移动 1 枚棋。若有敌棋能够直接吃掉玩家，敌方一定优先执行击杀。',
-            '· 所有可能被敌棋吃掉的格子会显示淡红危险标记，可在暂停面板关闭。',
-            '· 增援的棋种和倒计时会提前公开。每批普通增援至少 2 枚；清空棋盘时下一批立即落场。',
-            '· 连续用正常走車吃子会提高连斩倍率；走到空格会重置连斩，道具击杀不计入连斩。',
-            '· 斩杀将军可得高分；背包未满时会获得一次道具奖励选择。',
-            '· 当前版本开启广告时，每局最多一次视频复活机会。复活会回到致死行动前并自动释放十字斩。',
+            "·你的回合可直线移动绿色「車」任意格，走到敌棋位置即可吃子。",
+            "·回合开始时可先使用 1 件道具。",
+            "· 敌方每回合只走 1 枚棋。",
+            "· 淡红色格子表示敌方棋子可攻击此区域。可在暂停菜单关闭此提示。",
+            "· 下一批敌棋的到来时间会在棋盘顶部提前显示。",
+            "· 连续用正常走車吃子会触发连斩；道具击杀不计入连斩。",
+            "· 斩杀将军可得高分并获得一次道具奖励选择。",
+            "· 每局可看广告复活一次。复活会回到被吃掉前的位置，并自动释放十字斩。",
         ].join('\n'),
     }),
     Object.freeze({
         title: '敌棋走法',
         body: [
-            '卒：上下左右移动 1 格，贴近玩家时可直接击杀。',
+            "卒：可直线走 1 格。",
             '',
-            '士：斜向移动 1 格，不受传统九宫限制。',
+            "士：可斜走 1 格。",
             '',
-            '象：斜向移动 2 格；中心的「象眼」有棋子时不能通过。',
+            "象：按田字斜走 2 格；象眼（田字中心）被棋子挡住时不能走。",
             '',
-            '马：走日字；靠近出发点的「马腿」被挡时不能走。',
+            "马：按日字斜走；对应方向的马腿被挡住时不能走。",
             '',
-            '炮：平时沿横竖空线移动；吃玩家时中间必须恰好隔 1 枚棋作为炮架。',
+            "炮：可直线行走任意格；中间隔着 1 枚棋子时可吃车。",
             '',
-            '敌車：沿横向或纵向移动任意格，路径不能有棋子。',
+            "敌车：可直线行走任意格。",
             '',
-            '将：上下左右移动 1 格。',
+            "将：可直线走 1 格。",
             '',
             '点击棋盘上的任意敌棋，可随时打开对应走法说明。',
         ].join('\n'),
@@ -363,11 +373,11 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             '',
             `缓兵符：${ITEM_DESCRIPTIONS.delay} 连点道具两次确认使用。`,
             '',
-            `驱逐令：${ITEM_DESCRIPTIONS.banish} 先点道具，再点普通敌棋；再次点击当前道具可取消选择，会播放驱逐法阵，不计击杀。`,
+            `驱逐令：${ITEM_DESCRIPTIONS.banish} 先点道具，再点普通敌棋；再次点击当前道具可取消选择。`,
             '',
-            `移形符：${ITEM_DESCRIPTIONS.teleport} 先点道具，再点任意空格，之后仍需走車；再次点击当前道具可取消选择。`,
+            `移形符：${ITEM_DESCRIPTIONS.teleport} 先点道具，再点任意空格，再次点击当前道具可取消选择。`,
             '',
-            '每种道具最多持有 2 件。底部道具和斩将奖励卡上的「?」按钮都可打开单独说明。',
+            "每种道具最多持有 2 件。点击底部道具和斩将奖励卡上的「?」按钮都可打开道具详细说明。",
         ].join('\n'),
     }),
 ]);
@@ -413,6 +423,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private layout?: ChessEndlessLayout;
     private dangerHintsEnabled = true;
     private rulesPageIndex = 0;
+    private tutorialCompleted = false;
+    private tutorialStep = 0;
+    private tutorialOverlay?: OverlayState;
     private readonly rewardCardNodes = new Map<ItemType, Node>();
     private resumableRound?: ResumableChessRound;
     private savedProgressDiscarded = false;
@@ -434,9 +447,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.layout?.applyLayout();
             this.buildInterface();
             this.renderAll();
+            if (this.tutorialOverlay) this.showTutorial();
         }, 0);
         this.lifecycle = 'ready';
-        this.installQaBridge();
     }
 
     begin(): void {
@@ -457,8 +470,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.context?.reportScore(this.model.snapshot.score);
             this.renderAll();
             this.persistProgress(false);
-            this.resumeCurrentPhase();
-            console.info('[ChessEndless] resumed saved round');
+            if (!this.tutorialCompleted) this.showTutorial();
+            else this.resumeCurrentPhase();
+            // TODO: console.info('[ChessEndless] resumed saved round');
             return;
         }
 
@@ -472,7 +486,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (qaScenario === 'reward') void this.showRewardChestSequence();
         if (qaScenario === 'revive' || qaScenario === 'noRevive') void this.performEnemyTurn();
         this.persistProgress(false);
-        console.info('[ChessEndless] ready');
+        if (!this.tutorialCompleted && !qaScenario) this.showTutorial();
+        // TODO: console.info('[ChessEndless] ready');
     }
 
     pause(): boolean {
@@ -537,11 +552,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
         Tween.stopAll();
         this.destroyAllOverlays();
         this.context?.services.audio.stopMusic();
-        this.frames.forEach((frame) => frame.destroy());
+        this.frames.forEach((frame) => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.frames.clear();
         this.clips.clear();
         this.clearChildren(this.node);
-        this.removeQaBridge();
         this.context = undefined;
     }
 
@@ -569,7 +583,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const newRecord = extra.newRecord === true;
         this.resultOverlay = this.buildModal(
             'ResultOverlay',
-            '本局落幕',
+            "本局结束",
             newRecord ? '新纪录' : '棋局结束',
             `${model.result.score.toLocaleString()} 分\n生存 ${turns} 回合 · 斩将 ${generals} · 最大连斩 ×${combo}`,
             [
@@ -580,7 +594,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
                     },
                 },
                 { label: '再来一局', tone: 'cinnabar', action: model.restart },
-                { label: '返回游戏大厅', tone: 'paper', action: model.returnToLobby },
+                { label: "返回大厅", tone: 'paper', action: model.returnToLobby },
             ],
         );
     }
@@ -592,7 +606,14 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private buildInterface(): void {
-        this.clearChildren(this.node);
+        // 初次进入游戏后的布局校准也可能发生在开箱期间。只重建底层界面，
+        // 保留弹窗及其动画，避免销毁仍在进行奖励流程的节点。
+        const overlays = this.node.children.filter((child) => Boolean(child.getComponent(BlockInputEvents)));
+        this.node.children.slice().forEach((child) => {
+            if (overlays.indexOf(child) >= 0) return;
+            child.removeFromParent();
+            child.destroy();
+        });
         const metrics = this.layout?.getMetrics();
         if (!metrics) {
             return;
@@ -666,7 +687,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.bestLabel = this.createLabel(
             headerBrand,
             'BestScore',
-            `纪录 ${this.bestScore.toLocaleString()}`,
+            `最高分 ${this.bestScore.toLocaleString()}`,
             0,
             innerBottom + bestLabelHeight / 2,
             Math.max(10, Math.round(16 * headerBrandScale)),
@@ -826,6 +847,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
             dockTitleHeight,
         );
         dockTitle.lineHeight = dockTitleHeight;
+        overlays.forEach((overlay) => overlay.setSiblingIndex(this.node.children.length - 1));
+        if (this.rewardOverlay?.root.isValid) this.layoutRewardOverlay(this.rewardOverlay.root);
     }
 
     private drawBoardGrid(node: Node, width: number, height: number): void {
@@ -877,8 +900,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (!this.node.isValid) return;
         const snapshot = this.model.snapshot;
         this.scoreLabel && (this.scoreLabel.string = snapshot.score.toLocaleString());
-        this.bestLabel && (this.bestLabel.string = `纪录 ${Math.max(this.bestScore, snapshot.score).toLocaleString()}`);
+        this.bestLabel && (this.bestLabel.string = `最高分 ${Math.max(this.bestScore, snapshot.score).toLocaleString()}`);
         this.context?.reportScore(snapshot.score);
+        this.context?.reportAchievementProgress('generals', snapshot.killStats.general);
         this.renderReinforcement(snapshot);
         this.renderDangerPositions();
         this.renderPieces(snapshot);
@@ -921,7 +945,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }
         if (this.reinforcementStatus) {
             this.reinforcementStatus.string = waiting
-                ? (general ? '将军待降' : '等待入场')
+                ? (general ? "将军等待入场" : '等待入场')
                 : `${snapshot.reinforcementTimer} 回合后`;
             this.reinforcementStatus.color = general || waiting ? COLORS.cinnabar : COLORS.white;
         }
@@ -1183,13 +1207,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
             }
             if (!this.isOperationCurrent(generation)) return;
             this.renderAll();
-            this.setHint(item === 'freeze' ? '封印已生效；现在仍须正常走车' : `已驱逐${PIECE_DISPLAY[result.removed!.type]}；不计击杀分`);
+            this.setHint(item === 'freeze' ? "定身已生效，请继续行动" : `已驱逐${PIECE_DISPLAY[result.removed!.type]}`);
             return;
         }
 
         if (this.selectedItem === 'teleport') {
             if (enemy || same(target, snapshot.playerPosition)) {
-                this.setHint('移形符只能选择空格');
+                this.setHint("移形符只能对空位使用");
                 return;
             }
             const from = snapshot.playerPosition;
@@ -1201,7 +1225,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             await this.showTeleportEffect(from, target);
             if (!this.isOperationCurrent(generation)) return;
             this.renderAll();
-            this.setHint('移形完成；本回合仍须正常走车一次');
+            this.setHint("已移形，请继续行动");
             return;
         }
 
@@ -1215,7 +1239,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 this.context?.services.feedback.vibrate('heavy');
                 void this.showItemEffect('crossSlash', target);
                 this.renderAll();
-                this.setHint('十字斩已蓄势，将在本次正常移动结束后释放');
+                this.setHint("十字斩已准备好，行动后释放");
                 return;
             }
             this.selectedPlayer = true;
@@ -1249,9 +1273,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             const instruction = type === 'freeze' || type === 'banish'
                 ? '请选择一枚普通敌棋；再次点击取消'
                 : type === 'teleport'
-                    ? '请选择任意空格；再次点击取消，不会提示是否安全'
+                    ? "请选择空位；再次点击道具可取消。"
                     : type === 'crossSlash'
-                        ? '请点击己方「車」确认蓄力；再次点击取消'
+                        ? "点击绿色「車」准备十字斩；再次点击道具可取消"
                         : `再次点击确认使用${ITEM_DISPLAY[type]}`;
             this.setHint(`${ITEM_DISPLAY[type]}：${instruction}`);
             return;
@@ -1260,7 +1284,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.selectedItem = undefined;
             this.selectedPlayer = true;
             this.renderAll();
-            this.setHint(`${ITEM_DISPLAY[type]}已取消；可继续正常走車`);
+            this.setHint(`${ITEM_DISPLAY[type]}已取消；可继续行动`);
             return;
         }
         try {
@@ -1272,7 +1296,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.context?.services.feedback.vibrate('medium');
             this.renderAll();
             void this.showItemEffect(type, this.model.snapshot.playerPosition);
-            this.setHint('增援已延后 2 回合；现在仍须正常走車');
+            this.setHint("增援已延后 2 回合，请继续行动");
         } catch (error: unknown) {
             this.setHint(error instanceof Error ? error.message : String(error));
         }
@@ -1297,7 +1321,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         // 先保存逻辑快照，再播放移动/吃子动画；进程在动画期间退出也不会回退棋局。
         this.persistProgress(false);
         // 普通吃子音效保留为基础反馈；连斩里程碑音效在对应连斩特效出现时额外播放。
-        this.playSound(result.captured ? 'playerCapture' : 'playerMove');
+        this.playSound(result.captured ? 'playerCapture' : 'playerMove', result.captured ? 0.8 : 1);
         this.context?.services.feedback.vibrate(result.captured ? 'medium' : 'light');
 
         await this.animatePieceMove(
@@ -1350,7 +1374,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (!this.isOperationCurrent(generation)) return;
         if (result.moved) {
             const moving = this.pieceLayer?.getChildByName(`Enemy-${result.moved.pieceId}`);
-            this.playSound(result.killedPlayer ? 'playerKilled' : 'enemyMove', result.killedPlayer ? 1 : 0.72);
+            this.playSound(result.killedPlayer ? 'playerKilled' : 'enemyMove', result.killedPlayer ? 1 : 0.9);
             await this.animatePieceMove(
                 moving,
                 result.moved.from,
@@ -1377,7 +1401,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             }
         } else if (result.enteredWaiting) {
             this.playSound(before.queuedReinforcement.kind === 'general' ? 'generalWait' : 'reinforcementWait', 0.75);
-            this.setHint(before.queuedReinforcement.kind === 'general' ? '棋盘拥挤：将军待降' : '棋盘拥挤：本批增援等待入场');
+            this.setHint(before.queuedReinforcement.kind === 'general' ? "棋盘已满：将军等待入场" : '棋盘拥挤：本批增援等待入场');
         }
         if (!this.isOperationCurrent(generation)) return;
         this.renderAll();
@@ -1643,9 +1667,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
             'DeathOverlay',
             '一步失守',
             '棋局未尽',
-            `当前得分 ${snapshot.score}\n复活将回到致死行动前，并自动释放十字斩`,
+            `当前得分：${snapshot.score}\n复活后回到被吃掉前，并自动释放十字斩`,
             [
-                { label: '看视频复活', tone: 'cinnabar', action: () => this.handleRevive(), enabled: this.model.canRevive, adIcon: true },
+                { label: "看广告复活", tone: 'cinnabar', action: () => this.handleRevive(), enabled: this.model.canRevive, adIcon: true },
                 { label: '结束本局', tone: 'paper', action: () => this.finishRound() },
             ],
             'revive',
@@ -1674,10 +1698,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
                     gameId: context.gameId,
                     sessionId: context.sessionId,
                 })
-                : { outcome: 'completed' as const };
+                : { outcome: 'failed' as const };
             if (!this.isOperationCurrent(generation)) return;
             if (adResult.outcome !== 'completed') {
-                this.setHint('视频未完整播放，暂未复活');
+                this.setHint("广告未看完，尚未复活");
                 return;
             }
             this.destroyOverlay(this.deathOverlay);
@@ -1710,49 +1734,97 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async showRewardChestSequence(): Promise<void> {
-        if (this.model.snapshot.pendingRewardChoices.length === 0) return;
+        if (this.model.snapshot.phase !== 'reward' || this.model.snapshot.pendingRewardChoices.length === 0
+            || this.rewardOverlay?.root.isValid) return;
         const generation = this.operationGeneration;
         this.inputLocked = true;
         this.playSound('rewardOpen');
-        const overlay = this.createOverlayRoot('RewardOverlay');
-        const safeRect = this.resolveSafeContentRect();
-        this.rewardOverlay = { root: overlay, buttons: [] };
-        const closed = this.createNode(overlay, 'ChestClosed', safeRect.x, safeRect.y - 40, 320, 260);
+        const overlay = this.createRewardOverlay();
+        const stage = overlay.getChildByName('RewardStage')!;
+        const aura = this.createNode(stage, 'ChestAura', 0, 28, 480, 480);
+        const glow = aura.addComponent(Graphics);
+        for (let ring = 6; ring > 0; ring -= 1) {
+            glow.fillColor = new Color(239, 191, 77, 5 + (6 - ring) * 3);
+            glow.circle(0, 0, ring * 36);
+            glow.fill();
+        }
+        aura.setScale(0.3, 0.3, 1);
+        tween(aura).to(0.56, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' }).start();
+        const caption = this.createLabel(stage, 'ChestCaption', '斩将得宝', 0, 196, 42, COLORS.goldLight, 420, 62);
+        setLabelBold(caption, true);
+        const closed = this.createNode(stage, 'ChestClosed', 0, -18, 336, 272);
         this.applySprite(closed, 'rewardChestClosed');
-        closed.setScale(0.2, 0.2, 1);
-        await this.tweenNode(closed, 0.3, { scale: new Vec3(1, 1, 1) }, 'backOut');
-        if (!this.isOperationCurrent(generation)) {
+        closed.setScale(0.25, 0.25, 1);
+        tween(closed).to(0.3, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+            .to(0.06, { angle: -4 }).to(0.06, { angle: 4 }).to(0.06, { angle: 0 }).start();
+        await this.waitSeconds(0.48);
+        if (!this.isOperationCurrent(generation) || !overlay.isValid || this.rewardOverlay?.root !== overlay) {
             this.cancelRewardSequence(overlay);
             return;
         }
-        await this.waitSeconds(0.16);
-        if (!this.isOperationCurrent(generation)) {
-            this.cancelRewardSequence(overlay);
-            return;
-        }
-        const open = this.createNode(overlay, 'ChestOpen', safeRect.x, safeRect.y - 30, 350, 285);
+        const open = this.createNode(stage, 'ChestOpen', 0, -8, 368, 368 * 340 / 420);
         this.applySprite(open, 'rewardChestOpen');
         closed.destroy();
-        for (let index = 0; index < 8; index += 1) {
-            this.spawnScreenParticle(overlay, 'lightParticle', (index - 3.5) * 42, 28 + (index % 2) * 30, 48 + index * 3, index * 17);
+        open.setScale(0.94, 0.94, 1);
+        tween(open).to(0.2, { scale: new Vec3(1.06, 1.06, 1) }, { easing: 'quadOut' })
+            .to(0.14, { scale: new Vec3(1, 1, 1) }).start();
+        for (let index = 0; index < 10; index += 1) {
+            this.spawnScreenParticle(stage, 'lightParticle', (index - 4.5) * 34, 24 + (index % 3) * 32, 38 + index * 2, index * 17);
         }
-        await this.waitSeconds(0.38);
-        if (!this.isOperationCurrent(generation)) {
+        await this.waitSeconds(0.32);
+        if (!this.isOperationCurrent(generation) || !overlay.isValid || this.rewardOverlay?.root !== overlay) {
             this.cancelRewardSequence(overlay);
             return;
         }
-        this.buildRewardPanel(overlay, true);
-        await this.waitSeconds(0.34);
-        if (!this.isOperationCurrent(generation)) return;
+        tween(caption.node.addComponent(UIOpacity)).to(0.16, { opacity: 0 }).start();
+        tween(aura.addComponent(UIOpacity)).to(0.24, { opacity: 0 }).start();
+        tween(open.addComponent(UIOpacity)).to(0.22, { opacity: 0 }).start();
+        await this.buildRewardPanel(overlay, true);
         if (open.isValid) open.destroy();
+        if (aura.isValid) aura.destroy();
+        if (caption.node.isValid) caption.node.destroy();
     }
 
     private showRewardOverlay(): void {
-        if (this.model.snapshot.pendingRewardChoices.length === 0) return;
+        if (this.model.snapshot.phase !== 'reward' || this.model.snapshot.pendingRewardChoices.length === 0
+            || this.rewardOverlay?.root.isValid) return;
         this.inputLocked = true;
+        void this.buildRewardPanel(this.createRewardOverlay(), false);
+    }
+
+    private createRewardOverlay(): Node {
         const overlay = this.createOverlayRoot('RewardOverlay');
         this.rewardOverlay = { root: overlay, buttons: [] };
-        this.buildRewardPanel(overlay, false);
+        this.createNode(overlay, 'RewardStage', 0, 0, REWARD_PANEL_WIDTH, REWARD_PANEL_HEIGHT);
+        this.layoutRewardOverlay(overlay);
+        return overlay;
+    }
+
+    private layoutRewardOverlay(overlay: Node): void {
+        const safeRect = this.resolveSafeContentRect();
+        const size = this.resolveFullscreenOverlaySize();
+        const stage = overlay.getChildByName('RewardStage');
+        if (!stage) return;
+        const platformLayout = this.context?.services.platform.getLayoutInfo();
+        const safeTop = Math.max(
+            (size.height - safeRect.height) / 2 - safeRect.y,
+            platformLayout?.topRightReservedArea?.bottom ?? 0,
+        );
+        const safeBottom = (size.height - safeRect.height) / 2 + safeRect.y;
+        // 奖励 UI 占用左右屏幕宽度，只避让胶囊下沿及底部安全区。
+        const scale = Math.max(0.01, Math.min(
+            1,
+            Math.max(1, size.width - 14) / REWARD_PANEL_WIDTH,
+            Math.max(1, size.height - safeTop - safeBottom - 40) / REWARD_PANEL_HEIGHT,
+        ));
+        stage.setPosition(0, (safeBottom - safeTop) / 2);
+        stage.setScale(scale, scale, 1);
+        overlay.getComponent(UITransform)?.setContentSize(size.width, size.height);
+        const shade = overlay.getComponent(Graphics)!;
+        shade.clear();
+        shade.fillColor = new Color(8, 18, 16, 186);
+        shade.rect(-size.width / 2, -size.height / 2, size.width, size.height);
+        shade.fill();
     }
 
     private cancelRewardSequence(overlay: Node): void {
@@ -1760,85 +1832,169 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.destroyOverlay(this.rewardOverlay);
         this.rewardOverlay = undefined;
         this.rewardCardNodes.clear();
+        // 中途暂停/恢复或布局校准不会丢失尚未选择的奖励。
+        if (this.lifecycle === 'playing' && this.model.snapshot.phase === 'reward') this.showRewardOverlay();
     }
 
-    private buildRewardPanel(overlay: Node, animateFromChest: boolean): void {
+    private async buildRewardPanel(overlay: Node, animateFromChest: boolean): Promise<void> {
+        const generation = this.operationGeneration;
         const choices = this.model.snapshot.pendingRewardChoices;
-        const safeRect = this.resolveSafeContentRect();
-        const cardWidth = choices.length >= 3 ? 156 : 168;
-        const cardHeight = Math.round(cardWidth * (430 / 300));
-        const cardEdgeGap = choices.length >= 3 ? 10 : 16;
-        const cardGap = choices.length <= 1 ? 0 : cardWidth + cardEdgeGap;
-        const cardRowWidth = choices.length <= 1 ? cardWidth : (choices.length - 1) * cardGap + cardWidth;
-        const cardRowHeight = cardHeight + 24;
-        const headerHeight = 144;
-        const cardsTopGap = 18;
-        const bottomPadding = 22;
-        const panelSize = resolveChessEndlessModalPanelSize(
-            cardRowWidth,
-            headerHeight + cardsTopGap + cardRowHeight + bottomPadding,
-            safeRect,
-        );
-        const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
-        const panel = this.createNode(overlay, 'Panel', safeRect.x, safeRect.y + 20, panelSize.width, panelSize.height);
-        this.applySprite(panel, 'modalPanel');
+        const stage = overlay.getChildByName('RewardStage')!;
+        const panel = this.createNode(stage, 'Panel', 0, 0, REWARD_PANEL_WIDTH, REWARD_PANEL_HEIGHT);
+        this.applySprite(panel, 'rewardPanel');
+        const panelOpacity = panel.addComponent(UIOpacity);
         if (animateFromChest) {
-            panel.setPosition(safeRect.x, safeRect.y - 44);
-            panel.setScale(0.12, 0.12, 1);
-            tween(panel).to(0.34, { position: new Vec3(safeRect.x, safeRect.y + 20, 0), scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+            panelOpacity.opacity = 0;
+            panel.setScale(0.88, 0.88, 1);
+            tween(panel).to(0.26, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' }).start();
+            tween(panelOpacity).to(0.22, { opacity: 255 }).start();
         }
-        let cursorY = content.top - 18;
-        this.createLabel(panel, 'Kicker', '斩将奖励', 0, cursorY, 22, COLORS.cinnabar, content.width - 24, 32);
-        cursorY -= 42;
-        this.createLabel(panel, 'Title', '择一道具', 0, cursorY, 40, COLORS.ink, content.width - 24, 56);
-        cursorY -= 50;
-        this.createLabel(panel, 'Description', '每种最多持有 2 件 · 点 ? 查看说明', 0, cursorY, 22, COLORS.muted, content.width - 24, 34);
-        const cardCenterY = cursorY - 16 - cardsTopGap - cardHeight / 2;
+        const headerScale = REWARD_PANEL_WIDTH / 700;
+        this.createLabel(panel, 'Seal', '赏', 0, 365 * headerScale, 24, COLORS.goldLight, 42, 40);
+        this.createLabel(panel, 'Kicker', '斩将奖励', 0, 281 * headerScale, 22, COLORS.goldLight, 280, 34);
+        const title = this.createLabel(panel, 'Title', '挑选你的战利品', 0, 232 * headerScale, 42, COLORS.white, 580, 64);
+        setLabelBold(title, true);
+        const description = choices.length === 3 ? '三件宝物，任选其一'
+            : choices.length === 2 ? '两件宝物，任选其一' : '领取宝物，助战棋局';
+        this.createLabel(panel, 'Description', description, 0, 182 * headerScale, 22, COLORS.goldLight, 550, 38);
+        const divider = this.createNode(panel, 'Divider', 0, 148 * headerScale, 560, 8).addComponent(Graphics);
+        divider.lineWidth = 1;
+        divider.strokeColor = new Color(203, 159, 76, 126);
+        [-1, 1].forEach((side) => {
+            divider.moveTo(side * 20, 0);
+            divider.lineTo(side * 255, 0);
+            divider.stroke();
+        });
+        divider.fillColor = COLORS.gold;
+        divider.moveTo(0, 5);
+        divider.lineTo(5, 0);
+        divider.lineTo(0, -5);
+        divider.lineTo(-5, 0);
+        divider.close();
+        divider.fill();
         this.rewardCardNodes.clear();
         choices.forEach((item, index) => {
-            const x = (index - (choices.length - 1) / 2) * cardGap;
-            const card = this.createNode(panel, `Reward-${item}`, x, cardCenterY, cardWidth, cardHeight);
+            const x = (index - (choices.length - 1) / 2) * (REWARD_CARD_WIDTH + 16);
+            const card = this.createNode(panel, `Reward-${item}`, x, -46, REWARD_CARD_WIDTH, REWARD_CARD_HEIGHT);
             this.applySprite(card, 'rewardCard');
             this.rewardCardNodes.set(item, card);
-            const iconSize = Math.round(cardWidth * 0.58);
-            const icon = this.createNode(card, 'Icon', 0, cardHeight * 0.17, iconSize, iconSize);
+            const opacity = card.addComponent(UIOpacity);
+            const copy = REWARD_ITEM_COPY[item];
+            this.createLabel(card, 'Tag', copy.tag, 0, 165, 18, COLORS.goldLight, 88, 28);
+            const icon = this.createNode(card, 'Icon', 0, 83, 116, 116);
             this.applySprite(icon, ITEM_ICON_KEY[item]);
-            this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, -cardHeight * 0.08, 24, COLORS.ink, cardWidth - 18, 38);
+            const name = this.createLabel(card, 'Name', ITEM_DISPLAY[item], 0, 6, 28, COLORS.ink, 144, 42);
+            setLabelBold(name, true);
+            const effect = this.createLabel(card, 'Effect', copy.effect, 0, -45, 18, COLORS.inkSoft, 148, 56);
+            effect.lineHeight = 26;
             const count = this.model.snapshot.inventory[item];
-            this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -cardHeight * 0.28, 20, COLORS.jade, cardWidth - 18, 30);
-            const help = this.createNode(card, 'Help', cardWidth * 0.31, cardHeight * 0.34, 32, 32);
-            this.applySprite(help, 'helpIcon');
-            help.addComponent(Button);
+            this.createLabel(card, 'Count', `持有 ${count} / 2`, 0, -94, 20, COLORS.jade, 140, 30);
+            // 领取按钮在 362 高的底图上以第 310 像素为中心，文字与该区域居中对齐。
+            const claimY = REWARD_CARD_HEIGHT / 2 - 310;
+            const claim = this.createLabel(card, 'Claim', '领取 +1', 0, claimY, 24, COLORS.goldLight, 136, 40);
+            setLabelBold(claim, true);
+            // 放大问号和触摸区域，仍完整落在卡片内并单独处理说明事件。
+            const help = this.createNode(card, 'Help', 64, 149, 52, 52);
+            this.applySprite(this.createNode(help, 'Artwork', 0, 0, 40, 40), 'helpIcon');
+            const helpButton = help.addComponent(Button);
+            helpButton.interactable = !animateFromChest;
             help.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
                 event.propagationStopped = true;
+                if (!helpButton.interactable || this.lifecycle !== 'playing' || this.infoOverlay) return;
                 this.showItemHelp(item, true);
             }, this);
             const button = card.addComponent(Button);
+            button.transition = Button.Transition.SCALE;
+            button.zoomScale = 0.97;
+            button.duration = 0.08;
+            button.interactable = !animateFromChest;
             card.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
                 event.propagationStopped = true;
+                if (!button.interactable || this.infoOverlay) return;
                 void this.chooseReward(item);
             }, this);
-            this.rewardOverlay?.buttons.push(button);
+            this.rewardOverlay?.buttons.push(button, helpButton);
+            if (animateFromChest) {
+                // Button 先记录卡片的正常比例，再设置入场动画的起始比例。
+                card.setPosition(0, -110);
+                card.setScale(0.18, 0.18, 1);
+                card.angle = (index - (choices.length - 1) / 2) * -10;
+                opacity.opacity = 0;
+                const delay = 0.08 + index * 0.085;
+                tween(card).delay(delay).to(0.3, {
+                    position: new Vec3(x, -46, 0), scale: new Vec3(1, 1, 1), angle: 0,
+                }, { easing: 'backOut' }).start();
+                tween(opacity).delay(delay).to(0.18, { opacity: 255 }).start();
+            }
         });
+        if (!animateFromChest) return;
+        await this.waitSeconds(REWARD_REVEAL_DURATION);
+        if (!this.isOperationCurrent(generation) || !overlay.isValid || this.rewardOverlay?.root !== overlay) {
+            this.cancelRewardSequence(overlay);
+            return;
+        }
+        this.rewardOverlay.buttons.forEach((button) => { button.interactable = true; });
     }
 
     private async chooseReward(item: ItemType): Promise<void> {
+        const snapshot = this.model.snapshot;
+        if (this.lifecycle !== 'playing' || snapshot.phase !== 'reward' || this.infoOverlay
+            || snapshot.pendingRewardChoices.indexOf(item) < 0 || !this.rewardOverlay?.root.isValid) return;
         const generation = this.operationGeneration;
-        const overlay = this.rewardOverlay?.root;
+        const overlay = this.rewardOverlay.root;
+        this.rewardOverlay.buttons.forEach((button) => { button.interactable = false; });
         this.model.chooseReward(item);
         this.persistProgress(false);
         this.playSound('itemSelect');
-        const panel = overlay?.getChildByName('Panel');
-        if (panel) {
-            const opacity = panel.addComponent(UIOpacity);
-            tween(opacity).to(0.22, { opacity: 0 }).start();
-            await this.tweenNode(panel, 0.24, { scale: new Vec3(0.08, 0.08, 1), position: new Vec3(0, -70, 0) }, 'quadIn');
+        const panel = overlay.getChildByName('RewardStage')?.getChildByName('Panel');
+        const selected = this.rewardCardNodes.get(item);
+        this.rewardCardNodes.forEach((card, type) => {
+            if (!card.isValid) return;
+            Tween.stopAllByTarget(card);
+            const opacity = card.getComponent(UIOpacity)!;
+            Tween.stopAllByTarget(opacity);
+            if (type === item) {
+                tween(card).to(0.16, { scale: new Vec3(1.055, 1.055, 1) }, { easing: 'quadOut' }).start();
+                const claim = card.getChildByName('Claim')?.getComponent(Label);
+                if (claim) claim.string = '已领取';
+            } else tween(opacity).to(0.16, { opacity: 76 }).start();
+        });
+        if (panel?.isValid) {
+            const title = panel.getChildByName('Title')?.getComponent(Label);
+            const description = panel.getChildByName('Description')?.getComponent(Label);
+            if (title) title.string = `获得${ITEM_DISPLAY[item]}`;
+            if (description) description.string = '已收入道具栏，助你再破棋局';
         }
+        await this.waitSeconds(0.18);
+        if (!this.isOperationCurrent(generation) || !overlay.isValid) return;
+        const icon = selected?.getChildByName('Icon');
+        const target = this.itemDock?.getChildByName(`Item-${item}`)?.getChildByName('Icon');
+        if (icon?.isValid && target?.isValid) {
+            const transform = overlay.getComponent(UITransform)!;
+            const origin = transform.convertToNodeSpaceAR(icon.worldPosition);
+            const destination = transform.convertToNodeSpaceAR(target.worldPosition);
+            const size = icon.getComponent(UITransform)!.contentSize.width * icon.worldScale.x / overlay.worldScale.x;
+            const targetSize = target.getComponent(UITransform)!.contentSize.width * target.worldScale.x / overlay.worldScale.x;
+            const flight = this.createNode(overlay, 'RewardFlight', origin.x, origin.y, size, size);
+            this.applySprite(flight, ITEM_ICON_KEY[item]);
+            icon.addComponent(UIOpacity).opacity = 0;
+            tween(flight).to(0.12, {
+                position: new Vec3(origin.x + (destination.x - origin.x) * 0.2, origin.y + 32, 0),
+                scale: new Vec3(1.12, 1.12, 1),
+            }, { easing: 'quadOut' }).to(0.28, {
+                position: destination,
+                scale: new Vec3(targetSize / size, targetSize / size, 1),
+            }, { easing: 'quadIn' }).start();
+        }
+        if (panel?.isValid) tween(panel.getComponent(UIOpacity)!).delay(0.1).to(0.26, { opacity: 0 }).start();
+        await this.waitSeconds(0.42);
         if (!this.isOperationCurrent(generation)) return;
         this.playSound('rewardClose', 0.72);
-        this.destroyOverlay(this.rewardOverlay);
-        this.rewardOverlay = undefined;
-        this.rewardCardNodes.clear();
+        if (this.rewardOverlay?.root === overlay) {
+            this.destroyOverlay(this.rewardOverlay);
+            this.rewardOverlay = undefined;
+            this.rewardCardNodes.clear();
+        }
         this.renderAll();
         if (this.model.snapshot.phase === 'enemy') await this.performEnemyTurn();
         else {
@@ -1850,6 +2006,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private resumeCurrentPhase(): void {
         if (this.lifecycle !== 'playing') return;
+        if (this.tutorialOverlay) {
+            this.inputLocked = true;
+            return;
+        }
         const phase = this.model.snapshot.phase;
         if (phase !== 'reward' && this.rewardOverlay) {
             this.destroyOverlay(this.rewardOverlay);
@@ -1881,7 +2041,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.selectedPlayer = true;
         this.renderAll();
         if (this.model.snapshot.pendingCrossSlash) {
-            this.setHint('十字斩已蓄势，将在本次正常移动结束后释放');
+            this.setHint("十字斩已准备好，行动后释放");
         }
     }
 
@@ -1925,10 +2085,121 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }));
     }
 
+    private showTutorial(): void {
+        this.destroyOverlay(this.tutorialOverlay);
+        this.inputLocked = true;
+        const root = this.createOverlayRoot('TutorialOverlay');
+        const safeRect = this.resolveSafeContentRect();
+        const panel = this.createNode(root, 'Panel', safeRect.x, safeRect.y, 600, 760);
+        const scale = Math.max(0.01, Math.min(1, (safeRect.width - 32) / 600, (safeRect.height - 32) / 760));
+        panel.setScale(scale, scale, 1);
+        this.applySprite(panel, 'modalPanel');
+        this.createLabel(panel, 'Kicker', '初入棋局', 0, 262, 22, COLORS.cinnabar, 450, 32);
+        const steps = [
+            ['走車吃子', "点击落点，绿色車可横竖移动。\n不能越过棋子，落到敌棋处即可吃子。"],
+            ['避开危险', '你走一步，敌方走一步。\n留意淡红危险格，别让敌棋吃掉你！'],
+            ['斩将得宝', "连续吃子提高得分，斩将可获道具。"],
+        ];
+        const [title, body] = steps[this.tutorialStep];
+        this.createLabel(panel, 'Title', title, 0, 208, 40, COLORS.ink, 450, 56);
+        this.drawTutorialDiagram(panel);
+        this.createLabel(panel, 'Body', body, 0, -134, 23, COLORS.inkSoft, 470, 80);
+        this.createLabel(panel, 'Pager', `${this.tutorialStep + 1} / ${steps.length}`, 0, -200, 22, COLORS.muted, 180, 30);
+        const lastPage = this.tutorialStep === steps.length - 1;
+        const buttons: Button[] = [];
+        if (this.tutorialStep > 0) {
+            buttons.push(this.createActionButton(panel, 'Previous', '上一步', -126, -270, 184, 64, 'jade', () => {
+                if (this.lifecycle !== 'playing' || this.tutorialOverlay?.root !== root) return;
+                this.tutorialStep -= 1;
+                this.showTutorial();
+            }));
+        }
+        const button = this.createActionButton(panel, 'Next', lastPage ? '开始游戏' : '下一步',
+            this.tutorialStep > 0 ? 106 : 0, -270, this.tutorialStep > 0 ? 230 : 420, 64, 'jade', () => {
+            if (this.lifecycle !== 'playing' || this.tutorialOverlay?.root !== root) return;
+            if (!lastPage) {
+                this.tutorialStep += 1;
+                this.showTutorial();
+                return;
+            }
+            this.tutorialCompleted = true;
+            this.persistProgress(false);
+            this.destroyOverlay(this.tutorialOverlay);
+            this.tutorialOverlay = undefined;
+            this.resumeCurrentPhase();
+        });
+        buttons.push(button);
+        this.tutorialOverlay = { root, buttons };
+    }
+
+    /** Small illustrative boards use this game's own pieces and item artwork. */
+    private drawTutorialDiagram(panel: Node): void {
+        const diagram = this.createNode(panel, 'Diagram', 0, 38, 460, 230);
+        const graphics = diagram.addComponent(Graphics);
+        const sprite = (name: string, key: string, x: number, y: number, size = 62): void => {
+            this.applySprite(this.createNode(diagram, name, x, y, size, size), key);
+        };
+        const arrow = (x: number, y: number, endX: number, endY: number, color: Color): void => {
+            const angle = Math.atan2(endY - y, endX - x);
+            graphics.strokeColor = color;
+            graphics.lineWidth = 5;
+            graphics.moveTo(x, y);
+            graphics.lineTo(endX, endY);
+            graphics.moveTo(endX - 14 * Math.cos(angle - 0.5), endY - 14 * Math.sin(angle - 0.5));
+            graphics.lineTo(endX, endY);
+            graphics.lineTo(endX - 14 * Math.cos(angle + 0.5), endY - 14 * Math.sin(angle + 0.5));
+            graphics.stroke();
+        };
+        if (this.tutorialStep < 2) {
+            graphics.fillColor = COLORS.parchment;
+            graphics.roundRect(-180, -98, 360, 224, 12);
+            graphics.fill();
+            graphics.strokeColor = COLORS.wood;
+            graphics.lineWidth = 2;
+            for (let col = 0; col < 5; col++) {
+                const x = -144 + col * 72;
+                graphics.moveTo(x, -62);
+                graphics.lineTo(x, 90);
+            }
+            for (let row = 0; row < 3; row++) {
+                const y = -62 + row * 76;
+                graphics.moveTo(-144, y);
+                graphics.lineTo(144, y);
+            }
+            graphics.stroke();
+            sprite('Player', 'piecePlayer', -144, -62);
+            if (this.tutorialStep === 0) {
+                sprite('Target', 'piecePawn', 144, -62);
+                arrow(-104, -62, 102, -62, COLORS.jade);
+                arrow(-144, -24, -144, 82, COLORS.jade);
+                this.createLabel(diagram, 'Caption', '横竖走，不能越子', 0, -120, 20, COLORS.muted, 450, 30);
+            } else {
+                graphics.fillColor = new Color(190, 64, 48, 65);
+                graphics.roundRect(-30, -92, 60, 212, 8);
+                graphics.fill();
+                sprite('Enemy', 'pieceRook', 0, 90);
+                sprite('Danger', 'dangerMarker', 0, -62, 54);
+                arrow(0, 50, 0, -24, COLORS.cinnabar);
+                arrow(-144, -24, -144, 82, COLORS.jade);
+                this.createLabel(diagram, 'Caption', '避开敌車攻击的这一列', 0, -120, 20, COLORS.cinnabar, 450, 30);
+            }
+        } else {
+            sprite('Player', 'piecePlayer', -172, 30, 76);
+            sprite('General', 'pieceGeneral', -36, 30, 76);
+            arrow(-124, 30, -84, 30, COLORS.jade);
+            arrow(14, 30, 66, 30, COLORS.gold);
+            sprite('Reward', 'crossSlash', 132, 30, 90);
+            this.createLabel(diagram, 'Capture', '斩杀将军', -100, -40, 23, COLORS.cinnabar, 230, 34);
+            this.createLabel(diagram, 'RewardLabel', '获得道具', 132, -40, 23, COLORS.jade, 160, 34);
+            this.createLabel(diagram, 'Caption', '背包未满时，可三选一道具', 0, -108, 20, COLORS.muted, 450, 30);
+        }
+    }
+
     private showRules(): void {
         const inspectingCompletedBoard = this.lifecycle === 'completed' && !this.resultOverlay;
         if (this.rulesOverlay || (this.inputLocked && !inspectingCompletedBoard)) return;
-        this.playSound('uiPopup', 0.7);
+        // 规则、道具问号与暂停同属 HUD 按钮，统一用同一个木质点击音。
+        this.playSound('uiClick', 0.6);
         this.inputLocked = true;
         this.rulesPageIndex = 0;
         this.showRulesPage();
@@ -2053,7 +2324,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (this.infoOverlay) return;
         const wasLocked = this.inputLocked;
         this.inputLocked = true;
-        this.playSound('itemHelp', 0.66);
+        this.playSound('uiClick', 0.6);
         this.infoOverlay = this.buildModal('ItemHelpOverlay', '道具说明', ITEM_DISPLAY[type], ITEM_DESCRIPTIONS[type], [{
             label: '知道了', tone: 'jade', action: () => {
                 this.destroyOverlay(this.infoOverlay);
@@ -2149,11 +2420,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private buildPauseModal(score: number, model: MiniGamePauseModel): OverlayState {
         const overlay = this.createOverlayRoot('PauseOverlay');
         const safeRect = this.resolveSafeContentRect();
-        const body = `当前得分 ${score}\n增援与棋局都已冻结`;
+        const body = `当前得分：${score}\n棋局已暂停`;
         const actions: readonly OverlayAction[] = [
             { label: '继续棋局', tone: 'jade', action: model.resume },
             { label: '重新开始', tone: 'cinnabar', action: model.restart },
-            { label: '返回游戏大厅', tone: 'paper', action: model.exit },
+            { label: "返回大厅", tone: 'paper', action: model.exit },
         ];
         const bodyLineHeight = 36;
         const bodyFontSize = 26;
@@ -2209,7 +2480,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
             toggleY,
             content.width - 16,
             toggleRowHeight,
-            '危险点提示',
+            "危险格提示",
             this.dangerHintsEnabled,
             (enabled) => {
                 this.dangerHintsEnabled = enabled;
@@ -2457,28 +2728,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         return button;
     }
 
-    private createRoundButton(name: string, label: string, x: number, y: number, action: () => void): Button {
-        const node = this.createNode(this.node, name, x, y, 62, 62);
-        const graphics = node.addComponent(Graphics);
-        graphics.fillColor = new Color(244, 232, 201, 226);
-        graphics.strokeColor = new Color(COLORS.ink.r, COLORS.ink.g, COLORS.ink.b, 115);
-        graphics.lineWidth = 2;
-        graphics.circle(0, 0, 29);
-        graphics.fill();
-        graphics.stroke();
-        this.createLabel(node, 'Label', label, 0, 1, 23, COLORS.ink, 54, 50);
-        const button = node.addComponent(Button);
-        node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
-            event.propagationStopped = true;
-            action();
-        }, this);
-        return button;
-    }
-
-    private createImageButton(name: string, key: string, x: number, y: number, size: number, action: () => void): Button {
-        return this.createImageButtonOn(this.node, name, key, x, y, size, action);
-    }
-
     private createImageButtonOn(parent: Node, name: string, key: string, x: number, y: number, size: number, action: () => void): Button {
         const node = this.createNode(parent, name, x, y, size, size);
         this.applySprite(node, key);
@@ -2490,21 +2739,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             action();
         }, this);
         return button;
-    }
-
-    private drawPanel(node: Node, fill: Color, stroke: Color, radius: number): void {
-        const size = node.getComponent(UITransform)!.contentSize;
-        const graphics = node.addComponent(Graphics);
-        graphics.fillColor = fill;
-        graphics.strokeColor = stroke;
-        graphics.lineWidth = 3;
-        graphics.roundRect(-size.width / 2, -size.height / 2, size.width, size.height, radius);
-        graphics.fill();
-        graphics.stroke();
-        graphics.strokeColor = new Color(COLORS.woodDark.r, COLORS.woodDark.g, COLORS.woodDark.b, 48);
-        graphics.lineWidth = 1;
-        graphics.roundRect(-size.width / 2 + 9, -size.height / 2 + 9, size.width - 18, size.height - 18, Math.max(3, radius - 7));
-        graphics.stroke();
     }
 
     private async showCenterVfx(
@@ -2522,7 +2756,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const opacity = node.addComponent(UIOpacity);
         opacity.opacity = 0;
         const label = this.createLabel(node, 'Label', text, 0, textYOffset, 48, color, width - 110, 90);
-        label.isBold = true;
+        setLabelBold(label, true);
         const outline = label.node.addComponent(LabelOutline);
         outline.color = VFX_TEXT_OUTLINE;
         outline.width = 2;
@@ -2544,7 +2778,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const opacity = node.addComponent(UIOpacity);
         opacity.opacity = 0;
         const label = this.createLabel(node, 'Label', `连斩 ×${combo}`, 0, 0, fontSize, COLORS.goldLight, width - 100, 74);
-        label.isBold = true;
+        setLabelBold(label, true);
         const outline = label.node.addComponent(LabelOutline);
         outline.color = VFX_TEXT_OUTLINE;
         outline.width = 2;
@@ -2617,25 +2851,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
         tween(opacity).delay(0.18).to(0.26, { opacity: 0 }).call(() => node.destroy()).start();
     }
 
-    private showCallout(text: string, color: Color, fontSize: number, duration: number): void {
-        const safeRect = this.resolveSafeContentRect();
-        const calloutWidth = Math.max(1, Math.min(560, safeRect.width - 32));
-        const calloutY = safeRect.y + safeRect.height / 2 - 180;
-        const node = this.createNode(this.node, `Callout-${text}`, safeRect.x, calloutY, calloutWidth, 90);
-        const label = this.createLabel(node, 'Label', text, 0, 0, fontSize, color, calloutWidth, 80);
-        label.isBold = true;
-        const opacity = node.addComponent(UIOpacity);
-        opacity.opacity = 0;
-        node.setScale(0.72, 0.72, 1);
-        tween(opacity).to(0.12, { opacity: 255 }).delay(Math.max(0.1, duration - 0.26)).to(0.14, { opacity: 0 }).call(() => node.destroy()).start();
-        tween(node).to(0.18, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
-    }
-
     private showFloatingText(text: string, x: number, y: number, color: Color, fontSize = 22): void {
         const layer = this.effectLayer ?? this.node;
         const node = this.createNode(layer, `Float-${text}`, x, y, 260, 55);
         const label = this.createLabel(node, 'Label', text, 0, 0, fontSize, color, 250, 48);
-        label.isBold = true;
+        setLabelBold(label, true);
         const opacity = node.addComponent(UIOpacity);
         tween(node).by(0.52, { position: new Vec3(0, 46, 0) }, { easing: 'quadOut' }).start();
         tween(opacity).delay(0.18).to(0.34, { opacity: 0 }).call(() => node.destroy()).start();
@@ -2680,84 +2900,34 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async loadTextures(): Promise<void> {
-        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
-        if (!bundle) throw new Error(`Bundle ${RESOURCE_BUNDLE} is unavailable.`);
-
-        const pieceKeys = Object.keys(TEXTURE_PATHS)
-            .filter((key) => key.indexOf('piece') === 0);
-        const iconKeys = [
-            'crossSlash',
-            'freeze',
-            'delay',
-            'banish',
-            'teleport',
-            'revive',
-        ];
-        const [pieceFrames, iconFrames] = await Promise.all([
-            loadAutoAtlasFrames(
-                bundle,
-                CHESS_PIECE_ATLAS_PATH,
-                pieceKeys.map((key) => ({
-                    key,
-                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]!),
-                    fallbackTexturePath: TEXTURE_PATHS[key]!,
-                })),
-            ),
-            loadAutoAtlasFrames(
-                bundle,
-                CHESS_ICON_ATLAS_PATH,
-                iconKeys.map((key) => ({
-                    key,
-                    frameName: autoAtlasFrameName(TEXTURE_PATHS[key]!),
-                    fallbackTexturePath: TEXTURE_PATHS[key]!,
-                })),
-            ),
-        ]);
-        Object.keys(pieceFrames).forEach((key) => this.frames.set(key, pieceFrames[key]!));
-        Object.keys(iconFrames).forEach((key) => this.frames.set(key, iconFrames[key]!));
-
-        const atlasKeys = new Set([...pieceKeys, ...iconKeys]);
-        await Promise.all(Object.keys(TEXTURE_PATHS)
-            .filter((key) => !atlasKeys.has(key))
-            .map((key) => new Promise<void>((resolve, reject) => {
-                const path = TEXTURE_PATHS[key]!;
-                bundle.load(path, Texture2D, (error, texture) => {
-                    if (error || !texture) {
-                        reject(error ?? new Error(`Missing texture ${path}`));
-                        return;
-                    }
-                    const frame = new SpriteFrame();
-                    frame.texture = texture;
-                    if (key === 'rewardedVideoIcon') {
-                        frame.packable = false;
-                        frame.rect = new Rect(0, 0, texture.width, texture.height);
-                        frame.originalSize = new Size(texture.width, texture.height);
-                    }
-                    this.frames.set(key, frame);
-                    resolve();
-                });
-            })));
+        const assets = this.context!.services.assets;
+        const frames = await assets.loadSpriteFrames(RESOURCE_BUNDLE, Object.keys(TEXTURE_PATHS).map(key => {
+            const source = TEXTURE_PATHS[key]!;
+            const packed = PACKED_SPRITE_PATHS[source];
+            return { key, path: packed ?? source, type: packed ? 'frame' as const : 'texture' as const };
+        }));
+        if (this.lifecycle === 'disposed') {
+            Object.keys(frames).forEach(key => assets.releaseRuntimeAsset(frames[key]));
+            return;
+        }
+        Object.keys(frames).forEach(key => this.frames.set(key, frames[key]));
     }
 
     private async loadAudio(): Promise<void> {
-        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
-        if (!bundle) throw new Error(`Bundle ${RESOURCE_BUNDLE} is unavailable.`);
-        await Promise.all(Object.keys(AUDIO_PATHS).map((key) => new Promise<void>((resolve, reject) => {
+        const services = this.context!.services;
+        await Promise.all(Object.keys(AUDIO_PATHS).filter(key =>
+            key === 'musicNormal' || key === 'musicPressure'
+                ? services.audio.isMusicEnabled : services.audio.isSoundEnabled,
+        ).map(async key => {
             const path = AUDIO_PATHS[key]!;
-            bundle.load(path, AudioClip, (error, clip) => {
-                if (error || !clip) {
-                    if (OPTIONAL_AUDIO_KEYS.has(key)) {
-                        console.warn(`[ChessEndless] Optional audio unavailable: ${path}`);
-                        resolve();
-                        return;
-                    }
-                    reject(error ?? new Error(`Missing audio ${path}`));
-                    return;
-                }
-                this.clips.set(key, clip);
-                resolve();
-            });
-        })));
+            try {
+                const clip = await services.assets.loadAudioClip(RESOURCE_BUNDLE, path);
+                if (this.lifecycle !== 'disposed') this.clips.set(key, clip);
+            } catch (error: unknown) {
+                if (!OPTIONAL_AUDIO_KEYS.has(key)) throw error;
+                // TODO: console.warn(`[ChessEndless] Optional audio unavailable: ${path}`, error);
+            }
+        }));
     }
 
     private applySprite(node: Node, key: string): void {
@@ -2824,7 +2994,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private readSave(): void {
-        const data = this.context?.services.storage.getGameData(GAME_ID);
+        const stored = this.context?.services.storage.getGameData(GAME_ID);
+        const data = stored?.dataVersion === CHESS_DATA_VERSION ? stored : undefined;
+        this.tutorialCompleted = data?.custom?.tutorialCompleted === true;
         this.playCount = data?.playCount ?? 0;
         this.bestScore = Math.max(0, Math.floor(data?.highScore ?? 0));
         this.dangerHintsEnabled = data?.custom?.dangerHintsEnabled !== false;
@@ -2832,7 +3004,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private readResumableRound(data?: GameSaveData): ResumableChessRound | undefined {
-        if (!data || data.dataVersion > CHESS_DATA_VERSION) return undefined;
+        if (!data || data.dataVersion !== CHESS_DATA_VERSION) return undefined;
         const raw = data.custom?.activeRound;
         if (!isRecord(raw) || raw.inProgress !== true) return undefined;
 
@@ -2851,7 +3023,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 ...(recoverySnapshot ? { recoverySnapshot } : {}),
             });
         } catch (error: unknown) {
-            console.warn('[ChessEndless] Ignoring invalid active round save.', error);
+            // TODO: console.warn('[ChessEndless] Ignoring invalid active round save.', error);
             return undefined;
         }
     }
@@ -2860,7 +3032,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const storage = this.context?.services.storage;
         if (!storage) return;
         const snapshot = this.model.snapshot;
-        const previous = storage.getGameData(GAME_ID);
+        const stored = storage.getGameData(GAME_ID);
+        const previous = stored?.dataVersion === CHESS_DATA_VERSION ? stored : undefined;
         const previousCustom = isRecord(previous?.custom)
             ? previous.custom
             : {};
@@ -2883,11 +3056,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             highScore: Math.max(this.bestScore, snapshot.score),
             lastPlayedAt: Date.now(),
             custom: Object.freeze({
-                ...previousCustom,
                 totalKills: snapshot.totalKills,
                 generalKills: snapshot.generalKills,
                 maxCombo: snapshot.maxCombo,
                 dangerHintsEnabled: this.dangerHintsEnabled,
+                tutorialCompleted: this.tutorialCompleted,
                 completedRounds: previousCompletedRounds + (finished ? 1 : 0),
                 activeRound,
             }),
@@ -2895,7 +3068,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         try {
             storage.writeGameData(GAME_ID, save);
         } catch (error: unknown) {
-            console.error('[ChessEndless] Save failed.', error);
+            // TODO: console.error('[ChessEndless] Save failed.', error);
         }
     }
 
@@ -2952,7 +3125,16 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private destroyOverlay(overlay?: OverlayState): void {
-        if (overlay?.root.isValid) overlay.root.destroy();
+        if (!overlay?.root.isValid) return;
+        const stopTweens = (node: Node): void => {
+            Tween.stopAllByTarget(node);
+            const opacity = node.getComponent(UIOpacity);
+            if (opacity) Tween.stopAllByTarget(opacity);
+            node.children.forEach(stopTweens);
+        };
+        stopTweens(overlay.root);
+        overlay.root.removeFromParent();
+        overlay.root.destroy();
     }
 
     private clearChildren(parent: Node): void {
@@ -2963,7 +3145,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private destroyAllOverlays(): void {
-        [this.deathOverlay, this.rewardOverlay, this.pauseOverlay, this.resultOverlay, this.rulesOverlay, this.infoOverlay]
+        [this.deathOverlay, this.rewardOverlay, this.pauseOverlay, this.resultOverlay, this.rulesOverlay, this.infoOverlay, this.tutorialOverlay]
             .forEach((overlay) => this.destroyOverlay(overlay));
         this.deathOverlay = undefined;
         this.rewardOverlay = undefined;
@@ -2971,6 +3153,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.resultOverlay = undefined;
         this.rulesOverlay = undefined;
         this.infoOverlay = undefined;
+        this.tutorialOverlay = undefined;
+        this.rewardCardNodes.clear();
     }
 
     private readonly handleLayoutChange = (): void => {
@@ -2980,6 +3164,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.scheduleOnce(() => {
             this.resizeQueued = false;
             if (!this.isGenerationCurrent(generation)) return;
+            if (this.rewardOverlay?.root.isValid) this.layoutRewardOverlay(this.rewardOverlay.root);
+            if (this.tutorialOverlay) {
+                this.buildInterface();
+                this.renderAll();
+                this.showTutorial();
+                return;
+            }
             const overlayOpen = Boolean(this.deathOverlay || this.rewardOverlay || this.pauseOverlay
                 || this.resultOverlay || this.rulesOverlay || this.infoOverlay);
             if (!overlayOpen) {
@@ -3065,26 +3256,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
             });
         }
         return scenario;
-    }
-
-    private installQaBridge(): void {
-        const host = globalThis as unknown as Record<string, unknown>;
-        host.__CHESS_ENDLESS_QA__ = Object.freeze({
-            snapshot: () => this.model.snapshot,
-            tapCell: (column: number, row: number) => this.handleCellTap(position(column, row)),
-            tapItem: (item: ItemType) => this.handleItemTap(item),
-            restart: () => this.restart(),
-            layout: () => ({
-                root: this.node.getComponent(UITransform)?.contentSize,
-                parent: this.node.parent?.getComponent(UITransform)?.contentSize,
-                visible: view.getVisibleSize(),
-            }),
-        });
-    }
-
-    private removeQaBridge(): void {
-        const host = globalThis as unknown as Record<string, unknown>;
-        delete host.__CHESS_ENDLESS_QA__;
     }
 }
 

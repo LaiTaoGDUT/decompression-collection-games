@@ -1,17 +1,17 @@
 import {
-    assetManager,
     Color,
     find,
     Graphics,
     Node,
     Sprite,
     SpriteFrame,
-    Texture2D,
     UITransform,
     view,
     Widget,
 } from 'cc';
 import { calculateLobbyBackgroundCover } from './LobbyVisualLayout';
+import type { AssetService } from '../../services/asset/AssetService';
+import { LOBBY_BACKGROUND_BUNDLE, LOBBY_BACKGROUND_PATH } from '../../shared/ui/LobbyArtwork';
 import {
     calculateLobbyBrandMetrics,
     LOBBY_BRAND_HEIGHT,
@@ -20,9 +20,8 @@ import {
     LOBBY_DESIGN_WIDTH,
 } from '../../shared/ui/LobbyBrandLayout';
 
-const BACKGROUND_ASSET_PATH = 'visual/backgrounds/lobby-arcade-warm-rays-v3/texture';
 const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
-const BACKGROUND_FALLBACK = new Color(246, 173, 106, 255);
+const BACKGROUND_FALLBACK = new Color(249, 210, 170, 255);
 
 /** Builds a light, playful mini-game lobby while keeping the L1 palette. */
 export class LobbyPresentation {
@@ -33,20 +32,24 @@ export class LobbyPresentation {
     private brandEmblemNode: Node | null = null;
     private ownedBackgroundFrame?: SpriteFrame;
     private ownedBrandFrame?: SpriteFrame;
+    private assets?: AssetService;
+    private generation = 0;
     private mounted = false;
 
-    mount(contentRoot: Node): void {
+    mount(contentRoot: Node, assets?: AssetService): void {
         if (this.mounted) {
             return;
         }
         const scene = contentRoot.scene;
         const backgroundRoot = scene ? find('Canvas/SceneLayer/Background', scene) : null;
         if (!backgroundRoot) {
-            console.error('[LobbyPresentation] Background node is missing.');
+            // TODO: console.error('[LobbyPresentation] Background node is missing.');
             return;
         }
 
         this.mounted = true;
+        this.assets = assets;
+        this.generation++;
         this.backgroundRoot = backgroundRoot;
         this.createFallback(backgroundRoot);
         this.createArtwork(backgroundRoot);
@@ -62,6 +65,8 @@ export class LobbyPresentation {
         if (!this.mounted) {
             return;
         }
+        this.mounted = false;
+        this.generation++;
         view.off('canvas-resize', this.handleCanvasResize, this);
         const sprite = this.artworkNode?.isValid
             ? this.artworkNode.getComponent(Sprite)
@@ -75,18 +80,16 @@ export class LobbyPresentation {
         if (brandSprite) {
             brandSprite.spriteFrame = null;
         }
-        if (this.ownedBackgroundFrame?.isValid) {
-            this.ownedBackgroundFrame.destroy();
-        }
+        if (this.ownedBackgroundFrame) this.assets?.releaseRuntimeAsset(this.ownedBackgroundFrame);
         this.ownedBackgroundFrame = undefined;
-        this.ownedBrandFrame?.destroy();
+        if (this.ownedBrandFrame) this.assets?.releaseRuntimeAsset(this.ownedBrandFrame);
         this.ownedBrandFrame = undefined;
         this.backgroundRoot = null;
         this.fallbackNode = null;
         this.artworkNode = null;
         this.atmosphereNode = null;
         this.brandEmblemNode = null;
-        this.mounted = false;
+        this.assets = undefined;
     }
 
     private createFallback(parent: Node): void {
@@ -184,57 +187,46 @@ export class LobbyPresentation {
     }
 
     private loadBackgroundArtwork(): void {
-        const bundle = assetManager.getBundle('lobby');
-        if (!bundle) {
-            console.error('[LobbyPresentation] Lobby bundle is unavailable.');
-            return;
-        }
-        bundle.load(BACKGROUND_ASSET_PATH, Texture2D, (error: Error | null, texture: Texture2D) => {
+        const assets = this.assets;
+        if (!assets) return;
+        const generation = this.generation;
+        void assets.loadSpriteFrame(LOBBY_BACKGROUND_BUNDLE, LOBBY_BACKGROUND_PATH, 'texture').then(frame => {
             const artworkNode = this.artworkNode;
-            if (!artworkNode?.isValid) {
-                return;
-            }
-            if (error || !texture) {
-                console.error('[LobbyPresentation] Formal background failed to load.', error);
+            if (!this.mounted || generation !== this.generation || !artworkNode?.isValid) {
+                assets.releaseRuntimeAsset(frame);
                 return;
             }
             const sprite = artworkNode.getComponent(Sprite);
             if (!sprite) {
+                assets.releaseRuntimeAsset(frame);
                 return;
             }
-            this.ownedBackgroundFrame?.destroy();
-            const spriteFrame = new SpriteFrame();
-            spriteFrame.texture = texture;
-            this.ownedBackgroundFrame = spriteFrame;
-            sprite.spriteFrame = spriteFrame;
+            if (this.ownedBackgroundFrame) assets.releaseRuntimeAsset(this.ownedBackgroundFrame);
+            this.ownedBackgroundFrame = frame;
+            sprite.spriteFrame = frame;
             this.layoutBackground();
-        });
+        }).catch(() => {});
     }
 
     private loadBrandArtwork(): void {
-        const bundle = assetManager.getBundle('lobby');
-        if (!bundle) {
-            return;
-        }
-        bundle.load(BRAND_EMBLEM_ASSET_PATH, Texture2D, (error: Error | null, texture: Texture2D) => {
+        const assets = this.assets;
+        if (!assets) return;
+        const generation = this.generation;
+        void assets.loadSpriteFrame('lobby-covers', BRAND_EMBLEM_ASSET_PATH, 'texture').then(frame => {
             const node = this.brandEmblemNode;
-            if (!node?.isValid) {
-                return;
-            }
-            if (error || !texture) {
-                console.error('[LobbyPresentation] Brand emblem failed to load.', error);
+            if (!this.mounted || generation !== this.generation || !node?.isValid) {
+                assets.releaseRuntimeAsset(frame);
                 return;
             }
             const sprite = node.getComponent(Sprite);
             if (!sprite) {
+                assets.releaseRuntimeAsset(frame);
                 return;
             }
-            this.ownedBrandFrame?.destroy();
-            const frame = new SpriteFrame();
-            frame.texture = texture;
+            if (this.ownedBrandFrame) assets.releaseRuntimeAsset(this.ownedBrandFrame);
             this.ownedBrandFrame = frame;
             sprite.spriteFrame = frame;
-        });
+        }).catch(() => {});
     }
 
     private readonly handleCanvasResize = (): void => {
@@ -273,8 +265,8 @@ export class LobbyPresentation {
         const halfWidth = width / 2;
         const halfHeight = height / 2;
 
-        // The production background already contains its own light rays and
-        // sparkles; the runtime layer intentionally adds no extra geometry.
+        // Keep the warm cloud artwork quiet behind the game cards;
+        // the runtime layer intentionally adds no extra decoration.
         void halfWidth;
         void halfHeight;
     }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>player-fall-drag-streaks</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,188},{162,273}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{162,273}}</string>
+			<key>sourceSize</key>
+			<string>{162,273}</string>
+		</dict>
+		<key>player-screen-wrap-afterimages</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{279,182}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{279,182}}</string>
+			<key>sourceSize</key>
+			<string>{279,182}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-player-motion.png</string>
+		<key>size</key>
+		<string>{283,463}</string>
+		<key>textureFileName</key>
+		<string>doodle-player-motion.png</string>
+	</dict>
+</dict>
+</plist>

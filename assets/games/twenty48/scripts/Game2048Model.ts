@@ -188,19 +188,6 @@ export class Game2048Model {
         this.milestoneAcknowledgedState = milestoneAcknowledged;
     }
 
-    /** 开发验证用：随机选取一个已有的小于 256 的棋子并提升为 256。 */
-    promoteRandomTileTo256(): number | undefined {
-        const candidates = this.cells
-            .map((value, index) => value > 0 && value < 256 ? index : -1)
-            .filter((index) => index >= 0);
-        if (candidates.length === 0) return undefined;
-
-        const locationRoll = Math.max(0, Math.min(0.999999, this.random()));
-        const index = candidates[Math.floor(locationRoll * candidates.length)];
-        this.cells[index] = 256;
-        return index;
-    }
-
     restore(snapshot: Game2048Snapshot): void {
         if (typeof snapshot.targetAcknowledged !== 'boolean') {
             throw new Error('2048 target acknowledgement must be boolean.');

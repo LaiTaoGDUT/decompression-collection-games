@@ -1,0 +1,36 @@
+{
+  "generator": "OpenAI built-in imagegen",
+  "transparentBackground": true,
+  "referenceImages": [
+    "sprite-atlas-sources/meowdoku/visual/ui/meowdoku-result-win-cat-v1.png",
+    "sprite-atlas-sources/meowdoku/visual/ui/meowdoku-result-win-cat-hop-v1.png",
+    "sprite-atlas-sources/meowdoku/visual/ui/meowdoku-result-win-cat-wink-v1.png"
+  ],
+  "prompt": "Use case: precise-object-edit.\nAsset type: transparent exclusive victory character sprite for the same mobile game, title \"genius cat detective\".\nInput images: Image 1 is the original game character whose identity and art style must be preserved while its POSE is changed. Images 2 and 3 show additional poses of this SAME character and define the original asset family's exact style.\nPrimary request: transform this exact gray-and-white cartoon ragdoll cat into a CLEARLY DIFFERENT STANDING DETECTIVE POSE. Do not copy the seated waving pose, seated clasped-paws pose, or jumping arms-up pose of the references.\nNEW POSE: the cat stands upright with a slight forward lean, body turned three-quarter view toward the viewer's left, looking curiously at a small gold-rimmed magnifying glass. One FRONT paw holds the magnifying glass beside the face. The OTHER FRONT paw rests confidently on the hip, bent elbow visible. Exactly TWO HIND paws support the standing body at the bottom, separated by a small clear gap. A short curved fluffy tail balances the pose. The pose should read as a clever little detective inspecting a clue, with a lively knowing smile.\nANATOMY IS CRITICAL: Exactly four paws total — two front paws behaving as arms (one holding the glass, one on the hip), plus two hind paws serving as feet. At the bottom there must be ONLY TWO FEET. There must be NO extra central front leg or third paw touching the ground. The paw holding the magnifying glass is one of the TWO front paws, never an added fifth limb. Show all four limbs cleanly, without tangles or ambiguous duplicates.\nCHARACTER/STYLE LOCK: match the references' gray-taupe bicolor fur with white inverted-V blaze on forehead, white muzzle, white chest and white paws, gray ears/back/legs, exact blue cartoon eye style, pink nose, rounded cheek tufts, original head-to-body proportions and short legs. Match the original game's softly sculpted fur clumps, restrained fur detail, smooth rounded 3D-cartoon shading, soft neutral lighting, and simple clean edges. This must look like a fourth sprite from the same existing asset family, not a redesign or a more realistic animal.\nACCESSORIES: only a small simple warm brown-gray deerstalker cap between the ears, plus the small gold-rimmed magnifying glass with a brown handle. Both ears stay visible. No clothing covers the white chest or gray body. No cape, collar, jewellery, medals, purple outfit.\nCOMPOSITION: one centered full-body character in a square transparent canvas, feet/tail/ears fully contained, a narrow clean transparent margin; visually bold enough to read in a 480-pixel-tall mobile popup.\nBACKGROUND: genuinely transparent alpha, no scene, no floor, no ground shadow, no rays, glow or confetti.\nAVOID: five paws, three feet at the bottom, a waving paw, a seated body, clasping paws, jumping pose, cream-white body, hyperreal fur strands, plush toy texture, a different face, cinematic shine, text, logos or watermarks.",
+  "constraints": {
+    "paws": 4,
+    "pose": "standing, one front paw holding a magnifying glass, the other front paw on the hip, two hind paws on the ground",
+    "style": "original gray-and-white bicolor ragdoll victory cat asset family"
+  },
+  "postProcessing": {
+    "resize": {
+      "from": [
+        1254,
+        1254
+      ],
+      "to": [
+        512,
+        512
+      ],
+      "filter": "LANCZOS",
+      "preserveAlpha": true
+    },
+    "compression": {
+      "provider": "TinyPNG / Tinify",
+      "sourceBeforeBytes": 227976,
+      "sourceAfterBytes": 68530,
+      "runtimeAtlasBeforeBytes": 172321,
+      "runtimeAtlasAfterBytes": 66696
+    }
+  }
+}

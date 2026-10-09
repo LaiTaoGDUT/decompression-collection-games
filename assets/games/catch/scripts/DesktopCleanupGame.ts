@@ -1,6 +1,9 @@
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
+import { setLabelBold } from '../../../services/font/FontBinding';
 import {
     _decorator,
     assetManager,
+    AudioClip,
     BlockInputEvents,
     Button,
     Camera,
@@ -36,6 +39,9 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
+import type { AssetService } from '../../../services/asset/AssetService';
+import type { AudioService } from '../../../services/audio/AudioService';
+import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { Platform } from '../../../platform/Platform';
 import type { StorageService } from '../../../services/storage/StorageService';
@@ -64,6 +70,9 @@ import {
     selectDesktopCleanupTheme,
     type DesktopCleanupThemeDefinition,
 } from './DesktopCleanupTheme';
+import { DESKTOP_CLEANUP_DESSERT_HIT_SHAPES } from './DesktopCleanupDessertHitShapes';
+import { DESKTOP_CLEANUP_CONVENIENCE_HIT_SHAPES } from './DesktopCleanupConvenienceHitShapes';
+import { DESKTOP_CLEANUP_FRUIT_HIT_SHAPES } from './DesktopCleanupFruitHitShapes';
 import {
     readDesktopCleanupLayout,
     type DesktopCleanupLayoutMetrics,
@@ -75,6 +84,8 @@ import {
     type DesktopCleanupSave,
 } from './DesktopCleanupSave';
 
+/** 成就“收纳魔法师”：3 分钟内清空一次桌面（含续时后的实际用时）。 */
+const FAST_CLEAR_ACHIEVEMENT_MS = 180_000;
 const { ccclass } = _decorator;
 
 const BUNDLE = 'game-catch';
@@ -133,18 +144,6 @@ const THEME_FRAME_KEYS: readonly ThemeFrameKey[] = Object.freeze([
     'popupButtonPaper',
     'smoke',
 ]);
-const POPUP_BUTTON_FRAME_RECTS: Readonly<Partial<Record<ThemeFrameKey, Readonly<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}>>>> = Object.freeze({
-    // Tight alpha crop (threshold 8) removes transparent padding that would
-    // otherwise make equal-size sliced buttons render at different sizes.
-    popupButtonTeal: Object.freeze({ x: 20, y: 30, width: 459, height: 118 }),
-    popupButtonCoral: Object.freeze({ x: 33, y: 30, width: 433, height: 105 }),
-    popupButtonPaper: Object.freeze({ x: 24, y: 18, width: 452, height: 126 }),
-});
 const POPUP_BUTTON_HORIZONTAL_INSET_RATIO = 0.2;
 interface ItemHitPolygonPoint {
     readonly x: number;
@@ -156,6 +155,7 @@ type ItemHitPolygon = readonly ItemHitPolygonPoint[];
 
 interface ItemHitPolygonShape {
     readonly outer: ItemHitPolygon;
+    readonly holes?: readonly ItemHitPolygon[];
 }
 
 function attachDesktopCleanupAdIcon(
@@ -426,8 +426,35 @@ function isPointInsideHitPolygon(point: ItemHitPolygonPoint, polygon: ItemHitPol
 }
 
 function isPointInsideHitShape(point: ItemHitPolygonPoint, shape: ItemHitPolygonShape): boolean {
-    return isPointInsideHitPolygon(point, shape.outer);
+    return isPointInsideHitPolygon(point, shape.outer)
+        && !shape.holes?.some((hole) => isPointInsideHitPolygon(point, hole));
 }
+
+/** 「桌面软陶小乐队」声音：音乐、音效都归本 Bundle 所有，生成脚本见 tools/audio/desktop-cleanup。 */
+const DESKTOP_CLEANUP_AUDIO = Object.freeze({
+    normalMusic: 'visual/audio/dc-desk-band-loop-v1',
+    cues: Object.freeze({
+        uiButton: 'visual/audio/dc-ui-button-v1',
+        drop: Object.freeze(['visual/audio/dc-pick-1-v1', 'visual/audio/dc-pick-2-v1', 'visual/audio/dc-pick-3-v1']),
+        merge: 'visual/audio/dc-match-v1',
+        fold: 'visual/audio/dc-tool-return-v1',
+        danger: 'visual/audio/dc-time-warning-v1',
+        failure: 'visual/audio/dc-failure-v1',
+        continue: 'visual/audio/dc-continue-v1',
+        milestone: 'visual/audio/dc-win-v1',
+        record: 'visual/audio/dc-record-v1',
+    }),
+    tools: Object.freeze({
+        return: 'visual/audio/dc-tool-return-v1',
+        magnet: 'visual/audio/dc-tool-magnet-v1',
+        shuffle: 'visual/audio/dc-tool-shuffle-v1',
+    }) as Readonly<Record<DesktopCleanupTool, string>>,
+});
+/** 同一完整循环：普通状态从头播放，最后 30 秒从下一乐句起播。文件按紧张版电平导出。 */
+const DESKTOP_CLEANUP_HURRY_MS = 30_000;
+const DESKTOP_CLEANUP_HURRY_START_SECONDS = 19.2;
+const DESKTOP_CLEANUP_NORMAL_MUSIC_VOLUME = Math.pow(10, -1.5 / 20);
+const DESKTOP_CLEANUP_MUSIC_TRANSITION = { fadeOutSeconds: 1.5, fadeInSeconds: 1.5 } as const;
 
 const TOOL_TITLES: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze({
     return: '清除夹',
@@ -436,9 +463,9 @@ const TOOL_TITLES: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze(
 });
 
 const TOOL_DESCRIPTIONS: Readonly<Record<DesktopCleanupTool, string>> = Object.freeze({
-    return: '把收纳槽中最近放入的最多 3 件物品退回桌面，适合在槽位快满时直接腾出空间。',
-    magnet: '自动寻找最容易凑齐的一类物品，并直接完成一组三件收纳。',
-    shuffle: '将桌面上仍未收纳的物品重新压叠成一座紧凑物件堆，并改变露出顺序。',
+    return: "将收纳槽中最近放入的最多 3 件物品退回桌面，腾出槽位。",
+    magnet: "自动收集并消除一组三件同类物品。",
+    shuffle: "重新打乱并堆叠桌面上的物品，让其他物品露出来。",
 });
 
 const COLORS = Object.freeze({
@@ -460,6 +487,8 @@ const COLORS = Object.freeze({
 type GameState = 'idle' | 'ready' | 'rules' | 'tool-help' | 'playing' | 'paused' | 'failed' | 'completed' | 'disposed';
 
 export interface DesktopCleanupServices {
+    readonly assets: AssetService;
+    readonly audio: AudioService;
     readonly feedback: FeedbackService;
     readonly storage: StorageService;
     readonly platform: Platform;
@@ -578,6 +607,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private toolHelpOverlay?: OverlayState;
     private activeToolHelp?: DesktopCleanupTool;
     private failureOverlay?: OverlayState;
+    private audioBank?: BundleAudioBank;
+    private normalMusic?: AudioClip;
+    private toolClips: Partial<Record<DesktopCleanupTool, AudioClip>> = {};
     private pauseOverlay?: OverlayState;
     private resultOverlay?: OverlayState;
     private pauseModel?: MiniGamePauseModel;
@@ -587,6 +619,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private presentationOpacity?: UIOpacity;
     private readonly popupButtonFrames = new Set<SpriteFrame>();
     private itemAtlasTexture?: Texture2D;
+    private itemFrameTheme?: DesktopCleanupThemeDefinition;
     private readonly itemAtlasTextures = new Map<DesktopCleanupThemeDefinition['id'], Texture2D>();
     private itemFrames = new Map<DesktopCleanupItemType, SpriteFrame>();
     private resizeListening = false;
@@ -625,13 +658,18 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     async initialize(context: MiniGameContext<DesktopCleanupServices>): Promise<void> {
         if (this.state !== 'idle') throw new Error(`Cannot initialize DesktopCleanupGame from ${this.state}.`);
         this.context = context;
+        const generation = this.operationGeneration;
         this.config = await this.loadGameplayConfig();
+        if (!this.isCurrent(generation)) return;
         this.theme = getDesktopCleanupTheme(DEFAULT_DESKTOP_CLEANUP_THEME_ID);
         this.save = readDesktopCleanupSave(context.services.storage);
         // Resolve the formal visual set before creating any gameplay nodes.
         // A missing theme must fail through the runtime's recoverable load
         // error path instead of exposing an obsolete procedural interface.
         await this.loadThemeAssets();
+        if (!this.isCurrent(generation)) return;
+        await this.loadAudio();
+        if (!this.isCurrent(generation)) return;
         this.buildInterface();
         this.registerGlobalInput();
         this.applyThemeAssets();
@@ -644,10 +682,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         try {
             this.startRound();
         } catch (error: unknown) {
-            const detail = error instanceof Error
-                ? `${error.name}: ${error.message}\n${error.stack ?? ''}`
-                : String(error);
-            console.error(`[DesktopCleanupGame] begin.failed\n${detail}`);
+            // TODO: const detail = error instanceof Error
+            //     ? `${error.name}: ${error.message}\n${error.stack ?? ''}`
+            //     : String(error);
+            // TODO: console.error(`[DesktopCleanupGame] begin.failed\n${detail}`);
             throw error;
         }
     }
@@ -660,6 +698,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const second = Math.max(0, Math.ceil(this.model.remainingMs / 1000));
         if (second > 0 && second <= 30 && this.lastHudSecond > 30) {
             this.context?.services.feedback.play('danger');
+            this.syncRoundMusic(true);
         }
         if (second !== this.lastHudSecond) this.refreshHud();
         if (this.model.phase !== 'playing') this.syncTerminalPhase();
@@ -672,6 +711,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state !== 'paused') this.stateBeforePause = this.state;
         this.state = 'paused';
         this.inputLocked = true;
+        this.context?.services.audio.pauseMusic();
         return true;
     }
 
@@ -679,6 +719,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         if (this.state !== 'paused') return;
         this.state = this.stateBeforePause === 'paused' ? 'playing' : this.stateBeforePause;
         this.inputLocked = this.state !== 'playing';
+        // 失败或通关界面上暂停/恢复时，音乐保持停止。
+        if (this.state !== 'failed' && this.state !== 'completed') this.context?.services.audio.resumeMusic();
     }
 
     async restart(context?: MiniGameContext<DesktopCleanupServices>): Promise<void> {
@@ -710,25 +752,42 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.unscheduleAllCallbacks();
         this.destroyAllOverlays();
         this.node.children.slice().forEach((child) => this.destroyNode(child));
-        this.backgroundFrame?.destroy();
+        if (this.backgroundFrame) this.context?.services.assets.releaseRuntimeAsset(this.backgroundFrame);
         this.backgroundFrame = undefined;
-        this.themeFrames.forEach((frame) => frame.destroy());
+        this.themeFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.themeFrames.clear();
-        this.popupButtonFrames.forEach((frame) => frame.destroy());
+        this.popupButtonFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.popupButtonFrames.clear();
-        this.rewardedVideoIconFrame?.destroy();
+        if (this.rewardedVideoIconFrame) this.context?.services.assets.releaseRuntimeAsset(this.rewardedVideoIconFrame);
         this.rewardedVideoIconFrame = undefined;
-        this.itemFrames.forEach((frame) => frame.destroy());
+        this.itemFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.itemFrames.clear();
         this.pileItemNodes.clear();
         this.pileItemTypes.clear();
         this.slotItemNodes.clear();
         this.slotMoveTokens.clear();
         this.selectionHighlights.clear();
+        this.toolButtons.clear();
+        this.pileRoot = undefined;
+        this.slotRoot = undefined;
         this.selectionRoot = undefined;
         this.pickupRoot = undefined;
+        this.timerLabel = undefined;
+        this.headerLogoRoot = undefined;
+        this.hintRoot = undefined;
+        this.hintLabel = undefined;
+        this.pauseButton = undefined;
+        this.helpButton = undefined;
+        this.presentationOpacity = undefined;
+        this.pauseModel = undefined;
+        this.resultModel = undefined;
         this.itemAtlasTexture = undefined;
+        this.itemFrameTheme = undefined;
         this.itemAtlasTextures.clear();
+        this.audioBank?.dispose();
+        this.audioBank = undefined;
+        this.normalMusic = undefined;
+        this.toolClips = {};
         this.model = undefined;
         this.context = undefined;
         this.lastReportedScore = undefined;
@@ -741,10 +800,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.pauseOverlay = this.buildOverlay(
             'DesktopPauseOverlay',
             '先歇一会儿',
-            '倒计时已经暂停，回来后会从当前时间继续',
+            "倒计时已暂停",
             [
                 { name: 'ResumeButton', label: '继续整理', tone: 'teal', action: model.resume },
-                { name: 'RestartButton', label: '重新开局', tone: 'mustard', action: model.restart },
+                { name: 'RestartButton', label: "重新开始", tone: 'mustard', action: model.restart },
                 { name: 'LobbyButton', label: '返回大厅', tone: 'paper', action: model.exit },
             ],
         );
@@ -768,8 +827,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.destroyOverlay(this.resultOverlay);
         this.resultOverlay = this.buildOverlay(
             'DesktopResultOverlay',
-            newRecord ? '最快清理！' : '桌面清爽啦',
-            `剩余时间  ${remaining} 秒\n幸运徽章全部找回`,
+            newRecord ? "刷新最快清理纪录！" : '桌面清爽啦',
+            `剩余时间：${remaining} 秒\n已找回全部${this.theme.targetLabel}`,
             [
                 { name: 'RestartButton', label: '再清一桌', tone: 'coral', action: model.restart },
                 { name: 'LobbyButton', label: '返回大厅', tone: 'paper', action: model.returnToLobby },
@@ -798,6 +857,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.lastReportedScore = 0;
         this.context?.reportScore(0);
         this.state = 'playing';
+        this.resumeRoundMusic(true);
         this.renderAll();
         this.setHint('');
         if (this.save.rulesSeenVersion < DESKTOP_CLEANUP_RULES_VERSION) {
@@ -828,7 +888,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         return new Promise((resolve) => {
             bundle.load('configs/gameplay', JsonAsset, (error, asset) => {
                 if (error || !asset) {
-                    console.warn('[DesktopCleanupGame] Gameplay config unavailable; using defaults.', error);
+                    // TODO: console.warn('[DesktopCleanupGame] Gameplay config unavailable; using defaults.', error);
                     resolve(DEFAULT_DESKTOP_CLEANUP_CONFIG);
                     return;
                 }
@@ -837,55 +897,116 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         });
     }
 
-    private async loadThemeAssets(): Promise<void> {
-        const [background, themeAtlases, themeTextures, rewardedVideoIconTexture] = await Promise.all([
-            this.loadTexture(BACKGROUND_PATH),
-            Promise.all(DESKTOP_CLEANUP_THEME_IDS.map(async (themeId) => (
-                [themeId, await this.loadTexture(getDesktopCleanupTheme(themeId).itemAtlasPath)] as const
-            ))),
-            Promise.all(THEME_FRAME_KEYS.map(async (key) => (
-                [key, await this.loadTexture(THEME_TEXTURE_PATHS[key])] as const
-            ))),
-            this.loadTexture(DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_PATH),
+    /** 主题 Bundle 已加载；音频缺失只影响声音，不阻塞游戏。 */
+    private async loadAudio(): Promise<void> {
+        const context = this.context;
+        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
+        if (!context || !bundle) return;
+        this.audioBank = new BundleAudioBank({ bundle: RESOURCE_BUNDLE, cues: DESKTOP_CLEANUP_AUDIO.cues }, context.services.audio, context.services.feedback, context.services.assets);
+        const loadClip = (path: string, enabled: boolean): Promise<AudioClip | undefined> => {
+            if (!enabled) return Promise.resolve(undefined);
+            return context.services.assets.loadAudioClip(RESOURCE_BUNDLE, path).catch((error: unknown) => {
+                // TODO: console.warn(`[DesktopCleanupGame] Audio clip failed to load: ${path}`, error);
+                return undefined;
+            });
+        };
+        const tools = ['return', 'magnet', 'shuffle'] as const;
+        const [, normal, ...toolClips] = await Promise.all([
+            this.audioBank.initialize().catch((error: unknown) => {
+                // TODO: console.error('[DesktopCleanupGame] Audio cue initialization failed.', error);
+            }),
+            loadClip(DESKTOP_CLEANUP_AUDIO.normalMusic, context.services.audio.isMusicEnabled),
+            ...tools.map((tool) => loadClip(DESKTOP_CLEANUP_AUDIO.tools[tool], context.services.audio.isSoundEnabled)),
         ]);
-        if (!background
-            || themeAtlases.some(([, texture]) => !texture)
-            || themeTextures.some(([, texture]) => !texture)
-            || !rewardedVideoIconTexture) {
+        if (this.state === 'disposed') return;
+        this.normalMusic = normal;
+        const clips: Partial<Record<DesktopCleanupTool, AudioClip>> = {};
+        tools.forEach((tool, index) => {
+            const clip = toolClips[index];
+            if (clip) clips[tool] = clip;
+        });
+        this.toolClips = clips;
+    }
+
+    private isHurryTime(): boolean {
+        const model = this.model;
+        return !!model && model.remainingMs <= DESKTOP_CLEANUP_HURRY_MS;
+    }
+
+    /** 本局音乐按剩余时间在普通版和紧张版之间切换；crossfade 仅在对局中途越过阈值时使用。 */
+    private syncRoundMusic(crossfade: boolean, restart = false): void {
+        const audio = this.context?.services.audio;
+        const clip = this.normalMusic;
+        if (!audio || !clip) return;
+        const hurry = this.isHurryTime();
+        const startSeconds = hurry ? DESKTOP_CLEANUP_HURRY_START_SECONDS : 0;
+        const volumeScale = hurry ? 1 : DESKTOP_CLEANUP_NORMAL_MUSIC_VOLUME;
+        if (crossfade) audio.transitionMusic(clip, { ...DESKTOP_CLEANUP_MUSIC_TRANSITION, startSeconds, volumeScale });
+        else audio.playMusic(clip, volumeScale, { startSeconds, restart });
+    }
+
+    /**
+     * 开局、重开和续玩时恢复音乐：pause()、失败和通关会让音频服务处于游戏暂停状态，
+     * 期间 playMusic 只切换曲目、不会开始播放，所以先选定曲目再解除暂停。
+     */
+    private resumeRoundMusic(restart = false): void {
+        this.syncRoundMusic(false, restart);
+        this.context?.services.audio.resumeMusic();
+    }
+
+    /** 三种工具各有专属音效；凑成三件时统一用归档音，磁吸飞行时用磁吸音。 */
+    private playToolFeedback(tool: DesktopCleanupTool, triple: boolean, magnetFlight: boolean): void {
+        const feedback = this.context?.services.feedback;
+        if (!feedback) return;
+        if (triple && !(tool === 'magnet' && magnetFlight)) {
+            feedback.play('merge', { vibrate: false });
+            return;
+        }
+        const clip = this.toolClips[tool];
+        if (!clip) {
+            feedback.play('fold');
+            return;
+        }
+        this.context?.services.audio.playEffect(clip);
+        if (!magnetFlight) feedback.vibrate('medium');
+    }
+
+    private async loadThemeAssets(): Promise<void> {
+        const assets = this.context!.services.assets;
+        const requests = THEME_FRAME_KEYS.map(key => {
+            const source = THEME_TEXTURE_PATHS[key];
+            const packed = PACKED_SPRITE_PATHS[source];
+            return { key: key as string, path: packed ?? source, type: packed ? 'frame' as const : 'texture' as const };
+        });
+        requests.push({ key: 'rewardedVideoIcon', path: PACKED_SPRITE_PATHS[DESKTOP_CLEANUP_REWARDED_VIDEO_ICON_PATH], type: 'frame' });
+        const [background, themeAtlases, frames] = await Promise.all([
+            this.loadTexture(BACKGROUND_PATH),
+            Promise.all(DESKTOP_CLEANUP_THEME_IDS.map(async themeId =>
+                [themeId, await this.loadTexture(getDesktopCleanupTheme(themeId).itemAtlasPath)] as const)),
+            assets.loadSpriteFrames(RESOURCE_BUNDLE, requests),
+        ]);
+        if (!background || themeAtlases.some(([, texture]) => !texture)) {
+            Object.keys(frames).forEach(key => assets.releaseRuntimeAsset(frames[key]));
             throw new Error('Desktop cleanup formal theme assets are incomplete.');
         }
-        if (this.state === 'disposed' || !this.node.isValid) return;
-        if (background) {
-            this.backgroundFrame?.destroy();
-            const frame = new SpriteFrame();
-            frame.texture = background;
-            this.backgroundFrame = frame;
+        if (this.state === 'disposed' || !this.node.isValid) {
+            Object.keys(frames).forEach(key => assets.releaseRuntimeAsset(frames[key]));
+            return;
         }
+        if (this.backgroundFrame) assets.releaseRuntimeAsset(this.backgroundFrame);
+        this.backgroundFrame = assets.createSpriteFrame(RESOURCE_BUNDLE, background);
         this.itemAtlasTextures.clear();
         themeAtlases.forEach(([themeId, texture]) => {
             if (texture) this.itemAtlasTextures.set(themeId, texture);
         });
         this.activateItemThemeAssets();
-        themeTextures.forEach(([key, texture]) => {
-            if (!texture) return;
-            this.themeFrames.get(key)?.destroy();
-            const frame = this.createThemeFrame(key, texture);
-            this.themeFrames.set(key, frame);
+        THEME_FRAME_KEYS.forEach(key => {
+            const previous = this.themeFrames.get(key);
+            if (previous) assets.releaseRuntimeAsset(previous);
+            this.themeFrames.set(key, frames[key]);
         });
-        this.rewardedVideoIconFrame?.destroy();
-        this.rewardedVideoIconFrame = new SpriteFrame();
-        this.rewardedVideoIconFrame.texture = rewardedVideoIconTexture;
-        this.rewardedVideoIconFrame.rect = new Rect(
-            0,
-            0,
-            rewardedVideoIconTexture.width,
-            rewardedVideoIconTexture.height,
-        );
-        this.rewardedVideoIconFrame.originalSize = new Size(
-            rewardedVideoIconTexture.width,
-            rewardedVideoIconTexture.height,
-        );
-        this.rewardedVideoIconFrame.packable = false;
+        if (this.rewardedVideoIconFrame) assets.releaseRuntimeAsset(this.rewardedVideoIconFrame);
+        this.rewardedVideoIconFrame = frames.rewardedVideoIcon;
     }
 
     private setPresentationVisible(visible: boolean): void {
@@ -897,18 +1018,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private loadTexture(path: string): Promise<Texture2D | undefined> {
-        const bundle = assetManager.getBundle(RESOURCE_BUNDLE);
-        if (!bundle) return Promise.resolve(undefined);
-        return new Promise((resolve) => {
-            bundle.load(path, Texture2D, (error, texture) => {
-                if (error || !texture) {
-                    console.warn(`[DesktopCleanupGame] Theme asset unavailable: ${path}`, error);
-                    resolve(undefined);
-                    return;
-                }
-                resolve(texture);
-            });
-        });
+        return this.context!.services.assets.loadAsset(RESOURCE_BUNDLE, path, Texture2D);
     }
 
     private activateItemThemeAssets(): void {
@@ -920,36 +1030,17 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.applyHeaderLogo();
     }
 
-    private createThemeFrame(key: ThemeFrameKey, texture: Texture2D): SpriteFrame {
-        const frame = new SpriteFrame();
-        frame.texture = texture;
-        const crop = POPUP_BUTTON_FRAME_RECTS[key];
-        if (crop) {
-            frame.rect = new Rect(crop.x, crop.y, crop.width, crop.height);
-            frame.originalSize = new Size(crop.width, crop.height);
-            if (this.isPopupButtonFrameKey(key)) {
-                // Buttons use horizontal slicing: preserve each rounded end and
-                // stretch only the center strip to the shared target width.
-                const horizontalInset = Math.min(
-                    crop.width * POPUP_BUTTON_HORIZONTAL_INSET_RATIO,
-                    crop.width / 2 - 1,
-                );
-                frame.insetLeft = horizontalInset;
-                frame.insetRight = horizontalInset;
-                frame.insetTop = 0;
-                frame.insetBottom = 0;
-            }
-        } else {
-            frame.originalSize = new Size(texture.width, texture.height);
-        }
-        frame.offset = new Vec2();
-        return frame;
-    }
+
 
     private sliceItemAtlas(texture: Texture2D): void {
-        this.itemFrames.forEach((frame) => frame.destroy());
+        // Restarting the same theme can reuse all atlas slices and their GPU
+        // bindings. Theme or texture changes still rebuild the complete set.
+        if (this.itemAtlasTexture === texture && this.itemFrameTheme === this.theme
+            && this.itemFrames.size === this.theme.itemTypes.length) return;
+        this.itemFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.itemFrames.clear();
         this.itemAtlasTexture = texture;
+        this.itemFrameTheme = this.theme;
         const columns = this.theme.itemAtlasColumns;
         const rows = this.theme.itemAtlasRows;
         const cellWidth = Math.floor(texture.width / columns);
@@ -957,8 +1048,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.theme.itemTypes.forEach((type, index) => {
             const column = index % columns;
             const row = Math.floor(index / columns);
-            const frame = new SpriteFrame();
-            frame.texture = texture;
+            const frame = this.context!.services.assets.createSpriteFrame(RESOURCE_BUNDLE, texture);
             frame.rect = new Rect(
                 column * cellWidth,
                 row * cellHeight,
@@ -1100,7 +1190,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             210 * metrics.scale,
             72 * metrics.scale,
         );
-        label.isBold = true;
+        setLabelBold(label, true);
         return label;
     }
 
@@ -1297,7 +1387,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             count.node.getComponent(UITransform)?.setAnchorPoint(0.5, 0.5);
             count.node.setPosition(48 * metrics.scale, -48 * metrics.scale);
             count.lineHeight = 32 * metrics.scale;
-            count.isBold = true;
+            setLabelBold(count, true);
             const helpTarget = this.createNode(
                 card,
                 'Help',
@@ -1390,7 +1480,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 this.renderQueued = false;
                 // A snapshot clones every model item. Share one immutable
                 // snapshot across this render pass instead of rebuilding the
-                // full 144-item snapshot for every presentation subsystem.
+                // full pile snapshot for every presentation subsystem.
                 const snapshot = this.model?.snapshot;
                 const repaired = this.repairPresentationState(snapshot);
                 this.renderPile(snapshot);
@@ -1738,10 +1828,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
     private syncPileTransforms(): void {
         const pile = this.pileRoot;
-        const snapshot = this.model?.snapshot;
+        const items = this.model?.itemSnapshots;
         const metrics = this.layout;
-        if (!pile || !snapshot || !metrics) return;
-        const active = snapshot.items
+        if (!pile || !items || !metrics) return;
+        const active = items
             .filter((item) => item.active)
             .sort(compareDesktopCleanupItems);
         active.forEach((item, index) => {
@@ -1756,13 +1846,15 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     private updatePileItemTransform(node: Node, item: DesktopCleanupItemSnapshot): void {
         const baseScale = 1 + item.elevation * 0.14;
         const metrics = this.layout!;
-        node.setPosition(
-            item.x * metrics.boardWidth * DESKTOP_CLEANUP_STACK_RENDER_SCALE,
-            item.y * metrics.boardHeight * DESKTOP_CLEANUP_STACK_RENDER_SCALE,
-            0,
-        );
-        node.angle = item.angle;
-        node.setScale(baseScale, baseScale, 1);
+        const x = item.x * metrics.boardWidth * DESKTOP_CLEANUP_STACK_RENDER_SCALE;
+        const y = item.y * metrics.boardHeight * DESKTOP_CLEANUP_STACK_RENDER_SCALE;
+        if (node.position.x !== x || node.position.y !== y || node.position.z !== 0) {
+            node.setPosition(x, y, 0);
+        }
+        if (node.angle !== item.angle) node.angle = item.angle;
+        if (node.scale.x !== baseScale || node.scale.y !== baseScale || node.scale.z !== 1) {
+            node.setScale(baseScale, baseScale, 1);
+        }
     }
 
     private syncPileItemVisual(
@@ -1816,7 +1908,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             width * 0.78,
             height * 0.54,
         );
-        label.isBold = true;
+        setLabelBold(label, true);
     }
 
     private renderSlots(snapshot = this.model?.snapshot): void {
@@ -2237,7 +2329,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             .start();
     }
 
-    private refreshHud(snapshot = this.model?.snapshot): void {
+    private refreshHud(snapshot: Pick<DesktopCleanupSnapshot, 'remainingMs' | 'score'> | undefined = this.model): void {
         if (!snapshot) return;
         const seconds = Math.max(0, Math.ceil(snapshot.remainingMs / 1000));
         this.lastHudSecond = seconds;
@@ -2796,15 +2888,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             return;
         }
         if (!result.accepted) {
-            this.setHint(result.reason === 'empty' ? '当前还用不上这个工具' : '本局工具次数已用完');
+            this.setHint(result.reason === 'empty' ? "当前没有可处理的物品" : '本局工具次数已用完');
             return;
         }
-        const cue = tool === 'magnet' && result.magnet
-            ? 'drop'
-            : result.triple ? 'merge' : 'fold';
-        this.context?.services.feedback.play(cue, {
-            vibrate: cue !== 'drop' && cue !== 'merge',
-        });
+        this.playToolFeedback(tool, !!result.triple, !!result.magnet);
         this.presentToolResult(tool, true, result.removedItemIds ?? [], result.magnet);
     }
 
@@ -2845,7 +2932,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.adBusy = true;
         this.inputLocked = true;
         this.state = 'paused';
-        this.setHint('正在播放视频…');
+        this.setHint("正在播放广告…");
         this.refreshTools();
         let acceptedAction: DesktopCleanupActionResult | undefined;
         try {
@@ -2858,21 +2945,16 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             const action = model.resolveBoostAd(result.outcome === 'completed');
             if (action.accepted) {
                 acceptedAction = action;
-                const cue = tool === 'magnet' && action.magnet
-                    ? 'drop'
-                    : action.triple ? 'merge' : 'continue';
-                this.context?.services.feedback.play(cue, {
-                    vibrate: cue !== 'drop' && cue !== 'merge',
-                });
+                this.playToolFeedback(tool, !!action.triple, !!action.magnet);
                 this.setHint('');
             } else {
-                this.setHint('失败，请重试');
+                this.setHint("广告未完成，请重试");
             }
         } catch (error: unknown) {
             if (!this.isCurrent(generation)) return;
             model.resolveBoostAd(false);
-            console.warn('[DesktopCleanupGame] Rewarded tool ad failed.', error);
-            this.setHint('失败，请重试');
+            // TODO: console.warn('[DesktopCleanupGame] Rewarded tool ad failed.', error);
+            this.setHint("广告未完成，请重试");
         } finally {
             if (this.isCurrent(generation)) {
                 this.adBusy = false;
@@ -2896,10 +2978,11 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private syncTerminalPhase(): void {
-        const phase = this.model?.snapshot.phase;
+        const phase = this.model?.phase;
         if (phase === 'failed' && this.state === 'playing') {
             this.state = 'failed';
             this.inputLocked = true;
+            this.context?.services.audio.pauseMusic();
             this.context?.services.feedback.play('failure');
             this.showFailure();
         } else if (phase === 'won' && !this.terminalPending) {
@@ -2916,8 +2999,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const actions: OverlayAction[] = [];
         if (this.isAdsEnabled() && !snapshot.continueAdAttempted) {
             const label = snapshot.failureReason === 'slots'
-                ? '清除 3 格'
-                : `加时 ${this.config.continueSeconds} 秒`;
+                ? "看广告清除 3 格"
+                : `看广告加时 ${this.config.continueSeconds} 秒`;
             actions.push({ name: 'ContinueButton', label, tone: 'teal', action: () => this.requestContinueAd(), adIcon: true });
         }
         actions.push(
@@ -2941,10 +3024,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             || this.adBusy
             || !this.isAdsEnabled()
             || !model.beginContinueAd()) return;
-        const failureReason = model.snapshot.failureReason;
         const generation = this.operationGeneration;
         this.adBusy = true;
-        this.setOverlayBusy(this.failureOverlay, true, '正在播放视频…');
+        this.setOverlayBusy(this.failureOverlay, true, "正在播放广告…");
         try {
             const result = await context.services.ads.showRewarded({
                 placement: AD_PLACEMENTS.desktopCleanupRewarded,
@@ -2957,18 +3039,19 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 this.destroyOverlay(this.failureOverlay);
                 this.failureOverlay = undefined;
                 this.state = 'playing';
+                this.resumeRoundMusic();
                 this.context?.services.feedback.play('continue');
                 this.setHint('');
                 this.presentContinueResult(action.removedItemIds ?? []);
             } else {
-                this.setHint('失败，请重试');
+                this.setHint("广告未完成，请重试");
                 this.showFailure();
             }
         } catch (error: unknown) {
             if (!this.isCurrent(generation)) return;
             model.resolveContinueAd(false);
-            console.warn('[DesktopCleanupGame] Continue ad failed.', error);
-            this.setHint('失败，请重试');
+            // TODO: console.warn('[DesktopCleanupGame] Continue ad failed.', error);
+            this.setHint("广告未完成，请重试");
             this.showFailure();
         } finally {
             if (this.isCurrent(generation)) {
@@ -3035,7 +3118,9 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
             lastCompletedDate: this.model?.dateKey,
         });
         this.persistSave();
+        this.context?.services.audio.pauseMusic();
         this.context?.services.feedback.play(newRecord ? 'record' : 'milestone');
+        if (durationMs <= FAST_CLEAR_ACHIEVEMENT_MS) this.context?.reportAchievementProgress('fast-clears', 1);
         this.context?.requestExit(Object.freeze({
             score: snapshot.score,
             duration: durationMs / 1000,
@@ -3069,13 +3154,13 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.state = 'tool-help';
         this.inputLocked = true;
         const adRule = this.isAdsEnabled()
-            ? '三种道具都用完免费次数后，本局可看视频补充任意一种；未配置广告时点击后直接补充，视频失败可继续尝试，完整播放成功后不再补充。'
-            : '当前未开启视频补充次数。';
+            ? "可看广告补充一种道具。每局仅可补充一次。"
+            : "本局无法通过广告补充道具。";
         this.destroyOverlay(this.toolHelpOverlay);
         this.toolHelpOverlay = this.buildOverlay(
             'DesktopToolHelpOverlay',
             TOOL_TITLES[tool],
-            `${TOOL_DESCRIPTIONS[tool]}\n\n每局免费 ${this.config.freeUsesPerTool} 次。${adRule}`,
+            `${TOOL_DESCRIPTIONS[tool]}\n\n每局可免费使用 ${this.config.freeUsesPerTool} 次。${adRule}`,
             [
                 { name: 'CloseButton', label: '知道了', tone: 'teal', action: () => this.closeToolHelp() },
             ],
@@ -3098,10 +3183,13 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.state = 'rules';
         this.inputLocked = true;
         this.destroyOverlay(this.rulesOverlay);
+        const timeLimitText = this.config.timeLimitSeconds % 60 === 0
+            ? `${this.config.timeLimitSeconds / 60} 分钟`
+            : `${this.config.timeLimitSeconds} 秒`;
         this.rulesOverlay = this.buildOverlay(
             'DesktopRulesOverlay',
-            firstTime ? '今天也来清清桌面' : '整理规则',
-            '点击物件露出的部分，把它放入 7 格收纳槽\n同类三件会自动收好，清掉上层会露出更深的物件\n在 180 秒内清空桌面',
+            firstTime ? "今天也来清理桌面" : '整理规则',
+            `点击物品，将它放入 ${this.config.slotCapacity} 格收纳槽\n凑齐三件同类物品即可消除\n在 ${timeLimitText}内清空桌面，别让收纳槽填满`,
             [
                 { name: 'StartButton', label: firstTime ? '开始整理' : '知道了', tone: 'teal', action: () => this.closeRules(firstTime) },
             ],
@@ -3385,8 +3473,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private syncSelectionHighlights(): void {
-        const highlights = Array.from(this.selectionHighlights.values());
-        highlights.forEach((highlight) => {
+        this.selectionHighlights.forEach((highlight) => {
             if (!this.syncSelectionHighlight(highlight)) {
                 if (highlight.node.isValid) this.destroyNode(highlight.node);
                 this.selectionHighlights.delete(highlight.itemId);
@@ -3442,7 +3529,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private itemHitShape(type: DesktopCleanupItemType): ItemHitPolygonShape | undefined {
-        return ITEM_HIT_POLYGONS[type];
+        return ITEM_HIT_POLYGONS[type]
+            ?? DESKTOP_CLEANUP_DESSERT_HIT_SHAPES[type]
+            ?? DESKTOP_CLEANUP_CONVENIENCE_HIT_SHAPES[type]
+            ?? DESKTOP_CLEANUP_FRUIT_HIT_SHAPES[type];
     }
 
     private settlePendingImmediately(): void {
@@ -3574,7 +3664,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const titleY = top - 164 * metrics.scale;
         const dividerY = top - 226 * metrics.scale;
         const titleLabel = this.createLabel(panel, 'Title', title, 0, titleY, 50 * metrics.scale, COLORS.ink, panelWidth - 80 * metrics.scale, 70 * metrics.scale);
-        titleLabel.isBold = true;
+        setLabelBold(titleLabel, true);
         const divider = this.createNode(panel, 'Divider', 0, dividerY, 420 * metrics.scale, 18 * metrics.scale);
         const dividerGraphics = divider.addComponent(Graphics);
         dividerGraphics.fillColor = COLORS.mustard;
@@ -3629,7 +3719,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         try {
             await action.action();
         } catch (error: unknown) {
-            console.error(`[DesktopCleanupGame] Overlay action ${action.name} failed.`, error);
+            // TODO: console.error(`[DesktopCleanupGame] Overlay action ${action.name} failed.`, error);
             if (state.root.isValid) {
                 state.busy = false;
                 state.buttons.forEach((button) => { button.interactable = true; });
@@ -3676,34 +3766,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         return button;
     }
 
-    private createSmallHelpButton(
-        parent: Node,
-        x: number,
-        y: number,
-        size: number,
-        handler: () => void,
-    ): Button {
-        const node = this.createNode(parent, 'Help', x, y, size, size);
-        const background = node.addComponent(Graphics);
-        background.fillColor = new Color(255, 247, 220, 244);
-        background.strokeColor = new Color(38, 45, 64, 165);
-        background.lineWidth = Math.max(1.5, size * 0.06);
-        background.circle(0, 0, size * 0.46);
-        background.fill();
-        background.stroke();
-        const glyph = this.createNode(node, 'Glyph', 0, 0, size * 0.66, size * 0.66);
-        this.drawHelpIcon(glyph, COLORS.ink);
-        const button = node.addComponent(Button);
-        button.transition = Button.Transition.SCALE;
-        button.zoomScale = 0.88;
-        button.duration = 0.07;
-        node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
-            event.propagationStopped = true;
-            handler();
-        }, this);
-        return button;
-    }
-
     private drawHelpIcon(node: Node, color: Color): void {
         const size = node.getComponent(UITransform)?.contentSize.width ?? 32;
         const unit = size / 32;
@@ -3726,24 +3788,6 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         graphics.fillColor = color;
         graphics.roundRect(-10 * unit, -12 * unit, 7 * unit, 24 * unit, 3 * unit);
         graphics.roundRect(3 * unit, -12 * unit, 7 * unit, 24 * unit, 3 * unit);
-        graphics.fill();
-    }
-
-    private drawClockIcon(node: Node, color: Color): void {
-        const size = node.getComponent(UITransform)?.contentSize.width ?? 40;
-        const unit = size / 40;
-        const graphics = node.addComponent(Graphics);
-        graphics.strokeColor = color;
-        graphics.fillColor = color;
-        graphics.lineWidth = Math.max(2, 3.5 * unit);
-        graphics.circle(0, -1 * unit, 15 * unit);
-        graphics.stroke();
-        graphics.moveTo(0, -1 * unit);
-        graphics.lineTo(0, 8 * unit);
-        graphics.moveTo(0, -1 * unit);
-        graphics.lineTo(7 * unit, -6 * unit);
-        graphics.stroke();
-        graphics.roundRect(-6 * unit, 15 * unit, 12 * unit, 4 * unit, 2 * unit);
         graphics.fill();
     }
 
@@ -3863,7 +3907,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
                 4,
             );
         }
-        label.isBold = true;
+        setLabelBold(label, true);
         return button;
     }
 
@@ -3910,8 +3954,8 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
 
         slices.forEach((slice) => {
             const artwork = this.createNode(node, `Artwork${slice.name}`, slice.x, 0, slice.width, height);
-            const partFrame = new SpriteFrame();
-            partFrame.texture = texture;
+            const partFrame = this.context!.services.assets.createSpriteFrame(RESOURCE_BUNDLE, texture);
+            partFrame.packable = false;
             partFrame.rect = new Rect(slice.sourceX, sourceRect.y, slice.sourceWidth, sourceRect.height);
             partFrame.originalSize = new Size(slice.sourceWidth, sourceRect.height);
             partFrame.offset = new Vec2();
@@ -4060,7 +4104,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         try {
             writeDesktopCleanupSave(storage, this.save);
         } catch (error: unknown) {
-            console.error('[DesktopCleanupGame] Save failed.', error);
+            // TODO: console.error('[DesktopCleanupGame] Save failed.', error);
         }
     }
 
@@ -4089,7 +4133,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         const opacity = node.getComponent(UIOpacity);
         if (opacity) Tween.stopAllByTarget(opacity);
         const spriteFrame = node.getComponent(Sprite)?.spriteFrame;
-        if (spriteFrame && this.popupButtonFrames.delete(spriteFrame)) spriteFrame.destroy();
+        if (spriteFrame && this.popupButtonFrames.delete(spriteFrame)) this.context?.services.assets.releaseRuntimeAsset(spriteFrame);
         node.children.slice().forEach((child) => this.destroyNode(child));
         node.removeFromParent();
         node.destroy();

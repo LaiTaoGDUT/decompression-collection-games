@@ -1,3 +1,4 @@
+import { setLabelBold } from '../../../services/font/FontBinding';
 import { BubbleShooterModalMotion } from './BubbleShooterModalMotion';
 import { BlockInputEvents, Color, EventTouch, Label, Node, Sprite, SpriteFrame, UIOpacity, UITransform, instantiate } from 'cc';
 import type { BubbleItem, BubbleShooterRound } from './BubbleShooterRound';
@@ -5,7 +6,7 @@ import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
 import { calculateVerticalSafeBounds } from '../../../shared/ui/PlatformSafeLayout';
 
 const KEYS: readonly BubbleItem[] = ['bomb', 'wildcard', 'clear-bottom'];
-const NAMES = { bomb: '炸弹球', wildcard: '万能球', 'clear-bottom': '清底' };
+const NAMES = { bomb: '炸弹球', wildcard: '万能球', 'clear-bottom': "清底道具" };
 const INK = new Color(80, 18, 61);
 
 /** Shared reward body; the current region supplies its title and Boss decoration. */
@@ -203,7 +204,7 @@ export class BubbleShooterRewardView {
 
     private label(name: string, parent: Node, text: string, x: number, y: number, w: number, h: number, size: number, color = INK): Label {
         const label = this.node(name, parent, w, h, x, y).addComponent(Label);
-        label.string = text; label.fontSize = size; label.lineHeight = size + 4; label.isBold = true;
+        label.string = text; label.fontSize = size; label.lineHeight = size + 4; setLabelBold(label, true);
         label.color = color; label.horizontalAlign = Label.HorizontalAlign.CENTER;
         label.verticalAlign = Label.VerticalAlign.CENTER; label.overflow = Label.Overflow.SHRINK; return label;
     }

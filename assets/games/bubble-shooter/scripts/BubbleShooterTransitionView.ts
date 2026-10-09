@@ -1,6 +1,6 @@
 import { BlockInputEvents, Color, Director, director, EventTouch, Graphics, Label, Node, Sprite, SpriteFrame, UITransform, UIOpacity } from 'cc';
 
-type Phase = 'idle' | 'closing' | 'covered' | 'rendering' | 'opening' | 'error';
+type Phase = 'preparing' | 'idle' | 'closing' | 'covered' | 'rendering' | 'opening' | 'error';
 
 /** Common visual layer. Resource preparation is injected; no scene or platform APIs live here. */
 export class BubbleShooterTransitionView {
@@ -29,6 +29,7 @@ export class BubbleShooterTransitionView {
     private height = 1334;
     private cloudWidth = 810;
     private bannerY = 0;
+    private safeBottomY = -667;
 
     constructor(parent: Node, cloud: SpriteFrame, banner: SpriteFrame, button: SpriteFrame, exit: () => void) {
         this.bannerRoot = this.node('BossAlertOverlay', parent);
@@ -68,7 +69,8 @@ export class BubbleShooterTransitionView {
     }
     get active(): boolean { return this.phase !== 'idle' || this.alertTime >= 0; }
     get cloudActive(): boolean { return this.phase !== 'idle'; }
-    layout(width: number, height: number, centerY: number): void {
+    layout(width: number, height: number, centerY: number, safeBottomY = -height / 2): void {
+        this.safeBottomY = safeBottomY;
         this.width = width; this.height = height; this.bannerY = centerY;
         // The matte's minimum fully opaque width is 49.2%; 1.10 screen widths guarantees overlap.
         this.cloudWidth = Math.max(width * 1.10, height / 3 * 1.03);
@@ -84,8 +86,12 @@ export class BubbleShooterTransitionView {
         this.banner.getComponent(UITransform)!.setContentSize(native.width, native.height); this.bannerScale=scale; this.banner.setScale(scale, scale, 1);
         this.errorRoot.setScale(Math.min(1, width / 750), Math.min(1, width / 750), 1);
         this.errorRoot.setPosition(0, centerY);
-        this.loadingRoot.setPosition(0, centerY - height * .12);
+        this.loadingRoot.setPosition(width / 2 - 104, safeBottomY + 42);
         this.draw();
+    }
+    setBanner(frame:SpriteFrame):void {
+        this.banner.getComponent(Sprite)!.spriteFrame=frame;
+        this.layout(this.width,this.height,this.bannerY,this.safeBottomY);
     }
     showAlert(done: () => void): void {
         if (this.active) return;
@@ -97,6 +103,11 @@ export class BubbleShooterTransitionView {
         this.prepare = prepare; this.commit = commit; this.elapsed = 0; this.phase = 'closing';
         this.root.active = true; this.root.setSiblingIndex(this.root.parent!.children.length - 1);
         this.ready = this.failed = false; this.draw(); return true;
+    }
+    /** 首次进入时立即闭合，必须由 initialize 完成后的 begin 显式揭幕。 */
+    coverPreparation(): void {
+        this.cancel(); this.phase = 'preparing'; this.root.active = true;
+        this.root.setSiblingIndex(this.root.parent!.children.length - 1); this.draw();
     }
     revealPrepared(): void {
         this.cancel(); this.phase = 'rendering'; this.rendered = 0; this.root.active = true;
@@ -110,13 +121,13 @@ export class BubbleShooterTransitionView {
             if (generation === this.generation) this.ready = true;
         }, error => {
             if (generation !== this.generation) return;
-            console.warn('[BubbleShooter] Region preparation failed; retry available.', error);
+            // TODO: console.warn('[BubbleShooter] Region preparation failed; retry available.', error);
             this.failed = true;
         });
     }
     update(dt: number): void {
         // Waiting uses real frame time; animation clamping must not stretch the one-second delay.
-        if (this.phase === 'covered' || this.phase === 'rendering') this.coveredWait += Math.max(0, dt);
+        if (this.phase === 'preparing' || this.phase === 'covered' || this.phase === 'rendering') this.coveredWait += Math.max(0, dt);
         const step = Math.max(0, Math.min(.05, dt));
         if (this.alertTime >= 0) {
             this.alertTime += step;
@@ -133,7 +144,7 @@ export class BubbleShooterTransitionView {
             if (this.failed) this.phase = 'error';
             else if (this.ready) {
                 try { this.commit?.(); this.commit = undefined; this.prepare = undefined; this.phase = 'rendering'; this.rendered = 0; }
-                catch (error) { console.warn('[BubbleShooter] Region commit failed.', error); this.phase = 'error'; }
+                catch (error) { /* TODO: console.warn('[BubbleShooter] Region commit failed.', error); */ this.phase = 'error'; }
             }
         } else if (this.phase === 'rendering' && this.rendered >= 2) { this.phase = 'opening'; this.elapsed = 0; }
         else if (this.phase === 'opening') {
@@ -150,11 +161,11 @@ export class BubbleShooterTransitionView {
         this.root.active = false; this.bannerRoot.active = false; this.errorRoot.active = false;
     }
     private draw(): void {
-        this.loadingRoot.active = (this.phase === 'covered' || this.phase === 'rendering') && this.coveredWait > 1;
+        this.loadingRoot.active = (this.phase === 'preparing' || this.phase === 'covered' || this.phase === 'rendering') && this.coveredWait > 1;
         if (this.loadingRoot.active) this.loadingDots.string = '.'.repeat(1 + Math.floor(this.coveredWait - 1) % 3);
         this.errorRoot.active = this.phase === 'error';
         this.backing.clear();
-        if (this.phase === 'covered' || this.phase === 'rendering' || this.phase === 'error') {
+        if (this.phase === 'preparing' || this.phase === 'covered' || this.phase === 'rendering' || this.phase === 'error') {
             this.backing.fillColor = Color.WHITE; this.backing.rect(-this.width / 2, -this.height / 2, this.width, this.height); this.backing.fill();
         }
         const ease = (t: number) => { const x = Math.max(0, Math.min(1, t)); return x * x * (3 - 2 * x); };

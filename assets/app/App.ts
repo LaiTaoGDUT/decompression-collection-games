@@ -6,6 +6,7 @@ import {
     find,
     Node,
     sys,
+    view,
 } from 'cc';
 import {
     createServiceToken,
@@ -17,9 +18,13 @@ import type { Platform } from '../platform/Platform';
 import { WebPlatform } from '../platform/WebPlatform';
 import { WeChatRewardedAdProvider } from '../platform/WeChatAdProvider';
 import { WeChatPlatform } from '../platform/WeChatPlatform';
+import { TapMiniGamePlatform } from '../platform/TapMiniGamePlatform';
+import { isTapMiniGameEnvironment } from '../platform/TapMiniGameApi';
+import { TapRewardedAdProvider } from '../platform/TapAdProvider';
 import { GameRegistry } from '../runtime/GameRegistry';
 import { GameLoader } from '../runtime/GameLoader';
 import { GameRuntime, type PlatformSuspension } from '../runtime/GameRuntime';
+import { FontService } from '../services/font/FontService';
 import { AssetService } from '../services/asset/AssetService';
 import { AudioService } from '../services/audio/AudioService';
 import {
@@ -36,6 +41,10 @@ import {
 import { ConfigService } from '../services/config/ConfigService';
 import { FeedbackService } from '../services/feedback/FeedbackService';
 import { StorageService } from '../services/storage/StorageService';
+import { AchievementService } from '../services/achievements/AchievementService';
+import { AchievementArtService } from '../services/achievements/AchievementArtService';
+import { AchievementAudioService } from '../services/achievements/AchievementAudioService';
+import { AchievementCelebration } from '../shared/components/AchievementCelebration';
 import { ErrorView } from '../shared/components/ErrorView';
 import { LoadingView } from '../shared/components/LoadingView';
 import { PauseView } from '../shared/components/PauseView';
@@ -51,10 +60,15 @@ export const CONFIG_SERVICE = createServiceToken<ConfigService>('ConfigService')
 export const GAME_REGISTRY_SERVICE = createServiceToken<GameRegistry>(
     'GameRegistry',
 );
+export const FONT_SERVICE = createServiceToken<FontService>('FontService');
 export const ASSET_SERVICE = createServiceToken<AssetService>('AssetService');
 export const GAME_LOADER_SERVICE = createServiceToken<GameLoader>('GameLoader');
 export const GAME_RUNTIME_SERVICE = createServiceToken<GameRuntime>('GameRuntime');
 export const STORAGE_SERVICE = createServiceToken<StorageService>('StorageService');
+export const ACHIEVEMENT_SERVICE = createServiceToken<AchievementService>('AchievementService');
+export const ACHIEVEMENT_ART_SERVICE = createServiceToken<AchievementArtService>('AchievementArtService');
+export const ACHIEVEMENT_CELEBRATION_SERVICE = createServiceToken<AchievementCelebration>('AchievementCelebration');
+export const ACHIEVEMENT_AUDIO_SERVICE = createServiceToken<AchievementAudioService>('AchievementAudioService');
 export const AUDIO_SERVICE = createServiceToken<AudioService>('AudioService');
 export const ANALYTICS_SERVICE = createServiceToken<AnalyticsService>(
     'AnalyticsService',
@@ -157,6 +171,7 @@ export class App extends Component {
         }
 
         const musicSource = this.createAudioSource(audioRoot, 'MusicChannel');
+        const crossfadeMusicSource = this.createAudioSource(audioRoot, 'MusicCrossfadeChannel');
         const effectSource = this.createAudioSource(audioRoot, 'EffectChannel');
         let effectVoiceSequence = 0;
         const audioService = new AudioService(
@@ -167,6 +182,7 @@ export class App extends Component {
                 const source = this.createAudioSource(audioRoot, `ScopedEffect-${effectVoiceSequence++}`);
                 return { channel: source, dispose: () => { source.stop(); source.clip = null; source.node.destroy(); } };
             },
+            crossfadeMusicSource,
         );
         const feedbackService = new FeedbackService(
             audioService,
@@ -186,10 +202,14 @@ export class App extends Component {
         container.register(APP_STATE_MACHINE_SERVICE, stateMachine);
         container.register(PLATFORM_SERVICE, platform);
         container.register(CONFIG_SERVICE, configService);
-        container.register(GAME_REGISTRY_SERVICE, new GameRegistry());
+        container.register(GAME_REGISTRY_SERVICE, new GameRegistry(platform.id === 'web'));
         container.register(ASSET_SERVICE, assetService);
+        container.register(FONT_SERVICE, new FontService(assetService));
         container.register(GAME_LOADER_SERVICE, gameLoader);
         container.register(STORAGE_SERVICE, storageService);
+        container.register(ACHIEVEMENT_SERVICE, new AchievementService(storageService));
+        container.register(ACHIEVEMENT_ART_SERVICE, new AchievementArtService(assetService));
+        container.register(ACHIEVEMENT_AUDIO_SERVICE, new AchievementAudioService(assetService, audioService));
         container.register(AUDIO_SERVICE, audioService);
         container.register(ANALYTICS_SERVICE, analyticsService);
         container.register(FEEDBACK_SERVICE, feedbackService);
@@ -218,6 +238,12 @@ export class App extends Component {
 
         App.activeInstance = null;
         this.clearLifecycleListeners();
+        if (this.container?.has(ACHIEVEMENT_AUDIO_SERVICE)) {
+            this.container.get(ACHIEVEMENT_AUDIO_SERVICE).dispose();
+        }
+        if (this.container?.has(ACHIEVEMENT_ART_SERVICE)) {
+            this.container.get(ACHIEVEMENT_ART_SERVICE).dispose();
+        }
 
         if (this.container?.has(STORAGE_SERVICE)) {
             this.container.get(STORAGE_SERVICE).dispose();
@@ -235,6 +261,10 @@ export class App extends Component {
             this.container.get(AUDIO_SERVICE).dispose();
         }
 
+        if (this.container?.has(FONT_SERVICE)) {
+            this.container.get(FONT_SERVICE).dispose();
+        }
+
         this.container = undefined;
 
         if (director.isPersistRootNode(this.node)) {
@@ -243,11 +273,15 @@ export class App extends Component {
     }
 
     private createPlatform(): Platform {
+        // Tap 的微信兼容环境可能仍报告 WECHAT_GAME，优先检测真实宿主能力。
+        if (isTapMiniGameEnvironment()) {
+            return new TapMiniGamePlatform();
+        }
         if (sys.platform === sys.Platform.WECHAT_GAME) {
             return new WeChatPlatform();
         }
 
-        return new WebPlatform();
+        return new WebPlatform({ getViewportSize: () => view.getVisibleSize() });
     }
 
     private async initializeApplication(): Promise<void> {
@@ -281,10 +315,15 @@ export class App extends Component {
             return;
         }
 
+        await this.services.get(FONT_SERVICE).initialize(configService.config.fonts);
+        if (App.activeInstance !== this) return;
+
         // 广告 provider 依赖已经归一化的本地配置；Runtime 则依赖完整的
         // AdService，因此二者都在平台和配置完成后创建。
         this.registerAdService();
         this.registerGameRuntime();
+        // 与清单/大厅并行准备两个短提示音；声音失败不会阻塞应用启动。
+        void this.services.get(ACHIEVEMENT_AUDIO_SERVICE).prepare().catch(() => {});
 
         await this.runStartupStage('game-catalog', async () => {
             const manifests = await configService.loadGameManifests();
@@ -301,6 +340,13 @@ export class App extends Component {
             platform.onShow(this.handlePlatformShow),
         );
 
+        // 先接通应用暂停/恢复，再开放系统分享；大厅和各小游戏共用同一组回调。
+        try {
+            platform.showShareMenu(configService.config.sharing);
+        } catch (error: unknown) {
+            console.warn('[App] Failed to enable platform sharing.', error);
+        }
+
         await this.runStartupStage(
             'lobby',
             // The persistent main-package loading surface stays visible while
@@ -316,45 +362,46 @@ export class App extends Component {
         const platform = services.get(PLATFORM_SERVICE);
         const config = services.get(CONFIG_SERVICE).config;
         const wechatAds = config.ads.wechat;
+        const useRealTapAds = platform.id === 'tap';
+        const useMockAds = config.development.mockAds && !useRealTapAds;
         const useRealWeChatAds = platform.id === 'wechat'
-            && !config.development.mockAds;
+            && !useMockAds;
         const mockRewarded = new MockRewardedAdProvider();
         const rewardedRoutes = Object.freeze([
             Object.freeze({
                 gameId: 'watermelon',
                 placement: AD_PLACEMENTS.watermelonRevive,
                 adUnitId: wechatAds.watermelonReviveRewarded.adUnitId,
-                logName: 'Watermelon revive',
             }),
             Object.freeze({
                 gameId: 'chess-endless',
                 placement: AD_PLACEMENTS.chessEndlessRevive,
                 adUnitId: wechatAds.chessEndlessReviveRewarded.adUnitId,
-                logName: 'Chess Endless revive',
             }),
             Object.freeze({
                 gameId: 'catch',
                 placement: AD_PLACEMENTS.desktopCleanupRewarded,
                 adUnitId: wechatAds.desktopCleanupRewarded.adUnitId,
-                logName: 'Desktop cleanup',
             }),
             Object.freeze({
                 gameId: 'doodle-jump',
                 placement: AD_PLACEMENTS.doodleJumpRevive,
                 adUnitId: wechatAds.doodleJumpReviveRewarded.adUnitId,
-                logName: 'Doodle Jump revive',
             }),
             Object.freeze({
                 gameId: 'bubble-shooter',
                 placement: AD_PLACEMENTS.bubbleShooterRevive,
                 adUnitId: wechatAds.bubbleShooterReviveRewarded.adUnitId,
-                logName: 'Bubble shooter revive',
             }),
             Object.freeze({
                 gameId: 'game2048',
                 placement: AD_PLACEMENTS.game2048ClearSmallTiles,
                 adUnitId: wechatAds.game2048ClearSmallTilesRewarded.adUnitId,
-                logName: '2048 clear small tiles',
+            }),
+            Object.freeze({
+                gameId: 'meowdoku',
+                placement: AD_PLACEMENTS.meowdokuTool,
+                adUnitId: wechatAds.meowdokuToolRewarded.adUnitId,
             }),
         ]);
         const gameAdEnablement: Record<string, boolean> = {};
@@ -364,15 +411,22 @@ export class App extends Component {
             gameAdEnablement[gameId] = config.ads.games[gameId]?.enabled === true;
         });
         const providers: Record<string, RewardedAdProvider> = {};
+        const tapRewarded = useRealTapAds ? new TapRewardedAdProvider({
+            adUnitId: config.ads.tap.rewardedVideo.adUnitId,
+            placements: rewardedRoutes.map((route) => route.placement),
+        }) : undefined;
         rewardedRoutes.forEach((route) => {
             const configuredEnabled = config.ads.games[route.gameId]?.enabled === true;
             gameAdEnablement[route.gameId] = configuredEnabled;
-            providers[route.placement] = useRealWeChatAds
+            // 未配置的广告位在所有平台都不可用；只有显式开启模拟广告才允许模拟奖励。
+            const adUnitId = useRealTapAds ? config.ads.tap.rewardedVideo.adUnitId : route.adUnitId;
+            if (!adUnitId.trim() && !useMockAds) return;
+            providers[route.placement] = tapRewarded ?? (useRealWeChatAds
                 ? new WeChatRewardedAdProvider({
                     placement: route.placement,
-                    adUnitId: route.adUnitId,
+                    adUnitId,
                 })
-                : mockRewarded;
+                : mockRewarded);
         });
         const rewardedProvider = new RewardedAdRouter(providers);
         const adService = new AdService(
@@ -380,9 +434,19 @@ export class App extends Component {
             rewardedProvider,
             services.get(ANALYTICS_SERVICE),
             Object.freeze(gameAdEnablement),
+            platform,
         );
         services.register(AD_SERVICE, adService);
 
+        if (useRealTapAds) {
+            // Tap 全平台共用一个激励视频实例，只预加载一次。
+            const route = rewardedRoutes.find((entry) => adService.isEnabledForGame(entry.gameId));
+            if (route) void adService.preloadRewarded({
+                placement: route.placement,
+                gameId: route.gameId,
+            }).catch(() => {});
+            return;
+        }
         if (!useRealWeChatAds) return;
 
         rewardedRoutes.forEach((route) => {
@@ -390,9 +454,7 @@ export class App extends Component {
             void adService.preloadRewarded({
                 placement: route.placement,
                 gameId: route.gameId,
-            }).catch((error: unknown) => {
-                console.warn(`[App] ${route.logName} rewarded ad preload failed.`, error);
-            });
+            }).catch(() => {});
         });
     }
 
@@ -420,9 +482,11 @@ export class App extends Component {
             services.get(GAME_LOADER_SERVICE),
             Object.freeze({
                 assets: services.get(ASSET_SERVICE),
+                fonts: services.get(FONT_SERVICE),
                 audio: services.get(AUDIO_SERVICE),
                 feedback: services.get(FEEDBACK_SERVICE),
                 storage: services.get(STORAGE_SERVICE),
+                achievements: services.get(ACHIEVEMENT_SERVICE),
                 analytics,
                 ads: services.get(AD_SERVICE),
                 platform,
@@ -437,6 +501,25 @@ export class App extends Component {
         );
 
         services.register(GAME_RUNTIME_SERVICE, runtime);
+
+        const canvas = find('Canvas', this.node);
+        if (canvas) {
+            const awardLayer = new Node('AchievementLayer');
+            awardLayer.layer = canvas.layer;
+            canvas.addChild(awardLayer);
+            const celebration = awardLayer.addComponent(AchievementCelebration);
+            celebration.configure({
+                achievements: services.get(ACHIEVEMENT_SERVICE), runtime,
+                art: services.get(ACHIEVEMENT_ART_SERVICE),
+                audio: services.get(ACHIEVEMENT_AUDIO_SERVICE),
+                stateMachine: services.get(APP_STATE_MACHINE_SERVICE), platform,
+                feedback: services.get(FEEDBACK_SERVICE),
+                manifests: () => services.get(GAME_REGISTRY_SERVICE).getPlayableGames(
+                    platform.getDeviceProfile().tier, services.get(CONFIG_SERVICE).config.appVersion,
+                    services.get(CONFIG_SERVICE).config.development.showDevelopmentGames),
+            });
+            services.register(ACHIEVEMENT_CELEBRATION_SERVICE, celebration);
+        }
     }
 
     private async runStartupStage<TValue>(
@@ -458,7 +541,7 @@ export class App extends Component {
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
 
         if (stateMachine.currentState !== 'playing') {
-            this.flushStorage('platform hide');
+            this.flushStorage();
             audio.onHide();
             return;
         }
@@ -467,19 +550,19 @@ export class App extends Component {
         // 小游戏可以拒绝暂停；一旦接受，运行层要么保留玩家可恢复的暂停界面，
         // 要么对声明 `backgroundPausePolicy === 'silent'` 的小游戏做无界面冻结，
         // 回到前台后由运行层自动继续。
-        this.platformSuspension = this.suspendActiveGame('platform hide');
+        this.platformSuspension = this.suspendActiveGame();
 
         // 先暂停 MiniGame，让 AudioService 记录“游戏自身暂停”的来源，
         // 否则 onShow 会在暂停界面之下直接恢复音乐。
-        this.flushStorage('platform hide');
+        this.flushStorage();
         audio.onHide();
     };
 
-    private suspendActiveGame(reason: string): PlatformSuspension {
+    private suspendActiveGame(): PlatformSuspension {
         try {
             return this.services.get(GAME_RUNTIME_SERVICE).suspendForPlatform();
         } catch (error: unknown) {
-            console.error(`[App] Platform safety pause failed at ${reason}.`, error);
+            // TODO: console.error('[App] Platform safety pause failed.', error);
             return 'none';
         }
     }
@@ -495,7 +578,7 @@ export class App extends Component {
         if (wasHidden
             && this.platformSuspension === 'none'
             && stateMachine.currentState === 'playing') {
-            this.platformSuspension = this.suspendActiveGame('deferred platform hide');
+            this.platformSuspension = this.suspendActiveGame();
         }
 
         const suspension = this.platformSuspension;
@@ -507,7 +590,7 @@ export class App extends Component {
             try {
                 this.services.get(GAME_RUNTIME_SERVICE).resumeFromPlatformSuspension();
             } catch (error: unknown) {
-                console.error('[App] Silent platform resume failed.', error);
+                // TODO: console.error('[App] Silent platform resume failed.', error);
             }
         }
 
@@ -525,12 +608,12 @@ export class App extends Component {
         this.platformSuspension = 'none';
     }
 
-    private flushStorage(reason: string): void {
+    private flushStorage(): void {
         try {
             this.services.get(STORAGE_SERVICE).flush();
         } catch (error: unknown) {
             // 切后台不能因存储异常阻断音频暂停和平台生命周期。
-            console.error(`[App] Storage flush failed at ${reason}.`, error);
+            // TODO: console.error('[App] Storage flush failed.', error);
         }
     }
 
@@ -559,7 +642,7 @@ export class App extends Component {
         const stateMachine = this.services.get(APP_STATE_MACHINE_SERVICE);
         stateMachine.transition('error');
         this.showStartupFailure();
-        console.error(`[App] Startup failed at ${stage}: ${message}`, cause);
+        // TODO: console.error(`[App] Startup failed at ${stage}: ${message}`, cause);
     }
 
     private showStartupFailure(): void {
@@ -567,12 +650,12 @@ export class App extends Component {
         const loadingView = find('Canvas/LoadingLayer', this.node)?.getComponent(LoadingView);
         loadingView?.hide();
         if (!errorView) {
-            console.error('[App] Startup error dialog is missing.');
+            // TODO: console.error('[App] Startup error dialog is missing.');
             return;
         }
         errorView.show(Object.freeze({
             title: '启动失败',
-            message: '暂时无法完成初始化\n请稍后重新进入游戏',
+            message: "游戏暂时无法启动\n请稍后重新进入",
         }));
     }
 }

@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "407057bb-b00f-5100-95c1-38112141e8f1",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "3a9b4": {
+      "importer": "sprite-frame",
+      "uuid": "407057bb-b00f-5100-95c1-38112141e8f1@3a9b4",
+      "displayName": "",
+      "id": "3a9b4",
+      "name": "vfx_reward_chest_closed",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 420,
+        "height": 340,
+        "rawWidth": 420,
+        "rawHeight": 340,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "cde8999c-d809-504d-a6cb-cd55ac7d0304@6c48a",
+        "atlasUuid": "407057bb-b00f-5100-95c1-38112141e8f1",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "1b515": {
+      "importer": "sprite-frame",
+      "uuid": "407057bb-b00f-5100-95c1-38112141e8f1@1b515",
+      "displayName": "",
+      "id": "1b515",
+      "name": "vfx_reward_chest_open",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 426,
+        "trimY": 2,
+        "width": 420,
+        "height": 340,
+        "rawWidth": 420,
+        "rawHeight": 340,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "cde8999c-d809-504d-a6cb-cd55ac7d0304@6c48a",
+        "atlasUuid": "407057bb-b00f-5100-95c1-38112141e8f1",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "chess-reward-chest.png",
+    "format": 2,
+    "uuid": "407057bb-b00f-5100-95c1-38112141e8f1",
+    "textureUuid": "cde8999c-d809-504d-a6cb-cd55ac7d0304@6c48a"
+  }
+}

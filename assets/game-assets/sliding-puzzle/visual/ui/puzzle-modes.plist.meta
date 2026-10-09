@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "7c142b4f-240f-5692-acd9-80fc7b6e693c",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "e602e": {
+      "importer": "sprite-frame",
+      "uuid": "7c142b4f-240f-5692-acd9-80fc7b6e693c@e602e",
+      "displayName": "",
+      "id": "e602e",
+      "name": "pz1-display-mode-number-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 320,
+        "height": 98,
+        "rawWidth": 320,
+        "rawHeight": 98,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7c5a6ff-7a41-5064-8273-ba43104cd85b@6c48a",
+        "atlasUuid": "7c142b4f-240f-5692-acd9-80fc7b6e693c",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f5512": {
+      "importer": "sprite-frame",
+      "uuid": "7c142b4f-240f-5692-acd9-80fc7b6e693c@f5512",
+      "displayName": "",
+      "id": "f5512",
+      "name": "pz1-display-mode-original-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 326,
+        "trimY": 2,
+        "width": 320,
+        "height": 98,
+        "rawWidth": 320,
+        "rawHeight": 98,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d7c5a6ff-7a41-5064-8273-ba43104cd85b@6c48a",
+        "atlasUuid": "7c142b4f-240f-5692-acd9-80fc7b6e693c",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "puzzle-modes.png",
+    "format": 2,
+    "uuid": "7c142b4f-240f-5692-acd9-80fc7b6e693c",
+    "textureUuid": "d7c5a6ff-7a41-5064-8273-ba43104cd85b@6c48a"
+  }
+}

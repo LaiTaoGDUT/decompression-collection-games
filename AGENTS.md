@@ -40,9 +40,10 @@
 
 - 大厅和每个小游戏都是独立的视觉单元，必须分别定义并冻结自己的主题名称、设计关键词、色板、字体层级、构图、控件造型、图标、材质、动效和声音方向。新增小游戏不能默认继承大厅或已有小游戏的视觉体系。
 
-### Auto Atlas（`.pac`）合图规则
+### Sprite 图集制作
 
-- Auto Atlas 只在“同一个游戏 Bundle、同一个视觉模块、会一起使用”的小型 SpriteFrame 集合中使用，例如 HUD 图标、道具图标、棋子、数字方块和连续动画帧；不要按文件所在目录机械合图，也不要跨游戏、跨大厅/游戏 Bundle 合图。
+- 新增或更新小游戏 Sprite 图集，统一使用 [sprite-atlas-sources/build.py](sprite-atlas-sources/build.py) 生成；不要手工修改成品图集或恢复 Bundle 内的源散图。
+- 原始图片、原始 `.meta` 和原图集定义保存在 `sprite-atlas-sources/<游戏>/visual/<模块>`，位于 `assets` 外；保存源图片不会自动执行合图。
 
 ## 改动完成门槛
 

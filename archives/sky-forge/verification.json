@@ -1,0 +1,54 @@
+{
+  "verifiedDate": "2026-10-09",
+  "status": "passed",
+  "snapshotFiles": 2068,
+  "snapshotBytes": 282211110,
+  "runtimeFiles": 1265,
+  "checks": {
+    "snapshotSizeAndSha256": "passed",
+    "restorePreflightInCurrentWorkspace": "passed",
+    "fullRestoreInIsolatedDirectory": "passed",
+    "restoredFileSha256": "passed",
+    "restoredRegistrationsMatchBeforeSnapshot": "passed",
+    "unrelatedFutureChangePreservedDuringRestore": "passed",
+    "conflictingDestinationRejectedBeforeWrites": "passed",
+    "typescriptNoEmit": "passed",
+    "gameBundleOwnershipAndManifest": "passed",
+    "gitDiffCheck": "passed",
+    "noSkyForgeReferencesInActiveAssetsAndSettings": "passed",
+    "archiveNotExcludedByGitIgnore": "passed",
+    "cocosCreatorStdioAssetRefresh": "passed",
+    "auxiliaryZipContainerSha256": "passed",
+    "auxiliaryZipEntriesSizeAndSha256": "passed",
+    "compressedFullRestoreInIsolatedDirectory": "passed",
+    "compressedRestoreModesAndModificationTimes": "passed",
+    "compressedDestinationConflictRejectedBeforeExtraction": "passed",
+    "looseAuxiliaryCopiesRemovedAfterVerification": "passed",
+    "allZipFilesBelowGitHub100MiBLimit": "passed",
+    "unrelatedGitIndexPreserved": "passed"
+  },
+  "cocosRefresh": {
+    "tool": "assetAdvanced_asset_system",
+    "action": "refresh",
+    "folder": "db://assets",
+    "success": true
+  },
+  "activeGames": 8,
+  "releaseBuildRebuilt": false,
+  "gitCommitCreated": false,
+  "auxiliaryPacking": {
+    "packedFiles": 798,
+    "zipFiles": 3,
+    "zipPaths": [
+      "auxiliary-01.zip",
+      "auxiliary-02.zip",
+      "auxiliary-03.zip"
+    ],
+    "uncompressedBytes": 268273447,
+    "compressedBytes": 257827688,
+    "archiveFilesBefore": 2076,
+    "archiveFilesAfter": 1281,
+    "fileCountReducedBy": 795,
+    "sizeLimitSource": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github"
+  }
+}

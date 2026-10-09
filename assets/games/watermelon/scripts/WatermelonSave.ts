@@ -1,7 +1,7 @@
 import type { GameSaveData } from '../../../services/storage/StorageService';
 import type { WatermelonProgressSnapshot } from './WatermelonScoring';
 
-export const WATERMELON_DATA_VERSION = 4;
+export const WATERMELON_DATA_VERSION = 5;
 
 export interface WatermelonRoundSaveStats {
     readonly continueOffered: boolean;
@@ -15,31 +15,32 @@ function readInteger(value: unknown, min: number, max = Number.MAX_SAFE_INTEGER)
 }
 
 function readCustomCount(data: GameSaveData | undefined, key: string): number {
-    return readInteger(data?.custom?.[key], 0);
+    return readInteger(data?.dataVersion === WATERMELON_DATA_VERSION ? data.custom?.[key] : undefined, 0);
 }
 
 export function readSavedMaxLevel(data?: GameSaveData): number {
-    return readInteger(data?.custom?.maxFruitLevel, 0, 10);
+    return readInteger(data?.dataVersion === WATERMELON_DATA_VERSION ? data.custom?.maxFruitLevel : undefined, 0, 10);
 }
 
-/** 将旧游戏存档按字段迁移；未知自定义字段保留，缺失统计安全补零。 */
+/** 仅接受当前版本的进度；其他版本从新档开始。 */
 export function normalizeWatermelonSave(
     previous: GameSaveData | undefined,
 ): GameSaveData {
+    const current = previous?.dataVersion === WATERMELON_DATA_VERSION ? previous : undefined;
     return Object.freeze({
         dataVersion: WATERMELON_DATA_VERSION,
-        playCount: readInteger(previous?.playCount, 0),
-        ...(previous?.highScore === undefined
+        playCount: readInteger(current?.playCount, 0),
+        ...(current?.highScore === undefined
             ? {}
-            : { highScore: Math.max(0, previous.highScore) }),
-        ...(previous?.lastPlayedAt === undefined
+            : { highScore: Math.max(0, current.highScore) }),
+        ...(current?.lastPlayedAt === undefined
             ? {}
-            : { lastPlayedAt: Math.max(0, previous.lastPlayedAt) }),
+            : { lastPlayedAt: Math.max(0, current.lastPlayedAt) }),
         custom: Object.freeze({
-            ...(previous?.custom ?? {}),
-            maxFruitLevel: readSavedMaxLevel(previous),
-            continueOfferCount: readCustomCount(previous, 'continueOfferCount'),
-            continueCompletedCount: readCustomCount(previous, 'continueCompletedCount'),
+            maxFruitLevel: readSavedMaxLevel(current),
+            continueOfferCount: readCustomCount(current, 'continueOfferCount'),
+            continueCompletedCount: readCustomCount(current, 'continueCompletedCount'),
+            ...(current?.custom?.activeRound === undefined ? {} : { activeRound: current.custom.activeRound }),
         }),
     });
 }
@@ -48,10 +49,10 @@ export function createStartedWatermelonSave(
     previous: GameSaveData | undefined,
     now: number,
 ): GameSaveData {
-    const migrated = normalizeWatermelonSave(previous);
+    const current = normalizeWatermelonSave(previous);
     return Object.freeze({
-        ...migrated,
-        playCount: migrated.playCount + 1,
+        ...current,
+        playCount: current.playCount + 1,
         lastPlayedAt: Math.max(0, now),
     });
 }
@@ -61,11 +62,11 @@ export function refreshWatermelonHighScore(
     previous: GameSaveData,
     score: number,
 ): GameSaveData {
-    const migrated = normalizeWatermelonSave(previous);
+    const current = normalizeWatermelonSave(previous);
     const safeScore = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
     return Object.freeze({
-        ...migrated,
-        highScore: Math.max(migrated.highScore ?? 0, safeScore),
+        ...current,
+        highScore: Math.max(current.highScore ?? 0, safeScore),
     });
 }
 
@@ -77,19 +78,19 @@ export function refreshCompletedWatermelonSave(
         continueCompleted: false,
     },
 ): GameSaveData {
-    const migrated = normalizeWatermelonSave(previous);
-    const highScore = Math.max(migrated.highScore ?? 0, result.score);
-    const maxFruitLevel = Math.max(readSavedMaxLevel(migrated), result.maxFruitLevel);
-    const offerCount = readCustomCount(migrated, 'continueOfferCount')
+    const current = normalizeWatermelonSave(previous);
+    const highScore = Math.max(current.highScore ?? 0, result.score);
+    const maxFruitLevel = Math.max(readSavedMaxLevel(current), result.maxFruitLevel);
+    const offerCount = readCustomCount(current, 'continueOfferCount')
         + (stats.continueOffered ? 1 : 0);
-    const completedCount = readCustomCount(migrated, 'continueCompletedCount')
+    const completedCount = readCustomCount(current, 'continueCompletedCount')
         + (stats.continueCompleted ? 1 : 0);
 
     return Object.freeze({
-        ...migrated,
+        ...current,
         highScore,
         custom: Object.freeze({
-            ...(migrated.custom ?? {}),
+            ...(current.custom ?? {}),
             maxFruitLevel,
             continueOfferCount: offerCount,
             continueCompletedCount: completedCount,

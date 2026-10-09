@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "7060db78-865f-42ba-af73-040fea31678b",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "e7ac4": {
+      "importer": "sprite-frame",
+      "uuid": "7060db78-865f-42ba-af73-040fea31678b@e7ac4",
+      "displayName": "",
+      "id": "e7ac4",
+      "name": "canopy",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 788,
+        "height": 261,
+        "rawWidth": 788,
+        "rawHeight": 261,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "1648f36a-0aab-4be6-9a16-cfa8c0ff0b1e@6c48a",
+        "atlasUuid": "7060db78-865f-42ba-af73-040fea31678b",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "canopy-v3.png",
+    "format": 2,
+    "uuid": "7060db78-865f-42ba-af73-040fea31678b",
+    "textureUuid": "1648f36a-0aab-4be6-9a16-cfa8c0ff0b1e@6c48a"
+  }
+}

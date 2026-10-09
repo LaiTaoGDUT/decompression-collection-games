@@ -1,0 +1,155 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "d6045": {
+      "importer": "sprite-frame",
+      "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@d6045",
+      "displayName": "",
+      "id": "d6045",
+      "name": "aim-reticle-trimmed",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 674,
+        "trimY": 2,
+        "width": 233,
+        "height": 237,
+        "rawWidth": 233,
+        "rawHeight": 237,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b19461ff-e549-5c82-89ac-1b7bbbf4d375@6c48a",
+        "atlasUuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "5f3bd": {
+      "importer": "sprite-frame",
+      "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@5f3bd",
+      "displayName": "",
+      "id": "5f3bd",
+      "name": "paper-plane-trail",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 353,
+        "height": 79,
+        "rawWidth": 353,
+        "rawHeight": 79,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b19461ff-e549-5c82-89ac-1b7bbbf4d375@6c48a",
+        "atlasUuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c82c9": {
+      "importer": "sprite-frame",
+      "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@c82c9",
+      "displayName": "",
+      "id": "c82c9",
+      "name": "paper-plane-trimmed",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 359,
+        "trimY": 2,
+        "width": 311,
+        "height": 219,
+        "rawWidth": 311,
+        "rawHeight": 219,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b19461ff-e549-5c82-89ac-1b7bbbf4d375@6c48a",
+        "atlasUuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-projectiles.png",
+    "format": 2,
+    "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a",
+    "textureUuid": "b19461ff-e549-5c82-89ac-1b7bbbf4d375@6c48a"
+  }
+}

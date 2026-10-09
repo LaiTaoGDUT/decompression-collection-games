@@ -103,6 +103,8 @@ function isFlightPower(type: DoodleJumpItemType): type is DoodleJumpFlightPower 
     return FLIGHT_TYPES.indexOf(type as DoodleJumpFlightPower) >= 0;
 }
 
+const EMPTY_EVENTS: readonly DoodleJumpItemEvent[] = Object.freeze([]);
+
 export class DoodleJumpItemSystem {
     private readonly items: MutableItem[] = [];
     private readonly evaluatedPlatformIds = new Set<string>();
@@ -117,6 +119,7 @@ export class DoodleJumpItemSystem {
         itemPickupCount: 0,
         usedHeadStart: false,
     };
+    private readonly physicsByPower: Readonly<Record<'none' | 'head-start' | DoodleJumpFlightPower, DoodleJumpItemPhysics>>;
     private nextItemId = 1;
     private landingPower?: DoodleJumpLandingPower;
     private flightPower?: DoodleJumpFlightPower;
@@ -132,7 +135,29 @@ export class DoodleJumpItemSystem {
     constructor(
         private readonly config: DoodleJumpGameplayConfig,
         private readonly randomStreams: DoodleJumpRandomStreams,
-    ) {}
+    ) {
+        // 同一局的配置不可变，按道具状态复用只读物理参数。
+        this.physicsByPower = Object.freeze({
+            'none': Object.freeze({ gravity: config.player.gravity, platformCollisionEnabled: true }),
+            'head-start': Object.freeze({
+                gravity: 0, fixedVerticalVelocity: config.items.headStart.verticalVelocity,
+                platformCollisionEnabled: false,
+            }),
+            'jetpack': Object.freeze({
+                gravity: 0, fixedVerticalVelocity: config.items.jetpack.verticalVelocity,
+                platformCollisionEnabled: false,
+            }),
+            'rocket': Object.freeze({
+                gravity: 0, fixedVerticalVelocity: config.items.rocket.verticalVelocity,
+                platformCollisionEnabled: false,
+            }),
+            'propeller-hat': Object.freeze({
+                gravity: -config.items.propellerHat.gravity,
+                minimumVerticalVelocity: config.items.propellerHat.minimumVerticalVelocity,
+                platformCollisionEnabled: true,
+            }),
+        });
+    }
 
     reset(): void {
         this.items.length = 0;
@@ -280,38 +305,11 @@ export class DoodleJumpItemSystem {
     }
 
     getPhysics(): DoodleJumpItemPhysics {
-        if (this.headStartRemainingSeconds > 0) {
-            return Object.freeze({
-                gravity: 0,
-                fixedVerticalVelocity: this.config.items.headStart.verticalVelocity,
-                platformCollisionEnabled: false,
-            });
+        if (this.headStartRemainingSeconds > 0) return this.physicsByPower['head-start'];
+        if (this.flightPower && this.flightRemainingSeconds > 0) {
+            return this.physicsByPower[this.flightPower];
         }
-        if (this.flightPower === 'jetpack' && this.flightRemainingSeconds > 0) {
-            return Object.freeze({
-                gravity: 0,
-                fixedVerticalVelocity: this.config.items.jetpack.verticalVelocity,
-                platformCollisionEnabled: false,
-            });
-        }
-        if (this.flightPower === 'rocket' && this.flightRemainingSeconds > 0) {
-            return Object.freeze({
-                gravity: 0,
-                fixedVerticalVelocity: this.config.items.rocket.verticalVelocity,
-                platformCollisionEnabled: false,
-            });
-        }
-        if (this.flightPower === 'propeller-hat' && this.flightRemainingSeconds > 0) {
-            return Object.freeze({
-                gravity: -this.config.items.propellerHat.gravity,
-                minimumVerticalVelocity: this.config.items.propellerHat.minimumVerticalVelocity,
-                platformCollisionEnabled: true,
-            });
-        }
-        return Object.freeze({
-            gravity: this.config.player.gravity,
-            platformCollisionEnabled: true,
-        });
+        return this.physicsByPower.none;
     }
 
     consumeLandingPower(x: number, y: number): number | undefined {
@@ -378,7 +376,7 @@ export class DoodleJumpItemSystem {
     }
 
     drainEvents(): readonly DoodleJumpItemEvent[] {
-        if (this.events.length === 0) return Object.freeze([]);
+        if (this.events.length === 0) return EMPTY_EVENTS;
         return Object.freeze(this.events.splice(0, this.events.length));
     }
 
@@ -570,9 +568,8 @@ export class DoodleJumpItemSystem {
         cameraTopY: number,
         occupiedBodies: readonly DoodleJumpItemOccupiedBody[],
     ): void {
-        if (!this.config.items.enabled || this.items.length >= this.config.items.maximumActive) return;
+        if (!this.config.items.enabled) return;
         for (let index = 0; index < platforms.length; index += 1) {
-            if (this.items.length >= this.config.items.maximumActive) return;
             const platform = platforms[index];
             if (this.evaluatedPlatformIds.has(platform.id)) continue;
             if (platform.y < cameraBottomY
@@ -581,13 +578,14 @@ export class DoodleJumpItemSystem {
                 continue;
             }
             this.evaluatedPlatformIds.add(platform.id);
-            if (!platform.collisionEnabled
+            if (platform.spawnPlan?.content !== 'item'
+                || this.items.length >= this.config.items.maximumActive
+                || !platform.collisionEnabled
                 || platform.consumed
                 || platform.type === 'breakable'
                 || platform.type === 'disappearing'
                 || platform.type === 'exploding') continue;
             if (occupiedBodies.some((body) => body.anchorPlatformId === platform.id)) continue;
-            if (this.randomStreams.next('item') >= this.config.items.spawnChancePerPlatform) continue;
             const heightMeters = Math.max(0, (platform.y - this.startWorldY()) / 100);
             const type = this.pickItemType(heightMeters);
             if (!type) continue;
@@ -648,7 +646,8 @@ export class DoodleJumpItemSystem {
         const radius = this.config.items.pickupRadius;
         const safeHalfWidth = Math.max(0, platform.width / 2 - radius - 8);
         const offsetX = (this.randomStreams.next('item') * 2 - 1) * safeHalfWidth;
-        const offsetY = this.config.items.minimumAbovePlatform
+        const offsetY = type === 'spring' || type === 'trampoline' ? radius
+            : this.config.items.minimumAbovePlatform
             + this.randomStreams.next('item')
             * (this.config.items.maximumAbovePlatform - this.config.items.minimumAbovePlatform);
         const x = platform.x + offsetX;

@@ -1,14 +1,14 @@
-import { assetManager, AudioClip } from 'cc';
+import type { AudioClip } from 'cc';
+import type { AssetService } from '../asset/AssetService';
 import type { FeedbackCue, FeedbackService } from '../feedback/FeedbackService';
 import type { AudioService } from './AudioService';
 
 type AudioCuePath = string | readonly string[];
-type AudioBundle = ReturnType<typeof assetManager.getBundle> extends infer T
-    ? NonNullable<T>
-    : never;
 
 export interface BundleAudioBankConfig {
     readonly bundle: string;
+    /** 大厅始终准备音频，允许在大厅设置中即时开启。 */
+    readonly alwaysLoad?: boolean;
     readonly music?: string;
     /** Future music may be registered before the clip is shipped. */
     readonly optionalMusic?: string;
@@ -18,50 +18,64 @@ export interface BundleAudioBankConfig {
      * A missing optional clip does not invalidate the rest of the audio bank.
      */
     readonly optionalCues?: Readonly<Partial<Record<FeedbackCue, AudioCuePath>>>;
-    /** Defaults to true. Games with intentionally deferred audio may disable optional warnings. */
-    readonly logOptionalFailures?: boolean;
 }
 
 /** 一个场景/Bundle 持有的音乐与 Cue 注册；dispose 后不再保留 AudioClip 引用。 */
 export class BundleAudioBank {
     private registered: FeedbackCue[] = [];
     private disposed = false;
+    private musicClip?: AudioClip;
+    private musicOverride?: AudioClip;
 
     constructor(
         private readonly config: BundleAudioBankConfig,
         private readonly audio: AudioService,
         private readonly feedback: FeedbackService,
+        private readonly assets: AssetService,
     ) {}
 
     async initialize(): Promise<void> {
-        const bundle = assetManager.getBundle(this.config.bundle);
-        if (!bundle) throw new Error(`Audio bundle unavailable: ${this.config.bundle}.`);
+        if (this.disposed) return;
+        const loadMusic = this.config.alwaysLoad || this.audio.isMusicEnabled;
+        const loadSound = this.config.alwaysLoad || this.audio.isSoundEnabled;
 
-        if (this.config.music) {
-            const music = await this.loadClip(bundle, this.config.music);
-            if (this.disposed) return;
-            this.audio.playMusic(music);
-        } else if (this.config.optionalMusic) {
-            try {
-                const music = await this.loadClip(bundle, this.config.optionalMusic);
-                if (this.disposed) return;
-                this.audio.playMusic(music);
-            } catch (error: unknown) {
-                this.logOptionalFailure([this.config.optionalMusic], error);
+        const tasks: Promise<void>[] = [];
+        if (loadMusic) tasks.push(this.initializeMusic());
+        if (loadSound) {
+            for (const cue of Object.keys(this.config.cues) as FeedbackCue[]) {
+                const configured = this.config.cues[cue];
+                if (configured) tasks.push(this.loadAndRegisterCue(cue, configured, false));
+            }
+            for (const cue of Object.keys(this.config.optionalCues ?? {}) as FeedbackCue[]) {
+                const configured = this.config.optionalCues?.[cue];
+                if (configured) tasks.push(this.loadAndRegisterCue(cue, configured, true));
             }
         }
+        await Promise.all(tasks);
+    }
 
-        for (const cue of Object.keys(this.config.cues) as FeedbackCue[]) {
-            const configured = this.config.cues[cue];
-            if (!configured) continue;
-            await this.loadAndRegisterCue(bundle, cue, configured, false);
+    private async initializeMusic(): Promise<void> {
+        const path = this.config.music ?? this.config.optionalMusic;
+        if (!path) return;
+        try {
+            const music = await this.loadClip(path);
+            if (!this.disposed) {
+                this.musicClip = music;
+                // 页面覆盖音乐时，迟到的场景音乐加载只能缓存，不能抢回播放权。
+                if (!this.musicOverride) this.audio.playMusic(music);
+            }
+        } catch (error: unknown) {
+            if (this.config.music) throw error;
         }
+    }
 
-        for (const cue of Object.keys(this.config.optionalCues ?? {}) as FeedbackCue[]) {
-            const configured = this.config.optionalCues?.[cue];
-            if (!configured) continue;
-            await this.loadAndRegisterCue(bundle, cue, configured, true);
-        }
+    /** 场景内页面覆盖背景音乐；清空覆盖后恢复场景曲目，支持加载完成前快速返回。 */
+    setMusicOverride(clip?: AudioClip): void {
+        if (this.disposed) return;
+        this.musicOverride = clip;
+        const selected = clip ?? this.musicClip;
+        if (selected) this.audio.transitionMusic(selected, { fadeOutSeconds: .6, fadeInSeconds: .8 });
+        else this.audio.stopMusic();
     }
 
     dispose(): void {
@@ -70,10 +84,11 @@ export class BundleAudioBank {
         this.audio.stopMusic();
         this.registered.forEach((cue) => this.feedback.unregisterSound(cue));
         this.registered = [];
+        this.musicClip = undefined;
+        this.musicOverride = undefined;
     }
 
     private async loadAndRegisterCue(
-        bundle: AudioBundle,
         cue: FeedbackCue,
         configured: AudioCuePath,
         optional: boolean,
@@ -81,27 +96,16 @@ export class BundleAudioBank {
         const paths = typeof configured === 'string' ? [configured] : configured;
 
         try {
-            const clips = await Promise.all(paths.map((assetPath) => this.loadClip(bundle, assetPath)));
+            const clips = await Promise.all(paths.map((assetPath) => this.loadClip(assetPath)));
             if (this.disposed) return;
             this.feedback.registerSounds(cue, clips);
             this.registered.push(cue);
         } catch (error: unknown) {
             if (!optional) throw error;
-            this.logOptionalFailure(paths, error);
         }
     }
 
-    private logOptionalFailure(paths: readonly string[], error: unknown): void {
-        if (this.config.logOptionalFailures === false) return;
-        console.warn(
-            `[BundleAudioBank] Optional audio unavailable: ${this.config.bundle}/${paths.join(', ')}`,
-            error,
-        );
-    }
-
-    private loadClip(bundle: AudioBundle, assetPath: string): Promise<AudioClip> {
-        return new Promise((resolve, reject) => {
-            bundle.load(assetPath, AudioClip, (error, clip) => error ? reject(error) : resolve(clip));
-        });
+    private loadClip(assetPath: string): Promise<AudioClip> {
+        return this.assets.loadAudioClip(this.config.bundle, assetPath);
     }
 }

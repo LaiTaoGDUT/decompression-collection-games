@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "72f12006-7c25-5dc3-8793-cdf1ab307c5c",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "b5a75": {
+      "importer": "sprite-frame",
+      "uuid": "72f12006-7c25-5dc3-8793-cdf1ab307c5c@b5a75",
+      "displayName": "",
+      "id": "b5a75",
+      "name": "black-hole-core",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 257,
+        "trimY": 2,
+        "width": 193,
+        "height": 195,
+        "rawWidth": 193,
+        "rawHeight": 195,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "da63b626-ecc2-51f1-b1fb-bcb20c4d3d81@6c48a",
+        "atlasUuid": "72f12006-7c25-5dc3-8793-cdf1ab307c5c",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "e6e26": {
+      "importer": "sprite-frame",
+      "uuid": "72f12006-7c25-5dc3-8793-cdf1ab307c5c@e6e26",
+      "displayName": "",
+      "id": "e6e26",
+      "name": "black-hole-ring",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 251,
+        "height": 241,
+        "rawWidth": 251,
+        "rawHeight": 241,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "da63b626-ecc2-51f1-b1fb-bcb20c4d3d81@6c48a",
+        "atlasUuid": "72f12006-7c25-5dc3-8793-cdf1ab307c5c",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-black-hole.png",
+    "format": 2,
+    "uuid": "72f12006-7c25-5dc3-8793-cdf1ab307c5c",
+    "textureUuid": "da63b626-ecc2-51f1-b1fb-bcb20c4d3d81@6c48a"
+  }
+}

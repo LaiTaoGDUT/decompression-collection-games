@@ -1,0 +1,123 @@
+--- a/assets/resources/configs/games.json
++++ b/assets/resources/configs/games.json
+@@ -270,6 +270,37 @@
+         "trophy": "rook",
+         "color": "#5EAA94"
+       }
++    },
++    {
++      "id": "sky-forge",
++      "version": "1.0.0",
++      "name": "苍穹铸翼",
++      "description": "12 架会改变玩法的像素战机，单手 3 分钟一关的弹幕冒险",
++      "bundle": "game-sky-forge",
++      "resourceBundle": "game-sky-forge-assets",
++      "scene": "scenes/SkyForge",
++      "entryComponent": "SkyForgeGame",
++      "cover": "visual/covers/sky-forge/sky-forge-cover-v2/texture",
++      "orientation": "portrait",
++      "renderMode": "2d",
++      "minimumDeviceTier": "low",
++      "minAppVersion": "0.1.0",
++      "enabled": true,
++      "visibility": "development",
++      "preload": [],
++      "tags": [
++        "shooter",
++        "endless",
++        "action"
++      ],
++      "resourceDirectories": [
++        "visual/boot",
++        "visual/planes",
++        "visual/combat",
++        "visual/maps",
++        "visual/chapters",
++        "visual/bosses"
++      ]
+     }
+   ]
+ }
+--- a/assets/resources/configs/app.json
++++ b/assets/resources/configs/app.json
+@@ -109,6 +109,9 @@
+       },
+       "meowdoku": {
+         "enabled": true
++      },
++      "sky-forge": {
++        "enabled": true
+       }
+     },
+     "tap": {
+@@ -137,6 +140,12 @@
+       },
+       "meowdokuToolRewarded": {
+         "adUnitId": ""
++      },
++      "skyForgeReviveRewarded": {
++        "adUnitId": ""
++      },
++      "skyForgeDoubleGoldRewarded": {
++        "adUnitId": ""
+       }
+     }
+   },
+--- a/assets/app/App.ts
++++ b/assets/app/App.ts
+@@ -403,6 +403,16 @@
+                 placement: AD_PLACEMENTS.meowdokuTool,
+                 adUnitId: wechatAds.meowdokuToolRewarded.adUnitId,
+             }),
++            Object.freeze({
++                gameId: 'sky-forge',
++                placement: AD_PLACEMENTS.skyForgeRevive,
++                adUnitId: wechatAds.skyForgeReviveRewarded.adUnitId,
++            }),
++            Object.freeze({
++                gameId: 'sky-forge',
++                placement: AD_PLACEMENTS.skyForgeDoubleGold,
++                adUnitId: wechatAds.skyForgeDoubleGoldRewarded.adUnitId,
++            }),
+         ]);
+         const gameAdEnablement: Record<string, boolean> = {};
+         Object.keys(config.ads.games).forEach((gameId) => {
+--- a/assets/app/AppConfig.ts
++++ b/assets/app/AppConfig.ts
+@@ -51,6 +51,8 @@
+     readonly bubbleShooterReviveRewarded: AdPlacementConfig;
+     readonly game2048ClearSmallTilesRewarded: AdPlacementConfig;
+     readonly meowdokuToolRewarded: AdPlacementConfig;
++    readonly skyForgeReviveRewarded: AdPlacementConfig;
++    readonly skyForgeDoubleGoldRewarded: AdPlacementConfig;
+ }
+ 
+ export interface AdsConfig {
+@@ -203,6 +205,7 @@
+             'doodle-jump': { enabled: true },
+             'bubble-shooter': { enabled: true },
+             meowdoku: { enabled: true },
++            'sky-forge': { enabled: true },
+         },
+         wechat: {
+             watermelonReviveRewarded: {
+@@ -226,6 +229,8 @@
+             meowdokuToolRewarded: {
+                 adUnitId: '',
+             },
++            skyForgeReviveRewarded: { adUnitId: '' },
++            skyForgeDoubleGoldRewarded: { adUnitId: '' },
+         },
+         tap: { rewardedVideo: { adUnitId: '' } },
+     },
+--- a/assets/services/ads/AdService.ts
++++ b/assets/services/ads/AdService.ts
+@@ -10,6 +10,8 @@
+     bubbleShooterRevive: 'bubble-shooter-revive',
+     game2048ClearSmallTiles: 'game2048-clear-small-tiles',
+     meowdokuTool: 'meowdoku-tool',
++    skyForgeRevive: 'sky-forge-revive',
++    skyForgeDoubleGold: 'sky-forge-double-gold',
+ } as const);
+ 
+ export type AdOutcome = 'completed' | 'skipped' | 'failed';

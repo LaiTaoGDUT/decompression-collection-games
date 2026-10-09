@@ -16,11 +16,24 @@ export type FeedbackCue =
     | 'danger'
     | 'failure'
     | 'continue'
-    | 'record';
+    | 'record'
+    /** 连击鼓励语（原作 `combo_voice`）：`voice1` = Nice … `voice10` = Breathtaking。 */
+    | 'voice1'
+    | 'voice2'
+    | 'voice3'
+    | 'voice4'
+    | 'voice5'
+    | 'voice6'
+    | 'voice7'
+    | 'voice8'
+    | 'voice9'
+    | 'voice10';
 
 export interface FeedbackPlayOptions {
     /** 保留音效，仅在当前反馈上关闭平台振动。 */
     readonly vibrate?: boolean;
+    /** 本次播放的音量（0-1），默认 1；仅影响音效，不影响振动。 */
+    readonly volume?: number;
 }
 
 /** 小游戏反馈公共边界：玩法不直接调用音频实例或平台振动 API。 */
@@ -62,7 +75,9 @@ export class FeedbackService {
         const clip = clips.length > 0 ? clips[index % clips.length] : undefined;
 
         if (clip) {
-            this.audio.playEffect(clip, cue === 'collision' ? 0.62 : 1);
+            // 全量对齐原作音量：`mark_wrong_1.ogg` 在 `SoundManager.play` 里也是原音量
+            // （原来这里压到 0.62，听感像「没有音效」）。
+            this.audio.playEffect(clip, Math.max(0, Math.min(1, options.volume ?? 1)));
             this.sequence.set(cue, index + 1);
         }
 
@@ -72,7 +87,7 @@ export class FeedbackService {
 
         if (cue === 'drop' || cue === 'uiButton' || cue === 'toggle') {
             this.platform.vibrate('light');
-        } else if (cue === 'merge' || cue === 'fold' || cue === 'chain' || cue === 'danger') {
+        } else if (cue === 'merge' || cue === 'fold' || cue === 'chain' || cue === 'danger' || cue === 'collision') {
             this.platform.vibrate('medium');
         } else if (cue === 'milestone'
             || cue === 'failure'

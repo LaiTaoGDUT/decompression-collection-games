@@ -1,5 +1,6 @@
+import { calculateLobbyCardHeight } from './LobbyCardLayout';
+
 export const LOBBY_GRID_GAP = 12;
-export const LOBBY_CARD_HEIGHT = 391;
 
 export interface LobbyGridItemLayout {
     readonly x: number;
@@ -21,13 +22,14 @@ export function calculateLobbyGridLayout(
     itemCount: number,
     containerWidth: number,
     gap = LOBBY_GRID_GAP,
-    cardHeight = LOBBY_CARD_HEIGHT,
+    cardHeight?: number,
 ): LobbyGridLayout {
     const count = Math.max(0, Math.floor(itemCount));
     const safeWidth = Math.max(0, containerWidth);
     const safeGap = Math.max(0, gap);
-    const safeCardHeight = Math.max(0, cardHeight);
     const cardWidth = Math.max(0, (safeWidth - safeGap) / 2);
+    // Card height follows the card's own vertical layout unless overridden.
+    const safeCardHeight = Math.max(0, cardHeight ?? calculateLobbyCardHeight(cardWidth));
     const rows = Math.ceil(count / 2);
     const contentHeight = rows === 0
         ? 0

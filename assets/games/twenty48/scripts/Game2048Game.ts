@@ -1,3 +1,5 @@
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
+import { setLabelBold } from '../../../services/font/FontBinding';
 import {
     _decorator,
     assetManager,
@@ -33,16 +35,13 @@ import type {
     MiniGamePauseModel,
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
+import type { AssetService } from '../../../services/asset/AssetService';
 import type { AudioService } from '../../../services/audio/AudioService';
 import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { Platform } from '../../../platform/Platform';
 import type { GameSaveData, StorageService } from '../../../services/storage/StorageService';
-import {
-    autoAtlasFrameName,
-    loadAutoAtlasFrames,
-} from '../../../services/asset/AutoAtlasLoader';
 import {
     BOARD_SIZE,
     Game2048Model,
@@ -57,8 +56,6 @@ import {
     calculateGame2048LayoutFromPlatform,
     GAME_2048_BOARD_NODE_SIZE,
     GAME_2048_BOARD_SIZE,
-    GAME_2048_CHEAT_BUTTON_WIDTH,
-    GAME_2048_CHEAT_BUTTON_HEIGHT,
     GAME_2048_PAUSE_ICON_SIZE,
     GAME_2048_PAUSE_TOUCH_SIZE,
     GAME_2048_SCORE_CARD_HEIGHT,
@@ -73,6 +70,15 @@ const { ccclass } = _decorator;
 // 一次移动的动画节奏：滑动 + 落位合计就是输入锁窗口（0.08 + 0.04 = 0.12 秒），
 // 也是连续滑动的手感上限。缩短时必须保证棋子仍然在落位前完整播完滑动。
 const TILE_SLIDE_DURATION = 0.08;
+type HighMergeTier = 3 | 4 | 5;
+/** 普通/紧张音乐切换：前一首先淡出，后一首再淡入。 */
+const GAME_2048_MUSIC_TRANSITION = { fadeOutSeconds: 1.5, fadeInSeconds: 1.5 } as const;
+/** 512 / 1024 / 2048+ 合成各播放一条预混音效，避免运行时按帧延迟叠放多个 Cue 造成错位。 */
+const GAME_2048_HIGH_MERGE_AUDIO: Readonly<Record<HighMergeTier, string>> = {
+    3: 'visual/audio/t48-tier-512-v1',
+    4: 'visual/audio/t48-tier-1024-v1',
+    5: 'visual/audio/t48-tier-2048-v1',
+};
 const TILE_SETTLE_DURATION = 0.04;
 const MERGE_CELEBRATION_DELAY = 0.55;
 // 高阶合成的光晕会越出棋子边缘，但仍限制在相邻一格内快速消散。
@@ -103,15 +109,18 @@ const GAME_2048_TARGET_POPUP_ASPECT_RATIO = 780 / 548;
 const GAME_2048_POPUP_BUTTON_BOTTOM_PADDING = 58;
 const GAME_2048_TILE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096] as const;
 const GAME_2048_TILE_ASSET_PREFIX = 'visual/pieces/t48-user-piece-';
-const GAME_2048_TILE_ATLAS_PATH = 'visual/pieces/twenty48-pieces';
 // 新版棋盘图已去掉外圈留白；四列槽位连同内外间距约占 548/572，棋子间距略放宽为 9px。
 const GAME_2048_BOARD_GRID_RATIO = 548 / 572;
 const GAME_2048_BOARD_GAP_RATIO = 9 / 548;
+// 游玩画面让数字块保持最高亮度，背景电路与标题稍退到后层。
+const GAME_2048_BACKGROUND_BRIGHTNESS = 232;
+const GAME_2048_TITLE_BRIGHTNESS = 228;
 
 type Game2048State = 'idle' | 'ready' | 'playing' | 'paused' | 'target' | 'completed' | 'disposed';
 type AchievementTile = typeof MILESTONE_TILE | typeof TARGET_TILE;
 
 export interface Game2048Services {
+    readonly assets: AssetService;
     readonly audio: AudioService;
     readonly feedback: FeedbackService;
     readonly storage: StorageService;
@@ -289,17 +298,15 @@ export class Game2048Game extends Component implements MiniGame {
     private boardTileSizeValue = 0;
     private scoreLabel?: Label;
     private bestLabel?: Label;
-    private titleButton?: Button;
     private pauseButton?: Button;
-    private cheatButton?: Button;
     private pauseOverlay?: OverlayState;
-    private cheatOverlay?: OverlayState;
     private resultOverlay?: OverlayState;
     private completedResultModel?: MiniGameResultModel;
     private targetOverlay?: OverlayState;
     private audioBank?: BundleAudioBank;
     private normalMusicClip?: AudioClip;
     private dangerMusicClip?: AudioClip;
+    private highMergeClips: Partial<Record<HighMergeTier, AudioClip>> = {};
     private dangerLayer?: Node;
     private dangerMode = false;
     private ownedBackgroundFrame?: SpriteFrame;
@@ -329,13 +336,10 @@ export class Game2048Game extends Component implements MiniGame {
     private historicalHighestTile = 0;
     private roundStartingBest = 0;
     private resumableRound?: Game2048Snapshot;
-    private preservedCustom: Readonly<Record<string, unknown>> = Object.freeze({});
     private savedProgressDiscarded = false;
     private layoutMetrics?: Game2048LayoutMetrics;
     private resizeListening = false;
     private operationGeneration = 0;
-    private titleClickCount = 0;
-    private cheatUnlocked = false;
     private gameOverOverlay?: OverlayState;
     private hasShownGameOverAdOffer = false;
 
@@ -355,7 +359,7 @@ export class Game2048Game extends Component implements MiniGame {
             cues: {
                 uiButton: 'visual/audio/t48-button-v1',
                 drop: 'visual/audio/t48-move-v1',
-                collision: 'visual/audio/t48-invalid-v1',
+                // Invalid moves stay silent: `collision` has no clip and only vibrates.
                 fold: 'visual/audio/t48-spawn-v1',
                 merge: 'visual/audio/t48-merge-v1',
                 chain: 'visual/audio/t48-combo-v1',
@@ -363,10 +367,11 @@ export class Game2048Game extends Component implements MiniGame {
                 failure: 'visual/audio/t48-gameover-v1',
                 record: 'visual/audio/t48-record-v1',
             },
-        }, context.services.audio, context.services.feedback);
-        void this.audioBank.initialize().catch((error: unknown) => {
-            console.error('[Game2048Game] Audio initialization failed.', error);
+        }, context.services.audio, context.services.feedback, context.services.assets);
+        await this.audioBank.initialize().catch((error: unknown) => {
+            // TODO: console.error('[Game2048Game] Audio initialization failed.', error);
         });
+        if (this.context !== context) return;
         this.state = 'ready';
     }
 
@@ -416,12 +421,10 @@ export class Game2048Game extends Component implements MiniGame {
         if (context) this.context = context;
         this.operationGeneration += 1;
         this.destroyOverlay(this.pauseOverlay);
-        this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
         this.destroyOverlay(this.gameOverOverlay);
         this.pauseOverlay = undefined;
-        this.cheatOverlay = undefined;
         this.resultOverlay = undefined;
         this.targetOverlay = undefined;
         this.gameOverOverlay = undefined;
@@ -448,8 +451,8 @@ export class Game2048Game extends Component implements MiniGame {
         this.audioBank = undefined;
         this.normalMusicClip = undefined;
         this.dangerMusicClip = undefined;
+        this.highMergeClips = {};
         this.destroyOverlay(this.pauseOverlay);
-        this.destroyOverlay(this.cheatOverlay);
         this.destroyOverlay(this.resultOverlay);
         this.destroyOverlay(this.targetOverlay);
         this.destroyOverlay(this.gameOverOverlay);
@@ -462,42 +465,41 @@ export class Game2048Game extends Component implements MiniGame {
     private destroyOwnedThemeFrames(): void {
         this.ownedBackgroundFrame?.destroy();
         this.ownedBackgroundFrame = undefined;
-        this.ownedTitleFrame?.destroy();
+        if (this.ownedTitleFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedTitleFrame);
         this.ownedTitleFrame = undefined;
-        this.ownedBoardFrame?.destroy();
+        if (this.ownedBoardFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedBoardFrame);
         this.ownedBoardFrame = undefined;
-        this.ownedPauseFrame?.destroy();
+        if (this.ownedPauseFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedPauseFrame);
         this.ownedPauseFrame = undefined;
-        this.ownedRewardedAdIconFrame?.destroy();
+        if (this.ownedRewardedAdIconFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedRewardedAdIconFrame);
         this.ownedRewardedAdIconFrame = undefined;
-        this.ownedSystemPopupFrame?.destroy();
+        if (this.ownedSystemPopupFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedSystemPopupFrame);
         this.ownedSystemPopupFrame = undefined;
-        this.ownedResultPopupFrame?.destroy();
+        if (this.ownedResultPopupFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedResultPopupFrame);
         this.ownedResultPopupFrame = undefined;
-        this.ownedMilestonePopupFrame?.destroy();
+        if (this.ownedMilestonePopupFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedMilestonePopupFrame);
         this.ownedMilestonePopupFrame = undefined;
-        this.ownedTargetPopupFrame?.destroy();
+        if (this.ownedTargetPopupFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedTargetPopupFrame);
         this.ownedTargetPopupFrame = undefined;
-        this.ownedAchievementScoreFrame?.destroy();
+        if (this.ownedAchievementScoreFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedAchievementScoreFrame);
         this.ownedAchievementScoreFrame = undefined;
-        this.ownedResultScoreFrame?.destroy();
+        if (this.ownedResultScoreFrame) this.context?.services.assets.releaseRuntimeAsset(this.ownedResultScoreFrame);
         this.ownedResultScoreFrame = undefined;
-        this.ownedPopupButtonFrames.forEach((frame) => frame.destroy());
+        this.ownedPopupButtonFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.ownedPopupButtonFrames.clear();
-        this.ownedTileFrames.forEach((frame) => frame.destroy());
+        this.ownedTileFrames.forEach(frame => this.context?.services.assets.releaseRuntimeAsset(frame));
         this.ownedTileFrames.clear();
     }
 
     showPauseMenu(model: MiniGamePauseModel): void {
         this.hidePauseMenu();
-        this.hideCheatOverlay();
         this.pauseOverlay = this.buildOverlay(
             'Game2048PauseOverlay',
-            '信号暂停',
-            `当前分数  ${this.model.score}\n棋盘状态已安全冻结`,
+            "游戏暂停",
+            `当前分数：${this.model.score}\n棋盘已暂停，进度已保留`,
             [
-                { name: 'ResumeButton', label: '继续连接', tone: 'cyan', action: model.resume },
-                { name: 'RestartButton', label: '重新开局', tone: 'amber', action: model.restart },
+                { name: 'ResumeButton', label: "继续游戏", tone: 'cyan', action: model.resume },
+                { name: 'RestartButton', label: "重新开始", tone: 'amber', action: model.restart },
                 { name: 'LobbyButton', label: '返回大厅', tone: 'dark', action: model.exit },
             ],
         );
@@ -518,12 +520,12 @@ export class Game2048Game extends Component implements MiniGame {
         this.gameOverOverlay = undefined;
         const extra = model.result.extra ?? {};
         const highest = typeof extra.highestTile === 'number' ? Math.floor(extra.highestTile) : this.model.highestTile;
-        const reason = extra.reason === 'target-complete' ? '目标达成' : '信号结束';
+        const reason = extra.reason === 'target-complete' ? '目标达成' : "本局结束";
         const record = extra.newRecord === true;
         this.resultOverlay = this.buildOverlay(
             'Game2048ResultOverlay',
             record ? '新纪录' : reason,
-            `最终分数  ${model.result.score}\n本局最高数字  ${highest}`,
+            `本局得分：${model.result.score}\n最大数字：${highest}`,
             [
                 { name: 'RestartButton', label: '再来一局', tone: 'amber', action: model.restart },
                 { name: 'LobbyButton', label: '返回大厅', tone: 'dark', action: model.returnToLobby },
@@ -545,10 +547,9 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private startRound(allowResume = false): void {
-        this.hideCheatOverlay();
-        this.titleClickCount = 0;
-        this.cheatUnlocked = false;
-        if (this.cheatButton?.node.isValid) this.cheatButton.node.active = false;
+        // 重开前运行层会先 pause()（结算后则已由 finishRound 暂停），上一局也可能停在危险状态；
+        // 新一局先清掉危险表现，结尾再按新棋盘恢复正确曲目。
+        this.setDangerMode(false, false);
         this.savedProgressDiscarded = false;
         const savedRound = allowResume ? this.resumableRound : undefined;
         this.resumableRound = undefined;
@@ -579,14 +580,13 @@ export class Game2048Game extends Component implements MiniGame {
         else if (resumedMilestone) this.showAchievementOverlay(MILESTONE_TILE);
         else if (resumedDeadTarget) this.finishRound('target-complete');
         else this.updateDangerState();
+        if (!resumedDeadTarget) this.resumeRoundMusic();
     }
 
     private registerInput(): void {
         this.node.on(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.node.on(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
-        this.titleButton?.node.on(Button.EventType.CLICK, this.handleTitleClick, this);
         this.pauseButton?.node.on(Button.EventType.CLICK, this.handlePause, this);
-        this.cheatButton?.node.on(Button.EventType.CLICK, this.handleCheatButton, this);
         input.on(Input.EventType.KEY_DOWN, this.handleKeyDown, this);
         if (!this.resizeListening) {
             view.on('canvas-resize', this.handleCanvasResize, this);
@@ -597,9 +597,7 @@ export class Game2048Game extends Component implements MiniGame {
     private unregisterInput(): void {
         this.node.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.node.off(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
-        this.titleButton?.node.off(Button.EventType.CLICK, this.handleTitleClick, this);
         this.pauseButton?.node.off(Button.EventType.CLICK, this.handlePause, this);
-        this.cheatButton?.node.off(Button.EventType.CLICK, this.handleCheatButton, this);
         input.off(Input.EventType.KEY_DOWN, this.handleKeyDown, this);
         if (this.resizeListening) {
             view.off('canvas-resize', this.handleCanvasResize, this);
@@ -612,19 +610,16 @@ export class Game2048Game extends Component implements MiniGame {
 
         this.operationGeneration += 1;
         const pauseRebuild = this.pauseOverlay?.rebuild;
-        const cheatRebuild = this.cheatOverlay?.rebuild;
         const resultRebuild = this.resultOverlay?.rebuild;
         const targetRebuild = this.targetOverlay?.rebuild;
         const shouldRestoreDanger = this.dangerMode;
         const wasPaused = this.state === 'paused';
-        const wasCheat = !!this.cheatOverlay;
         const wasCompleted = this.state === 'completed';
         const wasTarget = this.state === 'target';
         const wasAnimatingMove = this.state === 'playing' && this.inputLocked;
 
         this.unregisterInput();
         this.pauseOverlay = undefined;
-        this.cheatOverlay = undefined;
         this.resultOverlay = undefined;
         this.targetOverlay = undefined;
         this.dangerLayer = undefined;
@@ -641,8 +636,6 @@ export class Game2048Game extends Component implements MiniGame {
 
         if (wasPaused && pauseRebuild) {
             this.pauseOverlay = pauseRebuild();
-        } else if (wasCheat && cheatRebuild) {
-            this.cheatOverlay = cheatRebuild();
         } else if (wasCompleted && resultRebuild) {
             this.resultOverlay = resultRebuild();
         } else if (wasTarget && targetRebuild) {
@@ -710,62 +703,6 @@ export class Game2048Game extends Component implements MiniGame {
         this.context?.requestPause();
     };
 
-    private readonly handleTitleClick = (): void => {
-        if (this.state !== 'playing' || this.cheatUnlocked) return;
-        this.titleClickCount += 1;
-        if (this.titleClickCount < 7) return;
-
-        this.cheatUnlocked = true;
-        if (this.cheatButton?.node.isValid) this.cheatButton.node.active = true;
-        this.context?.services.feedback.play('uiButton');
-    };
-
-    private readonly handleCheatButton = (): void => {
-        if (!this.cheatUnlocked || this.state !== 'playing' || this.inputLocked) return;
-        if (this.cheatOverlay?.root.isValid) return;
-        this.context?.services.feedback.play('uiButton');
-        this.cheatOverlay = this.buildOverlay(
-            'Game2048CheatOverlay',
-            '作弊工具',
-            '仅用于验证 256 及以上棋子的合成与显示',
-            [
-                {
-                    name: 'PromoteTileButton',
-                    label: '随机提升一枚棋子至 256',
-                    tone: 'amber',
-                    action: () => this.promoteRandomTileTo256(),
-                },
-                {
-                    name: 'CloseCheatButton',
-                    label: '关闭作弊弹窗',
-                    tone: 'dark',
-                    action: () => this.hideCheatOverlay(),
-                },
-            ],
-        );
-    };
-
-    private promoteRandomTileTo256(): void {
-        if (this.state !== 'playing' || this.inputLocked) return;
-        const index = this.model.promoteRandomTileTo256();
-        if (index === undefined) {
-            this.context?.services.feedback.play('collision');
-            return;
-        }
-
-        this.historicalHighestTile = Math.max(this.historicalHighestTile, this.model.highestTile);
-        this.syncBoardViews();
-        this.refreshHud();
-        this.updateDangerState();
-        this.persistProgress();
-        this.context?.services.feedback.play('milestone');
-    }
-
-    private hideCheatOverlay(): void {
-        this.destroyOverlay(this.cheatOverlay);
-        this.cheatOverlay = undefined;
-    }
-
     private performMove(direction: Game2048Direction): void {
         if (this.state !== 'playing' || this.inputLocked) return;
         const generation = this.operationGeneration;
@@ -789,7 +726,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.scheduleOnce(() => {
             if (!this.isOperationCurrent(generation)) return;
             this.syncBoardViews(result);
-            this.playHighMergeFeedback(result, generation);
+            this.playHighMergeFeedback(result);
             this.updateDangerState(result.gameOver);
         }, TILE_SLIDE_DURATION);
 
@@ -831,10 +768,7 @@ export class Game2048Game extends Component implements MiniGame {
         else this.context?.services.feedback.play('drop');
     }
 
-    private playHighMergeFeedback(
-        result: Game2048MoveResult,
-        generation: number,
-    ): void {
+    private playHighMergeFeedback(result: Game2048MoveResult): void {
         const highest = this.highestMergedValue(result);
         if (highest < 128) {
             if (result.reachedTarget) this.context?.services.feedback.play('milestone');
@@ -849,21 +783,19 @@ export class Game2048Game extends Component implements MiniGame {
         feedback.vibrate(level >= 3 ? 'heavy' : 'medium');
 
         if (level === 1) {
-            feedback.play('fold');
+            feedback.play('fold', { vibrate: false });
+            return;
+        }
+        if (level === 2) {
+            feedback.play('chain', { vibrate: false });
             return;
         }
 
-        feedback.play('chain');
-        if (level >= 3 && level !== 4) {
-            this.scheduleOnce(() => {
-                if (this.isOperationCurrent(generation)) feedback.play('fold');
-            }, 0.035);
-        }
-        if (level >= 4) {
-            this.scheduleOnce(() => {
-                if (this.isOperationCurrent(generation)) feedback.play('milestone');
-            }, level >= 5 ? 0.07 : 0.045);
-        }
+        // 512 及以上：每一级是一条在同一时间线上预混好的音效（阶梯琶音 + 落地冲击 + 绽放），
+        // 不再在运行时用 scheduleOnce 叠放 chain/fold/milestone。
+        const clip = this.highMergeClips[level as HighMergeTier];
+        if (clip) this.context?.services.audio.playEffect(clip);
+        else feedback.play('chain', { vibrate: false });
     }
 
     private highestMergedValue(result: Game2048MoveResult): number {
@@ -904,7 +836,7 @@ export class Game2048Game extends Component implements MiniGame {
                 },
                 {
                     name: 'FinishButton',
-                    label: '完成本局',
+                    label: "结束并结算",
                     tone: 'amber',
                     action: () => this.finishRound('target-complete'),
                 },
@@ -946,11 +878,11 @@ export class Game2048Game extends Component implements MiniGame {
     private showGameOverAdOffer(): void {
         this.gameOverOverlay = this.buildOverlay(
             'Game2048GameOverAdOverlay',
-            '棋盘已满',
-            '首次无可移动方块\n看视频清除2和4后继续游戏',
+            "没有可移动的方块了",
+            "无可移动的方块\n看广告可清除数字 2 和 4，继续本局",
             [
-                { name: 'WatchAdButton', label: '看视频清除2和4', tone: 'cyan', action: () => this.watchGameOverAd() },
-                { name: 'SettleButton', label: '结算', tone: 'amber', action: () => this.context?.requestExit(this.createResult('no-moves')) },
+                { name: 'WatchAdButton', label: "看广告清除 2 和 4", tone: 'cyan', action: () => this.watchGameOverAd() },
+                { name: 'SettleButton', label: "结束并结算", tone: 'amber', action: () => this.context?.requestExit(this.createResult('no-moves')) },
                 { name: 'LobbyButton', label: '返回大厅', tone: 'dark', action: () => this.context?.requestLobby(this.createResult('no-moves')) },
             ],
         );
@@ -968,7 +900,7 @@ export class Game2048Game extends Component implements MiniGame {
         const context = this.context;
         const result = context?.services.ads
             ? await context.services.ads.showRewarded({ placement: AD_PLACEMENTS.game2048ClearSmallTiles, gameId: context.gameId, sessionId: context.sessionId })
-            : { outcome: 'completed' as const };
+            : { outcome: 'failed' as const };
         if (result.outcome !== 'completed') return;
         this.destroyOverlay(this.gameOverOverlay);
         this.gameOverOverlay = undefined;
@@ -980,6 +912,19 @@ export class Game2048Game extends Component implements MiniGame {
         this.refreshHud();
         this.persistProgress(true);
         this.updateDangerState();
+        this.resumeRoundMusic();
+    }
+
+    /**
+     * 开局和复活时恢复本局音乐：pause()/finishRound() 会让音频服务处于游戏暂停状态，
+     * 期间 playMusic 只切换曲目、不会开始播放。这里按当前危险状态选定曲目，再解除暂停。
+     */
+    private resumeRoundMusic(): void {
+        const audio = this.context?.services.audio;
+        if (!audio) return;
+        const clip = this.dangerMode ? this.dangerMusicClip : this.normalMusicClip;
+        if (clip) audio.playMusic(clip);
+        audio.resumeMusic();
     }
 
     private playSmallTileClearEffect(): Promise<void> {
@@ -1021,11 +966,8 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private readSave(): void {
-        const data = this.context?.services.storage.getGameData('game2048');
-        const custom = data?.custom;
-        this.preservedCustom = custom && typeof custom === 'object' && !Array.isArray(custom)
-            ? Object.freeze({ ...custom })
-            : Object.freeze({});
+        const stored = this.context?.services.storage.getGameData('game2048');
+        const data = stored?.dataVersion === GAME_2048_DATA_VERSION ? stored : undefined;
         this.playCount = data?.playCount ?? 0;
         this.bestScore = Math.max(0, Math.floor(data?.highScore ?? 0));
         const highest = data?.custom?.highestTile;
@@ -1043,69 +985,37 @@ export class Game2048Game extends Component implements MiniGame {
             || !Array.isArray(value.board)
             || typeof value.score !== 'number'
             || typeof value.targetAcknowledged !== 'boolean'
-            || (value.milestoneAcknowledged !== undefined
-                && typeof value.milestoneAcknowledged !== 'boolean')) {
+            || typeof value.milestoneAcknowledged !== 'boolean') {
             return undefined;
         }
 
         try {
-            const dataVersion = data?.dataVersion ?? 1;
             const snapshot: Game2048Snapshot = {
                 board: value.board as number[],
                 score: value.score,
-                targetAcknowledged: this.migrateTargetAcknowledgement(
-                    dataVersion,
-                    value.targetAcknowledged,
-                ),
-                milestoneAcknowledged: this.migrateMilestoneAcknowledgement(
-                    dataVersion,
-                    value.targetAcknowledged,
-                    value.milestoneAcknowledged,
-                ),
+                targetAcknowledged: value.targetAcknowledged,
+                milestoneAcknowledged: value.milestoneAcknowledged,
             };
             this.model.restore(snapshot);
             if (!this.model.hasAvailableMove && this.model.highestTile < TARGET_TILE) return undefined;
             return this.model.snapshot;
         } catch (error: unknown) {
-            console.warn('[Game2048Game] Ignoring invalid round save.', error);
+            // TODO: console.warn('[Game2048Game] Ignoring invalid round save.', error);
             return undefined;
         }
-    }
-
-    private migrateTargetAcknowledgement(dataVersion: number, acknowledged: boolean): boolean {
-        // v1/v2 的 true 只代表“2048 目标层已确认”；v3 起才表示 4096 目标确认。
-        return dataVersion < 3 ? false : acknowledged;
-    }
-
-    private migrateMilestoneAcknowledgement(
-        dataVersion: number,
-        legacyTargetAcknowledged: boolean,
-        acknowledged: unknown,
-    ): boolean {
-        if (typeof acknowledged === 'boolean') return acknowledged;
-        // v1/v2 的旧目标层就是 2048；v3 没有 2048 弹窗确认字段，需要补为未确认。
-        return dataVersion < 3 ? legacyTargetAcknowledged : false;
     }
 
     private persistProgress(inProgress = true): void {
         const storage = this.context?.services.storage;
         if (!storage) return;
-        const previousRound = this.preservedCustom.activeRound;
-        const previousRoundFields = previousRound
-            && typeof previousRound === 'object'
-            && !Array.isArray(previousRound)
-            ? previousRound as Record<string, unknown>
-            : {};
         const data: GameSaveData = {
             dataVersion: GAME_2048_DATA_VERSION,
             playCount: this.playCount,
             highScore: Math.max(this.bestScore, this.model.score),
             lastPlayedAt: Date.now(),
             custom: Object.freeze({
-                ...this.preservedCustom,
                 highestTile: Math.max(this.historicalHighestTile, this.model.highestTile),
                 activeRound: Object.freeze({
-                    ...previousRoundFields,
                     inProgress,
                     ...this.model.snapshot,
                 }),
@@ -1114,7 +1024,7 @@ export class Game2048Game extends Component implements MiniGame {
         try {
             storage.writeGameData('game2048', data);
         } catch (error: unknown) {
-            console.error('[Game2048Game] Save failed.', error);
+            // TODO: console.error('[Game2048Game] Save failed.', error);
         }
     }
 
@@ -1220,10 +1130,6 @@ export class Game2048Game extends Component implements MiniGame {
         titleArtworkNode.active = false;
         titleArtworkNode.setSiblingIndex(titleFrame.children.length - 1);
         this.titleArtwork = titleArtwork;
-        this.titleButton = titleFrame.addComponent(Button);
-        this.titleButton.transition = Button.Transition.SCALE;
-        this.titleButton.zoomScale = 0.98;
-        this.titleButton.duration = 0.08;
         this.pauseButton = this.createPauseButton(
             this.node,
             'PauseButton',
@@ -1233,21 +1139,8 @@ export class Game2048Game extends Component implements MiniGame {
         // 暂停按钮使用独立图标，触摸热区略大于图标本身。
         this.pauseButton.node.setScale(metrics.fitScale, metrics.fitScale, 1);
 
-        this.cheatButton = this.createButton(
-            this.node,
-            'CheatButton',
-            '作弊',
-            metrics.cheatX,
-            metrics.cheatY,
-            GAME_2048_CHEAT_BUTTON_WIDTH,
-            GAME_2048_CHEAT_BUTTON_HEIGHT,
-            'amber',
-        );
-        this.cheatButton.node.setScale(metrics.fitScale, metrics.fitScale, 1);
-        this.cheatButton.node.active = this.cheatUnlocked;
-
         this.scoreLabel = this.createHudCard(metrics.scoreLeftX, metrics.scoreY, '分数', COLORS.cyan, metrics.fitScale);
-        this.bestLabel = this.createHudCard(metrics.scoreRightX, metrics.scoreY, '最高', COLORS.amber, metrics.fitScale);
+        this.bestLabel = this.createHudCard(metrics.scoreRightX, metrics.scoreY, "最高分", COLORS.amber, metrics.fitScale);
 
         const boardSize = GAME_2048_BOARD_SIZE;
         this.boardNode = this.createNode(
@@ -1330,7 +1223,12 @@ export class Game2048Game extends Component implements MiniGame {
                     this.ownedBackgroundFrame = spriteFrame;
                     sprite.spriteFrame = spriteFrame;
                     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-                    sprite.color = new Color(255, 255, 255, 255);
+                    sprite.color = new Color(
+                        GAME_2048_BACKGROUND_BRIGHTNESS,
+                        GAME_2048_BACKGROUND_BRIGHTNESS,
+                        GAME_2048_BACKGROUND_BRIGHTNESS,
+                        255,
+                    );
 
                     const rootSize = this.node.getComponent(UITransform)?.contentSize;
                     const targetWidth = rootSize?.width ?? 750;
@@ -1345,7 +1243,7 @@ export class Game2048Game extends Component implements MiniGame {
                     const backdrop = this.node.getChildByName('NeonBackdrop');
                     if (backdrop) backdrop.active = false;
                 } else if (error) {
-                    console.warn('[Game2048Game] Neon background failed to load.', error);
+                    // TODO: console.warn('[Game2048Game] Neon background failed to load.', error);
                 }
                 resolve();
             });
@@ -1355,19 +1253,11 @@ export class Game2048Game extends Component implements MiniGame {
     private async loadThemeAssets(): Promise<void> {
         const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
         if (!bundle) return;
-        const tileRequests = GAME_2048_TILE_VALUES.map((value) => {
-            const path = `${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`;
-            return {
+        const tileFrames = await this.context!.services.assets.loadSpriteFrames(GAME_2048_RESOURCE_BUNDLE,
+            GAME_2048_TILE_VALUES.map(value => ({
                 key: String(value),
-                frameName: autoAtlasFrameName(path),
-                fallbackTexturePath: path,
-            };
-        });
-        const tileFrames = await loadAutoAtlasFrames(
-            bundle,
-            GAME_2048_TILE_ATLAS_PATH,
-            tileRequests,
-        );
+                path: PACKED_SPRITE_PATHS[`${GAME_2048_TILE_ASSET_PREFIX}${value}-v1/texture`],
+            })));
         const [
             title,
             board,
@@ -1397,19 +1287,19 @@ export class Game2048Game extends Component implements MiniGame {
         ]);
 
         if (!this.node.isValid || this.state === 'disposed') {
-            title?.destroy();
-            board?.destroy();
-            pause?.destroy();
-            systemPopup?.destroy();
-            resultPopup?.destroy();
-            milestonePopup?.destroy();
-            targetPopup?.destroy();
-            cyanButton?.destroy();
-            amberButton?.destroy();
-            violetButton?.destroy();
-            achievementScore?.destroy();
-            resultScore?.destroy();
-            Object.keys(tileFrames).forEach((key) => tileFrames[key]?.destroy());
+            if (title) this.context?.services.assets.releaseRuntimeAsset(title);
+            if (board) this.context?.services.assets.releaseRuntimeAsset(board);
+            if (pause) this.context?.services.assets.releaseRuntimeAsset(pause);
+            if (systemPopup) this.context?.services.assets.releaseRuntimeAsset(systemPopup);
+            if (resultPopup) this.context?.services.assets.releaseRuntimeAsset(resultPopup);
+            if (milestonePopup) this.context?.services.assets.releaseRuntimeAsset(milestonePopup);
+            if (targetPopup) this.context?.services.assets.releaseRuntimeAsset(targetPopup);
+            if (cyanButton) this.context?.services.assets.releaseRuntimeAsset(cyanButton);
+            if (amberButton) this.context?.services.assets.releaseRuntimeAsset(amberButton);
+            if (violetButton) this.context?.services.assets.releaseRuntimeAsset(violetButton);
+            if (achievementScore) this.context?.services.assets.releaseRuntimeAsset(achievementScore);
+            if (resultScore) this.context?.services.assets.releaseRuntimeAsset(resultScore);
+            Object.keys(tileFrames).forEach((key) => this.context?.services.assets.releaseRuntimeAsset(tileFrames[key]));
             return;
         }
 
@@ -1434,25 +1324,21 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private loadTextureFrame(assetPath: string): Promise<SpriteFrame | undefined> {
-        const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
-        if (!bundle) return Promise.resolve(undefined);
-        return new Promise((resolve) => {
-            bundle.load(assetPath, Texture2D, (error, texture) => {
-                if (error || !texture) {
-                    console.warn(`[Game2048Game] Theme asset failed to load: ${assetPath}`, error);
-                    resolve(undefined);
-                    return;
-                }
-                const frame = new SpriteFrame();
-                frame.texture = texture;
-                resolve(frame);
-            });
-        });
+        const packed = PACKED_SPRITE_PATHS[assetPath];
+        return this.context!.services.assets.loadSpriteFrame(
+            GAME_2048_RESOURCE_BUNDLE, packed ?? assetPath, packed ? 'frame' : 'texture',
+        );
     }
 
     private applyLoadedThemeAssets(): void {
         if (this.titleArtwork?.node.isValid) {
             this.titleArtwork.spriteFrame = this.ownedTitleFrame ?? null;
+            this.titleArtwork.color = new Color(
+                GAME_2048_TITLE_BRIGHTNESS,
+                GAME_2048_TITLE_BRIGHTNESS,
+                GAME_2048_TITLE_BRIGHTNESS,
+                255,
+            );
             this.titleArtwork.node.active = !!this.ownedTitleFrame;
         }
         if (this.boardArtwork?.node.isValid) {
@@ -1469,20 +1355,23 @@ export class Game2048Game extends Component implements MiniGame {
     }
 
     private async loadMusic(): Promise<void> {
-        const bundle = assetManager.getBundle(GAME_2048_RESOURCE_BUNDLE);
-        if (!bundle) return;
-        const loadClip = (assetPath: string): Promise<AudioClip> => new Promise((resolve, reject) => {
-            bundle.load(assetPath, AudioClip, (error, clip) => error ? reject(error) : resolve(clip));
-        });
-        const [normal, danger] = await Promise.all([
-            loadClip('visual/audio/t48-neon-loop-v1').catch((error: unknown) => {
-                console.warn('[Game2048Game] Normal music failed to load.', error);
+        const services = this.context!.services;
+        const loadClip = (path: string, enabled: boolean): Promise<AudioClip | undefined> =>
+            enabled ? services.assets.loadAudioClip(GAME_2048_RESOURCE_BUNDLE, path) : Promise.resolve(undefined);
+        const tiers = [3, 4, 5] as const;
+        const [normal, danger, ...tierClips] = await Promise.all([
+            loadClip('visual/audio/t48-neon-loop-v1', services.audio.isMusicEnabled).catch((error: unknown) => {
+                // TODO: console.warn('[Game2048Game] Normal music failed to load.', error);
                 return undefined;
             }),
-            loadClip('visual/audio/t48-danger-loop-v1').catch((error: unknown) => {
-                console.warn('[Game2048Game] Danger music failed to load.', error);
+            loadClip('visual/audio/t48-danger-loop-v1', services.audio.isMusicEnabled).catch((error: unknown) => {
+                // TODO: console.warn('[Game2048Game] Danger music failed to load.', error);
                 return undefined;
             }),
+            ...tiers.map((tier) => loadClip(GAME_2048_HIGH_MERGE_AUDIO[tier], services.audio.isSoundEnabled).catch((error: unknown) => {
+                // TODO: console.warn(`[Game2048Game] High-merge tier ${tier} audio failed to load.`, error);
+                return undefined;
+            })),
         ]);
         if (!this.node.isValid || this.state === 'disposed') return;
         if (normal) {
@@ -1490,6 +1379,12 @@ export class Game2048Game extends Component implements MiniGame {
             this.context?.services.audio.playMusic(normal);
         }
         this.dangerMusicClip = danger;
+        const highMergeClips: Partial<Record<HighMergeTier, AudioClip>> = {};
+        tiers.forEach((tier, index) => {
+            const clip = tierClips[index];
+            if (clip) highMergeClips[tier] = clip;
+        });
+        this.highMergeClips = highMergeClips;
     }
 
     private buildTileViews(boardSize: number): void {
@@ -1540,7 +1435,7 @@ export class Game2048Game extends Component implements MiniGame {
                 this.boardTileSizeValue - 12,
                 this.boardTileSizeValue - 12,
             );
-            fallbackLabel.isBold = true;
+            setLabelBold(fallbackLabel, true);
             fallbackLabel.node.active = false;
             tile.active = false;
             this.tileViews.push({
@@ -2075,7 +1970,7 @@ export class Game2048Game extends Component implements MiniGame {
         label.fontSize = fontSize;
         label.lineHeight = fontSize + 9;
         label.color = color;
-        label.isBold = true;
+        setLabelBold(label, true);
     }
 
     private updateDangerState(gameOver = false): void {
@@ -2092,12 +1987,12 @@ export class Game2048Game extends Component implements MiniGame {
         this.dangerMode = enabled;
         if (enabled) {
             this.createDangerLayer(emptyCount);
-            if (this.dangerMusicClip) this.context?.services.audio.playMusic(this.dangerMusicClip);
+            if (this.dangerMusicClip) this.context?.services.audio.transitionMusic(this.dangerMusicClip, GAME_2048_MUSIC_TRANSITION);
             return;
         }
         this.destroyDangerLayer();
         this.updateDangerHint();
-        if (restoreMusic && this.normalMusicClip) this.context?.services.audio.playMusic(this.normalMusicClip);
+        if (restoreMusic && this.normalMusicClip) this.context?.services.audio.transitionMusic(this.normalMusicClip, GAME_2048_MUSIC_TRANSITION);
     }
 
     private createDangerLayer(emptyCount: number): void {
@@ -2171,17 +2066,18 @@ export class Game2048Game extends Component implements MiniGame {
         const hint = this.node.getChildByName('Hint')?.getComponent(Label);
         if (!hint) return;
         if (emptyCount !== undefined && emptyCount <= 2) {
-            hint.string = `空间临界 · 仅剩 ${emptyCount} 格`;
+            hint.string = `空位不足 · 仅剩 ${emptyCount} 格`;
             hint.color = new Color(255, 126, 184, 255);
-            hint.isBold = true;
+            setLabelBold(hint, true);
         } else {
             hint.string = '';
             hint.color = COLORS.muted;
-            hint.isBold = false;
+            setLabelBold(hint, false);
         }
     }
 
     private refreshHud(): void {
+        this.context?.reportAchievementProgress('highest-tile', this.model.highestTile);
         if (this.scoreLabel) this.scoreLabel.string = String(this.model.score);
         if (this.bestLabel) this.bestLabel.string = String(Math.max(this.bestScore, this.model.score));
     }
@@ -2239,7 +2135,7 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.stroke();
         this.createLabel(card, 'Caption', caption, 0, 28, 22, accent, 180, 30).spacingX = 2;
         const value = this.createLabel(card, 'Value', '0', 0, -13, 41, COLORS.white, 188, 52);
-        value.isBold = true;
+        setLabelBold(value, true);
         return value;
     }
 
@@ -2486,7 +2382,7 @@ export class Game2048Game extends Component implements MiniGame {
             panelWidth - 112,
             62,
         );
-        title.isBold = true;
+        setLabelBold(title, true);
         const achievementTitleOutline = title.node.addComponent(LabelOutline);
         achievementTitleOutline.color = colorWithAlpha(targetMaterial.glow, 142);
         achievementTitleOutline.width = 3;
@@ -2518,11 +2414,11 @@ export class Game2048Game extends Component implements MiniGame {
         const scoreCaption = this.createLabel(
             scoreChip, 'ScoreCaption', '本局得分', -98, 0, 26, COLORS.muted, 188, 46,
         );
-        scoreCaption.isBold = true;
+        setLabelBold(scoreCaption, true);
         const scoreValue = this.createLabel(
             scoreChip, 'ScoreValue', `${this.model.score}`, 115, 0, 30, COLORS.white, 205, 46,
         );
-        scoreValue.isBold = true;
+        setLabelBold(scoreValue, true);
 
         const state: OverlayState = {
             root,
@@ -2660,7 +2556,7 @@ export class Game2048Game extends Component implements MiniGame {
             panelWidth - 112,
             70,
         );
-        titleLabel.isBold = true;
+        setLabelBold(titleLabel, true);
         const titleOutline = titleLabel.node.addComponent(LabelOutline);
         titleOutline.color = resultContent
             ? new Color(COLORS.cyan.r, COLORS.cyan.g, COLORS.cyan.b, 138)
@@ -2669,7 +2565,7 @@ export class Game2048Game extends Component implements MiniGame {
         if (resultContent) {
             const scoreCaption = this.createLabel(panel, 'ScoreCaption', '最终分数', 0, contentTop - 95, 26,
                 COLORS.cyan, panelWidth - 128, 38);
-            scoreCaption.isBold = true;
+            setLabelBold(scoreCaption, true);
             const scoreChipWidth = 430;
             const scoreChipHeight = 130;
             const scoreChip = this.createNode(panel, 'ResultScoreChip', 0, contentTop - 190, scoreChipWidth, scoreChipHeight);
@@ -2690,11 +2586,11 @@ export class Game2048Game extends Component implements MiniGame {
             scoreGraphics.enabled = !scoreArtwork;
             const scoreLabel = this.createLabel(scoreChip, 'Score', `${resultContent.score}`, 0, 0, 54,
                 COLORS.amber, scoreChipWidth - 54, 70);
-            scoreLabel.isBold = true;
+            setLabelBold(scoreLabel, true);
             const highestLabel = this.createLabel(
                 panel,
                 'HighestTile',
-                `本局最高数字  ${resultContent.highestTile}`,
+                `本局最大数字：${resultContent.highestTile}`,
                 0,
                 contentTop - 287,
                 25,
@@ -2702,14 +2598,14 @@ export class Game2048Game extends Component implements MiniGame {
                 panelWidth - 128,
                 40,
             );
-            highestLabel.isBold = true;
+            setLabelBold(highestLabel, true);
         } else {
             const [scoreLine = body, descriptionLine = ''] = body.split('\n');
             const scoreLineLabel = this.createLabel(
                 panel, 'ScoreLine', scoreLine, 0, contentTop - 106, 30,
                 new Color(112, 202, 255, 255), panelWidth - 132, 42,
             );
-            scoreLineLabel.isBold = true;
+            setLabelBold(scoreLineLabel, true);
             this.createLabel(
                 panel, 'DescriptionLine', descriptionLine, 0, contentTop - 156, 25,
                 COLORS.muted, panelWidth - 132, 40,
@@ -2768,7 +2664,7 @@ export class Game2048Game extends Component implements MiniGame {
                 });
             }
         } catch (error: unknown) {
-            console.error(`[Game2048Game] ${action.name} failed.`, error);
+            // TODO: console.error(`[Game2048Game] ${action.name} failed.`, error);
             if (state.root.isValid) {
                 state.busy = false;
                 state.buttons.forEach((button) => {
@@ -2924,7 +2820,7 @@ export class Game2048Game extends Component implements MiniGame {
         const labelWidth = isRewardedAdButton ? 240 : width - 24;
         const label = this.createLabel(node, 'Label', text, isRewardedAdButton ? 22 : 0, 0, height <= 54 ? 22 : 24,
             tone === 'dark' ? new Color(196, 156, 255, 255) : COLORS.white, labelWidth, height - 8);
-        label.isBold = true;
+        setLabelBold(label, true);
         return button;
     }
 
@@ -2947,142 +2843,6 @@ export class Game2048Game extends Component implements MiniGame {
         graphics.lineTo(x + corner, y);
         graphics.lineTo(x, y + corner);
         graphics.lineTo(x, top - corner);
-        graphics.close();
-    }
-
-    private createButton(
-        parent: Node,
-        name: string,
-        text: string,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        tone: 'cyan' | 'amber' | 'dark',
-        flushRightEdge = false,
-        matchScoreCardStyle = false,
-    ): Button {
-        const node = this.createNode(parent, name, x, y, width, height);
-        node.addComponent(UIOpacity);
-        const graphics = node.addComponent(Graphics);
-        const drawButtonShape = (
-            shapeX: number,
-            shapeY: number,
-            shapeWidth: number,
-            shapeHeight: number,
-            radius: number,
-            includeRightEdge: boolean,
-        ): void => {
-            if (flushRightEdge) {
-                this.drawLeftRoundedButtonPath(
-                    graphics,
-                    shapeX,
-                    shapeY,
-                    shapeWidth,
-                    shapeHeight,
-                    radius,
-                    includeRightEdge,
-                );
-                return;
-            }
-            graphics.roundRect(shapeX, shapeY, shapeWidth, shapeHeight, radius);
-        };
-        const accent = tone === 'cyan' ? COLORS.cyan
-            : tone === 'amber' ? COLORS.amber
-                : new Color(91, 157, 177, 255);
-        if (matchScoreCardStyle) {
-            // 暂停按钮与分数卡片复用同一套面板底色、外发光、主边框和内描边。
-            graphics.fillColor = new Color(accent.r, accent.g, accent.b, 14);
-            drawButtonShape(-width / 2 - 5, -height / 2 - 6, width + 10, height + 10, 24, true);
-            graphics.fill();
-            graphics.fillColor = COLORS.panelLight;
-            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 155);
-            graphics.lineWidth = 2;
-            drawButtonShape(-width / 2, -height / 2, width, height, 20, true);
-            graphics.fill();
-            drawButtonShape(-width / 2, -height / 2, width, height, 20, !flushRightEdge);
-            graphics.stroke();
-            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 48);
-            graphics.lineWidth = 1;
-            drawButtonShape(
-                -width / 2 + 6,
-                -height / 2 + 6,
-                width - 12,
-                height - 12,
-                16,
-                !flushRightEdge,
-            );
-            graphics.stroke();
-            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 100);
-            graphics.moveTo(-width / 2 + 22, height / 2 - 7);
-            graphics.lineTo(width / 2 - 22, height / 2 - 7);
-            graphics.stroke();
-        } else {
-            const fill = tone === 'dark' ? COLORS.panelLight : new Color(
-                Math.round(COLORS.panel.r * 0.68 + accent.r * 0.32),
-                Math.round(COLORS.panel.g * 0.68 + accent.g * 0.32),
-                Math.round(COLORS.panel.b * 0.68 + accent.b * 0.32),
-                255,
-            );
-            graphics.fillColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 9 : 16);
-            drawButtonShape(-width / 2 - 5, -height / 2 - 5, width + 10, height + 10, 19, true);
-            graphics.fill();
-            graphics.fillColor = fill;
-            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 130 : 188);
-            graphics.lineWidth = 2;
-            drawButtonShape(-width / 2, -height / 2, width, height, 15, true);
-            graphics.fill();
-            drawButtonShape(-width / 2, -height / 2, width, height, 15, !flushRightEdge);
-            graphics.stroke();
-            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 58);
-            graphics.lineWidth = 1;
-            drawButtonShape(
-                -width / 2 + 5,
-                -height / 2 + 5,
-                flushRightEdge ? width - 5 : width - 10,
-                height - 10,
-                11,
-                !flushRightEdge,
-            );
-            graphics.stroke();
-            graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 112);
-            graphics.moveTo(-width / 2 + 22, height / 2 - 7);
-            graphics.lineTo(width / 2 - 22, height / 2 - 7);
-            graphics.stroke();
-        }
-        const button = node.addComponent(Button);
-        button.transition = Button.Transition.SCALE;
-        button.zoomScale = 0.95;
-        button.duration = 0.08;
-        const label = this.createLabel(node, 'Label', text, 0, 0, height <= 58 ? 23 : 27,
-            COLORS.white, width - 20, height - 8);
-        label.isBold = true;
-        return button;
-    }
-
-    private drawLeftRoundedButtonPath(
-        graphics: Graphics,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        radius: number,
-        includeRightEdge: boolean,
-    ): void {
-        const left = x;
-        const right = x + width;
-        const bottom = y;
-        const top = y + height;
-        const corner = Math.max(0, Math.min(radius, Math.min(width, height) / 2));
-
-        graphics.moveTo(left + corner, top);
-        graphics.lineTo(right, top);
-        if (includeRightEdge) graphics.lineTo(right, bottom);
-        else graphics.moveTo(right, bottom);
-        graphics.lineTo(left + corner, bottom);
-        graphics.quadraticCurveTo(left, bottom, left, bottom + corner);
-        graphics.lineTo(left, top - corner);
-        graphics.quadraticCurveTo(left, top, left + corner, top);
         graphics.close();
     }
 

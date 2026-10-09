@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>enemy-defeat-fragments</key>
+		<dict>
+			<key>frame</key>
+			<string>{{388,2},{292,265}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{292,265}}</string>
+			<key>sourceSize</key>
+			<string>{292,265}</string>
+		</dict>
+		<key>enemy-hit-scratch</key>
+		<dict>
+			<key>frame</key>
+			<string>{{684,2},{231,147}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{231,147}}</string>
+			<key>sourceSize</key>
+			<string>{231,147}</string>
+		</dict>
+		<key>player-enemy-contact-impact</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{382,301}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{382,301}}</string>
+			<key>sourceSize</key>
+			<string>{382,301}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-enemy-impact.png</string>
+		<key>size</key>
+		<string>{917,305}</string>
+		<key>textureFileName</key>
+		<string>doodle-enemy-impact.png</string>
+	</dict>
+</dict>
+</plist>

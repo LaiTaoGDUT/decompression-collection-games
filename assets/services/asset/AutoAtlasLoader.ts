@@ -1,4 +1,5 @@
 import {
+    Asset,
     AssetManager,
     Rect,
     Size,
@@ -38,30 +39,50 @@ export async function loadAutoAtlasFrames(
     bundle: AssetManager.Bundle,
     atlasPath: string,
     entries: readonly AutoAtlasFrameRequest[],
+    loadAsset?: <T extends Asset>(path: string, type: new (...args: any[]) => T) => Promise<T>,
 ): Promise<Readonly<Record<string, SpriteFrame>>> {
     let atlas: SpriteAtlas | undefined;
 
     try {
-        atlas = await loadAtlas(bundle, atlasPath);
+        atlas = await (loadAsset ? loadAsset(atlasPath, SpriteAtlas) : loadAtlas(bundle, atlasPath));
     } catch (error: unknown) {
         // `.pac` 只在构建阶段生成内容；编辑器预览、热重载或老版本构建
         // 可能暂时没有 SpriteAtlas。此时逐张纹理回退，保持预览可用。
-        console.warn(`[AutoAtlasLoader] Atlas unavailable, using source textures: ${atlasPath}`, error);
+        // TODO: console.warn(`[AutoAtlasLoader] Atlas unavailable, using source textures: ${atlasPath}`, error);
     }
 
+    const created: SpriteFrame[] = [];
+    let failure: unknown;
+    let failed = false;
     const loadedEntries = await Promise.all(entries.map(async (entry) => {
-        const atlasFrame = atlas?.getSpriteFrame(entry.frameName);
-        if (atlasFrame?.texture) {
-            return [entry.key, cloneSpriteFrame(atlasFrame)] as const;
-        }
+        try {
+            const atlasFrame = atlas?.getSpriteFrame(entry.frameName);
+            if (atlasFrame?.texture) {
+                const frame = cloneSpriteFrame(atlasFrame);
+                created.push(frame);
+                return [entry.key, frame] as const;
+            }
 
-        const texture = await loadTexture(bundle, entry.fallbackTexturePath);
-        return [entry.key, createTextureFrame(texture)] as const;
+            const texture = await (loadAsset
+                ? loadAsset(entry.fallbackTexturePath, Texture2D)
+                : loadTexture(bundle, entry.fallbackTexturePath));
+            const frame = createTextureFrame(texture);
+            created.push(frame);
+            return [entry.key, frame] as const;
+        } catch (error) {
+            if (!failed) failure = error;
+            failed = true;
+            return undefined;
+        }
     }));
+    if (failed) {
+        for (const frame of created) if (frame.isValid) frame.destroy();
+        throw failure;
+    }
 
     const frames: Record<string, SpriteFrame> = {};
-    loadedEntries.forEach(([key, frame]) => {
-        frames[key] = frame;
+    loadedEntries.forEach(entry => {
+        if (entry) frames[entry[0]] = entry[1];
     });
     return frames;
 }

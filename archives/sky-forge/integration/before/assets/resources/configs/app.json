@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 3,
+  "appVersion": "0.1.0",
+  "defaultLanguage": "zh-CN",
+  "sharing": {
+    "enableTimeline": true,
+    "appMessage": {
+      "title": "发现一个摸鱼宝藏，进来挑一款试试？",
+      "titles": [
+        "发现一个摸鱼宝藏，进来挑一款试试？",
+        "这几个小游戏有点上头，你能忍住只玩一把吗？",
+        "合西瓜、消泡泡、玩2048，你先挑战哪个？",
+        "手痒了就来一把，看看哪款最合你胃口",
+        "来试试你的手速和脑力，看看哪款能难住你",
+        "给脑袋放个小假，进来挑个小游戏玩"
+      ],
+      "imageUrl": "",
+      "imageUrlId": "Cfyc0QMZT+eCMQEAoaFTow==",
+      "imageUrlIds": [
+        "Cfyc0QMZT+eCMQEAoaFTow==",
+        "YdjzF/6cQFKjuVRht30+rw==",
+        "fcvpWzC1SkCtTtQm2DyASw=="
+      ],
+      "query": "source=share_app_message"
+    },
+    "timeline": {
+      "title": "说好只玩一把，怎么又点了下一局？",
+      "titles": [
+        "说好只玩一把，怎么又点了下一局？",
+        "你猜，哪款小游戏最容易让人上头？",
+        "今天的快乐，从随手玩一把开始",
+        "脑袋累了就点这里，给自己放个小假",
+        "合西瓜、消泡泡、玩2048，总有一款合你胃口",
+        "只想放松一下，结果又开了一局"
+      ],
+      "imageUrl": "",
+      "imageUrlId": "Cfyc0QMZT+eCMQEAoaFTow==",
+      "imageUrlIds": [
+        "Cfyc0QMZT+eCMQEAoaFTow==",
+        "YdjzF/6cQFKjuVRht30+rw==",
+        "fcvpWzC1SkCtTtQm2DyASw=="
+      ],
+      "imagePreviewUrl": "",
+      "imagePreviewUrlId": "",
+      "query": "source=share_timeline"
+    }
+  },
+  "designResolution": {
+    "width": 750,
+    "height": 1334,
+    "policy": "fixed-width"
+  },
+  "renderLayers": {
+    "systemUi": "UI_2D",
+    "gameUi": "UI_3D",
+    "game3d": "DEFAULT"
+  },
+  "qualityProfiles": {
+    "low": {
+      "renderScale": 0.75,
+      "realtimeShadows": false,
+      "postProcessing": false,
+      "particleScale": 0.5,
+      "maxActivePhysicsBodies": 32
+    },
+    "medium": {
+      "renderScale": 1,
+      "realtimeShadows": false,
+      "postProcessing": false,
+      "particleScale": 0.75,
+      "maxActivePhysicsBodies": 64
+    },
+    "high": {
+      "renderScale": 1,
+      "realtimeShadows": true,
+      "postProcessing": true,
+      "particleScale": 1,
+      "maxActivePhysicsBodies": 96
+    }
+  },
+  "timeouts": {
+    "platformInitializationMs": 5000,
+    "bundleLoadMs": 60000,
+    "sceneLoadMs": 15000,
+    "gameInitializationMs": 75000
+  },
+  "ads": {
+    "games": {
+      "watermelon": {
+        "enabled": true
+      },
+      "chess-endless": {
+        "enabled": true
+      },
+      "game2048": {
+        "enabled": true
+      },
+      "sliding-puzzle": {
+        "enabled": false
+      },
+      "catch": {
+        "enabled": true
+      },
+      "doodle-jump": {
+        "enabled": true
+      },
+      "bubble-shooter": {
+        "enabled": true
+      },
+      "meowdoku": {
+        "enabled": true
+      },
+      "sky-forge": {
+        "enabled": true
+      }
+    },
+    "tap": {
+      "rewardedVideo": {
+        "adUnitId": ""
+      }
+    },
+    "wechat": {
+      "watermelonReviveRewarded": {
+        "adUnitId": ""
+      },
+      "chessEndlessReviveRewarded": {
+        "adUnitId": ""
+      },
+      "desktopCleanupRewarded": {
+        "adUnitId": ""
+      },
+      "doodleJumpReviveRewarded": {
+        "adUnitId": ""
+      },
+      "game2048ClearSmallTilesRewarded": {
+        "adUnitId": ""
+      },
+      "bubbleShooterReviveRewarded": {
+        "adUnitId": ""
+      },
+      "meowdokuToolRewarded": {
+        "adUnitId": ""
+      },
+      "skyForgeReviveRewarded": {
+        "adUnitId": ""
+      },
+      "skyForgeDoubleGoldRewarded": {
+        "adUnitId": ""
+      }
+    }
+  },
+  "development": {
+    "mockAds": false,
+    "showDevelopmentGames": true
+  },
+  "fonts": {
+    "enabled": true,
+    "validateCoverage": false,
+    "loadTimeoutMs": 10000
+  }
+}

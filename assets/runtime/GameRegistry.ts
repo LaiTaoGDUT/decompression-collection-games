@@ -12,6 +12,9 @@ const DEVICE_TIER_RANK: Readonly<Record<DevicePerformanceTier, number>> = {
 export class GameRegistry {
     private manifests = new Map<string, GameManifest>();
 
+    /** 由应用按平台设置；发布平台不允许配置开关放出开发游戏。 */
+    constructor(private readonly allowDevelopmentGames: boolean) {}
+
     /** 原子替换全部清单；输入中有重复 ID 时保留原有数据并抛错。 */
     load(manifests: readonly GameManifest[]): void {
         const next = new Map<string, GameManifest>();
@@ -52,7 +55,8 @@ export class GameRegistry {
         const playable = Array.from(this.manifests.values()).filter(
             (manifest) => (
                 manifest.enabled
-                && (manifest.visibility === 'public' || includeDevelopment)
+                && (manifest.visibility === 'public'
+                    || (includeDevelopment && this.allowDevelopmentGames))
                 && DEVICE_TIER_RANK[manifest.minimumDeviceTier] <= deviceRank
                 && compareSemanticVersions(appVersion, manifest.minAppVersion) >= 0
             ),

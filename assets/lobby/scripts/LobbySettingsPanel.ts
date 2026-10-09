@@ -1,3 +1,4 @@
+import { setLabelBold } from '../../services/font/FontBinding';
 import {
     assetManager,
     Button,
@@ -260,7 +261,7 @@ export class LobbySettingsPanel {
 
         const title = this.createLabel(panel, 'SettingsTitle', '游戏设置', -175, 232, 350, 60, 49, COLOR.primary);
         title.horizontalAlign = HorizontalTextAlignment.CENTER;
-        title.isBold = true;
+        setLabelBold(title, true);
         const subtitle = this.createLabel(panel, 'SettingsSubtitle', '✦  声音与触感  ✦', -175, 174, 350, 38, 25, COLOR.secondary);
         subtitle.horizontalAlign = HorizontalTextAlignment.CENTER;
         this.createCloseButton(panel);
@@ -329,7 +330,7 @@ export class LobbySettingsPanel {
         this.loadSprite(UI_ASSET_PATHS[key], iconSprite);
 
         const rowTitle = this.createLabel(row, `${key}Label`, title, -180, 3, 240, 46, 31, COLOR.primary);
-        rowTitle.isBold = true;
+        setLabelBold(rowTitle, true);
 
         const switchNode = new Node(`${key}Switch`);
         switchNode.layer = row.layer;
@@ -455,7 +456,7 @@ export class LobbySettingsPanel {
                 services.feedback.setVibrationEnabled(!enabled);
             }
         } catch (error) {
-            console.error('[LobbySettingsPanel] Setting write failed.', error);
+            // TODO: console.error('[LobbySettingsPanel] Setting write failed.', error);
             this.setError('保存失败，请重试');
         }
         this.refresh();
@@ -546,7 +547,7 @@ export class LobbySettingsPanel {
         insetBottom = 0,
         onLoaded?: () => void,
     ): void {
-        const bundle = assetManager.getBundle('lobby');
+        const bundle = assetManager.getBundle('lobby-covers');
         if (!bundle) return;
         const token = this.loadToken;
         bundle.load(path, Texture2D, (error: Error | null, texture: Texture2D) => {

@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "b5f2ebbe-dee7-5a7e-ae2d-8ebccd3c5078",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "a992d": {
+      "importer": "sprite-frame",
+      "uuid": "b5f2ebbe-dee7-5a7e-ae2d-8ebccd3c5078@a992d",
+      "displayName": "",
+      "id": "a992d",
+      "name": "spring-rebound",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 300,
+        "trimY": 2,
+        "width": 254,
+        "height": 179,
+        "rawWidth": 254,
+        "rawHeight": 179,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c99c42c1-9805-5790-b4a7-bc5dc08d82a8@6c48a",
+        "atlasUuid": "b5f2ebbe-dee7-5a7e-ae2d-8ebccd3c5078",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "855fb": {
+      "importer": "sprite-frame",
+      "uuid": "b5f2ebbe-dee7-5a7e-ae2d-8ebccd3c5078@855fb",
+      "displayName": "",
+      "id": "855fb",
+      "name": "trampoline-rebound",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 294,
+        "height": 228,
+        "rawWidth": 294,
+        "rawHeight": 228,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c99c42c1-9805-5790-b4a7-bc5dc08d82a8@6c48a",
+        "atlasUuid": "b5f2ebbe-dee7-5a7e-ae2d-8ebccd3c5078",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-rebound.png",
+    "format": 2,
+    "uuid": "b5f2ebbe-dee7-5a7e-ae2d-8ebccd3c5078",
+    "textureUuid": "c99c42c1-9805-5790-b4a7-bc5dc08d82a8@6c48a"
+  }
+}

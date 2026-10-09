@@ -1,0 +1,293 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "55496": {
+      "importer": "sprite-frame",
+      "uuid": "1d518543-0a04-519f-8db0-331f86b89c03@55496",
+      "displayName": "",
+      "id": "55496",
+      "name": "desktop-cleanup-tool-magnet-v2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 384,
+        "height": 384,
+        "rawWidth": 384,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a",
+        "atlasUuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "3c168": {
+      "importer": "sprite-frame",
+      "uuid": "1d518543-0a04-519f-8db0-331f86b89c03@3c168",
+      "displayName": "",
+      "id": "3c168",
+      "name": "desktop-cleanup-hud-help-v2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 390,
+        "trimY": 390,
+        "width": 256,
+        "height": 256,
+        "rawWidth": 256,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a",
+        "atlasUuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "39c91": {
+      "importer": "sprite-frame",
+      "uuid": "1d518543-0a04-519f-8db0-331f86b89c03@39c91",
+      "displayName": "",
+      "id": "39c91",
+      "name": "desktop-cleanup-hud-pause-v2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 650,
+        "trimY": 390,
+        "width": 256,
+        "height": 256,
+        "rawWidth": 256,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a",
+        "atlasUuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c8f65": {
+      "importer": "sprite-frame",
+      "uuid": "1d518543-0a04-519f-8db0-331f86b89c03@c8f65",
+      "displayName": "",
+      "id": "c8f65",
+      "name": "desktop-cleanup-rewarded-video-icon-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 778,
+        "trimY": 2,
+        "width": 120,
+        "height": 85,
+        "rawWidth": 120,
+        "rawHeight": 85,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a",
+        "atlasUuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c8f78": {
+      "importer": "sprite-frame",
+      "uuid": "1d518543-0a04-519f-8db0-331f86b89c03@c8f78",
+      "displayName": "",
+      "id": "c8f78",
+      "name": "desktop-cleanup-tool-return-v2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 390,
+        "trimY": 2,
+        "width": 384,
+        "height": 384,
+        "rawWidth": 384,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a",
+        "atlasUuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c168d": {
+      "importer": "sprite-frame",
+      "uuid": "1d518543-0a04-519f-8db0-331f86b89c03@c168d",
+      "displayName": "",
+      "id": "c168d",
+      "name": "desktop-cleanup-tool-shuffle-v2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 390,
+        "width": 384,
+        "height": 384,
+        "rawWidth": 384,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a",
+        "atlasUuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "desktop-hud-tools.png",
+    "format": 2,
+    "uuid": "1d518543-0a04-519f-8db0-331f86b89c03",
+    "textureUuid": "b5d7752c-57f0-5a4a-9d16-6c9dd78821de@6c48a"
+  }
+}

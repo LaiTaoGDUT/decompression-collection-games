@@ -1,0 +1,155 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "c916bf83-d705-58a6-b616-16978eb85db5",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "17c29": {
+      "importer": "sprite-frame",
+      "uuid": "c916bf83-d705-58a6-b616-16978eb85db5@17c29",
+      "displayName": "",
+      "id": "17c29",
+      "name": "rocket-flame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 151,
+        "trimY": 2,
+        "width": 94,
+        "height": 225,
+        "rawWidth": 94,
+        "rawHeight": 225,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "64084833-15a3-5913-843c-f44810d85720@6c48a",
+        "atlasUuid": "c916bf83-d705-58a6-b616-16978eb85db5",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "429b5": {
+      "importer": "sprite-frame",
+      "uuid": "c916bf83-d705-58a6-b616-16978eb85db5@429b5",
+      "displayName": "",
+      "id": "429b5",
+      "name": "rocket-paper-scraps",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 276,
+        "width": 150,
+        "height": 238,
+        "rawWidth": 150,
+        "rawHeight": 238,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "64084833-15a3-5913-843c-f44810d85720@6c48a",
+        "atlasUuid": "c916bf83-d705-58a6-b616-16978eb85db5",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "2fb8d": {
+      "importer": "sprite-frame",
+      "uuid": "c916bf83-d705-58a6-b616-16978eb85db5@2fb8d",
+      "displayName": "",
+      "id": "2fb8d",
+      "name": "rocket-paper-trail",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 145,
+        "height": 270,
+        "rawWidth": 145,
+        "rawHeight": 270,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "64084833-15a3-5913-843c-f44810d85720@6c48a",
+        "atlasUuid": "c916bf83-d705-58a6-b616-16978eb85db5",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-rocket.png",
+    "format": 2,
+    "uuid": "c916bf83-d705-58a6-b616-16978eb85db5",
+    "textureUuid": "64084833-15a3-5913-843c-f44810d85720@6c48a"
+  }
+}

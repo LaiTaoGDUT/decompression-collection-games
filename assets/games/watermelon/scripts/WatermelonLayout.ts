@@ -1,6 +1,7 @@
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
+import { setLabelBold } from '../../../services/font/FontBinding';
 import {
     _decorator,
-    assetManager,
     Button,
     Color,
     Component,
@@ -15,6 +16,7 @@ import {
     UITransform,
     view,
 } from 'cc';
+import type { AssetService } from '../../../services/asset/AssetService';
 import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
 import { calculateTopRightControlPosition } from '../../../shared/ui/PlatformSafeLayout';
 import { CAT_UI_SHAPE, catUiColor } from './WatermelonUiTheme';
@@ -117,15 +119,11 @@ export function calculateWatermelonLayout(
     safeTop = 0,
     safeBottom = 0,
     platformLayout?: PlatformLayoutInfo,
-    safeLeft = 0,
-    safeRight = 0,
 ): WatermelonLayoutMetrics {
     const width = Math.max(1, canvasWidth);
     const height = Math.max(1, canvasHeight);
-    const left = Math.max(0, Math.min(width * 0.45, safeLeft));
-    const right = Math.max(0, Math.min(width * 0.45, safeRight));
-    const contentWidth = Math.max(1, width - left - right);
-    const contentX = (left - right) / 2;
+    const contentWidth = width;
+    const contentX = 0;
     const clampedTop = Math.max(0, Math.min(height * 0.45, safeTop));
     const clampedBottom = Math.max(0, Math.min(height * 0.45, safeBottom));
     const uiScale = Math.max(0.01, Math.min(1, contentWidth / 750));
@@ -142,8 +140,8 @@ export function calculateWatermelonLayout(
             reservedGap: 10,
         },
     );
-    const safeLeftEdge = -width / 2 + left;
-    const safeRightEdge = width / 2 - right;
+    const safeLeftEdge = -width / 2;
+    const safeRightEdge = width / 2;
     const pauseX = Math.max(
         safeLeftEdge + CAT_PAUSE_TOUCH_SIZE / 2,
         Math.min(safeRightEdge - CAT_PAUSE_TOUCH_SIZE / 2, pausePosition.x),
@@ -205,13 +203,14 @@ export class WatermelonLayout extends Component {
     private layoutChangeHandler?: () => void;
     private backgroundSourceAspect = 750 / 1334;
     private artworkLoadPromise?: Promise<void>;
+    private assets?: AssetService;
+    private artworkReleased = false;
     private latestMetrics?: WatermelonLayoutMetrics;
     private fruitRouteFrames: readonly SpriteFrame[] = [];
 
     protected onLoad(): void {
         this.applyLayout();
         view.on('canvas-resize', this.handleCanvasResize, this);
-        void this.prepareArtwork();
     }
 
     protected onDestroy(): void {
@@ -226,6 +225,7 @@ export class WatermelonLayout extends Component {
      * so onDestroy must not call getComponentsInChildren there.
      */
     releaseOwnedArtwork(detachBindings = true): void {
+        this.artworkReleased = true;
         const ownedFrames = new Set<SpriteFrame>();
         this.ownedUiFrames.forEach((frame) => ownedFrames.add(frame));
         if (this.ownedBackgroundFrame) {
@@ -248,13 +248,14 @@ export class WatermelonLayout extends Component {
         }
 
         for (const frame of ownedFrames) {
-            if (frame.isValid) frame.destroy();
+            this.assets?.releaseRuntimeAsset(frame);
         }
         this.ownedUiFrames.clear();
         this.bundleUiFrames.clear();
         this.ownedBackgroundFrame = undefined;
         this.ownedTitleFrame = undefined;
         this.fruitRouteFrames = [];
+        this.assets = undefined;
     }
 
     /** 由 MiniGameContext 注入平台原生 UI 约束，供初始化和后续 resize 共同使用。 */
@@ -284,21 +285,23 @@ export class WatermelonLayout extends Component {
         );
         const label = this.node.getChildByName('Instruction')?.getComponent(Label);
         if (label) {
-            label.isBold = emphasized;
+            setLabelBold(label, emphasized);
             label.enableOutline = false;
         }
     }
 
     /**
-     * 场景生命周期会早于 MiniGame.initialize() 触发，因此统一复用同一个
-     * 加载 Promise，让运行层能够等正式背景、标题和 HUD 全部准备完成。
+     * 由 initialize 注入公共资源服务后才开始加载，避免 onLoad 绕过 Context。
+     * 同一个加载 Promise 覆盖背景、标题和 HUD，供运行层等待。
      */
-    prepareArtwork(): Promise<void> {
+    prepareArtwork(assets: AssetService): Promise<void> {
+        if (this.artworkReleased) return Promise.reject(new Error('Watermelon artwork already released.'));
+        this.assets = assets;
         if (!this.artworkLoadPromise) {
             this.artworkLoadPromise = Promise.all([
-                this.loadBackground(),
-                this.loadTitleArtwork(),
-                this.loadUiArtwork(),
+                this.loadBackground(assets),
+                this.loadTitleArtwork(assets),
+                this.loadUiArtwork(assets),
             ]).then(() => undefined);
         }
         return this.artworkLoadPromise;
@@ -320,32 +323,21 @@ export class WatermelonLayout extends Component {
             visible.height > 0 ? visible.height : canvasSize.height,
         );
         const safeRect = sys.getSafeAreaRect();
-        const scaleX = visible.width > 0 ? viewportWidth / visible.width : 1;
         const scaleY = visible.height > 0 ? viewportHeight / visible.height : 1;
         const systemSafeTop = Math.max(0, visible.height - safeRect.y - safeRect.height)
             * scaleY;
         const systemSafeBottom = Math.max(0, safeRect.y) * scaleY;
-        const systemSafeLeft = Math.max(0, safeRect.x) * scaleX;
-        const systemSafeRight = Math.max(0, visible.width - safeRect.x - safeRect.width)
-            * scaleX;
         const safeTop = Math.max(systemSafeTop, this.platformLayout?.safeArea.top ?? 0);
         const platformSafeBottom = this.platformLayout
             ? Math.max(0, viewportHeight - this.platformLayout.safeArea.bottom)
             : 0;
         const safeBottom = Math.max(systemSafeBottom, platformSafeBottom);
-        const safeLeft = Math.max(systemSafeLeft, this.platformLayout?.safeArea.left ?? 0);
-        const platformSafeRight = this.platformLayout
-            ? Math.max(0, viewportWidth - this.platformLayout.safeArea.right)
-            : 0;
-        const safeRight = Math.max(systemSafeRight, platformSafeRight);
         const metrics = calculateWatermelonLayout(
             viewportWidth,
             viewportHeight,
             safeTop,
             safeBottom,
             this.platformLayout,
-            safeLeft,
-            safeRight,
         );
         this.latestMetrics = metrics;
         this.node.getComponent(UITransform)?.setContentSize(metrics.width, metrics.height);
@@ -515,7 +507,7 @@ export class WatermelonLayout extends Component {
             arrowLabel.string = '>';
             arrowLabel.fontSize = Math.max(14, Math.min(20 * scale, slotWidth * 0.34));
             arrowLabel.lineHeight = arrowLabel.fontSize + 4;
-            arrowLabel.isBold = false;
+            setLabelBold(arrowLabel, false);
             arrowLabel.color = catUiColor('ink', 255);
             arrowLabel.horizontalAlign = 1;
             arrowLabel.verticalAlign = 1;
@@ -538,13 +530,13 @@ export class WatermelonLayout extends Component {
             highScore.setParent(this.node);
             highScore.addComponent(UITransform).setContentSize(190, 76);
             const label = highScore.addComponent(Label);
-            label.string = '最高\n0';
+            label.string = "最高分\n0";
             label.horizontalAlign = 1;
             label.verticalAlign = 1;
         }
 
         this.ensureNumericHudLabels('ScoreLabel', '分数');
-        this.ensureNumericHudLabels('HighScoreLabel', '最高');
+        this.ensureNumericHudLabels('HighScoreLabel', "最高分");
 
         if (!this.node.getChildByName('HudDecorLayer')) {
             const decor = new Node('HudDecorLayer');
@@ -611,79 +603,62 @@ export class WatermelonLayout extends Component {
         pauseArtwork.sprite.spriteFrame = this.ownedUiFrames.get('pause') ?? null;
     }
 
-    private loadBackground(): Promise<void> {
-        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
-        if (!bundle) {
-            return Promise.resolve();
+    private async loadBackground(assets: AssetService): Promise<void> {
+        try {
+            const texture = await assets.loadAsset(WATERMELON_RESOURCE_BUNDLE,
+                'visual/backgrounds/c1-cat-room-bg-v1/texture', Texture2D);
+            if (!this.isValid || this.artworkReleased) return;
+            let background = this.node.getChildByName('CatRoomBackground');
+            if (!background) {
+                background = new Node('CatRoomBackground');
+                background.layer = this.node.layer;
+                background.setParent(this.node);
+                background.addComponent(UITransform);
+                background.addComponent(Sprite);
+                background.setSiblingIndex(0);
+            }
+            const sprite = background.getComponent(Sprite)!;
+            if (this.ownedBackgroundFrame) assets.releaseRuntimeAsset(this.ownedBackgroundFrame);
+            const frame = this.createTextureFrame(texture);
+            this.ownedBackgroundFrame = frame;
+            if (frame.originalSize.width > 0 && frame.originalSize.height > 0) {
+                this.backgroundSourceAspect = frame.originalSize.width / frame.originalSize.height;
+            }
+            sprite.spriteFrame = frame;
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            const size = this.node.getComponent(UITransform)?.contentSize;
+            this.resizeBackground(size?.width ?? 750, size?.height ?? 1334);
+        } catch (error) {
+            // TODO: console.warn('[WatermelonLayout] Cat-room background failed to load.', error);
         }
-
-        return new Promise((resolve) => {
-            bundle.load(
-                'visual/backgrounds/c1-cat-room-bg-v1/texture',
-                Texture2D,
-                (error, texture) => {
-                    if (!error && texture && this.node.isValid) {
-                        let background = this.node.getChildByName('CatRoomBackground');
-                        if (!background) {
-                            background = new Node('CatRoomBackground');
-                            background.layer = this.node.layer;
-                            background.setParent(this.node);
-                            background.addComponent(UITransform);
-                            background.addComponent(Sprite);
-                            background.setSiblingIndex(0);
-                        }
-                        const sprite = background.getComponent(Sprite)!;
-                        this.ownedBackgroundFrame?.destroy();
-                        const spriteFrame = this.createTextureFrame(texture);
-                        this.ownedBackgroundFrame = spriteFrame;
-                        const sourceWidth = spriteFrame.originalSize.width;
-                        const sourceHeight = spriteFrame.originalSize.height;
-                        if (sourceWidth > 0 && sourceHeight > 0) {
-                            this.backgroundSourceAspect = sourceWidth / sourceHeight;
-                        }
-                        sprite.spriteFrame = spriteFrame;
-                        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-                        const size = this.node.getComponent(UITransform)?.contentSize;
-                        this.resizeBackground(size?.width ?? 750, size?.height ?? 1334);
-                    } else if (error) {
-                        console.warn('[WatermelonLayout] Cat-room background failed to load.', error);
-                    }
-                    resolve();
-                },
-            );
-        });
     }
 
-    private loadTitleArtwork(): Promise<void> {
-        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
+    private async loadTitleArtwork(assets: AssetService): Promise<void> {
         const title = this.node.getChildByName('Title');
-        if (!bundle || !title) return Promise.resolve();
-
-        return new Promise((resolve) => {
-            bundle.load('visual/title/c1-cat-merge-title-v1/texture', Texture2D, (error, texture) => {
-                if (!error && texture && this.node.isValid && title.isValid) {
-                    let artwork = title.getChildByName('TitleArtwork');
-                    if (!artwork) {
-                        artwork = new Node('TitleArtwork');
-                        artwork.layer = title.layer;
-                        artwork.setParent(title);
-                        artwork.addComponent(UITransform);
-                        artwork.addComponent(Sprite);
-                    }
-                    const sprite = artwork.getComponent(Sprite)!;
-                    const frame = this.createTextureFrame(texture);
-                    this.ownedTitleFrame?.destroy();
-                    this.ownedTitleFrame = frame;
-                    sprite.spriteFrame = frame;
-                    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-                    artwork.getComponent(UITransform)?.setContentSize(CAT_TITLE_WIDTH, CAT_TITLE_HEIGHT);
-                    this.applyLayout();
-                } else if (error) {
-                    console.warn('[WatermelonLayout] Title artwork failed to load.', error);
-                }
-                resolve();
-            });
-        });
+        if (!title) return;
+        try {
+            const texture = await assets.loadAsset(WATERMELON_RESOURCE_BUNDLE,
+                'visual/title/c1-cat-merge-title-v1/texture', Texture2D);
+            if (!this.isValid || this.artworkReleased || !title.isValid) return;
+            let artwork = title.getChildByName('TitleArtwork');
+            if (!artwork) {
+                artwork = new Node('TitleArtwork');
+                artwork.layer = title.layer;
+                artwork.setParent(title);
+                artwork.addComponent(UITransform);
+                artwork.addComponent(Sprite);
+            }
+            const sprite = artwork.getComponent(Sprite)!;
+            const frame = this.createTextureFrame(texture);
+            if (this.ownedTitleFrame) assets.releaseRuntimeAsset(this.ownedTitleFrame);
+            this.ownedTitleFrame = frame;
+            sprite.spriteFrame = frame;
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            artwork.getComponent(UITransform)?.setContentSize(CAT_TITLE_WIDTH, CAT_TITLE_HEIGHT);
+            this.applyLayout();
+        } catch (error) {
+            // TODO: console.warn('[WatermelonLayout] Title artwork failed to load.', error);
+        }
     }
 
     private resizeBackground(width: number, height: number): void {
@@ -698,41 +673,26 @@ export class WatermelonLayout extends Component {
         background.getComponent(UITransform)?.setContentSize(drawWidth, drawHeight);
     }
 
-    private loadUiArtwork(): Promise<void> {
-        const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
-        if (!bundle) {
-            return Promise.resolve();
-        }
-
-        const artworkKeys = Object.keys(CAT_UI_ARTWORK_PATHS) as CatUiArtworkKey[];
-        const entries: Array<[CatUiArtworkKey, string]> = artworkKeys
-            .map((key): [CatUiArtworkKey, string] => [key, CAT_UI_ARTWORK_PATHS[key]]);
-        return Promise.all(entries.map(([key, path]) => new Promise<void>((resolve) => {
-            if (isNativeHudFrame(key)) {
-                bundle.load(path, SpriteFrame, (error, frame) => {
-                    if (!error && frame && this.node.isValid) {
-                        this.bundleUiFrames.set(key, frame);
-                        this.applyLayout();
-                    } else if (error) {
-                        console.warn(`[WatermelonLayout] UI SpriteFrame failed to load: ${key}.`, error);
-                    }
-                    resolve();
-                });
-                return;
-            }
-            bundle.load(path, Texture2D, (error, texture) => {
-                if (!error && texture && this.node.isValid) {
-                    const frame = this.createTextureFrame(texture);
-                    const previous = this.ownedUiFrames.get(key);
-                    if (previous?.isValid) previous.destroy();
-                    this.ownedUiFrames.set(key, frame);
-                    this.applyLayout();
-                } else if (error) {
-                    console.warn(`[WatermelonLayout] UI artwork failed to load: ${key}.`, error);
+    private async loadUiArtwork(assets: AssetService): Promise<void> {
+        const keys = Object.keys(CAT_UI_ARTWORK_PATHS) as CatUiArtworkKey[];
+        await Promise.all(keys.map(async key => {
+            try {
+                const path = CAT_UI_ARTWORK_PATHS[key];
+                const packed = PACKED_SPRITE_PATHS[path];
+                const frame = await assets.loadSpriteFrame(WATERMELON_RESOURCE_BUNDLE, packed ?? path,
+                    packed || isNativeHudFrame(key) ? 'frame' : 'texture');
+                if (!this.isValid || this.artworkReleased) {
+                    assets.releaseRuntimeAsset(frame);
+                    return;
                 }
-                resolve();
-            });
-        }))).then(() => undefined);
+                const previous = this.ownedUiFrames.get(key);
+                if (previous) assets.releaseRuntimeAsset(previous);
+                this.ownedUiFrames.set(key, frame);
+                this.applyLayout();
+            } catch (error) {
+                // TODO: console.warn(`[WatermelonLayout] UI artwork failed to load: ${key}.`, error);
+            }
+        }));
     }
 
     private hasUiArtwork(key: CatUiArtworkKey): boolean {
@@ -748,8 +708,7 @@ export class WatermelonLayout extends Component {
      * the source dimensions here is required by Cocos SLICED layout.
      */
     private createTextureFrame(texture: Texture2D): SpriteFrame {
-        const frame = new SpriteFrame();
-        frame.texture = texture;
+        const frame = this.assets!.createSpriteFrame(WATERMELON_RESOURCE_BUNDLE, texture);
         frame.originalSize = new Size(texture.width, texture.height);
         // Runtime-created nine-slice frames keep their own cap insets. Avoid
         // dynamic-atlas replacement changing the texture rect behind them.
@@ -1088,14 +1047,14 @@ export class WatermelonLayout extends Component {
         this.styleLabel('Title', 36 * scale, catUiColor('ink'), '');
         this.styleNumericHudLabels('ScoreLabel', scale);
         this.styleNumericHudLabels('HighScoreLabel', scale);
-        this.styleLabel('NextLabel', CAT_HUD_CAPTION_FONT_SIZE * scale, catUiColor('scoreInk'), '下一个');
+        this.styleLabel('NextLabel', CAT_HUD_CAPTION_FONT_SIZE * scale, catUiColor('scoreInk'), "下个水果");
         const nextLabel = this.node.getChildByName('NextLabel')?.getComponent(Label);
         if (nextLabel) {
-            nextLabel.isBold = true;
+            setLabelBold(nextLabel, true);
             nextLabel.enableOutline = false;
         }
         this.styleLabel('DropZone', 21 * scale, catUiColor('ink', 220), '');
-        this.setInstructionPresentation('左右移动，松手投放，摇晃搅动');
+        this.setInstructionPresentation("左右拖动，松手投放；摇晃手机搅动");
         const danger = this.node.getChildByName('FruitContainer')
             ?.getChildByName('DangerLine')?.getComponent(Label);
         if (danger) {
@@ -1159,7 +1118,7 @@ export class WatermelonLayout extends Component {
         caption.lineHeight = (CAT_HUD_CAPTION_FONT_SIZE + 2) * scale;
         const textToken = parentName === 'ScoreLabel' ? 'scoreInk' : 'bestScoreInk';
         caption.color = catUiColor(textToken, 220);
-        caption.isBold = true;
+        setLabelBold(caption, true);
         caption.enableOutline = false;
         caption.horizontalAlign = 1;
         caption.verticalAlign = 1;
@@ -1174,7 +1133,7 @@ export class WatermelonLayout extends Component {
         value.fontSize = valueFontSize * scale;
         value.lineHeight = (valueFontSize + 2) * scale;
         value.color = catUiColor(textToken);
-        value.isBold = true;
+        setLabelBold(value, true);
         value.enableOutline = false;
         value.horizontalAlign = 1;
         value.verticalAlign = 1;

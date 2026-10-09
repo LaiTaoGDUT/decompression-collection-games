@@ -1,0 +1,293 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "21919": {
+      "importer": "sprite-frame",
+      "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0@21919",
+      "displayName": "",
+      "id": "21919",
+      "name": "round-panel",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 384,
+        "height": 123,
+        "rawWidth": 384,
+        "rawHeight": 123,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a",
+        "atlasUuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+        "trimType": "custom",
+        "borderTop": 20,
+        "borderBottom": 20,
+        "borderLeft": 61,
+        "borderRight": 61
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f008e": {
+      "importer": "sprite-frame",
+      "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0@f008e",
+      "displayName": "",
+      "id": "f008e",
+      "name": "hud-boss-health-fill",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 586,
+        "trimY": 2,
+        "width": 128,
+        "height": 64,
+        "rawWidth": 128,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a",
+        "atlasUuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 32,
+        "borderRight": 32
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f40b7": {
+      "importer": "sprite-frame",
+      "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0@f40b7",
+      "displayName": "",
+      "id": "f40b7",
+      "name": "hud-boss-health-track",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 390,
+        "trimY": 2,
+        "width": 192,
+        "height": 96,
+        "rawWidth": 192,
+        "rawHeight": 96,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a",
+        "atlasUuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 48,
+        "borderRight": 48
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f8bbe": {
+      "importer": "sprite-frame",
+      "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0@f8bbe",
+      "displayName": "",
+      "id": "f8bbe",
+      "name": "hud-counter-bead",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 718,
+        "trimY": 2,
+        "width": 56,
+        "height": 56,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a",
+        "atlasUuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "151ec": {
+      "importer": "sprite-frame",
+      "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0@151ec",
+      "displayName": "",
+      "id": "151ec",
+      "name": "hud-counter-slot-empty",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 778,
+        "trimY": 2,
+        "width": 37,
+        "height": 37,
+        "rawWidth": 39,
+        "rawHeight": 39,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a",
+        "atlasUuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "69ddc": {
+      "importer": "sprite-frame",
+      "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0@69ddc",
+      "displayName": "",
+      "id": "69ddc",
+      "name": "hud-insert-row",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0.5,
+        "offsetY": -0.5,
+        "trimX": 819,
+        "trimY": 2,
+        "width": 34,
+        "height": 34,
+        "rawWidth": 37,
+        "rawHeight": 37,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a",
+        "atlasUuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "common-hud.png",
+    "format": 2,
+    "uuid": "3ee6a01f-5fd3-5bd4-8c92-d2cc10c6d0b0",
+    "textureUuid": "d592fb98-8fa3-5484-afc2-49856001c5b8@6c48a"
+  }
+}

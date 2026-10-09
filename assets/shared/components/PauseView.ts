@@ -95,7 +95,7 @@ export class PauseView extends Component implements PausePresenter {
         try {
             await action();
         } catch (error: unknown) {
-            console.error('[PauseView] Pause action failed.', error);
+            // TODO: console.error('[PauseView] Pause action failed.', error);
         } finally {
             if (this.node.active) {
                 this.setBusy(false);

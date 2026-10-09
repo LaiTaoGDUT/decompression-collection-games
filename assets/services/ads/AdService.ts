@@ -1,4 +1,5 @@
 import type { AppStateMachine } from '../../core/state/AppStateMachine';
+import type { Platform } from '../../platform/Platform';
 import type { AnalyticsService } from '../analytics/AnalyticsService';
 
 export const AD_PLACEMENTS = Object.freeze({
@@ -8,6 +9,7 @@ export const AD_PLACEMENTS = Object.freeze({
     doodleJumpRevive: 'doodle-jump-revive',
     bubbleShooterRevive: 'bubble-shooter-revive',
     game2048ClearSmallTiles: 'game2048-clear-small-tiles',
+    meowdokuTool: 'meowdoku-tool',
 } as const);
 
 export type AdOutcome = 'completed' | 'skipped' | 'failed';
@@ -15,6 +17,8 @@ export type AdOutcome = 'completed' | 'skipped' | 'failed';
 export interface AdResult {
     readonly outcome: AdOutcome;
     readonly error?: string;
+    /** 未配置时公共服务已经显示提示，调用方无需重复提示。 */
+    readonly errorCode?: 'not-configured';
 }
 
 export interface AdRequest {
@@ -55,12 +59,8 @@ function requestKey(request: AdRequest): string {
     return [request.placement, request.gameId, request.sessionId ?? ''].join('|');
 }
 
-function failedRewarded(error: string): AdResult {
-    return Object.freeze({ outcome: 'failed', error });
-}
-
-function completedRewarded(): AdResult {
-    return Object.freeze({ outcome: 'completed' });
+function failedRewarded(error: string, errorCode?: AdResult['errorCode']): AdResult {
+    return Object.freeze({ outcome: 'failed', error, ...(errorCode ? { errorCode } : {}) });
 }
 
 /** 可由开发菜单或测试直接配置下一次结果的模拟广告。 */
@@ -111,6 +111,7 @@ export class RewardedAdRouter implements RewardedAdProvider {
             ? provider.show(request)
             : Promise.resolve(failedRewarded(
                 `Rewarded ad placement "${request.placement}" is not configured.`,
+                'not-configured',
             ));
     }
 
@@ -140,6 +141,7 @@ export class AdService {
         private readonly rewardedProvider: RewardedAdProvider,
         private readonly analytics?: AnalyticsService,
         private readonly gameEnablement?: Readonly<Record<string, boolean>>,
+        private readonly platform?: Pick<Platform, 'showToast'>,
     ) {}
 
     isEnabledForGame(gameId: string): boolean {
@@ -173,11 +175,8 @@ export class AdService {
             ));
         }
         if (!this.isRewardedConfigured(normalized)) {
-            // The game must still expose its ad opportunity when no real ad
-            // has been configured. Treat the click as a completed reward and
-            // let the game continue through its normal success path without
-            // touching the platform provider or the app pause state.
-            return Promise.resolve(completedRewarded());
+            this.platform?.showToast('广告暂不可用');
+            return Promise.resolve(failedRewarded('Rewarded ad placement is not configured.', 'not-configured'));
         }
         const key = requestKey(normalized);
 
@@ -240,6 +239,7 @@ export class AdService {
             result = Object.freeze({
                 outcome: providerResult.outcome,
                 ...(providerResult.error ? { error: providerResult.error } : {}),
+                ...(providerResult.errorCode ? { errorCode: providerResult.errorCode } : {}),
             });
         } catch (error: unknown) {
             result = failedRewarded(

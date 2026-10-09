@@ -1,4 +1,5 @@
 import type { DoodleJumpPlatformType } from './DoodleJumpConfig';
+import type { DoodleJumpSpawnPlan } from './DoodleJumpReferenceRules';
 
 export interface DoodleJumpWorldPlatform {
     readonly id: string;
@@ -8,6 +9,7 @@ export interface DoodleJumpWorldPlatform {
     readonly width: number;
     readonly collisionEnabled: boolean;
     readonly consumed: boolean;
+    readonly spawnPlan?: DoodleJumpSpawnPlan;
 }
 
 export interface DoodleJumpWorldIndex {

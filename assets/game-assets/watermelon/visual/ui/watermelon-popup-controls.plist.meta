@@ -1,0 +1,293 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "7bbd5": {
+      "importer": "sprite-frame",
+      "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005@7bbd5",
+      "displayName": "",
+      "id": "7bbd5",
+      "name": "c1-cat-popup-button-cream-350-v3",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 356,
+        "trimY": 184,
+        "width": 350,
+        "height": 78,
+        "rawWidth": 350,
+        "rawHeight": 78,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a",
+        "atlasUuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f2276": {
+      "importer": "sprite-frame",
+      "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005@f2276",
+      "displayName": "",
+      "id": "f2276",
+      "name": "c1-cat-popup-button-mint-350-v3",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 123,
+        "width": 350,
+        "height": 80,
+        "rawWidth": 350,
+        "rawHeight": 80,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a",
+        "atlasUuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "433c7": {
+      "importer": "sprite-frame",
+      "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005@433c7",
+      "displayName": "",
+      "id": "433c7",
+      "name": "c1-watermelon-continue-video-button-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 356,
+        "trimY": 2,
+        "width": 350,
+        "height": 90,
+        "rawWidth": 350,
+        "rawHeight": 90,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a",
+        "atlasUuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b85e4": {
+      "importer": "sprite-frame",
+      "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005@b85e4",
+      "displayName": "",
+      "id": "b85e4",
+      "name": "c1-watermelon-continue-video-icon-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 710,
+        "trimY": 2,
+        "width": 96,
+        "height": 96,
+        "rawWidth": 96,
+        "rawHeight": 96,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a",
+        "atlasUuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "93f82": {
+      "importer": "sprite-frame",
+      "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005@93f82",
+      "displayName": "",
+      "id": "93f82",
+      "name": "c1-watermelon-pause-score-v3",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 350,
+        "height": 117,
+        "rawWidth": 350,
+        "rawHeight": 117,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a",
+        "atlasUuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6c70c": {
+      "importer": "sprite-frame",
+      "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005@6c70c",
+      "displayName": "",
+      "id": "6c70c",
+      "name": "c1-watermelon-record-restart-button-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 356,
+        "trimY": 96,
+        "width": 350,
+        "height": 84,
+        "rawWidth": 350,
+        "rawHeight": 84,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a",
+        "atlasUuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "watermelon-popup-controls.png",
+    "format": 2,
+    "uuid": "a393b45f-0b2a-5f67-9b17-81388f633005",
+    "textureUuid": "c7e31f6d-175e-5608-8d92-53d477df8771@6c48a"
+  }
+}

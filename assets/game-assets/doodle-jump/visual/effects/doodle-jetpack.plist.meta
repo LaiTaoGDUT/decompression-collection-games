@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "2606e5cd-db93-5194-9b01-ba090df56db1",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "cf315": {
+      "importer": "sprite-frame",
+      "uuid": "2606e5cd-db93-5194-9b01-ba090df56db1@cf315",
+      "displayName": "",
+      "id": "cf315",
+      "name": "jetpack-flames",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 279,
+        "width": 179,
+        "height": 209,
+        "rawWidth": 179,
+        "rawHeight": 209,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "cb11e2c6-3384-51b3-a0b9-bcd8079a0389@6c48a",
+        "atlasUuid": "2606e5cd-db93-5194-9b01-ba090df56db1",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c6e39": {
+      "importer": "sprite-frame",
+      "uuid": "2606e5cd-db93-5194-9b01-ba090df56db1@c6e39",
+      "displayName": "",
+      "id": "c6e39",
+      "name": "jetpack-paper-scraps",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 197,
+        "height": 273,
+        "rawWidth": 197,
+        "rawHeight": 273,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "cb11e2c6-3384-51b3-a0b9-bcd8079a0389@6c48a",
+        "atlasUuid": "2606e5cd-db93-5194-9b01-ba090df56db1",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-jetpack.png",
+    "format": 2,
+    "uuid": "2606e5cd-db93-5194-9b01-ba090df56db1",
+    "textureUuid": "cb11e2c6-3384-51b3-a0b9-bcd8079a0389@6c48a"
+  }
+}

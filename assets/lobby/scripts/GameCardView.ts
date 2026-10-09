@@ -1,3 +1,4 @@
+import { setLabelBold } from '../../services/font/FontBinding';
 import {
     _decorator,
     assetManager,
@@ -21,12 +22,27 @@ import {
     VerticalTextAlignment,
 } from 'cc';
 import type { GameManifest } from '../../runtime/GameManifest';
+import {
+    calculateLobbyCardRows,
+    LOBBY_CARD_LAYOUT as CARD_LAYOUT,
+} from './LobbyCardLayout';
 
 const { ccclass } = _decorator;
 export type GameCardClickHandler = (manifest: GameManifest) => void;
 
 const CARD_SKIN_PATH = 'visual/ui/lobby-card-frame/texture';
+const RECENT_BADGE_PATH = 'visual/ui/lobby-recently-played-v2/texture';
 const START_BUTTON_PATH = 'visual/ui/lobby-start-button/texture';
+/**
+ * 卡片底板九宫格边距（纹理像素）：上下保留圆角与底部厚边，只拉伸中段，
+ * 卡片变高时圆角和厚边不变形。
+ */
+const CARD_SKIN_INSETS = { left: 64, right: 64, top: 64, bottom: 72 } as const;
+/**
+ * “最近游玩”贴纸：设计宽度、倾角（度，负值为顺时针）与探出卡片边缘的距离
+ * （320 设计单位）。右侧紧邻 12 单位的网格间隙，横向只轻微探出。
+ */
+const RECENT_BADGE = { width: 160, angle: -8, overhangX: 4, overhangY: 8 } as const;
 
 const COLORS = {
     surface: new Color(241, 135, 84, 255),
@@ -42,9 +58,16 @@ const COLORS = {
     butter: new Color(246, 199, 84, 255),
     paper: new Color(255, 246, 224, 255),
     textShadow: new Color(66, 25, 15, 220),
+    actionText: new Color(255, 255, 255, 255),
+    actionTextShadow: new Color(176, 42, 22, 235),
+    actionDisabledTint: new Color(236, 228, 220, 255),
+    actionDisabledShadow: new Color(112, 104, 98, 200),
+    actionBusyTint: new Color(255, 226, 214, 255),
 };
 
 type CardMode = 'game' | 'coming-soon';
+/** ready: 可点击；busy: 正在进入，保持品牌色但不可点击；disabled: 暂未开放。 */
+type ActionState = 'ready' | 'busy' | 'disabled';
 
 /** Lobby collectible card with an animated artwork window and paper details. */
 @ccclass('GameCardView')
@@ -59,10 +82,14 @@ export class GameCardView extends Component {
     private cardSurface?: Graphics;
     private cardSkin?: Sprite;
     private coverFallback?: Graphics;
+    private coverBorder?: Graphics;
     private titleOverlay?: Graphics;
     private actionBackground?: Graphics;
     private actionSkin?: Sprite;
     private decorRoot?: Node;
+    private recentBadge?: Sprite;
+    private recentlyPlayed = false;
+    private actionState: ActionState = 'ready';
     private ownedCoverFrame?: SpriteFrame;
     private readonly ownedUiFrames: SpriteFrame[] = [];
     private uiLoadToken = 0;
@@ -87,11 +114,13 @@ export class GameCardView extends Component {
         manifest: GameManifest,
         _highScore: number | undefined,
         clickHandler: GameCardClickHandler,
+        recentlyPlayed = false,
     ): void {
         this.ensureStructure();
         this.requireLabel('DescriptionLabel').node.active = true;
         this.mode = 'game';
         this.manifest = manifest;
+        this.recentlyPlayed = recentlyPlayed;
         this.clickHandler = clickHandler;
         this.node.name = `GameCard-${manifest.id}`;
         this.requireLabel('NameLabel').string = manifest.name;
@@ -110,6 +139,7 @@ export class GameCardView extends Component {
     bindComingSoon(): void {
         this.ensureStructure();
         this.mode = 'coming-soon';
+        this.recentlyPlayed = false;
         this.manifest = undefined;
         this.clickHandler = undefined;
         this.coverLoadToken += 1;
@@ -131,7 +161,7 @@ export class GameCardView extends Component {
     setCardSize(width: number, height: number): void {
         this.ensureStructure();
         this.cardWidth = Math.max(240, width);
-        this.cardHeight = Math.max(350, height);
+        this.cardHeight = Math.max(1, height);
         this.node.getComponent(UITransform)?.setContentSize(
             this.cardWidth,
             this.cardHeight,
@@ -139,9 +169,9 @@ export class GameCardView extends Component {
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(this.mode === 'coming-soon');
-        this.requireActionNode().active = this.mode === 'game' && (this.manifest?.enabled ?? false);
+        this.requireActionNode().active = this.mode === 'game';
         if (this.mode === 'game') {
-            this.drawActionBackground(!(this.manifest?.enabled ?? false));
+            this.drawActionBackground(this.actionState);
         }
     }
 
@@ -152,7 +182,7 @@ export class GameCardView extends Component {
         this.requireActionLabel().string = '正在进入…';
         this.requireButton().interactable = false;
         this.requireActionNode().active = true;
-        this.drawActionBackground(true);
+        this.drawActionBackground('busy');
     }
 
     setEnterFailed(): void {
@@ -162,7 +192,7 @@ export class GameCardView extends Component {
         this.requireActionLabel().string = '重试';
         this.requireButton().interactable = true;
         this.requireActionNode().active = true;
-        this.drawActionBackground();
+        this.drawActionBackground('ready');
     }
 
     setIdle(): void {
@@ -170,12 +200,12 @@ export class GameCardView extends Component {
             return;
         }
         const enabled = this.manifest?.enabled ?? false;
-        this.requireActionNode().active = enabled;
+        this.requireActionNode().active = true;
         this.requireActionLabel().string = enabled ? '开始游戏' : '暂未开放';
         this.requireLabel('ScoreLabel').string = '';
         this.requireLabel('ScoreLabel').node.active = false;
         this.requireButton().interactable = enabled;
-        this.drawActionBackground(!enabled);
+        this.drawActionBackground(enabled ? 'ready' : 'disabled');
     }
 
     private ensureStructure(): void {
@@ -262,6 +292,16 @@ export class GameCardView extends Component {
             artwork.setParent(coverClip);
         }
         this.coverSprite = artwork.getComponent(Sprite) ?? undefined;
+        let border = this.coverRoot.getChildByName('CoverBorder');
+        if (!border) {
+            border = new Node('CoverBorder');
+            border.layer = parentLayer;
+            this.coverRoot.addChild(border);
+            border.addComponent(UITransform);
+            border.addComponent(Graphics);
+        }
+        border.setSiblingIndex(this.coverRoot.children.length - 1);
+        this.coverBorder = border.getComponent(Graphics) ?? undefined;
 
         let titleOverlay = this.node.getChildByName('TitleOverlay');
         if (!titleOverlay) {
@@ -313,10 +353,12 @@ export class GameCardView extends Component {
             actionLabel.verticalAlign = VerticalTextAlignment.CENTER;
             actionLabel.overflow = Label.Overflow.SHRINK;
         }
+        // The button art is text-free; the label carries every state
+        // (开始游戏 / 正在进入… / 重试 / 暂未开放) above the skin.
         const actionLabel = action.getChildByName('ActionLabel')?.getComponent(Label);
         if (actionLabel) {
-            this.configurePlainText(actionLabel);
-            actionLabel.node.active = false;
+            actionLabel.node.active = true;
+            actionLabel.node.setSiblingIndex(action.children.length - 1);
         }
 
         let decor = this.node.getChildByName('CardDecor');
@@ -328,6 +370,15 @@ export class GameCardView extends Component {
             decor.addComponent(Graphics);
         }
         this.decorRoot = decor;
+        let recentBadge = decor.getChildByName('RecentlyPlayedBadge');
+        if (!recentBadge) {
+            recentBadge = new Node('RecentlyPlayedBadge');
+            recentBadge.layer = parentLayer;
+            decor.addChild(recentBadge);
+            recentBadge.addComponent(UITransform);
+            recentBadge.addComponent(Sprite).sizeMode = Sprite.SizeMode.CUSTOM;
+        }
+        this.recentBadge = recentBadge.getComponent(Sprite) ?? undefined;
         let badge = decor.getChildByName('GenreBadge');
         if (!badge) {
             badge = new Node('GenreBadge');
@@ -342,17 +393,15 @@ export class GameCardView extends Component {
     }
 
     private layoutChildren(): void {
-        const halfHeight = this.cardHeight / 2;
-        const skinScale = this.cardWidth / 320;
-        const innerWidth = this.cardWidth - 34 * skinScale;
-        const coverWidth = this.cardWidth - 42 * skinScale;
-        const coverHeight = 172 * skinScale;
-        const coverTopInset = 24 * skinScale;
-        const coverY = halfHeight - coverTopInset - coverHeight / 2;
-        const coverVisualY = coverY + 5 * skinScale;
+        const rows = calculateLobbyCardRows(this.cardWidth, this.cardHeight);
+        const skinScale = rows.scale;
+        const innerWidth = rows.coverWidth;
+        const coverWidth = rows.coverWidth;
+        const coverHeight = rows.coverHeight;
+        const coverY = rows.coverY;
 
         if (this.coverRoot) {
-            this.coverRoot.setPosition(0, coverVisualY);
+            this.coverRoot.setPosition(0, coverY);
             this.coverRoot.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
             this.coverFallback?.node.setPosition(0, 0);
             this.coverFallback?.node.getComponent(UITransform)?.setContentSize(coverWidth, coverHeight);
@@ -370,7 +419,7 @@ export class GameCardView extends Component {
                     -coverHeight / 2,
                     coverWidth,
                     coverHeight,
-                    20 * skinScale,
+                    CARD_LAYOUT.coverRadius * skinScale,
                 );
                 maskGraphics.fill();
             }
@@ -379,40 +428,83 @@ export class GameCardView extends Component {
             this.layoutCoverArtwork(coverWidth, coverHeight);
         }
 
-        // Keep the three text/action groups on one deliberate rhythm below
-        // the artwork slot: equal cover/title and title/description gaps,
-        // followed by a slightly larger gap before the action button.
-        const coverBottom = coverY - coverHeight / 2;
-        const commonGap = 4 * skinScale;
-        const actionGap = 12 * skinScale;
-        const titleHeight = 44 * skinScale;
-        const descriptionHeight = 30 * skinScale;
-        const actionWidth = 180 * skinScale;
-        const actionHeight = actionWidth * 99 / 320;
-        const nameY = coverBottom - commonGap - titleHeight / 2;
-        const descriptionY = nameY - titleHeight / 2 - commonGap - descriptionHeight / 2;
-        const actionY = descriptionY - descriptionHeight / 2 - actionGap - actionHeight / 2;
-        this.layoutLabel('NameLabel', 0, nameY, innerWidth - 24, 44, 0.5);
-        this.layoutLabel('DescriptionLabel', 0, descriptionY, innerWidth - 32, 30, 0.5);
+        const titleHeight = CARD_LAYOUT.titleHeight * skinScale;
+        const descriptionHeight = CARD_LAYOUT.descriptionHeight * skinScale;
+        const actionWidth = rows.actionWidth;
+        const actionHeight = rows.actionHeight;
+        const actionY = rows.actionY;
+        // The coming-soon card has no description or action: centre its title
+        // in the whole area under the cover slot.
+        const nameY = this.mode === 'game'
+            ? rows.titleY
+            : (coverY - coverHeight / 2 - this.cardHeight / 2 + CARD_LAYOUT.bottomInset * skinScale) / 2;
+        this.layoutLabel('NameLabel', 0, nameY, innerWidth - 12 * skinScale, titleHeight, 0.5);
+        this.layoutLabel(
+            'DescriptionLabel',
+            0,
+            rows.descriptionY,
+            innerWidth - 12 * skinScale,
+            descriptionHeight,
+            0.5,
+        );
         const action = this.requireActionNode();
         action.setPosition(0, actionY);
         action.getComponent(UITransform)?.setContentSize(actionWidth, actionHeight);
         this.actionSkin?.node.setPosition(0, 0);
         this.actionSkin?.node.getComponent(UITransform)?.setContentSize(actionWidth, actionHeight);
-        const actionLabel = action.getChildByName('ActionLabel');
-        actionLabel?.setPosition(0, 0);
-        actionLabel?.getComponent(UITransform)?.setContentSize(actionWidth, 40 * skinScale);
+        const actionLabel = this.requireActionLabel();
+        // The skin's glossy face sits slightly above its bottom lip; centre
+        // the text on the face rather than on the whole sprite.
+        actionLabel.node.setPosition(0, actionHeight * 0.02);
+        actionLabel.node.getComponent(UITransform)?.setContentSize(
+            actionWidth - 36 * skinScale,
+            actionHeight * 0.7,
+        );
+        actionLabel.fontSize = Math.round(CARD_LAYOUT.actionFontSize * skinScale);
+        actionLabel.lineHeight = Math.round(CARD_LAYOUT.actionFontSize * 1.25 * skinScale);
+        actionLabel.spacingX = Math.round(2 * skinScale);
+        actionLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
+        actionLabel.verticalAlign = VerticalTextAlignment.CENTER;
+        actionLabel.overflow = Label.Overflow.SHRINK;
+        actionLabel.enableWrapText = false;
+        setLabelBold(actionLabel, true);
+        this.styleActionLabel(this.actionState);
 
         if (this.decorRoot) {
             this.decorRoot.setPosition(0, 0);
             this.decorRoot.getComponent(UITransform)?.setContentSize(this.cardWidth, this.cardHeight);
             const badge = this.decorRoot.getChildByName('GenreBadge');
-            badge?.setPosition(innerWidth / 2 - 30, coverVisualY + coverHeight / 2 - 28);
+            badge?.setPosition(innerWidth / 2 - 30, coverY + coverHeight / 2 - 28);
             badge?.getComponent(UITransform)?.setContentSize(30, 30);
             this.drawDecor();
         }
+        this.layoutRecentBadge();
         this.drawTitleOverlay();
         this.raiseCardContent();
+    }
+
+    /**
+     * “最近游玩”贴纸斜贴在卡片右上角：略微探出卡片边缘并顺时针倾斜，
+     * 像随手贴上的标签，同时尽量少遮挡封面主体。最近游玩的卡片总在网格
+     * 首位（左列首行），上方是品牌区留白；右侧只探入网格间隙，不压相邻卡片。
+     */
+    private layoutRecentBadge(): void {
+        const badge = this.recentBadge;
+        if (!badge) return;
+        badge.node.active = this.mode === 'game' && this.recentlyPlayed;
+        if (!badge.node.active) return;
+        const scale = this.cardWidth / CARD_LAYOUT.designWidth;
+        const texture = badge.spriteFrame?.texture;
+        const width = RECENT_BADGE.width * scale;
+        const height = width * (texture ? texture.height / texture.width : 0.4);
+        // Preserve the illustrated sticker's baked-in lettering, cream outline
+        // and shadow at the original aspect ratio.
+        badge.node.getComponent(UITransform)?.setContentSize(width, height);
+        badge.node.angle = RECENT_BADGE.angle;
+        badge.node.setPosition(
+            this.cardWidth / 2 - width / 2 + RECENT_BADGE.overhangX * scale,
+            this.cardHeight / 2 - height / 2 + RECENT_BADGE.overhangY * scale,
+        );
     }
 
     private layoutLabel(
@@ -430,17 +522,17 @@ export class GameCardView extends Component {
         transform?.setAnchorPoint(anchorX, 0.5);
 
         if (name === 'NameLabel') {
-            label.fontSize = Math.round((this.mode === 'coming-soon' ? 33 : 36) * this.cardWidth / 320);
-            label.lineHeight = Math.round(44 * this.cardWidth / 320);
+            label.fontSize = Math.round(CARD_LAYOUT.titleFontSize * this.cardWidth / CARD_LAYOUT.designWidth);
+            label.lineHeight = Math.round(CARD_LAYOUT.titleHeight * this.cardWidth / CARD_LAYOUT.designWidth);
             // Give the Chinese game titles a little more breathing room while
             // keeping the spacing proportional to the card scale.
             label.spacingX = Math.round(4 * this.cardWidth / 320);
             label.color = new Color(91, 42, 24, 255);
             label.horizontalAlign = HorizontalTextAlignment.CENTER;
-            label.isBold = true;
+            setLabelBold(label, true);
         } else if (name === 'DescriptionLabel') {
-            label.fontSize = Math.round(19 * this.cardWidth / 320);
-            label.lineHeight = Math.round(24 * this.cardWidth / 320);
+            label.fontSize = Math.round(CARD_LAYOUT.descriptionFontSize * this.cardWidth / CARD_LAYOUT.designWidth);
+            label.lineHeight = Math.round(CARD_LAYOUT.descriptionHeight * this.cardWidth / CARD_LAYOUT.designWidth);
             label.spacingX = 0;
             label.color = new Color(112, 55, 34, 255);
             label.horizontalAlign = HorizontalTextAlignment.CENTER;
@@ -502,8 +594,7 @@ export class GameCardView extends Component {
         const width = this.cardWidth;
         const height = this.cardHeight;
         graphics.node.getComponent(UITransform)?.setContentSize(width, height);
-        this.cardSkin?.node.setPosition(0, 0);
-        this.cardSkin?.node.getComponent(UITransform)?.setContentSize(width, height);
+        this.layoutCardSkin(width, height);
         graphics.clear();
         if (this.cardSkin?.spriteFrame) {
             this.cardSkin.color = this.mode === 'game'
@@ -527,6 +618,20 @@ export class GameCardView extends Component {
             graphics.roundRect(-width / 2, -height / 2, width, height, 24);
             graphics.stroke();
         }
+    }
+
+    /**
+     * 九宫格边框按纹理像素绘制；底板是 2 倍图，因此以纹理分辨率排布节点后
+     * 再整体缩回卡片尺寸，让圆角与厚边保持原始比例，只拉伸中段。
+     */
+    private layoutCardSkin(width: number, height: number): void {
+        const skin = this.cardSkin;
+        if (!skin) return;
+        const textureWidth = skin.spriteFrame?.texture.width ?? 0;
+        const resolution = textureWidth > 0 ? textureWidth / Math.max(1, width) : 1;
+        skin.node.setPosition(0, 0);
+        skin.node.getComponent(UITransform)?.setContentSize(width * resolution, height * resolution);
+        skin.node.setScale(1 / resolution, 1 / resolution, 1);
     }
 
     private layoutCoverArtwork(viewportWidth: number, viewportHeight: number): void {
@@ -556,11 +661,31 @@ export class GameCardView extends Component {
         }
         const width = transform.contentSize.width;
         const height = transform.contentSize.height;
+        const scale = this.cardWidth / CARD_LAYOUT.designWidth;
+        const radius = CARD_LAYOUT.coverRadius * scale;
         graphics.clear();
+        const border = this.coverBorder;
+        border?.clear();
+        border?.node.getComponent(UITransform)?.setContentSize(width, height);
         if (!comingSoon) {
+            // Shadow stays behind the clipped artwork; the fine rim sits above it.
+            for (const [offset, alpha] of [[4, 16], [2, 24]]) {
+                graphics.fillColor = new Color(102, 61, 31, alpha);
+                graphics.roundRect(-width / 2, -height / 2 - offset * scale,
+                    width, height, radius);
+                graphics.fill();
+            }
             graphics.fillColor = COLORS.paper;
-            graphics.roundRect(-width / 2, -height / 2, width, height, 24);
+            graphics.roundRect(-width / 2, -height / 2, width, height, radius);
             graphics.fill();
+            if (border) {
+                const lineWidth = 1.5 * scale;
+                border.lineWidth = lineWidth;
+                border.strokeColor = new Color(173, 114, 65, 160);
+                border.roundRect(-width / 2 + lineWidth / 2, -height / 2 + lineWidth / 2,
+                    width - lineWidth, height - lineWidth, radius - lineWidth / 2);
+                border.stroke();
+            }
         }
 
         const artwork = this.coverSprite?.node;
@@ -569,7 +694,8 @@ export class GameCardView extends Component {
         }
     }
 
-    private drawActionBackground(disabled = false): void {
+    private drawActionBackground(state: ActionState): void {
+        this.actionState = state;
         const action = this.requireActionNode();
         const graphics = this.actionBackground;
         const transform = action.getComponent(UITransform);
@@ -578,60 +704,95 @@ export class GameCardView extends Component {
         }
         const width = transform.contentSize.width;
         const height = transform.contentSize.height;
+        const disabled = state === 'disabled';
         graphics.clear();
+        this.styleActionLabel(state);
         if (this.actionSkin?.spriteFrame) {
+            // Tinting cannot desaturate the coral art, so the unavailable
+            // state uses the sprite's grayscale mode instead.
+            this.actionSkin.grayscale = disabled;
             this.actionSkin.color = disabled
-                ? new Color(190, 190, 190, 255)
-                : Color.WHITE;
+                ? COLORS.actionDisabledTint
+                : state === 'busy'
+                    ? COLORS.actionBusyTint
+                    : Color.WHITE;
             return;
         }
+        const radius = height / 2;
         graphics.fillColor = disabled
-            ? new Color(170, 139, 112, 72)
-            : new Color(145, 50, 25, 82);
-        graphics.roundRect(-width / 2 + 1, -height / 2 - 4, width - 2, height, 24);
+            ? new Color(150, 140, 132, 150)
+            : new Color(160, 40, 20, 170);
+        graphics.roundRect(-width / 2, -height / 2 - 4, width, height, radius);
         graphics.fill();
-        graphics.fillColor = disabled ? COLORS.disabled : new Color(255, 238, 207, 255);
-        graphics.strokeColor = disabled ? COLORS.disabled : new Color(250, 253, 255, 255);
-        graphics.lineWidth = 2;
-        graphics.roundRect(-width / 2, -height / 2, width, height, 24);
+        graphics.fillColor = disabled ? COLORS.disabled : COLORS.action;
+        graphics.roundRect(-width / 2, -height / 2, width, height, radius);
         graphics.fill();
-        graphics.stroke();
-        if (!disabled) {
-            graphics.fillColor = new Color(255, 255, 255, 112);
-            graphics.roundRect(-width / 2 + 8, 5, width - 16, 14, 7);
-            graphics.fill();
-        }
+        graphics.fillColor = new Color(255, 255, 255, disabled ? 40 : 70);
+        graphics.roundRect(-width / 2 + radius / 2, height * 0.08,
+            width - radius, height * 0.3, height * 0.15);
+        graphics.fill();
+    }
+
+    private styleActionLabel(state: ActionState): void {
         const label = this.requireActionLabel();
-        label.color = disabled ? COLORS.secondary : COLORS.action;
+        const disabled = state === 'disabled';
+        label.color = disabled ? new Color(255, 255, 255, 235) : COLORS.actionText;
+        label.enableShadow = true;
+        label.shadowColor = disabled ? COLORS.actionDisabledShadow : COLORS.actionTextShadow;
+        const offset = Math.max(1, Math.round(2 * this.cardWidth / 320));
+        label.shadowOffset = new Vec2(0, -offset);
+        label.shadowBlur = 1;
+        const outline = label.node.getComponent(LabelOutline);
+        if (outline) {
+            outline.enabled = false;
+        }
     }
 
     private drawDecor(): void {
         const graphics = this.decorRoot?.getComponent(Graphics);
-        if (!graphics) {
+        const cover = this.coverRoot;
+        const coverSize = cover?.getComponent(UITransform)?.contentSize;
+        if (!graphics || !cover || !coverSize) {
             return;
         }
         graphics.clear();
-        if (this.mode === 'coming-soon') {
-            graphics.fillColor = new Color(255, 248, 230, 236);
-            graphics.strokeColor = new Color(255, 255, 255, 238);
-            graphics.lineWidth = 3;
-            graphics.roundRect(-92, 8, 184, 100, 40);
-            graphics.fill();
-            graphics.stroke();
-            graphics.strokeColor = new Color(231, 131, 75, 235);
-            graphics.lineWidth = 9;
-            graphics.moveTo(-58, 58);
-            graphics.lineTo(-26, 58);
-            graphics.moveTo(-42, 42);
-            graphics.lineTo(-42, 74);
-            graphics.stroke();
-            graphics.fillColor = new Color(231, 131, 75, 235);
-            graphics.circle(37, 68, 10);
-            graphics.fill();
-            graphics.fillColor = new Color(244, 176, 93, 235);
-            graphics.circle(62, 44, 10);
-            graphics.fill();
+        if (this.mode !== 'coming-soon') {
+            return;
         }
+        // An empty cover slot with a small game-pad glyph, occupying exactly
+        // the space a real cover would so the grid rhythm stays intact.
+        const scale = this.cardWidth / CARD_LAYOUT.designWidth;
+        const { width, height } = coverSize;
+        const cx = cover.position.x;
+        const cy = cover.position.y;
+        const radius = CARD_LAYOUT.coverRadius * scale;
+        graphics.fillColor = new Color(250, 228, 196, 150);
+        graphics.strokeColor = new Color(226, 170, 112, 150);
+        graphics.lineWidth = 2 * scale;
+        graphics.roundRect(cx - width / 2, cy - height / 2, width, height, radius);
+        graphics.fill();
+        graphics.stroke();
+
+        const pad = 46 * scale;
+        graphics.fillColor = new Color(255, 248, 232, 245);
+        graphics.strokeColor = new Color(236, 176, 112, 200);
+        graphics.lineWidth = 3 * scale;
+        graphics.roundRect(cx - pad * 2, cy - pad, pad * 4, pad * 2, pad);
+        graphics.fill();
+        graphics.stroke();
+        graphics.strokeColor = new Color(231, 131, 75, 235);
+        graphics.lineWidth = 9 * scale;
+        graphics.moveTo(cx - 58 * scale, cy);
+        graphics.lineTo(cx - 26 * scale, cy);
+        graphics.moveTo(cx - 42 * scale, cy - 16 * scale);
+        graphics.lineTo(cx - 42 * scale, cy + 16 * scale);
+        graphics.stroke();
+        graphics.fillColor = new Color(231, 131, 75, 235);
+        graphics.circle(cx + 37 * scale, cy - 8 * scale, 10 * scale);
+        graphics.fill();
+        graphics.fillColor = new Color(244, 176, 93, 235);
+        graphics.circle(cx + 60 * scale, cy + 12 * scale, 10 * scale);
+        graphics.fill();
     }
 
     private drawTitleOverlay(): void {
@@ -657,9 +818,9 @@ export class GameCardView extends Component {
 
     private loadCover(path: string): void {
         const token = ++this.coverLoadToken;
-        const bundle = assetManager.getBundle('lobby');
+        const bundle = assetManager.getBundle('lobby-covers');
         if (!bundle) {
-            console.error('[GameCardView] Lobby bundle is unavailable.');
+            // TODO: console.error('[GameCardView] Lobby resource bundle is unavailable.');
             return;
         }
         bundle.load(path, Texture2D, (error: Error | null, texture: Texture2D) => {
@@ -667,7 +828,7 @@ export class GameCardView extends Component {
                 return;
             }
             if (error || !texture) {
-                console.warn('[GameCardView] Cover failed to load.', path, error);
+                // TODO: console.warn('[GameCardView] Cover failed to load.', path, error);
                 return;
             }
             this.releaseOwnedCoverFrame();
@@ -690,7 +851,7 @@ export class GameCardView extends Component {
     }
 
     private loadUiArtwork(): void {
-        const bundle = assetManager.getBundle('lobby');
+        const bundle = assetManager.getBundle('lobby-covers');
         if (!bundle) return;
         const token = ++this.uiLoadToken;
         const load = (path: string, sprite: Sprite | undefined, onLoaded: () => void): void => {
@@ -699,13 +860,21 @@ export class GameCardView extends Component {
                 if (error || !texture || token !== this.uiLoadToken || !this.node.isValid) return;
                 const frame = new SpriteFrame();
                 frame.texture = texture;
+                if (sprite === this.cardSkin) {
+                    frame.insetLeft = CARD_SKIN_INSETS.left;
+                    frame.insetRight = CARD_SKIN_INSETS.right;
+                    frame.insetTop = CARD_SKIN_INSETS.top;
+                    frame.insetBottom = CARD_SKIN_INSETS.bottom;
+                    sprite.type = Sprite.Type.SLICED;
+                }
                 this.ownedUiFrames.push(frame);
                 sprite.spriteFrame = frame;
                 onLoaded();
             });
         };
         load(CARD_SKIN_PATH, this.cardSkin, () => this.drawCard());
-        load(START_BUTTON_PATH, this.actionSkin, () => this.drawActionBackground());
+        load(START_BUTTON_PATH, this.actionSkin, () => this.drawActionBackground(this.actionState));
+        load(RECENT_BADGE_PATH, this.recentBadge, () => this.layoutRecentBadge());
     }
 
     private startCoverMotion(): void {

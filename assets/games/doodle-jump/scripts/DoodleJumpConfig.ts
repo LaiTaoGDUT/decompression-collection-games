@@ -1,3 +1,4 @@
+import type { DoodleJumpSpawnPlan } from './DoodleJumpReferenceRules';
 export const DOODLE_JUMP_BUNDLE = 'game-doodle-jump';
 export const DOODLE_JUMP_RESOURCE_BUNDLE = 'game-doodle-jump-assets';
 export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
@@ -12,7 +13,12 @@ export type DoodleJumpPlatformType =
     | 'exploding'
     | 'spiked';
 
-export type DoodleJumpEnemyType = 'small' | 'large' | 'hover';
+export const DOODLE_JUMP_ENEMY_TYPES = ['small', 'large', 'hover', 'hopper', 'weaver'] as const;
+export type DoodleJumpEnemyType = typeof DOODLE_JUMP_ENEMY_TYPES[number];
+
+export function isDoodleJumpFlyingEnemy(type: DoodleJumpEnemyType): boolean {
+    return type === 'hover' || type === 'weaver';
+}
 export type DoodleJumpHazardType = 'ufo' | 'black-hole' | 'bear-trap';
 export type DoodleJumpItemType =
     | 'spring'
@@ -60,13 +66,9 @@ export interface DoodleJumpFixedPlatformConfig {
     readonly y: number;
     readonly width: number;
     readonly type: DoodleJumpPlatformType;
-}
-
-export interface DoodleJumpInsertedPlatformCountCurve {
-    readonly startHeightMeters: number;
-    readonly endHeightMeters: number;
-    readonly weightsAtStart: readonly [number, number, number, number];
-    readonly weightsAtEnd: readonly [number, number, number, number];
+    readonly movingVelocity?: number;
+    readonly motionStartSeconds?: number;
+    readonly spawnPlan?: DoodleJumpSpawnPlan;
 }
 
 export interface DoodleJumpGameplayConfig {
@@ -82,6 +84,7 @@ export interface DoodleJumpGameplayConfig {
     readonly player: Readonly<{
         gravity: number;
         bounceVelocity: number;
+        terminalFallVelocity: number;
         horizontalAcceleration: number;
         horizontalDeceleration: number;
         maxHorizontalSpeed: number;
@@ -101,7 +104,8 @@ export interface DoodleJumpGameplayConfig {
         smoothingSeconds: number;
     }>;
     readonly camera: Readonly<{
-        targetHeightRatio: number;
+        anchorHeight: number;
+        maximumAnchorHeightRatio: number;
         preGenerateJumpHeights: number;
         recycleBelow: number;
         floatingOriginThreshold: number;
@@ -119,6 +123,14 @@ export interface DoodleJumpGameplayConfig {
         /** The only widened platform: a normal platform carrying a large monster. */
         largeMonsterWidth: number;
         explodingDelaySeconds: number;
+        challenge: Readonly<{
+            startHeightMeters: number;
+            capHeightMeters: number;
+            movingSpeedBonus: number;
+            movingChanceBonus: number;
+            shiftingChanceBonus: number;
+            fragileChanceBonus: number;
+        }>;
         verticalMoving: Readonly<{
             unlockHeightMeters: number;
             spawnChanceAtUnlock: number;
@@ -141,8 +153,7 @@ export interface DoodleJumpGameplayConfig {
     >>;
     readonly enemies: Readonly<{
         enabled: boolean;
-        spawnChanceAtUnlock: number;
-        spawnChancePerPlatform: number;
+
         difficultyCapHeightMeters: number;
         maximumActive: number;
         twoActiveHeightMeters: number;
@@ -156,12 +167,13 @@ export interface DoodleJumpGameplayConfig {
         small: DoodleJumpEnemyTypeConfig;
         large: DoodleJumpEnemyTypeConfig;
         hover: DoodleJumpEnemyTypeConfig;
+        hopper: DoodleJumpEnemyTypeConfig;
+        weaver: DoodleJumpEnemyTypeConfig;
     }>;
     readonly hazards: Readonly<{
         enabled: boolean;
         typeOverride: DoodleJumpHazardType | 'auto';
-        spawnChanceAtUnlock: number;
-        spawnChancePerPlatform: number;
+
         difficultyCapHeightMeters: number;
         maximumActive: number;
         twoActiveHeightMeters: number;
@@ -206,7 +218,6 @@ export interface DoodleJumpGameplayConfig {
         typeOverride: DoodleJumpItemType | 'auto';
         debugPowerPreset: DoodleJumpPowerPreset;
         debugHeadStartCount: number;
-        spawnChancePerPlatform: number;
         maximumActive: number;
         recycleBelow: number;
         spawnAboveScreenMargin: number;
@@ -247,18 +258,13 @@ export interface DoodleJumpGameplayConfig {
     }>;
     readonly generation: Readonly<{
         enabled: boolean;
-        singleStep: boolean;
-        showRouteDebug: boolean;
-        exportFailureDebug: boolean;
         forceDegradedFallback: boolean;
         seedOverride: number;
         platformTypeOverride: DoodleJumpPlatformType | 'auto';
-        verticalStep: number;
-        mainRouteStepCount: number;
-        maxInsertedPlatforms: number;
-        insertedPlatformCountCurve: DoodleJumpInsertedPlatformCountCurve;
-        recoveryLayerInterval: number;
-        maxHorizontalGap: number;
+        authoredPatternChance: number;
+        specialPlatformChancePerSegment: number;
+        itemChancePerSegment: number;
+        hazardChancePerSegment: number;
         preloadAboveScreen: number;
         maxCandidateAttempts: number;
         maxActivePlatforms: number;
@@ -348,32 +354,6 @@ function unitRatio(value: unknown, path: string): number {
         throw new Error(`${path} must be between zero and one inclusive.`);
     }
     return parsed;
-}
-
-function parseInsertedPlatformCountWeights(
-    value: unknown,
-    path: string,
-): readonly [number, number, number, number] {
-    if (!Array.isArray(value) || value.length !== 4) {
-        throw new Error(`${path} must contain exactly four weights for 0/1/2/3 platforms.`);
-    }
-    const weights = value.map((weight, index) => unitRatio(weight, `${path}[${index}]`));
-    const total = weights.reduce((sum, weight) => sum + weight, 0);
-    if (Math.abs(total - 1) > 0.0001) {
-        throw new Error(`${path} weights must sum to one.`);
-    }
-    return Object.freeze([
-        weights[0],
-        weights[1],
-        weights[2],
-        weights[3],
-    ]) as readonly [number, number, number, number];
-}
-
-function expectedInsertedPlatformCount(
-    weights: readonly [number, number, number, number],
-): number {
-    return weights[1] + weights[2] * 2 + weights[3] * 3;
 }
 
 function parseEnemyTypeConfig(value: unknown, path: string): DoodleJumpEnemyTypeConfig {
@@ -481,6 +461,23 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         platformBehavior.verticalMoving,
         'platformBehavior.verticalMoving',
     );
+    const challenge = asRecord(platformBehavior.challenge, 'platformBehavior.challenge');
+    const challengeStart = nonNegativeInteger(challenge.startHeightMeters, 'platformBehavior.challenge.startHeightMeters');
+    const challengeCap = positiveNumber(challenge.capHeightMeters, 'platformBehavior.challenge.capHeightMeters');
+    const challengeSettings = Object.freeze({
+        startHeightMeters: challengeStart,
+        capHeightMeters: challengeCap,
+        movingSpeedBonus: unitRatio(challenge.movingSpeedBonus, 'platformBehavior.challenge.movingSpeedBonus'),
+        movingChanceBonus: unitRatio(challenge.movingChanceBonus, 'platformBehavior.challenge.movingChanceBonus'),
+        shiftingChanceBonus: unitRatio(challenge.shiftingChanceBonus, 'platformBehavior.challenge.shiftingChanceBonus'),
+        fragileChanceBonus: unitRatio(challenge.fragileChanceBonus, 'platformBehavior.challenge.fragileChanceBonus'),
+    });
+    if (challengeCap <= challengeStart
+        || challengeSettings.movingSpeedBonus > 0.25
+        || challengeSettings.movingChanceBonus + challengeSettings.shiftingChanceBonus > 0.2
+        || challengeSettings.fragileChanceBonus > 0.15) {
+        throw new Error('Platform challenge must rise gradually within safe motion and probability budgets.');
+    }
     const spiked = asRecord(platformBehavior.spiked, 'platformBehavior.spiked');
     const visualQuality = asRecord(root.visualQuality, 'visualQuality');
     const lowVisualQuality = asRecord(visualQuality.low, 'visualQuality.low');
@@ -501,10 +498,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const headStart = asRecord(items.headStart, 'items.headStart');
     const resurrection = asRecord(root.resurrection, 'resurrection');
     const generation = asRecord(root.generation, 'generation');
-    const insertedPlatformCountCurve = asRecord(
-        generation.insertedPlatformCountCurve,
-        'generation.insertedPlatformCountCurve',
-    );
     if (!Array.isArray(root.fixedPlatforms) || root.fixedPlatforms.length !== 8) {
         throw new Error('fixedPlatforms must contain exactly P0-P7.');
     }
@@ -548,84 +541,19 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     if (Math.abs((wrapRight - wrapLeft) - wrapDistance) > 0.001) {
         throw new Error('player.wrapDistance must match wrapRight - wrapLeft.');
     }
-    const verticalStep = positiveNumber(
-        generation.verticalStep,
-        'generation.verticalStep',
-    );
-    const mainRouteStepCount = positiveInteger(
-        generation.mainRouteStepCount,
-        'generation.mainRouteStepCount',
-    );
-    const maxInsertedPlatforms = nonNegativeInteger(
-        generation.maxInsertedPlatforms,
-        'generation.maxInsertedPlatforms',
-    );
-    const recoveryLayerInterval = positiveInteger(
-        generation.recoveryLayerInterval,
-        'generation.recoveryLayerInterval',
-    );
-    const maxHorizontalGap = positiveNumber(
-        generation.maxHorizontalGap,
-        'generation.maxHorizontalGap',
-    );
-    if (verticalStep < 42 || verticalStep > 90) {
-        throw new Error('generation.verticalStep must satisfy 42 <= verticalStep <= 90.');
+    const terminalFallVelocity = finiteNumber(player.terminalFallVelocity, 'player.terminalFallVelocity');
+    if (gravity >= 0 || terminalFallVelocity >= 0) {
+        throw new Error('Player gravity and terminal fall velocity must be negative.');
     }
-    if (mainRouteStepCount < 2 || mainRouteStepCount > 6) {
-        throw new Error('generation.mainRouteStepCount must satisfy 2 <= count <= 6.');
-    }
-    if (gravity >= 0) {
-        throw new Error('player.gravity must be negative.');
-    }
-    const mainRouteGap = verticalStep * mainRouteStepCount;
-    const theoreticalJumpHeight = bounceVelocity * bounceVelocity / (-2 * gravity);
-    if (theoreticalJumpHeight < mainRouteGap + 10
-        || theoreticalJumpHeight > mainRouteGap + 80) {
-        throw new Error(
-            'player.bounceVelocity must produce a jump peak 10-80 units above the fixed main-route gap.',
-        );
+    const jumpHeight = bounceVelocity * bounceVelocity / (-2 * gravity)
+        + bounceVelocity * positiveNumber(fixedStep.seconds, 'fixedStep.seconds') / 2;
+    const largestFixedGap = platforms.reduce((gap, platform, index) => index === 0 ? gap
+        : Math.max(gap, platform.y - platforms[index - 1].y), 0);
+    if (largestFixedGap + 10 >= jumpHeight || 90 * designWidth / 320 >= jumpHeight) {
+        throw new Error('Initial platforms and original random gaps must fit the jump trajectory.');
     }
     if (Math.abs(launchVelocity - bounceVelocity) > 0.001) {
         throw new Error('resurrection.launchVelocity must match player.bounceVelocity.');
-    }
-    if (maxInsertedPlatforms > 3
-        || maxInsertedPlatforms >= mainRouteStepCount) {
-        throw new Error(
-            'generation.maxInsertedPlatforms must not exceed 3 or the available intermediate steps.',
-        );
-    }
-    const insertedPlatformCountStartHeight = nonNegativeInteger(
-        insertedPlatformCountCurve.startHeightMeters,
-        'generation.insertedPlatformCountCurve.startHeightMeters',
-    );
-    const insertedPlatformCountEndHeight = positiveInteger(
-        insertedPlatformCountCurve.endHeightMeters,
-        'generation.insertedPlatformCountCurve.endHeightMeters',
-    );
-    if (insertedPlatformCountEndHeight <= insertedPlatformCountStartHeight) {
-        throw new Error(
-            'generation.insertedPlatformCountCurve.endHeightMeters must exceed startHeightMeters.',
-        );
-    }
-    const insertedPlatformCountWeightsAtStart = parseInsertedPlatformCountWeights(
-        insertedPlatformCountCurve.weightsAtStart,
-        'generation.insertedPlatformCountCurve.weightsAtStart',
-    );
-    const insertedPlatformCountWeightsAtEnd = parseInsertedPlatformCountWeights(
-        insertedPlatformCountCurve.weightsAtEnd,
-        'generation.insertedPlatformCountCurve.weightsAtEnd',
-    );
-    if (expectedInsertedPlatformCount(insertedPlatformCountWeightsAtEnd)
-        >= expectedInsertedPlatformCount(insertedPlatformCountWeightsAtStart)) {
-        throw new Error(
-            'generation.insertedPlatformCountCurve must reduce expected inserted platform count.',
-        );
-    }
-    if (recoveryLayerInterval < 4 || recoveryLayerInterval > 30) {
-        throw new Error('generation.recoveryLayerInterval must satisfy 4 <= interval <= 30.');
-    }
-    if (maxHorizontalGap > 240) {
-        throw new Error('generation.maxHorizontalGap must not exceed 240.');
     }
     const maxCandidateAttempts = positiveInteger(
         generation.maxCandidateAttempts,
@@ -690,6 +618,12 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const smallEnemy = parseEnemyTypeConfig(enemies.small, 'enemies.small');
     const largeEnemy = parseEnemyTypeConfig(enemies.large, 'enemies.large');
     const hoverEnemy = parseEnemyTypeConfig(enemies.hover, 'enemies.hover');
+    const hopperEnemy = parseEnemyTypeConfig(enemies.hopper, 'enemies.hopper');
+    const weaverEnemy = parseEnemyTypeConfig(enemies.weaver, 'enemies.weaver');
+    if (hopperEnemy.verticalRange <= 0
+        || weaverEnemy.anchorHeight - weaverEnemy.verticalRange < weaverEnemy.height / 2) {
+        throw new Error('New enemy motion must remain above its anchor platform.');
+    }
     if (smallEnemy.unlockHeightMeters !== 70
         || largeEnemy.unlockHeightMeters !== 220
         || hoverEnemy.unlockHeightMeters !== 150) {
@@ -705,14 +639,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     if (maximumActiveEnemies > 3) {
         throw new Error('enemies.maximumActive must not exceed the three-enemy budget.');
     }
-    const enemySpawnChanceAtUnlock = unitRatio(
-        enemies.spawnChanceAtUnlock,
-        'enemies.spawnChanceAtUnlock',
-    );
-    const enemySpawnChanceCap = unitRatio(
-        enemies.spawnChancePerPlatform,
-        'enemies.spawnChancePerPlatform',
-    );
     const enemyDifficultyCapHeight = positiveNumber(
         enemies.difficultyCapHeightMeters,
         'enemies.difficultyCapHeightMeters',
@@ -733,8 +659,7 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         enemies.minimumVerticalSeparation,
         'enemies.minimumVerticalSeparation',
     );
-    if (enemySpawnChanceAtUnlock > enemySpawnChanceCap
-        || enemyDifficultyCapHeight <= smallEnemy.unlockHeightMeters
+    if (enemyDifficultyCapHeight <= smallEnemy.unlockHeightMeters
         || enemyTwoActiveHeight >= enemyThreeActiveHeight
         || enemyThreeActiveHeight > enemyDifficultyCapHeight
         || enemyInitialSeparation < enemyFinalSeparation) {
@@ -775,14 +700,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         hazards.maximumActive,
         'hazards.maximumActive',
     );
-    const hazardSpawnChanceAtUnlock = unitRatio(
-        hazards.spawnChanceAtUnlock,
-        'hazards.spawnChanceAtUnlock',
-    );
-    const hazardSpawnChanceCap = unitRatio(
-        hazards.spawnChancePerPlatform,
-        'hazards.spawnChancePerPlatform',
-    );
     const hazardDifficultyCapHeight = positiveNumber(
         hazards.difficultyCapHeightMeters,
         'hazards.difficultyCapHeightMeters',
@@ -800,7 +717,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         'hazards.minimumVerticalSeparation',
     );
     if (maximumActiveHazards > 2
-        || hazardSpawnChanceAtUnlock > hazardSpawnChanceCap
         || hazardDifficultyCapHeight <= Math.min(
             ufoUnlockHeight,
             blackHoleUnlockHeight,
@@ -965,6 +881,7 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         player: Object.freeze({
             gravity,
             bounceVelocity,
+            terminalFallVelocity,
             horizontalAcceleration: positiveNumber(player.horizontalAcceleration, 'player.horizontalAcceleration'),
             horizontalDeceleration: positiveNumber(player.horizontalDeceleration, 'player.horizontalDeceleration'),
             maxHorizontalSpeed: positiveNumber(player.maxHorizontalSpeed, 'player.maxHorizontalSpeed'),
@@ -984,7 +901,8 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             smoothingSeconds: positiveNumber(sensor.smoothingSeconds, 'sensor.smoothingSeconds'),
         }),
         camera: Object.freeze({
-            targetHeightRatio: ratio(camera.targetHeightRatio, 'camera.targetHeightRatio'),
+            anchorHeight: positiveNumber(camera.anchorHeight, 'camera.anchorHeight'),
+            maximumAnchorHeightRatio: ratio(camera.maximumAnchorHeightRatio, 'camera.maximumAnchorHeightRatio'),
             preGenerateJumpHeights: positiveNumber(camera.preGenerateJumpHeights, 'camera.preGenerateJumpHeights'),
             recycleBelow: positiveNumber(camera.recycleBelow, 'camera.recycleBelow'),
             floatingOriginThreshold: positiveNumber(camera.floatingOriginThreshold, 'camera.floatingOriginThreshold'),
@@ -997,6 +915,7 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             poolSoftTarget: positiveInteger(shooting.poolSoftTarget, 'shooting.poolSoftTarget'),
         }),
         platformBehavior: Object.freeze({
+            challenge: challengeSettings,
             standardWidth: standardPlatformWidth,
             largeMonsterWidth: largeMonsterPlatformWidth,
             explodingDelaySeconds: positiveNumber(
@@ -1035,8 +954,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         }),
         enemies: Object.freeze({
             enabled: booleanValue(enemies.enabled, 'enemies.enabled'),
-            spawnChanceAtUnlock: enemySpawnChanceAtUnlock,
-            spawnChancePerPlatform: enemySpawnChanceCap,
             difficultyCapHeightMeters: enemyDifficultyCapHeight,
             maximumActive: maximumActiveEnemies,
             twoActiveHeightMeters: enemyTwoActiveHeight,
@@ -1053,12 +970,12 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             small: smallEnemy,
             large: largeEnemy,
             hover: hoverEnemy,
+            hopper: hopperEnemy,
+            weaver: weaverEnemy,
         }),
         hazards: Object.freeze({
             enabled: booleanValue(hazards.enabled, 'hazards.enabled'),
             typeOverride: hazardTypeOverride,
-            spawnChanceAtUnlock: hazardSpawnChanceAtUnlock,
-            spawnChancePerPlatform: hazardSpawnChanceCap,
             difficultyCapHeightMeters: hazardDifficultyCapHeight,
             maximumActive: maximumActiveHazards,
             twoActiveHeightMeters: hazardTwoActiveHeight,
@@ -1132,10 +1049,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             debugHeadStartCount: nonNegativeInteger(
                 items.debugHeadStartCount,
                 'items.debugHeadStartCount',
-            ),
-            spawnChancePerPlatform: unitRatio(
-                items.spawnChancePerPlatform,
-                'items.spawnChancePerPlatform',
             ),
             maximumActive: itemMaximumActive,
             recycleBelow: positiveNumber(items.recycleBelow, 'items.recycleBelow'),
@@ -1237,29 +1150,16 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         }),
         generation: Object.freeze({
             enabled: booleanValue(generation.enabled, 'generation.enabled'),
-            singleStep: booleanValue(generation.singleStep, 'generation.singleStep'),
-            showRouteDebug: booleanValue(generation.showRouteDebug, 'generation.showRouteDebug'),
-            exportFailureDebug: booleanValue(
-                generation.exportFailureDebug,
-                'generation.exportFailureDebug',
-            ),
             forceDegradedFallback: booleanValue(
                 generation.forceDegradedFallback,
                 'generation.forceDegradedFallback',
             ),
             seedOverride: nonNegativeInteger(generation.seedOverride, 'generation.seedOverride'),
             platformTypeOverride,
-            verticalStep,
-            mainRouteStepCount,
-            maxInsertedPlatforms,
-            insertedPlatformCountCurve: Object.freeze({
-                startHeightMeters: insertedPlatformCountStartHeight,
-                endHeightMeters: insertedPlatformCountEndHeight,
-                weightsAtStart: insertedPlatformCountWeightsAtStart,
-                weightsAtEnd: insertedPlatformCountWeightsAtEnd,
-            }),
-            recoveryLayerInterval,
-            maxHorizontalGap,
+            authoredPatternChance: unitRatio(generation.authoredPatternChance, 'generation.authoredPatternChance'),
+            specialPlatformChancePerSegment: unitRatio(generation.specialPlatformChancePerSegment, 'generation.specialPlatformChancePerSegment'),
+            itemChancePerSegment: unitRatio(generation.itemChancePerSegment, 'generation.itemChancePerSegment'),
+            hazardChancePerSegment: unitRatio(generation.hazardChancePerSegment, 'generation.hazardChancePerSegment'),
             preloadAboveScreen: positiveNumber(
                 generation.preloadAboveScreen,
                 'generation.preloadAboveScreen',

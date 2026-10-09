@@ -1,0 +1,14 @@
+{
+  "gameId": "sky-forge",
+  "game": {
+    "enabled": true
+  },
+  "wechat": {
+    "skyForgeReviveRewarded": {
+      "adUnitId": ""
+    },
+    "skyForgeDoubleGoldRewarded": {
+      "adUnitId": ""
+    }
+  }
+}

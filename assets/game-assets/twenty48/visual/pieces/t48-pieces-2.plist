@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>t48-user-piece-512-v1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{292,292}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{292,292}}</string>
+			<key>sourceSize</key>
+			<string>{292,292}</string>
+		</dict>
+		<key>t48-user-piece-64-v1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{298,2},{292,292}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{292,292}}</string>
+			<key>sourceSize</key>
+			<string>{292,292}</string>
+		</dict>
+		<key>t48-user-piece-8-v1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{594,2},{292,292}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{292,292}}</string>
+			<key>sourceSize</key>
+			<string>{292,292}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>t48-pieces-2.png</string>
+		<key>size</key>
+		<string>{888,296}</string>
+		<key>textureFileName</key>
+		<string>t48-pieces-2.png</string>
+	</dict>
+</dict>
+</plist>

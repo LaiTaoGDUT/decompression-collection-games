@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>bottom</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,1147},{872,167}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{872,167}}</string>
+			<key>sourceSize</key>
+			<string>{872,167}</string>
+		</dict>
+		<key>middle</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{872,698}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{872,698}}</string>
+			<key>sourceSize</key>
+			<string>{872,698}</string>
+		</dict>
+		<key>top</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,702},{872,443}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{872,443}}</string>
+			<key>sourceSize</key>
+			<string>{872,443}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>boss-panel-v7.png</string>
+		<key>size</key>
+		<string>{876,1316}</string>
+		<key>textureFileName</key>
+		<string>boss-panel-v7.png</string>
+	</dict>
+</dict>
+</plist>

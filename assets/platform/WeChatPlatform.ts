@@ -1,848 +1,234 @@
-import { EventBus } from '../core/events/EventBus';
-import type {
-    DevicePerformanceTier,
-    DeviceProfile,
-    LaunchOptions,
-    LocalImageCropRequest,
-    LocalImageSelection,
-    PlatformLayoutInfo,
-    PlatformUiRect,
-    SafeArea,
-    Unsubscribe,
-} from '../core/types/CommonTypes';
-import type { AccelerometerSample, Platform } from './Platform';
+import {
+    MiniGamePlatform,
+    type MiniGameApi,
+} from './MiniGamePlatform';
+import type { ShareContent, ShareMenuOptions, TimelineShareContent } from './Platform';
 
-interface WeChatSafeArea {
-    readonly left: number;
-    readonly top: number;
-    readonly right: number;
-    readonly bottom: number;
-    readonly width: number;
-    readonly height: number;
-}
+type ShareHandler = () => ShareContent;
+type TimelineShareHandler = () => TimelineShareContent;
 
-interface WeChatSystemInfo {
-    readonly screenWidth: number;
-    readonly screenHeight: number;
-    readonly SDKVersion?: string;
-    readonly safeArea?: WeChatSafeArea;
-    readonly pixelRatio?: number;
-    readonly memorySize?: number;
-    readonly benchmarkLevel?: number;
-}
-
-interface WeChatMenuButtonRect {
-    readonly left: number;
-    readonly top: number;
-    readonly right: number;
-    readonly bottom: number;
-    readonly width: number;
-    readonly height: number;
-}
-
-interface WeChatLaunchOptions {
-    readonly scene?: number;
-    readonly path?: string;
-    readonly query?: Readonly<Record<string, string>>;
-    readonly shareTicket?: string;
-    readonly referrerInfo?: Readonly<{
-        appId?: string;
-        extraData?: unknown;
-    }>;
-}
-
-interface WeChatMediaFile {
-    readonly tempFilePath?: string;
-    readonly fileType?: string;
-    readonly size?: number;
-}
-
-interface WeChatChooseMediaResult {
-    readonly tempFiles?: readonly WeChatMediaFile[];
-}
-
-interface WeChatChooseMediaOptions {
-    readonly count: number;
-    readonly mediaType: readonly ['image'];
-    readonly sourceType: readonly ['album'];
-    readonly success?: (result: WeChatChooseMediaResult) => void;
-    readonly fail?: (error?: WeChatApiError) => void;
-}
-
-interface WeChatImage {
-    src: string;
-    onload?: (() => void) | null;
-    onerror?: (() => void) | null;
-}
-
-interface WeChatCanvas2DContext {
-    clearRect(x: number, y: number, width: number, height: number): void;
-    drawImage(
-        image: WeChatImage,
-        sourceX: number,
-        sourceY: number,
-        sourceWidth: number,
-        sourceHeight: number,
-        destinationX: number,
-        destinationY: number,
-        destinationWidth: number,
-        destinationHeight: number,
-    ): void;
-}
-
-interface WeChatCanvasFileResult {
-    readonly tempFilePath?: string;
-}
-
-interface WeChatCanvas {
-    width: number;
-    height: number;
-    getContext(type: '2d'): WeChatCanvas2DContext | null;
-    createImage?(): WeChatImage;
-    toDataURL?(type?: string, encoderOptions?: number): string;
-    toTempFilePath?(options: {
-        x?: number;
-        y?: number;
-        width?: number;
-        height?: number;
-        destWidth?: number;
-        destHeight?: number;
-        fileType?: 'jpg' | 'png';
-        quality?: number;
-        success?: (result: WeChatCanvasFileResult) => void;
-        fail?: (error?: WeChatApiError) => void;
-    }): string | void;
-    toTempFilePathSync?(options: {
-        x?: number;
-        y?: number;
-        width?: number;
-        height?: number;
-        destWidth?: number;
-        destHeight?: number;
-        fileType?: 'jpg' | 'png';
-        quality?: number;
-    }): string | void;
-}
-
-interface WeChatApiError {
-    readonly errMsg?: string;
-}
-
-interface WeChatAccelerometerChangeResult {
-    readonly x: number;
-    readonly y: number;
-    readonly z: number;
-}
-
-interface WeChatAccelerometerOptions {
-    readonly interval?: 'game' | 'ui' | 'normal';
-}
-
-interface WeChatApi {
-    getSystemInfoSync(): WeChatSystemInfo;
-    getMenuButtonBoundingClientRect?(): WeChatMenuButtonRect;
-    getLaunchOptionsSync?(): WeChatLaunchOptions;
-    vibrateShort?(options: {
-        type: 'light' | 'medium' | 'heavy';
-    }): void;
-    startAccelerometer?(options?: WeChatAccelerometerOptions): void;
-    stopAccelerometer?(): void;
-    onAccelerometerChange?(callback: (result: WeChatAccelerometerChangeResult) => void): void;
-    offAccelerometerChange?(callback: (result: WeChatAccelerometerChangeResult) => void): void;
-    showShareMenu?(options: {
-        withShareTicket: boolean;
-    }): void;
-    chooseMedia?(options: WeChatChooseMediaOptions): void;
-    createImage?(): WeChatImage;
-    createCanvas?(): WeChatCanvas;
-    env?: { readonly USER_DATA_PATH?: string };
-    getFileSystemManager?(): {
-        mkdir(options: { dirPath: string; recursive?: boolean; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
-        copyFile(options: { srcPath: string; destPath: string; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
-        writeFile(options: { filePath: string; data: string; encoding: 'base64'; success?: () => void; fail?: (error?: WeChatApiError) => void }): void;
-        access(options: { path: string; success?: () => void; fail?: () => void }): void;
-        unlink(options: { filePath: string; success?: () => void; fail?: () => void }): void;
-    };
-    onShow(callback: () => void): void;
-    onHide(callback: () => void): void;
-    offShow?(callback: () => void): void;
-    offHide?(callback: () => void): void;
+export interface WeChatApi extends MiniGameApi {
+    canIUse?(schema: string): boolean;
+    onShareAppMessage?(callback: ShareHandler): void;
+    offShareAppMessage?(callback: ShareHandler): void;
+    onShareTimeline?(callback: TimelineShareHandler): void;
+    offShareTimeline?(callback: TimelineShareHandler): void;
 }
 
 declare const wx: WeChatApi | undefined;
 
-interface WeChatPlatformEvents {
-    readonly show: void;
-    readonly hide: void;
-}
-
-// 某些客户端会在原生相册回调前后错开派发生命周期事件；保留一个很短的
-// 保护窗口，避免回调刚结束就被误判成小游戏真正切后台，进而打开暂停层。
-const IMAGE_PICKER_LIFECYCLE_GRACE_MS = 1000;
-
 export interface WeChatPlatformOptions {
-    /** 用于测试时注入微信 API 模拟对象。正式环境无需传入。 */
     readonly api?: WeChatApi;
-
-    /** FIXED_WIDTH 适配策略下的设计宽度。 */
     readonly designWidth?: number;
 }
 
-/** 微信小游戏环境使用的平台实现。 */
-export class WeChatPlatform implements Platform {
-    readonly id = 'wechat';
-
-    private readonly events = new EventBus<WeChatPlatformEvents>();
-    private readonly providedApi?: WeChatApi;
-    private readonly designWidth: number;
-    private api?: WeChatApi;
-    private safeArea?: SafeArea;
-    private layoutInfo?: PlatformLayoutInfo;
-    private launchOptions?: LaunchOptions;
-    private deviceProfile?: DeviceProfile;
-    private initialized = false;
-    private chooseMediaSupported = true;
-    private imagePickerGeneration = 0;
-    private cancelImagePicker?: () => void;
-    private imagePickerActive = false;
-    private imagePickerResultSettled = false;
-    private imagePickerActivityResetTimer?: ReturnType<typeof setTimeout>;
-    /** 原生相册会触发一对 hide/show；这对回调不应改变小游戏运行状态。 */
-    private imagePickerLifecycleInterrupted = false;
-    private accelerometerStarted = false;
-    private readonly accelerometerListeners = new Set<(sample: AccelerometerSample) => void>();
+/** 微信专有 API 解析和版本约束；共享能力由小游戏平台基类实现。 */
+export class WeChatPlatform extends MiniGamePlatform {
+    private appMessageContent: ShareContent = Object.freeze({});
+    private timelineContent: TimelineShareContent = Object.freeze({});
+    private lastAppMessageTitle?: string;
+    private lastTimelineTitle?: string;
+    private lastAppMessageImageUrlId?: string;
+    private lastTimelineImageUrlId?: string;
+    private enableTimeline = true;
+    private appMessageRegistered = false;
+    private timelineRegistered = false;
+    private shareMenuGeneration = 0;
 
     constructor(options: WeChatPlatformOptions = {}) {
-        if ((options.designWidth ?? 750) <= 0) {
-            throw new Error('WeChat platform design width must be greater than zero.');
-        }
-
-        this.providedApi = options.api;
-        this.designWidth = options.designWidth ?? 750;
+        super({
+            ...options,
+            id: 'wechat',
+            getApi: () => {
+                if (typeof wx === 'undefined') {
+                    throw new Error('WeChat API is unavailable in the current environment.');
+                }
+                return wx;
+            },
+            supportsChooseMedia: (version) => {
+                // 微信旧版 chooseMedia 可能静默不回调，且不回退到停止维护的 chooseImage。
+                if (!version) return true;
+                const [major, minor] = version.split('.').map((part) => Number.parseInt(part, 10));
+                return major > 2 || (major === 2 && minor >= 23);
+            },
+        });
     }
 
-    async initialize(): Promise<void> {
-        if (this.initialized) {
-            return;
+    showShareMenu(options?: ShareMenuOptions): void {
+        const api = this.api as WeChatApi | undefined;
+        if (!api) return;
+        const generation = ++this.shareMenuGeneration;
+
+        if (options) {
+            this.appMessageContent = this.normalizeShareContent(options.appMessage);
+            this.timelineContent = this.normalizeShareContent(options.timeline ?? options.appMessage);
+            this.lastAppMessageTitle = undefined;
+            this.lastTimelineTitle = undefined;
+            this.lastAppMessageImageUrlId = undefined;
+            this.lastTimelineImageUrlId = undefined;
+            this.enableTimeline = options.enableTimeline ?? true;
         }
 
-        const api = this.resolveApi();
-        const systemInfo = api.getSystemInfoSync();
+        if (!this.appMessageRegistered && api.onShareAppMessage && api.offShareAppMessage) {
+            // 先标记，以便原生注册部分成功后抛错时仍能移除本实例的监听。
+            this.appMessageRegistered = true;
+            try {
+                api.onShareAppMessage(this.handleShareAppMessage);
+            } catch (error: unknown) {
+                this.removeShareAppMessage(api);
+                console.warn('[WeChatPlatform] Failed to register friend sharing.', error);
+            }
+        }
 
-        this.chooseMediaSupported = this.supportsChooseMedia(systemInfo.SDKVersion);
-        this.safeArea = this.normalizeSafeArea(systemInfo);
-        this.layoutInfo = this.normalizeLayoutInfo(systemInfo, api);
-        this.deviceProfile = this.normalizeDeviceProfile(systemInfo);
-        this.launchOptions = this.normalizeLaunchOptions(
-            api.getLaunchOptionsSync?.() ?? {},
-        );
-        this.api = api;
-        api.onShow(this.handleShow);
-        api.onHide(this.handleHide);
-        api.onAccelerometerChange?.(this.handleAccelerometerChange);
-        this.initialized = true;
+        if (this.supportsTimeline(api)) {
+            if (!this.timelineRegistered) {
+                this.timelineRegistered = true;
+                try {
+                    api.onShareTimeline!(this.handleShareTimeline);
+                } catch (error: unknown) {
+                    this.removeShareTimeline(api);
+                    console.warn('[WeChatPlatform] Failed to register timeline sharing.', error);
+                }
+            }
+        } else {
+            this.removeShareTimeline(api);
+        }
+
+        this.showNativeShareMenu(api, this.timelineRegistered, generation);
     }
 
     dispose(): void {
-        this.cancelLocalImagePicker();
-        this.stopAccelerometer();
-        this.api?.offAccelerometerChange?.(this.handleAccelerometerChange);
-        this.api?.offShow?.(this.handleShow);
-        this.api?.offHide?.(this.handleHide);
-        this.events.clear();
-        this.accelerometerListeners.clear();
-        this.api = undefined;
-        this.safeArea = undefined;
-        this.layoutInfo = undefined;
-        this.launchOptions = undefined;
-        this.deviceProfile = undefined;
-        this.chooseMediaSupported = true;
-        this.imagePickerLifecycleInterrupted = false;
-        this.initialized = false;
+        ++this.shareMenuGeneration;
+        const api = this.api as WeChatApi | undefined;
+        if (api) {
+            this.removeShareAppMessage(api);
+            this.removeShareTimeline(api);
+        }
+        this.appMessageContent = Object.freeze({});
+        this.timelineContent = Object.freeze({});
+        this.lastAppMessageTitle = undefined;
+        this.lastTimelineTitle = undefined;
+        this.lastAppMessageImageUrlId = undefined;
+        this.lastTimelineImageUrlId = undefined;
+        this.enableTimeline = true;
+        super.dispose();
     }
 
-    getSafeArea(): SafeArea {
-        if (!this.safeArea) {
-            throw new Error('WeChat platform is not initialized.');
-        }
+    private readonly handleShareAppMessage: ShareHandler = () => {
+        const content = this.createSharePayload(
+            this.appMessageContent, this.lastAppMessageTitle, this.lastAppMessageImageUrlId,
+        );
+        this.lastAppMessageTitle = content.title;
+        this.lastAppMessageImageUrlId = content.imageUrlId;
+        return content;
+    };
 
-        return this.safeArea;
+    private readonly handleShareTimeline: TimelineShareHandler = () => {
+        const content = this.createSharePayload(
+            this.timelineContent, this.lastTimelineTitle, this.lastTimelineImageUrlId,
+        );
+        this.lastTimelineTitle = content.title;
+        this.lastTimelineImageUrlId = content.imageUrlId;
+        // 朋友圈发布预览与卡片使用同一张素材；显式配置的预览图优先。
+        if (!content.imagePreviewUrl && !content.imagePreviewUrlId && !content.imageUrl && content.imageUrlId) {
+            return { ...content, imagePreviewUrlId: content.imageUrlId };
+        }
+        return content;
+    };
+
+    private createSharePayload(
+        content: TimelineShareContent, previousTitle?: string, previousImageUrlId?: string,
+    ): TimelineShareContent {
+        // 备选池仅供应用选择，不传给微信；每次真正触发分享时才抽取。
+        const { titles, imageUrlIds, ...payload } = content;
+        if (titles?.length) {
+            payload.title = this.chooseRandom(titles, previousTitle);
+        }
+        if (!payload.imageUrl && imageUrlIds?.length) {
+            payload.imageUrlId = this.chooseRandom(imageUrlIds, previousImageUrlId);
+        }
+        return payload;
     }
 
-    getLayoutInfo(): PlatformLayoutInfo {
-        if (!this.layoutInfo) {
-            throw new Error('WeChat platform is not initialized.');
-        }
-
-        return this.layoutInfo;
+    private chooseRandom(values: readonly string[], previousValue?: string): string {
+        const candidates = values.filter((value) => value !== previousValue);
+        const choices = candidates.length ? candidates : values;
+        return choices[Math.floor(Math.random() * choices.length)];
     }
 
-    getDeviceProfile(): DeviceProfile {
-        if (!this.deviceProfile) {
-            throw new Error('WeChat platform is not initialized.');
+    private normalizeShareContent(content: TimelineShareContent = {}): TimelineShareContent {
+        const normalized: {
+            title?: string;
+            titles?: readonly string[];
+            imageUrl?: string;
+            imageUrlId?: string;
+            imageUrlIds?: readonly string[];
+            query?: string;
+            imagePreviewUrl?: string;
+            imagePreviewUrlId?: string;
+        } = {};
+        for (const field of ['title', 'imageUrl', 'imageUrlId', 'query', 'imagePreviewUrl', 'imagePreviewUrlId'] as const) {
+            const value = content[field]?.trim();
+            if (value) normalized[field] = value;
         }
-
-        return this.deviceProfile;
+        for (const field of ['titles', 'imageUrlIds'] as const) {
+            const values = content[field];
+            if (!Array.isArray(values)) continue;
+            const strings = Array.from(new Set(values
+                .filter((value) => typeof value === 'string' && value.trim().length > 0)
+                .map((value) => value.trim())));
+            if (strings.length) normalized[field] = Object.freeze(strings);
+        }
+        return Object.freeze(normalized);
     }
 
-    getLaunchOptions(): LaunchOptions {
-        if (!this.launchOptions) {
-            throw new Error('WeChat platform is not initialized.');
+    private supportsTimeline(api: WeChatApi): boolean {
+        if (!this.enableTimeline || !api.onShareTimeline || !api.offShareTimeline) return false;
+        try {
+            return api.canIUse?.('onShareTimeline') ?? true;
+        } catch (_error: unknown) {
+            return false;
         }
-
-        return this.launchOptions;
     }
 
-    async pickLocalImage(): Promise<LocalImageSelection | null> {
-        const api = this.api;
-        if (!api || typeof api.chooseMedia !== 'function') {
-            return null;
-        }
-
-        // 重新选图前先完整取消并清空上一轮请求，不能只调用回调取消函数，
-        // 否则上一轮的生命周期标记可能残留到下一次原生相册返回。
-        this.cancelLocalImagePicker();
-        const generation = ++this.imagePickerGeneration;
-        this.imagePickerActive = true;
-        this.imagePickerResultSettled = false;
-        const isCurrent = (): boolean => this.initialized
-            && this.api === api
-            && this.imagePickerGeneration === generation;
-        const normalize = (file: WeChatMediaFile | undefined): LocalImageSelection | null => {
-            const uri = file?.tempFilePath;
-            if (!uri || !isCurrent()) {
-                return null;
+    private showNativeShareMenu(api: WeChatApi, withTimeline: boolean, generation: number): void {
+        const fail = (error?: unknown): void => {
+            // 已销毁的应用不能被迟到的原生失败回调重新开启分享菜单。
+            if (this.api !== api || this.shareMenuGeneration !== generation) return;
+            console.warn('[WeChatPlatform] Failed to show share menu.', error);
+            if (withTimeline) {
+                this.removeShareTimeline(api);
+                this.showNativeShareMenu(api, false, generation);
             }
-
-            return Object.freeze({
-                uri,
-                // chooseMedia 返回的 fileType 常见值是 image，而不是 image/jpeg。
-                mimeType: file?.fileType === 'image' ? undefined : file?.fileType,
-                sizeBytes: file?.size,
-                // 微信临时文件由平台生命周期管理，业务层只需在会话结束时丢弃引用。
-                release: (): void => {},
-            });
         };
-
-        return new Promise<LocalImageSelection | null>((resolve) => {
-            let settled = false;
-            const finish = (selection: LocalImageSelection | null): void => {
-                if (settled) {
-                    return;
-                }
-
-                settled = true;
-                if (this.cancelImagePicker === cancel) {
-                    this.cancelImagePicker = undefined;
-                }
-                if (this.imagePickerGeneration === generation) {
-                    this.imagePickerResultSettled = true;
-                    this.deferImagePickerActivityReset(generation);
-                }
-                resolve(isCurrent() ? selection : null);
-            };
-            const cancel = (): void => finish(null);
-            this.cancelImagePicker = cancel;
-
-            // 只使用仍在维护的 wx.chooseMedia；wx.chooseImage 自基础库 2.21.0
-            // 起停止维护，部分客户端上首次成功后二次调用静默失效，不做回退。
-            // 低于 2.23 的基础库可能暴露同名方法却静默无回调，直接判失败，
-            // 让游戏层回到可重试的选择页，而不是停在空白等待。
-            if (!this.chooseMediaSupported) {
-                finish(null);
-                return;
-            }
-
-            try {
-                api.chooseMedia({
-                    count: 1,
-                    mediaType: ['image'],
-                    sourceType: ['album'],
-                    success: (result) => finish(normalize(result.tempFiles?.[0])),
-                    fail: (error) => {
-                        const errMsg = error?.errMsg;
-                        if (!errMsg?.toLowerCase().includes('cancel')) {
-                            console.warn('[WeChatPlatform] wx.chooseMedia failed.', errMsg);
-                        }
-
-                        finish(null);
-                    },
-                });
-            } catch (_error: unknown) {
-                finish(null);
-            }
-        });
-    }
-
-    async cropLocalImage(request: LocalImageCropRequest): Promise<LocalImageSelection | null> {
-        const api = this.api;
-        if (typeof api?.createCanvas !== 'function') {
-            console.warn('[WeChatPlatform] Local image crop requires wx.createCanvas.');
-            return null;
-        }
-
-        const outputSize = Math.max(1, Math.floor(request.outputSize));
         try {
-            // 微信小游戏通过 createCanvas 创建画布。Cocos 启动时已创建上屏
-            // 画布，此时新建的是独立离屏画布，不依赖 createOffscreenCanvas。
-            const canvas = api.createCanvas();
-            canvas.width = outputSize;
-            canvas.height = outputSize;
-            const context = canvas.getContext('2d');
-            const image = canvas.createImage?.() ?? api.createImage?.();
-            const fs = api.getFileSystemManager?.();
-            const userDataRoot = api.env?.USER_DATA_PATH;
-            // 离屏画布可能只提供 toDataURL；完整计入可写入本地文件的导出路径。
-            const canWriteDataUrl = typeof canvas.toDataURL === 'function' && !!fs && !!userDataRoot;
-            if (!context
-                || !image
-                || (!canvas.toTempFilePath && !canvas.toTempFilePathSync && !canWriteDataUrl)) {
-                console.warn('[WeChatPlatform] Local image crop capabilities unavailable.', {
-                    context: !!context, image: !!image, canWriteDataUrl,
-                    asyncExport: !!canvas.toTempFilePath, syncExport: !!canvas.toTempFilePathSync,
-                });
-                return null;
-            }
-
-            const loaded = await new Promise<boolean>((resolve) => {
-                let settled = false;
-                const timeout = setTimeout(() => finish(false), 8000);
-                const finish = (success: boolean): void => {
-                    if (settled) return;
-                    settled = true;
-                    clearTimeout(timeout);
-                    image.onload = null;
-                    image.onerror = null;
-                    resolve(success);
-                };
-                image.onload = () => finish(true);
-                image.onerror = () => finish(false);
-                image.src = request.uri;
-            });
-            if (!loaded) {
-                console.warn('[WeChatPlatform] Local image crop source failed to load or timed out.');
-                return null;
-            }
-
-            context.clearRect(0, 0, outputSize, outputSize);
-            context.drawImage(
-                image,
-                request.sourceX,
-                request.sourceY,
-                request.sourceSize,
-                request.sourceSize,
-                0,
-                0,
-                outputSize,
-                outputSize,
-            );
-            const exportOptions = {
-                x: 0,
-                y: 0,
-                width: outputSize,
-                height: outputSize,
-                destWidth: outputSize,
-                destHeight: outputSize,
-                fileType: 'jpg' as const,
-                quality: request.quality,
-            };
-            if (canvas.toTempFilePathSync) {
-                try {
-                    const syncPath = canvas.toTempFilePathSync(exportOptions);
-                    if (typeof syncPath === 'string' && syncPath) {
-                        return Object.freeze({
-                            uri: syncPath,
-                            mimeType: 'image/jpeg',
-                            release: (): void => {},
-                        });
-                    }
-                } catch (error: unknown) {
-                    // 部分基础库只实现异步版本；继续使用下面的回调接口。
-                    console.warn('[WeChatPlatform] Synchronous canvas export failed.', error);
-                }
-            }
-            let dataUrl: string | undefined;
-            try {
-                dataUrl = canvas.toDataURL?.('image/jpeg', request.quality);
-            } catch (error: unknown) {
-                // 部分客户端声明了 toDataURL 但不支持 2D 离屏画布导出；
-                // 继续尝试异步临时文件接口。
-                console.warn('[WeChatPlatform] Canvas data URL export failed.', error);
-            }
-            const dataSeparator = dataUrl?.indexOf(',') ?? -1;
-            if (dataUrl
-                && dataSeparator >= 0
-                && fs
-                && userDataRoot) {
-                const filePath = `${userDataRoot}/sliding-puzzle-crop-${Date.now()}.jpg`;
-                const written = await new Promise<boolean>((resolve) => {
-                    try {
-                        fs.writeFile({
-                            filePath,
-                            data: dataUrl.slice(dataSeparator + 1),
-                            encoding: 'base64',
-                            success: () => resolve(true),
-                            fail: (error) => {
-                                console.warn('[WeChatPlatform] Canvas data URL write failed.', error?.errMsg);
-                                resolve(false);
-                            },
-                        });
-                    } catch (error: unknown) {
-                        console.warn('[WeChatPlatform] Canvas data URL write threw.', error);
-                        resolve(false);
-                    }
-                });
-                if (written) {
-                    let released = false;
-                    return Object.freeze({
-                        uri: filePath,
-                        mimeType: 'image/jpeg',
-                        release: (): void => {
-                            if (released) return;
-                            released = true;
-                            fs.unlink({ filePath, success: () => {}, fail: () => {} });
-                        },
-                    });
-                }
-            }
-            if (!canvas.toTempFilePath) {
-                console.warn('[WeChatPlatform] No remaining canvas export method succeeded.');
-                return null;
-            }
-            const uri = await new Promise<string | null>((resolve) => {
-                let settled = false;
-                const timeout = setTimeout(() => {
-                    console.warn('[WeChatPlatform] Canvas export timed out.');
-                    finish(null);
-                }, 8000);
-                const finish = (path: string | null): void => {
-                    if (settled) return;
-                    settled = true;
-                    clearTimeout(timeout);
-                    resolve(path);
-                };
-                const immediatePath = canvas.toTempFilePath?.({
-                    ...exportOptions,
-                    success: (result) => finish(result.tempFilePath ?? null),
-                    fail: (error) => {
-                        console.warn('[WeChatPlatform] Canvas export failed.', error?.errMsg);
-                        finish(null);
-                    },
-                });
-                if (typeof immediatePath === 'string' && immediatePath) {
-                    finish(immediatePath);
-                }
-            });
-            if (!uri) {
-                return null;
-            }
-            return Object.freeze({
-                uri,
-                mimeType: 'image/jpeg',
-                // 微信临时文件随平台生命周期回收，当前接口不主动删除。
-                release: (): void => {},
+            api.showShareMenu?.({
+                withShareTicket: true,
+                menus: withTimeline ? ['shareAppMessage', 'shareTimeline'] : ['shareAppMessage'],
+                fail,
             });
         } catch (error: unknown) {
-            console.warn('[WeChatPlatform] Failed to crop local image.', error);
-            return null;
+            fail(error);
         }
     }
 
-    async persistLocalImage(uri: string, id: string): Promise<string | null> {
-        const fs = this.api?.getFileSystemManager?.();
-        const root = this.api?.env?.USER_DATA_PATH;
-        if (!fs || !root) return null;
-        const directory = `${root}/sliding-puzzle-custom`;
-        const destination = `${directory}/${id}.jpg`;
-        await new Promise<void>((resolve) => fs.mkdir({
-            dirPath: directory,
-            recursive: true,
-            success: () => resolve(),
-            // 目录已存在和创建失败都交给 copyFile 给出最终结果。
-            fail: () => resolve(),
-        }));
-        return new Promise<string | null>((resolve) => fs.copyFile({
-            srcPath: uri,
-            destPath: destination,
-            success: () => resolve(destination),
-            fail: (error) => {
-                console.warn('[WeChatPlatform] Failed to persist local image.', error?.errMsg);
-                resolve(null);
-            },
-        }));
-    }
-
-    async openPersistedLocalImage(uri: string): Promise<LocalImageSelection | null> {
-        const fs = this.api?.getFileSystemManager?.();
-        if (!fs) return null;
-        const exists = await new Promise<boolean>((resolve) => fs.access({
-            path: uri,
-            success: () => resolve(true),
-            fail: () => resolve(false),
-        }));
-        return exists ? Object.freeze({ uri, mimeType: 'image/jpeg', release: (): void => {} }) : null;
-    }
-
-    async deletePersistedLocalImage(uri: string): Promise<void> {
-        const fs = this.api?.getFileSystemManager?.();
-        if (!fs) return;
-        await new Promise<void>((resolve) => fs.unlink({
-            filePath: uri,
-            success: () => resolve(),
-            fail: () => resolve(),
-        }));
-    }
-
-    cancelLocalImagePicker(): void {
-        this.imagePickerGeneration += 1;
-        this.imagePickerActive = false;
-        this.imagePickerResultSettled = false;
-        if (this.imagePickerActivityResetTimer !== undefined) {
-            clearTimeout(this.imagePickerActivityResetTimer);
-            this.imagePickerActivityResetTimer = undefined;
-        }
-        this.imagePickerLifecycleInterrupted = false;
-        this.cancelImagePicker?.();
-        this.cancelImagePicker = undefined;
-    }
-
-    supportsVibration(): boolean {
-        return typeof this.api?.vibrateShort === 'function';
-    }
-
-    vibrate(type: 'light' | 'medium' | 'heavy'): void {
-        this.api?.vibrateShort?.({ type });
-    }
-
-    supportsAccelerometer(): boolean {
-        return typeof this.api?.startAccelerometer === 'function'
-            && typeof this.api?.onAccelerometerChange === 'function';
-    }
-
-    startAccelerometer(): void {
-        if (!this.supportsAccelerometer() || this.accelerometerStarted) return;
+    private removeShareAppMessage(api: WeChatApi): void {
+        if (!this.appMessageRegistered) return;
+        this.appMessageRegistered = false;
         try {
-            this.api?.startAccelerometer?.({ interval: 'game' });
-            this.accelerometerStarted = true;
+            api.offShareAppMessage?.(this.handleShareAppMessage);
         } catch (error: unknown) {
-            console.warn('[WeChatPlatform] Failed to start accelerometer.', error);
+            console.warn('[WeChatPlatform] Failed to remove friend sharing.', error);
         }
     }
 
-    stopAccelerometer(): void {
-        if (!this.accelerometerStarted) return;
+    private removeShareTimeline(api: WeChatApi): void {
+        if (!this.timelineRegistered) return;
+        this.timelineRegistered = false;
         try {
-            this.api?.stopAccelerometer?.();
+            api.offShareTimeline?.(this.handleShareTimeline);
         } catch (error: unknown) {
-            console.warn('[WeChatPlatform] Failed to stop accelerometer.', error);
-        } finally {
-            this.accelerometerStarted = false;
+            console.warn('[WeChatPlatform] Failed to remove timeline sharing.', error);
         }
-    }
-
-    onAccelerometerChange(callback: (sample: AccelerometerSample) => void): Unsubscribe {
-        this.accelerometerListeners.add(callback);
-        return () => this.accelerometerListeners.delete(callback);
-    }
-
-    showShareMenu(): void {
-        this.api?.showShareMenu?.({ withShareTicket: true });
-    }
-
-    onShow(callback: () => void): Unsubscribe {
-        return this.events.subscribe('show', callback);
-    }
-
-    onHide(callback: () => void): Unsubscribe {
-        return this.events.subscribe('hide', callback);
-    }
-
-    private readonly handleShow = (): void => {
-        if (this.imagePickerLifecycleInterrupted) {
-            this.imagePickerLifecycleInterrupted = false;
-            if (this.imagePickerResultSettled) {
-                this.imagePickerActive = false;
-            }
-            return;
-        }
-
-        // 有些客户端只回调 onShow、不回调 onHide；请求已完成时也要消费
-        // 这次原生页面返回，不能把它当成小游戏重新前台并触发全局状态流转。
-        if (this.imagePickerActive && this.imagePickerResultSettled) {
-            this.imagePickerActive = false;
-            return;
-        }
-
-        this.events.publish('show', undefined);
-    };
-
-    private readonly handleHide = (): void => {
-        if (this.imagePickerActive || this.imagePickerLifecycleInterrupted) {
-            this.imagePickerLifecycleInterrupted = true;
-            return;
-        }
-
-        this.events.publish('hide', undefined);
-    };
-
-    private readonly handleAccelerometerChange = (sample: WeChatAccelerometerChangeResult): void => {
-        if (!Number.isFinite(sample.x) || !Number.isFinite(sample.y) || !Number.isFinite(sample.z)) {
-            return;
-        }
-        const normalized: AccelerometerSample = Object.freeze({
-            x: sample.x,
-            y: sample.y,
-            z: sample.z,
-        });
-        this.accelerometerListeners.forEach((listener) => listener(normalized));
-    };
-
-    private readonly deferImagePickerActivityReset = (generation: number): void => {
-        if (this.imagePickerActivityResetTimer !== undefined) {
-            clearTimeout(this.imagePickerActivityResetTimer);
-        }
-
-        this.imagePickerActivityResetTimer = setTimeout(() => {
-            this.imagePickerActivityResetTimer = undefined;
-            if (this.imagePickerGeneration !== generation) {
-                return;
-            }
-
-            this.imagePickerActive = false;
-            this.imagePickerResultSettled = false;
-            this.imagePickerLifecycleInterrupted = false;
-        }, IMAGE_PICKER_LIFECYCLE_GRACE_MS);
-    };
-
-    private resolveApi(): WeChatApi {
-        if (this.providedApi) {
-            return this.providedApi;
-        }
-
-        if (typeof wx === 'undefined') {
-            throw new Error('WeChat API is unavailable in the current environment.');
-        }
-
-        return wx;
-    }
-
-    private normalizeSafeArea(systemInfo: WeChatSystemInfo): SafeArea {
-        if (systemInfo.screenWidth <= 0 || systemInfo.screenHeight <= 0) {
-            throw new Error('WeChat returned an invalid screen size.');
-        }
-
-        const scale = this.designWidth / systemInfo.screenWidth;
-        const source = systemInfo.safeArea ?? {
-            left: 0,
-            top: 0,
-            right: systemInfo.screenWidth,
-            bottom: systemInfo.screenHeight,
-            width: systemInfo.screenWidth,
-            height: systemInfo.screenHeight,
-        };
-
-        const left = source.left * scale;
-        const top = source.top * scale;
-        const right = source.right * scale;
-        const bottom = source.bottom * scale;
-
-        return Object.freeze({
-            left,
-            top,
-            right,
-            bottom,
-            width: right - left,
-            height: bottom - top,
-        });
-    }
-
-    private supportsChooseMedia(version?: string): boolean {
-        if (!version) {
-            return true;
-        }
-
-        const parts = version.split('.').map((part) => Number.parseInt(part, 10));
-        const major = Number.isFinite(parts[0]) ? parts[0] : 0;
-        const minor = Number.isFinite(parts[1]) ? parts[1] : 0;
-        return major > 2 || (major === 2 && minor >= 23);
-    }
-
-    private normalizeLayoutInfo(
-        systemInfo: WeChatSystemInfo,
-        api: WeChatApi,
-    ): PlatformLayoutInfo {
-        let topRightReservedArea: PlatformUiRect | undefined;
-
-        try {
-            const menuButton = api.getMenuButtonBoundingClientRect?.();
-            if (menuButton && menuButton.width > 0 && menuButton.height > 0) {
-                const scale = this.designWidth / systemInfo.screenWidth;
-                topRightReservedArea = Object.freeze({
-                    left: menuButton.left * scale,
-                    top: menuButton.top * scale,
-                    right: menuButton.right * scale,
-                    bottom: menuButton.bottom * scale,
-                    width: menuButton.width * scale,
-                    height: menuButton.height * scale,
-                });
-            }
-        } catch (error: unknown) {
-            console.warn('[WeChatPlatform] Failed to read menu button bounds.', error);
-        }
-
-        return Object.freeze({
-            safeArea: this.safeArea!,
-            topRightReservedArea,
-        });
-    }
-
-    private normalizeLaunchOptions(options: WeChatLaunchOptions): LaunchOptions {
-        const referrerInfo = options.referrerInfo?.appId
-            ? Object.freeze({
-                appId: options.referrerInfo.appId,
-                extraData: options.referrerInfo.extraData,
-            })
-            : undefined;
-
-        return Object.freeze({
-            scene: options.scene,
-            path: options.path,
-            query: Object.freeze({ ...(options.query ?? {}) }),
-            shareTicket: options.shareTicket,
-            referrerInfo,
-        });
-    }
-
-    private normalizeDeviceProfile(systemInfo: WeChatSystemInfo): DeviceProfile {
-        const memoryMB = systemInfo.memorySize && systemInfo.memorySize > 0
-            ? systemInfo.memorySize
-            : undefined;
-        const benchmarkLevel = systemInfo.benchmarkLevel && systemInfo.benchmarkLevel > 0
-            ? systemInfo.benchmarkLevel
-            : undefined;
-        let tier: DevicePerformanceTier = 'medium';
-
-        if (
-            (memoryMB !== undefined && memoryMB <= 2048)
-            || (benchmarkLevel !== undefined && benchmarkLevel <= 10)
-        ) {
-            tier = 'low';
-        } else if (
-            memoryMB !== undefined
-            && memoryMB >= 6144
-            && benchmarkLevel !== undefined
-            && benchmarkLevel >= 30
-        ) {
-            tier = 'high';
-        }
-
-        return Object.freeze({
-            tier,
-            pixelRatio: systemInfo.pixelRatio && systemInfo.pixelRatio > 0
-                ? systemInfo.pixelRatio
-                : 1,
-            memoryMB,
-            benchmarkLevel,
-        });
     }
 }

@@ -14,7 +14,11 @@ import {
 } from 'cc';
 import {
     App,
+    ACHIEVEMENT_SERVICE,
+    ACHIEVEMENT_ART_SERVICE,
+    ACHIEVEMENT_CELEBRATION_SERVICE,
     AUDIO_SERVICE,
+    ASSET_SERVICE,
     CONFIG_SERVICE,
     FEEDBACK_SERVICE,
     GAME_REGISTRY_SERVICE,
@@ -29,7 +33,9 @@ import { EnterRequestLock } from './EnterRequestLock';
 import { calculateLobbyGridLayout } from './LobbyGridLayout';
 import { LobbyPresentation } from './LobbyPresentation';
 import { LobbySettingsPanel } from './LobbySettingsPanel';
+import { AchievementWall } from '../../shared/components/AchievementWall';
 import { BundleAudioBank } from '../../services/audio/BundleAudioBank';
+import { AchievementWallMusic } from '../../services/achievements/AchievementWallMusic';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import {
     calculateLobbyBrandMetrics,
@@ -56,14 +62,17 @@ export class LobbyEntry extends Component {
     private gameCardPrefab: Prefab | null = null;
 
     private games: readonly GameManifest[] = EMPTY_GAMES;
+    private mostRecentlyPlayedId?: string;
     private readonly enterRequestLock = new EnterRequestLock();
     private readonly presentation = new LobbyPresentation();
     private readonly settingsPanel = new LobbySettingsPanel();
+    private readonly achievementWall = new AchievementWall();
     private readonly cardViews = new Map<string, GameCardView>();
     private gridViewport: Node | null = null;
     private storageHighScores = new Map<string, number | undefined>();
     private enterGameRequest?: EnterGameRequest;
     private audioBank?: BundleAudioBank;
+    private achievementMusic?: AchievementWallMusic;
     private feedback?: FeedbackService;
     private platformLayout?: PlatformLayoutInfo;
     private hasLaidOut = false;
@@ -82,14 +91,14 @@ export class LobbyEntry extends Component {
     }
 
     protected start(): void {
-        this.presentation.mount(this.node);
         const app = App.current;
+        this.presentation.mount(this.node, app?.services.get(ASSET_SERVICE));
 
         if (!app) {
             this.setupGridViewport();
-            console.warn(
-                '[LobbyEntry] App is unavailable; game list remains empty.',
-            );
+            // TODO: console.warn(
+            //     '[LobbyEntry] App is unavailable; game list remains empty.',
+            // );
             return;
         }
 
@@ -110,23 +119,38 @@ export class LobbyEntry extends Component {
             platform,
         });
         this.audioBank = new BundleAudioBank({
-            bundle: 'lobby',
+            bundle: 'lobby-covers',
+            alwaysLoad: true,
             music: 'visual/audio/l1-gallery-loop-v1',
             cues: {
                 uiButton: 'visual/audio/lobby-button-v1',
                 popup: 'visual/audio/lobby-popup-v1',
                 toggle: 'visual/audio/lobby-toggle-v1',
             },
-        }, audio, feedback);
+        }, audio, feedback, services.get(ASSET_SERVICE));
         void this.audioBank.initialize().catch((error: unknown) => {
-            console.error('[LobbyEntry] Audio initialization failed.', error);
+            // TODO: console.error('[LobbyEntry] Audio initialization failed.', error);
         });
+        this.achievementMusic = new AchievementWallMusic(services.get(ASSET_SERVICE), this.audioBank);
+        void this.achievementMusic.prepare().catch(() => {});
 
-        this.games = registry.getPlayableGames(
+        const playableGames = registry.getPlayableGames(
             platform.getDeviceProfile().tier,
             config.appVersion,
             config.development.showDevelopmentGames,
         );
+        this.games = playableGames
+            .map((manifest, index) => ({
+                manifest,
+                index,
+                lastPlayedAt: storage.getGameData(manifest.id)?.lastPlayedAt ?? 0,
+            }))
+            .sort((left, right) => right.lastPlayedAt - left.lastPlayedAt || left.index - right.index)
+            .map(({ manifest }) => manifest);
+        const firstGame = this.games[0];
+        this.mostRecentlyPlayedId = firstGame
+            && (storage.getGameData(firstGame.id)?.lastPlayedAt ?? 0) > 0
+            ? firstGame.id : undefined;
         this.setEnterGameRequest((manifest) => (
             services.get(GAME_RUNTIME_SERVICE).enterGame(manifest)
         ));
@@ -134,12 +158,25 @@ export class LobbyEntry extends Component {
             manifest.id,
             storage.getGameData(manifest.id)?.highScore,
         ]));
+        const gameList = this.gameList;
+        if (gameList) this.achievementWall.mount(this.node.parent?.parent ?? this.node, gameList, playableGames, {
+            achievements: services.get(ACHIEVEMENT_SERVICE), platform, feedback,
+            art: services.get(ACHIEVEMENT_ART_SERVICE),
+            music: this.achievementMusic,
+            replay: manifest => { services.get(ACHIEVEMENT_CELEBRATION_SERVICE).replay(manifest); },
+            preview: (manifest, challenge) => {
+                services.get(ACHIEVEMENT_CELEBRATION_SERVICE).preview(manifest, challenge);
+            },
+        }, this.handleCardClick);
         this.renderGames();
     }
 
     protected onDestroy(): void {
         this.presentation.unmount();
         this.settingsPanel.unmount();
+        this.achievementWall.unmount();
+        this.achievementMusic?.dispose();
+        this.achievementMusic = undefined;
         this.audioBank?.dispose();
         this.audioBank = undefined;
         this.feedback = undefined;
@@ -221,7 +258,7 @@ export class LobbyEntry extends Component {
         const gameCardPrefab = this.gameCardPrefab;
 
         if (!gameList || !gameCardPrefab) {
-            console.error('[LobbyEntry] Game list or card prefab is missing.');
+            // TODO: console.error('[LobbyEntry] Game list or card prefab is missing.');
             return;
         }
 
@@ -253,6 +290,7 @@ export class LobbyEntry extends Component {
                 manifest,
                 this.storageHighScores.get(manifest.id),
                 this.handleCardClick,
+                manifest.id === this.mostRecentlyPlayedId,
             );
             this.cardViews.set(manifest.id, view);
         });
@@ -301,8 +339,14 @@ export class LobbyEntry extends Component {
         const brandMetrics = calculateLobbyBrandMetrics(
             safeContentMetrics.contentWidth,
             safeContentMetrics.contentHeight,
+            this.achievementWall.hasShowcase,
         );
         const gridWidth = Math.max(0, viewportMetrics.contentWidth - GRID_SIDE_PADDING * 2);
+        this.achievementWall.layoutShowcase(
+            gridWidth,
+            -brandMetrics.showcaseCenterFromTop,
+            brandMetrics.scale,
+        );
         const cards = gameList.children.filter((child) => Boolean(child.getComponent(GameCardView)));
         const layout = calculateLobbyGridLayout(
             cards.length,
@@ -400,9 +444,9 @@ export class LobbyEntry extends Component {
         const request = this.enterGameRequest;
 
         if (!request) {
-            console.info(
-                `[LobbyEntry] Enter flow is not connected: ${manifest.id}.`,
-            );
+            // TODO: console.info(
+            //     `[LobbyEntry] Enter flow is not connected: ${manifest.id}.`,
+            // );
             return;
         }
 
@@ -416,10 +460,10 @@ export class LobbyEntry extends Component {
                 }
             },
             (error: unknown) => {
-                console.error(
-                    `[LobbyEntry] Enter request failed: ${manifest.id}.`,
-                    error,
-                );
+                // TODO: console.error(
+                //     `[LobbyEntry] Enter request failed: ${manifest.id}.`,
+                //     error,
+                // );
                 if (ownerNode.isValid) {
                     cardView?.setEnterFailed();
                 }

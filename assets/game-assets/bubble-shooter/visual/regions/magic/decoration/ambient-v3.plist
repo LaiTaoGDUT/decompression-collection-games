@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>drift</key>
+		<dict>
+			<key>frame</key>
+			<string>{{424,2},{525,351}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{525,351}}</string>
+			<key>sourceSize</key>
+			<string>{525,351}</string>
+		</dict>
+		<key>flyer</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{420,369}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{420,369}}</string>
+			<key>sourceSize</key>
+			<string>{420,369}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>ambient-v3.png</string>
+		<key>size</key>
+		<string>{951,373}</string>
+		<key>textureFileName</key>
+		<string>ambient-v3.png</string>
+	</dict>
+</dict>
+</plist>

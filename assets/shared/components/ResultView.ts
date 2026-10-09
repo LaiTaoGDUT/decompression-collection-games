@@ -98,7 +98,7 @@ export class ResultView extends Component implements ResultPresenter {
         try {
             await action();
         } catch (error: unknown) {
-            console.error('[ResultView] Result action failed.', error);
+            // TODO: console.error('[ResultView] Result action failed.', error);
         } finally {
             if (this.node.active) {
                 this.setBusy(false);

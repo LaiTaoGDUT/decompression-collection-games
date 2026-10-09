@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "2d6736b7-b965-5d22-bfed-8307a183b64a",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "77fe8": {
+      "importer": "sprite-frame",
+      "uuid": "2d6736b7-b965-5d22-bfed-8307a183b64a@77fe8",
+      "displayName": "",
+      "id": "77fe8",
+      "name": "meowdoku-result-win-cat-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d6a41a4d-6e83-55ad-b805-26f978a1f485@6c48a",
+        "atlasUuid": "2d6736b7-b965-5d22-bfed-8307a183b64a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "meow-result-cats-3.png",
+    "format": 2,
+    "uuid": "2d6736b7-b965-5d22-bfed-8307a183b64a",
+    "textureUuid": "d6a41a4d-6e83-55ad-b805-26f978a1f485@6c48a"
+  }
+}

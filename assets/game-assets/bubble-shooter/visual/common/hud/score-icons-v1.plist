@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>best</key>
+		<dict>
+			<key>frame</key>
+			<string>{{43,2},{43,36}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{43,36}}</string>
+			<key>sourceSize</key>
+			<string>{43,36}</string>
+		</dict>
+		<key>score</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{39,37}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0,0},{39,37}}</string>
+			<key>sourceSize</key>
+			<string>{39,37}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>score-icons-v1.png</string>
+		<key>size</key>
+		<string>{88,41}</string>
+		<key>textureFileName</key>
+		<string>score-icons-v1.png</string>
+	</dict>
+</dict>
+</plist>

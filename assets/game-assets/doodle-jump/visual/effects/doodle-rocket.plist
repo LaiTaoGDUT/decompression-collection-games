@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>rocket-flame</key>
+		<dict>
+			<key>frame</key>
+			<string>{{151,2},{94,225}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{94,225}}</string>
+			<key>sourceSize</key>
+			<string>{94,225}</string>
+		</dict>
+		<key>rocket-paper-scraps</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,276},{150,238}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{150,238}}</string>
+			<key>sourceSize</key>
+			<string>{150,238}</string>
+		</dict>
+		<key>rocket-paper-trail</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{145,270}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{145,270}}</string>
+			<key>sourceSize</key>
+			<string>{145,270}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-rocket.png</string>
+		<key>size</key>
+		<string>{247,516}</string>
+		<key>textureFileName</key>
+		<string>doodle-rocket.png</string>
+	</dict>
+</dict>
+</plist>

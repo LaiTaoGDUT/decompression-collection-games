@@ -21,7 +21,6 @@ export interface FruitLevelConfig {
         g: number;
         b: number;
     }>;
-    readonly prefab: string;
     readonly sprite: string;
     readonly initialSpawn: boolean;
     readonly nextLevel?: number;
@@ -34,17 +33,17 @@ export const CAT_TOKEN_VISIBLE_DIAMETER_RATIO = 252 / 256;
 // column only preserves the legacy cat texture key until those files are
 // physically renamed; it must not determine fruit identity or merge order.
 const DEFINITIONS = [
-    ['cherry', '小樱桃', [247, 221, 176], 'cherry', 'cream-kitten'],
-    ['grape', '葡萄', [224, 155, 85], 'strawberry', 'calico'],
-    ['strawberry', '草莓', [157, 164, 173], 'grape', 'gray-tabby'],
-    ['dekopon', '小橘子', [62, 65, 74], 'dekopon', 'tuxedo'],
-    ['orange', '橙子', [244, 244, 238], 'orange', 'white-fluffy'],
-    ['apple', '苹果', [153, 104, 62], 'apple', 'brown-tabby'],
-    ['pear', '梨子', [210, 185, 151], 'pear', 'siamese'],
-    ['peach', '桃子', [230, 169, 73], 'peach', 'golden-shorthair'],
-    ['pineapple', '菠萝', [103, 111, 134], 'pineapple', 'blue-scottish-fold'],
-    ['melon', '哈密瓜', [67, 65, 76], 'melon', 'orange-tabby'],
-    ['watermelon', '大西瓜', [235, 128, 28], 'watermelon', 'fat-orange'],
+    ['cherry', '小樱桃', [247, 221, 176], 'cream-kitten'],
+    ['grape', '葡萄', [224, 155, 85], 'calico'],
+    ['strawberry', '草莓', [157, 164, 173], 'gray-tabby'],
+    ['dekopon', '小橘子', [62, 65, 74], 'tuxedo'],
+    ['orange', '橙子', [244, 244, 238], 'white-fluffy'],
+    ['apple', '苹果', [153, 104, 62], 'brown-tabby'],
+    ['pear', '梨子', [210, 185, 151], 'siamese'],
+    ['peach', '桃子', [230, 169, 73], 'golden-shorthair'],
+    ['pineapple', '菠萝', [103, 111, 134], 'blue-scottish-fold'],
+    ['melon', '哈密瓜', [67, 65, 76], 'orange-tabby'],
+    ['watermelon', '大西瓜', [235, 128, 28], 'fat-orange'],
 ] as const;
 
 const FRAME_VERSIONS = [
@@ -57,7 +56,7 @@ function createFruitCatalog(
 ): readonly FruitLevelConfig[] {
     return Object.freeze(
     DEFINITIONS.map((definition, level) => {
-        const [id, displayName, rgb, legacyPrefabId, legacyCatAssetId] = definition;
+        const [id, displayName, rgb, legacyCatAssetId] = definition;
         const physics = gameplay.fruits[level];
         const assetPrefix = `visual/cats/frames-c6/cat-${level < 10 ? '0' : ''}${level}-${legacyCatAssetId}`;
         const frameVersion = FRAME_VERSIONS[level];
@@ -76,9 +75,6 @@ function createFruitCatalog(
             angularDamping: gameplay.angularDamping,
             score: gameplay.mergeScores[level],
             color: Object.freeze({ r: rgb[0], g: rgb[1], b: rgb[2] }),
-            // Keep the existing serialized prefab filename for scene and save
-            // compatibility; gameplay identity comes from the fruit ID above.
-            prefab: `prefabs/fruits/fruit-${level < 10 ? '0' : ''}${level}-${legacyPrefabId}`,
             sprite,
             initialSpawn: level <= 4,
             ...(level < DEFINITIONS.length - 1 ? { nextLevel: level + 1 } : {}),
@@ -133,7 +129,6 @@ export function validateFruitCatalog(
             || fruit.linearDamping < 0
             || fruit.angularDamping < 0
             || fruit.score <= 0
-            || !fruit.prefab
             || !fruit.sprite) {
             errors.push(`Fruit level ${index} has incomplete physical data.`);
         }

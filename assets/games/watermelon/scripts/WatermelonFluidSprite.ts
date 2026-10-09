@@ -1,6 +1,7 @@
 import {
     _decorator,
     Color,
+    Mat4,
     RenderData,
     Sprite,
     SpriteFrame,
@@ -42,6 +43,7 @@ interface FluidAssembler {
 export class WatermelonFluidSprite extends Sprite {
     private readonly fluidPoints: Array<{ x: number; y: number }> = [];
     private fluidUvFrame?: SpriteFrame;
+    private fluidWorldMatrix?: Mat4;
 
     setFluidPoints(
         points: readonly FluidRenderPoint[],
@@ -49,20 +51,25 @@ export class WatermelonFluidSprite extends Sprite {
         centerY = 0,
     ): void {
         if (points.length !== POINT_COUNT) return;
+        let changed = false;
         for (let index = 0; index < POINT_COUNT; index += 1) {
             const source = points[index];
             const target = this.fluidPoints[index];
             if (target) {
-                target.x = source.x - centerX;
-                target.y = source.y - centerY;
+                const x = source.x - centerX;
+                const y = source.y - centerY;
+                changed = changed || target.x !== x || target.y !== y;
+                target.x = x;
+                target.y = y;
             } else {
+                changed = true;
                 this.fluidPoints.push({
                     x: source.x - centerX,
                     y: source.y - centerY,
                 });
             }
         }
-        this.markForUpdateRenderData();
+        if (changed) this.markForUpdateRenderData();
     }
 
     private ensureFluidPoints(): void {
@@ -98,6 +105,15 @@ export class WatermelonFluidSprite extends Sprite {
         const endY = (control.y + next.y) * 0.5;
         target.x = inverse * inverse * startX + 2 * inverse * t * control.x + t * t * endX;
         target.y = inverse * inverse * startY + 2 * inverse * t * control.y + t * t * endY;
+    }
+
+    needsFluidWorldUpdate(): boolean {
+        const matrix = this.node.worldMatrix;
+        if (!this.renderData?.vertDirty && this.fluidWorldMatrix
+            && Mat4.strictEquals(this.fluidWorldMatrix, matrix)) return false;
+        if (this.fluidWorldMatrix) Mat4.copy(this.fluidWorldMatrix, matrix);
+        else this.fluidWorldMatrix = new Mat4(matrix);
+        return true;
     }
 
     needsFluidUvUpdate(frame: SpriteFrame): boolean {
@@ -189,19 +205,23 @@ function interpolate(
     return bottom + (top - bottom) * y;
 }
 
+// All fruits share the same rest UV samples and triangle topology. Keep them
+// once per module instead of allocating points/indices on every drop or merge.
+const REST_RIM_POINTS = Array.from({ length: RIM_VERTEX_COUNT }, (_, index) => getSmoothedRestPoint(index));
+const FAN_INDICES = new Uint16Array(INDEX_COUNT);
+for (let index = 0; index < RIM_VERTEX_COUNT; index += 1) {
+    const offset = index * 3;
+    FAN_INDICES[offset] = 0;
+    FAN_INDICES[offset + 1] = index + 1;
+    FAN_INDICES[offset + 2] = ((index + 1) % RIM_VERTEX_COUNT) + 1;
+}
+
 const fluidSpriteAssembler: FluidAssembler = {
     createData(sprite: WatermelonFluidSprite): RenderData {
         const renderData = sprite.requestRenderData();
         renderData.dataLength = VERTEX_COUNT;
         renderData.resize(VERTEX_COUNT, INDEX_COUNT);
-        const indices = new Uint16Array(INDEX_COUNT);
-        for (let index = 0; index < RIM_VERTEX_COUNT; index += 1) {
-            const offset = index * 3;
-            indices[offset] = 0;
-            indices[offset + 1] = index + 1;
-            indices[offset + 2] = ((index + 1) % RIM_VERTEX_COUNT) + 1;
-        }
-        renderData.chunk.setIndexBuffer(indices);
+        renderData.chunk.setIndexBuffer(FAN_INDICES);
         return renderData;
     },
 
@@ -237,7 +257,7 @@ const fluidSpriteAssembler: FluidAssembler = {
         };
         writeUv(0, 0.5, 0.5);
         for (let index = 0; index < RIM_VERTEX_COUNT; index += 1) {
-            const point = getSmoothedRestPoint(index);
+            const point = REST_RIM_POINTS[index];
             writeUv(
                 index + 1,
                 0.5 + point.x * CAT_TOKEN_VISIBLE_DIAMETER_RATIO / 2,
@@ -265,8 +285,12 @@ const fluidSpriteAssembler: FluidAssembler = {
     fillBuffers(sprite: WatermelonFluidSprite): void {
         const renderData = sprite.renderData;
         if (!renderData) return;
-        updateWorldVertices(sprite);
-        renderData.vertDirty = false;
+        // Compare the full world matrix so parent/layout transforms still
+        // propagate while paused, without depending on private engine flags.
+        if (sprite.needsFluidWorldUpdate()) {
+            updateWorldVertices(sprite);
+            renderData.vertDirty = false;
+        }
         const vertexOffset = renderData.chunk.vertexOffset;
         const meshBuffer = renderData.chunk.meshBuffer;
         const indices = meshBuffer.iData;

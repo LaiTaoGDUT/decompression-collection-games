@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "d6f17e66-80e9-5267-9c6f-79e5b51fe16c",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "f81b2": {
+      "importer": "sprite-frame",
+      "uuid": "d6f17e66-80e9-5267-9c6f-79e5b51fe16c@f81b2",
+      "displayName": "",
+      "id": "f81b2",
+      "name": "player-fall-drag-streaks",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 188,
+        "width": 162,
+        "height": 273,
+        "rawWidth": 162,
+        "rawHeight": 273,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7684042d-3ef6-58ce-9811-516744f615fc@6c48a",
+        "atlasUuid": "d6f17e66-80e9-5267-9c6f-79e5b51fe16c",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b7d10": {
+      "importer": "sprite-frame",
+      "uuid": "d6f17e66-80e9-5267-9c6f-79e5b51fe16c@b7d10",
+      "displayName": "",
+      "id": "b7d10",
+      "name": "player-screen-wrap-afterimages",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 279,
+        "height": 182,
+        "rawWidth": 279,
+        "rawHeight": 182,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7684042d-3ef6-58ce-9811-516744f615fc@6c48a",
+        "atlasUuid": "d6f17e66-80e9-5267-9c6f-79e5b51fe16c",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-player-motion.png",
+    "format": 2,
+    "uuid": "d6f17e66-80e9-5267-9c6f-79e5b51fe16c",
+    "textureUuid": "7684042d-3ef6-58ce-9811-516744f615fc@6c48a"
+  }
+}

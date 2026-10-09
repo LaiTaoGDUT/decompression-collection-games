@@ -1,0 +1,201 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "373834ef-4ccd-5996-939e-be98a5b34396",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "af0c3": {
+      "importer": "sprite-frame",
+      "uuid": "373834ef-4ccd-5996-939e-be98a5b34396@af0c3",
+      "displayName": "",
+      "id": "af0c3",
+      "name": "star-comet",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 381,
+        "trimY": 333,
+        "width": 384,
+        "height": 293,
+        "rawWidth": 384,
+        "rawHeight": 293,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "af1f30f2-0d76-56d2-8e57-cab576fd2639@6c48a",
+        "atlasUuid": "373834ef-4ccd-5996-939e-be98a5b34396",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "bb3bf": {
+      "importer": "sprite-frame",
+      "uuid": "373834ef-4ccd-5996-939e-be98a5b34396@bb3bf",
+      "displayName": "",
+      "id": "bb3bf",
+      "name": "star-constellation",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 390,
+        "width": 339,
+        "height": 384,
+        "rawWidth": 339,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "af1f30f2-0d76-56d2-8e57-cab576fd2639@6c48a",
+        "atlasUuid": "373834ef-4ccd-5996-939e-be98a5b34396",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "7ecf7": {
+      "importer": "sprite-frame",
+      "uuid": "373834ef-4ccd-5996-939e-be98a5b34396@7ecf7",
+      "displayName": "",
+      "id": "7ecf7",
+      "name": "star-moon",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 375,
+        "height": 384,
+        "rawWidth": 375,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "af1f30f2-0d76-56d2-8e57-cab576fd2639@6c48a",
+        "atlasUuid": "373834ef-4ccd-5996-939e-be98a5b34396",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "977e7": {
+      "importer": "sprite-frame",
+      "uuid": "373834ef-4ccd-5996-939e-be98a5b34396@977e7",
+      "displayName": "",
+      "id": "977e7",
+      "name": "star-planet",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 381,
+        "trimY": 2,
+        "width": 384,
+        "height": 327,
+        "rawWidth": 384,
+        "rawHeight": 327,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "af1f30f2-0d76-56d2-8e57-cab576fd2639@6c48a",
+        "atlasUuid": "373834ef-4ccd-5996-939e-be98a5b34396",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-star.png",
+    "format": 2,
+    "uuid": "373834ef-4ccd-5996-939e-be98a5b34396",
+    "textureUuid": "af1f30f2-0d76-56d2-8e57-cab576fd2639@6c48a"
+  }
+}

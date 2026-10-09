@@ -40,6 +40,7 @@ function requireName(name: string): string {
 /** 厂商无关统计入口，统一补充公共字段并去重 Session 结束事件。 */
 export class AnalyticsService {
     private readonly endedSessionIds = new Set<string>();
+    private readonly eventIds = new Set<string>();
 
     constructor(
         private readonly getContext: () => AnalyticsContext,
@@ -58,6 +59,19 @@ export class AnalyticsService {
             properties: Object.freeze({ ...properties }),
         });
         this.transport.send(event);
+        return event;
+    }
+
+    trackOnce(eventId: string, name: string, properties: AnalyticsProperties = {}): AnalyticsEvent | undefined {
+        const id = eventId.trim();
+        if (!id) throw new Error('Analytics event ID must not be empty.');
+        if (this.eventIds.has(id)) return undefined;
+        const event = this.track(name, { ...properties, eventId: id });
+        this.eventIds.add(id);
+        if (this.eventIds.size > 2048) {
+            const oldest = this.eventIds.values().next().value as string | undefined;
+            if (oldest) this.eventIds.delete(oldest);
+        }
         return event;
     }
 

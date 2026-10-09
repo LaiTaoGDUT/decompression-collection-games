@@ -2,6 +2,7 @@ import type {
     GameResult,
     GameServices,
 } from '../core/types/CommonTypes';
+import type { AnalyticsProperties } from '../services/analytics/AnalyticsService';
 
 /**
  * 平台切到后台时小游戏的自动暂停策略。
@@ -37,6 +38,10 @@ export interface MiniGameContext<TServices extends object = object> {
     readonly services: GameServices<TServices>;
 
     reportScore(score: number): void;
+    /** 上报本局玩法里程碑；运行层根据 Manifest 判定并记录最高进度。 */
+    reportAchievementProgress(metric: string, value: number): void;
+    /** Generic game events use the public analytics service; eventId deduplicates retries. */
+    reportEvent?(name: string, properties: AnalyticsProperties, eventId?: string): void;
     requestPause(): void;
     requestExit(result?: GameResult): void;
     requestRestart(result?: GameResult): void;

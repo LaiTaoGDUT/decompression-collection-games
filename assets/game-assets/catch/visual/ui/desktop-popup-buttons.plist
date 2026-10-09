@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>desktop-cleanup-popup-button-coral-v1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,124},{433,105}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{433,105}}</string>
+			<key>sourceSize</key>
+			<string>{433,105}</string>
+		</dict>
+		<key>desktop-cleanup-popup-button-paper-v1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{465,2},{452,126}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{452,126}}</string>
+			<key>sourceSize</key>
+			<string>{452,126}</string>
+		</dict>
+		<key>desktop-cleanup-popup-button-teal-v1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{459,118}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{459,118}}</string>
+			<key>sourceSize</key>
+			<string>{459,118}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>desktop-popup-buttons.png</string>
+		<key>size</key>
+		<string>{919,231}</string>
+		<key>textureFileName</key>
+		<string>desktop-popup-buttons.png</string>
+	</dict>
+</dict>
+</plist>

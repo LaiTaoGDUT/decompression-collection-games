@@ -1,3 +1,4 @@
+import { setLabelBold } from '../../services/font/FontBinding';
 import {
     _decorator,
     BlockInputEvents,
@@ -61,7 +62,7 @@ export class ErrorView extends Component implements GameErrorPresenter {
         this.layoutAndDraw();
         const title = this.node.getChildByName('ErrorTitle')?.getComponent(Label);
         const message = this.node.getChildByName('ErrorMessage')?.getComponent(Label);
-        if (title) title.string = model.title ?? '加载出现问题';
+        if (title) title.string = model.title ?? "加载失败";
         if (message) message.string = model.message;
         this.retryButton!.node.active = Boolean(model.retry);
         this.lobbyButton!.node.active = Boolean(model.returnToLobby);
@@ -204,7 +205,7 @@ export class ErrorView extends Component implements GameErrorPresenter {
         label.node.getComponent(UITransform)?.setContentSize(204, 62);
         label.fontSize = 27;
         label.lineHeight = 36;
-        label.isBold = true;
+        setLabelBold(label, true);
         label.color = text;
         label.horizontalAlign = HorizontalTextAlignment.CENTER;
         label.verticalAlign = VerticalTextAlignment.CENTER;
@@ -218,7 +219,7 @@ export class ErrorView extends Component implements GameErrorPresenter {
         label.node.getComponent(UITransform)?.setContentSize(width, height);
         label.fontSize = fontSize;
         label.lineHeight = Math.round(fontSize * 1.45);
-        label.isBold = bold;
+        setLabelBold(label, bold);
         label.color = color;
         label.horizontalAlign = HorizontalTextAlignment.CENTER;
         label.verticalAlign = VerticalTextAlignment.CENTER;
@@ -252,7 +253,7 @@ export class ErrorView extends Component implements GameErrorPresenter {
         try {
             await action();
         } catch (error: unknown) {
-            console.error('[ErrorView] Recovery action failed.', error);
+            // TODO: console.error('[ErrorView] Recovery action failed.', error);
         } finally {
             if (this.node.active) this.setBusy(false);
         }

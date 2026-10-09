@@ -1,8 +1,7 @@
 import { sys } from 'cc';
 
-export const USER_DATA_SCHEMA_VERSION = 2;
+export const USER_DATA_SCHEMA_VERSION = 3;
 export const DEFAULT_STORAGE_KEY = 'decompression-collection.user-data';
-export const MIGRATION_BACKUP_SUFFIX = '.migration-backup';
 export const DEFAULT_STORAGE_WRITE_THROTTLE_MS = 3000;
 
 export interface UserSettings {
@@ -23,6 +22,14 @@ export interface UserData {
     readonly schemaVersion: number;
     readonly settings: UserSettings;
     readonly games: Readonly<Record<string, GameSaveData>>;
+    readonly achievements: Readonly<Record<string, AchievementSaveData>>;
+}
+
+export interface AchievementSaveData {
+    readonly achievementId: string;
+    readonly progress: number;
+    readonly unlockedAt?: number;
+    readonly celebratedAt?: number;
 }
 
 export interface StorageProvider {
@@ -42,16 +49,6 @@ export class StorageWriteError extends Error {
     }
 }
 
-export class StorageMigrationError extends Error {
-    constructor(
-        readonly fromVersion: number | undefined,
-        readonly cause: unknown,
-    ) {
-        super(cause instanceof Error ? cause.message : String(cause));
-        this.name = 'StorageMigrationError';
-    }
-}
-
 const DEFAULT_USER_DATA: UserData = Object.freeze({
     schemaVersion: USER_DATA_SCHEMA_VERSION,
     settings: Object.freeze({
@@ -60,6 +57,7 @@ const DEFAULT_USER_DATA: UserData = Object.freeze({
         vibrationEnabled: true,
     }),
     games: Object.freeze({}),
+    achievements: Object.freeze({}),
 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -74,91 +72,9 @@ function isFiniteNumber(value: unknown): value is number {
     return typeof value === 'number' && Number.isFinite(value);
 }
 
-type MutableData = Record<string, unknown>;
-type StorageMigration = (data: MutableData) => MutableData;
 interface PendingWrite {
     readonly revision: number;
     readonly payload: string;
-}
-
-const STORAGE_MIGRATIONS: Readonly<Record<number, StorageMigration>> = Object.freeze({
-    1: (data: MutableData): MutableData => {
-        if (!isRecord(data.settings)) {
-            throw new Error('Version 1 settings are missing.');
-        }
-
-        return {
-            ...data,
-            schemaVersion: 2,
-            settings: {
-                ...data.settings,
-                vibrationEnabled: isBoolean(data.settings.vibrationEnabled)
-                    ? data.settings.vibrationEnabled
-                    : true,
-            },
-        };
-    },
-});
-
-function readSchemaVersion(value: unknown): number | undefined {
-    if (!isRecord(value)
-        || !isFiniteNumber(value.schemaVersion)
-        || !Number.isInteger(value.schemaVersion)) {
-        return undefined;
-    }
-
-    return value.schemaVersion;
-}
-
-function migrateToCurrent(value: unknown): {
-    readonly data: unknown;
-    readonly migrated: boolean;
-} {
-    const initialVersion = readSchemaVersion(value);
-
-    if (initialVersion === undefined) {
-        return { data: value, migrated: false };
-    }
-
-    if (initialVersion > USER_DATA_SCHEMA_VERSION) {
-        throw new StorageMigrationError(
-            initialVersion,
-            new Error('Stored schema is newer than this app.'),
-        );
-    }
-
-    let data = value as MutableData;
-    let version = initialVersion;
-
-    while (version < USER_DATA_SCHEMA_VERSION) {
-        const migration = STORAGE_MIGRATIONS[version];
-
-        if (!migration) {
-            throw new StorageMigrationError(
-                initialVersion,
-                new Error(`Missing storage migration from version ${version}.`),
-            );
-        }
-
-        try {
-            data = migration(data);
-        } catch (cause: unknown) {
-            throw new StorageMigrationError(initialVersion, cause);
-        }
-
-        const nextVersion = readSchemaVersion(data);
-
-        if (nextVersion !== version + 1) {
-            throw new StorageMigrationError(
-                initialVersion,
-                new Error(`Migration ${version} must produce version ${version + 1}.`),
-            );
-        }
-
-        version = nextVersion;
-    }
-
-    return { data, migrated: version !== initialVersion };
 }
 
 function isGameSaveData(value: unknown): value is GameSaveData {
@@ -186,7 +102,8 @@ function parseUserData(value: unknown): UserData | undefined {
     if (!isRecord(value)
         || value.schemaVersion !== USER_DATA_SCHEMA_VERSION
         || !isRecord(value.settings)
-        || !isRecord(value.games)) {
+        || !isRecord(value.games)
+        || !isRecord(value.achievements)) {
         return undefined;
     }
 
@@ -199,6 +116,15 @@ function parseUserData(value: unknown): UserData | undefined {
     }
 
     const games: Record<string, GameSaveData> = {};
+    const achievements: Record<string, AchievementSaveData> = {};
+    const storedAchievements = value.achievements;
+    for (const gameId of Object.keys(storedAchievements)) {
+        const record = storedAchievements[gameId];
+        // 单条成就损坏不应清空正常的游戏存档。
+        if (gameId.trim() && isAchievementSaveData(record)) {
+            achievements[gameId] = Object.freeze({ ...record });
+        }
+    }
 
     for (const gameId of Object.keys(value.games)) {
         const gameData = value.games[gameId];
@@ -217,7 +143,17 @@ function parseUserData(value: unknown): UserData | undefined {
             vibrationEnabled: settings.vibrationEnabled,
         },
         games,
+        achievements,
     });
+}
+
+function isAchievementSaveData(value: unknown): value is AchievementSaveData {
+    return isRecord(value)
+        && typeof value.achievementId === 'string' && value.achievementId.trim().length > 0
+        && isFiniteNumber(value.progress) && value.progress >= 0
+        && (value.unlockedAt === undefined || (isFiniteNumber(value.unlockedAt) && value.unlockedAt > 0))
+        && (value.celebratedAt === undefined || (isFiniteNumber(value.celebratedAt) && value.celebratedAt > 0
+            && value.unlockedAt !== undefined));
 }
 
 function cloneGameData(data: GameSaveData): GameSaveData {
@@ -236,6 +172,10 @@ function cloneGameData(data: GameSaveData): GameSaveData {
 
 function freezeUserData(data: UserData): UserData {
     const games: Record<string, GameSaveData> = {};
+    const achievements: Record<string, AchievementSaveData> = {};
+    for (const gameId of Object.keys(data.achievements)) {
+        achievements[gameId] = Object.freeze({ ...data.achievements[gameId] });
+    }
 
     for (const gameId of Object.keys(data.games)) {
         const gameData = data.games[gameId];
@@ -246,6 +186,7 @@ function freezeUserData(data: UserData): UserData {
         schemaVersion: data.schemaVersion,
         settings: Object.freeze({ ...data.settings }),
         games: Object.freeze(games),
+        achievements: Object.freeze(achievements),
     });
 }
 
@@ -300,23 +241,14 @@ export class StorageService {
 
         if (stored !== null) {
             try {
-                const migration = migrateToCurrent(JSON.parse(stored));
-                const parsed = parseUserData(migration.data);
+                const parsed = parseUserData(JSON.parse(stored));
 
                 if (parsed) {
                     this.data = parsed;
 
-                    if (migration.migrated) {
-                        this.persistImmediately(parsed);
-                    }
-
                     return parsed;
                 }
-            } catch (cause: unknown) {
-                if (cause instanceof StorageMigrationError) {
-                    this.preserveMigrationFailure(stored, cause);
-                }
-
+            } catch {
                 // 损坏或不完整的存档统一恢复默认值并立即落盘。
             }
         }
@@ -334,34 +266,22 @@ export class StorageService {
         return this.snapshot.games[normalizeGameId(gameId)];
     }
 
+    getAchievement(gameId: string): AchievementSaveData | undefined {
+        return this.snapshot.achievements[normalizeGameId(gameId)];
+    }
+
+    writeAchievement(gameId: string, record: AchievementSaveData): void {
+        const id = normalizeGameId(gameId);
+        if (!isAchievementSaveData(record)) throw new Error('Invalid achievement save.');
+        this.commit({ ...this.snapshot, achievements: { ...this.snapshot.achievements, [id]: record } });
+    }
+
     get hasPendingWrites(): boolean {
         return this.pendingWrite !== undefined;
     }
 
     get lastPersistenceError(): StorageWriteError | undefined {
         return this.persistenceError;
-    }
-
-    /**
-     * 游戏自身 schema 迁移失败时保存迁移前的完整根快照。
-     * 该操作不修改当前内存数据，也不向小游戏暴露底层 provider。
-     */
-    backupGameDataMigrationFailure(gameId: string, reason: string): void {
-        this.ensureActive();
-        const normalizedId = normalizeGameId(gameId);
-        const normalizedReason = reason.trim() || 'Unknown game-data migration failure.';
-        try {
-            this.provider.setItem(
-                `${this.storageKey}${MIGRATION_BACKUP_SUFFIX}.${normalizedId}`,
-                JSON.stringify({
-                    gameId: normalizedId,
-                    reason: normalizedReason,
-                    rawData: this.serialize(this.snapshot),
-                }),
-            );
-        } catch (cause: unknown) {
-            throw new StorageMigrationError(undefined, cause);
-        }
     }
 
     writeGameData(gameId: string, gameData: GameSaveData): UserData {
@@ -424,7 +344,7 @@ export class StorageService {
         try {
             this.flush();
         } catch (error: unknown) {
-            console.error('[StorageService] Final flush failed during dispose.', error);
+            // TODO: console.error('[StorageService] Final flush failed during dispose.', error);
         }
 
         this.disposed = true;
@@ -500,7 +420,7 @@ export class StorageService {
                 this.persistPendingWrite();
             } catch (error: unknown) {
                 // 定时写入不能抛出未处理异常；保留 pendingWrite，下一轮继续重试。
-                console.error('[StorageService] Deferred flush failed.', error);
+                // TODO: console.error('[StorageService] Deferred flush failed.', error);
                 this.scheduleFlush();
             }
         }, delay);
@@ -514,22 +434,4 @@ export class StorageService {
         }
     }
 
-    private preserveMigrationFailure(
-        rawData: string,
-        error: StorageMigrationError,
-    ): void {
-        try {
-            this.provider.setItem(
-                `${this.storageKey}${MIGRATION_BACKUP_SUFFIX}`,
-                JSON.stringify({
-                    fromVersion: error.fromVersion,
-                    targetVersion: USER_DATA_SCHEMA_VERSION,
-                    reason: error.message,
-                    rawData,
-                }),
-            );
-        } catch (cause: unknown) {
-            throw new StorageMigrationError(error.fromVersion, cause);
-        }
-    }
 }

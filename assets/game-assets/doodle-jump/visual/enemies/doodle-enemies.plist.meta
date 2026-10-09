@@ -1,0 +1,293 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "2378d063-d158-5830-b2aa-2044945499ff",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "c2484": {
+      "importer": "sprite-frame",
+      "uuid": "2378d063-d158-5830-b2aa-2044945499ff@c2484",
+      "displayName": "",
+      "id": "c2484",
+      "name": "enemy-hover-01",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 406,
+        "width": 341,
+        "height": 436,
+        "rawWidth": 341,
+        "rawHeight": 436,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a",
+        "atlasUuid": "2378d063-d158-5830-b2aa-2044945499ff",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b4652": {
+      "importer": "sprite-frame",
+      "uuid": "2378d063-d158-5830-b2aa-2044945499ff@b4652",
+      "displayName": "",
+      "id": "b4652",
+      "name": "enemy-hover-02",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 347,
+        "trimY": 406,
+        "width": 341,
+        "height": 436,
+        "rawWidth": 341,
+        "rawHeight": 436,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a",
+        "atlasUuid": "2378d063-d158-5830-b2aa-2044945499ff",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "d18c3": {
+      "importer": "sprite-frame",
+      "uuid": "2378d063-d158-5830-b2aa-2044945499ff@d18c3",
+      "displayName": "",
+      "id": "d18c3",
+      "name": "enemy-large-01",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 457,
+        "height": 400,
+        "rawWidth": 457,
+        "rawHeight": 400,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a",
+        "atlasUuid": "2378d063-d158-5830-b2aa-2044945499ff",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "11a04": {
+      "importer": "sprite-frame",
+      "uuid": "2378d063-d158-5830-b2aa-2044945499ff@11a04",
+      "displayName": "",
+      "id": "11a04",
+      "name": "enemy-large-02",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 463,
+        "trimY": 2,
+        "width": 457,
+        "height": 400,
+        "rawWidth": 457,
+        "rawHeight": 400,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a",
+        "atlasUuid": "2378d063-d158-5830-b2aa-2044945499ff",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "d0554": {
+      "importer": "sprite-frame",
+      "uuid": "2378d063-d158-5830-b2aa-2044945499ff@d0554",
+      "displayName": "",
+      "id": "d0554",
+      "name": "enemy-weaver-01",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 692,
+        "trimY": 406,
+        "width": 320,
+        "height": 256,
+        "rawWidth": 320,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a",
+        "atlasUuid": "2378d063-d158-5830-b2aa-2044945499ff",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "d6fa8": {
+      "importer": "sprite-frame",
+      "uuid": "2378d063-d158-5830-b2aa-2044945499ff@d6fa8",
+      "displayName": "",
+      "id": "d6fa8",
+      "name": "enemy-weaver-02",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 692,
+        "trimY": 666,
+        "width": 320,
+        "height": 256,
+        "rawWidth": 320,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a",
+        "atlasUuid": "2378d063-d158-5830-b2aa-2044945499ff",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-enemies.png",
+    "format": 2,
+    "uuid": "2378d063-d158-5830-b2aa-2044945499ff",
+    "textureUuid": "33111562-f300-56eb-9f2c-6888b3eaf306@6c48a"
+  }
+}

@@ -1,3 +1,5 @@
+import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
+import { setLabelBold } from '../../../services/font/FontBinding';
 import {
     BlockInputEvents,
     Button,
@@ -101,7 +103,6 @@ const PANEL_HEIGHT = 930;
 const PAUSE_PANEL_ART_WIDTH = 550;
 const PAUSE_PANEL_ART_HEIGHT = 900;
 const PAUSE_ART_SCALE = 1;
-const PAUSE_PANEL_DISPLAY_HEIGHT = 860;
 const RECORD_PANEL_ART_WIDTH = 550;
 const RECORD_PANEL_BASE_ART_HEIGHT = 930;
 const RECORD_PANEL_ART_HEIGHT = 980;
@@ -139,6 +140,7 @@ export class WatermelonOverlayView {
         private readonly owner: Node,
         private readonly feedback: FeedbackService,
         private readonly frames: WatermelonPopupFrames,
+        private readonly getPlatformLayout: () => PlatformLayoutInfo,
     ) {}
 
     showPause(model: MiniGamePauseModel, score: number): void {
@@ -146,12 +148,12 @@ export class WatermelonOverlayView {
         this.pause = this.build({
             name: 'W1PauseOverlay',
             kind: 'pause',
-            body: '水果们会在原位等你回来',
+            body: "已保存，等你回来哦",
             stats: [{ label: '当前分数', value: String(score) }],
             actions: [
                 { name: 'ResumeButton', label: '继续游戏', action: model.resume },
                 { name: 'RestartButton', label: '重新开始', action: model.restart },
-                { name: 'LobbyButton', label: '回到大厅', action: model.exit, textOnly: true },
+                { name: 'LobbyButton', label: "返回大厅", action: model.exit, textOnly: true },
             ],
         });
     }
@@ -170,14 +172,14 @@ export class WatermelonOverlayView {
             actions: [
                 {
                     name: 'ContinueButton',
-                    label: '看视频续玩',
+                    label: "看广告续玩",
                     action: model.continueGame,
                     videoIcon: true,
-                    busyLabel: '正在播放视频…',
+                    busyLabel: "正在播放广告…",
                 },
                 { name: 'SettleButton', label: '查看本局结算', action: model.settle },
                 { name: 'RestartButton', label: '再来一局', action: model.restart },
-                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, textOnly: true },
+                { name: 'LobbyButton', label: "返回大厅", action: model.returnToLobby, textOnly: true },
             ],
         });
     }
@@ -204,8 +206,8 @@ export class WatermelonOverlayView {
             ],
             actions: [
                 { name: 'RestartButton', label: '再来一局', action: model.restart },
-                { name: 'InspectFruitsButton', label: '关闭并查看水果', action: dismiss },
-                { name: 'LobbyButton', label: '回到大厅', action: model.returnToLobby, textOnly: true },
+                { name: 'InspectFruitsButton', label: "查看本局水果", action: dismiss },
+                { name: 'LobbyButton', label: "返回大厅", action: model.returnToLobby, textOnly: true },
             ],
             highlight: newRecord,
         });
@@ -223,7 +225,7 @@ export class WatermelonOverlayView {
     }
 
     private build(spec: PopupSpec): OverlayState {
-        const viewport = readWatermelonViewport(this.owner);
+        const viewport = readWatermelonViewport(this.owner, this.getPlatformLayout());
         const recordArtwork = spec.kind === 'result' && spec.highlight === true;
         const resultArtwork = spec.kind === 'result';
         const metrics = calculateWatermelonOverlayMetrics(
@@ -232,14 +234,12 @@ export class WatermelonOverlayView {
             viewport.safeTop,
             viewport.safeBottom,
             spec.kind === 'pause'
-                ? PAUSE_PANEL_DISPLAY_HEIGHT
+                ? PAUSE_PANEL_ART_HEIGHT
                 : spec.kind === 'continue'
                     ? CONTINUE_PANEL_ART_HEIGHT
                     : resultArtwork
                         ? recordArtwork ? RECORD_PANEL_ART_HEIGHT : NORMAL_RESULT_PANEL_ART_HEIGHT
                     : PANEL_HEIGHT,
-            viewport.safeLeft,
-            viewport.safeRight,
         );
         const root = new Node(spec.name);
         root.layer = this.owner.layer;
@@ -310,7 +310,7 @@ export class WatermelonOverlayView {
             pauseArtwork || spec.kind === 'continue' || resultArtwork ? 470 : 500,
             resultArtwork ? 88 : 76,
         );
-        title.isBold = true;
+        setLabelBold(title, true);
         if (pauseArtwork || spec.kind === 'continue') title.spacingX = 8;
         if (resultArtwork) title.spacingX = 5;
         this.createContent(contentPanel, spec);
@@ -321,6 +321,13 @@ export class WatermelonOverlayView {
 
         const resultDisplayScale = recordArtwork ? RECORD_PANEL_DISPLAY_SCALE : CONTINUE_PANEL_DISPLAY_SCALE;
         const finalScale = (resultArtwork ? resultDisplayScale : PAUSE_ART_SCALE) * metrics.panelScale;
+        // Fit the actual artwork bounds, including its existing visual offset.
+        // Keep 24px on both ends; this also contains the backOut entrance overshoot.
+        const halfHeight = panel.getComponent(UITransform)!.height * finalScale / 2;
+        const bottom = -metrics.height / 2 + metrics.safeBottom + 24;
+        const top = metrics.height / 2 - metrics.safeTop - 24;
+        panel.setPosition(panel.position.x,
+            Math.max(bottom + halfHeight, Math.min(top - halfHeight, panel.position.y)));
         const initialScale = 0.88 * finalScale;
         panel.setScale(initialScale, resultArtwork ? initialScale : 0.74 * finalScale, 1);
         tween(panel)
@@ -400,8 +407,8 @@ export class WatermelonOverlayView {
 
     private getPopupTitle(spec: PopupSpec): string {
         if (spec.kind === 'pause') return '暂停一下';
-        if (spec.kind === 'continue') return '再坚持一下';
-        return spec.highlight ? '新纪录!!!' : '本局完成';
+        if (spec.kind === 'continue') return "还有一次续玩机会";
+        return spec.highlight ? "新纪录！" : "本局结束";
     }
 
     private createPauseStat(parent: Node, stat: PopupStat): void {
@@ -416,9 +423,9 @@ export class WatermelonOverlayView {
         );
         node.getComponent(Sprite)!.type = Sprite.Type.SLICED;
         const label = this.createLabel(node, 'StatLabel', stat.label, 0, 24, 22, PAUSE_TEXT_COLOR, 280, 38);
-        label.isBold = false;
+        setLabelBold(label, false);
         const value = this.createLabel(node, 'StatValue', stat.value, 0, -24, 46, PAUSE_TEXT_COLOR, 280, 58);
-        value.isBold = true;
+        setLabelBold(value, true);
     }
 
     private createRecordStat(parent: Node, stat: PopupStat, y: number): void {
@@ -434,9 +441,9 @@ export class WatermelonOverlayView {
         graphics.roundRect(-width / 2, -height / 2, width, height, 30);
         graphics.fill();
         const label = this.createLabel(node, 'StatLabel', stat.label, 0, 29, 25, RECORD_TEXT_COLOR, 300, 36);
-        label.isBold = false;
+        setLabelBold(label, false);
         const value = this.createLabel(node, 'StatValue', stat.value, 0, -21, 52, RECORD_TEXT_COLOR, 320, 72);
-        value.isBold = true;
+        setLabelBold(value, true);
     }
 
     /**
@@ -570,9 +577,9 @@ export class WatermelonOverlayView {
         const labelY = textOnly ? 1 : 2;
         const label = this.createLabel(node, 'Label', spec.label, labelX, labelY, labelFontSize, color, labelWidth, Math.max(62, height - 36));
         label.enableWrapText = false;
-        label.isBold = continueVideoArtwork === true
+        setLabelBold(label, continueVideoArtwork === true
             || (pauseArtwork && spec.name === 'ResumeButton')
-            || (recordArtwork && spec.name === 'RestartButton');
+            || (recordArtwork && spec.name === 'RestartButton'));
         label.spacingX = continueVideoArtwork ? 2 : 4;
         if (continueVideoArtwork) {
             const icon = this.createSpriteSurface(node, 'FruitVideoIcon', this.frames.continueVideoIcon, 64, 64, 0, 0);
@@ -665,7 +672,7 @@ export class WatermelonOverlayView {
         try {
             await spec.action();
         } catch (error: unknown) {
-            console.error(`[WatermelonOverlayView] ${spec.name} failed.`, error);
+            // TODO: console.error(`[WatermelonOverlayView] ${spec.name} failed.`, error);
             if (state.root.isValid) {
                 state.busy = false;
                 state.buttons.forEach((button) => {

@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "4b6585c2-81b2-4e86-95a8-943ae96bb5f0",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "a6188": {
+      "importer": "sprite-frame",
+      "uuid": "4b6585c2-81b2-4e86-95a8-943ae96bb5f0@a6188",
+      "displayName": "",
+      "id": "a6188",
+      "name": "cotton",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 173,
+        "height": 67,
+        "rawWidth": 173,
+        "rawHeight": 67,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "86d4ed0c-c1a6-4661-a15b-fdaf89913a5d@6c48a",
+        "atlasUuid": "4b6585c2-81b2-4e86-95a8-943ae96bb5f0",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "cotton-v7.png",
+    "format": 2,
+    "uuid": "4b6585c2-81b2-4e86-95a8-943ae96bb5f0",
+    "textureUuid": "86d4ed0c-c1a6-4661-a15b-fdaf89913a5d@6c48a"
+  }
+}

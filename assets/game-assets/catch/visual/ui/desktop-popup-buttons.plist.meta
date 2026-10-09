@@ -1,0 +1,155 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "1940d": {
+      "importer": "sprite-frame",
+      "uuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf@1940d",
+      "displayName": "",
+      "id": "1940d",
+      "name": "desktop-cleanup-popup-button-coral-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 124,
+        "width": 433,
+        "height": 105,
+        "rawWidth": 433,
+        "rawHeight": 105,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "2a6039a6-25f6-5e02-b610-705e0b9cb6d4@6c48a",
+        "atlasUuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 86,
+        "borderRight": 86
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "7a0bd": {
+      "importer": "sprite-frame",
+      "uuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf@7a0bd",
+      "displayName": "",
+      "id": "7a0bd",
+      "name": "desktop-cleanup-popup-button-paper-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 465,
+        "trimY": 2,
+        "width": 452,
+        "height": 126,
+        "rawWidth": 452,
+        "rawHeight": 126,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "2a6039a6-25f6-5e02-b610-705e0b9cb6d4@6c48a",
+        "atlasUuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 90,
+        "borderRight": 90
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "0518a": {
+      "importer": "sprite-frame",
+      "uuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf@0518a",
+      "displayName": "",
+      "id": "0518a",
+      "name": "desktop-cleanup-popup-button-teal-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 459,
+        "height": 118,
+        "rawWidth": 459,
+        "rawHeight": 118,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "2a6039a6-25f6-5e02-b610-705e0b9cb6d4@6c48a",
+        "atlasUuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 91,
+        "borderRight": 91
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "desktop-popup-buttons.png",
+    "format": 2,
+    "uuid": "466d14bf-ef32-55f8-9792-04f0c34dffdf",
+    "textureUuid": "2a6039a6-25f6-5e02-b610-705e0b9cb6d4@6c48a"
+  }
+}

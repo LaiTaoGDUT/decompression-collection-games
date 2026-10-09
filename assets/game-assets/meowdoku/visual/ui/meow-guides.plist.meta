@@ -1,0 +1,247 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "50a82": {
+      "importer": "sprite-frame",
+      "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb@50a82",
+      "displayName": "",
+      "id": "50a82",
+      "name": "meowdoku-guide-hand-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 338,
+        "trimY": 2,
+        "width": 224,
+        "height": 204,
+        "rawWidth": 224,
+        "rawHeight": 204,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "87801780-7492-57a5-b2f0-13fb17706000@6c48a",
+        "atlasUuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "12d7a": {
+      "importer": "sprite-frame",
+      "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb@12d7a",
+      "displayName": "",
+      "id": "12d7a",
+      "name": "meowdoku-rule-color-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 146,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "87801780-7492-57a5-b2f0-13fb17706000@6c48a",
+        "atlasUuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b458b": {
+      "importer": "sprite-frame",
+      "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb@b458b",
+      "displayName": "",
+      "id": "b458b",
+      "name": "meowdoku-rule-highlight-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 332,
+        "height": 140,
+        "rawWidth": 332,
+        "rawHeight": 140,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "87801780-7492-57a5-b2f0-13fb17706000@6c48a",
+        "atlasUuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "d238c": {
+      "importer": "sprite-frame",
+      "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb@d238c",
+      "displayName": "",
+      "id": "d238c",
+      "name": "meowdoku-rule-line-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 70,
+        "trimY": 146,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "87801780-7492-57a5-b2f0-13fb17706000@6c48a",
+        "atlasUuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "2a8d3": {
+      "importer": "sprite-frame",
+      "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb@2a8d3",
+      "displayName": "",
+      "id": "2a8d3",
+      "name": "meowdoku-rule-touch-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 138,
+        "trimY": 146,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "87801780-7492-57a5-b2f0-13fb17706000@6c48a",
+        "atlasUuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "meow-guides.png",
+    "format": 2,
+    "uuid": "200f4e58-37f6-5e64-a134-5eea4b75d6eb",
+    "textureUuid": "87801780-7492-57a5-b2f0-13fb17706000@6c48a"
+  }
+}

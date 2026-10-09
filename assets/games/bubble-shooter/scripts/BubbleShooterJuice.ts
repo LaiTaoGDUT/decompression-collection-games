@@ -26,6 +26,7 @@ export class BubbleShooterJuice {
     private readonly node: Node;
     private readonly ink: Graphics;
     theme: JuiceTheme = 'cloud';
+    get busy(): boolean { return this.motions.length > 0 || this.marks.length > 0; }
     constructor(parent: Node) {
         this.node = new Node('ShotFeedback'); this.node.layer = parent.layer; this.node.setParent(parent);
         this.node.addComponent(UITransform); this.ink = this.node.addComponent(Graphics);
@@ -71,6 +72,7 @@ export class BubbleShooterJuice {
             this.marks.push({x:point.x,y:point.y,age:-i*.07,life:.32+i*.06,radius:DIAMETER*.7*power,ring:true});
     }
     update(dt: number): void {
+        if (!this.busy) return;
         this.motions=this.motions.filter(m=>{
             if (!m.node.isValid) return false;
             m.age+=dt; const age=m.age-m.delay;

@@ -3,9 +3,9 @@ import type {
     StorageService,
 } from '../../../services/storage/StorageService';
 import type { DoodleJumpSimulationSnapshot } from './DoodleJumpSimulation';
+import { DOODLE_JUMP_RULES_VERSION } from './DoodleJumpReferenceRules';
 
 export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
-export const DOODLE_JUMP_LEGACY_GAME_ID = 'doodleJump';
 export const DOODLE_JUMP_SAVE_DATA_VERSION = 1;
 export const DOODLE_JUMP_GAME_DATA_VERSION = 3;
 export const DOODLE_JUMP_SETTINGS_VERSION = 1;
@@ -45,14 +45,6 @@ export interface DoodleJumpSaveState {
     readonly headStartCount: number;
     readonly settingsVersion: number;
     readonly activeRound?: DoodleJumpActiveRound;
-    /** 包含未知兼容字段；写回时已知字段会覆盖同名值。 */
-    readonly custom: Readonly<Record<string, unknown>>;
-}
-
-export interface DoodleJumpSaveLoadResult {
-    readonly save: DoodleJumpSaveState;
-    readonly migrated: boolean;
-    readonly recoveredFromFailure: boolean;
 }
 
 export interface DoodleJumpRunHistory {
@@ -70,26 +62,11 @@ export interface DoodleJumpRunSaveResult {
     readonly isNewBestScore: boolean;
 }
 
-const KNOWN_CUSTOM_KEYS = Object.freeze([
-    'gameDataVersion',
-    'bestHeightMeters',
-    'bestKillCount',
-    'totalShots',
-    'totalKills',
-    'sensorInvert',
-    'sensorSensitivity',
-    'tutorialCompleted',
-    'headStartCount',
-    'settingsVersion',
-    'activeRound',
-]);
-
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function nonNegativeInteger(value: unknown, field: string, fallback?: number): number {
-    if (value === undefined && fallback !== undefined) return fallback;
+function nonNegativeInteger(value: unknown, field: string): number {
     if (typeof value !== 'number'
         || !Number.isFinite(value)
         || !Number.isInteger(value)
@@ -99,22 +76,19 @@ function nonNegativeInteger(value: unknown, field: string, fallback?: number): n
     return value;
 }
 
-function finiteTimestamp(value: unknown, field: string, fallback?: number): number {
-    if (value === undefined && fallback !== undefined) return fallback;
+function finiteTimestamp(value: unknown, field: string): number {
     if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
         throw new Error(`${field} must be a non-negative timestamp.`);
     }
     return Math.floor(value);
 }
 
-function booleanField(value: unknown, field: string, fallback?: boolean): boolean {
-    if (value === undefined && fallback !== undefined) return fallback;
+function booleanField(value: unknown, field: string): boolean {
     if (typeof value !== 'boolean') throw new Error(`${field} must be boolean.`);
     return value;
 }
 
 function sensitivityField(value: unknown): DoodleJumpSensorSensitivity {
-    if (value === undefined) return 1;
     if (value === 0.75 || value === 1 || value === 1.25) return value;
     throw new Error('custom.sensorSensitivity must be 0.75, 1, or 1.25.');
 }
@@ -127,7 +101,9 @@ function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
             || !isRecord(value.historyBaseline)
             || !isRecord(value.snapshot)) return undefined;
         const snapshot = value.snapshot;
-        if (!Array.isArray(snapshot.platforms)
+        if (snapshot.rulesVersion !== DOODLE_JUMP_RULES_VERSION
+            || !isRecord(snapshot.generationState)
+            || !Array.isArray(snapshot.platforms)
             || !Array.isArray(snapshot.enemies)
             || !Array.isArray(snapshot.hazards)
             || !Array.isArray(snapshot.items)
@@ -153,13 +129,9 @@ function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
             snapshot: snapshot as unknown as DoodleJumpSimulationSnapshot,
         });
     } catch (error: unknown) {
-        console.warn('[DoodleJumpSave] Ignored invalid active round.', error);
+        // TODO: console.warn('[DoodleJumpSave] Ignored invalid active round.', error);
         return undefined;
     }
-}
-
-function isKnownCustomKey(key: string): boolean {
-    return KNOWN_CUSTOM_KEYS.indexOf(key) >= 0;
 }
 
 function defaultSave(): DoodleJumpSaveState {
@@ -176,85 +148,45 @@ function defaultSave(): DoodleJumpSaveState {
         tutorialCompleted: false,
         headStartCount: 0,
         settingsVersion: DOODLE_JUMP_SETTINGS_VERSION,
-        custom: Object.freeze({}),
     });
 }
 
-function parseSave(data: GameSaveData): {
-    readonly save: DoodleJumpSaveState;
-    readonly migrated: boolean;
-} {
+function parseSave(data: GameSaveData): DoodleJumpSaveState {
     if (data.dataVersion !== DOODLE_JUMP_SAVE_DATA_VERSION) {
         throw new Error(`Unsupported dataVersion ${data.dataVersion}.`);
     }
-    const custom = isRecord(data.custom) ? data.custom : {};
-    const rawGameVersion = custom.gameDataVersion;
-    const gameDataVersion = rawGameVersion === undefined
-        ? 1
-        : nonNegativeInteger(rawGameVersion, 'custom.gameDataVersion');
-    if (gameDataVersion < 1 || gameDataVersion > DOODLE_JUMP_GAME_DATA_VERSION) {
-        throw new Error(`Unsupported custom.gameDataVersion ${gameDataVersion}.`);
+    const custom = data.custom;
+    if (!isRecord(custom) || custom.gameDataVersion !== DOODLE_JUMP_GAME_DATA_VERSION
+        || custom.settingsVersion !== DOODLE_JUMP_SETTINGS_VERSION) {
+        throw new Error('Unsupported Doodle Jump save version.');
     }
-    const unknown: Record<string, unknown> = {};
-    Object.keys(custom).forEach((key) => {
-        if (!isKnownCustomKey(key)) unknown[key] = custom[key];
-    });
     return Object.freeze({
-        save: Object.freeze({
             playCount: nonNegativeInteger(data.playCount, 'playCount'),
-            highScore: nonNegativeInteger(data.highScore, 'highScore', 0),
-            lastPlayedAt: finiteTimestamp(data.lastPlayedAt, 'lastPlayedAt', 0),
+            highScore: nonNegativeInteger(data.highScore, 'highScore'),
+            lastPlayedAt: finiteTimestamp(data.lastPlayedAt, 'lastPlayedAt'),
             bestHeightMeters: nonNegativeInteger(
                 custom.bestHeightMeters,
                 'custom.bestHeightMeters',
-                0,
             ),
             bestKillCount: nonNegativeInteger(
                 custom.bestKillCount,
                 'custom.bestKillCount',
-                0,
             ),
-            totalShots: nonNegativeInteger(custom.totalShots, 'custom.totalShots', 0),
-            totalKills: nonNegativeInteger(custom.totalKills, 'custom.totalKills', 0),
-            sensorInvert: booleanField(custom.sensorInvert, 'custom.sensorInvert', false),
+            totalShots: nonNegativeInteger(custom.totalShots, 'custom.totalShots'),
+            totalKills: nonNegativeInteger(custom.totalKills, 'custom.totalKills'),
+            sensorInvert: booleanField(custom.sensorInvert, 'custom.sensorInvert'),
             sensorSensitivity: sensitivityField(custom.sensorSensitivity),
             tutorialCompleted: booleanField(
                 custom.tutorialCompleted,
                 'custom.tutorialCompleted',
-                false,
             ),
             headStartCount: nonNegativeInteger(
                 custom.headStartCount,
                 'custom.headStartCount',
-                0,
             ),
-            settingsVersion: nonNegativeInteger(
-                custom.settingsVersion,
-                'custom.settingsVersion',
-                DOODLE_JUMP_SETTINGS_VERSION,
-            ),
+            settingsVersion: DOODLE_JUMP_SETTINGS_VERSION,
             activeRound: parseActiveRound(custom.activeRound),
-            custom: Object.freeze(unknown),
-        }),
-        migrated: gameDataVersion !== DOODLE_JUMP_GAME_DATA_VERSION
-            || custom.tutorialCompleted === undefined,
     });
-}
-
-function mergeLegacyUnknownFields(
-    formal: DoodleJumpSaveState,
-    formalRaw: GameSaveData,
-    legacyRaw: GameSaveData | undefined,
-): DoodleJumpSaveState {
-    if (!legacyRaw || !isRecord(legacyRaw.custom)) return formal;
-    const formalCustom = isRecord(formalRaw.custom) ? formalRaw.custom : {};
-    const merged = { ...formal.custom };
-    Object.keys(legacyRaw.custom).forEach((key) => {
-        if (isKnownCustomKey(key)
-            || Object.prototype.hasOwnProperty.call(formalCustom, key)) return;
-        merged[key] = legacyRaw.custom?.[key];
-    });
-    return Object.freeze({ ...formal, custom: Object.freeze(merged) });
 }
 
 export function toDoodleJumpGameSaveData(save: DoodleJumpSaveState): GameSaveData {
@@ -264,7 +196,6 @@ export function toDoodleJumpGameSaveData(save: DoodleJumpSaveState): GameSaveDat
         highScore: save.highScore,
         lastPlayedAt: save.lastPlayedAt,
         custom: Object.freeze({
-            ...save.custom,
             gameDataVersion: DOODLE_JUMP_GAME_DATA_VERSION,
             bestHeightMeters: save.bestHeightMeters,
             bestKillCount: save.bestKillCount,
@@ -280,51 +211,20 @@ export function toDoodleJumpGameSaveData(save: DoodleJumpSaveState): GameSaveDat
     });
 }
 
-export function readDoodleJumpSave(storage: StorageService): DoodleJumpSaveLoadResult {
-    const formal = storage.getGameData(DOODLE_JUMP_GAME_ID);
-    const legacy = storage.getGameData(DOODLE_JUMP_LEGACY_GAME_ID);
-    if (!formal && !legacy) {
-        return Object.freeze({
-            save: defaultSave(),
-            migrated: false,
-            recoveredFromFailure: false,
-        });
-    }
-
+export function readDoodleJumpSave(storage: StorageService): DoodleJumpSaveState {
+    const data = storage.getGameData(DOODLE_JUMP_GAME_ID);
+    if (!data) return defaultSave();
     try {
-        const source = formal ?? legacy!;
-        const parsed = parseSave(source);
-        const save = formal
-            ? mergeLegacyUnknownFields(parsed.save, formal, legacy)
-            : parsed.save;
-        const legacyUnknownMerged = formal !== undefined
-            && legacy?.custom !== undefined
-            && Object.keys(legacy.custom).some((key) => (
-                !isKnownCustomKey(key)
-                && !Object.prototype.hasOwnProperty.call(formal.custom ?? {}, key)
-            ));
-        const migrated = parsed.migrated || !formal || legacyUnknownMerged;
-        if (migrated) {
-            storage.writeGameData(DOODLE_JUMP_GAME_ID, toDoodleJumpGameSaveData(save));
-            storage.flush();
-        }
-        return Object.freeze({ save, migrated, recoveredFromFailure: false });
-    } catch (cause: unknown) {
-        const reason = cause instanceof Error ? cause.message : String(cause);
+        return parseSave(data);
+    } catch {
         const fallback = defaultSave();
         try {
-            storage.backupGameDataMigrationFailure(DOODLE_JUMP_GAME_ID, reason);
             storage.writeGameData(DOODLE_JUMP_GAME_ID, toDoodleJumpGameSaveData(fallback));
             storage.flush();
-        } catch (backupCause: unknown) {
-            console.error('[DoodleJumpSave] Failed to back up invalid save data.', backupCause);
+        } catch {
+            // The current session can still start with defaults if persistence is unavailable.
         }
-        console.warn('[DoodleJumpSave] Invalid save data replaced with safe defaults.', reason);
-        return Object.freeze({
-            save: fallback,
-            migrated: false,
-            recoveredFromFailure: true,
-        });
+        return fallback;
     }
 }
 

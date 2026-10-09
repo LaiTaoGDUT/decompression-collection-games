@@ -28,6 +28,10 @@ export class FruitBody extends Component {
     private dropSequenceId = 0;
     private dropMergeCount = 0;
     private fluidSprite?: WatermelonFluidSprite;
+    private readonly previousFluidPoints: Array<{ x: number; y: number }> = [];
+    private readonly presentedFluidPoints: Array<{ x: number; y: number }> = [];
+    private previousFluidX = 0;
+    private previousFluidY = 0;
 
     protected onLoad(): void {
         this.applyConfig();
@@ -82,14 +86,61 @@ export class FruitBody extends Component {
         points: readonly { x: number; y: number }[],
         centerX: number,
         centerY: number,
+        visualOffsetX = 0,
+        visualOffsetY = 0,
     ): void {
         if (points.length < 3) return;
         const visual = this.fluidSprite?.node ?? this.node.getChildByName('CatVisual');
         const sprite = this.fluidSprite ?? visual?.getComponent(WatermelonFluidSprite);
         if (!visual || !sprite) return;
         this.fluidSprite = sprite;
+        visual.setPosition(visualOffsetX, visualOffsetY, 0);
         sprite.setFluidPoints(points, centerX, centerY);
-        visual.setScale(1, 1, 1);
+        const scale = visual.scale;
+        if (scale.x !== 1 || scale.y !== 1 || scale.z !== 1) visual.setScale(1, 1, 1);
+    }
+
+    /** Capture solved positions before each fixed step, never Verlet px/py:
+     * those encode velocity and can be rewritten by collision constraints. */
+    captureFluidShape(points: readonly { x: number; y: number }[], x: number, y: number): void {
+        this.previousFluidX = x;
+        this.previousFluidY = y;
+        for (let index = 0; index < points.length; index += 1) {
+            const point = points[index];
+            const previous = this.previousFluidPoints[index];
+            if (previous) {
+                previous.x = point.x;
+                previous.y = point.y;
+            } else {
+                this.previousFluidPoints.push({ x: point.x, y: point.y });
+                this.presentedFluidPoints.push({ x: point.x, y: point.y });
+            }
+        }
+    }
+
+    presentFluidShape(
+        points: readonly { x: number; y: number }[],
+        centerX: number,
+        centerY: number,
+        alpha: number,
+    ): void {
+        // A new merge result or restored fruit has no previous step yet.
+        if (this.previousFluidPoints.length !== points.length) {
+            this.applyFluidShape(points, centerX, centerY);
+            return;
+        }
+        const x = this.previousFluidX + (centerX - this.previousFluidX) * alpha;
+        const y = this.previousFluidY + (centerY - this.previousFluidY) * alpha;
+        for (let index = 0; index < points.length; index += 1) {
+            const previous = this.previousFluidPoints[index];
+            const current = points[index];
+            const target = this.presentedFluidPoints[index];
+            target.x = previous.x + (current.x - previous.x) * alpha;
+            target.y = previous.y + (current.y - previous.y) * alpha;
+        }
+        // Only the visual child is interpolated. Gameplay queries and saves
+        // keep reading the authoritative fruit/solver position.
+        this.applyFluidShape(this.presentedFluidPoints, x, y, x - centerX, y - centerY);
     }
 
     lockForMerge(): boolean {

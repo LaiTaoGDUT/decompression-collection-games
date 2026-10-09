@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>bear-trap</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{242,151}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{242,151}}</string>
+			<key>sourceSize</key>
+			<string>{242,151}</string>
+		</dict>
+		<key>bear-trap-flash</key>
+		<dict>
+			<key>frame</key>
+			<string>{{248,2},{221,177}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{221,177}}</string>
+			<key>sourceSize</key>
+			<string>{221,177}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-trap.png</string>
+		<key>size</key>
+		<string>{471,181}</string>
+		<key>textureFileName</key>
+		<string>doodle-trap.png</string>
+	</dict>
+</dict>
+</plist>

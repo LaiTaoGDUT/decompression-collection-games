@@ -1,4 +1,6 @@
-import { assetManager, Rect, Size, SpriteFrame, Texture2D } from 'cc';
+import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
+import { SpriteFrame } from 'cc';
+import type { AssetService } from '../../../services/asset/AssetService';
 
 const WATERMELON_RESOURCE_BUNDLE = 'game-watermelon-assets';
 
@@ -52,52 +54,53 @@ const PAUSE_SLICE_INSETS = Object.freeze({
     recordRestartButton: Object.freeze({ left: 60, right: 60, top: 40, bottom: 40 }),
 });
 
-function applyInsets(frame: SpriteFrame, texture: Texture2D, insets?: SliceInsets): void {
+function applyInsets(frame: SpriteFrame, insets?: SliceInsets): void {
     frame.packable = false;
-    frame.rect = new Rect(0, 0, texture.width, texture.height);
-    frame.originalSize = new Size(texture.width, texture.height);
+    const { width, height } = frame.rect;
     if (!insets) return;
-    frame.insetLeft = Math.min(insets.left, texture.width - 1);
-    frame.insetRight = Math.min(insets.right, texture.width - frame.insetLeft - 1);
-    frame.insetTop = Math.min(insets.top, texture.height - 1);
-    frame.insetBottom = Math.min(insets.bottom, texture.height - frame.insetTop - 1);
+    frame.insetLeft = Math.min(insets.left, width - 1);
+    frame.insetRight = Math.min(insets.right, width - frame.insetLeft - 1);
+    frame.insetTop = Math.min(insets.top, height - 1);
+    frame.insetBottom = Math.min(insets.bottom, height - frame.insetTop - 1);
 }
 
-function loadFrame(path: string, insets?: SliceInsets): Promise<SpriteFrame> {
-    const bundle = assetManager.getBundle(WATERMELON_RESOURCE_BUNDLE);
-    if (!bundle) {
-        return Promise.reject(new Error(`${WATERMELON_RESOURCE_BUNDLE} bundle is unavailable.`));
-    }
-    return new Promise<SpriteFrame>((resolve, reject) => {
-        bundle.load(path, Texture2D, (error, texture) => {
-            if (error || !texture) {
-                reject(new Error(`Popup texture failed: ${path}. ${error?.message ?? 'Asset missing.'}`));
-                return;
-            }
-            const frame = new SpriteFrame();
-            frame.texture = texture;
-            applyInsets(frame, texture, insets);
-            resolve(frame);
-        });
-    });
+async function loadFrame(assets: AssetService, path: string, insets?: SliceInsets): Promise<SpriteFrame> {
+    const packed = PACKED_SPRITE_PATHS[path];
+    const frame = await assets.loadSpriteFrame(WATERMELON_RESOURCE_BUNDLE, packed ?? path, packed ? 'frame' : 'texture');
+    applyInsets(frame, insets);
+    return frame;
 }
 
-export async function loadWatermelonPopupFrames(): Promise<WatermelonPopupFrames> {
+export async function loadWatermelonPopupFrames(assets: AssetService): Promise<WatermelonPopupFrames> {
+    const created: SpriteFrame[] = [];
+    let failure: unknown;
+    let failed = false;
     const [pauseBackground, pauseScoreBackground, pauseResumeButton, pauseRestartButton, continuePanel, continueVideoButton, continueVideoIcon, recordBackground, recordRestartButton] = await Promise.all([
-        loadFrame(POPUP_TEXTURE_PATHS.pauseBackground, PAUSE_SLICE_INSETS.panel),
-        loadFrame(POPUP_TEXTURE_PATHS.pauseScoreBackground, PAUSE_SLICE_INSETS.score),
-        loadFrame(POPUP_TEXTURE_PATHS.pauseResumeButton, PAUSE_SLICE_INSETS.pauseResumeButton),
-        loadFrame(POPUP_TEXTURE_PATHS.pauseRestartButton, PAUSE_SLICE_INSETS.pauseRestartButton),
-        loadFrame(POPUP_TEXTURE_PATHS.continuePanel, PAUSE_SLICE_INSETS.continuePanel),
-        loadFrame(POPUP_TEXTURE_PATHS.continueVideoButton, PAUSE_SLICE_INSETS.continueVideoButton),
-        loadFrame(POPUP_TEXTURE_PATHS.continueVideoIcon),
-        loadFrame(POPUP_TEXTURE_PATHS.recordBackground, PAUSE_SLICE_INSETS.recordBackground),
-        loadFrame(POPUP_TEXTURE_PATHS.recordRestartButton, PAUSE_SLICE_INSETS.recordRestartButton),
-    ]);
+        loadFrame(assets, POPUP_TEXTURE_PATHS.pauseBackground, PAUSE_SLICE_INSETS.panel),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.pauseScoreBackground, PAUSE_SLICE_INSETS.score),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.pauseResumeButton, PAUSE_SLICE_INSETS.pauseResumeButton),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.pauseRestartButton, PAUSE_SLICE_INSETS.pauseRestartButton),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.continuePanel, PAUSE_SLICE_INSETS.continuePanel),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.continueVideoButton, PAUSE_SLICE_INSETS.continueVideoButton),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.continueVideoIcon),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.recordBackground, PAUSE_SLICE_INSETS.recordBackground),
+        loadFrame(assets, POPUP_TEXTURE_PATHS.recordRestartButton, PAUSE_SLICE_INSETS.recordRestartButton),
+    ].map(load => load.then(frame => {
+        created.push(frame);
+        return frame;
+    }, error => {
+        if (!failed) failure = error;
+        failed = true;
+        return undefined;
+    })));
+    if (failed) {
+        for (const frame of created) assets.releaseRuntimeAsset(frame);
+        throw failure;
+    }
     return Object.freeze({ pauseBackground, pauseScoreBackground, pauseResumeButton, pauseRestartButton, continuePanel, continueVideoButton, continueVideoIcon, recordBackground, recordRestartButton });
 }
 
-export function destroyWatermelonPopupFrames(frames?: WatermelonPopupFrames): void {
+export function destroyWatermelonPopupFrames(assets: AssetService, frames?: WatermelonPopupFrames): void {
     if (!frames) return;
     for (const frame of [
         frames.pauseBackground,
@@ -110,6 +113,6 @@ export function destroyWatermelonPopupFrames(frames?: WatermelonPopupFrames): vo
         frames.recordBackground,
         frames.recordRestartButton,
     ]) {
-        if (frame.isValid) frame.destroy();
+        assets.releaseRuntimeAsset(frame);
     }
 }

@@ -1,0 +1,201 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "413b6": {
+      "importer": "sprite-frame",
+      "uuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482@413b6",
+      "displayName": "",
+      "id": "413b6",
+      "name": "boss-pudding-body",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 580,
+        "height": 265,
+        "rawWidth": 590,
+        "rawHeight": 295,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "4818d5af-23b7-5e84-9fe9-e143aa956377@6c48a",
+        "atlasUuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c1e67": {
+      "importer": "sprite-frame",
+      "uuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482@c1e67",
+      "displayName": "",
+      "id": "c1e67",
+      "name": "boss-pudding-crown",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 586,
+        "trimY": 158,
+        "width": 169,
+        "height": 99,
+        "rawWidth": 177,
+        "rawHeight": 141,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "4818d5af-23b7-5e84-9fe9-e143aa956377@6c48a",
+        "atlasUuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f2a6e": {
+      "importer": "sprite-frame",
+      "uuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482@f2a6e",
+      "displayName": "",
+      "id": "f2a6e",
+      "name": "boss-pudding-fist-left",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 791,
+        "trimY": 2,
+        "width": 198,
+        "height": 152,
+        "rawWidth": 206,
+        "rawHeight": 172,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "4818d5af-23b7-5e84-9fe9-e143aa956377@6c48a",
+        "atlasUuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f103d": {
+      "importer": "sprite-frame",
+      "uuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482@f103d",
+      "displayName": "",
+      "id": "f103d",
+      "name": "boss-pudding-fist-right",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 586,
+        "trimY": 2,
+        "width": 201,
+        "height": 152,
+        "rawWidth": 209,
+        "rawHeight": 174,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "4818d5af-23b7-5e84-9fe9-e143aa956377@6c48a",
+        "atlasUuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "cloud-boss.png",
+    "format": 2,
+    "uuid": "49a83a93-fcd7-500a-a5df-4539fd4bf482",
+    "textureUuid": "4818d5af-23b7-5e84-9fe9-e143aa956377@6c48a"
+  }
+}

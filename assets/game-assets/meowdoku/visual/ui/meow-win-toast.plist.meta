@@ -1,0 +1,247 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "f0c98": {
+      "importer": "sprite-frame",
+      "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7@f0c98",
+      "displayName": "",
+      "id": "f0c98",
+      "name": "meowdoku-win-toast-1-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 726,
+        "trimY": 2,
+        "width": 104,
+        "height": 88,
+        "rawWidth": 104,
+        "rawHeight": 88,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7bb14152-712d-5677-bcda-ea325a991e4d@6c48a",
+        "atlasUuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6fa93": {
+      "importer": "sprite-frame",
+      "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7@6fa93",
+      "displayName": "",
+      "id": "6fa93",
+      "name": "meowdoku-win-toast-2-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 834,
+        "trimY": 2,
+        "width": 104,
+        "height": 88,
+        "rawWidth": 104,
+        "rawHeight": 88,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7bb14152-712d-5677-bcda-ea325a991e4d@6c48a",
+        "atlasUuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "5f9d2": {
+      "importer": "sprite-frame",
+      "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7@5f9d2",
+      "displayName": "",
+      "id": "5f9d2",
+      "name": "meowdoku-win-toast-3-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 726,
+        "trimY": 94,
+        "width": 104,
+        "height": 88,
+        "rawWidth": 104,
+        "rawHeight": 88,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7bb14152-712d-5677-bcda-ea325a991e4d@6c48a",
+        "atlasUuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9c12": {
+      "importer": "sprite-frame",
+      "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7@f9c12",
+      "displayName": "",
+      "id": "f9c12",
+      "name": "meowdoku-win-toast-4-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 834,
+        "trimY": 94,
+        "width": 104,
+        "height": 88,
+        "rawWidth": 104,
+        "rawHeight": 88,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7bb14152-712d-5677-bcda-ea325a991e4d@6c48a",
+        "atlasUuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "80c2a": {
+      "importer": "sprite-frame",
+      "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7@80c2a",
+      "displayName": "",
+      "id": "80c2a",
+      "name": "meowdoku-win-toast-bg-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 720,
+        "height": 296,
+        "rawWidth": 720,
+        "rawHeight": 296,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7bb14152-712d-5677-bcda-ea325a991e4d@6c48a",
+        "atlasUuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "meow-win-toast.png",
+    "format": 2,
+    "uuid": "a5d1e390-b1e6-5f5c-9cdd-2baf69539dc7",
+    "textureUuid": "7bb14152-712d-5677-bcda-ea325a991e4d@6c48a"
+  }
+}

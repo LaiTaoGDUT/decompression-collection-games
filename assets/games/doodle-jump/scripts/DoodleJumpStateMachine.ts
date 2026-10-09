@@ -3,6 +3,7 @@ export type DoodleJumpState =
     | 'SensorCalibrating'
     | 'Playing'
     | 'Paused'
+    | 'ResumeCountdown'
     | 'Failing'
     | 'ResurrectPrompt'
     | 'Resurrecting'
@@ -16,12 +17,13 @@ function states(...values: DoodleJumpState[]): readonly DoodleJumpState[] {
 
 const LEGAL_TRANSITIONS: Readonly<Record<DoodleJumpState, readonly DoodleJumpState[]>> = Object.freeze({
     Loading: states('SensorCalibrating', 'Error', 'Disposed'),
-    SensorCalibrating: states('Playing', 'Error', 'Disposed'),
+    SensorCalibrating: states('Playing', 'ResumeCountdown', 'Error', 'Disposed'),
     Playing: states('Paused', 'Failing', 'Error', 'Disposed'),
-    Paused: states('Playing', 'Disposed'),
+    Paused: states('ResumeCountdown', 'Disposed'),
+    ResumeCountdown: states('Playing', 'Paused', 'Disposed'),
     Failing: states('ResurrectPrompt', 'Result', 'Disposed'),
     ResurrectPrompt: states('Resurrecting', 'Result', 'Disposed'),
-    Resurrecting: states('Playing', 'Result', 'Disposed'),
+    Resurrecting: states('ResumeCountdown', 'Result', 'Disposed'),
     Result: states('Disposed'),
     Error: states('SensorCalibrating', 'Disposed'),
     Disposed: states(),

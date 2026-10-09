@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "d1b69690-c748-41fc-90ea-b54d99dba3bf",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "a1bc7": {
+      "importer": "sprite-frame",
+      "uuid": "d1b69690-c748-41fc-90ea-b54d99dba3bf@a1bc7",
+      "displayName": "",
+      "id": "a1bc7",
+      "name": "celebration",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 712,
+        "height": 352,
+        "rawWidth": 712,
+        "rawHeight": 352,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "2f80027d-6a1b-4c4f-b57a-cd12df36424f@6c48a",
+        "atlasUuid": "d1b69690-c748-41fc-90ea-b54d99dba3bf",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "celebration-v8.png",
+    "format": 2,
+    "uuid": "d1b69690-c748-41fc-90ea-b54d99dba3bf",
+    "textureUuid": "2f80027d-6a1b-4c4f-b57a-cd12df36424f@6c48a"
+  }
+}

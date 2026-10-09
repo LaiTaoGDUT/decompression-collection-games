@@ -1,0 +1,31 @@
+{
+  "id": "sky-forge",
+  "version": "1.0.0",
+  "name": "苍穹铸翼",
+  "description": "12 架会改变玩法的像素战机，单手 3 分钟一关的弹幕冒险",
+  "bundle": "game-sky-forge",
+  "resourceBundle": "game-sky-forge-assets",
+  "scene": "scenes/SkyForge",
+  "entryComponent": "SkyForgeGame",
+  "cover": "visual/covers/sky-forge/sky-forge-cover-v2/texture",
+  "orientation": "portrait",
+  "renderMode": "2d",
+  "minimumDeviceTier": "low",
+  "minAppVersion": "0.1.0",
+  "enabled": true,
+  "visibility": "development",
+  "preload": [],
+  "tags": [
+    "shooter",
+    "endless",
+    "action"
+  ],
+  "resourceDirectories": [
+    "visual/boot",
+    "visual/planes",
+    "visual/combat",
+    "visual/maps",
+    "visual/chapters",
+    "visual/bosses"
+  ]
+}

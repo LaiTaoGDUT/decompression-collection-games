@@ -1,0 +1,1609 @@
+{
+  "games": {
+    "watermelon": [
+      {
+        "path": "visual/cats/frames-c6/watermelon-fruits",
+        "frames": [
+          {
+            "source": "visual/cats/frames-c6/cat-00-cream-kitten-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-01-calico-idle-1-c6-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-02-gray-tabby-idle-1-c6-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-03-tuxedo-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-04-white-fluffy-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-05-brown-tabby-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-06-siamese-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-07-golden-shorthair-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-08-blue-scottish-fold-idle-1-c8-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-09-orange-tabby-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-10-fat-orange-idle-1-c6-v1.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/watermelon-hud",
+        "frames": [
+          {
+            "source": "visual/ui/c1-cat-high-score-panel-v2.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/c1-cat-instruction-strip-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-cat-next-panel-v2.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/c1-cat-pause-button-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-cat-score-panel-v2.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/watermelon-popup-controls",
+        "frames": [
+          {
+            "source": "visual/ui/c1-cat-popup-button-cream-350-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-cat-popup-button-mint-350-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-continue-video-button-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-continue-video-icon-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-pause-score-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-record-restart-button-v1.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "chess-endless": [
+      {
+        "path": "visual/pieces/chess-pieces",
+        "frames": [
+          {
+            "source": "visual/pieces/piece_enemy_advisor.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_enemy_cannon.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_enemy_elephant.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_enemy_general.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_enemy_horse.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_enemy_pawn.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_enemy_rook.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/piece_player_rook.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/icons/chess-items",
+        "frames": [
+          {
+            "source": "visual/icons/icon_item_banish.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/icon_item_cross_slash.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/icon_item_delay.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/icon_item_freeze.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/icon_item_teleport.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/icon_revive.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/chess-controls",
+        "frames": [
+          {
+            "source": "visual/ui/chess-endless-rewarded-video-icon-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_close.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_help.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_pause.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_rules.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/vfx/chess-combat",
+        "frames": [
+          {
+            "source": "visual/vfx/vfx_capture_burst.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_combo_burst.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_cross_slash.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_ink_particle.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_light_particle.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_wood_chip.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/vfx/chess-item-feedback",
+        "frames": [
+          {
+            "source": "visual/vfx/vfx_item_banish.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_item_cross.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_item_delay.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_item_freeze.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_item_teleport.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_talisman.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/vfx/chess-reward-chest",
+        "frames": [
+          {
+            "source": "visual/vfx/vfx_reward_chest_closed.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/vfx/vfx_reward_chest_open.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "twenty48": [
+      {
+        "path": "visual/pieces/t48-pieces",
+        "frames": [
+          {
+            "source": "visual/pieces/t48-user-piece-1024-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-128-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-16-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-2-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-2048-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-256-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-32-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-4-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-4096-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-512-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-64-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/pieces/t48-user-piece-8-v1.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/t48-popup-controls",
+        "frames": [
+          {
+            "source": "visual/ui/t48-popup-button-amber-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-button-cyan-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-button-violet-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-score-amber-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-score-cyan-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-rewarded-ad-icon-v1.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "sliding-puzzle": [
+      {
+        "path": "visual/icons/puzzle-icons",
+        "frames": [
+          {
+            "source": "visual/icons/pz1-album-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-back-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-close-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-crop-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-library-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-pause-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-random-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-reference-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-selected-v1.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/puzzle-modes",
+        "frames": [
+          {
+            "source": "visual/ui/pz1-display-mode-number-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/pz1-display-mode-original-v1.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "catch": [
+      {
+        "path": "visual/ui/desktop-hud-tools",
+        "frames": [
+          {
+            "source": "visual/ui/desktop-cleanup-hud-help-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-hud-pause-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-rewarded-video-icon-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-tool-magnet-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-tool-return-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-tool-shuffle-v2.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/desktop-popup-buttons",
+        "frames": [
+          {
+            "source": "visual/ui/desktop-cleanup-popup-button-teal-v1.png",
+            "crop": [
+              20,
+              30,
+              459,
+              118
+            ],
+            "insets": {
+              "borderLeft": 91.80000000000001,
+              "borderRight": 91.80000000000001,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-popup-button-coral-v1.png",
+            "crop": [
+              33,
+              30,
+              433,
+              105
+            ],
+            "insets": {
+              "borderLeft": 86.60000000000001,
+              "borderRight": 86.60000000000001,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-popup-button-paper-v1.png",
+            "crop": [
+              24,
+              18,
+              452,
+              126
+            ],
+            "insets": {
+              "borderLeft": 90.4,
+              "borderRight": 90.4,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      }
+    ],
+    "doodle-jump": [
+      {
+        "path": "visual/enemies/doodle-enemies",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-hopper-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hopper-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hover-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hover-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-large-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-large-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-small-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-small-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-weaver-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-weaver-02.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/items/doodle-items",
+        "frames": [
+          {
+            "source": "visual/items/pickup-jetpack.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-propeller-hat.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-rocket.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-shield.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-spring-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-trampoline.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/platforms/doodle-platforms",
+        "frames": [
+          {
+            "source": "visual/platforms/platform-breakable-left.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-breakable-right.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-breakable-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-disappearing-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-exploding-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-moving-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-normal-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-shifting-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-spiked-shadowed-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-vertical-moving-shadowed-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/platform-effects/doodle-platform-effects",
+        "frames": [
+          {
+            "source": "visual/platform-effects/breakable-cracks.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platform-effects/disappearing-fade.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platform-effects/explosion-fragments.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platform-effects/explosive-countdown.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/projectiles/doodle-projectiles",
+        "frames": [
+          {
+            "source": "visual/projectiles/aim-reticle-trimmed.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/projectiles/paper-plane-trail.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/projectiles/paper-plane-trimmed.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/hud/doodle-hud",
+        "frames": [
+          {
+            "source": "visual/ui/hud/back-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/height-card.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/item-progress-fill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/pause-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/play-again-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/retry-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/rules-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/score-card.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/item-icons/doodle-item-icons",
+        "frames": [
+          {
+            "source": "visual/ui/item-icons/head-start.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/jetpack.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/propeller-hat.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/rocket.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/shield.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/spring.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/trampoline.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-warm",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/warm-binder-clip.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/warm-paperclip.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/warm-pencil-spiral.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/warm-push-pin.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-sky",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/sky-kite.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/sky-rainbow.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/sky-sun.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/sky-wind.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-cloud",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-lightning.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-moon-wind.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-rain.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-warning-zigzag.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-star",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/star-comet.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/star-constellation.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/star-moon.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/star-planet.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hazards/doodle-trap",
+        "frames": [
+          {
+            "source": "visual/hazards/bear-trap-flash.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/bear-trap.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hazards/doodle-black-hole",
+        "frames": [
+          {
+            "source": "visual/hazards/black-hole-core.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/black-hole-ring.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hazards/doodle-ufo",
+        "frames": [
+          {
+            "source": "visual/hazards/ufo-beam.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/ufo-lock-target.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/ufo-tether.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/ufo.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-rocket",
+        "frames": [
+          {
+            "source": "visual/effects/rocket-flame.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/rocket-paper-scraps.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/rocket-paper-trail.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-jetpack",
+        "frames": [
+          {
+            "source": "visual/effects/jetpack-flames.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/jetpack-paper-scraps.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-enemy-impact",
+        "frames": [
+          {
+            "source": "visual/effects/enemy-defeat-fragments.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/enemy-hit-scratch.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/player-enemy-contact-impact.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-rebound",
+        "frames": [
+          {
+            "source": "visual/effects/spring-rebound.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/trampoline-rebound.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-player-motion",
+        "frames": [
+          {
+            "source": "visual/effects/player-fall-drag-streaks.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/player-screen-wrap-afterimages.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "bubble-shooter": [
+      {
+        "path": "visual/common/dialog-common/common-dialog-common",
+        "frames": [
+          {
+            "source": "visual/common/dialog-common/dialog-panel.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/dialog-common/dialog-primary.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/dialog-common/dialog-secondary.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/reward-common/common-reward-common",
+        "frames": [
+          {
+            "source": "visual/common/reward-common/reward-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-card.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-check.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-panel.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-selection.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-subtitle.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/items/common-items",
+        "frames": [
+          {
+            "source": "visual/common/items/item-bomb.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-button-base.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-clear-bottom.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-count-badge.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-name-plate.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-wildcard.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/hud/common-hud",
+        "frames": [
+          {
+            "source": "visual/common/hud/hud-boss-health-fill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-boss-health-track.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-counter-bead.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-counter-slot-empty.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-insert-row.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/round-panel.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/combo/common-combo",
+        "frames": [
+          {
+            "source": "visual/common/combo/banner-6.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-10.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-7.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-9.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-8.png",
+            "frame": "banner"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/bubbles/cloud-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-blue.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-purple.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-red.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-support.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-yellow.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/frosting-overlay.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/launcher/cloud-launcher",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/launcher/launcher-connector.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/launcher/launcher-head.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/launcher/launcher-pedestal.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/launcher/swap-icon.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/boss/cloud-boss",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-body.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-crown.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-fist-left.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-fist-right.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/foreground/cloud-foreground",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/foreground/cloud-a.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/foreground/cloud-b.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/foreground/cloud-c.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/vfx/cloud-vfx",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/blue-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/blue-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/purple-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/purple-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/red-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/red-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/yellow-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/yellow-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-energy-heart.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-03.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-04.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-05.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-06.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-07.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/bubbles/ocean-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-blue.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-purple.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-red.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-support.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-yellow.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/launcher/ocean-launcher",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/launcher/base.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/launcher/turret.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/boss/ocean-boss",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/boss/boss-reclining-arm.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/boss/boss-reclining-body.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/boss/boss-reclining-staff.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/vfx/ocean-vfx",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/vfx/attack-pearl-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/blue-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/blue-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/purple-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/purple-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/red-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/red-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/yellow-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/yellow-02.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/hud/cloud-hud",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/hud/hud-pause-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/hud/rules-icon-v2.png",
+            "frame": "rules"
+          },
+          {
+            "source": "visual/regions/cloud/hud/hud-frosting-skill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/hud/hud-down-arrow.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/hud/ocean-hud",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/hud/health-track.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/rules-icon-v2.png",
+            "frame": "rules"
+          },
+          {
+            "source": "visual/regions/ocean/hud/skill-petrify.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/down.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/swap.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/health-fill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/pause.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/item-base.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/magic/bubbles/magic-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "red"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "yellow"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "blue"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "purple"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/bubble-support.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/toy/bubbles/toy-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "red"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "yellow"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "blue"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "purple"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/bubble-support.png",
+            "geometry": "meta"
+          }
+        ]
+      }
+    ],
+    "meowdoku": [
+      {
+        "path": "visual/ui/meow-hud",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-icon-ad-play-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-icon-back-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-icon-pause-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-panel-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-tool-hint-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-tool-locate-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-guides",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-guide-hand-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-color-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-highlight-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-line-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-touch-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effect/meow-board-feedback",
+        "frames": [
+          {
+            "source": "visual/effect/meowdoku-broken-heart-1-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-broken-heart-2-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-cross-bar-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-cross-shadow-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-glow-radial-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-glow-soft-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-grid-glow-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-hint-light-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-paw-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-prompt-cat-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-prompt-frame-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-prompt-x-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effect/meow-scoring",
+        "frames": [
+          {
+            "source": "visual/effect/meowdoku-star-gold-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-star-spark-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-star-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-trail-gold-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-win-toast",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-win-toast-1-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-2-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-3-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-4-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-bg-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-result-cats",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-like-hand-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-fail-cat-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-win-cat-hop-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-win-cat-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-win-cat-wink-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-genius-cat",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-result-genius-cat-v2.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ]
+  }
+}

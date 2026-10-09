@@ -1,3 +1,12 @@
+import { DoodleJumpLevelGenerator } from './DoodleJumpLevelGenerator';
+import {
+    DOODLE_JUMP_RULES_VERSION,
+    reflectedPlatformX,
+    referenceMovingSpeed,
+    stepDoodleJumpVertical,
+    type DoodleJumpGenerationState,
+    type DoodleJumpSpawnPlan,
+} from './DoodleJumpReferenceRules';
 import type {
     DoodleJumpFixedPlatformConfig,
     DoodleJumpGameplayConfig,
@@ -54,10 +63,15 @@ export interface DoodleJumpPlatformSnapshot {
     readonly y: number;
     readonly baseX?: number;
     readonly baseY?: number;
+    readonly movingVelocity?: number;
+    readonly motionStartSeconds?: number;
+    readonly spawnPlan?: DoodleJumpSpawnPlan;
     readonly width: number;
     readonly collisionEnabled: boolean;
     readonly consumed: boolean;
     readonly warningProgress: number;
+    readonly consumeAt?: number;
+    readonly effectStartedAt?: number;
     readonly predecessorId?: string;
     readonly generationAttempts: number;
     readonly degraded: boolean;
@@ -66,6 +80,8 @@ export interface DoodleJumpPlatformSnapshot {
 }
 
 export interface DoodleJumpSimulationSnapshot {
+    readonly rulesVersion: number;
+    readonly generationState: DoodleJumpGenerationState;
     readonly playerX: number;
     readonly playerY: number;
     readonly velocityX: number;
@@ -230,6 +246,13 @@ function shiftingPlatformSegmentAt(elapsedSeconds: number): number {
 }
 
 export class DoodleJumpSimulation {
+    // 配置不可变；弱引用缓存同时覆盖正式平台与可达性预测的临时候选，
+    // 被淘汰的平台/候选不会因为缓存而在长局中一直驻留。
+    private readonly motionProfiles = new WeakMap<DoodleJumpFixedPlatformConfig, Readonly<{
+        amplitude: number;
+        periodSeconds: number;
+        phaseRadians: number;
+    }>>();
     private readonly platforms: MutablePlatform[];
     private readonly worldPlatforms: IndexedWorldPlatform[] = [];
     private readonly platformById = new Map<string, IndexedWorldPlatform>();
@@ -244,6 +267,7 @@ export class DoodleJumpSimulation {
     private readonly combat: DoodleJumpCombatSystem;
     private readonly hazards: DoodleJumpHazardSystem;
     private readonly items: DoodleJumpItemSystem;
+    private readonly levelGenerator: DoodleJumpLevelGenerator;
     private generatorCursor = 0;
     private generatedLayerCount = 0;
     private latestMainLayer: MutablePlatform[] = [];
@@ -283,6 +307,7 @@ export class DoodleJumpSimulation {
     constructor(private readonly config: DoodleJumpGameplayConfig, seed: string | number = 1) {
         this.initialSeed = hashDoodleJumpSeed(seed) || 1;
         this.randomStreams = new DoodleJumpRandomStreams(this.initialSeed);
+        this.levelGenerator = new DoodleJumpLevelGenerator(config, this.randomStreams);
         this.combat = new DoodleJumpCombatSystem(config, this.randomStreams);
         this.hazards = new DoodleJumpHazardSystem(config, this.randomStreams);
         this.items = new DoodleJumpItemSystem(config, this.randomStreams);
@@ -336,6 +361,7 @@ export class DoodleJumpSimulation {
         this.fatalFocusY = undefined;
         this.monsterContactGraceRemaining = 0;
         this.randomStreams.reset();
+        this.levelGenerator.reset();
         this.combat.reset();
         this.hazards.reset();
         this.items.reset();
@@ -381,15 +407,6 @@ export class DoodleJumpSimulation {
             platform.layerIndex = index - 7;
         });
         const fixedMainPlatforms = this.platforms.slice();
-        for (let index = 2; index < fixedMainPlatforms.length; index += 1) {
-            this.generatedLayerCount = index - 7;
-            this.addInsertedPlatforms(
-                [fixedMainPlatforms[index - 1]],
-                fixedMainPlatforms[index].config,
-                0,
-                false,
-            );
-        }
         this.generatedLayerCount = 0;
         this.latestMainLayer = fixedMainPlatforms.length > 0
             ? [fixedMainPlatforms[fixedMainPlatforms.length - 1]]
@@ -409,7 +426,8 @@ export class DoodleJumpSimulation {
             if (!Number.isFinite(value)) throw new Error(`Invalid restored ${field}.`);
             return value;
         };
-        if (snapshot.seed !== this.initialSeed
+        if (snapshot.rulesVersion !== DOODLE_JUMP_RULES_VERSION
+            || snapshot.seed !== this.initialSeed
             || snapshot.platforms.length === 0
             || snapshot.platforms.length > this.config.generation.maxActivePlatforms) {
             throw new Error('Invalid Doodle Jump active-round snapshot.');
@@ -444,15 +462,14 @@ export class DoodleJumpSimulation {
         this.platforms.length = 0;
         let maximumGeneratedId = 7;
         snapshot.platforms.forEach((platform) => {
-            const generatedId = Number(platform.id.replace(/^G/, ''));
+            const generatedId = Number(/^(?:G|resurrect-safe-)(\d+)$/.exec(platform.id)?.[1]);
             if (Number.isInteger(generatedId)) maximumGeneratedId = Math.max(
                 maximumGeneratedId,
                 generatedId,
             );
             const restoredX = finite(platform.x, `platform ${platform.id} x`);
             const restoredY = finite(platform.y, `platform ${platform.id} y`);
-            // Width is a rule, not per-platform state: older saves may carry
-            // legacy random widths, so every restored platform is normalized.
+            // Width is a rule, not per-platform state; rebuild it from the current config.
             // Large-monster widening is re-applied after combat is restored.
             const restoredWidth = this.baseWidthFor(platform.id);
             const zeroOriginConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
@@ -476,6 +493,9 @@ export class DoodleJumpSimulation {
                 ),
                 width: restoredWidth,
                 type: platform.type,
+                movingVelocity: platform.movingVelocity,
+                motionStartSeconds: platform.motionStartSeconds,
+                spawnPlan: platform.spawnPlan ? Object.freeze({ ...platform.spawnPlan }) : undefined,
             });
             this.platforms.push({
                 config,
@@ -485,10 +505,8 @@ export class DoodleJumpSimulation {
                 y: restoredY,
                 collisionEnabled: platform.collisionEnabled,
                 consumed: platform.consumed,
-                consumeAt: platform.warningProgress > 0 && platform.collisionEnabled
-                    ? this.elapsedSeconds + 0.25
-                    : 0,
-                effectStartedAt: 0,
+                consumeAt: finite(platform.consumeAt ?? 0, `platform ${platform.id} consumeAt`),
+                effectStartedAt: finite(platform.effectStartedAt ?? 0, `platform ${platform.id} effectStartedAt`),
                 warningProgress: Math.max(0, platform.warningProgress),
                 predecessorId: platform.predecessorId,
                 generationAttempts: Math.max(0, Math.floor(platform.generationAttempts)),
@@ -502,13 +520,12 @@ export class DoodleJumpSimulation {
             (maximum, platform) => Math.max(maximum, platform.layerIndex),
             0,
         );
-        const latestMain = this.platforms.filter((platform) => (
-            platform.mainRoute && platform.layerIndex === this.generatedLayerCount
-        ));
-        this.latestMainLayer = latestMain.length > 0
-            ? latestMain
-            : [this.findHighestPlatform()];
+        const restoredMainRoute = this.platforms.filter((platform) => platform.mainRoute);
+        this.latestMainLayer = [restoredMainRoute.length > 0
+            ? restoredMainRoute.reduce((highest, platform) => platform.config.y > highest.config.y ? platform : highest)
+            : this.findHighestPlatform()];
         this.randomStreams.restore(snapshot.randomStreams);
+        this.levelGenerator.restore(snapshot.generationState);
         this.syncWorldIndex();
         this.combat.restore(
             snapshot.enemies,
@@ -678,16 +695,11 @@ export class DoodleJumpSimulation {
                 (highest, platform) => Math.max(highest, platform.y),
                 this.cameraBottomY,
             );
-            const verticalStep = this.config.generation.verticalStep;
-            const mainRouteGap = verticalStep * this.config.generation.mainRouteStepCount;
-            const latticeOriginY = this.config.fixedPlatforms[0].y;
-            const minimumSafeY = Math.max(screenTop + 180, highestY + mainRouteGap);
+            const minimumSafeY = Math.max(screenTop + 180, highestY + 120);
             const generatedConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
-                id: `resurrect-safe-${this.platforms.length}`,
+                id: `resurrect-safe-${this.nextGeneratedId++}`,
                 x: this.config.design.width / 2,
-                y: latticeOriginY + Math.ceil(
-                    (minimumSafeY - latticeOriginY) / verticalStep,
-                ) * verticalStep,
+                y: minimumSafeY,
                 width: this.config.platformBehavior.standardWidth,
                 type: 'normal',
             });
@@ -714,7 +726,7 @@ export class DoodleJumpSimulation {
             this.worldNeedsPreStepReconcile = true;
         }
 
-        const targetScreenY = Math.max(1, visibleHeight) * this.config.camera.targetHeightRatio;
+        const targetScreenY = this.cameraAnchorHeight(visibleHeight);
         this.cameraBottomY = Math.max(this.cameraBottomY, target.y - targetScreenY);
         this.playerX = target.x;
         this.playerY = target.y + this.config.player.collisionHeight / 2;
@@ -756,6 +768,8 @@ export class DoodleJumpSimulation {
         // Lifecycle and persistence boundary: callers may retain this deeply
         // frozen value without observing later simulation mutations.
         return Object.freeze({
+            rulesVersion: DOODLE_JUMP_RULES_VERSION,
+            generationState: this.levelGenerator.getSnapshot(),
             playerX: this.playerX,
             playerY: this.playerY,
             velocityX: this.velocityX,
@@ -784,10 +798,15 @@ export class DoodleJumpSimulation {
                 y: platform.y,
                 baseX: platform.config.x,
                 baseY: platform.config.y,
+                movingVelocity: platform.config.movingVelocity,
+                motionStartSeconds: platform.config.motionStartSeconds,
+                spawnPlan: platform.config.spawnPlan,
                 width: platform.width,
                 collisionEnabled: platform.collisionEnabled,
                 consumed: platform.consumed,
                 warningProgress: platform.warningProgress,
+                consumeAt: platform.consumeAt,
+                effectStartedAt: platform.effectStartedAt,
                 predecessorId: platform.predecessorId,
                 generationAttempts: platform.generationAttempts,
                 degraded: platform.degraded,
@@ -1026,25 +1045,25 @@ export class DoodleJumpSimulation {
         }
         const previousFootY = this.playerY - player.collisionHeight / 2;
         const itemPhysics = this.items.getPhysics();
-        if (itemPhysics.fixedVerticalVelocity !== undefined) {
-            this.velocityY = itemPhysics.fixedVerticalVelocity;
-        } else {
-            this.velocityY += itemPhysics.gravity * delta;
-            if (itemPhysics.minimumVerticalVelocity !== undefined) {
-                this.velocityY = Math.max(
-                    itemPhysics.minimumVerticalVelocity,
-                    this.velocityY,
-                );
-            }
-        }
-        const blackHoleAttraction = this.hazards.resolveBlackHoleAttraction(
-            this.playerX,
-            this.playerY,
-        );
+        const blackHoleAttraction = this.hazards.resolveBlackHoleAttraction(this.playerX, this.playerY);
         this.velocityX += blackHoleAttraction.accelerationX * delta;
         this.velocityY += blackHoleAttraction.accelerationY * delta;
+        let verticalDisplacement: number;
+        if (itemPhysics.fixedVerticalVelocity !== undefined) {
+            this.velocityY = itemPhysics.fixedVerticalVelocity;
+            verticalDisplacement = this.velocityY * delta;
+        } else {
+            const vertical = stepDoodleJumpVertical(
+                this.velocityY, itemPhysics.gravity, delta, player.terminalFallVelocity,
+            );
+            verticalDisplacement = vertical.displacement;
+            this.velocityY = vertical.velocity;
+            if (itemPhysics.minimumVerticalVelocity !== undefined) {
+                this.velocityY = Math.max(itemPhysics.minimumVerticalVelocity, this.velocityY);
+            }
+        }
         this.playerX += this.velocityX * delta;
-        this.playerY += this.velocityY * delta;
+        this.playerY += verticalDisplacement;
         if (this.playerX < player.wrapLeft) this.playerX += player.wrapDistance;
         if (this.playerX > player.wrapRight) this.playerX -= player.wrapDistance;
         const collisionVelocityY = this.velocityY;
@@ -1111,8 +1130,10 @@ export class DoodleJumpSimulation {
             return;
         }
         this.maxAbsoluteWorldY = Math.max(this.maxAbsoluteWorldY, this.playerY);
-        const targetScreenY = visibleHeight * this.config.camera.targetHeightRatio;
-        this.cameraBottomY = Math.max(this.cameraBottomY, this.playerY - targetScreenY);
+        const targetScreenY = this.cameraAnchorHeight(visibleHeight);
+        if (this.velocityY >= 0) {
+            this.cameraBottomY = Math.max(this.cameraBottomY, this.playerY - targetScreenY);
+        }
         this.recyclePlatforms();
         this.ensureGenerated(visibleHeight);
         this.syncWorldIndex();
@@ -1232,7 +1253,7 @@ export class DoodleJumpSimulation {
     }
 
     private ensureGenerated(visibleHeight: number): void {
-        if (!this.config.generation.enabled || this.config.generation.singleStep) return;
+        if (!this.config.generation.enabled) return;
         const generationTop = this.cameraBottomY
             + Math.max(1, visibleHeight)
             + this.config.generation.preloadAboveScreen;
@@ -1245,105 +1266,63 @@ export class DoodleJumpSimulation {
     }
 
     private generateReachablePlatform(previous: MutablePlatform): MutablePlatform {
-        const generation = this.config.generation;
+        const planned = this.levelGenerator.next(previous.config.y, this.cameraBottomY);
         const nextLayer = this.generatedLayerCount + 1;
-        const recoveryLayer = nextLayer % generation.recoveryLayerInterval === 0;
-        const previousLayer = this.latestMainLayer.length > 0
-            ? this.latestMainLayer
-            : [previous];
-        const routePrevious = previousLayer[0];
-        const candidateAttemptLimit = generation.forceDegradedFallback
-            ? 0
-            : generation.maxCandidateAttempts;
-        for (let attempt = 1; attempt <= candidateAttemptLimit; attempt += 1) {
-            const lowered = attempt > 8 ? Math.min(24, (attempt - 8) * 2.4) : 0;
-            const difficulty = this.generationDifficulty(routePrevious.config.y);
-            const verticalGap = generation.verticalStep * generation.mainRouteStepCount;
-            const layerBaseY = previousLayer.reduce(
-                (highest, platform) => Math.max(highest, platform.config.y),
-                routePrevious.config.y,
-            );
-            const heightMeters = Math.max(0, Math.floor((layerBaseY + verticalGap - 114) / 100));
-            const routeType = attempt > 16 || recoveryLayer
-                ? 'normal'
-                : this.pickAnchorPlatformType(heightMeters);
-            const candidateY = layerBaseY + verticalGap;
-            const width = this.config.platformBehavior.standardWidth;
-            const baseHorizontalRange = recoveryLayer
-                ? 95
-                : 112 + difficulty * Math.max(0, generation.maxHorizontalGap - 112);
-            const horizontalRange = Math.max(78, baseHorizontalRange - lowered * 2);
-            const requiresSteering = !recoveryLayer && nextLayer % 4 !== 0;
-            const horizontalGap = requiresSteering
-                ? (this.nextPlatformRandom() < 0.5 ? -1 : 1)
-                    * (88 + difficulty * 24
-                        + this.triangularPlatformRandom()
-                        * Math.max(0, horizontalRange - 88 - difficulty * 24))
-                : (this.triangularPlatformRandom() * 2 - 1) * horizontalRange;
-            const x = this.clampPlatformX(routePrevious.x + horizontalGap, width, routeType);
-            const config: DoodleJumpFixedPlatformConfig = Object.freeze({
+        const routePrevious = this.latestMainLayer[0] ?? previous;
+        const jumpHeight = this.config.player.bounceVelocity ** 2 / (-2 * this.config.player.gravity)
+            + this.config.player.bounceVelocity * this.config.fixedStep.seconds / 2;
+        let type = this.config.generation.platformTypeOverride === 'auto'
+            ? planned.type : this.config.generation.platformTypeOverride;
+        // A broken platform is optional scenery. Recover before a run of fragile
+        // platforms can consume the entire ordinary-jump height budget.
+        if (type === 'breakable' && planned.y - routePrevious.config.y > jumpHeight * 0.65) type = 'normal';
+        const width = this.config.platformBehavior.standardWidth;
+        const limit = this.config.generation.forceDegradedFallback ? 0 : this.config.generation.maxCandidateAttempts;
+        for (let attempt = 1; attempt <= limit; attempt += 1) {
+            const candidate: DoodleJumpFixedPlatformConfig = Object.freeze({
                 id: `G${this.nextGeneratedId}`,
-                x,
-                y: candidateY,
+                x: this.clampPlatformX(attempt === 1 ? planned.x : this.nextPlatformRandom() * this.config.design.width, width, type),
+                y: planned.y,
                 width,
-                type: routeType,
+                type,
+                movingVelocity: planned.movingVelocity,
+                motionStartSeconds: this.elapsedSeconds,
+                spawnPlan: planned.spawnPlan,
             });
-            if (!previousLayer.every((candidate) => this.isCandidateReachable(candidate, config))) {
-                continue;
-            }
-            if (requiresSteering && this.isCandidateReachableWithoutSteering(routePrevious, config)) {
-                continue;
-            }
-            const anchor = this.createGeneratedPlatform(
-                config,
-                routePrevious.config.id,
-                attempt,
-                false,
-                true,
-                nextLayer,
-            );
+            if (!this.isCandidateReachable(routePrevious, candidate)) continue;
+            const platform = this.createGeneratedPlatform(candidate, routePrevious.config.id, attempt, false,
+                type !== 'breakable', nextLayer);
             this.nextGeneratedId += 1;
             this.generatorCursor += 1;
             this.generatedLayerCount = nextLayer;
-            this.addInsertedPlatforms(
-                previousLayer,
-                config,
-                attempt,
-                recoveryLayer,
-            );
-            this.latestMainLayer = [anchor];
-            return anchor;
+            if (platform.mainRoute) this.latestMainLayer = [platform];
+            return platform;
         }
-
-        const fallbackGap = generation.verticalStep * generation.mainRouteStepCount;
-        const fallbackY = routePrevious.config.y + fallbackGap;
-        const fallbackWidth = this.config.platformBehavior.standardWidth;
-        const fallbackX = this.clampPlatformX(
-            routePrevious.x + (this.nextPlatformRandom() * 2 - 1) * 120,
-            fallbackWidth,
-            'normal',
-        );
-        const fallbackConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
+        // A deterministic recovery is checked with the same solver as the live
+        // player; retain segment ownership even when adapting its geometry.
+        const candidate: DoodleJumpFixedPlatformConfig = Object.freeze({
             id: `G${this.nextGeneratedId}`,
-            x: fallbackX,
-            y: fallbackY,
-            width: fallbackWidth,
+            x: this.clampPlatformX(routePrevious.x, width, 'normal'),
+            y: Math.min(planned.y, previous.config.y + 40),
+            width,
             type: 'normal',
+            spawnPlan: planned.spawnPlan,
         });
+        if (!this.isCandidateReachable(routePrevious, candidate)) {
+            throw new Error(`Unreachable level recovery after ${routePrevious.config.id}.`);
+        }
+        const platform = this.createGeneratedPlatform(candidate, routePrevious.config.id, limit, true, true, nextLayer);
         this.nextGeneratedId += 1;
         this.generatorCursor += 1;
         this.generatedLayerCount = nextLayer;
         this.degradedGenerationCount += 1;
-        const fallback = this.createGeneratedPlatform(
-            fallbackConfig,
-            routePrevious.config.id,
-            generation.maxCandidateAttempts,
-            true,
-            true,
-            nextLayer,
-        );
-        this.latestMainLayer = [fallback];
-        return fallback;
+        this.latestMainLayer = [platform];
+        return platform;
+    }
+
+    private cameraAnchorHeight(visibleHeight: number): number {
+        return Math.min(this.config.camera.anchorHeight,
+            Math.max(1, visibleHeight) * this.config.camera.maximumAnchorHeightRatio);
     }
 
     private findHighestPlatform(): MutablePlatform {
@@ -1355,17 +1334,8 @@ export class DoodleJumpSimulation {
 
     private validateFixedRoute(): void {
         for (let index = 1; index < this.config.fixedPlatforms.length; index += 1) {
-            const previous = this.platforms[index - 1];
-            const candidate = this.platforms[index].config;
-            if (!this.isCandidateReachable(previous, candidate)) {
-                throw new Error(
-                    `Fixed platform route is unreachable: ${previous.config.id} -> ${candidate.id}.`,
-                );
-            }
-            if (index === 1 && this.isCandidateReachableWithoutSteering(previous, candidate)) {
-                throw new Error(
-                    'Fixed second platform must be horizontally offset and require steering.',
-                );
+            if (!this.isCandidateReachable(this.platforms[index - 1], this.config.fixedPlatforms[index])) {
+                throw new Error(`Unreachable initial platform ${this.config.fixedPlatforms[index].id}.`);
             }
         }
     }
@@ -1397,120 +1367,9 @@ export class DoodleJumpSimulation {
         };
     }
 
-    private addInsertedPlatforms(
-        previousLayer: readonly MutablePlatform[],
-        routeConfig: DoodleJumpFixedPlatformConfig,
-        generationAttempts: number,
-        recoveryLayer: boolean,
-    ): void {
-        if (recoveryLayer) return;
-        const routePrevious = previousLayer[0];
-        const verticalStep = this.config.generation.verticalStep;
-        const capacity = this.config.generation.mainRouteStepCount - 1;
-        const maximumCount = Math.min(
-            this.config.generation.maxInsertedPlatforms,
-            capacity,
-        );
-        if (maximumCount <= 0) return;
-
-        const override = this.config.generation.platformTypeOverride;
-        const desiredCount = override !== 'auto'
-            ? 1
-            : this.pickInsertedPlatformCount(
-                Math.max(
-                    0,
-                    (routeConfig.y - this.config.fixedPlatforms[0].y) / 100,
-                ),
-            );
-        const insertedCount = Math.min(maximumCount, desiredCount);
-        if (insertedCount <= 0) return;
-
-        const availableSlots: number[] = [];
-        for (let slot = 1; slot <= capacity; slot += 1) availableSlots.push(slot);
-        for (let index = availableSlots.length - 1; index > 0; index -= 1) {
-            const swapIndex = Math.floor(this.nextPlatformRandom() * (index + 1));
-            const value = availableSlots[index];
-            availableSlots[index] = availableSlots[swapIndex];
-            availableSlots[swapIndex] = value;
-        }
-        const selectedSlots = availableSlots.slice(0, insertedCount).sort((a, b) => a - b);
-        for (let index = 0; index < selectedSlots.length; index += 1) {
-            const y = routePrevious.config.y + selectedSlots[index] * verticalStep;
-            const heightMeters = Math.max(
-                0,
-                (y - this.config.fixedPlatforms[0].y) / 100,
-            );
-            const type = this.pickInsertedPlatformType(heightMeters);
-            const width = this.config.platformBehavior.standardWidth;
-            let config: DoodleJumpFixedPlatformConfig | undefined;
-            let predecessor: MutablePlatform | undefined;
-            for (let attempt = 0; attempt < 14; attempt += 1) {
-                const x = this.clampPlatformX(
-                    width / 2 + this.nextPlatformRandom() * (this.config.design.width - width),
-                    width,
-                    type,
-                );
-                const candidate: DoodleJumpFixedPlatformConfig = Object.freeze({
-                    id: `G${this.nextGeneratedId}`,
-                    x,
-                    y,
-                    width,
-                    type,
-                });
-                predecessor = previousLayer.find((platform) => (
-                    this.isCandidateReachable(platform, candidate)
-                ));
-                if (!predecessor) continue;
-                config = candidate;
-                break;
-            }
-            if (!config || !predecessor) continue;
-            this.nextGeneratedId += 1;
-            this.generatorCursor += 1;
-            this.platforms.push(this.createGeneratedPlatform(
-                config,
-                predecessor.config.id,
-                generationAttempts,
-                false,
-                false,
-                this.generatedLayerCount,
-            ));
-        }
-    }
-
     private clampPlatformX(x: number, width: number, type: DoodleJumpPlatformType): number {
-        const movementPadding = type === 'moving' ? 90 : type === 'shifting' ? 70 : 0;
-        const minimum = width / 2 + movementPadding;
-        const maximum = this.config.design.width - width / 2 - movementPadding;
-        return Math.max(minimum, Math.min(maximum, x));
-    }
-
-    private pickInsertedPlatformCount(heightMeters: number): number {
-        const curve = this.config.generation.insertedPlatformCountCurve;
-        const progress = Math.max(
-            0,
-            Math.min(
-                1,
-                (heightMeters - curve.startHeightMeters)
-                    / (curve.endHeightMeters - curve.startHeightMeters),
-            ),
-        );
-        const weights: readonly number[] = [
-            curve.weightsAtStart[0]
-                + (curve.weightsAtEnd[0] - curve.weightsAtStart[0]) * progress,
-            curve.weightsAtStart[1]
-                + (curve.weightsAtEnd[1] - curve.weightsAtStart[1]) * progress,
-            curve.weightsAtStart[2]
-                + (curve.weightsAtEnd[2] - curve.weightsAtStart[2]) * progress,
-            curve.weightsAtStart[3]
-                + (curve.weightsAtEnd[3] - curve.weightsAtStart[3]) * progress,
-        ];
-        let roll = this.nextPlatformRandom();
-        for (let count = 0; count < weights.length; count += 1) {
-            roll -= weights[count];
-            if (roll < 0) return count;
-        }
-        return weights.length - 1;
+        const padding = type === 'shifting' ? 70 : 0;
+        return Math.max(width / 2 + padding, Math.min(this.config.design.width - width / 2 - padding, x));
     }
 
     private applyLargeMonsterPlatformWidths(): void {
@@ -1623,24 +1482,13 @@ export class DoodleJumpSimulation {
         return this.isCandidateReachableWithStrategies(previous, candidate, strategies);
     }
 
-    private isCandidateReachableWithoutSteering(
-        previous: MutablePlatform,
-        candidate: DoodleJumpFixedPlatformConfig,
-    ): boolean {
-        return this.isCandidateReachableWithStrategies(previous, candidate, [0]);
-    }
-
     private isCandidateReachableWithStrategies(
         previous: MutablePlatform,
         candidate: DoodleJumpFixedPlatformConfig,
         strategies: readonly number[],
     ): boolean {
         const verticalGap = candidate.y - previous.config.y;
-        const verticalStep = this.config.generation.verticalStep;
-        const stepCount = verticalGap / verticalStep;
-        if (verticalGap < verticalStep
-            || Math.abs(stepCount - Math.round(stepCount)) > 0.0001
-            || stepCount > this.config.generation.mainRouteStepCount) return false;
+        if (verticalGap <= 0) return false;
         const player = this.config.player;
         const delta = this.config.fixedStep.seconds;
         const direction = candidate.x >= previous.x ? 1 : -1;
@@ -1669,9 +1517,10 @@ export class DoodleJumpSimulation {
                         player.horizontalDeceleration * delta,
                     );
                 }
-                velocityY += player.gravity * delta;
+                const vertical = stepDoodleJumpVertical(velocityY, player.gravity, delta, player.terminalFallVelocity);
+                velocityY = vertical.velocity;
                 x += velocityX * delta;
-                y += velocityY * delta;
+                y += vertical.displacement;
                 if (x < player.wrapLeft) x += player.wrapDistance;
                 if (x > player.wrapRight) x -= player.wrapDistance;
                 elapsed += delta;
@@ -1699,10 +1548,12 @@ export class DoodleJumpSimulation {
 
     private platformXAt(config: DoodleJumpFixedPlatformConfig, elapsedSeconds: number): number {
         if (config.type === 'moving') {
-            const profile = this.movingPlatformProfile(config);
-            return config.x + Math.sin(
-                elapsedSeconds * Math.PI * 2 / profile.periodSeconds + profile.phaseRadians,
-            ) * profile.amplitude;
+            const scale = this.config.design.width / 320;
+            const velocity = config.movingVelocity ?? referenceMovingSpeed(
+                config.y / scale, (hashDoodleJumpSeed(`${config.id}:moving`) % 1000) / 1000,
+            ) * 60 * scale;
+            return reflectedPlatformX(config.x, velocity,
+                elapsedSeconds - (config.motionStartSeconds ?? 0), this.config.design.width);
         }
         if (config.type !== 'shifting') return config.x;
         const segment = shiftingPlatformSegmentAt(elapsedSeconds);
@@ -1717,121 +1568,47 @@ export class DoodleJumpSimulation {
         ) * profile.amplitude;
     }
 
-    private movingPlatformProfile(config: DoodleJumpFixedPlatformConfig): Readonly<{
-        amplitude: number;
-        periodSeconds: number;
-        phaseRadians: number;
-    }> {
-        const hash = hashDoodleJumpSeed(`${config.id}:moving`);
-        return Object.freeze({
-            amplitude: 60 + hash % 31,
-            periodSeconds: 1.55 + ((hash >>> 8) % 101) / 100,
-            phaseRadians: ((hash >>> 16) & 1) === 0 ? 0 : Math.PI,
-        });
-    }
-
     private verticalMovingPlatformProfile(config: DoodleJumpFixedPlatformConfig): Readonly<{
         amplitude: number;
         periodSeconds: number;
         phaseRadians: number;
     }> {
+        const cached = this.motionProfiles.get(config);
+        if (cached) return cached;
         const settings = this.config.platformBehavior.verticalMoving;
         const hash = hashDoodleJumpSeed(`${config.id}:vertical-moving`);
         const amplitudeRange = settings.maximumAmplitude - settings.minimumAmplitude;
         const periodRange = settings.maximumPeriodSeconds - settings.minimumPeriodSeconds;
-        return Object.freeze({
+        const profile = Object.freeze({
             amplitude: settings.minimumAmplitude + (hash % 1001) / 1000 * amplitudeRange,
-            periodSeconds: settings.minimumPeriodSeconds
-                + ((hash >>> 10) % 1001) / 1000 * periodRange,
+            periodSeconds: (settings.minimumPeriodSeconds
+                + ((hash >>> 10) % 1001) / 1000 * periodRange)
+                / this.platformSpeedMultiplier(config.y),
             phaseRadians: ((hash >>> 20) % 1001) / 1000 * Math.PI * 2,
         });
+        this.motionProfiles.set(config, profile);
+        return profile;
     }
 
-    private generationDifficulty(worldY: number): number {
-        const heightMeters = Math.max(0, (worldY - 114) / 100);
-        return Math.max(0, Math.min(1, heightMeters / 400));
-    }
-
-    private triangularPlatformRandom(): number {
-        return (this.nextPlatformRandom() + this.nextPlatformRandom()) / 2;
-    }
-
-    private pickAnchorPlatformType(heightMeters: number): 'normal' | 'moving' | 'shifting' {
-        const override = this.config.generation.platformTypeOverride;
-        if (override === 'normal' || override === 'moving' || override === 'shifting') {
-            return override;
-        }
-        if (override !== 'auto') return 'normal';
-        const difficulty = Math.max(0, Math.min(1, heightMeters / 400));
-        const recentAnchors = this.platforms.filter((platform) => (
-            platform.mainRoute
-        )).slice(-2);
-        if (recentAnchors.length === 2
-            && recentAnchors.every((platform) => platform.config.type !== 'normal')) {
-            return 'normal';
-        }
-        const movingChance = 0.14 + difficulty * 0.19;
-        const shiftingChance = heightMeters < 170 ? 0 : 0.06 + difficulty * 0.08;
-        const roll = this.nextPlatformRandom();
-        if (roll < shiftingChance) return 'shifting';
-        if (roll < shiftingChance + movingChance) return 'moving';
-        return 'normal';
-    }
-
-    private pickInsertedPlatformType(heightMeters: number): DoodleJumpPlatformType {
-        const override = this.config.generation.platformTypeOverride;
-        if (override !== 'auto') return override;
-        const types: readonly DoodleJumpPlatformType[] = [
-            'normal',
-            'moving',
-            'breakable',
-            'disappearing',
-            'shifting',
-            'exploding',
-            'vertical-moving',
-            'spiked',
-        ];
-        const verticalChance = this.verticalMovingSpawnChance(heightMeters);
-        const spiked = this.config.platformBehavior.spiked;
-        const spikedChance = heightMeters >= spiked.unlockHeightMeters
-            ? spiked.spawnChance
-            : 0;
-        const baseScale = Math.max(0, 1 - verticalChance - spikedChance);
-        const weights: readonly number[] = [
-            0.34 * baseScale,
-            0.17 * baseScale,
-            0.13 * baseScale,
-            0.12 * baseScale,
-            0.13 * baseScale,
-            0.11 * baseScale,
-            verticalChance,
-            spikedChance,
-        ];
-        let roll = this.nextPlatformRandom();
-        for (let index = 0; index < weights.length; index += 1) {
-            roll -= weights[index];
-            if (roll < 0) return types[index];
-        }
-        return types[types.length - 1];
-    }
-
-    private verticalMovingSpawnChance(heightMeters: number): number {
-        const settings = this.config.platformBehavior.verticalMoving;
-        if (heightMeters < settings.unlockHeightMeters) return 0;
-        const progress = Math.max(0, Math.min(
-            1,
-            (heightMeters - settings.unlockHeightMeters)
-                / (settings.chanceCapHeightMeters - settings.unlockHeightMeters),
+    private platformChallengeProgress(heightMeters: number): number {
+        const settings = this.config.platformBehavior.challenge;
+        return Math.max(0, Math.min(1,
+            (heightMeters - settings.startHeightMeters)
+                / (settings.capHeightMeters - settings.startHeightMeters),
         ));
-        return settings.spawnChanceAtUnlock
-            + (settings.spawnChanceAtCap - settings.spawnChanceAtUnlock) * progress;
+    }
+
+    private platformSpeedMultiplier(worldY: number): number {
+        const heightMeters = Math.max(0, (worldY - 114) / 100);
+        return 1 + this.platformChallengeProgress(heightMeters)
+            * this.config.platformBehavior.challenge.movingSpeedBonus;
     }
 
     private recyclePlatforms(): void {
         const recycleY = this.cameraBottomY - this.config.camera.recycleBelow;
         for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
             const platform = this.platforms[index];
-            if (!platform.generated || platform.config.y >= recycleY) continue;
+            if (platform.config.y >= recycleY) continue;
             this.platforms.splice(index, 1);
         }
         this.enforcePlatformBudget();
@@ -1842,7 +1619,6 @@ export class DoodleJumpSimulation {
             let removalIndex = -1;
             for (let index = 0; index < this.platforms.length; index += 1) {
                 const platform = this.platforms[index];
-                if (!platform.generated) continue;
                 if (removalIndex < 0
                     || platform.config.y < this.platforms[removalIndex].config.y) {
                     removalIndex = index;
@@ -1874,6 +1650,7 @@ export class DoodleJumpSimulation {
                     get width(): number { return source.width; },
                     get collisionEnabled(): boolean { return source.collisionEnabled; },
                     get consumed(): boolean { return source.consumed; },
+                    get spawnPlan(): DoodleJumpSpawnPlan | undefined { return source.config.spawnPlan; },
                 };
                 this.platformById.set(id, worldPlatform);
             }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>cloud-a</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{262,133}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{262,133}}</string>
+			<key>sourceSize</key>
+			<string>{262,133}</string>
+		</dict>
+		<key>cloud-b</key>
+		<dict>
+			<key>frame</key>
+			<string>{{534,2},{262,101}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{262,101}}</string>
+			<key>sourceSize</key>
+			<string>{262,101}</string>
+		</dict>
+		<key>cloud-c</key>
+		<dict>
+			<key>frame</key>
+			<string>{{268,2},{262,106}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{262,106}}</string>
+			<key>sourceSize</key>
+			<string>{262,106}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>cloud-foreground.png</string>
+		<key>size</key>
+		<string>{798,137}</string>
+		<key>textureFileName</key>
+		<string>cloud-foreground.png</string>
+	</dict>
+</dict>
+</plist>

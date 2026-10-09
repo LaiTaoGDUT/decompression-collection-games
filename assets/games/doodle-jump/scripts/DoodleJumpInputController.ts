@@ -74,6 +74,8 @@ export class DoodleJumpInputController {
                 if (this.disposed) return;
                 this.rawX = sample.x;
                 this.lastSampleAt = Date.now();
+                // 校准完成后只保留最新输入，避免整局持续积累无用采样。
+                if (!this.calibrationFinish) return;
                 this.samples.push(sample.x);
                 if (this.samples.length >= this.config.sensor.minimumSamples
                     && Date.now() - this.calibrationStartedAt >= this.config.sensor.calibrationWindowMs) {

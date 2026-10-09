@@ -1,0 +1,201 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "36039": {
+      "importer": "sprite-frame",
+      "uuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88@36039",
+      "displayName": "",
+      "id": "36039",
+      "name": "cloud-rain",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 778,
+        "trimY": 2,
+        "width": 231,
+        "height": 384,
+        "rawWidth": 231,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "244a1479-a009-5948-ad61-53d631d15645@6c48a",
+        "atlasUuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "41f6f": {
+      "importer": "sprite-frame",
+      "uuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88@41f6f",
+      "displayName": "",
+      "id": "41f6f",
+      "name": "cloud-lightning",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 354,
+        "width": 316,
+        "height": 384,
+        "rawWidth": 316,
+        "rawHeight": 384,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "244a1479-a009-5948-ad61-53d631d15645@6c48a",
+        "atlasUuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "ce5e1": {
+      "importer": "sprite-frame",
+      "uuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88@ce5e1",
+      "displayName": "",
+      "id": "ce5e1",
+      "name": "cloud-moon-wind",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 384,
+        "height": 348,
+        "rawWidth": 384,
+        "rawHeight": 348,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "244a1479-a009-5948-ad61-53d631d15645@6c48a",
+        "atlasUuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "a8e29": {
+      "importer": "sprite-frame",
+      "uuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88@a8e29",
+      "displayName": "",
+      "id": "a8e29",
+      "name": "cloud-warning-zigzag",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 390,
+        "trimY": 2,
+        "width": 384,
+        "height": 320,
+        "rawWidth": 384,
+        "rawHeight": 320,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "244a1479-a009-5948-ad61-53d631d15645@6c48a",
+        "atlasUuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-cloud.png",
+    "format": 2,
+    "uuid": "97ab82b8-8ed2-51f0-b599-4ab6216dfa88",
+    "textureUuid": "244a1479-a009-5948-ad61-53d631d15645@6c48a"
+  }
+}

@@ -7,6 +7,10 @@ export const LOBBY_BRAND_HEIGHT = 198;
 export const LOBBY_BRAND_TOP_GAP = 42;
 export const LOBBY_VIEWPORT_TOP_GAP = 12;
 export const LOBBY_BRAND_TO_GRID_GAP = 68;
+/** 品牌 logo 与游戏网格之间的成就展柜条（设计宽度内的高度与上下间距）。 */
+export const LOBBY_SHOWCASE_HEIGHT = 124;
+export const LOBBY_BRAND_TO_SHOWCASE_GAP = 26;
+export const LOBBY_SHOWCASE_TO_GRID_GAP = 40;
 export const LOBBY_BRAND_AREA_HEIGHT = 320;
 export const LOBBY_SETTINGS_ENTRY_SIZE = 80;
 export const LOBBY_SETTINGS_ENTRY_TOP_GAP = 20;
@@ -39,6 +43,9 @@ export interface LobbyBrandMetrics {
     readonly topGap: number;
     readonly centerFromTop: number;
     readonly areaHeight: number;
+    /** 成就展柜条中心距内容顶部的距离及其高度；没有展柜时为 0。 */
+    readonly showcaseCenterFromTop: number;
+    readonly showcaseHeight: number;
     readonly gridTop: number;
 }
 
@@ -254,6 +261,7 @@ export function calculateLobbySettingsEntryMetrics(
 export function calculateLobbyBrandMetrics(
     contentWidth: number,
     contentHeight: number,
+    withShowcase = false,
 ): LobbyBrandMetrics {
     const widthScale = Math.max(0.01, contentWidth / LOBBY_DESIGN_WIDTH);
     const heightScale = Math.max(0.01, contentHeight / LOBBY_DESIGN_HEIGHT);
@@ -262,10 +270,15 @@ export function calculateLobbyBrandMetrics(
     const height = LOBBY_BRAND_HEIGHT * scale;
     const topGap = LOBBY_BRAND_TOP_GAP * scale;
     const centerFromTop = topGap + height / 2;
-    const areaHeight = Math.max(
-        LOBBY_BRAND_AREA_HEIGHT * scale,
-        centerFromTop + height / 2 + LOBBY_BRAND_TO_GRID_GAP * scale,
-    );
+    const brandBottom = centerFromTop + height / 2;
+    const showcaseHeight = withShowcase ? LOBBY_SHOWCASE_HEIGHT * scale : 0;
+    const showcaseCenterFromTop = withShowcase
+        ? brandBottom + LOBBY_BRAND_TO_SHOWCASE_GAP * scale + showcaseHeight / 2
+        : 0;
+    const gridTop = withShowcase
+        ? showcaseCenterFromTop + showcaseHeight / 2 + LOBBY_SHOWCASE_TO_GRID_GAP * scale
+        : brandBottom + LOBBY_BRAND_TO_GRID_GAP * scale;
+    const areaHeight = Math.max(LOBBY_BRAND_AREA_HEIGHT * scale, gridTop);
 
     return Object.freeze({
         scale,
@@ -274,6 +287,8 @@ export function calculateLobbyBrandMetrics(
         topGap,
         centerFromTop,
         areaHeight,
-        gridTop: centerFromTop + height / 2 + LOBBY_BRAND_TO_GRID_GAP * scale,
+        showcaseCenterFromTop,
+        showcaseHeight,
+        gridTop,
     });
 }

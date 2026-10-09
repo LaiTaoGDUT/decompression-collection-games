@@ -1,4 +1,6 @@
-import { Bubble, DIAMETER, DANGER, Point } from './BubbleShooterModel';
+import { Bubble, DIAMETER, DANGER, Point, neighbors } from './BubbleShooterModel';
+import { POP_SPEED, popStartTime } from './BubbleShooterFeedback';
+export { POP_SPEED, POP_BURST_TIME, POP_CHAIN_INTERVAL, popStartTime } from './BubbleShooterFeedback';
 
 export interface RemovalMotion {
     falling: boolean; x: number; y: number; delay: number;
@@ -7,9 +9,6 @@ export interface RemovalMotion {
 }
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const smooth = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
-export const POP_SPEED = 1.2;
-export const POP_BURST_TIME = .14;
-export const POP_CHAIN_INTERVAL = .055;
 export const FALL_FADE_Y = DANGER + DIAMETER * 1.25;
 
 /** Reproducible variation affects presentation only, never the round's random stream. */
@@ -19,7 +18,7 @@ export function removalMotion(bubble: Bubble, point: Point, falling: boolean, or
     const speed = 20 + unit(8) * 75, gravity = 850 + unit(16) * 380;
     const distance = Math.max(0, point.y - FALL_FADE_Y);
     return { falling, x: point.x, y: point.y,
-        delay: falling ? 0 : order * POP_CHAIN_INTERVAL,
+        delay: falling ? 0 : popStartTime(order),
         vx: (unit(0) - .5) * 76, speed, gravity, spin: (unit(16) - .5) * 150,
         fadeAt: (Math.sqrt(speed * speed + 2 * gravity * distance) - speed) / gravity,
         fadeDuration: .46 + unit(8) * .16 };
@@ -42,4 +41,31 @@ export function sampleRemoval(m: RemovalMotion, elapsed: number) {
     return { x: Math.max(-336, Math.min(336, m.x + m.vx * (fallTime + Math.min(age - fallTime, .12)))),
         y, sx: 1 + .025 * Math.sin(age * 11) * (1 - settle), sy: 1 - .025 * Math.sin(age * 11) * (1 - settle),
         angle: m.spin * age, opacity: 255 * (1 - smooth(fade)), done: fade >= 1, age };
+}
+
+/** Replay visible removals, releasing a bubble only when its final ceiling path breaks. */
+export function dropStartTimes(before: readonly Bubble[], removed: readonly Bubble[], dropped: readonly Bubble[], phase: number): Map<string, number> {
+    const key = (b: {row: number; col: number}) => `${b.row}:${b.col}`;
+    const cells = new Map(before.map(b => [key(b), b]));
+    // Include the just-attached shot, which is absent from the pre-shot board.
+    removed.forEach(b => cells.set(key(b), b));
+    dropped.forEach(b => cells.set(key(b), b));
+    const starts = new Map<string, number>();
+    removed.forEach((bubble, index) => {
+        cells.delete(key(bubble));
+        const reached = new Set<string>();
+        const queue = Array.from(cells.values()).filter(b => b.row === 0);
+        queue.forEach(b => reached.add(key(b)));
+        for (let i = 0; i < queue.length; i++) {
+            for (const next of neighbors(queue[i], phase)) {
+                const id = key(next), cell = cells.get(id);
+                if (cell && !reached.has(id)) { reached.add(id); queue.push(cell); }
+            }
+        }
+        dropped.forEach(b => {
+            const id = key(b);
+            if (!reached.has(id) && !starts.has(id)) starts.set(id, popStartTime(index) / POP_SPEED);
+        });
+    });
+    return starts;
 }

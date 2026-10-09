@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "084fd7e1-1339-5143-ba53-e2f78516bc5a",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "5db14": {
+      "importer": "sprite-frame",
+      "uuid": "084fd7e1-1339-5143-ba53-e2f78516bc5a@5db14",
+      "displayName": "",
+      "id": "5db14",
+      "name": "base",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 140,
+        "trimY": 2,
+        "width": 134,
+        "height": 82,
+        "rawWidth": 134,
+        "rawHeight": 82,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "bb03ab79-d2d9-5472-a717-b2eb75cba464@6c48a",
+        "atlasUuid": "084fd7e1-1339-5143-ba53-e2f78516bc5a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "a8b8b": {
+      "importer": "sprite-frame",
+      "uuid": "084fd7e1-1339-5143-ba53-e2f78516bc5a@a8b8b",
+      "displayName": "",
+      "id": "a8b8b",
+      "name": "turret",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 134,
+        "height": 156,
+        "rawWidth": 134,
+        "rawHeight": 156,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "bb03ab79-d2d9-5472-a717-b2eb75cba464@6c48a",
+        "atlasUuid": "084fd7e1-1339-5143-ba53-e2f78516bc5a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "ocean-launcher.png",
+    "format": 2,
+    "uuid": "084fd7e1-1339-5143-ba53-e2f78516bc5a",
+    "textureUuid": "bb03ab79-d2d9-5472-a717-b2eb75cba464@6c48a"
+  }
+}

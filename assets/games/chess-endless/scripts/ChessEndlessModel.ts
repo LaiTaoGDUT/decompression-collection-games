@@ -182,11 +182,11 @@ export const ITEM_DISPLAY: Readonly<Record<ItemType, string>> = Object.freeze({
 });
 
 export const ITEM_DESCRIPTIONS: Readonly<Record<ItemType, string>> = Object.freeze({
-    crossSlash: '本次正常移动后，清除车所在横线与竖线上的全部敌棋。',
+    crossSlash: "本次行动后，清除车所在横线与竖线上的全部敌棋。",
     freeze: '封住一枚普通敌棋，使其跳过下一个敌方回合。',
     delay: '当前增援倒计时增加 2 回合。',
     banish: '移走一枚普通敌棋；不计击杀与得分。',
-    teleport: '立即传送到任意空格；随后仍须正常走车一次。',
+    teleport: "立即传送到任意空格；随后继续行动。",
 });
 
 const ITEM_TYPES: readonly ItemType[] = Object.freeze([
@@ -654,7 +654,7 @@ export class ChessEndlessModel {
         } else if (item === 'delay') {
             if (this.state.reinforcementState === 'WAITING'
                 || this.state.reinforcementState === 'GENERAL_WAITING') {
-                throw new Error('待命增援无法继续延后。');
+                throw new Error("增援已在等待入场，无法再延后。");
             }
             this.state.reinforcementTimer += 2;
         } else if (item === 'teleport') {

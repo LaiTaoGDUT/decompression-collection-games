@@ -15,6 +15,20 @@ export const SLIDING_PUZZLE_SHUFFLE_STEPS: Readonly<Record<SlidingPuzzleBoardSiz
         7: 420,
     });
 
+/** 以实际局面衡量开局难度；空位固定在右下角，不计入错位块数。 */
+const SHUFFLE_QUALITY_FLOORS: Readonly<Record<SlidingPuzzleBoardSize, Readonly<{
+    misplaced: number;
+    manhattan: number;
+}>>> = Object.freeze({
+    3: { misplaced: 5, manhattan: 10 },
+    4: { misplaced: 11, manhattan: 22 },
+    5: { misplaced: 18, manhattan: 40 },
+    6: { misplaced: 28, manhattan: 68 },
+    7: { misplaced: 40, manhattan: 102 },
+});
+const MAX_SHUFFLE_ATTEMPTS = 16;
+const EXTERNAL_RANDOM_ATTEMPTS = 8;
+
 const ALL_DIRECTIONS: readonly SlidingPuzzleDirection[] = ['up', 'down', 'left', 'right'];
 
 function isBoardSize(value: number): value is SlidingPuzzleBoardSize {
@@ -132,17 +146,11 @@ export class SlidingPuzzleModel {
         }
 
         this.size = size;
-        this.tiles = Array.from(
-            { length: size * size },
-            (_value, index) => index === size * size - 1 ? 0 : index + 1,
-        );
-        this.empty = this.tiles.length - 1;
-        this.moveCount = 0;
         this.shuffleCount = Math.max(
             0,
             Math.floor(shuffleSteps ?? SLIDING_PUZZLE_SHUFFLE_STEPS[size]),
         );
-        this.shuffle();
+        this.shuffle(shuffleSteps === undefined);
         this.moveCount = 0;
         return this.snapshot;
     }
@@ -250,7 +258,34 @@ export class SlidingPuzzleModel {
         return direction ? this.move(direction) : this.createNoMoveResult('up');
     }
 
-    private shuffle(): void {
+    private shuffle(enforceQuality: boolean): void {
+        const floor = SHUFFLE_QUALITY_FLOORS[this.size];
+        const attempts = enforceQuality ? MAX_SHUFFLE_ATTEMPTS : 1;
+
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
+            this.tiles = Array.from(
+                { length: this.size * this.size },
+                (_value, index) => index === this.size * this.size - 1 ? 0 : index + 1,
+            );
+            this.empty = this.tiles.length - 1;
+            this.moveCount = 0;
+            const random = attempt < EXTERNAL_RANDOM_ATTEMPTS
+                ? this.random
+                : this.createFallbackRandom(attempt);
+            this.shuffleWalk(random);
+            this.returnEmptyToBottomRight();
+            if (this.isSolved && this.tiles.length > 1) this.createNonSolvedBottomRightState();
+
+            if (!enforceQuality) return;
+            const quality = this.shuffleQuality();
+            if (quality.misplaced >= floor.misplaced && quality.manhattan >= floor.manhattan) return;
+        }
+
+        // 有界重抽后仍无合格局面时，构造一个满足门槛的可解局面。
+        this.createDeterministicFallback();
+    }
+
+    private shuffleWalk(random: () => number): void {
         let previous: SlidingPuzzleDirection | undefined;
         let remaining = this.shuffleCount;
         let guard = 0;
@@ -264,7 +299,7 @@ export class SlidingPuzzleModel {
             const choices = candidates.length > 0
                 ? candidates
                 : ALL_DIRECTIONS.filter((direction) => this.canMove(direction));
-            const direction = choices[this.randomIndex(choices.length)];
+            const direction = choices[this.randomIndex(choices.length, random)];
             if (!direction) {
                 break;
             }
@@ -275,16 +310,42 @@ export class SlidingPuzzleModel {
                 remaining -= 1;
             }
         }
+    }
 
-        // 选关页约定空位落在右下角，但这不代表空位是固定的：
-        // 开局后玩家仍可把相邻方块滑入空位。把空位沿合法移动带回目标角，
-        // 既保留从完成局面生成的可解性，也让玩家一眼知道最终缺口在哪。
-        this.returnEmptyToBottomRight();
-
-        // 极端的固定随机源也不能让开始按钮得到一个已完成的“乱序”局面。
-        if (this.isSolved && this.tiles.length > 1) {
-            this.createNonSolvedBottomRightState();
+    private shuffleQuality(): { misplaced: number; manhattan: number } {
+        let misplaced = 0;
+        let manhattan = 0;
+        for (let index = 0; index < this.tiles.length; index += 1) {
+            const tile = this.tiles[index];
+            if (tile === 0) continue;
+            const target = tile - 1;
+            if (index !== target) misplaced += 1;
+            manhattan += Math.abs(Math.floor(index / this.size) - Math.floor(target / this.size))
+                + Math.abs(index % this.size - target % this.size);
         }
+        return { misplaced, manhattan };
+    }
+
+    private createFallbackRandom(attempt: number): () => number {
+        // 注入的随机源可能恒定或无效；不同种子仍要能生成不同的合法移动序列。
+        let state = (Math.imul(this.size, 0x85ebca6b)
+            ^ Math.imul(attempt + 1, 0x9e3779b1)) >>> 0;
+        return () => {
+            state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+            return state / 0x100000000;
+        };
+    }
+
+    private createDeterministicFallback(): void {
+        const numberedTiles = this.size * this.size - 1;
+        const rotation = this.size % 2 === 0 ? 1 : 2;
+        // 偶数宽移动 1 位、奇数宽移动 2 位，逆序数均为偶数；右下角仍为空位。
+        this.tiles = Array.from(
+            { length: numberedTiles },
+            (_value, index) => (index + rotation) % numberedTiles + 1,
+        );
+        this.tiles.push(0);
+        this.empty = numberedTiles;
     }
 
     private returnEmptyToBottomRight(): void {
@@ -314,7 +375,7 @@ export class SlidingPuzzleModel {
 
     private createNonSolvedBottomRightState(): void {
         // 这条四步合法路径以右下角为空位结束，同时会扰动至少三块方块。
-        // 3×3～6×6 都满足这些方向的邻接条件。
+        // 3×3～7×7 都满足这些方向的邻接条件。
         const fallback: readonly SlidingPuzzleDirection[] = ['right', 'down', 'left', 'up'];
         fallback.forEach((direction) => {
             this.move(direction);
@@ -347,12 +408,12 @@ export class SlidingPuzzleModel {
         };
     }
 
-    private randomIndex(length: number): number {
+    private randomIndex(length: number, random: () => number): number {
         if (length <= 1) {
             return 0;
         }
 
-        const randomValue = this.random();
+        const randomValue = random();
         const value = Number.isFinite(randomValue) ? randomValue : 0;
         return Math.min(length - 1, Math.max(0, Math.floor(value * length)));
     }

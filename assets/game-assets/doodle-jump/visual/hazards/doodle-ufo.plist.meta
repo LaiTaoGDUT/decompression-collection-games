@@ -1,0 +1,201 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "59141": {
+      "importer": "sprite-frame",
+      "uuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f@59141",
+      "displayName": "",
+      "id": "59141",
+      "name": "ufo-tether",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 740,
+        "trimY": 2,
+        "width": 187,
+        "height": 262,
+        "rawWidth": 187,
+        "rawHeight": 262,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "388b4bff-2b4c-52ab-83d2-1dd13de3dfd5@6c48a",
+        "atlasUuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "748ae": {
+      "importer": "sprite-frame",
+      "uuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f@748ae",
+      "displayName": "",
+      "id": "748ae",
+      "name": "ufo",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 416,
+        "trimY": 2,
+        "width": 320,
+        "height": 254,
+        "rawWidth": 320,
+        "rawHeight": 254,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "388b4bff-2b4c-52ab-83d2-1dd13de3dfd5@6c48a",
+        "atlasUuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f0664": {
+      "importer": "sprite-frame",
+      "uuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f@f0664",
+      "displayName": "",
+      "id": "f0664",
+      "name": "ufo-beam",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 416,
+        "trimY": 260,
+        "width": 173,
+        "height": 255,
+        "rawWidth": 173,
+        "rawHeight": 255,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "388b4bff-2b4c-52ab-83d2-1dd13de3dfd5@6c48a",
+        "atlasUuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "217bb": {
+      "importer": "sprite-frame",
+      "uuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f@217bb",
+      "displayName": "",
+      "id": "217bb",
+      "name": "ufo-lock-target",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 410,
+        "height": 389,
+        "rawWidth": 410,
+        "rawHeight": 389,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "388b4bff-2b4c-52ab-83d2-1dd13de3dfd5@6c48a",
+        "atlasUuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-ufo.png",
+    "format": 2,
+    "uuid": "5e06ce8a-1297-5628-9cb2-04c13b5aa12f",
+    "textureUuid": "388b4bff-2b4c-52ab-83d2-1dd13de3dfd5@6c48a"
+  }
+}

@@ -700,7 +700,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "启动失败\n请重新进入小游戏",
+    "_string": "游戏启动失败\n请重新进入",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 43.55555555555555,
@@ -2931,7 +2931,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "得分：0`n用时：0.0 秒",
+    "_string": "得分：0\n用时：0.0 秒",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 36,

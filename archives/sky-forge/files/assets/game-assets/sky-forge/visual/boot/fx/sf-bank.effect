@@ -1,0 +1,68 @@
+// 苍穹铸翼：我方飞机侧偏。顶点部分基于 Cocos Creator 3.8.8 builtin-sprite.effect（MIT）。
+// 参考 tmp/tidal-wings 的 drawBankedSprite 仿射矩阵：X 乘 (1-|roll|×0.28)，Y 乘 (1+|roll|×0.035) 并随 X 产生 roll×0.14 的错切。
+// 机身与所有挂载零件共用同一个材质实例，侧偏时零件不会和机身脱离。
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: bank-vs:vert
+      frag: bank-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+        bankPose: { value: [0, 0, 0, 1] }
+}%
+
+CCProgram bank-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  out vec4 color;
+  out vec2 uv0;
+  uniform BankPose { vec4 bankPose; };
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+    // bankPose.xy = 机体中心（世界坐标），z = roll（-1～1），w = 世界缩放。
+    vec2 local = (pos.xy - bankPose.xy) / max(bankPose.w, 0.0001);
+    float roll = bankPose.z;
+    vec2 banked = vec2(local.x * (1.0 - abs(roll) * 0.28), local.y * (1.0 + abs(roll) * 0.035) + local.x * roll * 0.14);
+    pos.xy = bankPose.xy + banked * bankPose.w;
+    pos = cc_matViewProj * pos;
+    uv0 = a_texCoord;
+    color = a_color;
+    return pos;
+  }
+}%
+
+CCProgram bank-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  in vec4 color;
+  in vec2 uv0;
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  vec4 frag () {
+    vec4 o = CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

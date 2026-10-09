@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>dialog-panel</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{512,498}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{512,498}}</string>
+			<key>sourceSize</key>
+			<string>{512,498}</string>
+		</dict>
+		<key>dialog-primary</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,504},{512,121}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{512,121}}</string>
+			<key>sourceSize</key>
+			<string>{512,121}</string>
+		</dict>
+		<key>dialog-secondary</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,629},{512,102}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{512,102}}</string>
+			<key>sourceSize</key>
+			<string>{512,102}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>common-dialog-common.png</string>
+		<key>size</key>
+		<string>{516,733}</string>
+		<key>textureFileName</key>
+		<string>common-dialog-common.png</string>
+	</dict>
+</dict>
+</plist>
