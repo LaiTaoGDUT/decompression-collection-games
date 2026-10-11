@@ -1,0 +1,295 @@
+sprite-atlas-sources/generated.json
+  s_6296ccde468fe2::t_214b134760ede2 6423-6454
+  s_6296ccde468fe2::t_41924e3d0575fb 6406-6422,6455-6477
+assets/games/multi-color-fill/scripts/MultiColorFillLevels.ts.meta
+  s_6296ccde468fe2::t_6671902d8a2a68 1-9
+assets/shared/ui/LobbyBrandLayout.ts
+  s_6296ccde468fe2::t_3cae44b9558785 6-8,12-15,17-19,50,53,220,222-224,231-236
+  s_6296ccde468fe2::t_5870f046c134c6 5
+assets/game-assets/doodle-jump/visual/ui/tutorial/doodle-tutorial.plist.meta
+  s_6296ccde468fe2::t_214b134760ede2 27-47,73-93
+  s_6296ccde468fe2::t_a25419ceda3575 10-26,56-72
+  s_6296ccde468fe2::t_0668c62d752aa4 1-9,48-55,94-109
+sprite-atlas-sources/doodle-jump/generation-rabbit-tutorial-20261011.json
+  s_6296ccde468fe2::t_5bb2bd1a0a2c2e 7-70
+  s_6296ccde468fe2::t_b038cc607986ce 71-82
+  s_6296ccde468fe2::t_7bade7581636d9 1-6,83
+assets/lobby/scripts/LobbyCardStatus.ts
+  s_6296ccde468fe2::t_25f1a930e7250f 1-43
+assets/shared/components/AchievementWall.ts
+  s_6296ccde468fe2::t_65b908b30e1b94 67-73
+  s_6296ccde468fe2::t_3cae44b9558785 335-338
+  s_6296ccde468fe2::t_f2769c38d3b226 21-22,54,63-66,122,181-182,195,221-223,277,279-283,339-349
+  s_6296ccde468fe2::t_f87c6535dd7633 23-24,61,85-86,106,109,187,197,200-213,215,217,226,228-229,231-232,234,236-238,240-248,250-252,254-259,261,263-264,297,300-317,319-326
+  s_6296ccde468fe2::t_367d4fb10b3804 56,58-59,265,272,299,330-334
+  s_6296ccde468fe2::t_12819325b1b07d 55,88,219
+  s_6296ccde468fe2::t_5dbda4594cb915 60,62,87,89,107-108,110,115,118-121,188,196,198-199,224,227,230,233,235,239,249,253,260,262,284-296,298,318
+assets/games/multi-color-fill/scripts/MultiColorFillGame.ts
+  s_6296ccde468fe2::t_b4ae2293ec352f 39-40,100,750,898-899,901
+  s_6296ccde468fe2::t_0c85c7b8eeaa44 1-2,4-18,20-38,41-67,78-92,95-99,101-112,114-124,126-183,192-209,211-213,216-318,323,328-335,342-347,353-355,358-415,419,421,437,441,481-482,504-505,515-516,562,564-582,585-599,601-617,619-622,624-641,644,647-660,662-664,666-669,707-711,713-734,736-745,748-749,751-755,758-813,815-823,825-840,842-851,853-897,900,902-906,908-917,922-931
+  s_6296ccde468fe2::t_214b134760ede2 113,125,712
+  s_6296ccde468fe2::t_927c2f715d52da 3
+  s_6296ccde468fe2::t_2f24397b73981f 19
+  s_6296ccde468fe2::t_4da2020f514b1b 68-70,75-77
+  s_6296ccde468fe2::t_9674f35165f889 93-94
+  s_6296ccde468fe2::t_ab006237e579d6 184-186,189-191
+  s_6296ccde468fe2::t_c9d40f12074076 210
+  s_6296ccde468fe2::t_7bbb5dd0c36e8a 214-215
+  s_6296ccde468fe2::t_6e06771531089f 319-322
+  s_6296ccde468fe2::t_ba5ebd9100d26a 324-327
+  s_6296ccde468fe2::t_768163e17bc25c 336-341
+  s_6296ccde468fe2::t_2e424d94e9763b 348-352
+  s_6296ccde468fe2::t_e357b7819b1a4c 356-357
+  s_6296ccde468fe2::t_5913b41b3d890a 416-418
+  s_6296ccde468fe2::t_79c2482640bcc4 420
+  s_6296ccde468fe2::t_6ef02220e63e90 422-424,434-436
+  s_6296ccde468fe2::t_395e3681fdb09a 438-440
+  s_6296ccde468fe2::t_ec4625378e103d 442-444,478-480
+  s_6296ccde468fe2::t_79ad906b9b4fd0 483-485,501-503
+  s_6296ccde468fe2::t_2dc12a28bcc14e 506-508,512-514
+  s_6296ccde468fe2::t_6e10e4d422f3de 517-519,559-561
+  s_6296ccde468fe2::t_96c111facecda2 563
+  s_6296ccde468fe2::t_abdef41f5c0828 583-584
+  s_6296ccde468fe2::t_577458b788e716 600
+  s_6296ccde468fe2::t_8b025bf4486a9b 618
+  s_6296ccde468fe2::t_6b2f7c4c3c7274 623
+  s_6296ccde468fe2::t_21331c121d12ec 642-643
+  s_6296ccde468fe2::t_2e5128e0f6cf26 645-646
+  s_6296ccde468fe2::t_9d9ae0ef28fe99 661
+  s_6296ccde468fe2::t_a4fbe5be287b9f 665
+  s_6296ccde468fe2::t_bd7449713b2e11 670-672,704-706
+  s_6296ccde468fe2::t_f70c972801315b 735
+  s_6296ccde468fe2::t_2152b2bc44e709 746-747
+  s_6296ccde468fe2::t_603c55abddb15d 756-757
+  s_6296ccde468fe2::t_1acdb45747fb9a 814
+  s_6296ccde468fe2::t_908f3eef138a1f 824
+  s_6296ccde468fe2::t_cdb184809aafca 841
+  s_6296ccde468fe2::t_49d17e485aeace 852
+  s_6296ccde468fe2::t_47c48077c03a48 907
+  s_6296ccde468fe2::t_de9266fc24330d 918-921
+  h_293365c3a5ebee 71-74,187-188,425-433,445-477,486-500,509-511,520-558,673-703
+project-scripts/README.md
+  s_6296ccde468fe2::t_214b134760ede2 21
+  s_6296ccde468fe2::t_12c7a653d4bd38 41-42
+assets/lobby/scripts/GameCardView.ts
+  s_6296ccde468fe2::t_f2769c38d3b226 30-31,41,49
+  h_293365c3a5ebee 11,26,72-75,79-83,100-103,147,163,172,193,201,219,254,258,262-277,392,488,502,594,747-842
+assets/resources/configs/games.json
+  h_293365c3a5ebee 22
+  s_6296ccde468fe2::t_dd7fa1c94bf62d 5-21,23-30,64-65,102-103,108,131-142,211-212,279-280,316-317,350-351
+assets/lobby/scripts/LobbyCardLayout.ts
+  s_6296ccde468fe2::t_f2769c38d3b226 25-30
+  h_293365c3a5ebee 3-4,11,14,17-22
+assets/games/multi-color-fill/scripts/MultiColorFillGame.ts.meta
+  s_6296ccde468fe2::t_0c85c7b8eeaa44 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillLevels.ts
+  s_6296ccde468fe2::t_cfe4d89383ef4b 23,55-58,60-61,64,68-70,72-74,76-82,87-88,91-93,96,106,110,114,124-125,130-131,135,137,141-142,144,146,149,155,157,160-166,168,170-173,180-182,187,192-193,197,201-204,206-208,217,221,223,228,230,233-235,241-4055,4064-4081,4087,4100-4104,4108,4111-4118,4121-4127,4130-4132,4136-4140,4142-4145,4156,4161-4162,4165-4177,4181-4183,4187-4191,4193-4196,4199-4200,4202-4216,4218-4225,4552-4572,4585-4644,4651,4665,4672-4696,4701-4769,4790,4798-4822,4845-4904,4924-4967,4974-4975,4982-4993,5015-5027,5053-6050
+  s_6296ccde468fe2::t_99d904ecc40915 20-22
+  s_6296ccde468fe2::t_7d6856f63cbfc8 24-26,52-54
+  s_6296ccde468fe2::t_08373582d0e5ba 59
+  s_6296ccde468fe2::t_1a1b8ba94af8e9 62-63
+  s_6296ccde468fe2::t_941db85476917f 65-67
+  s_6296ccde468fe2::t_77ea803b4e5b00 71
+  s_6296ccde468fe2::t_6d596fab22d369 75
+  s_6296ccde468fe2::t_e5d556e08774fd 83-86
+  s_6296ccde468fe2::t_4c714ab0f2b62a 89-90
+  s_6296ccde468fe2::t_5cb9dd8ff0f1d7 94-95
+  s_6296ccde468fe2::t_2fc9d6f5cacdcd 97-99,103-105
+  s_6296ccde468fe2::t_55961abccb4ccd 107-109
+  s_6296ccde468fe2::t_038338f292c9a4 111-113
+  s_6296ccde468fe2::t_308b310a2308e8 115-117,121-123
+  s_6296ccde468fe2::t_c784dadf12debf 126-129
+  s_6296ccde468fe2::t_df3533ac92260f 132-134
+  s_6296ccde468fe2::t_d51b473d9c4954 136
+  s_6296ccde468fe2::t_1e629229672aac 138-140
+  s_6296ccde468fe2::t_cd255045152350 143
+  s_6296ccde468fe2::t_fdd2e5e1b90f5d 145
+  s_6296ccde468fe2::t_035eb5141dd535 147-148
+  s_6296ccde468fe2::t_b9538f00408cac 150-154
+  s_6296ccde468fe2::t_8caafbb28307e3 156
+  s_6296ccde468fe2::t_871f47e53cc18b 158-159
+  s_6296ccde468fe2::t_cc373085800a04 167
+  s_6296ccde468fe2::t_c1b38148968843 169
+  s_6296ccde468fe2::t_52982c0a3b06ad 174-179
+  s_6296ccde468fe2::t_dbc4e0c26060aa 183-186
+  s_6296ccde468fe2::t_1daa9f9f330b60 188-191
+  s_6296ccde468fe2::t_abbc10d4b328ab 194-196
+  s_6296ccde468fe2::t_69cb046ae88198 198-200
+  s_6296ccde468fe2::t_be1a347b50f4c3 205
+  s_6296ccde468fe2::t_f6ef79e7f4997d 209-211,214-216
+  s_6296ccde468fe2::t_2b7677fb389b58 218-220
+  s_6296ccde468fe2::t_bb18a0c0e7cecb 222
+  s_6296ccde468fe2::t_0b8f27c28407eb 224-227
+  s_6296ccde468fe2::t_8dba225b7191ab 229
+  s_6296ccde468fe2::t_d7c6102f0bd276 231-232
+  s_6296ccde468fe2::t_5c5ac2571febee 236-240
+  s_6296ccde468fe2::t_85b580f4c451b8 4056-4058,4061-4063
+  s_6296ccde468fe2::t_ea259539d13dcc 4082-4086
+  s_6296ccde468fe2::t_d890b643bacc68 4088-4090,4097-4099
+  s_6296ccde468fe2::t_37def177402d48 4105-4107
+  s_6296ccde468fe2::t_723bc3469d3a5a 4109-4110
+  s_6296ccde468fe2::t_e191347764f497 4119-4120
+  s_6296ccde468fe2::t_9056b1f3341496 4128-4129
+  s_6296ccde468fe2::t_db9710ba1b2252 4133-4135
+  s_6296ccde468fe2::t_3dbc3bb25e58a9 4141
+  s_6296ccde468fe2::t_13b7b34072cfd9 4146-4148,4153-4155
+  s_6296ccde468fe2::t_685aff65e82aa9 4157-4160
+  s_6296ccde468fe2::t_3adc1693c21741 4163-4164
+  s_6296ccde468fe2::t_bd6ee498f084c2 4178-4180
+  s_6296ccde468fe2::t_6f3443d8721e14 4184-4186
+  s_6296ccde468fe2::t_06e8d572b1dfee 4192
+  s_6296ccde468fe2::t_fedda3d849219d 4197-4198
+  s_6296ccde468fe2::t_2474d09e7bd18c 4201
+  s_6296ccde468fe2::t_4e8f28c80b793f 4217
+  s_6296ccde468fe2::t_152b55e9c7f959 4226-4228,4549-4551
+  s_6296ccde468fe2::t_209d6771ea64eb 4573-4575,4582-4584
+  s_6296ccde468fe2::t_5f53a0be812b16 4645-4650
+  s_6296ccde468fe2::t_961564765b5a48 4652-4654,4662-4664
+  s_6296ccde468fe2::t_3c9983a419cff9 4666-4671
+  s_6296ccde468fe2::t_2a746eb252329b 4697-4700
+  s_6296ccde468fe2::t_ef6b764509f481 4770-4772,4787-4789
+  s_6296ccde468fe2::t_71529403dbb3ba 4791-4793,4795-4797
+  s_6296ccde468fe2::t_6b21e6085db8f1 4823-4825,4842-4844
+  s_6296ccde468fe2::t_aaa2d0d158aaed 4905-4907,4921-4923
+  s_6296ccde468fe2::t_6bf87f3bd84f8d 4968-4973
+  s_6296ccde468fe2::t_ba2a9f84680fe2 4976-4981
+  s_6296ccde468fe2::t_8e844ce4cdf22e 4994-4996,5012-5014
+  s_6296ccde468fe2::t_85e9c0e0b211e9 5028-5030,5050-5052
+  s_6296ccde468fe2::t_1780517085ae1d 6051-6053
+  h_293365c3a5ebee 1-19,27-51,100-102,118-120,212-213,4059-4060,4091-4096,4149-4152,4229-4548,4576-4581,4655-4661,4773-4786,4794,4826-4841,4908-4920,4997-5011,5031-5049,6054
+assets/lobby/scripts/LobbyEntry.ts
+  s_6296ccde468fe2::t_65b908b30e1b94 440-444,450
+  s_6296ccde468fe2::t_d0e925a9f20bcf 38,94,196-197,199,209-210,383
+  s_6296ccde468fe2::t_f2769c38d3b226 5,10-11,39,85,213,231,246-269
+  s_6296ccde468fe2::t_7af9d0846e0f50 270
+assets/games/meowdoku/scripts/MeowdokuGame.ts
+  s_6296ccde468fe2::t_214b134760ede2 1054,1057,5881,6241
+assets/game-assets/doodle-jump/visual/ui/tutorial/doodle-tutorial.plist
+  s_6296ccde468fe2::t_0cc45f18204cad 1-46
+assets/game-assets/doodle-jump/visual/ui/tutorial/doodle-tutorial.png.meta
+  s_6296ccde468fe2::t_7aa0c0a25856f2 5,13-14,25,40
+assets/games/doodle-jump/scripts/PackedSpritePaths.ts
+  s_6296ccde468fe2::t_5de52da1210b57 208-212
+sprite-atlas-sources/compression-inputs.json
+  s_6296ccde468fe2::t_9237ba6e930e76 94
+.codex/config.toml
+  h_293365c3a5ebee 51
+AGENTS.md
+  h_293365c3a5ebee 43-46
+announcement-sources/announcements.json
+  h_293365c3a5ebee 32-46
+assets/game-assets/multi-color-fill.meta
+  h_293365c3a5ebee 1-17
+assets/game-assets/multi-color-fill/visual.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/multi-color-fill/visual/audio.meta
+  h_293365c3a5ebee 1-9
+assets/game-assets/multi-color-fill/visual/audio/fill-back-v1.mp3.meta
+  h_293365c3a5ebee 1-14
+assets/game-assets/multi-color-fill/visual/audio/fill-button-v1.mp3.meta
+  h_293365c3a5ebee 1-14
+assets/game-assets/multi-color-fill/visual/audio/fill-complete-v1.mp3.meta
+  h_293365c3a5ebee 1-14
+assets/game-assets/multi-color-fill/visual/audio/fill-limit-v1.mp3.meta
+  h_293365c3a5ebee 1-14
+assets/game-assets/multi-color-fill/visual/audio/fill-step-v1.mp3.meta
+  h_293365c3a5ebee 1-14
+assets/games/cyblockbees/scripts/CyBlockBeesGame.ts
+  h_293365c3a5ebee 48-54,150,181,237-238,420-426,431-434,460,841,845
+assets/games/cyblockbees/scripts/CyBlockBeesLevels.ts
+  h_293365c3a5ebee 5-8,18,24-27,157-218,220-221,225-262,267,271,276,279,284,289,293,299,302-1296
+assets/games/cyblockbees/scripts/CyBlockBeesProgress.ts
+  h_293365c3a5ebee 1-65
+assets/games/cyblockbees/scripts/CyBlockBeesProgress.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/cyblockbees/scripts/CyBlockBeesUi.ts
+  h_293365c3a5ebee 5-6
+assets/games/doodle-jump/scripts/DoodleJumpGame.ts
+  h_293365c3a5ebee 1034-1037,1062-1067,1069-1074,1077,1243-1245,1563-1573,1578-1579,1588,1613,2214,3766-3772,4929-4931,4933-4988,4990-5044,5055,5064-5065,5080-5090,5102,5105,5109,5115-5122,5126,5130,5139,5143,5151
+assets/games/multi-color-fill.meta
+  h_293365c3a5ebee 1-17
+assets/games/multi-color-fill/scenes.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scenes/MultiColorFill.scene
+  h_293365c3a5ebee 1-592
+assets/games/multi-color-fill/scenes/MultiColorFill.scene.meta
+  h_293365c3a5ebee 1-11
+assets/games/multi-color-fill/scripts.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillEffects.ts
+  h_293365c3a5ebee 1-127
+assets/games/multi-color-fill/scripts/MultiColorFillEffects.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillGuide.ts
+  h_293365c3a5ebee 1-38
+assets/games/multi-color-fill/scripts/MultiColorFillGuide.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillLayout.ts
+  h_293365c3a5ebee 1-28
+assets/games/multi-color-fill/scripts/MultiColorFillLayout.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillModel.ts
+  h_293365c3a5ebee 1-201
+assets/games/multi-color-fill/scripts/MultiColorFillModel.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillSave.ts
+  h_293365c3a5ebee 1-49
+assets/games/multi-color-fill/scripts/MultiColorFillSave.ts.meta
+  h_293365c3a5ebee 1-9
+assets/games/multi-color-fill/scripts/MultiColorFillTheme.ts
+  h_293365c3a5ebee 1-46
+assets/games/multi-color-fill/scripts/MultiColorFillTheme.ts.meta
+  h_293365c3a5ebee 1-9
+assets/lobby-covers/visual/achievements/trophy-bee-shield.png.meta
+  h_293365c3a5ebee 5,13-14,25,40
+assets/lobby-covers/visual/covers/multi-color-fill.meta
+  h_293365c3a5ebee 1-9
+assets/lobby-covers/visual/covers/multi-color-fill/multi-color-fill-cover-v1.png.meta
+  h_293365c3a5ebee 1-42
+assets/lobby-covers/visual/ui/lobby-notice-icon.png.meta
+  h_293365c3a5ebee 5,13-14,25,40
+assets/lobby-covers/visual/ui/lobby-settings-icon.png.meta
+  h_293365c3a5ebee 1-42
+assets/lobby/scripts/LobbyAnnouncementPanel.ts
+  h_293365c3a5ebee 39-41,62,317-320
+assets/lobby/scripts/LobbyCardStatus.ts.meta
+  h_293365c3a5ebee 1-9
+assets/lobby/scripts/LobbyHeader.ts
+  h_293365c3a5ebee 1,7-8,14-20,26-27,32,59-68,84,95,97-101,121,124-145
+assets/lobby/scripts/LobbySettingsPanel.ts
+  h_293365c3a5ebee 27-29,64,139-141,144
+assets/runtime/GameManifest.ts
+  h_293365c3a5ebee 6,9-15,26
+assets/runtime/GameManifestValidator.ts
+  h_293365c3a5ebee 1-2,58-60,62-63
+sprite-atlas-sources/doodle-jump/visual/ui/tutorial/hazard-symbols.png.meta
+  h_293365c3a5ebee 1-46
+sprite-atlas-sources/doodle-jump/visual/ui/tutorial/sensor-tilt.png.meta
+  h_293365c3a5ebee 1-46
+sprite-atlas-sources/manifest.json
+  h_293365c3a5ebee 1009-1021
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d68075082ea12c8641f5c873fd367aed17e35168",
+  "prompts": {},
+  "logical_commit_id": "d68075082ea12c8641f5c873fd367aed17e35168",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_6296ccde468fe2": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a12b5a-b591-7444-bd5a-040d54714872",
+        "model": "deepseek-v4.1-flash"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 14972,
+      "total_deletions": 18078
+    }
+  }
+}
