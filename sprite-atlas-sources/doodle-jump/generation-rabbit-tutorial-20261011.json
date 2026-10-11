@@ -1,0 +1,83 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-11",
+  "scope": "Replace the two live tutorial illustrations that retained the old teal character; align the hazard illustration with the current garden bee enemy.",
+  "audit": {
+    "reviewedImages": 58,
+    "inventory": "tools/doodle-jump/reports/rabbit-tutorial-20261011/inventory.json"
+  },
+  "entries": [
+    {
+      "name": "sensor-tilt",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent game tutorial illustration, approximately 1.4:1 landscape, shown at 210 by 150 pixels in a phone-tilt calibration panel. Image 1 is the EDIT TARGET; image 2 is the EXACT CURRENT PLAYER IDENTITY reference. Replace ONLY the old teal spiky-headed character on the LEFT with the cream-white paper rabbit from image 2: two long pink-inner ears, small black oval eye, blush cheek, small tail and coral-red scarf. Keep the rabbit joyfully jumping and facing right toward the phone; all ears, paws, scarf and tail fully visible. Match the reference rabbit's fine charcoal pencil outline, ivory paper-cut rim, warm cream fur and subtle colored-pencil texture. Keep image 1's phone, hand, tilt/motion strokes on the RIGHT in the same positions and proportions, preserving their teal/coral/cream hand-drawn paper appearance. Keep a clear space between rabbit and phone so both read instantly at small size. Entire complete two-subject illustration centered in a landscape canvas with modest transparent margins. True transparent RGBA background. No background paper sheet, no ground, no platforms, no extra character, no old teal humanoid, no text, labels, watermark or border. Preserve the simple clear teaching composition.",
+      "references": [
+        "assets/game-assets/doodle-jump/visual/ui/tutorial/sensor-tilt.png",
+        "sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "targetSize": [
+        210,
+        150
+      ],
+      "sourceRender": "sprite-atlas-sources/doodle-jump/visual/ui/tutorial/source-renders/rabbit-20261011/sensor-tilt.png",
+      "authoredImage": "sprite-atlas-sources/doodle-jump/visual/ui/tutorial/sensor-tilt.png",
+      "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-f909ffe7-ec8c-4c8c-ad15-de6385d32b07.png",
+      "sourceSize": [
+        1484,
+        1060
+      ],
+      "normalizationCrop": [
+        150,
+        31,
+        1448,
+        1056
+      ],
+      "retiredOriginal": "sprite-atlas-sources/doodle-jump/visual/ui/tutorial/retired/sensor-tilt-old-character.png",
+      "sha256": "8af4567693d7c3b4b175beb80a9ae70731f624e2260fa713ea86fc68cb06bcad"
+    },
+    {
+      "name": "hazard-symbols",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent danger tutorial illustration for a paper rabbit jumping mobile game, approximately 1.29:1 landscape, displayed 227 by 176 pixels. Image 1 is the EDIT TARGET and layout reference; image 2 is the EXACT CURRENT PLAYER IDENTITY; image 3 is the CURRENT GARDEN BEE ENEMY reference. Replace the old teal spiky-headed humanoid at CENTER LEFT with the cream-white rabbit from image 2, preserving the rabbit's long pink-inner ears, black oval eye, blush cheek, coral-red scarf, fine charcoal pencil outline, ivory cut-paper rim and warm textured cream body. The rabbit is jumping rightward just above the existing teal platform; paws, scarf, tail and both ears complete and visible. Replace the small coral one-eyed monster at TOP CENTER with one small grumpy golden garden bee matching image 3, keeping similar visual weight and clear spacing from the rabbit's ears. Preserve image 1's surrounding teaching symbols and their positions: warning triangle, shield and spring along the left; purple-dome teal UFO at upper right; black swirling hole and red exclamation at middle right; purple-jawed bear trap at lower right; teal stitched platform under rabbit. Keep all symbols recognizable and fully visible, retain the warm paper-cut colored-pencil illustration style and light ivory rims. No added new symbol, no carrot, no bullets, no text, labels, watermark, rectangular backing or notebook background. True transparent RGBA, whole composition centered with modest transparent margins.",
+      "references": [
+        "assets/game-assets/doodle-jump/visual/ui/tutorial/hazard-symbols.png",
+        "sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png",
+        "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-hover-01.png"
+      ],
+      "targetSize": [
+        227,
+        176
+      ],
+      "sourceRender": "sprite-atlas-sources/doodle-jump/visual/ui/tutorial/source-renders/rabbit-20261011/hazard-symbols.png",
+      "authoredImage": "sprite-atlas-sources/doodle-jump/visual/ui/tutorial/hazard-symbols.png",
+      "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-daa0bffd-d575-4875-a476-6d5ab30eee78.png",
+      "sourceSize": [
+        1426,
+        1103
+      ],
+      "normalizationCrop": [
+        0,
+        4,
+        1426,
+        1101
+      ],
+      "retiredOriginal": "sprite-atlas-sources/doodle-jump/visual/ui/tutorial/retired/hazard-symbols-old-character.png",
+      "sha256": "6a6c3599def2b3bb455a0715fba053fb611cf7154d387958833a76e5337b9b6e"
+    }
+  ],
+  "runtimeAtlas": "assets/game-assets/doodle-jump/visual/ui/tutorial/doodle-tutorial.png",
+  "integration": "Mechanical trim of transparent padding and proportional Lanczos downsampling to the existing UI display size. Build the runtime atlas with sprite-atlas-sources/build.py; retain historical texture aliases via PackedSpritePaths.ts.",
+  "runtimeAtlasSize": [
+    445,
+    180
+  ],
+  "compression": {
+    "provider": "Tinify official API",
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "beforeBytes": 103558,
+    "afterBytes": 26927,
+    "savedBytes": 76631,
+    "savedPercent": 74.0
+  },
+  "runtimeAtlasSha256": "784079bf2f77ad5f49312597c8a432c0908597d26451f7565fcc66f756361978"
+}

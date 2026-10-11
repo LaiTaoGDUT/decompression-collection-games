@@ -36,8 +36,9 @@ import {
 import { calculateVerticalSafeBounds } from '../../shared/ui/PlatformSafeLayout';
 import {
     LOBBY_DESIGN_WIDTH,
-    LOBBY_HEADER_BUTTON_HEIGHT,
-    LOBBY_HEADER_BUTTON_WIDTH,
+    LOBBY_HEADER_TOOL_CELL_HEIGHT,
+    LOBBY_HEADER_TOOL_ICON_SIZE,
+    LOBBY_HEADER_TOOLBAR_WIDTH,
 } from '../../shared/ui/LobbyBrandLayout';
 import { drawLobbyModalOverlay, LOBBY_MODAL_MOTION } from './LobbyModalMotion';
 
@@ -58,7 +59,7 @@ interface AnnouncementGameEntry {
 
 const BUNDLE = 'lobby-covers';
 const ART = {
-    entry: 'visual/ui/lobby-notice-button/texture',
+    entry: 'visual/ui/lobby-notice-icon/texture',
     title: 'visual/ui/lobby-notice-title/texture',
     panel: 'visual/ui/lobby-settings-panel/texture',
     close: 'visual/ui/lobby-close-button/texture',
@@ -313,9 +314,10 @@ export class LobbyAnnouncementPanel {
     }
 
     private createEntry(slot: Node): Node {
-        const entry = this.node(slot, 'AnnouncementEntry', LOBBY_HEADER_BUTTON_WIDTH, LOBBY_HEADER_BUTTON_HEIGHT);
-        const skin = this.node(entry, 'AnnouncementEntrySkin', LOBBY_HEADER_BUTTON_WIDTH, LOBBY_HEADER_BUTTON_HEIGHT);
-        this.bindSprite(skin.addComponent(Sprite), ART.entry);
+        // 整格可点；图标画在顶部栏工具胶囊的下半格中央。
+        const entry = this.node(slot, 'AnnouncementEntry', LOBBY_HEADER_TOOLBAR_WIDTH, LOBBY_HEADER_TOOL_CELL_HEIGHT);
+        const icon = this.node(entry, 'AnnouncementEntryIcon', LOBBY_HEADER_TOOL_ICON_SIZE, LOBBY_HEADER_TOOL_ICON_SIZE);
+        this.bindSprite(icon.addComponent(Sprite), ART.entry);
         const button = entry.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.96;

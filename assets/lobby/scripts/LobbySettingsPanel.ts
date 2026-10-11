@@ -24,8 +24,9 @@ import type { AudioService } from '../../services/audio/AudioService';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import type { StorageService } from '../../services/storage/StorageService';
 import {
-    LOBBY_HEADER_BUTTON_HEIGHT,
-    LOBBY_HEADER_BUTTON_WIDTH,
+    LOBBY_HEADER_TOOL_CELL_HEIGHT,
+    LOBBY_HEADER_TOOL_ICON_SIZE,
+    LOBBY_HEADER_TOOLBAR_WIDTH,
 } from '../../shared/ui/LobbyBrandLayout';
 import { drawLobbyModalOverlay, LOBBY_MODAL_MOTION } from './LobbyModalMotion';
 
@@ -60,7 +61,7 @@ const COLOR = {
 };
 
 const UI_ASSET_PATHS = {
-    settings: 'visual/ui/lobby-settings-button/texture',
+    settings: 'visual/ui/lobby-settings-icon/texture',
     close: 'visual/ui/lobby-close-button/texture',
     panel: 'visual/ui/lobby-settings-panel/texture',
     music: 'visual/ui/lobby-music-icon/texture',
@@ -135,11 +136,12 @@ export class LobbySettingsPanel {
         this.entry = entry;
         entry.layer = slot.layer;
         slot.addChild(entry);
-        entry.addComponent(UITransform).setContentSize(LOBBY_HEADER_BUTTON_WIDTH, LOBBY_HEADER_BUTTON_HEIGHT);
-        const skin = new Node('SettingsEntrySkin');
+        // 整格可点；图标画在顶部栏工具胶囊的上半格中央。
+        entry.addComponent(UITransform).setContentSize(LOBBY_HEADER_TOOLBAR_WIDTH, LOBBY_HEADER_TOOL_CELL_HEIGHT);
+        const skin = new Node('SettingsEntryIcon');
         skin.layer = entry.layer;
         entry.addChild(skin);
-        skin.addComponent(UITransform).setContentSize(LOBBY_HEADER_BUTTON_WIDTH, LOBBY_HEADER_BUTTON_HEIGHT);
+        skin.addComponent(UITransform).setContentSize(LOBBY_HEADER_TOOL_ICON_SIZE, LOBBY_HEADER_TOOL_ICON_SIZE);
         const sprite = skin.addComponent(Sprite);
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         this.loadSprite(UI_ASSET_PATHS.settings, sprite);

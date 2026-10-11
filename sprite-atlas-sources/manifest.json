@@ -1006,6 +1006,19 @@
         ]
       },
       {
+        "path": "visual/ui/tutorial/doodle-tutorial",
+        "frames": [
+          {
+            "source": "visual/ui/tutorial/sensor-tilt.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/tutorial/hazard-symbols.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
         "path": "visual/player/doodle-rabbit",
         "frames": [
           {

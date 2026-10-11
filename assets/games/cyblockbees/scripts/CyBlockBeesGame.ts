@@ -45,6 +45,13 @@ import {
     getCyBlockBeesLevel,
     type CyBlockBeesLevel,
 } from './CyBlockBeesLevels';
+import {
+    CYBLOCKBEES_DEFAULT_SAVE,
+    CYBLOCKBEES_SAVE_VERSION,
+    countCyBlockBeesThreeStarLevels,
+    readCyBlockBeesSave,
+    type CyBlockBeesSave,
+} from './CyBlockBeesProgress';
 import { CYBLOCKBEES_SPRITES, CYBLOCKBEES_SPRITE_DIRECTORIES } from './CyBlockBeesSprites';
 import {
     CYBLOCKBEES_BUNDLE,
@@ -140,20 +147,7 @@ export interface CyBlockBeesServices {
     readonly platform: Platform;
 }
 
-interface CyBlockBeesSave {
-    version: number;
-    /** 已解锁到第几关（1 起）。 */
-    unlocked: number;
-    /** 已通关的最高关。 */
-    cleared: number;
-    /** 每关的最高用墨评分（0～1000）。 */
-    best: Readonly<Record<string, number>>;
-}
-
-const SAVE_VERSION = 2;
-const DEFAULT_SAVE: CyBlockBeesSave = Object.freeze({ version: SAVE_VERSION, unlocked: 1, cleared: 0, best: {} });
-
-/** 原作 208 关的画线防守；绘制完成才释放刚体、出蜂和计时。 */
+/** 精选 200 关的画线防守；绘制完成才释放刚体、出蜂和计时。 */
 @ccclass('CyBlockBeesGame')
 export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesServices> {
     readonly backgroundPausePolicy: MiniGameBackgroundPausePolicy = 'menu';
@@ -184,7 +178,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     private touchId?: number;
     private navigationPending = false;
 
-    private save: CyBlockBeesSave = DEFAULT_SAVE;
+    private save: CyBlockBeesSave = CYBLOCKBEES_DEFAULT_SAVE;
     private levelIndex = 0;
     private page = 0;
     private pageSize = LEVELS_PER_PAGE;
@@ -240,6 +234,8 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     begin(): void {
         // initialize 已从存档定位最新解锁关，进入后直接开始该关的画线规划。
         this.startLevel(this.levelIndex);
+        // 兼容更新前已获得的三星成绩，进入游戏即可补齐成就进度。
+        this.reportThreeStarProgress();
     }
 
     pause(): boolean {
@@ -421,33 +417,21 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     private readSave(): void {
         const context = this.context;
         if (!context) return;
-        const custom = context.services.storage.getGameData(context.gameId)?.custom as
-            | Partial<CyBlockBeesSave> | undefined;
-        if (custom && (custom.version === SAVE_VERSION || custom.version === 1)) {
-            const boundedInteger = (value: unknown, low: number, high: number): number => {
-                const number = Number(value);
-                return Number.isFinite(number) ? Math.max(low, Math.min(high, Math.floor(number))) : low;
-            };
-            const cleared = boundedInteger(custom.cleared, 0, CYBLOCKBEES_LEVELS.length);
-            const best: Record<string, number> = {};
-            if (custom.version === SAVE_VERSION && custom.best && typeof custom.best === 'object')
-                for (const key of Object.keys(custom.best)) {
-                    const level = Number(key), score = Number(custom.best[key]);
-                    if (Number.isInteger(level) && level >= 1 && level <= cleared && Number.isFinite(score))
-                        best[String(level)] = boundedInteger(score, 0, 1000);
-                }
-            this.save = Object.freeze({
-                version: SAVE_VERSION,
-                unlocked: Math.max(Math.min(CYBLOCKBEES_LEVELS.length, cleared + 1),
-                    boundedInteger(custom.unlocked, 1, CYBLOCKBEES_LEVELS.length)),
-                cleared,
-                best: Object.freeze(best),
+        const stored = context.services.storage.getGameData(context.gameId);
+        this.save = readCyBlockBeesSave(stored?.custom);
+        if (stored && (stored.custom?.version === 1 || stored.custom?.version === 2)) {
+            // 迁移只更新编号和评分，不增加游玩次数；后续读取直接使用 v3。
+            context.services.storage.writeGameData(context.gameId, {
+                ...stored, highScore: this.save.cleared,
+                custom: this.save as unknown as Readonly<Record<string, unknown>>,
             });
-        } else {
-            this.save = DEFAULT_SAVE;
         }
         this.levelIndex = Math.max(0, Math.min(CYBLOCKBEES_LEVELS.length - 1, this.save.unlocked - 1));
         this.page = Math.floor(this.levelIndex / this.pageSize);
+    }
+
+    private reportThreeStarProgress(): void {
+        this.context?.reportAchievementProgress('three-star-levels', countCyBlockBeesThreeStarLevels(this.save));
     }
 
     private persistSave(next: CyBlockBeesSave): void {
@@ -473,7 +457,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
 
         // 第一行：返回大厅 / 游戏标题。
         this.ui.button(root, '返回大厅', -301, top - 52, 84, 84,
-            () => this.context?.requestLobby(), { icon: 'home' });
+            () => this.context?.requestLobby(), { icon: 'back' });
         this.ui.label(root, '挡住蜜蜂', 0, top - 54, 64,
             { color: P.honey, bold: true, stroke: P.outline, strokeWidth: 8, width: 330 });
         const titleBee = this.ui.image(root, 'bee', 172, top - 30, 54);
@@ -854,11 +838,11 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         if (win && level) {
             const best = Math.max(this.save.best[String(level.level)] ?? 0, score);
             const cleared = Math.max(this.save.cleared, level.level);
-            this.persistSave({ version: SAVE_VERSION, cleared,
+            this.persistSave({ version: CYBLOCKBEES_SAVE_VERSION, cleared,
                 unlocked: Math.min(CYBLOCKBEES_LEVELS.length, Math.max(this.save.unlocked, level.level + 1)),
                 best: Object.freeze({ ...this.save.best, [String(level.level)]: best }) });
             this.context?.services.feedback.play('record');
-            this.context?.reportAchievementProgress('cleared-level', cleared);
+            this.reportThreeStarProgress();
         } else this.context?.services.feedback.play('failure');
         this.context?.reportScore(score);
         // completed 表示本局已结算；失败同样进入运行层结果页，不能误当退出大厅。

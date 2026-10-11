@@ -18,7 +18,7 @@
 | `copy-review/` | `npm run copy:review` 与 `npm run verify:copy-review` 的完整实现，包含页面、扫描与精确写回、建议数据、服务及校验。 |
 | `generate-desktop-cleanup-hit-polygons.py`、`desktop-cleanup/generate-dessert-hit-shapes.py` | 从当前物品图集生成桌面清理的命中多边形，保留甜点与便利店物品的孔洞。后者从 `DesktopCleanupTheme.ts` 读取图集顺序，不依赖本机 `docs`。 |
 | `meowdoku/build-level-bank.py` | 生成普通 `MeowdokuLevels.ts`（默认 3000 关）或 `--mode hard` 的 `MeowdokuHardLevels.ts`（SuperHard，默认 200 关，先 rank4 后 rank5）；输入 APK/XAPK 或已解密题库由调用方提供，支持 `--check`。 |
-| `meowdoku/verify-modes-browser.cjs` | 使用隔离存档在 Cocos 预览回归双模式切换/续玩、一命无复活、旧关跳最新关、200 关末页及胶囊/底部安全区与长短屏布局；需要本机 Playwright，可用 `PLAYWRIGHT_MODULE` 指定路径。 |
+| `meowdoku/verify-modes-browser.cjs` | 使用隔离存档在 Cocos 预览回归双模式切换/续玩、一命无复活、旧关顺序进入下一关、200 关末页及胶囊/底部安全区与长短屏布局；需要本机 Playwright，可用 `PLAYWRIGHT_MODULE` 指定路径。 |
 | `meowdoku/build-board-textures.py` | 生成当前数独棋盘、叉笔画与投影贴图。棋盘保持为独立纹理；已参与 SpriteAtlas 的笔画与投影更新源图片，再统一合图。 |
 
 Node 工具使用项目现有的 Node.js 与 TypeScript 编译器 `tsc`；Python 图片工具需要 Pillow，字体更新额外需要 fontTools 与完整的 ResourceHanRoundedCN 原字体。
@@ -38,6 +38,8 @@ git diff --check
 `verify:fonts` 按 `assets/resources/configs/app.json` 中的 `fonts.enabled` 和 `fonts.validateCoverage` 决定是否检查源码字形覆盖；开关关闭时会明确输出跳过原因。
 
 大厅推广标签在 `assets/resources/configs/games.json` 的游戏条目中配置 `lobbyTags: ["new", "hot"]`，可只配置其中一种，省略或空数组则无推广标签；旧清单的 `lobbyTag` 单值仍可读取，但不能与 `lobbyTags` 混用。卡片按 NEW、HOT、最近游玩的优先级显示一个标签，与数组顺序无关。NEW 按游戏条目的 `version` 判断：只有成功打开当前内容版本后才持久隐藏，随后显示配置的 HOT；更新版本后重新显示 NEW，加载失败、旧版本游玩记录或没有版本的旧隐藏记录不会提前隐藏。访问版本记录与小游戏进度独立保存。没有任何游玩记录时按 NEW、HOT、普通游戏排序；有游玩记录后按最近游玩、未隐藏的 NEW、其余游戏的游玩时间排序，HOT 不再单独提前。
+
+大厅卡片的进度行由成就的 `achievement.lobbyProgress` 决定：`"count"` 显示累计进度条与“47/500 关”，`"best"` 显示奖杯图标与“最高 812 米”；省略时（一次性达成的成就或没有成就的游戏）以及尚无进度时显示游戏简介。
 
 `npm run verify:lobby-tags` 验证版本升级、旧存档兼容、NEW/HOT 切换、成功进入后记录、加载失败保留 NEW 和存储重试。
 

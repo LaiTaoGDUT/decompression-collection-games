@@ -14,10 +14,8 @@ import {
     Input,
     JsonAsset,
     Label,
-    Mask,
     Node,
     Rect,
-    ScrollView,
     Sprite,
     SpriteFrame,
     Size,
@@ -243,7 +241,6 @@ const TEXTURE_PATHS = Object.freeze({
     panelSensorError: 'visual/ui/panels/sensor-error-panel/texture',
     panelRevive: 'visual/ui/panels/revive-confirmation-panel/texture',
     panelResults: 'visual/ui/panels/results-panel/texture',
-    panelRules: 'visual/ui/panels/rules-panel/texture',
     panelMissingResource: 'visual/ui/panels/missing-resource-panel/texture',
     tutorialSensorTilt: 'visual/ui/tutorial/sensor-tilt/texture',
     tutorialCarrot: 'visual/projectiles/carrot-bullet/texture',
@@ -316,74 +313,6 @@ function layoutDoodleJumpAdIconBeforeLabel(
     icon.getComponent(UITransform)?.setContentSize(iconWidth, iconHeight);
 }
 
-const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[] = Object.freeze([
-    Object.freeze({
-        title: '玩法规则',
-        body: [
-            '目标：帮助小兔子不断向上跳跃，沿途收集金萝卜。',
-            '',
-            "· 角色自动跳跃，左右倾斜手机控制移动。越过屏幕左边或右边后，会从另一侧出现。",
-            '· 点击任意方向发射胡萝卜，按住可持续发射。胡萝卜可攻击怪物和 UFO。',
-            "· 碰到金萝卜后，它会飞入顶部面板，数量加一。路程单独显示。",
-            "· 升降、变位和接力平台各有移动规则，留意下一次落脚点。",
-            "· 掉出屏幕、碰到怪物、被 UFO 带走、进入黑洞或踩中捕兽夹都会失败。",
-            "· 每局可看一次广告复活并继续。",
-            "· 切到后台时，角色、敌人、道具计时和场景都会自动暂停。",
-        ].join('\n'),
-    }),
-    Object.freeze({
-        title: '平台规则',
-        body: [
-            "角色下落时请踩住平台，不要掉落。",
-            '',
-            '· 普通平台：固定不动，落地后正常反弹。',
-            "· 移动平台：匀速左右往返；升降平台：进入画面后上下往返。",
-            '· 断裂平台：从上方踩中后立即断成两半，不产生反弹。',
-            "· 消失平台：踩中正常反弹，随后快速淡出，无法再次落脚。",
-            "· 变位平台：踩中一块，同类平台会一起改变位置。",
-            "· 爆炸平台：进入画面后自动倒计时；爆炸前可以落脚，爆炸后消失。",
-            "· 接力平台：踩中后，平台会移动到下个位置，或让下一块平台显现。",
-        ].join('\n'),
-    }),
-    Object.freeze({
-        title: '道具规则',
-        body: [
-            "飞行道具和护盾碰到即可获得；弹跳类道具需要从上方踩中。",
-            '',
-            "· 弹簧：在原位置踩中，立即弹起，使用后失效。",
-            "· 蹦床：踩中后先压缩，再向上弹起；上升期间可撞掉怪物，蹦床可以再次踩中。",
-            '· 喷气背包：持续 3 秒，先加速、再巡航，结束前减速；飞得比竹蜻蜓更高。',
-            "· 竹蜻蜓：先加速、再巡航，结束前减速；持续约 3.3 秒。",
-            '· 火箭：从道具位置起飞，分阶段加速和减速；持续约 4.9 秒。',
-            "· 弹簧鞋：持续约 8.3 秒，每次落地压缩后弹得更高。",
-            "· 喷气背包、竹蜻蜓或火箭激活期间，三种飞行拾取物都不会被拾取、续时或替换。",
-            "· 护盾：持续 10 秒，能撞掉怪物；仍要避开黑洞和 UFO 光束。",
-        ].join('\n'),
-    }),
-    Object.freeze({
-        title: '敌人与危险',
-        body: [
-            "怪物可以用胡萝卜攻击，也可以从上方向下踩踏。碰到怪物身体会失败。",
-            '',
-            '· 小怪：1 次射击击败，在空中小幅摆动。',
-            '· 大怪：2 次射击击败，体型和碰撞范围更大。',
-            '· 悬浮怪：1 次射击击败，横向往返并上下摆动。',
-            '· 扁身怪：1 次射击击败，扁身外形，在空中小幅摆动。',
-            '· 摆翼怪：1 次射击击败，体型较宽；红色飞行怪有 5 点生命，会持续上升。',
-            '· 宽身跳怪：3 次射击击败，在原高度反复弹跳。',
-            '· 跑跳怪：1 次射击击败，落回原高度时改变横向方向。',
-            '· 高身跳怪：2 次射击击败，身体较高，在原高度反复弹跳。',
-            "· UFO：在空中摆动，可射击或踩顶消灭；碰到光束会被带走。",
-            "· 黑洞：触碰核心会被吸入，护盾和飞行道具也无法抵挡。",
-            '· 捕兽夹：固定在平台上方，从上方踩中后触发失败。',
-            '· 踩中任何怪物头顶都能直接击败它，并获得更强的反弹。',
-            "· 请务必小心！",
-        ].join('\n'),
-    }),
-]);
-
-const RULES_PANEL_HEIGHT = Math.round(590 * 4 / 3);
-
 const BACKGROUND_THEME_BOUNDARIES = Object.freeze({
     sky: 114 + 250 * 100,
     cloud: 114 + 600 * 100,
@@ -398,7 +327,6 @@ const SLICED_TEXTURE_KEYS: readonly TextureKey[] = Object.freeze([
     'panelSensorError',
     'panelRevive',
     'panelResults',
-    'panelRules',
     'panelMissingResource',
 ]);
 
@@ -649,8 +577,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private tutorialActive = false;
     private tutorialStep = 0;
     private tutorialOpenedFromHud = false;
-    private rulesOverlayActive = false;
-    private rulesPageIndex = 0;
     private headStartPromptActive = false;
     private sensorCalibrationVisible = false;
     private missingResourceActive = false;
@@ -973,8 +899,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.tutorialActive = false;
         this.tutorialStep = 0;
         this.tutorialOpenedFromHud = false;
-        this.rulesOverlayActive = false;
-        this.rulesPageIndex = 0;
         this.headStartPromptActive = false;
         this.sensorCalibrationVisible = false;
         this.missingResourceActive = false;
@@ -1079,11 +1003,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     showPauseMenu(model: MiniGamePauseModel): void {
         this.cancelAttack(true);
         this.activePauseModel = model;
-        if (this.rulesOverlayActive) {
-            this.destroyPauseOverlay();
-            this.showRulesPage();
-            return;
-        }
         if (this.tutorialOpenedFromHud && this.tutorialActive) {
             this.destroyPauseOverlay();
             this.showTutorialStep();
@@ -1112,8 +1031,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     hidePauseMenu(): void {
         this.activePauseModel = undefined;
         this.destroyPauseOverlay();
-        if (this.rulesOverlayActive) {
-            this.rulesOverlayActive = false;
+        if (this.tutorialOpenedFromHud) {
+            this.tutorialActive = false;
+            this.tutorialOpenedFromHud = false;
+            this.tutorialStep = 0;
             this.destroyOverlay();
         }
     }
@@ -1138,18 +1059,22 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             'panelResults',
             'flow',
             true,
-            650,
+            620,
+            64,
         );
-        this.createRoundSummary(overlay, carrotCount, maxHeightMeters, 100, isNewBestCarrotCount);
+        const bestHeightMeters = Math.max(maxHeightMeters, this.saveBaseline?.bestHeightMeters ?? 0);
+        const previousBestHeight = this.runHistoryBaseline?.bestHeightMeters
+            ?? this.saveBaseline?.bestHeightMeters ?? 0;
         const bestCarrotCount = Math.max(carrotCount, this.saveBaseline?.bestCarrotCount ?? 0);
-        this.createLabel(
-            overlay, 'BestCarrotCount', `历史最多 ${bestCarrotCount} 根`,
-            0, -56, 20, COLORS.muted, 432, 30,
+        this.createRoundSummary(
+            overlay, carrotCount, maxHeightMeters, 60,
+            isNewBestCarrotCount, maxHeightMeters > previousBestHeight,
+            { bestHeightMeters, bestCarrotCount },
         );
-        this.createButton(overlay, '再来一局', 0, -136, 360, 82, () => {
+        this.createButton(overlay, '再来一局', 0, -140, 360, 82, () => {
             void model.restart();
         }, 'primary', 'hudPlayAgainButton');
-        this.createButton(overlay, '返回大厅', 0, -231, 360, 72, () => {
+        this.createButton(overlay, '返回大厅', 0, -230, 360, 72, () => {
             this.trackExitOnce('result-lobby');
             void model.returnToLobby();
         }, 'secondary', 'hudBackButton');
@@ -1315,7 +1240,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         }
         this.createButton(
             overlay,
-            this.tutorialStep >= steps.length - 1 ? '开始游戏' : '下一步',
+            this.tutorialStep >= steps.length - 1
+                ? (this.tutorialOpenedFromHud ? '继续游戏' : '开始游戏')
+                : '下一步',
             80,
             -205,
             250,
@@ -1367,158 +1294,6 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.tutorialActive = true;
         this.tutorialStep = 0;
         this.context?.requestPause();
-    }
-
-    private openRulesFromHud(): void {
-        if (this.stateMachine.state !== 'Playing') return;
-        this.rulesOverlayActive = true;
-        this.rulesPageIndex = 0;
-        this.context?.requestPause();
-    }
-
-    private showRulesPage(animatePanel = true): void {
-        if (!this.rulesOverlayActive || this.stateMachine.state !== 'Paused') return;
-        const sourcePage = RULE_PAGES[this.rulesPageIndex];
-        const page = this.inputController?.supportsPointerControl() && this.rulesPageIndex === 0
-            ? { ...sourcePage, body: sourcePage.body
-                .replace('左右倾斜手机控制移动', '横向拖动屏幕控制移动（也可用方向键或 A / D）')
-                .replace('点击任意方向发射胡萝卜，按住可持续发射', '轻点任意方向发射胡萝卜，按空格可持续发射') }
-            : sourcePage;
-        if (!page) return;
-        this.destroyOverlay();
-        const panel = this.createOverlay(
-            'RulesOverlay',
-            page.title,
-            '',
-            'panelRules',
-            'flow',
-            animatePanel,
-            RULES_PANEL_HEIGHT,
-        );
-        const panelWidth = panel.getComponent(UITransform)?.contentSize.width ?? 520;
-        const panelHeight = panel.getComponent(UITransform)?.contentSize.height
-            ?? RULES_PANEL_HEIGHT;
-        this.createLabel(
-            panel,
-            'RulesPager',
-            `${this.rulesPageIndex + 1} / ${RULE_PAGES.length}  ·  上下滑动查看  ·  左右滑动翻页`,
-            0,
-            panelHeight / 2 - 138,
-            18,
-            COLORS.muted,
-            panelWidth - 100,
-            32,
-        );
-
-        const viewportWidth = panelWidth - 82;
-        const viewportHeight = panelHeight - 297;
-        const viewport = new Node('RulesScrollViewport');
-        viewport.layer = this.node.layer;
-        viewport.setParent(panel);
-        viewport.setPosition(0, -18, 0);
-        viewport.addComponent(UITransform).setContentSize(viewportWidth, viewportHeight);
-        const mask = viewport.addComponent(Mask);
-        mask.type = Mask.Type.GRAPHICS_RECT;
-
-        const fontSize = 24;
-        const lineHeight = 38;
-        const bodyTextWidth = viewportWidth - 38;
-        const bodyHeight = this.estimateRulesTextHeight(
-            page.body,
-            fontSize,
-            lineHeight,
-            bodyTextWidth,
-            viewportHeight + 20,
-        );
-        const body = new Node('RulesScrollBody');
-        body.layer = this.node.layer;
-        body.setParent(viewport);
-        body.addComponent(UITransform).setContentSize(viewportWidth - 20, bodyHeight);
-        body.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
-        body.setPosition(0, viewportHeight / 2, 0);
-        const label = this.createLabel(
-            body,
-            'RulesBody',
-            page.body,
-            0,
-            -14,
-            fontSize,
-            COLORS.ink,
-            bodyTextWidth,
-            bodyHeight - 28,
-        );
-        label.horizontalAlign = 0;
-        label.verticalAlign = 0;
-        label.overflow = Label.Overflow.CLAMP;
-        label.lineHeight = lineHeight;
-        label.node.getComponent(UITransform)?.setAnchorPoint(0.5, 1);
-        label.node.setPosition(0, -14, 0);
-
-        const scrollView = viewport.addComponent(ScrollView);
-        scrollView.content = body;
-        scrollView.horizontal = false;
-        scrollView.vertical = true;
-        scrollView.inertia = true;
-        scrollView.brake = 0.75;
-        scrollView.elastic = true;
-        scrollView.cancelInnerEvents = true;
-
-        let swipeStartX = 0;
-        let swipeStartY = 0;
-        panel.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
-            const point = event.getUILocation();
-            swipeStartX = point.x;
-            swipeStartY = point.y;
-        }, this, true);
-        panel.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
-            const point = event.getUILocation();
-            const deltaX = point.x - swipeStartX;
-            const deltaY = point.y - swipeStartY;
-            if (Math.abs(deltaX) > 76 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
-                this.changeRulesPage(deltaX < 0 ? 1 : -1);
-            }
-        }, this, true);
-
-        const footerY = -panelHeight / 2 + 69;
-        this.createButton(panel, '‹ 上一页', -170, footerY, 140, 62, () => {
-            this.changeRulesPage(-1);
-        }, 'secondary');
-        this.createButton(panel, '关闭', 0, footerY, 140, 62, () => {
-            this.closeRulesOverlay();
-        }, 'primary');
-        this.createButton(panel, '下一页 ›', 170, footerY, 140, 62, () => {
-            this.changeRulesPage(1);
-        }, 'secondary');
-    }
-
-    private changeRulesPage(delta: -1 | 1): void {
-        if (!this.rulesOverlayActive) return;
-        this.rulesPageIndex = (
-            this.rulesPageIndex + delta + RULE_PAGES.length
-        ) % RULE_PAGES.length;
-        this.showRulesPage(false);
-    }
-
-    private closeRulesOverlay(): void {
-        if (!this.rulesOverlayActive) return;
-        this.rulesOverlayActive = false;
-        this.destroyOverlay();
-        const pauseModel = this.activePauseModel;
-        if (pauseModel) void pauseModel.resume();
-    }
-
-    private estimateRulesTextHeight(
-        text: string,
-        fontSize: number,
-        lineHeight: number,
-        width: number,
-        minimumHeight: number,
-    ): number {
-        const charactersPerLine = Math.max(8, Math.floor(width / Math.max(1, fontSize)));
-        const lineCount = text.split('\n').reduce((total, paragraph) => (
-            total + Math.max(1, Math.ceil(paragraph.length / charactersPerLine))
-        ), 0);
-        return Math.max(minimumHeight, lineCount * lineHeight + 36);
     }
 
     private availableHeadStartCount(): number {
@@ -1785,28 +1560,23 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             'panelRevive',
             'flow',
             true,
-            700,
+            620,
+            64,
         );
-        this.createRoundSummary(overlay, carrotCount, heightMeters, 115);
-        this.createLabel(
-            overlay, 'ReviveBenefit', '保留金萝卜，从安全平台继续',
-            0, -52, 20, COLORS.ink, 432, 30,
-        );
-        const remainingRevives = Math.max(
-            0, (this.config?.resurrection.maximumSuccessfulRevives ?? 0) - this.successfulRevives,
-        );
-        const adStatus = this.createLabel(
-            overlay, 'AdStatus',
-            message ?? `看完广告可复活 · 本局剩余 ${remainingRevives} 次`,
-            0, -83, 18, message ? COLORS.coral : COLORS.muted, 432, 32,
-        );
-        adStatus.overflow = Label.Overflow.SHRINK;
+        this.createRoundSummary(overlay, carrotCount, heightMeters, 60);
+        if (message) {
+            const adStatus = this.createLabel(
+                overlay, 'AdStatus', message,
+                0, -78, 18, COLORS.coral, 432, 28,
+            );
+            adStatus.overflow = Label.Overflow.SHRINK;
+        }
         this.createButton(
             overlay,
             '看广告复活',
             0,
-            -150,
-            386,
+            -140,
+            360,
             82,
             () => {
                 void this.requestResurrection();
@@ -1815,10 +1585,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             undefined,
             true,
         );
-        this.createButton(overlay, '重新开始', -102, -248, 184, 72, () => {
-            this.context?.requestRestart();
-        }, 'secondary');
-        this.createButton(overlay, '结束本局', 102, -248, 184, 72, () => {
+        this.createButton(overlay, '放弃', 0, -230, 360, 72, () => {
             const failure = this.pendingFailure;
             if (failure) this.commitResult(failure.reason, failure.carrotCount);
         }, 'secondary');
@@ -1843,7 +1610,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (result.outcome !== 'completed') {
             this.reviveActionLocked = false;
             this.showResurrectionPrompt(
-                result.outcome === 'skipped' ? '广告未完整观看，可以重试' : '广告暂不可用，可以重试',
+                result.outcome === 'skipped' ? '广告未完整观看，可以重试' : undefined,
             );
             return;
         }
@@ -2444,7 +2211,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             safe.topY - 46,
             72,
             72,
-            () => this.openRulesFromHud(),
+            () => this.openTutorialFromHud(),
             'secondary',
             'hudRulesButton',
         );
@@ -3996,20 +3763,13 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         frame.rect = new Rect(0, 0, texture.width, texture.height);
         frame.originalSize = new Size(texture.width, texture.height);
         if (SLICED_TEXTURE_KEYS.indexOf(key) >= 0) {
-            if (key === 'panelRules') {
-                frame.insetLeft = Math.min(104, texture.width - 1);
-                frame.insetRight = Math.min(64, texture.width - frame.insetLeft - 1);
-                frame.insetTop = Math.min(160, texture.height - 1);
-                frame.insetBottom = Math.min(96, texture.height - frame.insetTop - 1);
-            } else {
-                const inset = Math.max(8, Math.min(42, Math.floor(
-                    Math.min(texture.width, texture.height) * 0.18,
-                )));
-                frame.insetLeft = inset;
-                frame.insetRight = inset;
-                frame.insetTop = inset;
-                frame.insetBottom = inset;
-            }
+            const inset = Math.max(8, Math.min(42, Math.floor(
+                Math.min(texture.width, texture.height) * 0.18,
+            )));
+            frame.insetLeft = inset;
+            frame.insetRight = inset;
+            frame.insetTop = inset;
+            frame.insetBottom = inset;
             this.slicedFrames.add(frame);
         }
         this.ownedFrames.push(frame);
@@ -5166,49 +4926,122 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         carrotCount: number,
         heightMeters: number,
         centerY: number,
-        isNewBest = false,
+        isNewBestCarrotCount = false,
+        isNewBestHeight = false,
+        history?: Readonly<{ bestHeightMeters: number; bestCarrotCount: number }>,
     ): void {
-        const card = this.createGraphicsNode(parent, 'RoundCarrotSummary', 432, 156);
-        card.setPosition(0, centerY, 0);
-        const graphics = card.getComponent(Graphics)!;
-        graphics.fillColor = new Color(255, 241, 190, 255);
-        graphics.roundRect(-216, -78, 432, 156, 20);
-        graphics.fill();
-        graphics.strokeColor = new Color(174, 133, 61, 255);
-        graphics.lineWidth = 2;
-        graphics.roundRect(-216, -78, 432, 156, 20);
-        graphics.stroke();
-        this.createLabel(
-            card, 'RoundCarrotCaption', '本局金萝卜',
-            isNewBest ? -44 : 0, 50, 20, COLORS.muted, 230, 30,
-        );
-        const frame = this.textureFrames.goldenCarrot;
-        if (frame) {
-            const icon = this.createGraphicsNode(
-                card, 'RoundGoldenCarrot',
-                78 * frame.originalSize.width / frame.originalSize.height, 78,
+        const paper = this.createGraphicsNode(parent, 'RoundSummaryPaper', 448, 210);
+        paper.setPosition(0, centerY, 0);
+        const paperGraphics = paper.getComponent(Graphics)!;
+        paperGraphics.fillColor = new Color(255, 253, 239, 150);
+        paperGraphics.strokeColor = new Color(139, 151, 125, 100);
+        paperGraphics.lineWidth = 1.5;
+        paperGraphics.moveTo(-224, -101);
+        paperGraphics.lineTo(-225, 100);
+        paperGraphics.lineTo(-132, 103);
+        paperGraphics.lineTo(-39, 99);
+        paperGraphics.lineTo(57, 103);
+        paperGraphics.lineTo(224, 100);
+        paperGraphics.lineTo(225, -102);
+        paperGraphics.lineTo(132, -100);
+        paperGraphics.lineTo(35, -104);
+        paperGraphics.lineTo(-88, -100);
+        paperGraphics.close();
+        paperGraphics.fill();
+        paperGraphics.stroke();
+        paperGraphics.strokeColor = new Color(117, 137, 117, 125);
+        paperGraphics.lineWidth = 2;
+        for (let y = -79; y < 85; y += 15) {
+            paperGraphics.moveTo(0, y);
+            paperGraphics.lineTo(0, y + 7);
+        }
+        paperGraphics.stroke();
+        const metrics = [
+            {
+                card: 'RoundDistanceSummary', caption: 'RoundDistanceCaption',
+                value: 'RoundDistance', unit: 'RoundDistanceUnit', title: '路程',
+                amount: heightMeters, suffix: '米', x: -112,
+                record: 'NewHeightRecord', isNewBest: isNewBestHeight,
+                history: 'BestHeight', historyTitle: '历史最高', bestAmount: history?.bestHeightMeters,
+            },
+            {
+                card: 'RoundCarrotSummary', caption: 'RoundCarrotCaption',
+                value: 'RoundCarrotCount', unit: 'RoundCarrotUnit', title: '金萝卜',
+                amount: carrotCount, suffix: '根', x: 112,
+                record: 'NewCarrotRecord', isNewBest: isNewBestCarrotCount,
+                history: 'BestCarrotCount', historyTitle: '历史最多', bestAmount: history?.bestCarrotCount,
+            },
+        ] as const;
+        metrics.forEach((metric) => {
+            const card = this.createGraphicsNode(parent, metric.card, 208, 210);
+            card.setPosition(metric.x, centerY, 0);
+            const graphics = card.getComponent(Graphics)!;
+            graphics.strokeColor = new Color(139, 151, 125, 105);
+            graphics.lineWidth = 2;
+            graphics.moveTo(-68, -65);
+            graphics.lineTo(-21, -63);
+            graphics.lineTo(26, -65);
+            graphics.lineTo(68, -63);
+            graphics.stroke();
+            this.createLabel(
+                card, metric.caption, metric.title,
+                19, 71, 22, COLORS.tealDark, 124, 36,
             );
-            icon.setPosition(-115, -14, 0);
-            this.applySpriteVisual(icon, frame);
-        }
-        const count = this.createLabel(
-            card, 'RoundCarrotCount', String(carrotCount),
-            21, -14, 64, COLORS.ink, 166, 84,
-        );
-        count.overflow = Label.Overflow.SHRINK;
-        this.createLabel(card, 'RoundCarrotUnit', '根', 130, -23, 22, COLORS.muted, 44, 38);
-        if (isNewBest) {
-            this.createLabel(card, 'NewCarrotRecord', '新纪录', 142, 50, 18, COLORS.coral, 92, 30);
-        }
-        this.createLabel(
-            parent, 'RoundDistanceCaption', '本局路程',
-            -94, centerY - 105, 21, COLORS.muted, 160, 44,
-        );
-        const distance = this.createLabel(
-            parent, 'RoundDistance', `${heightMeters} 米`,
-            78, centerY - 105, 30, COLORS.ink, 200, 44,
-        );
-        distance.overflow = Label.Overflow.SHRINK;
+            if (metric.value === 'RoundCarrotCount') {
+                const frame = this.textureFrames.goldenCarrot;
+                if (frame) {
+                    const icon = this.createGraphicsNode(
+                        card, 'RoundGoldenCarrot',
+                        38 * frame.originalSize.width / frame.originalSize.height, 38,
+                    );
+                    icon.setPosition(-52, 71, 0);
+                    this.applySpriteVisual(icon, frame);
+                }
+            } else {
+                const icon = this.createGraphicsNode(card, 'RoundHeightIcon', 36, 32);
+                icon.setPosition(-44, 71, 0);
+                const iconGraphics = icon.getComponent(Graphics)!;
+                iconGraphics.fillColor = new Color(67, 154, 151, 38);
+                iconGraphics.strokeColor = COLORS.tealDark;
+                iconGraphics.lineWidth = 2.5;
+                iconGraphics.moveTo(-17, -12);
+                iconGraphics.lineTo(-5, 13);
+                iconGraphics.lineTo(2, -1);
+                iconGraphics.lineTo(8, 8);
+                iconGraphics.lineTo(17, -12);
+                iconGraphics.close();
+                iconGraphics.fill();
+                iconGraphics.stroke();
+                iconGraphics.moveTo(-9, 4);
+                iconGraphics.lineTo(-5, 1);
+                iconGraphics.lineTo(-1, 5);
+                iconGraphics.stroke();
+            }
+            const value = this.createLabel(
+                card, metric.value, String(metric.amount),
+                0, 7, 60, COLORS.ink, 180, 82,
+            );
+            value.isBold = true;
+            value.overflow = Label.Overflow.SHRINK;
+            this.createLabel(
+                card, metric.unit, metric.suffix,
+                0, -48, 20, COLORS.muted, history ? 58 : 150, 30,
+            );
+            if (metric.isNewBest) {
+                this.createLabel(
+                    card, metric.record, '新纪录',
+                    history ? 67 : 0, history ? -48 : -80,
+                    history ? 14 : 16, COLORS.coral, history ? 68 : 150, 26,
+                );
+            }
+            if (history) {
+                const best = this.createLabel(
+                    card, metric.history, `${metric.historyTitle} ${metric.bestAmount} ${metric.suffix}`,
+                    0, -80, 16, COLORS.muted, 198, 26,
+                );
+                best.overflow = Label.Overflow.SHRINK;
+            }
+        });
     }
 
     private createOverlay(
@@ -5219,6 +5052,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         layer: 'flow' | 'pause' = 'flow',
         animatePanel = true,
         panelHeight = 590,
+        bottomPadding = 0,
     ): Node {
         const targetRoot = layer === 'pause' ? this.pauseOverlayRoot : this.flowOverlayRoot;
         if (!targetRoot) throw new Error(`${layer} overlay root is unavailable.`);
@@ -5227,7 +5061,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const layout = this.context?.services.platform.getLayoutInfo();
         const safe = calculateVerticalSafeBounds(visible.height, layout, 18);
         const availableHeight = Math.max(1, safe.topY - safe.bottomY - 32);
-        const panelScale = Math.min(1, availableHeight / panelHeight);
+        const fullPanelHeight = panelHeight + bottomPadding;
+        const panelScale = Math.min(1, availableHeight / fullPanelHeight);
         const backdrop = this.createGraphicsNode(
             targetRoot,
             `${name}-Backdrop`,
@@ -5242,9 +5077,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             targetRoot,
             name,
             Math.min(560, visible.width - 70),
-            panelHeight,
+            fullPanelHeight,
         );
-        panel.setPosition(0, (safe.topY + safe.bottomY) / 2, 0);
+        const scaledHalfHeight = fullPanelHeight * panelScale / 2;
+        const panelCenterY = Math.max(
+            safe.bottomY + 16 + scaledHalfHeight,
+            Math.min(
+                safe.topY - 16 - scaledHalfHeight,
+                (safe.topY + safe.bottomY) / 2 - bottomPadding * panelScale / 2,
+            ),
+        );
+        panel.setPosition(0, panelCenterY, 0);
         panel.setScale(panelScale, panelScale, 1);
         if (animatePanel && this.visualQualityProfile().uiMotion) {
             panel.setScale(panelScale * 0.94, panelScale * 0.94, 1);
@@ -5256,27 +5099,35 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             tween(panelOpacity).to(0.12, { opacity: 255 }).start();
         }
         const width = panel.getComponent(UITransform)!.contentSize.width;
-        const halfPanelHeight = panelHeight / 2;
+        const halfPanelHeight = fullPanelHeight / 2;
         const graphics = panel.getComponent(Graphics)!;
         graphics.fillColor = COLORS.paperOverlay;
-        graphics.roundRect(-width / 2, -halfPanelHeight, width, panelHeight, 32);
+        graphics.roundRect(-width / 2, -halfPanelHeight, width, fullPanelHeight, 32);
         graphics.fill();
         graphics.strokeColor = COLORS.ink;
         graphics.lineWidth = 5;
-        graphics.roundRect(-width / 2, -halfPanelHeight, width, panelHeight, 32);
+        graphics.roundRect(-width / 2, -halfPanelHeight, width, fullPanelHeight, 32);
         graphics.stroke();
         const panelFrame = this.textureFrames[panelKey];
         if (panelFrame) {
             const sprite = this.applySpriteVisual(panel, panelFrame);
             sprite.node.setSiblingIndex(0);
         }
+        // Extend the paper below the existing content instead of moving its buttons up.
+        const content = bottomPadding > 0 ? new Node('OverlayContent') : panel;
+        if (content !== panel) {
+            content.layer = panel.layer;
+            content.setParent(panel);
+            content.setPosition(0, bottomPadding / 2, 0);
+            content.addComponent(UITransform).setContentSize(width, panelHeight);
+        }
         if (title.length > 0) {
             this.createLabel(
-                panel,
+                content,
                 'Title',
                 title,
                 0,
-                halfPanelHeight - 90,
+                panelHeight / 2 - 90,
                 38,
                 COLORS.ink,
                 width - 90,
@@ -5285,11 +5136,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         }
         if (message.length > 0) {
             const messageLabel = this.createLabel(
-                panel,
+                content,
                 'Message',
                 message,
                 0,
-                halfPanelHeight - 158,
+                panelHeight / 2 - 158,
                 22,
                 COLORS.muted,
                 width - 90,
@@ -5297,7 +5148,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             );
             messageLabel.overflow = Label.Overflow.SHRINK;
         }
-        return panel;
+        return content;
     }
 
     private createButton(

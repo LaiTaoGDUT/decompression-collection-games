@@ -8,6 +8,7 @@ import {
     HorizontalTextAlignment,
     Label,
     LabelOutline,
+    Layout,
     Mask,
     Node,
     Sprite,
@@ -22,9 +23,12 @@ import {
 import type { GameManifest } from '../../runtime/GameManifest';
 import type { AssetService } from '../../services/asset/AssetService';
 import type { LobbyGameBadge } from './LobbyGameList';
+import type { LobbyCardStatus } from './LobbyCardStatus';
 import {
     calculateLobbyCardRows,
     LOBBY_CARD_LAYOUT as CARD_LAYOUT,
+    LOBBY_CARD_SKIN,
+    type LobbyCardRows,
 } from './LobbyCardLayout';
 
 const { ccclass } = _decorator;
@@ -34,16 +38,15 @@ export interface GameCardSize {
     readonly height: number;
 }
 
-const CARD_SKIN_PATH = 'visual/ui/lobby-card-frame/texture';
+const CARD_SKIN_PATH = LOBBY_CARD_SKIN.path;
 const RECENT_BADGE_PATH = 'visual/ui/lobby-recently-played-v2/texture';
 const HOT_BADGE_PATH = 'visual/ui/lobby-hot-v1/texture';
 const NEW_BADGE_PATH = 'visual/ui/lobby-new-v1/texture';
-const START_BUTTON_PATH = 'visual/ui/lobby-start-button/texture';
 /**
  * 卡片底板九宫格边距（纹理像素）：上下保留圆角与底部厚边，只拉伸中段，
  * 卡片变高时圆角和厚边不变形。
  */
-const CARD_SKIN_INSETS = { left: 64, right: 64, top: 64, bottom: 72 } as const;
+const CARD_SKIN_INSETS = LOBBY_CARD_SKIN.insets;
 /**
  * “最近游玩”贴纸：设计宽度、倾角（度，负值为顺时针）与探出卡片边缘的距离
  * （320 设计单位）。右侧紧邻 12 单位的网格间隙，横向只轻微探出。
@@ -66,16 +69,18 @@ const COLORS = {
     butter: new Color(246, 199, 84, 255),
     paper: new Color(255, 246, 224, 255),
     textShadow: new Color(66, 25, 15, 220),
-    actionText: new Color(255, 255, 255, 255),
-    actionTextShadow: new Color(176, 42, 22, 235),
-    actionDisabledTint: new Color(236, 228, 220, 255),
-    actionDisabledShadow: new Color(112, 104, 98, 200),
-    actionBusyTint: new Color(255, 226, 214, 255),
+    description: new Color(112, 55, 34, 255),
+    statusTrack: new Color(236, 220, 200, 255),
+    trophy: new Color(236, 172, 60, 255),
+    trophyShade: new Color(190, 122, 34, 255),
 };
 
 type CardMode = 'game' | 'coming-soon';
-/** ready: 可点击；busy: 正在进入，保持品牌色但不可点击；disabled: 暂未开放。 */
-type ActionState = 'ready' | 'busy' | 'disabled';
+/**
+ * ready: 可点击；busy: 正在进入，不可点击；retry: 进入失败，可再次点击；disabled: 暂未开放。
+ * 失败与未开放在简介行给出文案；进入中保持原内容，由加载层呈现进度。整张卡片是唯一的点击区域。
+ */
+type ActionState = 'ready' | 'busy' | 'retry' | 'disabled';
 
 /** Lobby collectible card with an animated artwork window and paper details. */
 @ccclass('GameCardView')
@@ -92,8 +97,10 @@ export class GameCardView extends Component {
     private coverFallback?: Graphics;
     private coverBorder?: Graphics;
     private titleOverlay?: Graphics;
-    private actionBackground?: Graphics;
-    private actionSkin?: Sprite;
+    private statusRoot?: Node;
+    private statusLead?: Graphics;
+    private statusLabel?: Label;
+    private status?: LobbyCardStatus;
     private decorRoot?: Node;
     private badgeRoot?: Node;
     private recentBadge?: Sprite;
@@ -137,7 +144,7 @@ export class GameCardView extends Component {
         this.stopCoverMotion();
         this.releaseOwnedCoverFrame();
         this.uiLoadToken += 1;
-        for (const sprite of [this.cardSkin, this.actionSkin, this.recentBadge, this.hotBadge, this.newBadge]) {
+        for (const sprite of [this.cardSkin, this.recentBadge, this.hotBadge, this.newBadge]) {
             if (sprite) sprite.spriteFrame = null;
         }
         this.ownedUiFrames.forEach((frame) => this.assets?.releaseRuntimeAsset(frame));
@@ -153,24 +160,20 @@ export class GameCardView extends Component {
 
     bind(
         manifest: GameManifest,
-        _highScore: number | undefined,
+        status: LobbyCardStatus | undefined,
         clickHandler: GameCardClickHandler,
         badge?: LobbyGameBadge,
         size?: GameCardSize,
     ): void {
         if (size) this.applyCardSize(size.width, size.height);
         this.ensureStructure();
-        this.requireLabel('DescriptionLabel').node.active = true;
         this.mode = 'game';
         this.manifest = manifest;
+        this.status = status;
         this.badge = badge;
         this.clickHandler = clickHandler;
         this.node.name = `GameCard-${manifest.id}`;
         this.requireLabel('NameLabel').string = manifest.name;
-        this.requireLabel('DescriptionLabel').string = manifest.description;
-        this.requireLabel('ScoreLabel').string = '';
-        this.requireLabel('ScoreLabel').node.active = false;
-        this.requireActionLabel().string = '开始游戏';
         this.configureBadge('');
         this.layoutChildren();
         this.drawCard();
@@ -187,6 +190,7 @@ export class GameCardView extends Component {
         this.mode = 'coming-soon';
         this.badge = undefined;
         this.manifest = undefined;
+        this.status = undefined;
         this.clickHandler = undefined;
         this.coverLoadToken += 1;
         this.releaseOwnedCoverFrame();
@@ -194,9 +198,7 @@ export class GameCardView extends Component {
         this.requireLabel('NameLabel').string = '敬请期待';
         this.requireLabel('DescriptionLabel').string = '';
         this.requireLabel('DescriptionLabel').node.active = false;
-        this.requireLabel('ScoreLabel').string = '';
-        this.requireLabel('ScoreLabel').node.active = false;
-        this.requireActionNode().active = false;
+        if (this.statusRoot) this.statusRoot.active = false;
         this.requireButton().interactable = false;
         this.configureBadge('');
         this.layoutChildren();
@@ -214,10 +216,7 @@ export class GameCardView extends Component {
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(this.mode === 'coming-soon');
-        this.requireActionNode().active = this.mode === 'game';
-        if (this.mode === 'game') {
-            this.drawActionBackground(this.actionState);
-        }
+        this.applyActionState(this.actionState);
     }
 
     private applyCardSize(width: number, height: number): void {
@@ -252,36 +251,30 @@ export class GameCardView extends Component {
     }
 
     setLoading(): void {
-        if (this.mode !== 'game') {
-            return;
-        }
-        this.requireActionLabel().string = '正在进入…';
-        this.requireButton().interactable = false;
-        this.requireActionNode().active = true;
-        this.drawActionBackground('busy');
+        this.applyActionState('busy');
     }
 
     setEnterFailed(): void {
-        if (this.mode !== 'game') {
-            return;
-        }
-        this.requireActionLabel().string = '重试';
-        this.requireButton().interactable = true;
-        this.requireActionNode().active = true;
-        this.drawActionBackground('ready');
+        this.applyActionState('retry');
     }
 
     setIdle(): void {
-        if (this.mode !== 'game') {
-            return;
-        }
-        const enabled = this.manifest?.enabled ?? false;
-        this.requireActionNode().active = true;
-        this.requireActionLabel().string = enabled ? '开始游戏' : '暂未开放';
-        this.requireLabel('ScoreLabel').string = '';
-        this.requireLabel('ScoreLabel').node.active = false;
-        this.requireButton().interactable = enabled;
-        this.drawActionBackground(enabled ? 'ready' : 'disabled');
+        this.applyActionState(this.manifest?.enabled ? 'ready' : 'disabled');
+    }
+
+    /** 简介行在失败、未开放时显示状态文案，其余时候（含进入中）显示个人进度或游戏简介。 */
+    private applyActionState(state: ActionState): void {
+        this.actionState = state;
+        if (this.mode !== 'game') return;
+        const stateText = state === 'retry' ? '进入失败，点击重试'
+            : state === 'disabled' ? '暂未开放'
+                : undefined;
+        const showStatus = !stateText && !!this.status;
+        const description = this.requireLabel('DescriptionLabel');
+        description.string = stateText ?? this.manifest?.description ?? '';
+        description.node.active = !showStatus;
+        if (this.statusRoot) this.statusRoot.active = showStatus;
+        this.requireButton().interactable = state === 'ready' || state === 'retry';
     }
 
     private ensureStructure(): void {
@@ -392,51 +385,11 @@ export class GameCardView extends Component {
         titleOverlay.setSiblingIndex(Math.max(1, nameLabelIndex));
         this.titleOverlay = titleOverlay.getComponent(Graphics) ?? undefined;
 
-        this.ensureLabel('ScoreLabel');
-        let action = this.node.getChildByName('ActionBackground');
-        if (!action) {
-            action = new Node('ActionBackground');
-            action.layer = parentLayer;
-            this.node.addChild(action);
-            action.addComponent(UITransform);
-            action.addComponent(Graphics);
-        }
-        this.actionBackground = action.getComponent(Graphics) ?? undefined;
-        let actionSkinNode = action.getChildByName('ActionSkin');
-        if (!actionSkinNode) {
-            actionSkinNode = new Node('ActionSkin');
-            actionSkinNode.layer = parentLayer;
-            action.addChild(actionSkinNode);
-            actionSkinNode.addComponent(UITransform);
-            actionSkinNode.addComponent(Sprite);
-        }
-        this.actionSkin = actionSkinNode.getComponent(Sprite) ?? undefined;
-        actionSkinNode.setSiblingIndex(0);
-        this.actionSkin.sizeMode = Sprite.SizeMode.CUSTOM;
         const legacyStatus = this.node.getChildByName('StatusLabel');
         if (legacyStatus) {
             legacyStatus.active = false;
         }
-        if (!action.getChildByName('ActionLabel')) {
-            const actionLabelNode = new Node('ActionLabel');
-            actionLabelNode.layer = parentLayer;
-            action.addChild(actionLabelNode);
-            actionLabelNode.addComponent(UITransform);
-            const actionLabel = actionLabelNode.addComponent(Label);
-            actionLabel.fontSize = 24;
-            actionLabel.lineHeight = 34;
-            actionLabel.color = Color.WHITE;
-            actionLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
-            actionLabel.verticalAlign = VerticalTextAlignment.CENTER;
-            actionLabel.overflow = Label.Overflow.SHRINK;
-        }
-        // The button art is text-free; the label carries every state
-        // (开始游戏 / 正在进入… / 重试 / 暂未开放) above the skin.
-        const actionLabel = action.getChildByName('ActionLabel')?.getComponent(Label);
-        if (actionLabel) {
-            actionLabel.node.active = true;
-            actionLabel.node.setSiblingIndex(action.children.length - 1);
-        }
+        this.ensureStatusRow(parentLayer);
 
         let decor = this.node.getChildByName('CardDecor');
         if (!decor) {
@@ -532,10 +485,7 @@ export class GameCardView extends Component {
 
         const titleHeight = CARD_LAYOUT.titleHeight * skinScale;
         const descriptionHeight = CARD_LAYOUT.descriptionHeight * skinScale;
-        const actionWidth = rows.actionWidth;
-        const actionHeight = rows.actionHeight;
-        const actionY = rows.actionY;
-        // The coming-soon card has no description or action: centre its title
+        // The coming-soon card has no description: centre its title
         // in the whole area under the cover slot.
         const nameY = this.mode === 'game'
             ? rows.titleY
@@ -549,28 +499,7 @@ export class GameCardView extends Component {
             descriptionHeight,
             0.5,
         );
-        const action = this.requireActionNode();
-        action.setPosition(0, actionY);
-        action.getComponent(UITransform)?.setContentSize(actionWidth, actionHeight);
-        this.actionSkin?.node.setPosition(0, 0);
-        this.actionSkin?.node.getComponent(UITransform)?.setContentSize(actionWidth, actionHeight);
-        const actionLabel = this.requireActionLabel();
-        // The skin's glossy face sits slightly above its bottom lip; centre
-        // the text on the face rather than on the whole sprite.
-        actionLabel.node.setPosition(0, actionHeight * 0.02);
-        actionLabel.node.getComponent(UITransform)?.setContentSize(
-            actionWidth - 36 * skinScale,
-            actionHeight * 0.7,
-        );
-        actionLabel.fontSize = Math.round(CARD_LAYOUT.actionFontSize * skinScale);
-        actionLabel.lineHeight = Math.round(CARD_LAYOUT.actionFontSize * 1.25 * skinScale);
-        actionLabel.spacingX = Math.round(2 * skinScale);
-        actionLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
-        actionLabel.verticalAlign = VerticalTextAlignment.CENTER;
-        actionLabel.overflow = Label.Overflow.SHRINK;
-        actionLabel.enableWrapText = false;
-        setLabelBold(actionLabel, true);
-        this.styleActionLabel(this.actionState);
+        this.layoutStatusRow(rows);
 
         if (this.decorRoot) {
             this.decorRoot.setPosition(0, 0);
@@ -662,13 +591,7 @@ export class GameCardView extends Component {
             label.fontSize = Math.round(CARD_LAYOUT.descriptionFontSize * this.cardWidth / CARD_LAYOUT.designWidth);
             label.lineHeight = Math.round(CARD_LAYOUT.descriptionHeight * this.cardWidth / CARD_LAYOUT.designWidth);
             label.spacingX = 0;
-            label.color = new Color(112, 55, 34, 255);
-            label.horizontalAlign = HorizontalTextAlignment.CENTER;
-        } else if (name === 'ScoreLabel') {
-            label.fontSize = 17;
-            label.lineHeight = 24;
-            label.spacingX = 0;
-            label.color = Color.WHITE;
+            label.color = COLORS.description;
             label.horizontalAlign = HorizontalTextAlignment.CENTER;
         } else {
             label.fontSize = 24;
@@ -711,7 +634,6 @@ export class GameCardView extends Component {
         moveToTop(this.titleOverlay?.node);
         moveToTop(this.decorRoot);
         moveToTop(this.node.getChildByName('NameLabel') ?? undefined);
-        moveToTop(this.requireActionNode());
     }
 
     private drawCard(): void {
@@ -822,58 +744,102 @@ export class GameCardView extends Component {
         }
     }
 
-    private drawActionBackground(state: ActionState): void {
-        this.actionState = state;
-        const action = this.requireActionNode();
-        const graphics = this.actionBackground;
-        const transform = action.getComponent(UITransform);
-        if (!graphics || !transform || this.mode === 'coming-soon') {
-            return;
+    /** 进度行：前导图形（进度条或奖杯）与文字由水平 Layout 居中排列，文字宽度随内容变化。 */
+    private ensureStatusRow(parentLayer: number): void {
+        let row = this.node.getChildByName('StatusRow');
+        if (!row) {
+            row = new Node('StatusRow');
+            row.layer = parentLayer;
+            this.node.addChild(row);
+            row.addComponent(UITransform);
+            const layout = row.addComponent(Layout);
+            layout.type = Layout.Type.HORIZONTAL;
+            layout.resizeMode = Layout.ResizeMode.CONTAINER;
+            layout.horizontalDirection = Layout.HorizontalDirection.LEFT_TO_RIGHT;
+            const lead = new Node('StatusLead');
+            lead.layer = parentLayer;
+            row.addChild(lead);
+            lead.addComponent(UITransform);
+            lead.addComponent(Graphics);
+            const text = new Node('StatusText');
+            text.layer = parentLayer;
+            row.addChild(text);
+            text.addComponent(UITransform);
+            const label = text.addComponent(Label);
+            label.horizontalAlign = HorizontalTextAlignment.LEFT;
+            label.verticalAlign = VerticalTextAlignment.CENTER;
+            label.overflow = Label.Overflow.NONE;
+            label.enableWrapText = false;
         }
-        const width = transform.contentSize.width;
-        const height = transform.contentSize.height;
-        const disabled = state === 'disabled';
-        graphics.clear();
-        this.styleActionLabel(state);
-        if (this.actionSkin?.spriteFrame) {
-            // Tinting cannot desaturate the coral art, so the unavailable
-            // state uses the sprite's grayscale mode instead.
-            this.actionSkin.grayscale = disabled;
-            this.actionSkin.color = disabled
-                ? COLORS.actionDisabledTint
-                : state === 'busy'
-                    ? COLORS.actionBusyTint
-                    : Color.WHITE;
-            return;
-        }
-        const radius = height / 2;
-        graphics.fillColor = disabled
-            ? new Color(150, 140, 132, 150)
-            : new Color(160, 40, 20, 170);
-        graphics.roundRect(-width / 2, -height / 2 - 4, width, height, radius);
-        graphics.fill();
-        graphics.fillColor = disabled ? COLORS.disabled : COLORS.action;
-        graphics.roundRect(-width / 2, -height / 2, width, height, radius);
-        graphics.fill();
-        graphics.fillColor = new Color(255, 255, 255, disabled ? 40 : 70);
-        graphics.roundRect(-width / 2 + radius / 2, height * 0.08,
-            width - radius, height * 0.3, height * 0.15);
-        graphics.fill();
+        this.statusRoot = row;
+        this.statusLead = row.getChildByName('StatusLead')?.getComponent(Graphics) ?? undefined;
+        this.statusLabel = row.getChildByName('StatusText')?.getComponent(Label) ?? undefined;
     }
 
-    private styleActionLabel(state: ActionState): void {
-        const label = this.requireActionLabel();
-        const disabled = state === 'disabled';
-        label.color = disabled ? new Color(255, 255, 255, 235) : COLORS.actionText;
-        label.enableShadow = true;
-        label.shadowColor = disabled ? COLORS.actionDisabledShadow : COLORS.actionTextShadow;
-        const offset = Math.max(1, Math.round(2 * this.cardWidth / 320));
-        label.shadowOffset = new Vec2(0, -offset);
-        label.shadowBlur = 1;
-        const outline = label.node.getComponent(LabelOutline);
-        if (outline) {
-            outline.enabled = false;
+    /** 进度行与简介共用同一行；count 画累计进度条，best 画单局最佳的奖杯。 */
+    private layoutStatusRow(rows: LobbyCardRows): void {
+        const row = this.statusRoot;
+        const lead = this.statusLead;
+        const label = this.statusLabel;
+        if (!row || !lead || !label) return;
+        const scale = rows.scale;
+        const height = CARD_LAYOUT.descriptionHeight * scale;
+        row.setPosition(0, rows.descriptionY);
+        row.getComponent(UITransform)?.setContentSize(rows.coverWidth, height);
+        const layout = row.getComponent(Layout);
+        if (layout) layout.spacingX = CARD_LAYOUT.statusGap * scale;
+        label.fontSize = Math.round(CARD_LAYOUT.descriptionFontSize * scale);
+        label.lineHeight = Math.round(height);
+        label.color = COLORS.description;
+        this.configurePlainText(label);
+        const status = this.status;
+        label.string = status?.text ?? '';
+        lead.clear();
+        if (!status) return;
+        if (status.kind === 'count') {
+            const width = CARD_LAYOUT.statusBarWidth * scale;
+            const barHeight = CARD_LAYOUT.statusBarHeight * scale;
+            lead.node.getComponent(UITransform)?.setContentSize(width, barHeight);
+            lead.fillColor = COLORS.statusTrack;
+            lead.roundRect(-width / 2, -barHeight / 2, width, barHeight, barHeight / 2);
+            lead.fill();
+            const ratio = Math.min(1, status.progress / Math.max(1, status.target));
+            // 进度条至少露出一个圆头，刚开始的进度也看得见。
+            const filled = Math.max(barHeight, width * ratio);
+            lead.fillColor = new Color().fromHEX(status.color);
+            lead.roundRect(-width / 2, -barHeight / 2, filled, barHeight, barHeight / 2);
+            lead.fill();
+        } else {
+            const size = CARD_LAYOUT.statusIconSize * scale;
+            lead.node.getComponent(UITransform)?.setContentSize(size, size);
+            this.drawTrophyIcon(lead, size);
         }
+        row.getComponent(Layout)?.updateLayout();
+    }
+
+    /** 小奖杯：杯身、两侧把手、杯柄与底座，以图标中心为原点。 */
+    private drawTrophyIcon(g: Graphics, size: number): void {
+        const s = size;
+        g.strokeColor = COLORS.trophyShade;
+        g.lineWidth = s * 0.09;
+        g.lineCap = Graphics.LineCap.ROUND;
+        g.circle(-s * 0.3, s * 0.2, s * 0.13);
+        g.stroke();
+        g.circle(s * 0.3, s * 0.2, s * 0.13);
+        g.stroke();
+        g.fillColor = COLORS.trophy;
+        g.moveTo(-s * 0.32, s * 0.42);
+        g.lineTo(s * 0.32, s * 0.42);
+        g.lineTo(s * 0.26, s * 0.06);
+        g.quadraticCurveTo(s * 0.2, -s * 0.12, 0, -s * 0.14);
+        g.quadraticCurveTo(-s * 0.2, -s * 0.12, -s * 0.26, s * 0.06);
+        g.close();
+        g.fill();
+        g.rect(-s * 0.06, -s * 0.3, s * 0.12, s * 0.18);
+        g.fill();
+        g.fillColor = COLORS.trophyShade;
+        g.roundRect(-s * 0.24, -s * 0.46, s * 0.48, s * 0.16, s * 0.05);
+        g.fill();
     }
 
     private drawDecor(): void {
@@ -996,7 +962,6 @@ export class GameCardView extends Component {
         };
         this.uiArtworkReady = Promise.all([
             load(CARD_SKIN_PATH, this.cardSkin, () => this.drawCard()),
-            load(START_BUTTON_PATH, this.actionSkin, () => this.drawActionBackground(this.actionState)),
             load(RECENT_BADGE_PATH, this.recentBadge, () => this.layoutRecentBadge()),
             load(HOT_BADGE_PATH, this.hotBadge, () => this.layoutBadges()),
             load(NEW_BADGE_PATH, this.newBadge, () => this.layoutBadges()),
@@ -1035,22 +1000,6 @@ export class GameCardView extends Component {
         this.ownedCoverFrame = undefined;
     }
 
-    private ensureLabel(name: string): Label {
-        let node = this.node.getChildByName(name);
-        if (!node) {
-            node = new Node(name);
-            node.layer = this.node.layer;
-            this.node.addChild(node);
-            node.addComponent(UITransform);
-            node.addComponent(Label);
-        }
-        const label = node.getComponent(Label);
-        if (!label) {
-            throw new Error(`GameCard is missing ${name}.`);
-        }
-        return label;
-    }
-
     private requireLabel(nodeName: string): Label {
         const child = this.node.getChildByName(nodeName);
         const label = child?.getComponent(Label);
@@ -1066,22 +1015,6 @@ export class GameCardView extends Component {
             throw new Error('GameCard is missing Button.');
         }
         return button;
-    }
-
-    private requireActionNode(): Node {
-        const action = this.node.getChildByName('ActionBackground');
-        if (!action) {
-            throw new Error('GameCard is missing ActionBackground.');
-        }
-        return action;
-    }
-
-    private requireActionLabel(): Label {
-        const label = this.requireActionNode().getChildByName('ActionLabel')?.getComponent(Label);
-        if (!label) {
-            throw new Error('GameCard is missing ActionLabel.');
-        }
-        return label;
     }
 
     private applyLayer(node: Node, layer: number): void {

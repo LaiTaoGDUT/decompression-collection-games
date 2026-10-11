@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "da1619b4-4326-4a2b-bf0c-0808cfa8b1b5",
+  "uuid": "3f551323-9249-5dff-9213-7aa44d988fdc",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "da1619b4-4326-4a2b-bf0c-0808cfa8b1b5@6c48a",
-      "displayName": "lobby-notice-button",
+      "uuid": "3f551323-9249-5dff-9213-7aa44d988fdc@6c48a",
+      "displayName": "doodle-tutorial",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "da1619b4-4326-4a2b-bf0c-0808cfa8b1b5",
+        "imageUuidOrDatabaseUri": "3f551323-9249-5dff-9213-7aa44d988fdc",
         "visible": false
       },
       "ver": "1.0.22",
@@ -37,6 +37,6 @@
     "type": "texture",
     "fixAlphaTransparencyArtifacts": false,
     "hasAlpha": true,
-    "redirect": "da1619b4-4326-4a2b-bf0c-0808cfa8b1b5@6c48a"
+    "redirect": "3f551323-9249-5dff-9213-7aa44d988fdc@6c48a"
   }
 }

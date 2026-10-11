@@ -2,6 +2,32 @@
     "schemaVersion": 3,
     "games": [
         {
+            "id": "multi-color-fill",
+            "version": "0.1.0",
+            "name": "多彩填色",
+            "lobbyTags": [
+                "new"
+            ],
+            "description": "拖动彩色路线，填满每一格！",
+            "bundle": "game-multi-color-fill",
+            "resourceBundle": "game-multi-color-fill-assets",
+            "scene": "scenes/MultiColorFill",
+            "entryComponent": "MultiColorFillGame",
+            "cover": "visual/covers/multi-color-fill/multi-color-fill-cover-v1/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "development",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "logic",
+                "relaxing"
+            ]
+        },
+        {
             "id": "meowdoku",
             "version": "0.1.0",
             "name": "猫咪数独",
@@ -35,7 +61,8 @@
                 "target": 500,
                 "unit": "关",
                 "trophy": "cat",
-                "color": "#EBAA72"
+                "color": "#EBAA72",
+                "lobbyProgress": "count"
             }
         },
         {
@@ -72,12 +99,13 @@
                 "target": 1200,
                 "unit": "米",
                 "trophy": "rocket",
-                "color": "#7FB7DE"
+                "color": "#7FB7DE",
+                "lobbyProgress": "best"
             }
         },
         {
             "id": "cyblockbees",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "name": "挡住蜜蜂",
             "lobbyTags": [
                 "new"
@@ -100,7 +128,18 @@
                 "physics",
                 "draw",
                 "relaxing"
-            ]
+            ],
+            "achievement": {
+                "id": "cyblockbees-trophy-v1",
+                "name": "蜂蜂进不来",
+                "description": "以三星通关挡住蜜蜂全部 200 关",
+                "metric": "three-star-levels",
+                "target": 200,
+                "unit": "关",
+                "trophy": "bee-shield",
+                "color": "#E6B44C",
+                "lobbyProgress": "count"
+            }
         },
         {
             "id": "sliding-puzzle",
@@ -169,7 +208,8 @@
                 "target": 120,
                 "unit": "关",
                 "trophy": "bubble",
-                "color": "#9E92E4"
+                "color": "#9E92E4",
+                "lobbyProgress": "count"
             }
         },
         {
@@ -236,7 +276,8 @@
                 "target": 2,
                 "unit": "个",
                 "trophy": "watermelon",
-                "color": "#69BE87"
+                "color": "#69BE87",
+                "lobbyProgress": "best"
             }
         },
         {
@@ -272,7 +313,8 @@
                 "target": 8192,
                 "unit": "",
                 "trophy": "neon",
-                "color": "#9478F0"
+                "color": "#9478F0",
+                "lobbyProgress": "best"
             }
         },
         {
@@ -305,7 +347,8 @@
                 "target": 10,
                 "unit": "枚",
                 "trophy": "rook",
-                "color": "#5EAA94"
+                "color": "#5EAA94",
+                "lobbyProgress": "best"
             }
         }
     ]

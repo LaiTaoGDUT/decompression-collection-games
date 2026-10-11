@@ -1,27 +1,35 @@
-import { Node, Sprite, SpriteFrame, UITransform } from 'cc';
+import { Color, Graphics, Node, Sprite, SpriteFrame, UITransform } from 'cc';
 import type { AssetService } from '../../services/asset/AssetService';
 import {
     calculateLobbyBrandMetrics,
     LOBBY_BRAND_HEIGHT,
     LOBBY_BRAND_WIDTH,
+    LOBBY_HEADER_TOOL_CELL_HEIGHT,
+    LOBBY_HEADER_TOOLBAR_WIDTH,
     type LobbyBrandMetrics,
     type LobbySafeContentMetrics,
 } from '../../shared/ui/LobbyBrandLayout';
 
 const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
-/** 标题独立下移，保持固定入口和游戏网格的几何不变。 */
-const BRAND_VERTICAL_OFFSET = 32;
+/** 工具胶囊与成就展柜同属大厅的奶油色浮层：白色细边、奶油面、暖色软投影。 */
+const TOOLBAR_COLORS = {
+    shadow: new Color(196, 110, 60, 40),
+    rim: new Color(255, 255, 255, 235),
+    face: new Color(255, 244, 226, 255),
+    divider: new Color(234, 214, 190, 255),
+};
 
 export const LOBBY_HEADER_SLOTS = ['Settings', 'Notice'] as const;
 export type LobbyHeaderSlot = typeof LOBBY_HEADER_SLOTS[number];
 
 /**
- * 大厅标题与顶部入口：标题随游戏列表滚动，设置和公告入口固定。
- * 各入口由对应面板挂到槽位里，槽位按设计尺寸排版后整体等比缩放。
+ * 大厅标题与顶部入口：标题随游戏列表滚动，设置和公告入口固定在同一个竖向胶囊里。
+ * 胶囊底板由顶部栏绘制，各入口由对应面板挂到槽位里，槽位按设计尺寸排版后整体等比缩放。
  */
 export class LobbyHeader {
     private root: Node | null = null;
     private emblem: Node | null = null;
+    private toolbar: Node | null = null;
     private readonly slots = new Map<LobbyHeaderSlot, Node>();
     private ownedBrandFrame?: SpriteFrame;
     private assets?: AssetService;
@@ -48,6 +56,16 @@ export class LobbyHeader {
         emblem.addComponent(UITransform).setContentSize(LOBBY_BRAND_WIDTH, LOBBY_BRAND_HEIGHT);
         emblem.addComponent(Sprite).sizeMode = Sprite.SizeMode.CUSTOM;
         this.emblem = emblem;
+        // 底板先于槽位加入，绘制在两个入口之下。
+        const toolbar = new Node('HeaderToolbar');
+        toolbar.layer = root.layer;
+        root.addChild(toolbar);
+        toolbar.addComponent(UITransform).setContentSize(
+            LOBBY_HEADER_TOOLBAR_WIDTH,
+            LOBBY_HEADER_TOOL_CELL_HEIGHT * 2,
+        );
+        this.drawToolbar(toolbar.addComponent(Graphics));
+        this.toolbar = toolbar;
         for (const slot of LOBBY_HEADER_SLOTS) {
             const node = new Node(`${slot}Slot`);
             node.layer = root.layer;
@@ -63,7 +81,7 @@ export class LobbyHeader {
         return this.slots.get(name) ?? null;
     }
 
-    /** 固定入口避让安全区；滚动标题从列表顶边留出同样的顶部安全间距。 */
+    /** 标题与工具胶囊在顶部栏内垂直居中，并共同避让顶部安全区。 */
     layout(safe: LobbySafeContentMetrics): LobbyBrandMetrics {
         const metrics = calculateLobbyBrandMetrics(safe.contentWidth, safe.contentHeight);
         const root = this.root;
@@ -74,7 +92,12 @@ export class LobbyHeader {
         if (emblem?.isValid) {
             emblem.getComponent(UITransform)?.setContentSize(metrics.width, metrics.height);
             const topInset = emblem.parent === root ? 0 : safe.safeTop;
-            emblem.setPosition(0, -topInset - metrics.centerFromTop - BRAND_VERTICAL_OFFSET * metrics.scale);
+            emblem.setPosition(0, -topInset - metrics.centerFromTop);
+        }
+        const toolbar = this.toolbar;
+        if (toolbar?.isValid) {
+            toolbar.setPosition(metrics.sideColumnX, -metrics.toolbarCenterFromTop);
+            toolbar.setScale(metrics.scale, metrics.scale, 1);
         }
         const place = (slot: LobbyHeaderSlot, x: number, fromTop: number): void => {
             const node = this.slots.get(slot);
@@ -95,8 +118,31 @@ export class LobbyHeader {
         this.ownedBrandFrame = undefined;
         this.slots.clear();
         this.emblem = null;
+        this.toolbar = null;
         this.root = null;
         this.assets = undefined;
+    }
+
+    /** 竖向胶囊：两格之间一道短分隔线；坐标以胶囊中心为原点，按设计尺寸绘制。 */
+    private drawToolbar(g: Graphics): void {
+        const width = LOBBY_HEADER_TOOLBAR_WIDTH;
+        const height = LOBBY_HEADER_TOOL_CELL_HEIGHT * 2;
+        const radius = width / 2;
+        g.clear();
+        g.fillColor = TOOLBAR_COLORS.shadow;
+        g.roundRect(-width / 2, -height / 2 - 5, width, height, radius);
+        g.fill();
+        g.fillColor = TOOLBAR_COLORS.rim;
+        g.roundRect(-width / 2, -height / 2, width, height, radius);
+        g.fill();
+        g.fillColor = TOOLBAR_COLORS.face;
+        g.roundRect(-width / 2 + 3, -height / 2 + 3, width - 6, height - 6, radius - 3);
+        g.fill();
+        g.strokeColor = TOOLBAR_COLORS.divider;
+        g.lineWidth = 2;
+        g.moveTo(-width * 0.26, 0);
+        g.lineTo(width * 0.26, 0);
+        g.stroke();
     }
 
     private loadBrandArtwork(): void {

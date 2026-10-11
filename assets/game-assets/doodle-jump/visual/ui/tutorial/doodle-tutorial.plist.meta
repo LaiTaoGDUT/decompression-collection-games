@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "2cd0e76d-51d7-53f2-a1ee-286579601222",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "72496": {
+      "importer": "sprite-frame",
+      "uuid": "2cd0e76d-51d7-53f2-a1ee-286579601222@72496",
+      "displayName": "",
+      "id": "72496",
+      "name": "sensor-tilt",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 233,
+        "trimY": 2,
+        "width": 210,
+        "height": 150,
+        "rawWidth": 210,
+        "rawHeight": 150,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "3f551323-9249-5dff-9213-7aa44d988fdc@6c48a",
+        "atlasUuid": "2cd0e76d-51d7-53f2-a1ee-286579601222",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "d1f2b": {
+      "importer": "sprite-frame",
+      "uuid": "2cd0e76d-51d7-53f2-a1ee-286579601222@d1f2b",
+      "displayName": "",
+      "id": "d1f2b",
+      "name": "hazard-symbols",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 227,
+        "height": 176,
+        "rawWidth": 227,
+        "rawHeight": 176,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "3f551323-9249-5dff-9213-7aa44d988fdc@6c48a",
+        "atlasUuid": "2cd0e76d-51d7-53f2-a1ee-286579601222",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-tutorial.png",
+    "format": 2,
+    "uuid": "2cd0e76d-51d7-53f2-a1ee-286579601222",
+    "textureUuid": "3f551323-9249-5dff-9213-7aa44d988fdc@6c48a"
+  }
+}

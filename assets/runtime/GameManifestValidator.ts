@@ -1,4 +1,5 @@
-import { LOBBY_PROMOTION_TAGS, TROPHY_STYLES, type AchievementDefinition, type GameManifest, type LobbyPromotionTag } from './GameManifest';
+import { LOBBY_PROGRESS_STYLES, LOBBY_PROMOTION_TAGS, TROPHY_STYLES, type AchievementDefinition, type GameManifest,
+    type LobbyProgressStyle, type LobbyPromotionTag } from './GameManifest';
 import { isSemanticVersion } from '../core/version/SemanticVersion';
 
 const SUPPORTED_SCHEMA_VERSION = 3;
@@ -54,8 +55,12 @@ function readAchievement(raw: unknown, field: string, errors: ManifestValidation
         addError(errors, `${field}.trophy`, 'must be a supported trophy style');
     if (typeof raw.color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(raw.color))
         addError(errors, `${field}.color`, 'must be a six-digit hex color');
+    if (raw.lobbyProgress !== undefined
+        && LOBBY_PROGRESS_STYLES.indexOf(raw.lobbyProgress as LobbyProgressStyle) < 0)
+        addError(errors, `${field}.lobbyProgress`, 'must be count or best');
     return Object.freeze({ id: raw.id, name: raw.name, description: raw.description,
-        metric: raw.metric, target: raw.target, unit: raw.unit, trophy: raw.trophy, color: raw.color }) as AchievementDefinition;
+        metric: raw.metric, target: raw.target, unit: raw.unit, trophy: raw.trophy, color: raw.color,
+        ...(raw.lobbyProgress === undefined ? {} : { lobbyProgress: raw.lobbyProgress }) }) as AchievementDefinition;
 }
 
 function isRecord(value: unknown): value is UnknownRecord {

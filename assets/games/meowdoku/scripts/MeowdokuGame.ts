@@ -390,8 +390,6 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     /** 全模式共享的一次性提示；切换到困难或进入困难关卡后永久关闭。 */
     private hardModeDiscovered = false;
     private readonly hardModeNotices = new Set<Node>();
-    /** 在更新解锁进度前冻结，保证结算按钮与续玩存档使用同一个目标。 */
-    private clearedOlderLevel = false;
     /** 使上一局尚未完成的动画回调不能写入新局。 */
     private levelRunId = 0;
     /** 已解锁的最高关卡号（从 1 开始）；小于它的关卡都已通关。 */
@@ -1053,11 +1051,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     }
 
     private continuationLevelIndex(): number {
-        return this.clearedOlderLevel ? this.levelIndexOf(this.unlockedLevel)
-            : (this.levelIndex + 1) % this.levelDefinitions().length;
+        return (this.levelIndex + 1) % this.levelDefinitions().length;
     }
 
-    /** 玩家接下来要玩的关：旧关通关回到最新关，最新关通关继续下一关。 */
+    /** 玩家接下来要玩的关：通关后按顺序进入下一关。 */
     private currentLevelNumber(): number {
         const index = this.challengeTrackingActive && this.model?.isComplete && !this.tutorial
             ? this.continuationLevelIndex()
@@ -1193,7 +1190,6 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (this.mode === 'hard') this.discoverHardMode();
         this.levelRunId += 1;
         this.geniusClear = false;
-        this.clearedOlderLevel = false;
         this.unscheduleAllCallbacks();
         this.destroyWinOverlay();
         this.destroyFailPage();
@@ -5869,7 +5865,6 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     private handleLevelCleared(): void {
         const model = this.model;
         if (this.state !== 'playing' || !model?.isComplete) return;
-        this.clearedOlderLevel = model.level < this.unlockedLevel;
         this.recordLevelChallengeHistory();
         const history = this.levelChallengeHistories[String(model.level)];
         this.geniusClear = this.challengeTrackingActive && model.isPerfectClear
@@ -5883,7 +5878,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             this.clearedLevel = Math.max(this.clearedLevel, model.level);
             this.unlockedLevel = Math.max(this.unlockedLevel, this.clampLevel(model.level + 1));
         }
-        // 通关后存档与按钮指向同一关：旧关跳最新关，最新关继续下一关。
+        // 通关后存档与按钮都指向当前关的下一关。
         this.persistProgress();
         this.context?.reportScore(model?.score ?? 0);
         this.refreshDimTargets(true);
@@ -6243,7 +6238,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             'ContinueButton',
             spec.buttonWidth * s,
             buttonHeight,
-            this.clearedOlderLevel ? MEOWDOKU_COPY.levelTitle(this.unlockedLevel) : MEOWDOKU_COPY.resultNext,
+            MEOWDOKU_COPY.resultNext,
             'primary',
             { fontSize: spec.primaryButtonFont * s },
         );
@@ -7450,7 +7445,6 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.draftMode = false;
         this.tutorialFinishing = false;
         this.pendingToolReward = undefined;
-        this.clearedOlderLevel = false;
         this.readSave(mode);
         if (mode === 'hard') this.discoverHardMode();
         this.context?.services.feedback.play('uiButton');

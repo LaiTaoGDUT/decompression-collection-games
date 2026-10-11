@@ -2,10 +2,13 @@ import {
     _decorator,
     Component,
     instantiate,
+    isValid,
     Mask,
     Node,
     Prefab,
     ScrollView,
+    Sprite,
+    SpriteFrame,
     sys,
     UITransform,
     Vec2,
@@ -32,6 +35,8 @@ import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 import { GameCardView } from './GameCardView';
 import { EnterRequestLock } from './EnterRequestLock';
 import { buildLobbyGameList, type LobbyGameListItem } from './LobbyGameList';
+import { buildLobbyCardStatus, type LobbyCardStatus } from './LobbyCardStatus';
+import { LOBBY_CARD_SKIN } from './LobbyCardLayout';
 import { calculateLobbyGridLayout, type LobbyGridLayout } from './LobbyGridLayout';
 import { LobbyPresentation } from './LobbyPresentation';
 import { LobbySettingsPanel } from './LobbySettingsPanel';
@@ -77,6 +82,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
     private gameItems: readonly LobbyGameListItem[] = [];
     private storage?: StorageService;
     private assets?: AssetService;
+    private showcaseSkinFrame?: SpriteFrame;
     private readonly enterRequestLock = new EnterRequestLock();
     private readonly presentation = new LobbyPresentation();
     private readonly header = new LobbyHeader();
@@ -85,7 +91,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
     private readonly achievementWall = new AchievementWall();
     private readonly cardViews = new Map<string, GameCardView>();
     private gridViewport: Node | null = null;
-    private storageHighScores = new Map<string, number | undefined>();
+    private cardStatuses = new Map<string, LobbyCardStatus | undefined>();
     private enterGameRequest?: EnterGameRequest;
     private audioBank?: BundleAudioBank;
     private achievementMusic?: AchievementWallMusic;
@@ -187,9 +193,10 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         this.setEnterGameRequest((manifest) => (
             services.get(GAME_RUNTIME_SERVICE).enterGame(manifest)
         ));
-        this.storageHighScores = new Map(this.games.map((manifest) => [
+        const achievements = services.get(ACHIEVEMENT_SERVICE);
+        this.cardStatuses = new Map(this.games.map((manifest) => [
             manifest.id,
-            storage.getGameData(manifest.id)?.highScore,
+            buildLobbyCardStatus(manifest, achievements.getRecord(manifest)),
         ]));
         this.announcementPanel.mount(overlayParent, this.header.slot('Notice')!, configService.announcement, {
             assets: services.get(ASSET_SERVICE),
@@ -199,9 +206,11 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
             findGame: (gameId) => registry.getById(gameId),
         }, { playableGames, enterGame: this.handleCardClick });
         if (this.gameList) this.achievementWall.mount(overlayParent, this.gameList, playableGames, {
-            achievements: services.get(ACHIEVEMENT_SERVICE), platform, feedback,
+            achievements, platform, feedback,
+            lastPlayedAt: manifest => storage.getGameData(manifest.id)?.lastPlayedAt ?? 0,
             art: services.get(ACHIEVEMENT_ART_SERVICE),
             music: this.achievementMusic,
+            bindEntrySkin: (sprite, onLoaded) => this.bindShowcaseSkin(sprite, onLoaded),
             replay: manifest => { services.get(ACHIEVEMENT_CELEBRATION_SERVICE).replay(manifest); },
             preview: (manifest, challenge) => {
                 services.get(ACHIEVEMENT_CELEBRATION_SERVICE).preview(manifest, challenge);
@@ -219,6 +228,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         this.settingsPanel.unmount();
         this.header.unmount();
         this.achievementWall.unmount();
+        this.releaseShowcaseSkin();
         this.achievementMusic?.dispose();
         this.achievementMusic = undefined;
         this.audioBank?.dispose();
@@ -231,6 +241,31 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         this.hasLaidOut = false;
         this.gridLayout = undefined;
         this.badgeLayer = undefined;
+    }
+
+    private bindShowcaseSkin(sprite: Sprite, onLoaded: () => void): void {
+        const assets = this.assets;
+        if (!assets) return;
+        void assets.loadSpriteFrame('lobby-covers', LOBBY_CARD_SKIN.path, 'texture').then(frame => {
+            if (this.assets !== assets || !isValid(this.node, true) || !isValid(sprite.node, true)) {
+                assets.releaseRuntimeAsset(frame);
+                return;
+            }
+            frame.insetLeft = LOBBY_CARD_SKIN.insets.left;
+            frame.insetRight = LOBBY_CARD_SKIN.insets.right;
+            frame.insetTop = LOBBY_CARD_SKIN.insets.top;
+            frame.insetBottom = LOBBY_CARD_SKIN.insets.bottom;
+            this.releaseShowcaseSkin();
+            this.showcaseSkinFrame = frame;
+            sprite.type = Sprite.Type.SLICED;
+            sprite.spriteFrame = frame;
+            onLoaded();
+        }).catch(() => {});
+    }
+
+    private releaseShowcaseSkin(): void {
+        if (this.showcaseSkinFrame) this.assets?.releaseRuntimeAsset(this.showcaseSkinFrame);
+        this.showcaseSkinFrame = undefined;
     }
 
     /** 入口固定在全屏 UI 根节点，标题挂入列表；固定入口绘制在列表之上、弹窗之下。 */
@@ -345,7 +380,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
             card.setPosition(layout.x, layout.y - this.gridTop);
             if (item) {
                 const { manifest, badge } = item;
-                view.bind(manifest, this.storageHighScores.get(manifest.id), this.handleCardClick, badge, layout);
+                view.bind(manifest, this.cardStatuses.get(manifest.id), this.handleCardClick, badge, layout);
                 this.cardViews.set(manifest.id, view);
             } else {
                 view.bindComingSoon(layout);
@@ -402,20 +437,21 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
 
         const gridWidth = Math.max(0, viewportMetrics.contentWidth - GRID_SIDE_PADDING * 2);
         const headerBottom = safeContentMetrics.safeTop + headerMetrics.headerHeight;
-        const showcaseTop = headerBottom + LOBBY_BRAND_TO_SHOWCASE_GAP * headerMetrics.scale;
-        this.achievementWall.layoutShowcase(
-            gridWidth,
-            -showcaseTop - LOBBY_SHOWCASE_HEIGHT * headerMetrics.scale / 2,
-            headerMetrics.scale,
-        );
-        const gridTop = this.achievementWall.hasShowcase
-            ? showcaseTop + (LOBBY_SHOWCASE_HEIGHT + LOBBY_SHOWCASE_TO_GRID_GAP) * headerMetrics.scale
-            : headerBottom + (LOBBY_HEADER_TO_GRID_GAP + LOBBY_GRID_TOP_PADDING) * headerMetrics.scale;
         const cards = gameList.children.filter((child) => Boolean(child.getComponent(GameCardView)));
         const layout = calculateLobbyGridLayout(
             Math.max(cards.length, this.gameItems.length + (this.games.length > 0 ? 1 : 0)),
             gridWidth,
         );
+        const showcaseTop = headerBottom + LOBBY_BRAND_TO_SHOWCASE_GAP * headerMetrics.scale;
+        this.achievementWall.layoutShowcase(
+            gridWidth,
+            -showcaseTop - LOBBY_SHOWCASE_HEIGHT * headerMetrics.scale / 2,
+            headerMetrics.scale,
+            layout.cardWidth,
+        );
+        const gridTop = this.achievementWall.hasShowcase
+            ? showcaseTop + (LOBBY_SHOWCASE_HEIGHT + LOBBY_SHOWCASE_TO_GRID_GAP) * headerMetrics.scale
+            : headerBottom + (LOBBY_HEADER_TO_GRID_GAP + LOBBY_GRID_TOP_PADDING) * headerMetrics.scale;
         this.gridLayout = layout;
         this.gridTop = gridTop;
         const bottomSpacer = this.ensureBottomSpacer(gameList);

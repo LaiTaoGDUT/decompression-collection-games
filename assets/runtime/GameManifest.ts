@@ -3,8 +3,15 @@ import type { DevicePerformanceTier } from '../core/types/CommonTypes';
 export const LOBBY_PROMOTION_TAGS = ['hot', 'new'] as const;
 export type LobbyPromotionTag = (typeof LOBBY_PROMOTION_TAGS)[number];
 
-export const TROPHY_STYLES = ['watermelon', 'rook', 'neon', 'puzzle', 'tidy', 'rocket', 'bubble', 'cat'] as const;
+export const TROPHY_STYLES = ['watermelon', 'rook', 'neon', 'puzzle', 'tidy', 'rocket', 'bubble', 'cat', 'bee-shield'] as const;
 export type TrophyStyle = (typeof TROPHY_STYLES)[number];
+
+/**
+ * 大厅卡片如何展示成就进度：count 为累计进度（“47/500 关”加进度条），
+ * best 为单局最佳（“最高 812 米”）。省略时卡片只展示简介，适用于一次性达成的成就。
+ */
+export const LOBBY_PROGRESS_STYLES = ['count', 'best'] as const;
+export type LobbyProgressStyle = (typeof LOBBY_PROGRESS_STYLES)[number];
 
 /** 成就的展示与判定配置，不引用游戏实现或游戏 Bundle 资源。 */
 export interface AchievementDefinition {
@@ -16,6 +23,7 @@ export interface AchievementDefinition {
     readonly unit: string;
     readonly trophy: TrophyStyle;
     readonly color: string;
+    readonly lobbyProgress?: LobbyProgressStyle;
 }
 
 /**

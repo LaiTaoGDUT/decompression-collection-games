@@ -2,20 +2,21 @@ import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 
 export const LOBBY_DESIGN_WIDTH = 750;
 export const LOBBY_DESIGN_HEIGHT = 1334;
-/** 大厅顶部布局：标题与成就展柜随列表滚动，右侧固定设置与公告按钮。 */
-export const LOBBY_BRAND_WIDTH = 400;
-export const LOBBY_BRAND_HEIGHT = 132;
+/** 大厅顶部布局：标题与成就展柜随列表滚动，右侧固定设置与公告工具胶囊。 */
+/** 标题图按原有 400 × 132 的比例等比放大。 */
+export const LOBBY_BRAND_WIDTH = 432;
+export const LOBBY_BRAND_HEIGHT = LOBBY_BRAND_WIDTH * 132 / 400;
 export const LOBBY_VIEWPORT_TOP_GAP = 12;
 export const LOBBY_HEADER_TOP_GAP = 16;
 export const LOBBY_HEADER_SIDE_GAP = 24;
-/** 侧边圆形按钮沿用设置按钮美术的 128 × 134 比例。 */
-export const LOBBY_HEADER_BUTTON_WIDTH = 80;
-export const LOBBY_HEADER_BUTTON_HEIGHT = 84;
-export const LOBBY_HEADER_BUTTON_GAP = 14;
+/** 低频的设置与公告并入一个竖向胶囊：设置在上、公告在下，每格等高、图标居中。 */
+export const LOBBY_HEADER_TOOLBAR_WIDTH = 72;
+export const LOBBY_HEADER_TOOL_CELL_HEIGHT = 70;
+export const LOBBY_HEADER_TOOL_ICON_SIZE = 44;
 /** 品牌 logo 与游戏网格之间的成就展柜条。 */
-export const LOBBY_SHOWCASE_HEIGHT = 124;
-export const LOBBY_BRAND_TO_SHOWCASE_GAP = 26;
-export const LOBBY_SHOWCASE_TO_GRID_GAP = 40;
+export const LOBBY_SHOWCASE_HEIGHT = 136;
+export const LOBBY_BRAND_TO_SHOWCASE_GAP = 18;
+export const LOBBY_SHOWCASE_TO_GRID_GAP = 24;
 /** 首屏顶部布局下沿到游戏网格的间距，以及首行卡片的上留白。 */
 export const LOBBY_HEADER_TO_GRID_GAP = 8;
 export const LOBBY_GRID_TOP_PADDING = 24;
@@ -46,8 +47,10 @@ export interface LobbyBrandMetrics {
     readonly width: number;
     readonly height: number;
     readonly topGap: number;
+    /** 标题与设置、公告工具胶囊共用的垂直中心。 */
     readonly centerFromTop: number;
     readonly sideColumnX: number;
+    readonly toolbarCenterFromTop: number;
     readonly settingsCenterFromTop: number;
     readonly noticeCenterFromTop: number;
     /** 首屏顶部布局占用的高度，游戏网格从这里再向下留出间距。 */
@@ -214,22 +217,22 @@ export function calculateLobbyBrandMetrics(
     const width = LOBBY_BRAND_WIDTH * scale;
     const height = LOBBY_BRAND_HEIGHT * scale;
     const topGap = LOBBY_HEADER_TOP_GAP * scale;
-    const buttonHeight = LOBBY_HEADER_BUTTON_HEIGHT * scale;
-    const buttonGap = LOBBY_HEADER_BUTTON_GAP * scale;
+    const cellHeight = LOBBY_HEADER_TOOL_CELL_HEIGHT * scale;
     const sideGap = LOBBY_HEADER_SIDE_GAP * scale;
-    const settingsCenterFromTop = topGap + buttonHeight / 2;
-    const noticeCenterFromTop = settingsCenterFromTop + buttonHeight + buttonGap;
-    const columnHeight = buttonHeight * 2 + buttonGap;
+    const toolbarHeight = cellHeight * 2;
+    const headerHeight = Math.max(height, toolbarHeight);
+    const centerFromTop = topGap + headerHeight / 2;
 
     return Object.freeze({
         scale,
         width,
         height,
         topGap,
-        centerFromTop: topGap + height / 2,
-        sideColumnX: contentWidth / 2 - sideGap - LOBBY_HEADER_BUTTON_WIDTH * scale / 2,
-        settingsCenterFromTop,
-        noticeCenterFromTop,
-        headerHeight: topGap + Math.max(height, columnHeight),
+        centerFromTop,
+        sideColumnX: contentWidth / 2 - sideGap - LOBBY_HEADER_TOOLBAR_WIDTH * scale / 2,
+        toolbarCenterFromTop: centerFromTop,
+        settingsCenterFromTop: centerFromTop - cellHeight / 2,
+        noticeCenterFromTop: centerFromTop + cellHeight / 2,
+        headerHeight: topGap + headerHeight,
     });
 }

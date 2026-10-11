@@ -18,6 +18,10 @@ interface WallServices {
     readonly music: AchievementWallMusic;
     readonly platform: Platform;
     readonly feedback: FeedbackService;
+    /** 底板由大厅加载与管理；公共成就组件只负责排布九宫格。 */
+    readonly bindEntrySkin: (sprite: Sprite, onLoaded: () => void) => void;
+    /** 最近一次游玩时间，未玩过为 0；展柜条据此挑选最近在玩的游戏。 */
+    readonly lastPlayedAt: (manifest: GameManifest) => number;
     readonly replay: (manifest: GameManifest) => void;
     /** 未获得奖杯的全屏详情；“去挑战”时回调 challenge。 */
     readonly preview: (manifest: GameManifest, challenge: () => void) => void;
@@ -47,9 +51,26 @@ const CABINET_COLORS = {
     plaque: '#F1CF86', plaqueEdge: '#B98838', plaqueText: '#5A3712', lockedPlaque: '#E6E0E8', lockedText: '#8C7F96',
 };
 const SHOWCASE_COLORS = {
-    face: '#FFF4E2', rim: '#FFFFFF', shadow: new Color(196, 110, 60, 46), title: '#5B2A18', text: '#9A6A4E',
-    pipEmpty: '#EADCCB', go: '#EE7349',
+    face: '#FFF4E2', rim: '#FFFFFF', shadow: new Color(196, 110, 60, 46),
+    title: '#5B2A18', text: '#9A6A4E',
+    track: '#EADCCB', go: '#EE7349',
 };
+/** 右侧“查看”按钮的尺寸与距展柜右沿的中心距离。 */
+const SHOWCASE_GO = { width: 112, height: 56, right: 82 } as const;
+const SHOWCASE_ICON_SIZE = 96;
+const SHOWCASE_BAR_HEIGHT = 12;
+/**
+ * 底板保留原有底部厚边，奶油面的视觉中心比条带中心高约 5；
+ * 以下纵坐标都按奶油面居中：进行中状态的说明、成就名与进度、进度条，以及收藏总览的两行。
+ */
+const SHOWCASE_FACE_CENTER = 5;
+const SHOWCASE_ROWS = {
+    caption: SHOWCASE_FACE_CENTER + 31,
+    title: SHOWCASE_FACE_CENTER - 5,
+    bar: SHOWCASE_FACE_CENTER - 36,
+    summaryTitle: SHOWCASE_FACE_CENTER + 17,
+    summary: SHOWCASE_FACE_CENTER - 22,
+} as const;
 
 /** 大厅只传入清单和公共服务；成就馆不访问具体游戏脚本或资源。 */
 export class AchievementWall {
@@ -61,6 +82,11 @@ export class AchievementWall {
     private games: readonly GameManifest[] = [];
     private enterGame?: (manifest: GameManifest) => void;
     private readonly cards: Node[] = [];
+    /** 展柜条进度条的数据；收藏总览状态下为空。 */
+    private spotlightProgress?: { readonly ratio: number; readonly color: string };
+    private spotlightGame?: GameManifest;
+    /** 游戏卡片在展柜条坐标系中的宽度；底板按它换算绘制比例，使边框与卡片同粗。 */
+    private entryCardWidth = 320;
 
     /** 有成就的游戏时，大厅在品牌与网格之间为展柜条预留位置。 */
     get hasShowcase(): boolean {
@@ -77,15 +103,23 @@ export class AchievementWall {
         view.on('canvas-resize', this.layout, this);
     }
 
-    /** 由大厅滚动内容布局调用：展柜条与品牌、网格一起滚动。y 为展柜中心在列表内的坐标。 */
-    layoutShowcase(width: number, y: number, scale: number): void {
+    /**
+     * 由大厅滚动内容布局调用：展柜条与品牌、网格一起滚动，宽度与游戏网格一致。
+     * y 为展柜中心在列表内的坐标；cardWidth 为游戏卡片宽度，用于让底板边框与卡片同粗。
+     */
+    layoutShowcase(width: number, y: number, scale: number, cardWidth: number): void {
         const entry = this.entry;
         if (!entry?.isValid) return;
         const s = Math.max(0.01, scale);
         const designWidth = Math.max(420, width / s);
+        const designCardWidth = Math.max(1, cardWidth / s);
         entry.setScale(s, s, 1);
         entry.setPosition(0, y);
-        if (Math.abs(entry.getComponent(UITransform)!.width - designWidth) > 0.5) this.drawShowcase(entry, designWidth);
+        if (Math.abs(entry.getComponent(UITransform)!.width - designWidth) > 0.5
+            || Math.abs(this.entryCardWidth - designCardWidth) > 0.5) {
+            this.entryCardWidth = designCardWidth;
+            this.drawShowcase(entry, designWidth);
+        }
     }
 
     open(): void {
@@ -144,10 +178,14 @@ export class AchievementWall {
         this.close(false);
         const entry = this.entry;
         this.entry = undefined;
+        const skin = entry && isValid(entry, true) ? entry.getChildByName('EntrySkin')?.getComponent(Sprite) : null;
+        if (skin) skin.spriteFrame = null;
         if (entry && isValid(entry, true)) entry.destroy();
         this.services = undefined;
         this.parent = undefined;
         this.enterGame = undefined;
+        this.spotlightProgress = undefined;
+        this.spotlightGame = undefined;
         this.games = [];
     }
 
@@ -156,66 +194,159 @@ export class AchievementWall {
         return services ? this.games.filter(game => !!services.achievements.getRecord(game)?.unlockedAt).length : 0;
     }
 
+    /**
+     * 展柜条展示最近玩过、奖杯尚未获得的那款游戏的下一座奖杯（与成就墙一致显示为灰色）；
+     * 没有这样的游戏时展示收藏总览。奖杯在游戏内达成即自动获得，因此没有“待领取”状态。
+     */
+    private spotlight(): GameManifest | undefined {
+        const services = this.services;
+        if (!services) return undefined;
+        let latest: GameManifest | undefined;
+        let latestAt = 0;
+        for (const game of this.games) {
+            const playedAt = services.lastPlayedAt(game);
+            if (playedAt > latestAt && !services.achievements.getRecord(game)?.unlockedAt) {
+                latest = game;
+                latestAt = playedAt;
+            }
+        }
+        return latest;
+    }
+
     private createShowcase(parent: Node): Node {
+        const services = this.services!;
         const entry = achievementNode(parent, 'AchievementEntry', 678, SHOWCASE_HEIGHT);
+        // 与游戏卡片共用纸面底板；光斑画在底板之上、图标之下。
         entry.addComponent(Graphics);
+        const skin = achievementNode(entry, 'EntrySkin', 678, SHOWCASE_HEIGHT).addComponent(Sprite);
+        skin.sizeMode = Sprite.SizeMode.CUSTOM;
+        services.bindEntrySkin(skin, () => this.drawShowcase(entry, entry.getComponent(UITransform)!.width));
+        achievementNode(entry, 'EntryGlow', 678, SHOWCASE_HEIGHT).addComponent(Graphics);
         makeAchievementButton(entry, () => this.open(), 0.97);
-        createAchievementImage(entry, 'AchievementEntryIcon', 'entry-icon', 136, 136, this.services!.art);
-        const count = this.unlockedCount();
-        achievementLabel(entry, 'EntryTitle', '我的成就墙', 0, 28, 280, 42, 32, SHOWCASE_COLORS.title, true, 'left');
-        achievementLabel(entry, 'CollectionCount', `已点亮 ${count} / ${this.games.length} 座专属奖杯`, 0, -6,
-            320, 30, 22, SHOWCASE_COLORS.text, false, 'left');
-        achievementNode(entry, 'CollectionPips', 300, 12).addComponent(Graphics);
-        const go = achievementNode(entry, 'EntryGo', 112, 56);
+        const game = this.spotlight();
+        this.spotlightGame = game;
+        if (game) {
+            const definition = game.achievement!;
+            createAchievementTrophy(entry, definition, services.art, true, SHOWCASE_ICON_SIZE)
+                .name = 'AchievementEntryIcon';
+            const progress = Math.floor(Math.min(definition.target, services.achievements.getRecord(game)?.progress ?? 0));
+            achievementLabel(entry, 'EntryCaption', `下一座奖杯 · ${game.name}`, 0, SHOWCASE_ROWS.caption, 300, 30, 22,
+                SHOWCASE_COLORS.text, false, 'left');
+            achievementLabel(entry, 'EntryTitle', definition.name, 0, SHOWCASE_ROWS.title, 260, 40, 30,
+                SHOWCASE_COLORS.title, true, 'left');
+            if (definition.target > 1) {
+                const unit = definition.unit ? ` ${definition.unit}` : '';
+                achievementLabel(entry, 'EntryProgress', `${progress}/${definition.target}${unit}`, 0, SHOWCASE_ROWS.title,
+                    200, 34, 22, SHOWCASE_COLORS.text, true, 'right');
+                const bar = achievementNode(entry, 'EntryProgressBar', 300, SHOWCASE_BAR_HEIGHT);
+                bar.addComponent(Graphics);
+                this.spotlightProgress = Object.freeze({
+                    ratio: progress / definition.target,
+                    color: definition.color,
+                });
+            } else {
+                // 一次性达成的成就没有中间进度，改为说明达成条件。
+                achievementLabel(entry, 'EntryDescription', definition.description, 0, SHOWCASE_ROWS.bar, 300, 28, 20,
+                    SHOWCASE_COLORS.text, false, 'left');
+            }
+        } else {
+            createAchievementImage(entry, 'AchievementEntryIcon', 'entry-icon', SHOWCASE_ICON_SIZE, SHOWCASE_ICON_SIZE,
+                services.art);
+            const count = this.unlockedCount();
+            const total = this.games.length;
+            const summary = count === 0 ? `${total} 座专属奖杯等你收集`
+                : count >= total ? `已集齐全部 ${total} 座专属奖杯`
+                    : `已点亮 ${count} / ${total} 座专属奖杯`;
+            achievementLabel(entry, 'EntryTitle', '我的成就墙', 0, SHOWCASE_ROWS.summaryTitle, 280, 42, 32,
+                SHOWCASE_COLORS.title, true, 'left');
+            achievementLabel(entry, 'EntrySummary', summary, 0, SHOWCASE_ROWS.summary, 320, 30, 22,
+                SHOWCASE_COLORS.text, false, 'left');
+        }
+        const go = achievementNode(entry, 'EntryGo', SHOWCASE_GO.width, SHOWCASE_GO.height);
         go.addComponent(Graphics);
         achievementLabel(go, 'Caption', '查看', -8, 2, 64, 40, 25, '#FFFFFF', true);
         this.drawShowcase(entry, 678);
         return entry;
     }
 
+    /** 左侧图标、中间文字列、右侧“查看”按钮；文字列宽度随大厅网格宽度伸缩。 */
     private drawShowcase(entry: Node, width: number): void {
         const height = SHOWCASE_HEIGHT;
         entry.getComponent(UITransform)!.setContentSize(width, height);
         const g = entry.getComponent(Graphics)!;
+        this.layoutEntrySkin(entry, width, height);
         g.clear();
-        fillRoundRect(g, 0, -6, width, height, 34, SHOWCASE_COLORS.shadow);
-        fillRoundRect(g, 0, 0, width, height, 34, hexColor(SHOWCASE_COLORS.rim, 240));
-        fillRoundRect(g, 0, 0, width - 8, height - 8, 30, hexColor(SHOWCASE_COLORS.face));
-        // 图标后的暖金光斑，让展柜像被点亮。
-        const iconX = -width / 2 + 82;
-        for (let i = 5; i >= 1; i--) {
-            g.fillColor = new Color(255, 205, 120, 16);
-            g.circle(iconX, 0, 26 + i * 9); g.fill();
+        if (!entry.getChildByName('EntrySkin')?.getComponent(Sprite)?.spriteFrame) {
+            fillRoundRect(g, 0, -6, width, height, 34, SHOWCASE_COLORS.shadow);
+            fillRoundRect(g, 0, 0, width, height, 34, hexColor(SHOWCASE_COLORS.rim, 240));
+            fillRoundRect(g, 0, 0, width - 8, height - 8, 30, hexColor(SHOWCASE_COLORS.face));
         }
-        entry.getChildByName('AchievementEntryIcon')?.setPosition(iconX, 8);
-        const textX = -width / 2 + 164;
-        entry.getChildByName('EntryTitle')?.setPosition(textX + 140, 28);
-        entry.getChildByName('CollectionCount')?.setPosition(textX + 160, -6);
+        const iconX = -width / 2 + 70;
+        const glow = entry.getChildByName('EntryGlow')!;
+        glow.getComponent(UITransform)!.setContentSize(width, height);
+        const gg = glow.getComponent(Graphics)!;
+        gg.clear();
+        if (!this.spotlightGame) {
+            // 收藏总览的展柜图标后加暖金光斑，像被点亮；未获得的灰色奖杯与成就墙一致不加光。
+            for (let i = 5; i >= 1; i--) {
+                gg.fillColor = new Color(255, 205, 120, 16);
+                gg.circle(iconX, SHOWCASE_FACE_CENTER, (28 + i * 9) * SHOWCASE_ICON_SIZE / 120); gg.fill();
+            }
+        }
+        entry.getChildByName('AchievementEntryIcon')?.setPosition(iconX, SHOWCASE_FACE_CENTER);
 
-        const pips = entry.getChildByName('CollectionPips')!;
-        const total = this.games.length, gap = 6;
-        const pipWidth = Math.min(30, (300 - gap * (total - 1)) / Math.max(1, total));
-        const pipsWidth = pipWidth * total + gap * (total - 1);
-        pips.getComponent(UITransform)!.setContentSize(pipsWidth, 12);
-        pips.setPosition(textX + pipsWidth / 2, -36);
-        const pg = pips.getComponent(Graphics)!;
-        pg.clear();
-        this.games.forEach((game, index) => {
-            const lit = !!this.services?.achievements.getRecord(game)?.unlockedAt;
-            fillRoundRect(pg, -pipsWidth / 2 + pipWidth / 2 + index * (pipWidth + gap), 0, pipWidth, 10, 5,
-                lit ? hexColor(game.achievement!.color) : hexColor(SHOWCASE_COLORS.pipEmpty));
-        });
+        const textLeft = -width / 2 + 136;
+        const textRight = width / 2 - SHOWCASE_GO.right - SHOWCASE_GO.width / 2 - 20;
+        const textWidth = textRight - textLeft;
+        const placeLeft = (name: string): void => {
+            const node = entry.getChildByName(name);
+            const transform = node?.getComponent(UITransform);
+            if (!node || !transform) return;
+            const labelWidth = name === 'EntryTitle' && entry.getChildByName('EntryProgress')
+                ? Math.max(0, textWidth - 200 - 12) : textWidth;
+            transform.setContentSize(labelWidth, transform.height);
+            node.setPosition(textLeft + labelWidth / 2, node.position.y);
+        };
+        ['EntryCaption', 'EntryTitle', 'EntryDescription', 'EntrySummary'].forEach(placeLeft);
+        const progressLabel = entry.getChildByName('EntryProgress');
+        progressLabel?.setPosition(textRight - 100, progressLabel.position.y);
+
+        const bar = entry.getChildByName('EntryProgressBar');
+        const progress = this.spotlightProgress;
+        if (bar && progress) {
+            bar.getComponent(UITransform)!.setContentSize(textWidth, SHOWCASE_BAR_HEIGHT);
+            bar.setPosition(textLeft + textWidth / 2, SHOWCASE_ROWS.bar);
+            const bg = bar.getComponent(Graphics)!;
+            bg.clear();
+            fillRoundRect(bg, 0, 0, textWidth, SHOWCASE_BAR_HEIGHT, SHOWCASE_BAR_HEIGHT / 2,
+                hexColor(SHOWCASE_COLORS.track));
+            // 进度条至少露出一个圆头，刚开始的进度也看得见。
+            const filled = Math.max(SHOWCASE_BAR_HEIGHT, textWidth * Math.min(1, progress.ratio));
+            fillRoundRect(bg, -(textWidth - filled) / 2, 0, filled, SHOWCASE_BAR_HEIGHT, SHOWCASE_BAR_HEIGHT / 2,
+                hexColor(progress.color));
+        }
 
         const go = entry.getChildByName('EntryGo')!;
-        go.setPosition(width / 2 - 82, 0);
-        const gg = go.getComponent(Graphics)!;
-        gg.clear();
-        fillRoundRect(gg, 0, -3, 112, 52, 26, shadeColor(SHOWCASE_COLORS.go, 0.2));
-        fillRoundRect(gg, 0, 2, 112, 52, 26, hexColor(SHOWCASE_COLORS.go));
-        gg.strokeColor = Color.WHITE;
-        gg.lineWidth = 4;
-        gg.moveTo(26, 12); gg.lineTo(36, 2); gg.lineTo(26, -8);
-        gg.stroke();
+        go.setPosition(width / 2 - SHOWCASE_GO.right, SHOWCASE_FACE_CENTER);
+        const gg2 = go.getComponent(Graphics)!;
+        gg2.clear();
+        fillRoundRect(gg2, 0, -3, SHOWCASE_GO.width, SHOWCASE_GO.height - 4, 26, shadeColor(SHOWCASE_COLORS.go, 0.2));
+        fillRoundRect(gg2, 0, 2, SHOWCASE_GO.width, SHOWCASE_GO.height - 4, 26, hexColor(SHOWCASE_COLORS.go));
+        gg2.strokeColor = Color.WHITE;
+        gg2.lineWidth = 4;
+        gg2.moveTo(26, 12); gg2.lineTo(36, 2); gg2.lineTo(26, -8);
+        gg2.stroke();
+    }
+
+    /** 按游戏卡片宽度换算原图分辨率，让展柜与游戏卡片的圆角、底部厚边保持相同比例。 */
+    private layoutEntrySkin(entry: Node, width: number, height: number): void {
+        const skin = entry.getChildByName('EntrySkin')?.getComponent(Sprite);
+        if (!skin) return;
+        const textureWidth = skin.spriteFrame?.texture.width ?? 0;
+        const resolution = textureWidth > 0 ? textureWidth / this.entryCardWidth : 1;
+        skin.node.setPosition(0, 0);
+        skin.node.getComponent(UITransform)?.setContentSize(width * resolution, height * resolution);
+        skin.node.setScale(1 / resolution, 1 / resolution, 1);
     }
 
     private get shelfCount(): number {

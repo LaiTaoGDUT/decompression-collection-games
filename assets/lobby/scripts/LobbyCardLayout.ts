@@ -1,25 +1,31 @@
 /**
  * 大厅游戏卡片版式契约（以 320 宽的设计单位表示，按实际卡宽等比缩放）。
- * 自上而下：4:3 完整封面 → 标题 → 简介 → 按钮，卡片高度由这条纵向流推导，
- * 因此加宽间距或更换封面比例时网格行高会同步变化。
+ * 自上而下：4:3 完整封面 → 标题 → 进度/简介行，卡片高度由这条纵向流推导，
+ * 因此加宽间距或更换封面比例时网格行高会同步变化。整张卡片即开始游戏的点击区域。
  */
 export const LOBBY_CARD_LAYOUT = {
     designWidth: 320,
     inset: 12,
     coverAspect: 3 / 4,
     coverRadius: 18,
-    coverTitleGap: 16,
+    coverTitleGap: 18,
     titleHeight: 40,
     titleFontSize: 34,
-    titleDescriptionGap: 8,
+    titleDescriptionGap: 10,
     descriptionHeight: 28,
     descriptionFontSize: 21,
-    descriptionActionGap: 18,
-    actionWidth: 192,
-    /** 按钮美术 320×99 的高宽比。 */
-    actionAspect: 99 / 320,
-    actionFontSize: 27,
-    bottomInset: 22,
+    bottomInset: 30,
+    /** 进度行：累计进度条尺寸、单局最佳奖杯图标尺寸，以及它们与文字的间距。 */
+    statusBarWidth: 120,
+    statusBarHeight: 12,
+    statusIconSize: 24,
+    statusGap: 10,
+} as const;
+
+/** 游戏卡片与成就入口共用的九宫格底板，边距以原图纹理像素表示。 */
+export const LOBBY_CARD_SKIN = {
+    path: 'visual/ui/lobby-card-frame/texture',
+    insets: { left: 64, right: 64, top: 64, bottom: 72 },
 } as const;
 
 export interface LobbyCardRows {
@@ -32,9 +38,6 @@ export interface LobbyCardRows {
     readonly coverY: number;
     readonly titleY: number;
     readonly descriptionY: number;
-    readonly actionY: number;
-    readonly actionWidth: number;
-    readonly actionHeight: number;
 }
 
 function designHeight(): number {
@@ -46,8 +49,6 @@ function designHeight(): number {
         + layout.titleHeight
         + layout.titleDescriptionGap
         + layout.descriptionHeight
-        + layout.descriptionActionGap
-        + layout.actionWidth * layout.actionAspect
         + layout.bottomInset;
 }
 
@@ -73,10 +74,6 @@ export function calculateLobbyCardRows(cardWidth: number, cardHeight: number): L
     cursor -= titleHeight + layout.titleDescriptionGap * scale;
     const descriptionHeight = layout.descriptionHeight * scale;
     const descriptionY = cursor - descriptionHeight / 2;
-    cursor -= descriptionHeight + layout.descriptionActionGap * scale;
-    const actionWidth = layout.actionWidth * scale;
-    const actionHeight = actionWidth * layout.actionAspect;
-    const actionY = cursor - actionHeight / 2;
 
     return Object.freeze({
         scale,
@@ -87,8 +84,5 @@ export function calculateLobbyCardRows(cardWidth: number, cardHeight: number): L
         coverY,
         titleY,
         descriptionY,
-        actionY,
-        actionWidth,
-        actionHeight,
     });
 }

@@ -6403,6 +6403,78 @@
       }
     ]
   },
+  "doodle-jump/visual/ui/tutorial/doodle-tutorial": {
+    "rawHash": "0a82bfddd963f5c52451a9138c174489dabd7e43b7367a10d31a7d82454739e3",
+    "imageUuid": "3f551323-9249-5dff-9213-7aa44d988fdc",
+    "size": [
+      445,
+      180
+    ],
+    "frames": [
+      {
+        "source": "visual/ui/tutorial/hazard-symbols.png",
+        "sourceRect": [
+          0,
+          0,
+          227,
+          176
+        ],
+        "name": "hazard-symbols",
+        "uuid": "2cd0e76d-51d7-53f2-a1ee-286579601222@d1f2b",
+        "rect": [
+          2,
+          2,
+          227,
+          176
+        ],
+        "originalSize": [
+          227,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/tutorial/sensor-tilt.png",
+        "sourceRect": [
+          0,
+          0,
+          210,
+          150
+        ],
+        "name": "sensor-tilt",
+        "uuid": "2cd0e76d-51d7-53f2-a1ee-286579601222@72496",
+        "rect": [
+          233,
+          2,
+          210,
+          150
+        ],
+        "originalSize": [
+          210,
+          150
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
   "doodle-jump/visual/player/doodle-rabbit": {
     "rawHash": "ed0ea3803f395212e114ad5040db222d11a157c5eac807a622921b2c1c981b0c",
     "imageUuid": "edeb332c-65c0-5046-a165-7973749239dc",

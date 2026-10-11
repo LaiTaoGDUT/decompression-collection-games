@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>hazard-symbols</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{227,176}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{227,176}}</string>
+			<key>sourceSize</key>
+			<string>{227,176}</string>
+		</dict>
+		<key>sensor-tilt</key>
+		<dict>
+			<key>frame</key>
+			<string>{{233,2},{210,150}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{210,150}}</string>
+			<key>sourceSize</key>
+			<string>{210,150}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>doodle-tutorial.png</string>
+		<key>size</key>
+		<string>{445,180}</string>
+		<key>textureFileName</key>
+		<string>doodle-tutorial.png</string>
+	</dict>
+</dict>
+</plist>

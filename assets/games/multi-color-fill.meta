@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "9ae6f917-3568-49c1-b500-9afe8ae8674a",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-multi-color-fill",
+    "isSubpackage": true,
+    "isRemoteBundle": {},
+    "priority": 1,
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L",
+    "isBundle": true
+  }
+}

@@ -205,5 +205,9 @@ export const PACKED_SPRITE_PATHS: Readonly<Record<string, string>> = Object.free
     "visual/ui/item-icons/spring/spriteFrame": "visual/ui/item-icons/doodle-item-icons/spring",
     "visual/ui/item-icons/spring/texture": "visual/ui/item-icons/doodle-item-icons/spring",
     "visual/ui/item-icons/trampoline/spriteFrame": "visual/ui/item-icons/doodle-item-icons/trampoline",
-    "visual/ui/item-icons/trampoline/texture": "visual/ui/item-icons/doodle-item-icons/trampoline"
+    "visual/ui/item-icons/trampoline/texture": "visual/ui/item-icons/doodle-item-icons/trampoline",
+    "visual/ui/tutorial/hazard-symbols/spriteFrame": "visual/ui/tutorial/doodle-tutorial/hazard-symbols",
+    "visual/ui/tutorial/hazard-symbols/texture": "visual/ui/tutorial/doodle-tutorial/hazard-symbols",
+    "visual/ui/tutorial/sensor-tilt/spriteFrame": "visual/ui/tutorial/doodle-tutorial/sensor-tilt",
+    "visual/ui/tutorial/sensor-tilt/texture": "visual/ui/tutorial/doodle-tutorial/sensor-tilt"
 });

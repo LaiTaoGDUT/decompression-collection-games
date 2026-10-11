@@ -2,6 +2,8 @@ import { Color, EventTouch, Graphics, Label, Node, Sprite, SpriteFrame, UITransf
 import { setLabelBold } from '../../../services/font/FontBinding';
 import { CYBLOCKBEES_PALETTE as P } from './CyBlockBeesTheme';
 
+export { CYBLOCKBEES_STAR_THRESHOLDS, cyblockbeesStars } from './CyBlockBeesProgress';
+
 export type BeeIcon = 'back' | 'next' | 'play' | 'pause' | 'retry' | 'levels' | 'home' | 'lock' | 'pencil' | 'stopwatch' | 'check' | 'close';
 
 /** 贴纸配色：卡面、厚度、描边。 */
@@ -358,11 +360,3 @@ export class CyBlockBeesUi {
         return node;
     }
 }
-
-/** 原作 UpdateSlider：剩余墨水达到 20%、40%、60% 分别保留一颗星。 */
-export function cyblockbeesStars(remaining: number): number {
-    return Math.max(0, Math.min(3, Math.floor((remaining + 1e-8) / .2)));
-}
-
-/** 星级阈值（剩余墨水比例），HUD 墨水条上的星星就画在这些位置。 */
-export const CYBLOCKBEES_STAR_THRESHOLDS = Object.freeze([.2, .4, .6]);
