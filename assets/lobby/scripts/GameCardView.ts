@@ -1,7 +1,6 @@
 import { setLabelBold } from '../../services/font/FontBinding';
 import {
     _decorator,
-    assetManager,
     Button,
     Color,
     Component,
@@ -13,7 +12,6 @@ import {
     Node,
     Sprite,
     SpriteFrame,
-    Texture2D,
     tween,
     Tween,
     Vec2,
@@ -22,6 +20,8 @@ import {
     VerticalTextAlignment,
 } from 'cc';
 import type { GameManifest } from '../../runtime/GameManifest';
+import type { AssetService } from '../../services/asset/AssetService';
+import type { LobbyGameBadge } from './LobbyGameList';
 import {
     calculateLobbyCardRows,
     LOBBY_CARD_LAYOUT as CARD_LAYOUT,
@@ -29,9 +29,15 @@ import {
 
 const { ccclass } = _decorator;
 export type GameCardClickHandler = (manifest: GameManifest) => void;
+export interface GameCardSize {
+    readonly width: number;
+    readonly height: number;
+}
 
 const CARD_SKIN_PATH = 'visual/ui/lobby-card-frame/texture';
 const RECENT_BADGE_PATH = 'visual/ui/lobby-recently-played-v2/texture';
+const HOT_BADGE_PATH = 'visual/ui/lobby-hot-v1/texture';
+const NEW_BADGE_PATH = 'visual/ui/lobby-new-v1/texture';
 const START_BUTTON_PATH = 'visual/ui/lobby-start-button/texture';
 /**
  * 卡片底板九宫格边距（纹理像素）：上下保留圆角与底部厚边，只拉伸中段，
@@ -43,6 +49,8 @@ const CARD_SKIN_INSETS = { left: 64, right: 64, top: 64, bottom: 72 } as const;
  * （320 设计单位）。右侧紧邻 12 单位的网格间隙，横向只轻微探出。
  */
 const RECENT_BADGE = { width: 160, angle: -8, overhangX: 4, overhangY: 8 } as const;
+/** HOT／NEW 缩小并向卡片右上角内收，保留少量纸边探出和斜贴效果。 */
+const PROMOTION_BADGE = { width: 100, angle: -14, overhangX: 8, overhangY: 18 } as const;
 
 const COLORS = {
     surface: new Color(241, 135, 84, 255),
@@ -87,40 +95,75 @@ export class GameCardView extends Component {
     private actionBackground?: Graphics;
     private actionSkin?: Sprite;
     private decorRoot?: Node;
+    private badgeRoot?: Node;
     private recentBadge?: Sprite;
-    private recentlyPlayed = false;
+    private hotBadge?: Sprite;
+    private newBadge?: Sprite;
+    private badge?: LobbyGameBadge;
     private actionState: ActionState = 'ready';
+    private assets?: AssetService;
     private ownedCoverFrame?: SpriteFrame;
     private readonly ownedUiFrames: SpriteFrame[] = [];
     private uiLoadToken = 0;
     private coverLoadToken = 0;
+    private structureReady = false;
+    private configured = false;
+    private uiArtworkReady: Promise<void> = Promise.resolve();
+    private coverArtworkReady: Promise<void> = Promise.resolve();
+
+    get artworkReady(): Promise<void> {
+        return Promise.all([this.uiArtworkReady, this.coverArtworkReady]).then(() => {});
+    }
+
     protected onLoad(): void {
         this.node.on(Button.EventType.CLICK, this.handleClick, this);
-        this.ensureStructure();
-        this.setCardSize(this.cardWidth, this.cardHeight);
+        this.node.on(Node.EventType.TRANSFORM_CHANGED, this.syncBadgeTransform, this);
+        // 大厅先在未激活节点上完成绑定和最终尺寸配置；激活时只接通生命周期。
+        if (!this.configured) this.setCardSize(this.cardWidth, this.cardHeight);
         this.loadUiArtwork();
+    }
+
+    protected onEnable(): void {
+        this.syncBadgeTransform();
+    }
+
+    protected onDisable(): void {
+        if (this.badgeRoot?.isValid) this.badgeRoot.active = false;
     }
 
     protected onDestroy(): void {
         this.node.off(Button.EventType.CLICK, this.handleClick, this);
+        this.node.off(Node.EventType.TRANSFORM_CHANGED, this.syncBadgeTransform, this);
         this.stopCoverMotion();
         this.releaseOwnedCoverFrame();
         this.uiLoadToken += 1;
-        this.ownedUiFrames.forEach((frame) => frame.destroy());
+        for (const sprite of [this.cardSkin, this.actionSkin, this.recentBadge, this.hotBadge, this.newBadge]) {
+            if (sprite) sprite.spriteFrame = null;
+        }
+        this.ownedUiFrames.forEach((frame) => this.assets?.releaseRuntimeAsset(frame));
         this.ownedUiFrames.length = 0;
+        if (this.badgeRoot?.isValid) this.badgeRoot.destroy();
+        this.badgeRoot = undefined;
+        this.assets = undefined;
+    }
+
+    setAssetService(assets: AssetService | undefined): void {
+        this.assets = assets;
     }
 
     bind(
         manifest: GameManifest,
         _highScore: number | undefined,
         clickHandler: GameCardClickHandler,
-        recentlyPlayed = false,
+        badge?: LobbyGameBadge,
+        size?: GameCardSize,
     ): void {
+        if (size) this.applyCardSize(size.width, size.height);
         this.ensureStructure();
         this.requireLabel('DescriptionLabel').node.active = true;
         this.mode = 'game';
         this.manifest = manifest;
-        this.recentlyPlayed = recentlyPlayed;
+        this.badge = badge;
         this.clickHandler = clickHandler;
         this.node.name = `GameCard-${manifest.id}`;
         this.requireLabel('NameLabel').string = manifest.name;
@@ -133,13 +176,16 @@ export class GameCardView extends Component {
         this.drawCard();
         this.drawCoverFallback(false);
         this.setIdle();
+        this.configured = true;
+        this.loadUiArtwork();
         this.loadCover(manifest.cover);
     }
 
-    bindComingSoon(): void {
+    bindComingSoon(size?: GameCardSize): void {
+        if (size) this.applyCardSize(size.width, size.height);
         this.ensureStructure();
         this.mode = 'coming-soon';
-        this.recentlyPlayed = false;
+        this.badge = undefined;
         this.manifest = undefined;
         this.clickHandler = undefined;
         this.coverLoadToken += 1;
@@ -156,16 +202,15 @@ export class GameCardView extends Component {
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(true);
+        this.configured = true;
+        this.loadUiArtwork();
     }
 
     setCardSize(width: number, height: number): void {
+        if (this.configured && this.cardWidth === Math.max(240, width)
+            && this.cardHeight === Math.max(1, height)) return;
+        this.applyCardSize(width, height);
         this.ensureStructure();
-        this.cardWidth = Math.max(240, width);
-        this.cardHeight = Math.max(1, height);
-        this.node.getComponent(UITransform)?.setContentSize(
-            this.cardWidth,
-            this.cardHeight,
-        );
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(this.mode === 'coming-soon');
@@ -173,6 +218,37 @@ export class GameCardView extends Component {
         if (this.mode === 'game') {
             this.drawActionBackground(this.actionState);
         }
+    }
+
+    private applyCardSize(width: number, height: number): void {
+        this.cardWidth = Math.max(240, width);
+        this.cardHeight = Math.max(1, height);
+        this.node.getComponent(UITransform)?.setContentSize(this.cardWidth, this.cardHeight);
+    }
+
+    setBadge(badge: LobbyGameBadge | undefined): void {
+        this.badge = badge;
+        this.layoutBadges();
+    }
+
+    /** 列表内的贴纸前景层与卡片共用坐标系，所有贴纸在卡片之后绘制。 */
+    setBadgeLayer(layer: Node): void {
+        const root = this.badgeRoot;
+        if (!root?.isValid) return;
+        if (root.parent !== layer) root.setParent(layer);
+        root.name = `${this.node.name}-Badges`;
+        this.applyLayer(root, layer.layer);
+        this.syncBadgeTransform();
+    }
+
+    private syncBadgeTransform(): void {
+        const root = this.badgeRoot;
+        if (!root?.isValid) return;
+        root.active = this.enabledInHierarchy;
+        if (root.parent === this.decorRoot) return;
+        root.setPosition(this.node.position);
+        root.setRotation(this.node.rotation);
+        root.setScale(this.node.scale);
     }
 
     setLoading(): void {
@@ -209,6 +285,7 @@ export class GameCardView extends Component {
     }
 
     private ensureStructure(): void {
+        if (this.structureReady) return;
         const parentLayer = this.node.parent?.layer ?? this.node.layer;
         this.applyLayer(this.node, parentLayer);
 
@@ -370,15 +447,39 @@ export class GameCardView extends Component {
             decor.addComponent(Graphics);
         }
         this.decorRoot = decor;
-        let recentBadge = decor.getChildByName('RecentlyPlayedBadge');
+        let badgeRoot = this.badgeRoot;
+        if (!badgeRoot?.isValid) {
+            badgeRoot = new Node('CardBadges');
+            badgeRoot.layer = parentLayer;
+            decor.addChild(badgeRoot);
+            badgeRoot.addComponent(UITransform);
+            this.badgeRoot = badgeRoot;
+        }
+        let recentBadge = badgeRoot.getChildByName('RecentlyPlayedBadge')
+            ?? decor.getChildByName('RecentlyPlayedBadge');
         if (!recentBadge) {
             recentBadge = new Node('RecentlyPlayedBadge');
             recentBadge.layer = parentLayer;
-            decor.addChild(recentBadge);
+            badgeRoot.addChild(recentBadge);
             recentBadge.addComponent(UITransform);
             recentBadge.addComponent(Sprite).sizeMode = Sprite.SizeMode.CUSTOM;
         }
+        if (recentBadge.parent !== badgeRoot) recentBadge.setParent(badgeRoot);
         this.recentBadge = recentBadge.getComponent(Sprite) ?? undefined;
+        const ensurePromotionBadge = (name: string): Sprite => {
+            let node = badgeRoot.getChildByName(name) ?? decor.getChildByName(name);
+            if (!node) {
+                node = new Node(name);
+                node.layer = parentLayer;
+                badgeRoot.addChild(node);
+                node.addComponent(UITransform);
+                node.addComponent(Sprite).sizeMode = Sprite.SizeMode.CUSTOM;
+            }
+            if (node.parent !== badgeRoot) node.setParent(badgeRoot);
+            return node.getComponent(Sprite)!;
+        };
+        this.hotBadge = ensurePromotionBadge('HotBadge');
+        this.newBadge = ensurePromotionBadge('NewBadge');
         let badge = decor.getChildByName('GenreBadge');
         if (!badge) {
             badge = new Node('GenreBadge');
@@ -390,6 +491,7 @@ export class GameCardView extends Component {
             label.verticalAlign = VerticalTextAlignment.CENTER;
             label.overflow = Label.Overflow.SHRINK;
         }
+        this.structureReady = true;
     }
 
     private layoutChildren(): void {
@@ -478,7 +580,7 @@ export class GameCardView extends Component {
             badge?.getComponent(UITransform)?.setContentSize(30, 30);
             this.drawDecor();
         }
-        this.layoutRecentBadge();
+        this.layoutBadges();
         this.drawTitleOverlay();
         this.raiseCardContent();
     }
@@ -488,10 +590,18 @@ export class GameCardView extends Component {
      * 像随手贴上的标签，同时尽量少遮挡封面主体。最近游玩的卡片总在网格
      * 首位（左列首行），上方是品牌区留白；右侧只探入网格间隙，不压相邻卡片。
      */
+    private layoutBadges(): void {
+        this.badgeRoot?.getComponent(UITransform)?.setContentSize(this.cardWidth, this.cardHeight);
+        this.syncBadgeTransform();
+        this.layoutRecentBadge();
+        this.layoutPromotionBadge('hot', this.hotBadge);
+        this.layoutPromotionBadge('new', this.newBadge);
+    }
+
     private layoutRecentBadge(): void {
         const badge = this.recentBadge;
         if (!badge) return;
-        badge.node.active = this.mode === 'game' && this.recentlyPlayed;
+        badge.node.active = this.mode === 'game' && this.badge === 'recent';
         if (!badge.node.active) return;
         const scale = this.cardWidth / CARD_LAYOUT.designWidth;
         const texture = badge.spriteFrame?.texture;
@@ -504,6 +614,24 @@ export class GameCardView extends Component {
         badge.node.setPosition(
             this.cardWidth / 2 - width / 2 + RECENT_BADGE.overhangX * scale,
             this.cardHeight / 2 - height / 2 + RECENT_BADGE.overhangY * scale,
+        );
+    }
+
+    /** HOT／NEW 随卡片等比缩放，向右上角内收并保留随手斜贴的效果。 */
+    private layoutPromotionBadge(tag: 'hot' | 'new', sprite: Sprite | undefined): void {
+        if (!sprite) return;
+        const node = sprite.node;
+        node.active = this.mode === 'game' && this.badge === tag;
+        if (!node.active) return;
+        const scale = this.cardWidth / CARD_LAYOUT.designWidth;
+        const width = PROMOTION_BADGE.width * scale;
+        const texture = sprite.spriteFrame?.texture;
+        const height = width * (texture ? texture.height / texture.width : 1);
+        node.getComponent(UITransform)?.setContentSize(width, height);
+        node.angle = PROMOTION_BADGE.angle;
+        node.setPosition(
+            this.cardWidth / 2 - width / 2 + PROMOTION_BADGE.overhangX * scale,
+            this.cardHeight / 2 - height / 2 + PROMOTION_BADGE.overhangY * scale,
         );
     }
 
@@ -818,22 +946,14 @@ export class GameCardView extends Component {
 
     private loadCover(path: string): void {
         const token = ++this.coverLoadToken;
-        const bundle = assetManager.getBundle('lobby-covers');
-        if (!bundle) {
-            // TODO: console.error('[GameCardView] Lobby resource bundle is unavailable.');
-            return;
-        }
-        bundle.load(path, Texture2D, (error: Error | null, texture: Texture2D) => {
+        const assets = this.assets;
+        if (!assets) return;
+        this.coverArtworkReady = assets.loadSpriteFrame('lobby-covers', path, 'texture').then((frame) => {
             if (token !== this.coverLoadToken || !this.node?.isValid) {
-                return;
-            }
-            if (error || !texture) {
-                // TODO: console.warn('[GameCardView] Cover failed to load.', path, error);
+                assets.releaseRuntimeAsset(frame);
                 return;
             }
             this.releaseOwnedCoverFrame();
-            const frame = new SpriteFrame();
-            frame.texture = texture;
             this.ownedCoverFrame = frame;
             if (this.coverSprite) {
                 if (this.mode === 'coming-soon') {
@@ -848,18 +968,20 @@ export class GameCardView extends Component {
                 this.startCoverMotion();
             }
         });
+        void this.coverArtworkReady.catch(() => {});
     }
 
     private loadUiArtwork(): void {
-        const bundle = assetManager.getBundle('lobby-covers');
-        if (!bundle) return;
+        const assets = this.assets;
+        if (!assets || this.uiLoadToken > 0) return;
         const token = ++this.uiLoadToken;
-        const load = (path: string, sprite: Sprite | undefined, onLoaded: () => void): void => {
-            if (!sprite) return;
-            bundle.load(path, Texture2D, (error: Error | null, texture: Texture2D) => {
-                if (error || !texture || token !== this.uiLoadToken || !this.node.isValid) return;
-                const frame = new SpriteFrame();
-                frame.texture = texture;
+        const load = (path: string, sprite: Sprite | undefined, onLoaded: () => void): Promise<void> => {
+            if (!sprite) return Promise.resolve();
+            return assets.loadSpriteFrame('lobby-covers', path, 'texture').then((frame) => {
+                if (token !== this.uiLoadToken || !this.node.isValid) {
+                    assets.releaseRuntimeAsset(frame);
+                    return;
+                }
                 if (sprite === this.cardSkin) {
                     frame.insetLeft = CARD_SKIN_INSETS.left;
                     frame.insetRight = CARD_SKIN_INSETS.right;
@@ -872,9 +994,14 @@ export class GameCardView extends Component {
                 onLoaded();
             });
         };
-        load(CARD_SKIN_PATH, this.cardSkin, () => this.drawCard());
-        load(START_BUTTON_PATH, this.actionSkin, () => this.drawActionBackground(this.actionState));
-        load(RECENT_BADGE_PATH, this.recentBadge, () => this.layoutRecentBadge());
+        this.uiArtworkReady = Promise.all([
+            load(CARD_SKIN_PATH, this.cardSkin, () => this.drawCard()),
+            load(START_BUTTON_PATH, this.actionSkin, () => this.drawActionBackground(this.actionState)),
+            load(RECENT_BADGE_PATH, this.recentBadge, () => this.layoutRecentBadge()),
+            load(HOT_BADGE_PATH, this.hotBadge, () => this.layoutBadges()),
+            load(NEW_BADGE_PATH, this.newBadge, () => this.layoutBadges()),
+        ]).then(() => {});
+        void this.uiArtworkReady.catch(() => {});
     }
 
     private startCoverMotion(): void {
@@ -904,7 +1031,7 @@ export class GameCardView extends Component {
         if (this.coverSprite) {
             this.coverSprite.spriteFrame = null;
         }
-        this.ownedCoverFrame?.destroy();
+        if (this.ownedCoverFrame) this.assets?.releaseRuntimeAsset(this.ownedCoverFrame);
         this.ownedCoverFrame = undefined;
     }
 

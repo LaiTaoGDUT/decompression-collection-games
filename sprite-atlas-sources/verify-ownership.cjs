@@ -31,7 +31,7 @@ const { AssetService } = exportsObject;
 function fixture() {
     let loaded = true;
     const pending = [], events = [];
-    const bundle = { load(path, type, done) { pending.push({ path, type, done }); }, releaseAll() { events.push('release'); } };
+    const bundle = { get() { return null; }, load(path, type, done) { pending.push({ path, type, done }); }, releaseAll() { events.push('release'); } };
     const assets = new AssetService({ getBundle: () => loaded ? bundle : null, removeBundle() { loaded = false; events.push('remove'); } });
     return { assets, pending, events };
 }

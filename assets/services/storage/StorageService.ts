@@ -23,6 +23,10 @@ export interface UserData {
     readonly settings: UserSettings;
     readonly games: Readonly<Record<string, GameSaveData>>;
     readonly achievements: Readonly<Record<string, AchievementSaveData>>;
+    /** 按游戏 ID 保存已打开的内容版本，与游戏进度独立，旧版本不隐藏新版本的 NEW。 */
+    readonly dismissedNewGameVersions?: Readonly<Record<string, readonly string[]>>;
+    /** 已自动展示过的版本更新公告 ID；新公告生效后首次进入大厅自动弹出一次。 */
+    readonly seenAnnouncementId?: string;
 }
 
 export interface AchievementSaveData {
@@ -58,6 +62,7 @@ const DEFAULT_USER_DATA: UserData = Object.freeze({
     }),
     games: Object.freeze({}),
     achievements: Object.freeze({}),
+    dismissedNewGameVersions: Object.freeze({}),
 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -144,7 +149,33 @@ function parseUserData(value: unknown): UserData | undefined {
         },
         games,
         achievements,
+        // 旧的 ID 隐藏记录没有内容版本，不能推断为已访问当前版本。
+        dismissedNewGameVersions: readDismissedNewGameVersions(value.dismissedNewGameVersions),
+        seenAnnouncementId: readSeenAnnouncementId(value.seenAnnouncementId),
     });
+}
+
+function readSeenAnnouncementId(value: unknown): string | undefined {
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+/** 兼容没有版本记录的旧存档；损坏的标签记录不影响游戏进度。 */
+function readDismissedNewGameVersions(value: unknown): Readonly<Record<string, readonly string[]>> {
+    const records: Record<string, readonly string[]> = Object.create(null);
+    if (isRecord(value)) {
+        for (const gameId of Object.keys(value)) {
+            const stored = value[gameId];
+            if (!gameId.trim() || !Array.isArray(stored)) continue;
+            const versions: string[] = [];
+            for (const item of stored) {
+                if (typeof item !== 'string') continue;
+                const version = item.trim();
+                if (version && versions.indexOf(version) < 0) versions.push(version);
+            }
+            if (versions.length > 0) records[gameId] = Object.freeze(versions);
+        }
+    }
+    return Object.freeze(records);
 }
 
 function isAchievementSaveData(value: unknown): value is AchievementSaveData {
@@ -187,6 +218,10 @@ function freezeUserData(data: UserData): UserData {
         settings: Object.freeze({ ...data.settings }),
         games: Object.freeze(games),
         achievements: Object.freeze(achievements),
+        dismissedNewGameVersions: readDismissedNewGameVersions(data.dismissedNewGameVersions),
+        ...(readSeenAnnouncementId(data.seenAnnouncementId) === undefined
+            ? {}
+            : { seenAnnouncementId: readSeenAnnouncementId(data.seenAnnouncementId) }),
     });
 }
 
@@ -197,6 +232,12 @@ function normalizeGameId(gameId: string): string {
         throw new Error('Game ID must not be empty.');
     }
 
+    return normalized;
+}
+
+function normalizeGameVersion(gameVersion: string): string {
+    const normalized = gameVersion.trim();
+    if (!normalized) throw new Error('Game version must not be empty.');
     return normalized;
 }
 
@@ -264,6 +305,49 @@ export class StorageService {
 
     getGameData(gameId: string): GameSaveData | undefined {
         return this.snapshot.games[normalizeGameId(gameId)];
+    }
+
+    get hasPlayedAnyGame(): boolean {
+        const games = this.snapshot.games;
+        return Object.keys(games).some((id) => (
+            (games[id].lastPlayedAt ?? 0) > 0 || games[id].playCount > 0
+        ));
+    }
+
+    hasDismissedNewBadge(gameId: string, gameVersion: string): boolean {
+        const id = normalizeGameId(gameId);
+        const version = normalizeGameVersion(gameVersion);
+        const versions = this.snapshot.dismissedNewGameVersions?.[id];
+        return Array.isArray(versions) && versions.indexOf(version) >= 0;
+    }
+
+    /** 游戏成功进入后记录该内容版本，重复访问不重复写入。 */
+    dismissNewBadge(gameId: string, gameVersion: string): void {
+        const id = normalizeGameId(gameId);
+        const version = normalizeGameVersion(gameVersion);
+        const data = this.snapshot;
+        const stored = data.dismissedNewGameVersions?.[id];
+        const versions = Array.isArray(stored) ? stored : [];
+        if (versions.indexOf(version) >= 0) return;
+        this.commit({
+            ...data,
+            dismissedNewGameVersions: {
+                ...data.dismissedNewGameVersions,
+                [id]: [...versions, version],
+            },
+        });
+    }
+
+    hasSeenAnnouncement(announcementId: string): boolean {
+        return this.snapshot.seenAnnouncementId === announcementId.trim();
+    }
+
+    /** 公告自动弹出后记录；重复记录同一公告不重复写入。 */
+    markAnnouncementSeen(announcementId: string): void {
+        const id = announcementId.trim();
+        if (!id) throw new Error('Announcement ID must not be empty.');
+        if (this.snapshot.seenAnnouncementId === id) return;
+        this.commit({ ...this.snapshot, seenAnnouncementId: id });
     }
 
     getAchievement(gameId: string): AchievementSaveData | undefined {

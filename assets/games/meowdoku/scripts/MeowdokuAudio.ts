@@ -32,6 +32,7 @@ import { MEOWDOKU_RESOURCE_BUNDLE } from './MeowdokuTheme';
 export const MEOWDOKU_AUDIO_BANK: BundleAudioBankConfig = Object.freeze({
     bundle: MEOWDOKU_RESOURCE_BUNDLE,
     music: 'visual/music/meowdoku-melody-v1',
+    musicVolume: .9,
     cues: Object.freeze({
         uiButton: 'visual/audio/meowdoku-button-v1',
         toggle: Object.freeze([
@@ -45,11 +46,11 @@ export const MEOWDOKU_AUDIO_BANK: BundleAudioBankConfig = Object.freeze({
         collision: 'visual/audio/meowdoku-mark-wrong-v1',
         // 自动补叉。
         chain: 'visual/audio/meowdoku-auto-mark-v1',
-        // 连击鼓励语：原作 `combo_voice` 默认档（VALUE_REAL_MALE_B_TEXT2）的组合是
+        // 连击鼓励语：配音沿用原作 `combo_voice` 默认档（VALUE_REAL_MALE_B_TEXT2），
         // combo 3~8 用 S6 组（nice / great / perfect / excellent / amazing / unbelievable），
-        // 9~12 用 S10 组（unreal / insane / epic / breathtaking）；
+        // 9~11 用 S10 组（unreal / insane / breathtaking），移除 epic。
         // 本项目保留原配音的表演与资源时长，使用由原声变声得到的女声版本。
-        // 这里按「鼓励图 1~10」编号注册成独立 cue，保证图和声音永远同一档。
+        // cue 保留原素材编号；Breathtaking 在 11 连击时播放 voice10 对应的原配音。
         voice1: 'visual/audio/meowdoku-combo-1-v1',
         voice2: 'visual/audio/meowdoku-combo-2-v1',
         voice3: 'visual/audio/meowdoku-combo-3-v1',
@@ -58,7 +59,6 @@ export const MEOWDOKU_AUDIO_BANK: BundleAudioBankConfig = Object.freeze({
         voice6: 'visual/audio/meowdoku-combo-6-v1',
         voice7: 'visual/audio/meowdoku-combo-7-v1',
         voice8: 'visual/audio/meowdoku-combo-8-v1',
-        voice9: 'visual/audio/meowdoku-combo-9-v1',
         voice10: 'visual/audio/meowdoku-combo-10-v1',
         milestone: 'visual/audio/meowdoku-all-cleared-v1',
         record: 'visual/audio/meowdoku-level-win-v1',

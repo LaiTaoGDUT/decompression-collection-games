@@ -1814,33 +1814,33 @@
       }
     ]
   },
-  "twenty48/visual/pieces/t48-pieces": {
-    "rawHash": "092516e88440a8743533078093086a1a28f1357ac1bee1d0fcb1e366075e0c91",
-    "imageUuid": "3e179569-00e5-5f00-82df-219b804361fd",
+  "twenty48/visual/pieces/t48-tiles": {
+    "rawHash": "a38cdbde9b317625172bb0526d0fdff55caac29138b35af2f3eb675962ca1168",
+    "imageUuid": "aba3ad02-cd72-50b3-b00b-d2e3733f6b1c",
     "size": [
-      888,
-      888
+      900,
+      900
     ],
     "frames": [
       {
-        "source": "visual/pieces/t48-user-piece-1024-v1.png",
+        "source": "visual/pieces/t48-tile-2048-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          224,
+          224
         ],
-        "name": "t48-user-piece-1024-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@a3ca0",
+        "name": "t48-tile-2048-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@76879",
         "rect": [
           2,
           2,
-          292,
-          292
+          224,
+          224
         ],
         "originalSize": [
-          292,
-          292
+          224,
+          224
         ],
         "offset": [
           0,
@@ -1854,24 +1854,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-128-v1.png",
+        "source": "visual/pieces/t48-tile-4096-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          224,
+          224
         ],
-        "name": "t48-user-piece-128-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@7636b",
+        "name": "t48-tile-4096-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@35662",
         "rect": [
-          298,
+          230,
           2,
-          292,
-          292
+          224,
+          224
         ],
         "originalSize": [
-          292,
-          292
+          224,
+          224
         ],
         "offset": [
           0,
@@ -1885,24 +1885,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-16-v1.png",
+        "source": "visual/pieces/t48-tile-8192-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          224,
+          224
         ],
-        "name": "t48-user-piece-16-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@6dfd8",
+        "name": "t48-tile-8192-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@e4a18",
         "rect": [
-          594,
+          458,
           2,
-          292,
-          292
+          224,
+          224
         ],
         "originalSize": [
-          292,
-          292
+          224,
+          224
         ],
         "offset": [
           0,
@@ -1916,24 +1916,86 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-2-v1.png",
+        "source": "visual/pieces/t48-tile-1024-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          176,
+          176
         ],
-        "name": "t48-user-piece-2-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@b91b2",
+        "name": "t48-tile-1024-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@a90c0",
+        "rect": [
+          686,
+          2,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/pieces/t48-tile-128-v3.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "t48-tile-128-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@c3732",
+        "rect": [
+          686,
+          182,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/pieces/t48-tile-16-v3.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "t48-tile-16-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@1a418",
         "rect": [
           2,
-          298,
-          292,
-          292
+          362,
+          176,
+          176
         ],
         "originalSize": [
-          292,
-          292
+          176,
+          176
         ],
         "offset": [
           0,
@@ -1947,24 +2009,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-2048-v1.png",
+        "source": "visual/pieces/t48-tile-2-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          176,
+          176
         ],
-        "name": "t48-user-piece-2048-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@0c367",
+        "name": "t48-tile-2-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@4a790",
         "rect": [
           2,
-          594,
-          292,
-          292
+          542,
+          176,
+          176
         ],
         "originalSize": [
-          292,
-          292
+          176,
+          176
         ],
         "offset": [
           0,
@@ -1978,24 +2040,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-256-v1.png",
+        "source": "visual/pieces/t48-tile-256-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          176,
+          176
         ],
-        "name": "t48-user-piece-256-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@1659a",
+        "name": "t48-tile-256-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@7cbc5",
         "rect": [
-          298,
-          298,
-          292,
-          292
+          2,
+          722,
+          176,
+          176
         ],
         "originalSize": [
-          292,
-          292
+          176,
+          176
         ],
         "offset": [
           0,
@@ -2009,24 +2071,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-32-v1.png",
+        "source": "visual/pieces/t48-tile-32-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          176,
+          176
         ],
-        "name": "t48-user-piece-32-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@e7757",
+        "name": "t48-tile-32-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@35f3e",
         "rect": [
-          594,
-          298,
-          292,
-          292
+          182,
+          230,
+          176,
+          176
         ],
         "originalSize": [
-          292,
-          292
+          176,
+          176
         ],
         "offset": [
           0,
@@ -2040,24 +2102,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-4-v1.png",
+        "source": "visual/pieces/t48-tile-4-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          176,
+          176
         ],
-        "name": "t48-user-piece-4-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@de237",
+        "name": "t48-tile-4-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@01d8c",
         "rect": [
-          298,
-          594,
-          292,
-          292
+          362,
+          230,
+          176,
+          176
         ],
         "originalSize": [
-          292,
-          292
+          176,
+          176
         ],
         "offset": [
           0,
@@ -2071,24 +2133,86 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-4096-v1.png",
+        "source": "visual/pieces/t48-tile-512-v3.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          176,
+          176
         ],
-        "name": "t48-user-piece-4096-v1",
-        "uuid": "24290324-6429-542c-9997-41695b838c71@6ba75",
+        "name": "t48-tile-512-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@402ed",
         "rect": [
-          594,
-          594,
-          292,
-          292
+          542,
+          362,
+          176,
+          176
         ],
         "originalSize": [
-          292,
-          292
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/pieces/t48-tile-64-v3.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "t48-tile-64-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@4ed0b",
+        "rect": [
+          722,
+          362,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/pieces/t48-tile-8-v3.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "t48-tile-8-v3",
+        "uuid": "d79b3735-f49a-5652-aabf-5389c9618020@c65e4",
+        "rect": [
+          182,
+          410,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
         ],
         "offset": [
           0,
@@ -2103,33 +2227,33 @@
       }
     ]
   },
-  "twenty48/visual/pieces/t48-pieces-2": {
-    "rawHash": "0cb26297c6cfea1f5d9d7396e66fbadfcbd8942ab976adc05ba392911f237230",
-    "imageUuid": "7a07f12a-7d6a-568b-ad56-db1a0c0e7807",
+  "twenty48/visual/fx/t48-merge-effects": {
+    "rawHash": "30b4356b07256d35614c38d76deaedc267d38675033e6adf3b67e831c862f13c",
+    "imageUuid": "c8d9aaf0-38fb-57e4-97ae-a94be8f94146",
     "size": [
-      888,
-      296
+      976,
+      520
     ],
     "frames": [
       {
-        "source": "visual/pieces/t48-user-piece-512-v1.png",
+        "source": "visual/fx/t48-fx-echo-v1.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          256,
+          256
         ],
-        "name": "t48-user-piece-512-v1",
-        "uuid": "4ddabd16-6cf5-59a1-b6b5-5bcb19a28711@06242",
+        "name": "t48-fx-echo-v1",
+        "uuid": "26cf6564-e4ed-534f-8d38-45c8925b4434@2672a",
         "rect": [
           2,
           2,
-          292,
-          292
+          256,
+          256
         ],
         "originalSize": [
-          292,
-          292
+          256,
+          256
         ],
         "offset": [
           0,
@@ -2143,24 +2267,24 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-64-v1.png",
+        "source": "visual/fx/t48-fx-rays-v1.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          256,
+          256
         ],
-        "name": "t48-user-piece-64-v1",
-        "uuid": "4ddabd16-6cf5-59a1-b6b5-5bcb19a28711@474c9",
+        "name": "t48-fx-rays-v1",
+        "uuid": "26cf6564-e4ed-534f-8d38-45c8925b4434@10c46",
         "rect": [
-          298,
+          262,
           2,
-          292,
-          292
+          256,
+          256
         ],
         "originalSize": [
-          292,
-          292
+          256,
+          256
         ],
         "offset": [
           0,
@@ -2174,24 +2298,117 @@
         }
       },
       {
-        "source": "visual/pieces/t48-user-piece-8-v1.png",
+        "source": "visual/fx/t48-fx-shockwave-v1.png",
         "sourceRect": [
           0,
           0,
-          292,
-          292
+          256,
+          256
         ],
-        "name": "t48-user-piece-8-v1",
-        "uuid": "4ddabd16-6cf5-59a1-b6b5-5bcb19a28711@4f691",
+        "name": "t48-fx-shockwave-v1",
+        "uuid": "26cf6564-e4ed-534f-8d38-45c8925b4434@8d23b",
         "rect": [
-          594,
+          522,
           2,
-          292,
-          292
+          256,
+          256
         ],
         "originalSize": [
-          292,
-          292
+          256,
+          256
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/fx/t48-fx-tech-ring-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "t48-fx-tech-ring-v1",
+        "uuid": "26cf6564-e4ed-534f-8d38-45c8925b4434@31811",
+        "rect": [
+          2,
+          262,
+          256,
+          256
+        ],
+        "originalSize": [
+          256,
+          256
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/fx/t48-fx-glow-square-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          192,
+          192
+        ],
+        "name": "t48-fx-glow-square-v1",
+        "uuid": "26cf6564-e4ed-534f-8d38-45c8925b4434@a125a",
+        "rect": [
+          782,
+          2,
+          192,
+          192
+        ],
+        "originalSize": [
+          192,
+          192
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/fx/t48-fx-sparkle-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "t48-fx-sparkle-v1",
+        "uuid": "26cf6564-e4ed-534f-8d38-45c8925b4434@f7d76",
+        "rect": [
+          782,
+          198,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
         ],
         "offset": [
           0,
@@ -2388,6 +2605,150 @@
         "originalSize": [
           120,
           79
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "twenty48/visual/ui/t48-hud": {
+    "rawHash": "e63482e21f6cb59a9c514bf5c2e4f7a3a67d211c684512ddd4a7e78f8a45de7e",
+    "imageUuid": "78e11f28-b713-5dea-8a82-091a2effb3e2",
+    "size": [
+      502,
+      121
+    ],
+    "frames": [
+      {
+        "source": "visual/ui/t48-hud-card-amber-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          247,
+          117
+        ],
+        "name": "t48-hud-card-amber-v1",
+        "uuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f@3a16a",
+        "rect": [
+          2,
+          2,
+          247,
+          117
+        ],
+        "originalSize": [
+          247,
+          117
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/t48-hud-card-cyan-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          247,
+          117
+        ],
+        "name": "t48-hud-card-cyan-v1",
+        "uuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f@57430",
+        "rect": [
+          253,
+          2,
+          247,
+          117
+        ],
+        "originalSize": [
+          247,
+          117
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "twenty48/visual/ui/t48-chrome": {
+    "rawHash": "6f0f827b69df4edf63e453b98798c88d8fdd0ff9aa7575618cc6759f136073c3",
+    "imageUuid": "1db8a427-f11a-5100-8151-453081b9fa1c",
+    "size": [
+      448,
+      109
+    ],
+    "frames": [
+      {
+        "source": "visual/ui/t48-title-v2.png",
+        "sourceRect": [
+          0,
+          0,
+          360,
+          105
+        ],
+        "name": "t48-title-v2",
+        "uuid": "8b62f635-318b-545c-9ab7-2a6f94b8519a@43e66",
+        "rect": [
+          2,
+          2,
+          360,
+          105
+        ],
+        "originalSize": [
+          360,
+          105
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/t48-pause-v2.png",
+        "sourceRect": [
+          0,
+          0,
+          80,
+          80
+        ],
+        "name": "t48-pause-v2",
+        "uuid": "8b62f635-318b-545c-9ab7-2a6f94b8519a@55a3e",
+        "rect": [
+          366,
+          2,
+          80,
+          80
+        ],
+        "originalSize": [
+          80,
+          80
         ],
         "offset": [
           0,
@@ -3063,32 +3424,280 @@
     ]
   },
   "doodle-jump/visual/enemies/doodle-enemies": {
-    "rawHash": "ea03293cba1ab6dad6b683487fc3948b96d51da43b345553b4ff17e21161ca29",
+    "rawHash": "e40a9e710672353feee976b1281227c2c85b9f853a57073e5b6ecce18d97d13a",
     "imageUuid": "33111562-f300-56eb-9f2c-6888b3eaf306",
     "size": [
-      1014,
-      924
+      986,
+      606
     ],
     "frames": [
+      {
+        "source": "visual/enemies/enemy-bouncer-01.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          81
+        ],
+        "name": "enemy-bouncer-01",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@72842",
+        "rect": [
+          2,
+          2,
+          224,
+          81
+        ],
+        "originalSize": [
+          224,
+          81
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-bouncer-02.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          81
+        ],
+        "name": "enemy-bouncer-02",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@58c9d",
+        "rect": [
+          230,
+          2,
+          224,
+          81
+        ],
+        "originalSize": [
+          224,
+          81
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-flyer-01.png",
+        "sourceRect": [
+          0,
+          0,
+          162,
+          219
+        ],
+        "name": "enemy-flyer-01",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@76b79",
+        "rect": [
+          458,
+          2,
+          162,
+          219
+        ],
+        "originalSize": [
+          162,
+          219
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-flyer-02.png",
+        "sourceRect": [
+          0,
+          0,
+          162,
+          219
+        ],
+        "name": "enemy-flyer-02",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@349e8",
+        "rect": [
+          624,
+          2,
+          162,
+          219
+        ],
+        "originalSize": [
+          162,
+          219
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-tall-01.png",
+        "sourceRect": [
+          0,
+          0,
+          157,
+          209
+        ],
+        "name": "enemy-tall-01",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@ded9f",
+        "rect": [
+          790,
+          2,
+          157,
+          209
+        ],
+        "originalSize": [
+          157,
+          209
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-tall-02.png",
+        "sourceRect": [
+          0,
+          0,
+          157,
+          209
+        ],
+        "name": "enemy-tall-02",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@811dd",
+        "rect": [
+          790,
+          215,
+          157,
+          209
+        ],
+        "originalSize": [
+          157,
+          209
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-runner-01.png",
+        "sourceRect": [
+          0,
+          0,
+          209,
+          133
+        ],
+        "name": "enemy-runner-01",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@991d3",
+        "rect": [
+          2,
+          87,
+          209,
+          133
+        ],
+        "originalSize": [
+          209,
+          133
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-runner-02.png",
+        "sourceRect": [
+          0,
+          0,
+          209,
+          133
+        ],
+        "name": "enemy-runner-02",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@481c8",
+        "rect": [
+          215,
+          87,
+          209,
+          133
+        ],
+        "originalSize": [
+          209,
+          133
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
       {
         "source": "visual/enemies/enemy-large-01.png",
         "sourceRect": [
           0,
           0,
-          457,
-          400
+          195,
+          143
         ],
         "name": "enemy-large-01",
         "uuid": "2378d063-d158-5830-b2aa-2044945499ff@d18c3",
         "rect": [
           2,
-          2,
-          457,
-          400
+          224,
+          195,
+          143
         ],
         "originalSize": [
-          457,
-          400
+          195,
+          143
         ],
         "offset": [
           0,
@@ -3106,82 +3715,20 @@
         "sourceRect": [
           0,
           0,
-          457,
-          400
+          195,
+          143
         ],
         "name": "enemy-large-02",
         "uuid": "2378d063-d158-5830-b2aa-2044945499ff@11a04",
         "rect": [
-          463,
-          2,
-          457,
-          400
+          201,
+          224,
+          195,
+          143
         ],
         "originalSize": [
-          457,
-          400
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/enemies/enemy-hover-01.png",
-        "sourceRect": [
-          0,
-          0,
-          341,
-          436
-        ],
-        "name": "enemy-hover-01",
-        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@c2484",
-        "rect": [
-          2,
-          406,
-          341,
-          436
-        ],
-        "originalSize": [
-          341,
-          436
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/enemies/enemy-hover-02.png",
-        "sourceRect": [
-          0,
-          0,
-          341,
-          436
-        ],
-        "name": "enemy-hover-02",
-        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@b4652",
-        "rect": [
-          347,
-          406,
-          341,
-          436
-        ],
-        "originalSize": [
-          341,
-          436
+          195,
+          143
         ],
         "offset": [
           0,
@@ -3199,20 +3746,20 @@
         "sourceRect": [
           0,
           0,
-          320,
-          256
+          190,
+          110
         ],
         "name": "enemy-weaver-01",
         "uuid": "2378d063-d158-5830-b2aa-2044945499ff@d0554",
         "rect": [
-          692,
-          406,
-          320,
-          256
+          400,
+          225,
+          190,
+          110
         ],
         "originalSize": [
-          320,
-          256
+          190,
+          110
         ],
         "offset": [
           0,
@@ -3230,20 +3777,20 @@
         "sourceRect": [
           0,
           0,
-          320,
-          256
+          190,
+          110
         ],
         "name": "enemy-weaver-02",
         "uuid": "2378d063-d158-5830-b2aa-2044945499ff@d6fa8",
         "rect": [
-          692,
-          666,
-          320,
-          256
+          594,
+          225,
+          190,
+          110
         ],
         "originalSize": [
-          320,
-          256
+          190,
+          110
         ],
         "offset": [
           0,
@@ -3255,36 +3802,26 @@
           "Left": 0,
           "Right": 0
         }
-      }
-    ]
-  },
-  "doodle-jump/visual/enemies/doodle-enemies-2": {
-    "rawHash": "e5dbed878233e5694b44936d9b21e8b7e7471c02004b6a94b290122abe5185b8",
-    "imageUuid": "4465617a-1c01-5fe1-8425-67a7dacd055a",
-    "size": [
-      571,
-      872
-    ],
-    "frames": [
+      },
       {
         "source": "visual/enemies/enemy-small-01.png",
         "sourceRect": [
           0,
           0,
-          275,
-          295
+          138,
+          124
         ],
         "name": "enemy-small-01",
-        "uuid": "0e2ebb99-1024-579f-b86b-459df11df76e@855ac",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@855ac",
         "rect": [
-          2,
-          2,
-          275,
-          295
+          400,
+          339,
+          138,
+          124
         ],
         "originalSize": [
-          275,
-          295
+          138,
+          124
         ],
         "offset": [
           0,
@@ -3302,20 +3839,82 @@
         "sourceRect": [
           0,
           0,
-          275,
-          295
+          138,
+          124
         ],
         "name": "enemy-small-02",
-        "uuid": "0e2ebb99-1024-579f-b86b-459df11df76e@04f9c",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@04f9c",
         "rect": [
-          2,
-          301,
-          275,
-          295
+          542,
+          339,
+          138,
+          124
         ],
         "originalSize": [
-          275,
-          295
+          138,
+          124
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-hover-01.png",
+        "sourceRect": [
+          0,
+          0,
+          91,
+          119
+        ],
+        "name": "enemy-hover-01",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@c2484",
+        "rect": [
+          684,
+          339,
+          91,
+          119
+        ],
+        "originalSize": [
+          91,
+          119
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/enemies/enemy-hover-02.png",
+        "sourceRect": [
+          0,
+          0,
+          91,
+          119
+        ],
+        "name": "enemy-hover-02",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@b4652",
+        "rect": [
+          779,
+          428,
+          91,
+          119
+        ],
+        "originalSize": [
+          91,
+          119
         ],
         "offset": [
           0,
@@ -3333,20 +3932,20 @@
         "sourceRect": [
           0,
           0,
-          288,
-          270
+          110,
+          86
         ],
         "name": "enemy-hopper-01",
-        "uuid": "0e2ebb99-1024-579f-b86b-459df11df76e@78778",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@78778",
         "rect": [
-          2,
-          600,
-          288,
-          270
+          874,
+          428,
+          110,
+          86
         ],
         "originalSize": [
-          288,
-          270
+          110,
+          86
         ],
         "offset": [
           0,
@@ -3364,20 +3963,20 @@
         "sourceRect": [
           0,
           0,
-          288,
-          270
+          110,
+          86
         ],
         "name": "enemy-hopper-02",
-        "uuid": "0e2ebb99-1024-579f-b86b-459df11df76e@38717",
+        "uuid": "2378d063-d158-5830-b2aa-2044945499ff@38717",
         "rect": [
-          281,
-          2,
-          288,
-          270
+          874,
+          518,
+          110,
+          86
         ],
         "originalSize": [
-          288,
-          270
+          110,
+          86
         ],
         "offset": [
           0,
@@ -3393,32 +3992,32 @@
     ]
   },
   "doodle-jump/visual/items/doodle-items": {
-    "rawHash": "7d8b352ffa77ea1a4e657a9cb5e7745a8cea96b57fc698005dcccfc0202b64f3",
+    "rawHash": "20c7b5eb450ad0619d8168d5e9997c166635d48ccd569c00440adfa7bfec42af",
     "imageUuid": "50e440a9-1254-568f-a10c-8dd3fef1c56f",
     "size": [
-      732,
-      956
+      178,
+      595
     ],
     "frames": [
       {
-        "source": "visual/items/pickup-jetpack.png",
+        "source": "visual/items/pickup-rocket.png",
         "sourceRect": [
           0,
           0,
-          356,
-          474
+          174,
+          271
         ],
-        "name": "pickup-jetpack",
-        "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@74d12",
+        "name": "pickup-rocket",
+        "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@7187a",
         "rect": [
           2,
           2,
-          356,
-          474
+          174,
+          271
         ],
         "originalSize": [
-          356,
-          474
+          174,
+          271
         ],
         "offset": [
           0,
@@ -3432,24 +4031,24 @@
         }
       },
       {
-        "source": "visual/items/pickup-rocket.png",
+        "source": "visual/items/pickup-shield.png",
         "sourceRect": [
           0,
           0,
-          304,
-          474
+          94,
+          96
         ],
-        "name": "pickup-rocket",
-        "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@7187a",
+        "name": "pickup-shield",
+        "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@450f5",
         "rect": [
           2,
-          480,
-          304,
-          474
+          277,
+          94,
+          96
         ],
         "originalSize": [
-          304,
-          474
+          94,
+          96
         ],
         "offset": [
           0,
@@ -3467,20 +4066,82 @@
         "sourceRect": [
           0,
           0,
-          420,
-          309
+          92,
+          68
         ],
         "name": "pickup-trampoline",
         "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@7751c",
         "rect": [
-          310,
-          480,
-          420,
-          309
+          2,
+          377,
+          92,
+          68
         ],
         "originalSize": [
-          420,
-          309
+          92,
+          68
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/items/pickup-jetpack.png",
+        "sourceRect": [
+          0,
+          0,
+          68,
+          90
+        ],
+        "name": "pickup-jetpack",
+        "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@74d12",
+        "rect": [
+          2,
+          449,
+          68,
+          90
+        ],
+        "originalSize": [
+          68,
+          90
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/items/pickup-propeller-hat-v2.png",
+        "sourceRect": [
+          0,
+          0,
+          80,
+          50
+        ],
+        "name": "pickup-propeller-hat-v2",
+        "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@307cb",
+        "rect": [
+          2,
+          543,
+          80,
+          50
+        ],
+        "originalSize": [
+          80,
+          50
         ],
         "offset": [
           0,
@@ -3498,92 +4159,20 @@
         "sourceRect": [
           0,
           0,
-          329,
-          404
+          55,
+          68
         ],
         "name": "pickup-spring-v2",
         "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@b03b0",
         "rect": [
-          362,
-          2,
-          329,
-          404
+          74,
+          449,
+          55,
+          68
         ],
         "originalSize": [
-          329,
-          404
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "doodle-jump/visual/items/doodle-items-2": {
-    "rawHash": "3603b0c20532737ce5790b1aab569d19a94bae5f576821a141395444779ce657",
-    "imageUuid": "77f5c83f-5b3c-5a67-9556-7c3bdb609b16",
-    "size": [
-      373,
-      729
-    ],
-    "frames": [
-      {
-        "source": "visual/items/pickup-shield.png",
-        "sourceRect": [
-          0,
-          0,
-          369,
-          376
-        ],
-        "name": "pickup-shield",
-        "uuid": "2b411151-b14b-5503-865d-3bd3b373ac20@450f5",
-        "rect": [
-          2,
-          2,
-          369,
-          376
-        ],
-        "originalSize": [
-          369,
-          376
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/items/pickup-propeller-hat.png",
-        "sourceRect": [
-          0,
-          0,
-          351,
-          345
-        ],
-        "name": "pickup-propeller-hat",
-        "uuid": "2b411151-b14b-5503-865d-3bd3b373ac20@a7e96",
-        "rect": [
-          2,
-          382,
-          351,
-          345
-        ],
-        "originalSize": [
-          351,
-          345
+          55,
+          68
         ],
         "offset": [
           0,
@@ -4053,63 +4642,32 @@
     ]
   },
   "doodle-jump/visual/projectiles/doodle-projectiles": {
-    "rawHash": "2f94f6ab6c6376bc58ad0304b93a3f8ca27f1fe9194e1ea9547a7437e27edbc5",
+    "rawHash": "86474d31f8151c8c20ead8892657ea26701c99a2c27744c0b1fdd1d6d12b6326",
     "imageUuid": "b19461ff-e549-5c82-89ac-1b7bbbf4d375",
     "size": [
-      909,
-      241
+      196,
+      65
     ],
     "frames": [
       {
-        "source": "visual/projectiles/paper-plane-trail.png",
+        "source": "visual/projectiles/carrot-bullet.png",
         "sourceRect": [
           0,
           0,
-          353,
-          79
+          128,
+          59
         ],
-        "name": "paper-plane-trail",
-        "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@5f3bd",
+        "name": "carrot-bullet",
+        "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@5bef3",
         "rect": [
           2,
           2,
-          353,
-          79
+          128,
+          59
         ],
         "originalSize": [
-          353,
-          79
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/projectiles/paper-plane-trimmed.png",
-        "sourceRect": [
-          0,
-          0,
-          311,
-          219
-        ],
-        "name": "paper-plane-trimmed",
-        "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@c82c9",
-        "rect": [
-          359,
-          2,
-          311,
-          219
-        ],
-        "originalSize": [
-          311,
-          219
+          128,
+          59
         ],
         "offset": [
           0,
@@ -4127,20 +4685,20 @@
         "sourceRect": [
           0,
           0,
-          233,
-          237
+          60,
+          61
         ],
         "name": "aim-reticle-trimmed",
         "uuid": "7e124a8b-9073-50cc-a1dd-e2f585b6345a@d6045",
         "rect": [
-          674,
+          134,
           2,
-          233,
-          237
+          60,
+          61
         ],
         "originalSize": [
-          233,
-          237
+          60,
+          61
         ],
         "offset": [
           0,
@@ -4156,36 +4714,36 @@
     ]
   },
   "doodle-jump/visual/ui/hud/doodle-hud": {
-    "rawHash": "89f0924c3d0d22e333fedc1b850bd5544de989f5f14f3e01035fc621e859b1e0",
+    "rawHash": "daeebf9fdf3a97797b8412f0a843bee86390d7a50a4bd3786e7e5aa45c6235d4",
     "imageUuid": "ad25c911-1611-53a6-a26e-7be7c3b0122d",
     "size": [
-      956,
-      808
+      534,
+      222
     ],
     "frames": [
       {
         "source": "visual/ui/hud/height-card.png",
         "sourceRect": [
-          1,
-          1,
-          460,
-          248
+          0,
+          0,
+          222,
+          120
         ],
         "name": "height-card",
         "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@d7bc3",
         "rect": [
           2,
           2,
-          460,
-          248
+          222,
+          120
         ],
         "originalSize": [
-          462,
-          250
+          222,
+          120
         ],
         "offset": [
-          0,
-          0
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -4195,24 +4753,24 @@
         }
       },
       {
-        "source": "visual/ui/hud/score-card.png",
+        "source": "visual/ui/hud/carrot-card.png",
         "sourceRect": [
-          1,
-          1,
-          416,
-          274
+          0,
+          0,
+          192,
+          130
         ],
-        "name": "score-card",
-        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@86b95",
+        "name": "carrot-card",
+        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@80c5c",
         "rect": [
-          466,
+          228,
           2,
-          416,
-          274
+          192,
+          130
         ],
         "originalSize": [
-          418,
-          276
+          192,
+          130
         ],
         "offset": [
           0,
@@ -4230,86 +4788,24 @@
         "sourceRect": [
           0,
           0,
-          360,
-          39
+          120,
+          30
         ],
         "name": "item-progress-fill",
         "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@5c149",
         "rect": [
           2,
-          254,
-          360,
-          39
+          126,
+          120,
+          30
         ],
         "originalSize": [
-          360,
-          39
+          120,
+          30
         ],
         "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/ui/hud/back-button.png",
-        "sourceRect": [
-          1,
-          1,
-          308,
-          221
-        ],
-        "name": "back-button",
-        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@32fe2",
-        "rect": [
-          366,
-          280,
-          308,
-          221
-        ],
-        "originalSize": [
-          310,
-          223
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/ui/hud/retry-button.png",
-        "sourceRect": [
-          1,
-          1,
-          276,
-          287
-        ],
-        "name": "retry-button",
-        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@23972",
-        "rect": [
-          678,
-          280,
-          276,
-          287
-        ],
-        "originalSize": [
-          278,
-          289
-        ],
-        "offset": [
-          0,
-          0
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -4321,57 +4817,26 @@
       {
         "source": "visual/ui/hud/pause-button.png",
         "sourceRect": [
-          1,
-          1,
-          250,
-          267
+          0,
+          0,
+          64,
+          68
         ],
         "name": "pause-button",
         "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@4ddde",
         "rect": [
-          2,
-          297,
-          250,
-          267
+          126,
+          126,
+          64,
+          68
         ],
         "originalSize": [
-          252,
-          269
+          64,
+          68
         ],
         "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/ui/hud/play-again-button.png",
-        "sourceRect": [
-          1,
-          1,
-          225,
-          252
-        ],
-        "name": "play-again-button",
-        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@50871",
-        "rect": [
-          256,
-          505,
-          225,
-          252
-        ],
-        "originalSize": [
-          227,
-          254
-        ],
-        "offset": [
-          0,
-          0
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -4383,26 +4848,119 @@
       {
         "source": "visual/ui/hud/rules-button.png",
         "sourceRect": [
-          20,
-          19,
-          232,
-          238
+          5,
+          5,
+          59,
+          60
         ],
         "name": "rules-button",
         "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@537ce",
         "rect": [
           2,
-          568,
-          232,
-          238
+          160,
+          59,
+          60
         ],
         "originalSize": [
-          253,
-          270
+          64,
+          68
         ],
         "offset": [
-          9.5,
-          -3
+          2.5,
+          -1.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/hud/back-button.png",
+        "sourceRect": [
+          0,
+          0,
+          60,
+          43
+        ],
+        "name": "back-button",
+        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@32fe2",
+        "rect": [
+          424,
+          2,
+          60,
+          43
+        ],
+        "originalSize": [
+          60,
+          43
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/hud/play-again-button.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          49
+        ],
+        "name": "play-again-button",
+        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@50871",
+        "rect": [
+          65,
+          160,
+          44,
+          49
+        ],
+        "originalSize": [
+          44,
+          49
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/hud/retry-button.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          46
+        ],
+        "name": "retry-button",
+        "uuid": "e70c5ab8-7799-58c2-a734-12c2b14654e1@23972",
+        "rect": [
+          488,
+          2,
+          44,
+          46
+        ],
+        "originalSize": [
+          44,
+          46
+        ],
+        "offset": [
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -4641,32 +5199,32 @@
     ]
   },
   "doodle-jump/visual/backgrounds/decor-v2/doodle-warm": {
-    "rawHash": "fc4b8c041e4d4e7c062b15f78d43da8c358ed14757cf34630ef03d0ede9d0aca",
+    "rawHash": "b0f9a23021aea719cdc297eb84668c463c67dd9405298310e1c2d85e11bc59e5",
     "imageUuid": "08b93c77-d751-5493-8b8e-e85000b28542",
     "size": [
-      771,
-      734
+      624,
+      156
     ],
     "frames": [
       {
-        "source": "visual/backgrounds/decor-v2/warm-pencil-spiral.png",
+        "source": "visual/backgrounds/decor-v2/warm-clover.png",
         "sourceRect": [
           0,
           0,
-          384,
-          322
+          152,
+          152
         ],
-        "name": "warm-pencil-spiral",
-        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@4bc22",
+        "name": "warm-clover",
+        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@cb71e",
         "rect": [
           2,
           2,
-          384,
-          322
+          152,
+          152
         ],
         "originalSize": [
-          384,
-          322
+          152,
+          152
         ],
         "offset": [
           0,
@@ -4680,24 +5238,24 @@
         }
       },
       {
-        "source": "visual/backgrounds/decor-v2/warm-push-pin.png",
+        "source": "visual/backgrounds/decor-v2/warm-grass.png",
         "sourceRect": [
           0,
           0,
-          379,
-          360
+          152,
+          152
         ],
-        "name": "warm-push-pin",
-        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@c8506",
+        "name": "warm-grass",
+        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@fedf5",
         "rect": [
-          390,
+          158,
           2,
-          379,
-          360
+          152,
+          152
         ],
         "originalSize": [
-          379,
-          360
+          152,
+          152
         ],
         "offset": [
           0,
@@ -4711,24 +5269,24 @@
         }
       },
       {
-        "source": "visual/backgrounds/decor-v2/warm-binder-clip.png",
+        "source": "visual/backgrounds/decor-v2/warm-leaf-sprig.png",
         "sourceRect": [
           0,
           0,
-          362,
-          369
+          152,
+          152
         ],
-        "name": "warm-binder-clip",
-        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@5b5dc",
+        "name": "warm-leaf-sprig",
+        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@7262f",
         "rect": [
+          314,
           2,
-          328,
-          362,
-          369
+          152,
+          152
         ],
         "originalSize": [
-          362,
-          369
+          152,
+          152
         ],
         "offset": [
           0,
@@ -4742,24 +5300,24 @@
         }
       },
       {
-        "source": "visual/backgrounds/decor-v2/warm-paperclip.png",
+        "source": "visual/backgrounds/decor-v2/warm-wildflowers.png",
         "sourceRect": [
           0,
           0,
-          364,
-          366
+          152,
+          152
         ],
-        "name": "warm-paperclip",
-        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@65afa",
+        "name": "warm-wildflowers",
+        "uuid": "8069c2ee-9b75-5b8e-ad7b-7042d2abd82f@0398b",
         "rect": [
-          368,
-          366,
-          364,
-          366
+          470,
+          2,
+          152,
+          152
         ],
         "originalSize": [
-          364,
-          366
+          152,
+          152
         ],
         "offset": [
           0,
@@ -5455,11 +6013,11 @@
     ]
   },
   "doodle-jump/visual/effects/doodle-rocket": {
-    "rawHash": "ce5ea8df38baa16f50ed9286ab1e4e21a0d8d9937cb08e0a2c998d871dbf6d7f",
+    "rawHash": "15cc224d0c891829adc9a45ebad14561fed8e32a3200fa479cb90409e833c924",
     "imageUuid": "64084833-15a3-5913-843c-f44810d85720",
     "size": [
-      247,
-      516
+      140,
+      581
     ],
     "frames": [
       {
@@ -5467,20 +6025,20 @@
         "sourceRect": [
           0,
           0,
-          145,
-          270
+          136,
+          253
         ],
         "name": "rocket-paper-trail",
         "uuid": "c916bf83-d705-58a6-b616-16978eb85db5@2fb8d",
         "rect": [
           2,
           2,
-          145,
-          270
+          136,
+          253
         ],
         "originalSize": [
-          145,
-          270
+          136,
+          253
         ],
         "offset": [
           0,
@@ -5498,20 +6056,20 @@
         "sourceRect": [
           0,
           0,
-          150,
-          238
+          136,
+          216
         ],
         "name": "rocket-paper-scraps",
         "uuid": "c916bf83-d705-58a6-b616-16978eb85db5@429b5",
         "rect": [
           2,
-          276,
-          150,
-          238
+          259,
+          136,
+          216
         ],
         "originalSize": [
-          150,
-          238
+          136,
+          216
         ],
         "offset": [
           0,
@@ -5529,20 +6087,20 @@
         "sourceRect": [
           0,
           0,
-          94,
-          225
+          60,
+          100
         ],
         "name": "rocket-flame",
         "uuid": "c916bf83-d705-58a6-b616-16978eb85db5@17c29",
         "rect": [
-          151,
           2,
-          94,
-          225
+          479,
+          60,
+          100
         ],
         "originalSize": [
-          94,
-          225
+          60,
+          100
         ],
         "offset": [
           0,
@@ -5558,63 +6116,32 @@
     ]
   },
   "doodle-jump/visual/effects/doodle-jetpack": {
-    "rawHash": "7dc0e72ba994eb5c3eddd17898c0c3186fdca4050edeb5f81c6358f4d458447f",
+    "rawHash": "9a32d687d646835b5abcc20902464222a77105b0dcfb5d55fa16485b16e1c9de",
     "imageUuid": "cb11e2c6-3384-51b3-a0b9-bcd8079a0389",
     "size": [
-      201,
-      490
+      46,
+      84
     ],
     "frames": [
-      {
-        "source": "visual/effects/jetpack-paper-scraps.png",
-        "sourceRect": [
-          0,
-          0,
-          197,
-          273
-        ],
-        "name": "jetpack-paper-scraps",
-        "uuid": "2606e5cd-db93-5194-9b01-ba090df56db1@c6e39",
-        "rect": [
-          2,
-          2,
-          197,
-          273
-        ],
-        "originalSize": [
-          197,
-          273
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
       {
         "source": "visual/effects/jetpack-flames.png",
         "sourceRect": [
           0,
           0,
-          179,
-          209
+          42,
+          80
         ],
         "name": "jetpack-flames",
         "uuid": "2606e5cd-db93-5194-9b01-ba090df56db1@cf315",
         "rect": [
           2,
-          279,
-          179,
-          209
+          2,
+          42,
+          80
         ],
         "originalSize": [
-          179,
-          209
+          42,
+          80
         ],
         "offset": [
           0,
@@ -5862,6 +6389,429 @@
         "originalSize": [
           162,
           273
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "doodle-jump/visual/player/doodle-rabbit": {
+    "rawHash": "ed0ea3803f395212e114ad5040db222d11a157c5eac807a622921b2c1c981b0c",
+    "imageUuid": "edeb332c-65c0-5046-a165-7973749239dc",
+    "size": [
+      404,
+      1018
+    ],
+    "frames": [
+      {
+        "source": "visual/player/shield-overlay.png",
+        "sourceRect": [
+          0,
+          0,
+          264,
+          264
+        ],
+        "name": "shield-overlay",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@91e2d",
+        "rect": [
+          2,
+          2,
+          264,
+          264
+        ],
+        "originalSize": [
+          264,
+          264
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-rocket.png",
+        "sourceRect": [
+          0,
+          0,
+          144,
+          218
+        ],
+        "name": "rabbit-rocket",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@10a65",
+        "rect": [
+          2,
+          270,
+          144,
+          218
+        ],
+        "originalSize": [
+          144,
+          218
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-shoes-falling.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          178
+        ],
+        "name": "rabbit-shoes-falling",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@d58ee",
+        "rect": [
+          2,
+          492,
+          132,
+          178
+        ],
+        "originalSize": [
+          132,
+          178
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-shoes-jumping.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          178
+        ],
+        "name": "rabbit-shoes-jumping",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@549c0",
+        "rect": [
+          2,
+          674,
+          132,
+          178
+        ],
+        "originalSize": [
+          132,
+          178
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-falling.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          160
+        ],
+        "name": "rabbit-falling",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@07498",
+        "rect": [
+          2,
+          856,
+          132,
+          160
+        ],
+        "originalSize": [
+          132,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-jetpack.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          160
+        ],
+        "name": "rabbit-jetpack",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@13ecb",
+        "rect": [
+          138,
+          492,
+          132,
+          160
+        ],
+        "originalSize": [
+          132,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-jumping.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          160
+        ],
+        "name": "rabbit-jumping",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@4715d",
+        "rect": [
+          150,
+          270,
+          132,
+          160
+        ],
+        "originalSize": [
+          132,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-propeller.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          160
+        ],
+        "name": "rabbit-propeller",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@4d66e",
+        "rect": [
+          270,
+          2,
+          132,
+          160
+        ],
+        "originalSize": [
+          132,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/rabbit-propeller-spin.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          160
+        ],
+        "name": "rabbit-propeller-spin",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@2005b",
+        "rect": [
+          138,
+          656,
+          132,
+          160
+        ],
+        "originalSize": [
+          132,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/player-rocket.png",
+        "sourceRect": [
+          0,
+          0,
+          90,
+          131
+        ],
+        "name": "player-rocket",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@7eb15",
+        "rect": [
+          138,
+          820,
+          90,
+          131
+        ],
+        "originalSize": [
+          90,
+          131
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/player/player-jetpack.png",
+        "sourceRect": [
+          0,
+          0,
+          50,
+          48
+        ],
+        "name": "player-jetpack",
+        "uuid": "9800c124-87a4-5b97-94f9-4b26742a76bf@98f46",
+        "rect": [
+          150,
+          434,
+          50,
+          48
+        ],
+        "originalSize": [
+          50,
+          48
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "doodle-jump/visual/collectibles/doodle-collectibles": {
+    "rawHash": "6436eadc0285f3635e72a81ca97f204b7046ebe284e48c51f14928920ee18a35",
+    "imageUuid": "836412ff-0ed5-53fa-96fb-a536bcd35904",
+    "size": [
+      172,
+      256
+    ],
+    "frames": [
+      {
+        "source": "visual/collectibles/golden-carrot-glow.png",
+        "sourceRect": [
+          0,
+          0,
+          168,
+          168
+        ],
+        "name": "golden-carrot-glow",
+        "uuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee@0c221",
+        "rect": [
+          2,
+          2,
+          168,
+          168
+        ],
+        "originalSize": [
+          168,
+          168
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/collectibles/golden-carrot.png",
+        "sourceRect": [
+          0,
+          0,
+          47,
+          80
+        ],
+        "name": "golden-carrot",
+        "uuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee@d70f7",
+        "rect": [
+          2,
+          174,
+          47,
+          80
+        ],
+        "originalSize": [
+          47,
+          80
         ],
         "offset": [
           0,
@@ -9157,7 +10107,7 @@
     ]
   },
   "meowdoku/visual/ui/meow-hud": {
-    "rawHash": "bcca39d1c775ae0a14337ced47fb9678101e103394b392efab66f2c324934efc",
+    "rawHash": "28ac7726c43cfc51e08daecd1fb339ebb6336c23651f73a0f8686ba2a0e130c8",
     "imageUuid": "ef278de5-cb02-5f28-872a-c0cd15a5cd1a",
     "size": [
       468,
@@ -10420,6 +11370,2534 @@
         "originalSize": [
           512,
           512
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/game/cyblockbees-dog": {
+    "rawHash": "41d5916fc5bf35b4e35d970ea7b8fac04c3ae35cf808518d12ce0c195bcee9c9",
+    "imageUuid": "092c629c-e7fe-56bd-8b50-a4f5a6398ebe",
+    "size": [
+      184,
+      995
+    ],
+    "frames": [
+      {
+        "source": "visual/game/dog-beaten-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          185
+        ],
+        "name": "dog-beaten-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@d4d00",
+        "rect": [
+          2,
+          2,
+          180,
+          185
+        ],
+        "originalSize": [
+          180,
+          185
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/dog-idle-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          185
+        ],
+        "name": "dog-idle-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@d810b",
+        "rect": [
+          2,
+          191,
+          180,
+          185
+        ],
+        "originalSize": [
+          180,
+          185
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/dog-lose-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          185
+        ],
+        "name": "dog-lose-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@489ab",
+        "rect": [
+          2,
+          380,
+          180,
+          185
+        ],
+        "originalSize": [
+          180,
+          185
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/dog-scared-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          185
+        ],
+        "name": "dog-scared-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@e00b1",
+        "rect": [
+          2,
+          569,
+          180,
+          185
+        ],
+        "originalSize": [
+          180,
+          185
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/dog-win-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          185
+        ],
+        "name": "dog-win-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@4be2e",
+        "rect": [
+          2,
+          758,
+          180,
+          185
+        ],
+        "originalSize": [
+          180,
+          185
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/bee-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          148,
+          107
+        ],
+        "name": "bee-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@8df1f",
+        "rect": [
+          2,
+          947,
+          64,
+          46
+        ],
+        "originalSize": [
+          64,
+          46
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/bee-die-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          140,
+          99
+        ],
+        "name": "bee-die-v1",
+        "uuid": "acfceccc-e23c-52a7-af79-6e6102fbffa2@e178a",
+        "rect": [
+          70,
+          947,
+          64,
+          45
+        ],
+        "originalSize": [
+          64,
+          45
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/game/cyblockbees-props-1": {
+    "rawHash": "24da6e9f9c63a16a8794b9553d59e68fabef6ff2daa9c54c4feac04090729987",
+    "imageUuid": "07a553b8-6161-5200-9eba-2776bce4d58c",
+    "size": [
+      575,
+      247
+    ],
+    "frames": [
+      {
+        "source": "visual/game/box-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          218,
+          75
+        ],
+        "name": "box-1-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@062b8",
+        "rect": [
+          2,
+          2,
+          218,
+          75
+        ],
+        "originalSize": [
+          218,
+          75
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 15,
+          "Bottom": 14,
+          "Left": 15,
+          "Right": 15
+        }
+      },
+      {
+        "source": "visual/game/brick-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          217,
+          43
+        ],
+        "name": "brick-2-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@56829",
+        "rect": [
+          224,
+          2,
+          217,
+          43
+        ],
+        "originalSize": [
+          217,
+          43
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 5,
+          "Bottom": 5,
+          "Left": 5,
+          "Right": 5
+        }
+      },
+      {
+        "source": "visual/game/box-inner-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "box-inner-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@a31c0",
+        "rect": [
+          445,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 8,
+          "Bottom": 7,
+          "Left": 8,
+          "Right": 8
+        }
+      },
+      {
+        "source": "visual/game/box-outline-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          64
+        ],
+        "name": "box-outline-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@ece41",
+        "rect": [
+          224,
+          49,
+          128,
+          64
+        ],
+        "originalSize": [
+          128,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/saw-spin-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          232,
+          79
+        ],
+        "name": "saw-spin-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@fc73d",
+        "rect": [
+          2,
+          81,
+          128,
+          44
+        ],
+        "originalSize": [
+          128,
+          44
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/box-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          123,
+          75
+        ],
+        "name": "box-2-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@ed6b2",
+        "rect": [
+          134,
+          117,
+          123,
+          75
+        ],
+        "originalSize": [
+          123,
+          75
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 15,
+          "Bottom": 14,
+          "Left": 16,
+          "Right": 16
+        }
+      },
+      {
+        "source": "visual/game/saw-gear-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "saw-gear-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@c3b8c",
+        "rect": [
+          2,
+          129,
+          116,
+          116
+        ],
+        "originalSize": [
+          116,
+          116
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/box-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          74,
+          75
+        ],
+        "name": "box-3-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@be2ae",
+        "rect": [
+          356,
+          49,
+          74,
+          75
+        ],
+        "originalSize": [
+          74,
+          75
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 14,
+          "Bottom": 15,
+          "Left": 16,
+          "Right": 16
+        }
+      },
+      {
+        "source": "visual/game/spike-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          57,
+          101
+        ],
+        "name": "spike-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@82b7a",
+        "rect": [
+          261,
+          117,
+          36,
+          64
+        ],
+        "originalSize": [
+          36,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/brick-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          42
+        ],
+        "name": "brick-1-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@b0cc7",
+        "rect": [
+          301,
+          117,
+          44,
+          42
+        ],
+        "originalSize": [
+          44,
+          42
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/ice-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          57,
+          41
+        ],
+        "name": "ice-3-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@de5f4",
+        "rect": [
+          134,
+          81,
+          42,
+          30
+        ],
+        "originalSize": [
+          42,
+          30
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/ice-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          56
+        ],
+        "name": "ice-2-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@f5187",
+        "rect": [
+          349,
+          128,
+          41,
+          41
+        ],
+        "originalSize": [
+          41,
+          41
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/ice-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          55,
+          56
+        ],
+        "name": "ice-1-v1",
+        "uuid": "784cab21-03a0-5855-b76a-ef03a4434e51@69c77",
+        "rect": [
+          301,
+          163,
+          40,
+          41
+        ],
+        "originalSize": [
+          40,
+          41
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/game/cyblockbees-props-2": {
+    "rawHash": "1a5aa1b350add01b5e43505ddbabc2a0d26afe8fe4d9afdabc5eaf02aa15ec02",
+    "imageUuid": "d4671e82-d559-5014-99fb-5f070af18d6e",
+    "size": [
+      895,
+      209
+    ],
+    "frames": [
+      {
+        "source": "visual/game/stone-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          183,
+          205
+        ],
+        "name": "stone-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@77fbe",
+        "rect": [
+          2,
+          2,
+          183,
+          205
+        ],
+        "originalSize": [
+          183,
+          205
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spiky-ball-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          205,
+          19
+        ],
+        "name": "spiky-ball-3-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@33a8b",
+        "rect": [
+          189,
+          2,
+          205,
+          19
+        ],
+        "originalSize": [
+          205,
+          19
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spiky-ball-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          205,
+          205
+        ],
+        "name": "spiky-ball-1-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@1fc39",
+        "rect": [
+          398,
+          2,
+          144,
+          144
+        ],
+        "originalSize": [
+          144,
+          144
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/black-hole-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          156,
+          152
+        ],
+        "name": "black-hole-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@98f8a",
+        "rect": [
+          189,
+          25,
+          132,
+          129
+        ],
+        "originalSize": [
+          132,
+          129
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/solid-red-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "name": "solid-red-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@8beb6",
+        "rect": [
+          546,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/move-arrow-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          118,
+          54
+        ],
+        "name": "move-arrow-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@c07a9",
+        "rect": [
+          678,
+          2,
+          118,
+          54
+        ],
+        "originalSize": [
+          118,
+          54
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 16,
+          "Bottom": 16,
+          "Left": 16,
+          "Right": 16
+        }
+      },
+      {
+        "source": "visual/game/knife-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          97,
+          359
+        ],
+        "name": "knife-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@70d8f",
+        "rect": [
+          325,
+          25,
+          32,
+          118
+        ],
+        "originalSize": [
+          32,
+          118
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/ball-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          93,
+          113
+        ],
+        "name": "ball-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@7f94d",
+        "rect": [
+          800,
+          2,
+          93,
+          113
+        ],
+        "originalSize": [
+          93,
+          113
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/bomb-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          142,
+          149
+        ],
+        "name": "bomb-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@0d1a4",
+        "rect": [
+          678,
+          60,
+          104,
+          109
+        ],
+        "originalSize": [
+          104,
+          109
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spiky-ball-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          30,
+          31
+        ],
+        "name": "spiky-ball-2-v1",
+        "uuid": "3d2490cf-0e70-5cc2-95ae-3eb91bbe6259@7a95b",
+        "rect": [
+          361,
+          25,
+          30,
+          31
+        ],
+        "originalSize": [
+          30,
+          31
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/game/cyblockbees-spider": {
+    "rawHash": "a12dab0cffff96dfcf5fd0e8fdd1d275a7955aac382ff72d24aa23a5aaaaa345",
+    "imageUuid": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357",
+    "size": [
+      458,
+      80
+    ],
+    "frames": [
+      {
+        "source": "visual/game/spider-5-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          172,
+          149
+        ],
+        "name": "spider-5-v1",
+        "uuid": "68427664-45c8-5baa-addc-53eae02c1467@56c45",
+        "rect": [
+          2,
+          2,
+          88,
+          76
+        ],
+        "originalSize": [
+          88,
+          76
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spider-4-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          169,
+          149
+        ],
+        "name": "spider-4-v1",
+        "uuid": "68427664-45c8-5baa-addc-53eae02c1467@cb515",
+        "rect": [
+          94,
+          2,
+          86,
+          76
+        ],
+        "originalSize": [
+          86,
+          76
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spider-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          165,
+          149
+        ],
+        "name": "spider-3-v1",
+        "uuid": "68427664-45c8-5baa-addc-53eae02c1467@f9038",
+        "rect": [
+          184,
+          2,
+          84,
+          76
+        ],
+        "originalSize": [
+          84,
+          76
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spider-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          155,
+          148
+        ],
+        "name": "spider-1-v1",
+        "uuid": "68427664-45c8-5baa-addc-53eae02c1467@fb614",
+        "rect": [
+          272,
+          2,
+          80,
+          76
+        ],
+        "originalSize": [
+          80,
+          76
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spider-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          159,
+          149
+        ],
+        "name": "spider-2-v1",
+        "uuid": "68427664-45c8-5baa-addc-53eae02c1467@9467c",
+        "rect": [
+          356,
+          2,
+          80,
+          75
+        ],
+        "originalSize": [
+          80,
+          75
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/spider-6-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          38,
+          38
+        ],
+        "name": "spider-6-v1",
+        "uuid": "68427664-45c8-5baa-addc-53eae02c1467@f8c20",
+        "rect": [
+          440,
+          2,
+          16,
+          16
+        ],
+        "originalSize": [
+          16,
+          16
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/game/cyblockbees-hive": {
+    "rawHash": "fbe97e40ad62be046ba845d71837cd789ce4d0dbfd8d7582f78d9c823240e9d2",
+    "imageUuid": "68c69a69-9214-53c5-8628-425643f37b14",
+    "size": [
+      589,
+      189
+    ],
+    "frames": [
+      {
+        "source": "visual/game/hive-a-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          153,
+          185
+        ],
+        "name": "hive-a-v1",
+        "uuid": "7a2838ec-73ee-59f8-8669-850e24f5ff11@269d0",
+        "rect": [
+          2,
+          2,
+          153,
+          185
+        ],
+        "originalSize": [
+          153,
+          185
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/hive-fan-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          266,
+          172
+        ],
+        "name": "hive-fan-1-v1",
+        "uuid": "7a2838ec-73ee-59f8-8669-850e24f5ff11@4b165",
+        "rect": [
+          159,
+          2,
+          156,
+          101
+        ],
+        "originalSize": [
+          156,
+          101
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/hive-fan-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          266,
+          172
+        ],
+        "name": "hive-fan-2-v1",
+        "uuid": "7a2838ec-73ee-59f8-8669-850e24f5ff11@6d7d1",
+        "rect": [
+          319,
+          2,
+          156,
+          101
+        ],
+        "originalSize": [
+          156,
+          101
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/game/hive-b-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          153,
+          185
+        ],
+        "name": "hive-b-v1",
+        "uuid": "7a2838ec-73ee-59f8-8669-850e24f5ff11@beeed",
+        "rect": [
+          479,
+          2,
+          108,
+          131
+        ],
+        "originalSize": [
+          108,
+          131
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/backdrop/cyblockbees-terrain": {
+    "rawHash": "768b899e36ca7e67454cb85e11f94b718909327b9e2b2e5e036257329cfd424e",
+    "imageUuid": "6e76d73d-f4ab-5dd3-bcb5-53f210eeb5c1",
+    "size": [
+      716,
+      226
+    ],
+    "frames": [
+      {
+        "source": "visual/backdrop/platform-cube-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          216,
+          200
+        ],
+        "name": "platform-cube-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@332d9",
+        "rect": [
+          2,
+          2,
+          216,
+          200
+        ],
+        "originalSize": [
+          216,
+          200
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/ground-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "name": "ground-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@d36d4",
+        "rect": [
+          222,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/grass-outline-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          64
+        ],
+        "name": "grass-outline-1-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@373a7",
+        "rect": [
+          354,
+          2,
+          128,
+          64
+        ],
+        "originalSize": [
+          128,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/grass-outline-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          64
+        ],
+        "name": "grass-outline-2-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@b41d0",
+        "rect": [
+          486,
+          2,
+          128,
+          64
+        ],
+        "originalSize": [
+          128,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/grass-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          214
+        ],
+        "name": "grass-1-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@e028f",
+        "rect": [
+          618,
+          2,
+          96,
+          117
+        ],
+        "originalSize": [
+          96,
+          117
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/grass-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          197,
+          231
+        ],
+        "name": "grass-3-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@7f621",
+        "rect": [
+          354,
+          70,
+          96,
+          113
+        ],
+        "originalSize": [
+          96,
+          113
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/grass-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          271,
+          231
+        ],
+        "name": "grass-2-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@62117",
+        "rect": [
+          222,
+          134,
+          106,
+          90
+        ],
+        "originalSize": [
+          106,
+          90
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/platform-round-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          89,
+          89
+        ],
+        "name": "platform-round-v1",
+        "uuid": "e09411a5-9893-51cc-a02e-5d96f92f29f3@c811d",
+        "rect": [
+          454,
+          70,
+          89,
+          89
+        ],
+        "originalSize": [
+          89,
+          89
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/backdrop/cyblockbees-clouds": {
+    "rawHash": "aa8d9dccbdc580ec67b4dd1cce6eb51cee88cd3f4ea24df18fc7afb54a9c871d",
+    "imageUuid": "dc355c10-91ef-5eec-a81d-90a2f5aa7b0a",
+    "size": [
+      718,
+      141
+    ],
+    "frames": [
+      {
+        "source": "visual/backdrop/cloud-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          519,
+          285
+        ],
+        "name": "cloud-2-v1",
+        "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f@5feeb",
+        "rect": [
+          2,
+          2,
+          250,
+          137
+        ],
+        "originalSize": [
+          250,
+          137
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/cloud-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          509,
+          214
+        ],
+        "name": "cloud-3-v1",
+        "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f@5be5c",
+        "rect": [
+          256,
+          2,
+          236,
+          99
+        ],
+        "originalSize": [
+          236,
+          99
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/backdrop/cloud-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          404,
+          211
+        ],
+        "name": "cloud-1-v1",
+        "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f@0a21b",
+        "rect": [
+          496,
+          2,
+          220,
+          115
+        ],
+        "originalSize": [
+          220,
+          115
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/backdrop/cyblockbees-landscape": {
+    "rawHash": "d4d81e79b1e270173bf14dfdf4c6873849a9b5d29dddf588c5b6e84e5ca76b6a",
+    "imageUuid": "ef80e248-1af9-50ab-ad71-4dec500227ac",
+    "size": [
+      424,
+      845
+    ],
+    "frames": [
+      {
+        "source": "visual/backdrop/tree-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          471,
+          943
+        ],
+        "name": "tree-v1",
+        "uuid": "0bc970b7-ecc5-53eb-9c62-3dcd06228f96@3d7e1",
+        "rect": [
+          2,
+          2,
+          420,
+          841
+        ],
+        "originalSize": [
+          420,
+          841
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/backdrop/cyblockbees-landscape-2": {
+    "rawHash": "3ddefd5a1170193c2e8c81ce8f241588a799c1a5883e8a5a666c4f3fd533e8e8",
+    "imageUuid": "79202246-fb1d-57af-96b1-5c40e1b3c1ba",
+    "size": [
+      724,
+      462
+    ],
+    "frames": [
+      {
+        "source": "visual/backdrop/water-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          720,
+          458
+        ],
+        "name": "water-v1",
+        "uuid": "962c19ea-94c3-55e2-ad30-f81d01ed4982@ca865",
+        "rect": [
+          2,
+          2,
+          720,
+          458
+        ],
+        "originalSize": [
+          720,
+          458
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/ui/cyblockbees-hud": {
+    "rawHash": "40804948f7a2febc41f118fed335adaa9ffe53bb48c7b28776dda8ca89029899",
+    "imageUuid": "cabfbecf-1313-5e7e-bd15-a8921aa5f5c4",
+    "size": [
+      102,
+      584
+    ],
+    "frames": [
+      {
+        "source": "visual/ui/timer-fill-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          98,
+          109
+        ],
+        "name": "timer-fill-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@f88da",
+        "rect": [
+          2,
+          2,
+          98,
+          109
+        ],
+        "originalSize": [
+          98,
+          109
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/timer-track-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          98,
+          109
+        ],
+        "name": "timer-track-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@0d276",
+        "rect": [
+          2,
+          115,
+          98,
+          109
+        ],
+        "originalSize": [
+          98,
+          109
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/hand-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "hand-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@e1b4e",
+        "rect": [
+          2,
+          228,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon-pencil-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          60
+        ],
+        "name": "icon-pencil-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@f0ab6",
+        "rect": [
+          2,
+          328,
+          56,
+          60
+        ],
+        "originalSize": [
+          56,
+          60
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/star-off-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          48,
+          53
+        ],
+        "name": "star-off-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@7e50b",
+        "rect": [
+          2,
+          392,
+          48,
+          53
+        ],
+        "originalSize": [
+          48,
+          53
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/star-on-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          48,
+          53
+        ],
+        "name": "star-on-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@f4dfc",
+        "rect": [
+          2,
+          449,
+          48,
+          53
+        ],
+        "originalSize": [
+          48,
+          53
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/bar-fill-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          36
+        ],
+        "name": "bar-fill-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@70d01",
+        "rect": [
+          2,
+          506,
+          44,
+          36
+        ],
+        "originalSize": [
+          44,
+          36
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 17,
+          "Bottom": 17,
+          "Left": 18,
+          "Right": 18
+        }
+      },
+      {
+        "source": "visual/ui/bar-track-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          36
+        ],
+        "name": "bar-track-v1",
+        "uuid": "5e76c38d-c563-5bee-a66e-210907ede852@50fdc",
+        "rect": [
+          2,
+          546,
+          44,
+          36
+        ],
+        "originalSize": [
+          44,
+          36
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 17,
+          "Bottom": 17,
+          "Left": 17,
+          "Right": 18
+        }
+      }
+    ]
+  },
+  "cyblockbees/visual/effect/cyblockbees-fx": {
+    "rawHash": "d5faf0f94c776da9c402d6214f34d982991888cc6d7b12aeb5da91a3656151c0",
+    "imageUuid": "31faf9ed-d483-5155-8d0e-2c11cddd4eab",
+    "size": [
+      1016,
+      584
+    ],
+    "frames": [
+      {
+        "source": "visual/effect/fx-noise-poison-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "name": "fx-noise-poison-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@1c593",
+        "rect": [
+          2,
+          2,
+          512,
+          512
+        ],
+        "originalSize": [
+          512,
+          512
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-bubble-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-bubble-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@f48a5",
+        "rect": [
+          518,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-glow-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-glow-1-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@810e0",
+        "rect": [
+          650,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-glow-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-glow-2-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@98aae",
+        "rect": [
+          782,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-noise-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "name": "fx-noise-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@1a3b8",
+        "rect": [
+          518,
+          134,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-ring-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-ring-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@6dd31",
+        "rect": [
+          650,
+          134,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-sequence-1-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "fx-sequence-1-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@e01bd",
+        "rect": [
+          782,
+          134,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-sequence-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "fx-sequence-3-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@0af0f",
+        "rect": [
+          518,
+          266,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-sequence-4-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "fx-sequence-4-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@61969",
+        "rect": [
+          650,
+          266,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-smoke-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-smoke-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@c6d34",
+        "rect": [
+          782,
+          266,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-swirl-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-swirl-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@40325",
+        "rect": [
+          518,
+          398,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-wind-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx-wind-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@3b530",
+        "rect": [
+          650,
+          398,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-prop-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          128
+        ],
+        "name": "fx-prop-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@132a0",
+        "rect": [
+          782,
+          398,
+          128,
+          64
+        ],
+        "originalSize": [
+          128,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-sequence-2-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          128
+        ],
+        "name": "fx-sequence-2-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@21b9c",
+        "rect": [
+          782,
+          466,
+          128,
+          64
+        ],
+        "originalSize": [
+          128,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-spark-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          128
+        ],
+        "name": "fx-spark-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@45051",
+        "rect": [
+          2,
+          518,
+          128,
+          64
+        ],
+        "originalSize": [
+          128,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-ripple-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          256
+        ],
+        "name": "fx-ripple-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@f0711",
+        "rect": [
+          914,
+          2,
+          32,
+          128
+        ],
+        "originalSize": [
+          32,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/effect/fx-glow-3-v1.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "fx-glow-3-v1",
+        "uuid": "f600cd13-e224-5842-a5a7-713e6042aa72@9367c",
+        "rect": [
+          950,
+          2,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
         ],
         "offset": [
           0,

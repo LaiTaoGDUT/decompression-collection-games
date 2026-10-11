@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "d70f7": {
+      "importer": "sprite-frame",
+      "uuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee@d70f7",
+      "displayName": "",
+      "id": "d70f7",
+      "name": "golden-carrot",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 174,
+        "width": 47,
+        "height": 80,
+        "rawWidth": 47,
+        "rawHeight": 80,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "836412ff-0ed5-53fa-96fb-a536bcd35904@6c48a",
+        "atlasUuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "0c221": {
+      "importer": "sprite-frame",
+      "uuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee@0c221",
+      "displayName": "",
+      "id": "0c221",
+      "name": "golden-carrot-glow",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 168,
+        "height": 168,
+        "rawWidth": 168,
+        "rawHeight": 168,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "836412ff-0ed5-53fa-96fb-a536bcd35904@6c48a",
+        "atlasUuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "doodle-collectibles.png",
+    "format": 2,
+    "uuid": "d9ab43e0-f6a1-572c-90c7-217a2157d5ee",
+    "textureUuid": "836412ff-0ed5-53fa-96fb-a536bcd35904@6c48a"
+  }
+}

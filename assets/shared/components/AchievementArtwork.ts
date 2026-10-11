@@ -141,6 +141,25 @@ export function createAchievementTrophy(parent: Node, definition: AchievementDef
     return root;
 }
 
+/** 奖杯的柔和椭圆光晕：暖金外层、奶油白亮心；按目标宽度等比绘制。 */
+export function createAchievementTrophyGlow(parent: Node, name: string, width = 212): Node {
+    const scale = width / 212;
+    const node = achievementNode(parent, name, width, 236 * scale);
+    const glow = node.addComponent(Graphics);
+    for (let i = 24; i >= 1; i--) {
+        const alpha = 4 + Math.floor((24 - i) / 5);
+        glow.fillColor = new Color(246, 192, 101, alpha);
+        glow.ellipse(0, 8 * scale, (45 + i * 2.5) * scale, (56 + i * 2.5) * scale);
+        glow.fill();
+    }
+    for (let i = 14; i >= 1; i--) {
+        glow.fillColor = new Color(255, 253, 237, 8);
+        glow.ellipse(0, 8 * scale, (26 + i * 3) * scale, (32 + i * 3.2) * scale);
+        glow.fill();
+    }
+    return node;
+}
+
 export function createAchievementImage(parent: Node, name: string, key: AchievementArtKey,
     width: number, height: number, art: AchievementArtService, fit: 'contain' | 'cover' = 'contain'): Node {
     const node = achievementNode(parent, name, width, height);

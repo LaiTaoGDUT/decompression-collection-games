@@ -183,6 +183,7 @@ export class App extends Component {
                 return { channel: source, dispose: () => { source.stop(); source.clip = null; source.node.destroy(); } };
             },
             crossfadeMusicSource,
+            () => platform.createAudioContext?.(),
         );
         const feedbackService = new FeedbackService(
             audioService,
@@ -329,6 +330,7 @@ export class App extends Component {
             const manifests = await configService.loadGameManifests();
             gameRegistry.load(manifests);
         });
+        await configService.loadAnnouncement();
 
         if (App.activeInstance !== this) {
             platform.dispose();

@@ -10,6 +10,8 @@ export interface BundleAudioBankConfig {
     /** 大厅始终准备音频，允许在大厅设置中即时开启。 */
     readonly alwaysLoad?: boolean;
     readonly music?: string;
+    /** 本 Bundle 背景音乐的播放音量（0–1），默认 1。 */
+    readonly musicVolume?: number;
     /** Future music may be registered before the clip is shipped. */
     readonly optionalMusic?: string;
     readonly cues: Readonly<Partial<Record<FeedbackCue, AudioCuePath>>>;
@@ -62,7 +64,7 @@ export class BundleAudioBank {
             if (!this.disposed) {
                 this.musicClip = music;
                 // 页面覆盖音乐时，迟到的场景音乐加载只能缓存，不能抢回播放权。
-                if (!this.musicOverride) this.audio.playMusic(music);
+                if (!this.musicOverride) this.audio.playMusic(music, this.config.musicVolume ?? 1);
             }
         } catch (error: unknown) {
             if (this.config.music) throw error;
@@ -74,7 +76,11 @@ export class BundleAudioBank {
         if (this.disposed) return;
         this.musicOverride = clip;
         const selected = clip ?? this.musicClip;
-        if (selected) this.audio.transitionMusic(selected, { fadeOutSeconds: .6, fadeInSeconds: .8 });
+        if (selected) this.audio.transitionMusic(selected, {
+            volumeScale: this.config.musicVolume ?? 1,
+            fadeOutSeconds: .6,
+            fadeInSeconds: .8,
+        });
         else this.audio.stopMusic();
     }
 

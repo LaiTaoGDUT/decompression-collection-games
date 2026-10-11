@@ -7,41 +7,41 @@
 		<key>rocket-flame</key>
 		<dict>
 			<key>frame</key>
-			<string>{{151,2},{94,225}}</string>
+			<string>{{2,479},{60,100}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{94,225}}</string>
+			<string>{{0.0,0.0},{60,100}}</string>
 			<key>sourceSize</key>
-			<string>{94,225}</string>
+			<string>{60,100}</string>
 		</dict>
 		<key>rocket-paper-scraps</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,276},{150,238}}</string>
+			<string>{{2,259},{136,216}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{150,238}}</string>
+			<string>{{0.0,0.0},{136,216}}</string>
 			<key>sourceSize</key>
-			<string>{150,238}</string>
+			<string>{136,216}</string>
 		</dict>
 		<key>rocket-paper-trail</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{145,270}}</string>
+			<string>{{2,2},{136,253}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{145,270}}</string>
+			<string>{{0.0,0.0},{136,253}}</string>
 			<key>sourceSize</key>
-			<string>{145,270}</string>
+			<string>{136,253}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -51,7 +51,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-rocket.png</string>
 		<key>size</key>
-		<string>{247,516}</string>
+		<string>{140,581}</string>
 		<key>textureFileName</key>
 		<string>doodle-rocket.png</string>
 	</dict>

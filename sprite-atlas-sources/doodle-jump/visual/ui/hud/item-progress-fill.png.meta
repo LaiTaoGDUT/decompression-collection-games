@@ -41,14 +41,14 @@
       "userData": {
         "trimThreshold": 1,
         "rotated": false,
-        "offsetX": 0,
-        "offsetY": 0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
         "trimX": 0,
         "trimY": 0,
-        "width": 360,
-        "height": 39,
-        "rawWidth": 360,
-        "rawHeight": 39,
+        "width": 120,
+        "height": 30,
+        "rawWidth": 120,
+        "rawHeight": 30,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,
@@ -60,17 +60,17 @@
         "meshType": 0,
         "vertices": {
           "rawPosition": [
-            -180,
-            -19.5,
+            -60.0,
+            -15.0,
             0,
-            180,
-            -19.5,
+            60.0,
+            -15.0,
             0,
-            -180,
-            19.5,
+            -60.0,
+            15.0,
             0,
-            180,
-            19.5,
+            60.0,
+            15.0,
             0
           ],
           "indexes": [
@@ -83,32 +83,32 @@
           ],
           "uv": [
             0,
-            39,
-            360,
-            39,
+            30,
+            120,
+            30,
             0,
             0,
-            360,
+            120,
             0
           ],
           "nuv": [
-            0,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
           ],
           "minPos": [
-            -180,
-            -19.5,
+            -60.0,
+            -15.0,
             0
           ],
           "maxPos": [
-            180,
-            19.5,
+            60.0,
+            15.0,
             0
           ]
         },
@@ -130,5 +130,9 @@
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
     "redirect": "3fd6ef10-25d6-407f-9e45-296637278885@6c48a"
-  }
+  },
+  "authoringSize": [
+    120,
+    30
+  ]
 }

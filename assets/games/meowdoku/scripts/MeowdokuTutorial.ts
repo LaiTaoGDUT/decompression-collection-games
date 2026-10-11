@@ -52,7 +52,6 @@ interface TutorialHost {
     readonly safeBottomY?: number;
     readonly frames: {
         readonly panelBg?: SpriteFrame;
-        readonly hintLight?: SpriteFrame;
         readonly promptFrame?: SpriteFrame;
         readonly guideHand?: SpriteFrame;
     };
@@ -396,8 +395,7 @@ export class MeowdokuTutorial {
         } else if (spec.swipe) {
             this.playSwipeHand(spec.swipe);
         } else if (spec.mode === 'mark') {
-            // 叉格步骤：给每个待叉格子一个呼吸光圈，手指指向第一个。
-            for (const [row, col] of spec.allowed) this.showGuideRing(row, col);
+            // 高亮框已由蒙层统一创建，手指指向第一个尚未标记的格子。
             const first = spec.allowed.find(([r, c]) => this.host.cellStateAt(r, c) !== 'mark');
             if (first) this.showHand(first[0], first[1], false);
         }
@@ -440,7 +438,7 @@ export class MeowdokuTutorial {
     /**
      * 页面坐标下的格子中心：**直接用游戏自己的 `cellCenter`**（里面含 `cellPadding` 与
      * 「槽位 − 色块」的 origin 偏移）。自己按 `boardSize / 4` 反推会整体偏十几个像素，
-     * 表现就是洞/光圈/小手和棋盘对不上、最后一步点不到。
+     * 表现就是洞/边框/小手和棋盘对不上、最后一步点不到。
      */
     private cellCenter(row: number, col: number): readonly [number, number] {
         return this.host.cellCenter(col, row);
@@ -495,34 +493,15 @@ export class MeowdokuTutorial {
         }
         this.overlays.push(mask);
 
-        // 待操作格子的呼吸光圈（原作 `play_hint`：光圈 + 提示框）。
+        // 每个待操作格子只显示一个呼吸黄色方框。
         for (const [row, col] of cells) {
-            this.showGuideRing(row, col);
+            this.showGuideFrame(row, col);
         }
     }
 
-    private showGuideRing(row: number, col: number): void {
+    private showGuideFrame(row: number, col: number): void {
         const host = this.host;
         const [x, y] = this.cellCenter(row, col);
-        const lightFrame = host.frames.hintLight;
-        if (lightFrame) {
-            const light = new Node('HintLight');
-            light.layer = this.layer.layer;
-            light.setParent(this.fxLayer);
-            light.addComponent(UITransform).setContentSize(host.cellFace * 1.1, host.cellFace * 1.1);
-            light.setPosition(x, y, 0);
-            const sprite = light.addComponent(Sprite);
-            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-            sprite.spriteFrame = lightFrame;
-            const opacity = light.addComponent(UIOpacity);
-            opacity.opacity = Math.round(255 * MEOWDOKU_TIMING.hintAlphaMin);
-            this.startTween(tween(opacity)
-                .to(MEOWDOKU_TIMING.hintHalfCycle, { opacity: 255 }, { easing: 'sineInOut' })
-                .to(MEOWDOKU_TIMING.hintHalfCycle, { opacity: Math.round(255 * MEOWDOKU_TIMING.hintAlphaMin) }, { easing: 'sineInOut' })
-                .union()
-                .repeatForever());
-            this.overlays.push(light);
-        }
         const frame = host.frames.promptFrame;
         if (frame) {
             const prompt = new Node('HintFrame');

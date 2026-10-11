@@ -49,3 +49,8 @@ approval_mode = "approve"
 
 [mcp_servers.cocos-creator-stdio.tools.node_node_script_management]
 approval_mode = "approve"
+
+[mcp_servers.rea]
+command = "npx"
+args = ["-y", "rea-agents@6.4.0", "mcp"]
+startup_timeout_sec = 60

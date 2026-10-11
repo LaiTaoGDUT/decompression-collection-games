@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "0bc970b7-ecc5-53eb-9c62-3dcd06228f96",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "3d7e1": {
+      "importer": "sprite-frame",
+      "uuid": "0bc970b7-ecc5-53eb-9c62-3dcd06228f96@3d7e1",
+      "displayName": "",
+      "id": "3d7e1",
+      "name": "tree-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 420,
+        "height": 841,
+        "rawWidth": 420,
+        "rawHeight": 841,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "ef80e248-1af9-50ab-ad71-4dec500227ac@6c48a",
+        "atlasUuid": "0bc970b7-ecc5-53eb-9c62-3dcd06228f96",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "cyblockbees-landscape.png",
+    "format": 2,
+    "uuid": "0bc970b7-ecc5-53eb-9c62-3dcd06228f96",
+    "textureUuid": "ef80e248-1af9-50ab-ad71-4dec500227ac@6c48a"
+  }
+}

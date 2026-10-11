@@ -38,5 +38,9 @@
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
     "redirect": "61fd6405-f5a3-4b53-9a4e-f1a16a08dbe6@6c48a"
-  }
+  },
+  "authoringSize": [
+    110,
+    86
+  ]
 }

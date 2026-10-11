@@ -1,4 +1,5 @@
-import { DOODLE_JUMP_ENEMY_TYPES, isDoodleJumpFlyingEnemy } from './DoodleJumpConfig';
+import { referenceEnemyOffset, createReferenceMonsterMotion, stepReferenceMonsterMotion,
+    type DoodleJumpMonsterMotionState } from './DoodleJumpReferenceRules';
 import type {
     DoodleJumpEnemyType,
     DoodleJumpGameplayConfig,
@@ -23,13 +24,20 @@ export interface DoodleJumpEnemySnapshot {
     readonly health: number;
     readonly maximumHealth: number;
     readonly hurt: boolean;
+    readonly hurtRemainingSeconds?: number;
     readonly animationPhase: number;
     readonly anchorPlatformId: string;
     readonly motionPhase?: number;
     readonly anchorOffsetX?: number;
+    readonly originX?: number;
+    readonly originY?: number;
+    readonly spawnedAt?: number;
+    readonly verticalPhase?: number;
+    readonly motionState?: Readonly<DoodleJumpMonsterMotionState>;
 }
 
 export interface DoodleJumpCombatStats {
+    readonly evaluatedPlatformIds?: readonly string[];
     readonly hitCount: number;
     readonly killCount: number;
     readonly stompCount: number;
@@ -38,7 +46,10 @@ export interface DoodleJumpCombatStats {
     readonly hopperMonsterKills?: number;
     readonly weaverMonsterKills?: number;
     readonly hoverMonsterKills: number;
-    readonly score: number;
+    readonly flyerMonsterKills?: number;
+    readonly tallMonsterKills?: number;
+    readonly runnerMonsterKills?: number;
+    readonly bouncerMonsterKills?: number;
 }
 
 export type DoodleJumpCombatEvent = Readonly<{
@@ -70,11 +81,14 @@ interface MutableEnemy {
     readonly anchorOffsetX: number;
     readonly phaseRadians: number;
     readonly animationPhase: number;
+    readonly originX: number;
+    readonly originY: number;
+    readonly spawnedAt: number;
+    readonly verticalPhase: number;
     readonly width: number;
     readonly height: number;
-    readonly headZoneHeight: number;
     readonly maximumHealth: number;
-    readonly score: number;
+    readonly motionState: DoodleJumpMonsterMotionState;
     health: number;
     x: number;
     y: number;
@@ -107,7 +121,10 @@ interface MutableCombatStats {
     hopperMonsterKills: number;
     weaverMonsterKills: number;
     hoverMonsterKills: number;
-    score: number;
+    flyerMonsterKills: number;
+    tallMonsterKills: number;
+    runnerMonsterKills: number;
+    bouncerMonsterKills: number;
 }
 
 function segmentAabbTime(
@@ -158,7 +175,10 @@ export class DoodleJumpCombatSystem {
         hopperMonsterKills: 0,
         weaverMonsterKills: 0,
         hoverMonsterKills: 0,
-        score: 0,
+        flyerMonsterKills: 0,
+        tallMonsterKills: 0,
+        runnerMonsterKills: 0,
+        bouncerMonsterKills: 0,
     };
     private nextEnemyId = 1;
     private elapsedSeconds = 0;
@@ -170,7 +190,10 @@ export class DoodleJumpCombatSystem {
     private hopperMonsterKills = 0;
     private weaverMonsterKills = 0;
     private hoverMonsterKills = 0;
-    private score = 0;
+    private flyerMonsterKills = 0;
+    private tallMonsterKills = 0;
+    private runnerMonsterKills = 0;
+    private bouncerMonsterKills = 0;
     private lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
 
     constructor(
@@ -192,7 +215,10 @@ export class DoodleJumpCombatSystem {
         this.hopperMonsterKills = 0;
         this.weaverMonsterKills = 0;
         this.hoverMonsterKills = 0;
-        this.score = 0;
+        this.flyerMonsterKills = 0;
+        this.tallMonsterKills = 0;
+        this.runnerMonsterKills = 0;
+        this.bouncerMonsterKills = 0;
         this.lastSpawnAnchorY = Number.NEGATIVE_INFINITY;
     }
 
@@ -212,37 +238,50 @@ export class DoodleJumpCombatSystem {
         this.hoverMonsterKills = Math.max(0, Math.floor(stats.hoverMonsterKills));
         this.hopperMonsterKills = Math.max(0, Math.floor(stats.hopperMonsterKills ?? 0));
         this.weaverMonsterKills = Math.max(0, Math.floor(stats.weaverMonsterKills ?? 0));
-        this.score = Math.max(0, Math.floor(stats.score));
-        world.platforms.forEach((platform) => {
-            this.evaluatedPlatformIds.add(platform.id);
+        this.flyerMonsterKills = Math.max(0, Math.floor(stats.flyerMonsterKills ?? 0));
+        this.tallMonsterKills = Math.max(0, Math.floor(stats.tallMonsterKills ?? 0));
+        this.runnerMonsterKills = Math.max(0, Math.floor(stats.runnerMonsterKills ?? 0));
+        this.bouncerMonsterKills = Math.max(0, Math.floor(stats.bouncerMonsterKills ?? 0));
+        const evaluatedIds = stats.evaluatedPlatformIds
+            ?? world.platforms.map((platform) => platform.id);
+        evaluatedIds.forEach((id) => {
+            if (world.platformById.has(id)) this.evaluatedPlatformIds.add(id);
         });
         let maximumId = 0;
         snapshots.forEach((snapshot) => {
             const platform = world.platformById.get(snapshot.anchorPlatformId);
             const settings = this.config.enemies[snapshot.type];
-            if (!platform || !settings || snapshot.health <= 0) return;
+            if (!settings || snapshot.health <= 0) return;
+            if (platform) this.evaluatedPlatformIds.add(snapshot.anchorPlatformId);
             const parsedId = Number(snapshot.id.replace(/^E/, ''));
             if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
             this.enemies.push({
                 id: snapshot.id,
                 type: snapshot.type,
                 anchorPlatformId: snapshot.anchorPlatformId,
-                anchorOffsetX: snapshot.anchorOffsetX
-                    ?? (isDoodleJumpFlyingEnemy(snapshot.type) ? snapshot.x - platform.x : 0),
+                anchorOffsetX: snapshot.anchorOffsetX ?? 0,
                 phaseRadians: snapshot.motionPhase ?? snapshot.animationPhase * Math.PI * 2,
                 animationPhase: snapshot.animationPhase,
+                originX: snapshot.originX ?? platform?.x ?? snapshot.x,
+                originY: snapshot.originY ?? platform?.y ?? snapshot.y,
+                spawnedAt: snapshot.spawnedAt ?? this.elapsedSeconds,
+                verticalPhase: snapshot.verticalPhase ?? 0,
+                motionState: snapshot.motionState ? { ...snapshot.motionState }
+                    : createReferenceMonsterMotion(snapshot.type,
+                        snapshot.x / (this.config.design.width / 320) - referenceEnemyOffset(snapshot.type)[0],
+                        snapshot.y / (this.config.design.width / 320) - referenceEnemyOffset(snapshot.type)[1],
+                        Math.floor((snapshot.motionPhase ?? 0) * 180 / Math.PI),
+                        Math.floor((snapshot.verticalPhase ?? 0) * 180 / Math.PI)),
                 width: settings.width,
                 height: settings.height,
-                headZoneHeight: settings.headZoneHeight,
                 maximumHealth: settings.health,
-                score: settings.killScore,
                 health: Math.min(settings.health, Math.max(1, Math.floor(snapshot.health))),
                 x: snapshot.x,
                 y: snapshot.y,
                 previousY: snapshot.y,
-                hurtUntil: snapshot.hurt ? this.elapsedSeconds + this.config.enemies.hitFlashSeconds : 0,
+                hurtUntil: snapshot.hurt ? this.elapsedSeconds + (snapshot.hurtRemainingSeconds ?? this.config.enemies.hitFlashSeconds) : 0,
             });
-            this.lastSpawnAnchorY = Math.max(this.lastSpawnAnchorY, platform.y);
+            this.lastSpawnAnchorY = Math.max(this.lastSpawnAnchorY, snapshot.originY ?? platform?.y ?? snapshot.y);
         });
         this.nextEnemyId = maximumId + 1;
         this.events.length = 0;
@@ -253,8 +292,9 @@ export class DoodleJumpCombatSystem {
         world: DoodleJumpWorldIndex,
         cameraBottomY: number,
     ): void {
+        const frames = Math.max(0, Math.round((elapsedSeconds - this.elapsedSeconds) * 60));
         this.elapsedSeconds = elapsedSeconds;
-        this.updateEnemyPositions(world.platformById);
+        this.updateEnemyPositions(frames);
         this.recycleEnemies(cameraBottomY);
     }
 
@@ -336,7 +376,7 @@ export class DoodleJumpCombatSystem {
         fromY: number,
         toX: number,
         toY: number,
-        projectileRadius = 5,
+        projectileRadius = 6 * this.config.design.width / 320,
     ): DoodleJumpProjectileHitResult | undefined {
         let target: MutableEnemy | undefined;
         let targetTime = Number.POSITIVE_INFINITY;
@@ -421,10 +461,16 @@ export class DoodleJumpCombatSystem {
             health: enemy.health,
             maximumHealth: enemy.maximumHealth,
             hurt: enemy.hurtUntil > this.elapsedSeconds,
+            hurtRemainingSeconds: Math.max(0, enemy.hurtUntil - this.elapsedSeconds),
             animationPhase: enemy.animationPhase,
             anchorPlatformId: enemy.anchorPlatformId,
             motionPhase: enemy.phaseRadians,
             anchorOffsetX: enemy.anchorOffsetX,
+            originX: enemy.originX,
+            originY: enemy.originY,
+            spawnedAt: enemy.spawnedAt,
+            verticalPhase: enemy.verticalPhase,
+            motionState: Object.freeze({ ...enemy.motionState }),
         })));
     }
 
@@ -474,6 +520,7 @@ export class DoodleJumpCombatSystem {
 
     getStats(): DoodleJumpCombatStats {
         return Object.freeze({
+            evaluatedPlatformIds: Object.freeze(Array.from(this.evaluatedPlatformIds)),
             hitCount: this.hitCount,
             killCount: this.killCount,
             stompCount: this.stompCount,
@@ -482,7 +529,10 @@ export class DoodleJumpCombatSystem {
             hopperMonsterKills: this.hopperMonsterKills,
             weaverMonsterKills: this.weaverMonsterKills,
             hoverMonsterKills: this.hoverMonsterKills,
-            score: this.score,
+            flyerMonsterKills: this.flyerMonsterKills,
+            tallMonsterKills: this.tallMonsterKills,
+            runnerMonsterKills: this.runnerMonsterKills,
+            bouncerMonsterKills: this.bouncerMonsterKills,
         });
     }
 
@@ -495,7 +545,10 @@ export class DoodleJumpCombatSystem {
         this.presentationStats.hopperMonsterKills = this.hopperMonsterKills;
         this.presentationStats.weaverMonsterKills = this.weaverMonsterKills;
         this.presentationStats.hoverMonsterKills = this.hoverMonsterKills;
-        this.presentationStats.score = this.score;
+        this.presentationStats.flyerMonsterKills = this.flyerMonsterKills;
+        this.presentationStats.tallMonsterKills = this.tallMonsterKills;
+        this.presentationStats.runnerMonsterKills = this.runnerMonsterKills;
+        this.presentationStats.bouncerMonsterKills = this.bouncerMonsterKills;
         return this.presentationStats;
     }
 
@@ -524,174 +577,63 @@ export class DoodleJumpCombatSystem {
     private evaluateNewPlatforms(
         platforms: readonly DoodleJumpCombatPlatform[],
         cameraBottomY: number,
-        cameraTopY: number,
-        occupiedBodies: readonly DoodleJumpCombatOccupiedBody[],
+        _cameraTopY: number,
+        _occupiedBodies: readonly DoodleJumpCombatOccupiedBody[],
     ): void {
         if (!this.config.enemies.enabled) return;
-        for (let index = 0; index < platforms.length; index += 1) {
-            const platform = platforms[index];
+        for (const platform of platforms) {
             if (this.evaluatedPlatformIds.has(platform.id)) continue;
-            if (platform.y < cameraBottomY) {
+            const type = platform.spawnPlan?.enemyType;
+            // Native authored entities keep their coordinates and species. The
+            // invisible carrier supplies ownership, never a required landing surface.
+            if (platform.spawnPlan?.content !== 'enemy' || !type
+                || platform.y < cameraBottomY || platform.consumed) {
                 this.evaluatedPlatformIds.add(platform.id);
                 continue;
             }
-            // A monster may only enter the world while its anchor platform is
-            // still fully above the visible playfield. Once a platform reaches
-            // the screen, permanently consume the candidate instead of using it
-            // as an immediate replacement after another monster dies.
-            if (platform.y <= cameraTopY + this.config.enemies.spawnAboveScreenMargin) {
-                this.evaluatedPlatformIds.add(platform.id);
-                continue;
-            }
-            const platformMeters = Math.max(0, (platform.y - this.startWorldY()) / 100);
-            if (platformMeters < this.config.enemies.small.unlockHeightMeters) {
-                this.evaluatedPlatformIds.add(platform.id);
-                continue;
-            }
-            const activeLimit = Math.min(
-                this.config.enemies.maximumActive,
-                platformMeters < this.config.enemies.twoActiveHeightMeters ? 1
-                    : platformMeters < this.config.enemies.threeActiveHeightMeters ? 2
-                        : 3,
-            );
-            // A segment ticket is consumed exactly once, including when the pool
-            // is full. A later kill must never create a replacement on an old row.
-            this.evaluatedPlatformIds.add(platform.id);
-            if (platform.spawnPlan?.content !== 'enemy' || this.enemies.length >= activeLimit
-                || !platform.collisionEnabled || platform.consumed) continue;
-            const difficulty = this.enemyDifficultyProgress(platformMeters);
-            const minimumSeparation = this.config.enemies.minimumVerticalSeparationAtUnlock
-                + (this.config.enemies.minimumVerticalSeparation
-                    - this.config.enemies.minimumVerticalSeparationAtUnlock) * difficulty;
-            if (platform.y - this.lastSpawnAnchorY < minimumSeparation) continue;
-            const type = this.pickEnemyType(platformMeters);
-            if (!type) continue;
-            const enemy = this.createEnemy(type, platform, occupiedBodies);
-            if (!enemy) continue;
-            if (this.enemies.some((candidate) => (
-                Math.abs(candidate.y - enemy.y)
-                    < minimumSeparation
-            ))) continue;
+            if (this.enemies.length >= this.config.enemies.maximumActive) continue;
+            const enemy = this.createEnemy(type, platform);
             this.enemies.push(enemy);
+            this.evaluatedPlatformIds.add(platform.id);
             this.lastSpawnAnchorY = platform.y;
         }
     }
 
-    private enemyDifficultyProgress(heightMeters: number): number {
-        const start = this.config.enemies.small.unlockHeightMeters;
-        const end = this.config.enemies.difficultyCapHeightMeters;
-        return Math.max(0, Math.min(1, (heightMeters - start) / Math.max(1, end - start)));
-    }
-
-    private pickEnemyType(heightMeters: number): DoodleJumpEnemyType | undefined {
-        // Normalize only unlocked species; every unlock is owned by gameplay.json.
-        const weights: Record<DoodleJumpEnemyType, number> = {
-            small: heightMeters < 260 ? 55 : 32,
-            large: heightMeters < 260 ? 15 : 24,
-            hover: 24,
-            hopper: 22,
-            weaver: 18,
-        };
-        let total = 0;
-        DOODLE_JUMP_ENEMY_TYPES.forEach((type) => {
-            if (heightMeters >= this.config.enemies[type].unlockHeightMeters) total += weights[type];
-        });
-        if (total <= 0) return undefined;
-        let roll = this.randomStreams.next('enemy') * total;
-        for (let index = 0; index < DOODLE_JUMP_ENEMY_TYPES.length; index += 1) {
-            const type = DOODLE_JUMP_ENEMY_TYPES[index];
-            if (heightMeters < this.config.enemies[type].unlockHeightMeters) continue;
-            roll -= weights[type];
-            if (roll < 0) return type;
-        }
-        return undefined;
-    }
-
-    private createEnemy(
-        type: DoodleJumpEnemyType,
-        platform: DoodleJumpCombatPlatform,
-        occupiedBodies: readonly DoodleJumpCombatOccupiedBody[],
-    ): MutableEnemy | undefined {
+    private createEnemy(type: DoodleJumpEnemyType, platform: DoodleJumpCombatPlatform): MutableEnemy {
         const settings = this.config.enemies[type];
-        if (!isDoodleJumpFlyingEnemy(type)
-            && (platform.type === 'breakable'
-                || platform.type === 'disappearing'
-                || platform.type === 'exploding')) return undefined;
-        const maximumGroundRange = Math.max(0, platform.width / 2 - settings.width / 2 - 8);
-        if (type !== 'large' && !isDoodleJumpFlyingEnemy(type) && maximumGroundRange < 12) return undefined;
-        const side = this.randomStreams.next('enemy') < 0.5 ? -1 : 1;
-        const anchorOffsetX = isDoodleJumpFlyingEnemy(type)
-            ? side * Math.min(118, platform.width / 2 + 62)
-            : 0;
-        const phaseRadians = this.randomStreams.next('enemy') * Math.PI * 2;
-        const enemy: MutableEnemy = {
-            id: `E${this.nextEnemyId}`,
-            type,
-            anchorPlatformId: platform.id,
-            anchorOffsetX,
-            phaseRadians,
-            animationPhase: this.randomStreams.next('enemy'),
-            width: settings.width,
-            height: settings.height,
-            headZoneHeight: settings.headZoneHeight,
-            maximumHealth: settings.health,
-            score: settings.killScore,
-            health: settings.health,
-            x: platform.x + anchorOffsetX,
-            y: platform.y + settings.height / 2,
-            previousY: platform.y + settings.height / 2,
-            hurtUntil: 0,
+        const scale = this.config.design.width / 320;
+        const [offsetX, offsetY] = referenceEnemyOffset(type);
+        const bouncing = type === 'bouncer' || type === 'runner' || type === 'tall';
+        const phaseX = bouncing || type === 'hover' ? 0 : Math.floor(this.randomStreams.next('enemy') * 360);
+        const phaseY = bouncing || type === 'flyer' ? 0 : Math.floor(this.randomStreams.next('enemy') * 360);
+        const originX = platform.x + (platform.spawnPlan?.enemyOffsetX ?? 0);
+        const originY = platform.y + (platform.spawnPlan?.enemyOffsetY ?? 0);
+        const motionState = createReferenceMonsterMotion(type, originX / scale - offsetX,
+            originY / scale - offsetY, phaseX, phaseY);
+        return {
+            id: `E${this.nextEnemyId++}`, type, anchorPlatformId: platform.id, anchorOffsetX: 0,
+            phaseRadians: phaseX * Math.PI / 180, verticalPhase: phaseY * Math.PI / 180,
+            animationPhase: (phaseX || phaseY) / 360, originX, originY, spawnedAt: this.elapsedSeconds,
+            width: settings.width, height: settings.height,
+            maximumHealth: settings.health, health: settings.health,
+            motionState, x: originX, y: originY, previousY: originY, hurtUntil: 0,
         };
-        this.nextEnemyId += 1;
-        this.positionEnemy(enemy, platform);
-        enemy.previousY = enemy.y;
-        if (occupiedBodies.some((body) => (
-            body.anchorPlatformId === platform.id
-            || (Math.abs(body.x - enemy.x) <= body.width / 2 + enemy.width / 2 + 12
-                && Math.abs(body.y - enemy.y) <= body.height / 2 + enemy.height / 2 + 12)
-        ))) return undefined;
-        return enemy;
     }
 
-    private updateEnemyPositions(
-        platformById: ReadonlyMap<string, DoodleJumpCombatPlatform>,
-    ): void {
-        this.enemies.forEach((enemy) => {
-            const platform = platformById.get(enemy.anchorPlatformId);
+    private updateEnemyPositions(frames: number): void {
+        const scale = this.config.design.width / 320;
+        for (const enemy of this.enemies) {
             enemy.previousY = enemy.y;
-            if (platform) this.positionEnemy(enemy, platform);
-        });
+            for (let frame = 0; frame < frames; frame += 1) stepReferenceMonsterMotion(enemy.type, enemy.motionState);
+            const [offsetX, offsetY] = referenceEnemyOffset(enemy.type);
+            enemy.x = (enemy.motionState.x + offsetX) * scale;
+            enemy.y = (enemy.motionState.y + offsetY) * scale;
+        }
     }
 
-    private positionEnemy(enemy: MutableEnemy, platform: DoodleJumpCombatPlatform): void {
-        const settings = this.config.enemies[enemy.type];
-        const cycleRadians = this.elapsedSeconds * Math.PI * 2 / settings.cycleSeconds
-            + enemy.phaseRadians;
-        if (isDoodleJumpFlyingEnemy(enemy.type)) {
-            const horizontal = Math.sin(cycleRadians) * settings.horizontalRange;
-            enemy.x = Math.max(
-                enemy.width / 2,
-                Math.min(
-                    this.config.design.width - enemy.width / 2,
-                    platform.x + enemy.anchorOffsetX + horizontal,
-                ),
-            );
-            enemy.y = platform.y + settings.anchorHeight
-                + Math.sin(cycleRadians * (enemy.type === 'weaver' ? 3 : 2)) * settings.verticalRange;
-            return;
-        }
-        const availableRange = Math.max(
-            0,
-            Math.min(settings.horizontalRange, platform.width / 2 - enemy.width / 2 - 8),
-        );
-        enemy.x = platform.x + Math.sin(cycleRadians) * availableRange;
-        // A grounded pause makes the hop readable; the parabolic arc has a soft apex.
-        const hopPhase = ((cycleRadians / (Math.PI * 2)) % 1 + 1) % 1;
-        const airbornePhase = Math.max(0, (hopPhase - 0.28) / 0.72);
-        const hopHeight = enemy.type === 'hopper'
-            ? 4 * airbornePhase * (1 - airbornePhase) * settings.verticalRange
-            : 0;
-        enemy.y = platform.y + enemy.height / 2 + hopHeight;
+    defeatContactEnemy(id: string): void {
+        const enemy = this.enemies.find((candidate) => candidate.id === id);
+        if (enemy) this.killEnemy(enemy, 'contact');
     }
 
     private recycleEnemies(cameraBottomY: number): void {
@@ -709,20 +651,22 @@ export class DoodleJumpCombatSystem {
         });
     }
 
-    private killEnemy(enemy: MutableEnemy, source: 'projectile' | 'stomp'): void {
+    private killEnemy(enemy: MutableEnemy, source: 'projectile' | 'stomp' | 'contact'): void {
         const index = this.enemies.indexOf(enemy);
         if (index < 0) return;
         this.enemies.splice(index, 1);
         this.killCount += 1;
-        this.score += enemy.score;
         if (enemy.type === 'small') this.smallMonsterKills += 1;
         if (enemy.type === 'large') this.largeMonsterKills += 1;
         if (enemy.type === 'hopper') this.hopperMonsterKills += 1;
         if (enemy.type === 'weaver') this.weaverMonsterKills += 1;
         if (enemy.type === 'hover') this.hoverMonsterKills += 1;
+        if (enemy.type === 'flyer') this.flyerMonsterKills += 1;
+        if (enemy.type === 'tall') this.tallMonsterKills += 1;
+        if (enemy.type === 'runner') this.runnerMonsterKills += 1;
+        if (enemy.type === 'bouncer') this.bouncerMonsterKills += 1;
         if (source === 'stomp') {
             this.stompCount += 1;
-            this.score += this.config.enemies.stompBonus;
         }
         this.events.push(Object.freeze({
             type: source === 'stomp' ? 'stomp' : 'kill',

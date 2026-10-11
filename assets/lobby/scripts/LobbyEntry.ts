@@ -27,21 +27,31 @@ import {
     STORAGE_SERVICE,
 } from '../../app/App';
 import type { GameManifest } from '../../runtime/GameManifest';
+import { ScenePresentationGate, type ScenePresentationEntry } from '../../runtime/ScenePresentation';
 import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 import { GameCardView } from './GameCardView';
 import { EnterRequestLock } from './EnterRequestLock';
-import { calculateLobbyGridLayout } from './LobbyGridLayout';
+import { buildLobbyGameList, type LobbyGameListItem } from './LobbyGameList';
+import { calculateLobbyGridLayout, type LobbyGridLayout } from './LobbyGridLayout';
 import { LobbyPresentation } from './LobbyPresentation';
 import { LobbySettingsPanel } from './LobbySettingsPanel';
+import { LobbyHeader } from './LobbyHeader';
+import { LobbyAnnouncementPanel } from './LobbyAnnouncementPanel';
 import { AchievementWall } from '../../shared/components/AchievementWall';
 import { BundleAudioBank } from '../../services/audio/BundleAudioBank';
 import { AchievementWallMusic } from '../../services/achievements/AchievementWallMusic';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
+import type { StorageService } from '../../services/storage/StorageService';
+import type { AssetService } from '../../services/asset/AssetService';
 import {
-    calculateLobbyBrandMetrics,
     calculateLobbyScrollViewportMetrics,
     calculateLobbySafeContentFromPlatform,
     clampLobbyScrollOffset,
+    LOBBY_BRAND_TO_SHOWCASE_GAP,
+    LOBBY_GRID_TOP_PADDING,
+    LOBBY_HEADER_TO_GRID_GAP,
+    LOBBY_SHOWCASE_HEIGHT,
+    LOBBY_SHOWCASE_TO_GRID_GAP,
     type LobbySafeContentMetrics,
 } from '../../shared/ui/LobbyBrandLayout';
 
@@ -50,11 +60,12 @@ const EMPTY_GAMES: readonly GameManifest[] = Object.freeze([]);
 const GRID_SIDE_PADDING = 36;
 const GRID_BOTTOM = 40;
 const GRID_BOTTOM_SPACER_NAME = 'GameListBottomSpacer';
+const GRID_BADGE_LAYER_NAME = 'GameCardBadges';
 export type EnterGameRequest = (manifest: GameManifest) => Promise<void>;
 
 /** 大厅入口，只负责从应用服务中取得当前可玩的游戏清单。 */
 @ccclass('LobbyEntry')
-export class LobbyEntry extends Component {
+export class LobbyEntry extends Component implements ScenePresentationEntry {
     @property(Node)
     private gameList: Node | null = null;
 
@@ -62,10 +73,15 @@ export class LobbyEntry extends Component {
     private gameCardPrefab: Prefab | null = null;
 
     private games: readonly GameManifest[] = EMPTY_GAMES;
-    private mostRecentlyPlayedId?: string;
+    private catalogGames: readonly GameManifest[] = EMPTY_GAMES;
+    private gameItems: readonly LobbyGameListItem[] = [];
+    private storage?: StorageService;
+    private assets?: AssetService;
     private readonly enterRequestLock = new EnterRequestLock();
     private readonly presentation = new LobbyPresentation();
+    private readonly header = new LobbyHeader();
     private readonly settingsPanel = new LobbySettingsPanel();
+    private readonly announcementPanel = new LobbyAnnouncementPanel();
     private readonly achievementWall = new AchievementWall();
     private readonly cardViews = new Map<string, GameCardView>();
     private gridViewport: Node | null = null;
@@ -76,6 +92,15 @@ export class LobbyEntry extends Component {
     private feedback?: FeedbackService;
     private platformLayout?: PlatformLayoutInfo;
     private hasLaidOut = false;
+    private readonly presentationGate = new ScenePresentationGate();
+    private initialization?: Promise<void>;
+    private gridLayout?: LobbyGridLayout;
+    private gridTop = 0;
+    private badgeLayer?: Node;
+
+    get presentationReady(): Promise<void> {
+        return this.presentationGate.ready;
+    }
 
     get playableGames(): readonly GameManifest[] {
         return this.games;
@@ -91,28 +116,46 @@ export class LobbyEntry extends Component {
     }
 
     protected start(): void {
+        if (this.initialization) return;
+        const gate = this.presentationGate;
+        this.initialization = this.initializePresentation();
+        void this.initialization.then(
+            () => gate.complete(),
+            error => gate.fail(error),
+        );
+    }
+
+    private async initializePresentation(): Promise<void> {
+        const gate = this.presentationGate;
         const app = App.current;
         this.presentation.mount(this.node, app?.services.get(ASSET_SERVICE));
 
         if (!app) {
+            this.setupHeader();
             this.setupGridViewport();
             // TODO: console.warn(
             //     '[LobbyEntry] App is unavailable; game list remains empty.',
             // );
+            await gate.nextFrame();
             return;
         }
 
         const services = app.services;
+        this.assets = services.get(ASSET_SERVICE);
         const registry = services.get(GAME_REGISTRY_SERVICE);
         const platform = services.get(PLATFORM_SERVICE);
         this.platformLayout = platform.getLayoutInfo();
+        this.setupHeader();
         this.setupGridViewport();
-        const config = services.get(CONFIG_SERVICE).config;
+        const configService = services.get(CONFIG_SERVICE);
+        const config = configService.config;
         const storage = services.get(STORAGE_SERVICE);
+        this.storage = storage;
         const audio = services.get(AUDIO_SERVICE);
         const feedback = services.get(FEEDBACK_SERVICE);
         this.feedback = feedback;
-        this.settingsPanel.mount(this.node, {
+        const overlayParent = this.node.parent?.parent ?? this.node;
+        this.settingsPanel.mount(this.node, this.header.slot('Settings')!, {
             audio,
             feedback,
             storage,
@@ -139,18 +182,8 @@ export class LobbyEntry extends Component {
             config.appVersion,
             config.development.showDevelopmentGames,
         );
-        this.games = playableGames
-            .map((manifest, index) => ({
-                manifest,
-                index,
-                lastPlayedAt: storage.getGameData(manifest.id)?.lastPlayedAt ?? 0,
-            }))
-            .sort((left, right) => right.lastPlayedAt - left.lastPlayedAt || left.index - right.index)
-            .map(({ manifest }) => manifest);
-        const firstGame = this.games[0];
-        this.mostRecentlyPlayedId = firstGame
-            && (storage.getGameData(firstGame.id)?.lastPlayedAt ?? 0) > 0
-            ? firstGame.id : undefined;
+        this.catalogGames = playableGames;
+        this.refreshGameOrder();
         this.setEnterGameRequest((manifest) => (
             services.get(GAME_RUNTIME_SERVICE).enterGame(manifest)
         ));
@@ -158,8 +191,14 @@ export class LobbyEntry extends Component {
             manifest.id,
             storage.getGameData(manifest.id)?.highScore,
         ]));
-        const gameList = this.gameList;
-        if (gameList) this.achievementWall.mount(this.node.parent?.parent ?? this.node, gameList, playableGames, {
+        this.announcementPanel.mount(overlayParent, this.header.slot('Notice')!, configService.announcement, {
+            assets: services.get(ASSET_SERVICE),
+            feedback,
+            storage,
+            platform,
+            findGame: (gameId) => registry.getById(gameId),
+        }, { playableGames, enterGame: this.handleCardClick });
+        if (this.gameList) this.achievementWall.mount(overlayParent, this.gameList, playableGames, {
             achievements: services.get(ACHIEVEMENT_SERVICE), platform, feedback,
             art: services.get(ACHIEVEMENT_ART_SERVICE),
             music: this.achievementMusic,
@@ -168,20 +207,39 @@ export class LobbyEntry extends Component {
                 services.get(ACHIEVEMENT_CELEBRATION_SERVICE).preview(manifest, challenge);
             },
         }, this.handleCardClick);
-        this.renderGames();
+        // 先绘制大厅背景和顶部栏，再分帧构建卡片，避免所有文字和蒙版挤在首帧。
+        await gate.nextFrame();
+        await this.renderGames();
     }
 
     protected onDestroy(): void {
+        this.presentationGate.dispose();
         this.presentation.unmount();
+        this.announcementPanel.unmount();
         this.settingsPanel.unmount();
+        this.header.unmount();
         this.achievementWall.unmount();
         this.achievementMusic?.dispose();
         this.achievementMusic = undefined;
         this.audioBank?.dispose();
         this.audioBank = undefined;
         this.feedback = undefined;
+        this.storage = undefined;
+        this.assets = undefined;
+        this.cardViews.clear();
         view.off('canvas-resize', this.handleCanvasResize, this);
         this.hasLaidOut = false;
+        this.gridLayout = undefined;
+        this.badgeLayer = undefined;
+    }
+
+    /** 入口固定在全屏 UI 根节点，标题挂入列表；固定入口绘制在列表之上、弹窗之下。 */
+    private setupHeader(): void {
+        const safeArea = this.node.parent?.name === 'SafeArea' ? this.node.parent : null;
+        const fullscreenRoot = safeArea?.parent ?? this.node;
+        this.header.mount(fullscreenRoot, this.gameList, App.current?.services.get(ASSET_SERVICE));
+        const headerNode = this.header.node;
+        if (safeArea && headerNode) headerNode.setSiblingIndex(safeArea.getSiblingIndex());
     }
 
     private setupGridViewport(): void {
@@ -190,10 +248,10 @@ export class LobbyEntry extends Component {
             return;
         }
 
-        // Keep the viewport on the full Canvas UI root, then assign its
-        // top/side-safe rectangle below; its bottom intentionally reaches the
-        // screen edge. Relying on the SafeArea child's Widget size leaves
-        // stale design-size bounds on tablet resize.
+        // The viewport spans the full screen height. Safe-area spacing belongs
+        // to the scrolling content so the title and cards clip at screen edges.
+        // Use the full Canvas UI root rather than the SafeArea child's Widget,
+        // whose bounds can still have the design size during a resize.
         const safeArea = this.node.parent?.name === 'SafeArea'
             ? this.node.parent
             : null;
@@ -231,21 +289,11 @@ export class LobbyEntry extends Component {
         scrollView.cancelInnerEvents = true;
         gameList.setParent(viewport);
         scrollView.content = gameList;
-        if (safeArea) {
-            // Background < scrolling content < fixed safe-area controls.
-            const safeAreaIndex = safeArea.getSiblingIndex();
-            if (viewport.getSiblingIndex() > safeAreaIndex) {
-                viewport.setSiblingIndex(safeAreaIndex);
-            }
-        }
-
-        // The brand/title is part of the page content so it naturally leaves
-        // the screen together with the cards. Persistent controls (settings)
-        // remain direct children of ContentRoot and therefore stay fixed.
-        const brandArea = this.node.getChildByName('BrandArea');
-        if (brandArea && brandArea.parent !== gameList) {
-            brandArea.setParent(gameList);
-            brandArea.setSiblingIndex(0);
+        // Background < scrolling title/cards < fixed entries < safe-area popups.
+        const headerNode = this.header.node;
+        const anchor = headerNode?.parent === viewportParent ? headerNode : safeArea;
+        if (anchor && viewport.getSiblingIndex() > anchor.getSiblingIndex()) {
+            viewport.setSiblingIndex(anchor.getSiblingIndex());
         }
 
         this.gridViewport = viewport;
@@ -253,13 +301,13 @@ export class LobbyEntry extends Component {
         this.layoutCards();
     }
 
-    private renderGames(): void {
+    private async renderGames(): Promise<void> {
+        const gate = this.presentationGate;
         const gameList = this.gameList;
         const gameCardPrefab = this.gameCardPrefab;
 
         if (!gameList || !gameCardPrefab) {
-            // TODO: console.error('[LobbyEntry] Game list or card prefab is missing.');
-            return;
+            throw new Error('Lobby game list or GameCard prefab is missing.');
         }
 
         // Keep the list idempotent even when a lobby scene is restored or its
@@ -276,8 +324,14 @@ export class LobbyEntry extends Component {
             child.destroy();
         }
 
-        this.games.forEach((manifest) => {
+        this.layoutCards();
+        const itemCount = this.gameItems.length + (this.games.length > 0 ? 1 : 0);
+        for (let index = 0; index < itemCount; index++) {
+            const item = this.gameItems[index];
+            const layout = this.gridLayout?.items[index];
+            if (!layout) throw new Error('Lobby card layout is missing.');
             const card = instantiate(gameCardPrefab);
+            card.active = false;
             const view = card.getComponent(GameCardView);
 
             if (!view) {
@@ -285,27 +339,36 @@ export class LobbyEntry extends Component {
                 throw new Error('GameCard prefab is missing GameCardView.');
             }
 
+            view.setAssetService(this.assets);
             card.setParent(gameList);
-            view.bind(
-                manifest,
-                this.storageHighScores.get(manifest.id),
-                this.handleCardClick,
-                manifest.id === this.mostRecentlyPlayedId,
-            );
-            this.cardViews.set(manifest.id, view);
-        });
-
-        if (this.games.length > 0) {
-            const comingSoonCard = instantiate(gameCardPrefab);
-            const view = comingSoonCard.getComponent(GameCardView);
-            if (!view) {
-                comingSoonCard.destroy();
-                throw new Error('GameCard prefab is missing GameCardView.');
+            card.setSiblingIndex(index);
+            card.setPosition(layout.x, layout.y - this.gridTop);
+            if (item) {
+                const { manifest, badge } = item;
+                view.bind(manifest, this.storageHighScores.get(manifest.id), this.handleCardClick, badge, layout);
+                this.cardViews.set(manifest.id, view);
+            } else {
+                view.bindComingSoon(layout);
             }
-            comingSoonCard.setParent(gameList);
-            view.bindComingSoon();
+            if (this.badgeLayer) view.setBadgeLayer(this.badgeLayer);
+            card.active = true;
+            await view.artworkReady;
+            await gate.nextFrame();
         }
+    }
 
+    private refreshGameOrder(): void {
+        if (!this.storage) return;
+        this.gameItems = buildLobbyGameList(this.catalogGames, this.storage);
+        this.games = this.gameItems.map(({ manifest }) => manifest);
+        const gameList = this.gameList;
+        if (!gameList || this.cardViews.size === 0) return;
+        for (const { manifest, badge } of this.gameItems) {
+            const card = this.cardViews.get(manifest.id);
+            card?.setBadge(badge);
+            card?.node.setSiblingIndex(gameList.children.length - 1);
+        }
+        gameList.getChildByName('ComingSoonCard')?.setSiblingIndex(gameList.children.length - 1);
         this.layoutCards();
     }
 
@@ -328,6 +391,7 @@ export class LobbyEntry extends Component {
             ? scrollView.getScrollOffset().y
             : 0;
         const safeContentMetrics = this.readLobbyViewportMetrics();
+        const headerMetrics = this.header.layout(safeContentMetrics);
         const viewportMetrics = calculateLobbyScrollViewportMetrics(safeContentMetrics);
         viewportTransform.setAnchorPoint(0.5, 0.5);
         viewportTransform.setContentSize(
@@ -336,23 +400,27 @@ export class LobbyEntry extends Component {
         );
         viewport.setPosition(viewportMetrics.contentX, viewportMetrics.contentY);
 
-        const brandMetrics = calculateLobbyBrandMetrics(
-            safeContentMetrics.contentWidth,
-            safeContentMetrics.contentHeight,
-            this.achievementWall.hasShowcase,
-        );
         const gridWidth = Math.max(0, viewportMetrics.contentWidth - GRID_SIDE_PADDING * 2);
+        const headerBottom = safeContentMetrics.safeTop + headerMetrics.headerHeight;
+        const showcaseTop = headerBottom + LOBBY_BRAND_TO_SHOWCASE_GAP * headerMetrics.scale;
         this.achievementWall.layoutShowcase(
             gridWidth,
-            -brandMetrics.showcaseCenterFromTop,
-            brandMetrics.scale,
+            -showcaseTop - LOBBY_SHOWCASE_HEIGHT * headerMetrics.scale / 2,
+            headerMetrics.scale,
         );
+        const gridTop = this.achievementWall.hasShowcase
+            ? showcaseTop + (LOBBY_SHOWCASE_HEIGHT + LOBBY_SHOWCASE_TO_GRID_GAP) * headerMetrics.scale
+            : headerBottom + (LOBBY_HEADER_TO_GRID_GAP + LOBBY_GRID_TOP_PADDING) * headerMetrics.scale;
         const cards = gameList.children.filter((child) => Boolean(child.getComponent(GameCardView)));
         const layout = calculateLobbyGridLayout(
-            cards.length,
+            Math.max(cards.length, this.gameItems.length + (this.games.length > 0 ? 1 : 0)),
             gridWidth,
         );
+        this.gridLayout = layout;
+        this.gridTop = gridTop;
         const bottomSpacer = this.ensureBottomSpacer(gameList);
+        const badgeLayer = this.ensureBadgeLayer(gameList);
+        this.badgeLayer = badgeLayer;
         const bottomSpacerHeight = Math.max(0, safeContentMetrics.safeBottom) + GRID_BOTTOM;
         const bottomSpacerTransform = bottomSpacer.getComponent(UITransform);
         bottomSpacerTransform?.setAnchorPoint(0.5, 0.5);
@@ -362,20 +430,16 @@ export class LobbyEntry extends Component {
         );
         bottomSpacer.setPosition(
             0,
-            -brandMetrics.gridTop - layout.contentHeight - bottomSpacerHeight / 2,
+            -gridTop - layout.contentHeight - bottomSpacerHeight / 2,
         );
         const contentHeight = Math.max(
             viewportMetrics.contentHeight,
-            brandMetrics.gridTop
+            gridTop
                 + layout.contentHeight
                 + bottomSpacerHeight,
         );
         listTransform.setContentSize(viewportMetrics.contentWidth, contentHeight);
         listTransform.setAnchorPoint(0.5, 1);
-        this.presentation.layoutBrand(
-            safeContentMetrics.contentWidth,
-            safeContentMetrics.contentHeight,
-        );
         const maxScrollOffset = scrollView.getMaxScrollOffset().y;
         const scrollOffset = this.hasLaidOut
             ? clampLobbyScrollOffset(
@@ -399,10 +463,25 @@ export class LobbyEntry extends Component {
             if (!item) {
                 return;
             }
-            card.setPosition(item.x, item.y - brandMetrics.gridTop);
-            card.getComponent(GameCardView)?.setCardSize(item.width, item.height);
+            card.setPosition(item.x, item.y - gridTop);
+            const cardView = card.getComponent(GameCardView);
+            cardView?.setCardSize(item.width, item.height);
+            cardView?.setBadgeLayer(badgeLayer);
         });
         this.hasLaidOut = true;
+    }
+
+    private ensureBadgeLayer(gameList: Node): Node {
+        const existing = gameList.getChildByName(GRID_BADGE_LAYER_NAME);
+        const layer = existing ?? new Node(GRID_BADGE_LAYER_NAME);
+        if (!existing) {
+            layer.layer = gameList.layer;
+            gameList.addChild(layer);
+            layer.addComponent(UITransform).setContentSize(0, 0);
+        }
+        // 与卡片一起滚动并受列表蒙版裁切，始终在所有卡片之后绘制。
+        layer.setSiblingIndex(gameList.children.length - 1);
+        return layer;
     }
 
     private ensureBottomSpacer(gameList: Node): Node {
@@ -452,13 +531,10 @@ export class LobbyEntry extends Component {
 
         const ownerNode = this.node;
         const cardView = this.cardViews.get(manifest.id);
-        cardView?.setLoading();
-        void this.enterRequestLock.run(() => request(manifest)).then(
-            (started) => {
-                if (!started && ownerNode.isValid) {
-                    cardView?.setIdle();
-                }
-            },
+        void this.enterRequestLock.run(() => {
+            cardView?.setLoading();
+            return request(manifest);
+        }).catch(
             (error: unknown) => {
                 // TODO: console.error(
                 //     `[LobbyEntry] Enter request failed: ${manifest.id}.`,

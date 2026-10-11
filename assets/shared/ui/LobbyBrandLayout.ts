@@ -2,19 +2,23 @@ import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
 
 export const LOBBY_DESIGN_WIDTH = 750;
 export const LOBBY_DESIGN_HEIGHT = 1334;
-export const LOBBY_BRAND_WIDTH = 600;
-export const LOBBY_BRAND_HEIGHT = 198;
-export const LOBBY_BRAND_TOP_GAP = 42;
+/** 大厅顶部布局：标题与成就展柜随列表滚动，右侧固定设置与公告按钮。 */
+export const LOBBY_BRAND_WIDTH = 400;
+export const LOBBY_BRAND_HEIGHT = 132;
 export const LOBBY_VIEWPORT_TOP_GAP = 12;
-export const LOBBY_BRAND_TO_GRID_GAP = 68;
-/** 品牌 logo 与游戏网格之间的成就展柜条（设计宽度内的高度与上下间距）。 */
+export const LOBBY_HEADER_TOP_GAP = 16;
+export const LOBBY_HEADER_SIDE_GAP = 24;
+/** 侧边圆形按钮沿用设置按钮美术的 128 × 134 比例。 */
+export const LOBBY_HEADER_BUTTON_WIDTH = 80;
+export const LOBBY_HEADER_BUTTON_HEIGHT = 84;
+export const LOBBY_HEADER_BUTTON_GAP = 14;
+/** 品牌 logo 与游戏网格之间的成就展柜条。 */
 export const LOBBY_SHOWCASE_HEIGHT = 124;
 export const LOBBY_BRAND_TO_SHOWCASE_GAP = 26;
 export const LOBBY_SHOWCASE_TO_GRID_GAP = 40;
-export const LOBBY_BRAND_AREA_HEIGHT = 320;
-export const LOBBY_SETTINGS_ENTRY_SIZE = 80;
-export const LOBBY_SETTINGS_ENTRY_TOP_GAP = 20;
-export const LOBBY_SETTINGS_ENTRY_RIGHT_GAP = 28;
+/** 首屏顶部布局下沿到游戏网格的间距，以及首行卡片的上留白。 */
+export const LOBBY_HEADER_TO_GRID_GAP = 8;
+export const LOBBY_GRID_TOP_PADDING = 24;
 
 export interface LobbySystemSafeInsets {
     readonly top?: number;
@@ -36,17 +40,18 @@ export interface LobbySafeContentMetrics {
     readonly contentY: number;
 }
 
+/** 顶部栏几何：y 均为距安全内容顶边的距离，x 均相对安全内容水平中心。 */
 export interface LobbyBrandMetrics {
     readonly scale: number;
     readonly width: number;
     readonly height: number;
     readonly topGap: number;
     readonly centerFromTop: number;
-    readonly areaHeight: number;
-    /** 成就展柜条中心距内容顶部的距离及其高度；没有展柜时为 0。 */
-    readonly showcaseCenterFromTop: number;
-    readonly showcaseHeight: number;
-    readonly gridTop: number;
+    readonly sideColumnX: number;
+    readonly settingsCenterFromTop: number;
+    readonly noticeCenterFromTop: number;
+    /** 首屏顶部布局占用的高度，游戏网格从这里再向下留出间距。 */
+    readonly headerHeight: number;
 }
 
 /** 将 resize/layout 前取得的 ScrollView 偏移限制到新的可滚动范围。 */
@@ -66,19 +71,18 @@ export function clampLobbyScrollOffset(
 }
 
 /**
- * 将大厅滚动 viewport 从安全内容矩形扩展到屏幕底部。
- * 顶部和左右仍然遵循安全区，底部安全区改由列表尾部 spacer 占位。
+ * 大厅滚动 viewport 覆盖整屏高度，标题和游戏卡片在屏幕边缘裁切。
+ * 顶部与底部安全间距由滚动内容占位，固定入口仍按安全内容矩形排版。
  */
 export function calculateLobbyScrollViewportMetrics(
     safeContent: LobbySafeContentMetrics,
 ): LobbySafeContentMetrics {
-    const contentHeight = Math.max(1, safeContent.height - safeContent.safeTop);
-
     return Object.freeze({
         ...safeContent,
+        safeTop: 0,
         safeBottom: 0,
-        contentHeight,
-        contentY: safeContent.contentY - safeContent.safeBottom / 2,
+        contentHeight: safeContent.height,
+        contentY: 0,
     });
 }
 
@@ -196,99 +200,36 @@ export function calculateLobbySafeContentFromPlatform(
     });
 }
 
-export interface LobbySettingsEntryMetrics {
-    readonly scale: number;
-    readonly size: number;
-    readonly x: number;
-    readonly y: number;
-    readonly left: number;
-    readonly right: number;
-    readonly top: number;
-    readonly bottom: number;
-    readonly topInset: number;
-    readonly rightInset: number;
-}
-
-/** 将大厅设置入口固定在当前 Canvas 右上角安全区之外，不依赖品牌区或滚动列表。 */
-export function calculateLobbySettingsEntryMetrics(
-    canvasWidth: number,
-    canvasHeight: number,
-    platformLayout?: PlatformLayoutInfo,
-    systemInsets: LobbySystemSafeInsets = {},
-): LobbySettingsEntryMetrics {
-    const width = Math.max(1, canvasWidth);
-    const height = Math.max(1, canvasHeight);
-    const designScale = width / LOBBY_DESIGN_WIDTH;
-    const safeContent = calculateLobbySafeContentFromPlatform(
-        width,
-        height,
-        platformLayout,
-        systemInsets,
-    );
-    const scale = Math.max(0.75, Math.min(1, designScale));
-    const size = LOBBY_SETTINGS_ENTRY_SIZE * scale;
-    const topGap = LOBBY_SETTINGS_ENTRY_TOP_GAP * scale;
-    const rightGap = LOBBY_SETTINGS_ENTRY_RIGHT_GAP * scale;
-    const capsuleBottom = normalizeNonNegative(
-        platformLayout?.topRightReservedArea?.bottom,
-    ) * designScale;
-    const topInset = Math.max(
-        safeContent.safeTop + topGap,
-        capsuleBottom + topGap,
-    );
-    const rightInset = safeContent.safeRight + rightGap;
-    const x = width / 2 - rightInset - size / 2;
-    const y = height / 2 - topInset - size / 2;
-
-    return Object.freeze({
-        scale,
-        size,
-        x,
-        y,
-        left: x - size / 2,
-        right: x + size / 2,
-        top: y + size / 2,
-        bottom: y - size / 2,
-        topInset,
-        rightInset,
-    });
-}
-
 /**
- * 大厅页和大厅启动页的品牌几何契约。
- * 短屏或非对称安全区变窄时只等比缩小，不放大正式 logo。
+ * 大厅顶部栏与大厅启动页共用的品牌几何契约。
+ * 短屏或非对称安全区变窄时整栏等比缩小，不放大正式 logo。
  */
 export function calculateLobbyBrandMetrics(
     contentWidth: number,
     contentHeight: number,
-    withShowcase = false,
 ): LobbyBrandMetrics {
     const widthScale = Math.max(0.01, contentWidth / LOBBY_DESIGN_WIDTH);
     const heightScale = Math.max(0.01, contentHeight / LOBBY_DESIGN_HEIGHT);
     const scale = Math.max(0.01, Math.min(1, widthScale, heightScale));
     const width = LOBBY_BRAND_WIDTH * scale;
     const height = LOBBY_BRAND_HEIGHT * scale;
-    const topGap = LOBBY_BRAND_TOP_GAP * scale;
-    const centerFromTop = topGap + height / 2;
-    const brandBottom = centerFromTop + height / 2;
-    const showcaseHeight = withShowcase ? LOBBY_SHOWCASE_HEIGHT * scale : 0;
-    const showcaseCenterFromTop = withShowcase
-        ? brandBottom + LOBBY_BRAND_TO_SHOWCASE_GAP * scale + showcaseHeight / 2
-        : 0;
-    const gridTop = withShowcase
-        ? showcaseCenterFromTop + showcaseHeight / 2 + LOBBY_SHOWCASE_TO_GRID_GAP * scale
-        : brandBottom + LOBBY_BRAND_TO_GRID_GAP * scale;
-    const areaHeight = Math.max(LOBBY_BRAND_AREA_HEIGHT * scale, gridTop);
+    const topGap = LOBBY_HEADER_TOP_GAP * scale;
+    const buttonHeight = LOBBY_HEADER_BUTTON_HEIGHT * scale;
+    const buttonGap = LOBBY_HEADER_BUTTON_GAP * scale;
+    const sideGap = LOBBY_HEADER_SIDE_GAP * scale;
+    const settingsCenterFromTop = topGap + buttonHeight / 2;
+    const noticeCenterFromTop = settingsCenterFromTop + buttonHeight + buttonGap;
+    const columnHeight = buttonHeight * 2 + buttonGap;
 
     return Object.freeze({
         scale,
         width,
         height,
         topGap,
-        centerFromTop,
-        areaHeight,
-        showcaseCenterFromTop,
-        showcaseHeight,
-        gridTop,
+        centerFromTop: topGap + height / 2,
+        sideColumnX: contentWidth / 2 - sideGap - LOBBY_HEADER_BUTTON_WIDTH * scale / 2,
+        settingsCenterFromTop,
+        noticeCenterFromTop,
+        headerHeight: topGap + Math.max(height, columnHeight),
     });
 }

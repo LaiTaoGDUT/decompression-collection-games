@@ -1,0 +1,32 @@
+{
+  "version": "cover-layout-v1",
+  "size": [1200, 900],
+  "bodySize": [1200, 1200],
+  "defaults": {
+    "manifest": "assets/resources/configs/games.json",
+    "brandLogo": "assets/lobby-covers/visual/branding/lobby-cn-title-logo-v3.png",
+    "coverBundleRoot": "assets/lobby-covers",
+    "badge": "官方 · 玩法介绍"
+  },
+  "logo": { "x": 62, "y": 30, "width": 304, "maxHeight": 112 },
+  "badge": { "right": 1136, "y": 61, "height": 54, "fontSize": 25, "padding": 24 },
+  "title": { "x": 64, "baseline": 224, "width": 1072, "fontSize": 80, "minFontSize": 48 },
+  "subtitle": { "x": 66, "baseline": 278, "width": 1070, "fontSize": 34, "minFontSize": 24 },
+  "points": {
+    "x": 64, "y": 326, "width": 400, "height": 476, "radius": 28,
+    "heading": { "x": 94, "baseline": 382, "width": 340, "fontSize": 32, "minFontSize": 24 },
+    "numberX": 94, "labelX": 153, "labelWidth": 280,
+    "labelSize": 29, "labelMinSize": 21, "detailX": 94, "detailWidth": 340,
+    "detailSize": 24, "detailMinSize": 18, "detailOffset": 43,
+    "three": { "firstBaseline": 460, "step": 112 },
+    "four": { "firstBaseline": 448, "step": 80 },
+    "note": { "x": 94, "baseline": 780, "width": 340, "fontSize": 23, "minFontSize": 18 }
+  },
+  "hero": { "x": 494, "y": 326, "width": 642, "height": 481.5, "radius": 28 },
+  "footer": { "x": 66, "baseline": 864, "width": 1070, "fontSize": 30, "minFontSize": 23 },
+  "body": {
+    "cardX": [64, 616], "cardY": [338, 646], "cardWidth": 520, "cardHeight": 276,
+    "cardRadius": 28, "labelSize": 32, "detailSize": 27,
+    "footer": { "x": 64, "y": 965, "width": 1072, "height": 165, "radius": 28 }
+  }
+}

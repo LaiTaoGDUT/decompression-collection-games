@@ -1,0 +1,1009 @@
+{
+  "operation": "mechanical-downsample-and-final-atlas-tinify",
+  "designSize": [
+    750,
+    1334
+  ],
+  "originalRendersPreserved": true,
+  "atlasBuilder": "sprite-atlas-sources/build.py",
+  "compressionSkill": ".agents/skills/tinypng-batch/SKILL.md",
+  "compressionStats": {
+    "processed": 10,
+    "cached": 0,
+    "failed": 0,
+    "saved_bytes": 1423680,
+    "pending": 0
+  },
+  "frames": [
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-small-01.png",
+      "beforeSize": [
+        232,
+        208
+      ],
+      "runtimeAuthoringSize": [
+        138,
+        124
+      ],
+      "maximumDisplay": [
+        135.9375,
+        121.875
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "5c5496e551dacf832049fdb25d732821a14e966008f6700d9a5bd63c3a13296b",
+      "afterSha256": "b06ca8291d90d89411a3e9d52b56bf2c44ce805a64dd9e7988641565b5bfe91b"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-small-02.png",
+      "beforeSize": [
+        232,
+        208
+      ],
+      "runtimeAuthoringSize": [
+        138,
+        124
+      ],
+      "maximumDisplay": [
+        135.9375,
+        121.875
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "8c71d2feb2552f570a6e8c8f19c0901fbc36395b1c23f6b5d922b85cdf758a41",
+      "afterSha256": "05247958fea6863a590d4a38369085e663eb861de655ca879fc52cad879a3076"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-hopper-01.png",
+      "beforeSize": [
+        184,
+        144
+      ],
+      "runtimeAuthoringSize": [
+        110,
+        86
+      ],
+      "maximumDisplay": [
+        107.8125,
+        84.375
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "9f615c5379318ab2cec40fde3c39abc73b345a5f2217e99ed2be2cc71bc212b5",
+      "afterSha256": "2536a60c5460b739d3daf95c39caa1ce6b7ea28a4b50f56c544b2346aa635399"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-hopper-02.png",
+      "beforeSize": [
+        184,
+        144
+      ],
+      "runtimeAuthoringSize": [
+        110,
+        86
+      ],
+      "maximumDisplay": [
+        107.8125,
+        84.375
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "ecf72cc4937f2525fd677b124aadc06b7d34c83920f6230c6ed69277cd1e5c17",
+      "afterSha256": "5ff08a04a319f3a2204d118f594ccec7e2b0a444a21bd8c54b50c80cded5572a"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-hover-01.png",
+      "beforeSize": [
+        152,
+        200
+      ],
+      "runtimeAuthoringSize": [
+        91,
+        119
+      ],
+      "maximumDisplay": [
+        89.0625,
+        117.1875
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "f720dbac32e1aed2f20b27eaaf65e48ee184f3eaeb5cc3c22d1473a967866042",
+      "afterSha256": "f351408719fa77beed4ca14e0e866eced5811a7f767daf9f47557eff6506df81"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-hover-02.png",
+      "beforeSize": [
+        152,
+        200
+      ],
+      "runtimeAuthoringSize": [
+        91,
+        119
+      ],
+      "maximumDisplay": [
+        89.0625,
+        117.1875
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "73047f1440fd5863cde59f3382145d8d206d749587e5f30132eccb188c2c031f",
+      "afterSha256": "c46b0559816df4898990c468004a0dd95d7b913500e38b0a5697c899d1d06347"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-weaver-01.png",
+      "beforeSize": [
+        320,
+        184
+      ],
+      "runtimeAuthoringSize": [
+        190,
+        110
+      ],
+      "maximumDisplay": [
+        187.5,
+        107.8125
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "e40fe4080227108ffe132b1a1dd06a4e98e88699273e7d0aff716ddbbb726635",
+      "afterSha256": "fd3996d0046cf7965ba2313f34aecc85508d9d73c31ab2cd9362b0cdfe6f8e47"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-weaver-02.png",
+      "beforeSize": [
+        320,
+        184
+      ],
+      "runtimeAuthoringSize": [
+        190,
+        110
+      ],
+      "maximumDisplay": [
+        187.5,
+        107.8125
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "7aa799329f01cabaf458c1e72623567ffc867acd40d35bf9d258b40e4aa6654d",
+      "afterSha256": "c65e875f0df10cef04b4719b69576bdcf7281cc9725b00e9c3680090d61a9c80"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-large-01.png",
+      "beforeSize": [
+        328,
+        240
+      ],
+      "runtimeAuthoringSize": [
+        195,
+        143
+      ],
+      "maximumDisplay": [
+        192.1875,
+        140.625
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "9acf502981678ae033b92d7c0ab82b8578fc02e6c048c66bca4eadb837f4f0b5",
+      "afterSha256": "0cc73567663b8b69f3fdd13e834af1aeca2f9f3f0ed52db53e930449a99cf50b"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-large-02.png",
+      "beforeSize": [
+        328,
+        240
+      ],
+      "runtimeAuthoringSize": [
+        195,
+        143
+      ],
+      "maximumDisplay": [
+        192.1875,
+        140.625
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "5c99ce22b57d1cb917ed8fb5a083a6e7cc2086ccabe3d70bb634a3ff43a346ee",
+      "afterSha256": "515548aa7d34a3cc364e501cb1f345b71aaadab0cad3277d15518cef2968f18d"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-flyer-01.png",
+      "beforeSize": [
+        272,
+        368
+      ],
+      "runtimeAuthoringSize": [
+        162,
+        219
+      ],
+      "maximumDisplay": [
+        159.375,
+        215.625
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "96ccf5455173a33a29ae8db0bb7d76d57a0c1b44232444a5df2469040eb9f94a",
+      "afterSha256": "156c5b386c6770720b4a8e8176a737db9f540ccd1e8e60ef17d5928a2ba988ca"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-flyer-02.png",
+      "beforeSize": [
+        272,
+        368
+      ],
+      "runtimeAuthoringSize": [
+        162,
+        219
+      ],
+      "maximumDisplay": [
+        159.375,
+        215.625
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "30c0f4cf7d2bcb5d2f4cc7569547664c457efb6d359d859538ebbd4d9e5544ec",
+      "afterSha256": "f8d45898486a956f95e3de5f7788fa60c91881005228778c27e8f12359698d74"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-bouncer-01.png",
+      "beforeSize": [
+        376,
+        136
+      ],
+      "runtimeAuthoringSize": [
+        224,
+        81
+      ],
+      "maximumDisplay": [
+        220.3125,
+        79.6875
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "68ff7688dce73da19b183293bb4589f74037a8a9201efdd992fa7602b81af89a",
+      "afterSha256": "d5760b2a29f7345909b4b294f2d3ba0887676ff365c12782faf4358a136f20ae"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-bouncer-02.png",
+      "beforeSize": [
+        376,
+        136
+      ],
+      "runtimeAuthoringSize": [
+        224,
+        81
+      ],
+      "maximumDisplay": [
+        220.3125,
+        79.6875
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "95a9ebae378c6527a08e54f421eea993f50d3638cc0ad42febcdf54ac78d97c3",
+      "afterSha256": "973d1505becf6639e82bd1c09918b2da4a03ba68e02bcfafbc3e6d231202d15d"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-runner-01.png",
+      "beforeSize": [
+        352,
+        224
+      ],
+      "runtimeAuthoringSize": [
+        209,
+        133
+      ],
+      "maximumDisplay": [
+        206.25,
+        131.25
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "2b27d5add485e71c529bb94262d0ea0f8313c01c95b5bae14b907185fa17ba51",
+      "afterSha256": "dbe6dd02c228439f96c6ffb4b2db7196dfa445593f1aa9894be3295c6d3fb8ca"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-runner-02.png",
+      "beforeSize": [
+        352,
+        224
+      ],
+      "runtimeAuthoringSize": [
+        209,
+        133
+      ],
+      "maximumDisplay": [
+        206.25,
+        131.25
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "9579e7ed46728d1e7dc9684b8a320f49108ab806804f07f0bb16c3fd54e4148c",
+      "afterSha256": "c021df37f1b0fb89c973699b7367d0e7accfe9f1f219c9973b9a12341a10b460"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-tall-01.png",
+      "beforeSize": [
+        264,
+        352
+      ],
+      "runtimeAuthoringSize": [
+        157,
+        209
+      ],
+      "maximumDisplay": [
+        154.6875,
+        206.25
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "2ad04c540b56f6bb4469e6d1f2a5ad9a7fff225f271b12792460530547bd0d55",
+      "afterSha256": "18c6bc9fc7c674619ce3e4d81d343550dee542f7b22d3555004adb325cf438ff"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-tall-02.png",
+      "beforeSize": [
+        264,
+        352
+      ],
+      "runtimeAuthoringSize": [
+        157,
+        209
+      ],
+      "maximumDisplay": [
+        154.6875,
+        206.25
+      ],
+      "reason": "原版怪物画幅 × 750/320",
+      "beforeSha256": "67b59068c3ef730ecec037475ede00fe73e74eec4ebacac6bf9486267613bbd1",
+      "afterSha256": "81fefdd88df4ca7be556eb580acef0e0e442985088ec1f82a979cfedfd07daa8"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/items/pickup-jetpack.png",
+      "beforeSize": [
+        356,
+        474
+      ],
+      "runtimeAuthoringSize": [
+        68,
+        90
+      ],
+      "maximumDisplay": [
+        60.9375,
+        89.0625
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "a871d26fd544612cc31a0b2c049168e91fb99fbe6df7db9cf73cd39e49c51a99",
+      "afterSha256": "03f1941bbdc5dc0f89e9bf31541cf07201bbbcc033b1c9ae16a1f91cd7332a14"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/items/pickup-propeller-hat-v2.png",
+      "beforeSize": [
+        200,
+        125
+      ],
+      "runtimeAuthoringSize": [
+        80,
+        50
+      ],
+      "maximumDisplay": [
+        75,
+        46.875
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "33d3d0eecc49184f7af8d6698e72c872875eddba229b46f4fec1a50f0ae408f5",
+      "afterSha256": "e72cd3a45dfb4d04b8b81cc423270c5198852cac6fafd6f1d88a0dc4cfe776fb"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/items/pickup-rocket.png",
+      "beforeSize": [
+        304,
+        474
+      ],
+      "runtimeAuthoringSize": [
+        174,
+        271
+      ],
+      "maximumDisplay": [
+        168.75,
+        248.4375
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "3a3ad9807da253f91804d5f8012bd23f0871f7a5dd728178f1b3d38f74a8e4ea",
+      "afterSha256": "00506f4fccfaddced3bdcc55c31026629ca061e4d1892b2c8b5d5d10bd20507d"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/items/pickup-shield.png",
+      "beforeSize": [
+        369,
+        376
+      ],
+      "runtimeAuthoringSize": [
+        94,
+        96
+      ],
+      "maximumDisplay": [
+        89.0625,
+        89.0625
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "d91ff8c4611d51f4ed8932ad88705fee25a0bc36d8982b00a0493c0d1d016d97",
+      "afterSha256": "b0bce4f6f77d2acab2daa3647843a80f195838bc867cb60efbc749eedbdba056"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/items/pickup-spring-v2.png",
+      "beforeSize": [
+        329,
+        404
+      ],
+      "runtimeAuthoringSize": [
+        55,
+        68
+      ],
+      "maximumDisplay": [
+        42.1875,
+        65.625
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "df040688876d6f01a866336beb33a1c0ef006d0e0e56423a31899aff8d241a74",
+      "afterSha256": "3863c2542e88d57faca792409bce4a193c7f515216390e917a03106cc3789dde"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/items/pickup-trampoline.png",
+      "beforeSize": [
+        420,
+        309
+      ],
+      "runtimeAuthoringSize": [
+        92,
+        68
+      ],
+      "maximumDisplay": [
+        89.0625,
+        46.875
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "a1ff11b8ac5f12c1a403d528bf33701a288663b6e68cbde1121a287cdac31bfc",
+      "afterSha256": "0ce37b77d0b2ceb130a5f3ea81a8ddb557805c4c48a7378ddcddc71b0702b86b"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/projectiles/aim-reticle-trimmed.png",
+      "beforeSize": [
+        233,
+        237
+      ],
+      "runtimeAuthoringSize": [
+        60,
+        61
+      ],
+      "maximumDisplay": [
+        58,
+        58
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "7804b45acbfba936f5ba1da65c91ae5baf7ecbd9e1676800505cf628a406b05a",
+      "afterSha256": "7fc941e6407a098b2afdaf518669473924cbb761f8d27ea1ccb10aa2826e2a5b"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/projectiles/carrot-bullet.png",
+      "beforeSize": [
+        128,
+        59
+      ],
+      "runtimeAuthoringSize": [
+        128,
+        59
+      ],
+      "maximumDisplay": [
+        208.27118644067798,
+        96
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "de28be68f71287716b30675f94ad4ffe91c056f0538aa1a6246f5a01ec69209a",
+      "afterSha256": "de28be68f71287716b30675f94ad4ffe91c056f0538aa1a6246f5a01ec69209a"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/back-button.png",
+      "beforeSize": [
+        310,
+        223
+      ],
+      "runtimeAuthoringSize": [
+        60,
+        43
+      ],
+      "maximumDisplay": [
+        42,
+        42
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "6c287fd826cd5ac974f2859ade68e5aeaec7a2b3abe0acdbd2487460fde859f5",
+      "afterSha256": "c68be8f885736f8572ff3e2c142d55fd4c2466254fc5ce61caf74d773c552986"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/height-card.png",
+      "beforeSize": [
+        462,
+        250
+      ],
+      "runtimeAuthoringSize": [
+        222,
+        120
+      ],
+      "maximumDisplay": [
+        205,
+        111
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "b25f02518b5b55458e53f86e0481447d9e969c0ac0e9356351247af598c86d6d",
+      "afterSha256": "fdbb760d0cf2eaa9df35fb05909e847e6dfb9abb88a58dad6e8a8bc1f1911cbc"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/item-progress-fill.png",
+      "beforeSize": [
+        360,
+        39
+      ],
+      "runtimeAuthoringSize": [
+        120,
+        30
+      ],
+      "maximumDisplay": [
+        112,
+        28
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "fbf9ae823f0bc9951303a11979cb0c554f31e65339a1f866d26edc1392cfd966",
+      "afterSha256": "81e9205bbfce7fb2a6d290a8a7a4a36b1e6f09e1958ac64567439e6fff201ea8"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/pause-button.png",
+      "beforeSize": [
+        252,
+        269
+      ],
+      "runtimeAuthoringSize": [
+        64,
+        68
+      ],
+      "maximumDisplay": [
+        64,
+        64
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "666ac986498afaaf4c0dfba0528c62ba0505a24d7c9b091c22bfaff767248a6e",
+      "afterSha256": "bc690093d2fc747f95bb752c03b8b643c377024abd749d7f97951419b3bff85c"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/play-again-button.png",
+      "beforeSize": [
+        227,
+        254
+      ],
+      "runtimeAuthoringSize": [
+        44,
+        49
+      ],
+      "maximumDisplay": [
+        42,
+        42
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "38be27e116a3a585823764587fc0f90e66c9d0a45f7f9136976f10691410217d",
+      "afterSha256": "b7c9bfa30643e454d57357e483ec1fe373f482fa5033c1a781aa8d719bb56ed9"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/retry-button.png",
+      "beforeSize": [
+        278,
+        289
+      ],
+      "runtimeAuthoringSize": [
+        44,
+        46
+      ],
+      "maximumDisplay": [
+        42,
+        42
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "adfc6bb41f2a9596d1a8fe082d36144ecedd2f34e5c0822cec1cb5319d0db75f",
+      "afterSha256": "0317150b6111eecbaf657c6b777f487fd8cb1cea3ee853b28043700edbb63879"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/rules-button.png",
+      "beforeSize": [
+        253,
+        270
+      ],
+      "runtimeAuthoringSize": [
+        64,
+        68
+      ],
+      "maximumDisplay": [
+        64,
+        64
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "5869477f136b082112d0e43eaf2f9e6ae762cb707e74a8a3c2ddf9edf0df53e8",
+      "afterSha256": "c8ece5051d4ffd7350ff63ada44a4fdecdbf8132c603dc509e574354969c93e9"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/ui/hud/carrot-card.png",
+      "beforeSize": [
+        430,
+        290
+      ],
+      "runtimeAuthoringSize": [
+        192,
+        130
+      ],
+      "maximumDisplay": [
+        185,
+        122
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "05e3a120e28164710d5d104d8d34fc726c60ae0e08416352dba31caae8d2f224",
+      "afterSha256": "7faff419ff6f69d0e14a2cf9af21235fdbb08444f44dcbb4646abf656af90599"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/effects/rocket-flame.png",
+      "beforeSize": [
+        96,
+        160
+      ],
+      "runtimeAuthoringSize": [
+        60,
+        100
+      ],
+      "maximumDisplay": [
+        56.160000000000004,
+        90
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "838ac8d17dc794e4aee2d25ee7cc32362be13b0e19b5e18badb2f5966d7de17b",
+      "afterSha256": "051e189df7bce21d6a115438a41121da7414bebf21acaa3309e341031cd3ea82"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/effects/rocket-paper-scraps.png",
+      "beforeSize": [
+        150,
+        238
+      ],
+      "runtimeAuthoringSize": [
+        136,
+        216
+      ],
+      "maximumDisplay": [
+        133.92000000000002,
+        212.4864
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "98353bfdfa6f7dfa373f56c23029b88156724d2eb111f3b3ef92dc1bd31a8397",
+      "afterSha256": "0a79d7b0dfcfbef7270598de6f0777bf89b73e8becd999e78e4bc543180c5a46"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/effects/rocket-paper-trail.png",
+      "beforeSize": [
+        145,
+        270
+      ],
+      "runtimeAuthoringSize": [
+        136,
+        253
+      ],
+      "maximumDisplay": [
+        133.92000000000002,
+        249.368275862069
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "01af378e0b7ed91908884ece970e74d22d68022d75ca34b9a3bbc6655c08f432",
+      "afterSha256": "3c94a95cf4cd64ca7237daaec2a2546ceb593375126d8ef65dfadb7a0926bec3"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/effects/jetpack-flames.png",
+      "beforeSize": [
+        84,
+        160
+      ],
+      "runtimeAuthoringSize": [
+        42,
+        80
+      ],
+      "maximumDisplay": [
+        39.52,
+        72.38095238095238
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "af0f7f5a521a4d7aa7681f9278edc44c68076bb6a1e7c0bef3980ec418ce829c",
+      "afterSha256": "3806e3fc154825b873b16c28ab5056f75358b8709fb5483e195399d5da94b2ab"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png",
+      "beforeSize": [
+        264,
+        320
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        160
+      ],
+      "maximumDisplay": [
+        128.7,
+        156
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "18d733da1a1ba5987cbf7fe5ff35e4cf8c770b2f3077cb4905f97ef9621c2ef6",
+      "afterSha256": "a623b6206e10a662a04d6e40d985be8d988b82a834c0adfccd61a71cb43affdd"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-falling.png",
+      "beforeSize": [
+        264,
+        320
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        160
+      ],
+      "maximumDisplay": [
+        115.5,
+        140
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "f93db66aa0bdea00683697b3a618ffa6af21c0c9d75fd4dafde4fa3b6d426093",
+      "afterSha256": "e9e481f51cdfa48937ab8e60fa0cd33d0d28b3d55288efd6e4a63c9a36fb7b1d"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-propeller.png",
+      "beforeSize": [
+        264,
+        320
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        160
+      ],
+      "maximumDisplay": [
+        115.5,
+        140
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "bdeeea0df12e5e318ce6b50ea3f8728b903a470559f0d7dc0ab8c4741f584f81",
+      "afterSha256": "7c033a3b9a49f40cb7ff94a4efb567ef8bd1f4f4d43b661f6ba1b8ac4fd70fc7"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-propeller-spin.png",
+      "beforeSize": [
+        264,
+        320
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        160
+      ],
+      "maximumDisplay": [
+        115.5,
+        140
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "ef297be2f588f7c0af021c337649149885aa433b91ba50dab6c24ecf39a54dd3",
+      "afterSha256": "6727555553fd7990969b76130cbe5848515cbf31cf6fe947ede26c40b92facf7"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-rocket.png",
+      "beforeSize": [
+        264,
+        400
+      ],
+      "runtimeAuthoringSize": [
+        144,
+        218
+      ],
+      "maximumDisplay": [
+        135.96,
+        206
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "7ff5ab4240318573973cb21aaa1ac62f3b96862f08d874daa6df49bcb871efe6",
+      "afterSha256": "075b8796b8c90bff20c7ac4e93da568c5a51719018df8e24348c35fb7efafde7"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-jetpack.png",
+      "beforeSize": [
+        264,
+        320
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        160
+      ],
+      "maximumDisplay": [
+        115.5,
+        140
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "726350ac75804f8adeaeef651ec69406b4899b4e1c0d01500212681cdf2595b8",
+      "afterSha256": "d0b6ed6fb53fe7acc009f530c5aba9828d3036421e19b5208878eeed4469785f"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-shoes-jumping.png",
+      "beforeSize": [
+        264,
+        356
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        178
+      ],
+      "maximumDisplay": [
+        115.68539325842697,
+        156
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "b0cef7929b1588e38adb9c58115ccdcc21b8672ff76f131d1744f6347a7d1c65",
+      "afterSha256": "1b8c7db289dd1a384fc6dedfa09ebae729e9594511c94f9e922e5ecc5fdc9a20"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/rabbit-shoes-falling.png",
+      "beforeSize": [
+        264,
+        356
+      ],
+      "runtimeAuthoringSize": [
+        132,
+        178
+      ],
+      "maximumDisplay": [
+        115.68539325842697,
+        156
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "e07419f6b1ed6d766c8a99aa64292de893a4a21e69f70fef512608d0a91654d5",
+      "afterSha256": "dc75316009af0580c17361737ace4453c5de4777c85f3c3ec169fe1085246f77"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/player-jetpack.png",
+      "beforeSize": [
+        152,
+        145
+      ],
+      "runtimeAuthoringSize": [
+        50,
+        48
+      ],
+      "maximumDisplay": [
+        48,
+        46
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "3b47d7529e235f9fef8129621f409b735986df8c1c50d1806fcd43dd1c798b93",
+      "afterSha256": "b819d9362a9d5eac8c1c839bb04361cfa04f71fee23ef5e3841e8b1cac13ef34"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/player-rocket.png",
+      "beforeSize": [
+        247,
+        360
+      ],
+      "runtimeAuthoringSize": [
+        90,
+        131
+      ],
+      "maximumDisplay": [
+        88,
+        128
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "5a8a913c313d0fd143dbbf09b421242d50091a9aa5866fa8e63f57f20b7c8882",
+      "afterSha256": "0217ef636928b12ac028ee43730124a5b426d45aadb002a6d0bc2bce9025fb85"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/player/shield-overlay.png",
+      "beforeSize": [
+        336,
+        336
+      ],
+      "runtimeAuthoringSize": [
+        264,
+        264
+      ],
+      "maximumDisplay": [
+        202.85999999999999,
+        258.75
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "c841bd7871c80cf9ae323917a9b2c575e96ad301d8bbfbd02a84d7fff10e6ff2",
+      "afterSha256": "b8da30350e7d1095f1e81838811f2e55e831244d3df40ed2374e348d2cd506d4"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/collectibles/golden-carrot.png",
+      "beforeSize": [
+        94,
+        160
+      ],
+      "runtimeAuthoringSize": [
+        47,
+        80
+      ],
+      "maximumDisplay": [
+        45.825,
+        78
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "347f314e068bccaa9ea1207b249f1792b8bf75e21351b68bf0c9f7b52a73006f",
+      "afterSha256": "9614bab08b67469393d9afaea115a21afd5b67c454e8efbbe742da07c19ad50b"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/collectibles/golden-carrot-glow.png",
+      "beforeSize": [
+        288,
+        288
+      ],
+      "runtimeAuthoringSize": [
+        168,
+        168
+      ],
+      "maximumDisplay": [
+        165.62879999999998,
+        165.62879999999998
+      ],
+      "reason": "包含教程、掉落或动画的最大显示画幅",
+      "beforeSha256": "6b64fff95b86080383c8350f52e7d084f6d23329ad62a1d0a30b5182afe0b1ae",
+      "afterSha256": "523b5b9b0a5c3b61b49a3e6ef019424709f26e6e1e7dcebc529d1cb817c128ed"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/backgrounds/decor-v2/warm-wildflowers.png",
+      "beforeSize": [
+        240,
+        240
+      ],
+      "runtimeAuthoringSize": [
+        152,
+        152
+      ],
+      "maximumDisplay": [
+        150,
+        150
+      ],
+      "reason": "花草最大显示宽度 150",
+      "beforeSha256": "d2e76c28b58fd5f962534929a2c97c6aff65935a93b0cfc9efa6104882b2841a",
+      "afterSha256": "3634baed2a889370b2426742c65b83a90ed2b20166a9ff2609b0bf1eecadc55e"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/backgrounds/decor-v2/warm-grass.png",
+      "beforeSize": [
+        240,
+        240
+      ],
+      "runtimeAuthoringSize": [
+        152,
+        152
+      ],
+      "maximumDisplay": [
+        150,
+        150
+      ],
+      "reason": "花草最大显示宽度 150",
+      "beforeSha256": "cc29ba40d86d95d1e40cc6b289c23097966f9e539e8c82ba5cf0513f7fbbc2cc",
+      "afterSha256": "420c0f8b773d9a86b7f27d698fbc3d2186e28574dca314e0fb31c8c7c1cc8662"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/backgrounds/decor-v2/warm-clover.png",
+      "beforeSize": [
+        240,
+        240
+      ],
+      "runtimeAuthoringSize": [
+        152,
+        152
+      ],
+      "maximumDisplay": [
+        150,
+        150
+      ],
+      "reason": "花草最大显示宽度 150",
+      "beforeSha256": "422b269a51d0816878cc86b5a08100c37e20800a83aee44d4b10a6a9fd114625",
+      "afterSha256": "74e8cb37cee223ef8d75c330c0884c97b7526ae66bac700552844125addb55bf"
+    },
+    {
+      "source": "sprite-atlas-sources/doodle-jump/visual/backgrounds/decor-v2/warm-leaf-sprig.png",
+      "beforeSize": [
+        240,
+        240
+      ],
+      "runtimeAuthoringSize": [
+        152,
+        152
+      ],
+      "maximumDisplay": [
+        150,
+        150
+      ],
+      "reason": "花草最大显示宽度 150",
+      "beforeSha256": "4d11339a0bc98cf8c617d89efabee2860ccf37a95aae416fd901fb8a8280fb94",
+      "afterSha256": "ec428037fe03273e9edd24327369ba18b7466abb2d2912bc9352e7772ae6674b"
+    }
+  ]
+}

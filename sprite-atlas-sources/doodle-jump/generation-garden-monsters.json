@@ -1,0 +1,824 @@
+{
+  "mode": "builtin-imagegen",
+  "created": "2026-10-11",
+  "specs": [
+    {
+      "type": "small",
+      "title": "粉萝卜小怪",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: A round squat rosy pink radish imp, white cream lower belly, short teal leafy crown, two small stubby dark feet, small mitten arms, mischievous charcoal brows and oval black eyes, one tiny tooth. Broad round silhouette ratio 58:52. No wings. Idle left and a tiny squashed stepping pose right. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-8275b3f2-533a-42eb-bb84-4c4b92282a4a.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-small-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-small-01.png",
+          "sha256": "5c5496e551dacf832049fdb25d732821a14e966008f6700d9a5bd63c3a13296b",
+          "size": [
+            232,
+            208
+          ],
+          "position": [
+            31,
+            2
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-small-02.png",
+          "sha256": "8c71d2feb2552f570a6e8c8f19c0901fbc36395b1c23f6b5d922b85cdf758a41",
+          "size": [
+            232,
+            208
+          ],
+          "position": [
+            33,
+            17
+          ]
+        }
+      ]
+    },
+    {
+      "type": "hopper",
+      "title": "豌豆跳跳虫",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: A squat green pea beetle with teal pea-shell back, lime round face, stout bent hind legs visibly ready to hop, little antennae and dark mischievous brows. Ratio 46:36. No wings. Left poised hop, right gently crouched landing, same identity. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-953349e8-6d92-4496-9d49-bcc3a3e058ea.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-hopper-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-hopper-01.png",
+          "sha256": "9f615c5379318ab2cec40fde3c39abc73b345a5f2217e99ed2be2cc71bc212b5",
+          "size": [
+            184,
+            144
+          ],
+          "position": [
+            5,
+            2
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-hopper-02.png",
+          "sha256": "ecf72cc4937f2525fd677b124aadc06b7d34c83920f6230c6ed69277cd1e5c17",
+          "size": [
+            184,
+            144
+          ],
+          "position": [
+            10,
+            20
+          ]
+        }
+      ]
+    },
+    {
+      "type": "hover",
+      "title": "菜园小蜜蜂",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: An upright compact ochre and charcoal striped garden bee, cream translucent paper wings on sides, teal tiny antennae, small pink cheeks, stern playful oval eyes. Ratio 38:50. Left wings open upward, right wings swept slightly down. No flight trails. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-e4d16d4d-fc40-4f9e-b1f3-fd6c4fa6130d.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-hover-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-hover-01.png",
+          "sha256": "f720dbac32e1aed2f20b27eaaf65e48ee184f3eaeb5cc3c22d1473a967866042",
+          "size": [
+            152,
+            200
+          ],
+          "position": [
+            2,
+            32
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-hover-02.png",
+          "sha256": "73047f1440fd5863cde59f3382145d8d206d749587e5f30132eccb188c2c031f",
+          "size": [
+            152,
+            200
+          ],
+          "position": [
+            2,
+            58
+          ]
+        }
+      ]
+    },
+    {
+      "type": "weaver",
+      "title": "紫翅菜蛾",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: A wide lavender garden moth with large teal-edged purple wings, small cream/ochre center body, two antennae, mischievous black oval eyes and little brows. Broad horizontal silhouette ratio 80:46. Two wing flutter poses, same face, wings fully shown. No flight trails. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-0bc0e3b5-3753-46e9-ba39-80d3e15b71cf.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-weaver-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-weaver-01.png",
+          "sha256": "e40fe4080227108ffe132b1a1dd06a4e98e88699273e7d0aff716ddbbb726635",
+          "size": [
+            320,
+            184
+          ],
+          "position": [
+            38,
+            19
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-weaver-02.png",
+          "sha256": "7aa799329f01cabaf458c1e72623567ffc867acd40d35bf9d258b40e4aa6654d",
+          "size": [
+            320,
+            184
+          ],
+          "position": [
+            61,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "type": "large",
+      "title": "南瓜大块头",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: A broad squat orange pumpkin brute with cream vertical paper seams, teal leafy top tuft, two thick planted charcoal feet, stubby arms, heavy playful brows, two small cream teeth. Ratio 82:60. No wings. Left upright idle, right slight squash with arms raised; same pumpkin identity. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-249e93d6-cba4-4f48-ba26-aa01b1595cea.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-large-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-large-01.png",
+          "sha256": "9acf502981678ae033b92d7c0ab82b8578fc02e6c048c66bca4eadb837f4f0b5",
+          "size": [
+            328,
+            240
+          ],
+          "position": [
+            41,
+            2
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-large-02.png",
+          "sha256": "5c99ce22b57d1cb917ed8fb5a083a6e7cc2086ccabe3d70bb634a3ff43a346ee",
+          "size": [
+            328,
+            240
+          ],
+          "position": [
+            37,
+            21
+          ]
+        }
+      ]
+    },
+    {
+      "type": "flyer",
+      "title": "辣椒飞行怪",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: An upright coral red chili garden imp with a long curved chili body, teal leaf stem on top, two small cream wings on either side at mid-body, charcoal oval eyes and impish brows on upper body, a tiny tooth. Tall ratio 68:92. Two wing flutter poses, tall coherent silhouette, not a carrot. No trails. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-07326bec-209a-4ba2-a849-b7cc784b00be.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-flyer-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-flyer-01.png",
+          "sha256": "96ccf5455173a33a29ae8db0bb7d76d57a0c1b44232444a5df2469040eb9f94a",
+          "size": [
+            272,
+            368
+          ],
+          "position": [
+            3,
+            2
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-flyer-02.png",
+          "sha256": "30c0f4cf7d2bcb5d2f4cc7569547664c457efb6d359d859538ebbd4d9e5544ec",
+          "size": [
+            272,
+            368
+          ],
+          "position": [
+            12,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "type": "bouncer",
+      "title": "毛毛虫弹跳怪",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: A low wide teal-green garden caterpillar, five rounded pea-like body segments, cream belly line, tiny dark feet along bottom, large mischievous brows and two oval eyes on its round head at right, two short antennae. Extremely wide low silhouette ratio 94:34. No wings. Left stretched body, right slight inchworm arch, keep feet on equal baseline and body not tall. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-fbbcb26f-1fa6-4481-aad4-c2ff863b3f2e.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-bouncer-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-bouncer-01.png",
+          "sha256": "68ff7688dce73da19b183293bb4589f74037a8a9201efdd992fa7602b81af89a",
+          "size": [
+            376,
+            136
+          ],
+          "position": [
+            25,
+            2
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-bouncer-02.png",
+          "sha256": "95a9ebae378c6527a08e54f421eea993f50d3638cc0ad42febcdf54ac78d97c3",
+          "size": [
+            376,
+            136
+          ],
+          "position": [
+            31,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "type": "runner",
+      "title": "胡萝卜象鼻虫",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: A wide low ochre-orange garden weevil, teal little shell on back, short curved orange snout, four dark paper legs along lower edge, charcoal oval eyes and mischievous brows, tiny cream teeth. Clear insect silhouette, not a collectible carrot. Ratio 88:56. No wings. Two alternating walking poses, feet at same baseline. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-96e59c1f-90bf-42d9-b849-64dcb8134819.png",
+      "localRender": "visual/enemies/source-renders/garden/monster-runner-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-runner-01.png",
+          "sha256": "2b27d5add485e71c529bb94262d0ea0f8313c01c95b5bae14b907185fa17ba51",
+          "size": [
+            352,
+            224
+          ],
+          "position": [
+            7,
+            3
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-runner-02.png",
+          "sha256": "9579e7ed46728d1e7dc9684b8a320f49108ab806804f07f0bb16c3fd54e4148c",
+          "size": [
+            352,
+            224
+          ],
+          "position": [
+            7,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "type": "tall",
+      "title": "茄子高个怪",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: An upright deep lavender eggplant garden brute with teal leafy cap, cream oval belly highlight, long narrow body, two stubby arms and two thick dark planted feet, heavy mischievous eyebrows and oval black eyes, small cream tooth. Tall ratio 66:88. No wings. Left upright, right small squashed bounce stance, whole feet visible on same baseline. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-2d54a7f4-97ba-4998-9f10-e7d36579b2d9.png",
+      "acceptedPrompt": "Use case: illustration-story. Create a two-frame garden monster sprite strip. Match ONLY the crisp flat paper/crayon style of the attached pink radish sprite reference, especially its clean cutout edges and fully empty transparent background. Replace the radish with a tall narrow purple eggplant monster: deep lavender elongated body, small teal leafy cap, short arms, cream belly patch, two little flat brown feet, charcoal crayon outlines, fine cream paper rim, heavy playful eyebrows, one tooth. Both eggplant characters are narrow and upright, width:height 66:88 including leaves/feet. Exactly two complete eggplant monsters on a horizontal strip, left idle pose and right slight knee-bend pose, same scale, same baseline; right height about 95% of left. Keep ample EMPTY TRANSPARENT padding and transparent central gap. Flat printed paper cutouts with hard crisp silhouettes. Texture belongs inside each silhouette. Absolutely NO outer glow, NO aura, NO shadow, NO blurred edge, NO surrounding illuminated paper, NO gradient or background of any color. Alpha zero outside the thin cream silhouette border. No lettering, no labels, no other objects. The entire background must be actually transparent. Do NOT copy any radish features; use the attached image only for paper style and clean alpha.",
+      "acceptedReferences": [
+        "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-8275b3f2-533a-42eb-bb84-4c4b92282a4a.png"
+      ],
+      "localRender": "visual/enemies/source-renders/garden/monster-tall-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-tall-01.png",
+          "sha256": "2ad04c540b56f6bb4469e6d1f2a5ad9a7fff225f271b12792460530547bd0d55",
+          "size": [
+            264,
+            352
+          ],
+          "position": [
+            28,
+            2
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-tall-02.png",
+          "sha256": "67b59068c3ef730ecec037475ede00fe73e74eec4ebacac6bf9486267613bbd1",
+          "size": [
+            264,
+            352
+          ],
+          "position": [
+            31,
+            31
+          ]
+        }
+      ]
+    }
+  ],
+  "repairs": [
+    {
+      "type": "tall",
+      "prompt": "Edit the attached two-frame eggplant garden-enemy animation strip. Critical alpha repair: completely REMOVE the diffuse cream/tan glow, halo, shadow and feathered backdrop surrounding both paper cutouts. Empty space must have actual alpha=0. Keep only the crisp cream paper rim directly attached to the charcoal outlines; absolutely no light rays, gradient, ground shadow, ambient aura or colored veil around either creature. Preserve the illustration, purple paper texture, teal leaf cap, cream belly, feet and character identity. Adjust the RIGHT animation pose to stay almost as tall as the LEFT pose (about 90–95 percent left height), with only a subtle soft knee bend; currently it is squashed much too far. Both stand on the same foot baseline with the same scale and narrow upright proportions. Exactly two complete characters, one in each half of a horizontal strip, an empty transparent central gutter, generous transparent padding. No background, text or extra objects. True transparent RGBA.",
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-b9a4982d-0159-45f6-8171-6147edf88c88.png",
+      "accepted": false,
+      "localRender": "visual/enemies/source-renders/garden/tall-repair-1.png"
+    },
+    {
+      "type": "tall",
+      "prompt": "Use case: illustration-story. Create a two-frame garden monster sprite strip. Match ONLY the crisp flat paper/crayon style of the attached pink radish sprite reference, especially its clean cutout edges and fully empty transparent background. Replace the radish with a tall narrow purple eggplant monster: deep lavender elongated body, small teal leafy cap, short arms, cream belly patch, two little flat brown feet, charcoal crayon outlines, fine cream paper rim, heavy playful eyebrows, one tooth. Both eggplant characters are narrow and upright, width:height 66:88 including leaves/feet. Exactly two complete eggplant monsters on a horizontal strip, left idle pose and right slight knee-bend pose, same scale, same baseline; right height about 95% of left. Keep ample EMPTY TRANSPARENT padding and transparent central gap. Flat printed paper cutouts with hard crisp silhouettes. Texture belongs inside each silhouette. Absolutely NO outer glow, NO aura, NO shadow, NO blurred edge, NO surrounding illuminated paper, NO gradient or background of any color. Alpha zero outside the thin cream silhouette border. No lettering, no labels, no other objects. The entire background must be actually transparent. Do NOT copy any radish features; use the attached image only for paper style and clean alpha.",
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-2d54a7f4-97ba-4998-9f10-e7d36579b2d9.png",
+      "accepted": true,
+      "localRender": "visual/enemies/source-renders/garden/tall-repair-2.png"
+    },
+    {
+      "type": "tall",
+      "prompt": "Use case: illustration-story. Asset type: a single game animation strip containing TWO frames of ONE enemy species for a paper rabbit-and-carrot jumping game. Input image is STYLE REFERENCE ONLY: match its warm flecked paper cutout texture, charcoal wax-crayon outline, fine cream paper rim, friendly small-game illustration quality. Primary request: An upright deep lavender eggplant garden brute with teal leafy cap, cream oval belly highlight, long narrow body, two stubby arms and two thick dark planted feet, heavy mischievous eyebrows and oval black eyes, small cream tooth. Tall ratio 66:88. No wings. Left upright, right small squashed bounce stance, whole feet visible on same baseline. Composition: a wide horizontal transparent sprite strip, exactly two equal cells left and right; one complete character centered in each half, generous transparent padding, an entirely empty transparent vertical gutter at center. Both frames depict the same creature at the same scale, matching colors, same baseline, subtle animation pose change only. Match the stated silhouette ratio within each cell so it reads at the game's small native sprite size. Character must look like a mischievous obstacle, clearly distinct from the cream rabbit hero and golden/orange carrot pickups. Flat 2D crayon paper, no 3D. Actual transparent RGBA background. No panels, boxes, ground, platforms, shadows beneath feet, glow, color overlays, motion swooshes, debris, letters, labels, numbers or watermark. Only the two full creature frames; no extra objects or characters.",
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-f6ed4d40-05a4-4a07-8786-92381916da5b.png",
+      "accepted": false,
+      "localRender": "visual/enemies/source-renders/garden/tall-repair-3.png"
+    }
+  ],
+  "normalization": {
+    "tool": "tools/doodle-jump/prepare-garden-monster-assets.py",
+    "method": "empty-gutter split; crop preserved RGBA; uniform shared pair scale; transparent padding; common bottom baseline",
+    "nativeSizes": {
+      "small": [
+        58,
+        52
+      ],
+      "hopper": [
+        46,
+        36
+      ],
+      "hover": [
+        38,
+        50
+      ],
+      "weaver": [
+        80,
+        46
+      ],
+      "large": [
+        82,
+        60
+      ],
+      "flyer": [
+        68,
+        92
+      ],
+      "bouncer": [
+        94,
+        34
+      ],
+      "runner": [
+        88,
+        56
+      ],
+      "tall": [
+        66,
+        88
+      ]
+    },
+    "report": [
+      {
+        "type": "small",
+        "gutterX": 940,
+        "cropRectsInCells": [
+          [
+            222,
+            75,
+            809,
+            783
+          ],
+          [
+            242,
+            118,
+            818,
+            775
+          ]
+        ],
+        "sharedScale": 0.288135593220339,
+        "renderSha256": "d17a1935f6ee9141ca17fc460e39993fde99deae47e6ec17fa8be5ba905885a9",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-small-01.png",
+            "sha256": "5c5496e551dacf832049fdb25d732821a14e966008f6700d9a5bd63c3a13296b",
+            "size": [
+              232,
+              208
+            ],
+            "position": [
+              31,
+              2
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-small-02.png",
+            "sha256": "8c71d2feb2552f570a6e8c8f19c0901fbc36395b1c23f6b5d922b85cdf758a41",
+            "size": [
+              232,
+              208
+            ],
+            "position": [
+              33,
+              17
+            ]
+          }
+        ]
+      },
+      {
+        "type": "hopper",
+        "gutterX": 718,
+        "cropRectsInCells": [
+          [
+            75,
+            348,
+            718,
+            867
+          ],
+          [
+            73,
+            434,
+            680,
+            885
+          ]
+        ],
+        "sharedScale": 0.2697495183044316,
+        "renderSha256": "b795f8a31e197764827551f38beebc9984428279ab51d37a9ef471a5fa1866b0",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-hopper-01.png",
+            "sha256": "9f615c5379318ab2cec40fde3c39abc73b345a5f2217e99ed2be2cc71bc212b5",
+            "size": [
+              184,
+              144
+            ],
+            "position": [
+              5,
+              2
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-hopper-02.png",
+            "sha256": "ecf72cc4937f2525fd677b124aadc06b7d34c83920f6230c6ed69277cd1e5c17",
+            "size": [
+              184,
+              144
+            ],
+            "position": [
+              10,
+              20
+            ]
+          }
+        ]
+      },
+      {
+        "type": "hover",
+        "gutterX": 773,
+        "cropRectsInCells": [
+          [
+            75,
+            131,
+            739,
+            876
+          ],
+          [
+            77,
+            249,
+            740,
+            876
+          ]
+        ],
+        "sharedScale": 0.22289156626506024,
+        "renderSha256": "7c0df9b02f10bc7c1bcb91740f1eb89dc4d4fac5f9cfc6b863e4a642ffec7196",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-hover-01.png",
+            "sha256": "f720dbac32e1aed2f20b27eaaf65e48ee184f3eaeb5cc3c22d1473a967866042",
+            "size": [
+              152,
+              200
+            ],
+            "position": [
+              2,
+              32
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-hover-02.png",
+            "sha256": "73047f1440fd5863cde59f3382145d8d206d749587e5f30132eccb188c2c031f",
+            "size": [
+              152,
+              200
+            ],
+            "position": [
+              2,
+              58
+            ]
+          }
+        ]
+      },
+      {
+        "type": "weaver",
+        "gutterX": 890,
+        "cropRectsInCells": [
+          [
+            21,
+            210,
+            890,
+            793
+          ],
+          [
+            45,
+            145,
+            750,
+            790
+          ]
+        ],
+        "sharedScale": 0.27906976744186046,
+        "renderSha256": "35391615ed6dbacacc324b17b588ccd84ddbef7635a5b4dd413e39c1f586e5f4",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-weaver-01.png",
+            "sha256": "e40fe4080227108ffe132b1a1dd06a4e98e88699273e7d0aff716ddbbb726635",
+            "size": [
+              320,
+              184
+            ],
+            "position": [
+              38,
+              19
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-weaver-02.png",
+            "sha256": "7aa799329f01cabaf458c1e72623567ffc867acd40d35bf9d258b40e4aa6654d",
+            "size": [
+              320,
+              184
+            ],
+            "position": [
+              61,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "type": "large",
+        "gutterX": 733,
+        "cropRectsInCells": [
+          [
+            27,
+            230,
+            710,
+            884
+          ],
+          [
+            18,
+            285,
+            719,
+            886
+          ]
+        ],
+        "sharedScale": 0.36085626911314983,
+        "renderSha256": "007b7c19348e2bc414b97941aed5212faf9af203bd513ceab8ccf722f2e4b15e",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-large-01.png",
+            "sha256": "9acf502981678ae033b92d7c0ab82b8578fc02e6c048c66bca4eadb837f4f0b5",
+            "size": [
+              328,
+              240
+            ],
+            "position": [
+              41,
+              2
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-large-02.png",
+            "sha256": "5c99ce22b57d1cb917ed8fb5a083a6e7cc2086ccabe3d70bb634a3ff43a346ee",
+            "size": [
+              328,
+              240
+            ],
+            "position": [
+              37,
+              21
+            ]
+          }
+        ]
+      },
+      {
+        "type": "flyer",
+        "gutterX": 762,
+        "cropRectsInCells": [
+          [
+            139,
+            86,
+            748,
+            920
+          ],
+          [
+            141,
+            90,
+            707,
+            924
+          ]
+        ],
+        "sharedScale": 0.4364508393285372,
+        "renderSha256": "fadec0965284115edb17d6ef887bbe35b88547264dea926456dc50eb761e6ab0",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-flyer-01.png",
+            "sha256": "96ccf5455173a33a29ae8db0bb7d76d57a0c1b44232444a5df2469040eb9f94a",
+            "size": [
+              272,
+              368
+            ],
+            "position": [
+              3,
+              2
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-flyer-02.png",
+            "sha256": "30c0f4cf7d2bcb5d2f4cc7569547664c457efb6d359d859538ebbd4d9e5544ec",
+            "size": [
+              272,
+              368
+            ],
+            "position": [
+              12,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bouncer",
+        "gutterX": 1043,
+        "cropRectsInCells": [
+          [
+            61,
+            221,
+            1015,
+            607
+          ],
+          [
+            99,
+            226,
+            1013,
+            607
+          ]
+        ],
+        "sharedScale": 0.34196891191709844,
+        "renderSha256": "04b2f7a0e14774d2ede0c96970779fabd04104c442484d8c2edaa507f7a3f228",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-bouncer-01.png",
+            "sha256": "68ff7688dce73da19b183293bb4589f74037a8a9201efdd992fa7602b81af89a",
+            "size": [
+              376,
+              136
+            ],
+            "position": [
+              25,
+              2
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-bouncer-02.png",
+            "sha256": "95a9ebae378c6527a08e54f421eea993f50d3638cc0ad42febcdf54ac78d97c3",
+            "size": [
+              376,
+              136
+            ],
+            "position": [
+              31,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "type": "runner",
+        "gutterX": 786,
+        "cropRectsInCells": [
+          [
+            55,
+            305,
+            772,
+            769
+          ],
+          [
+            58,
+            306,
+            773,
+            773
+          ]
+        ],
+        "sharedScale": 0.47109207708779444,
+        "renderSha256": "48ed3591b7c07e7945b32e561e25a9af58561881e2a918fed87e6090d3e3254a",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-runner-01.png",
+            "sha256": "2b27d5add485e71c529bb94262d0ea0f8313c01c95b5bae14b907185fa17ba51",
+            "size": [
+              352,
+              224
+            ],
+            "position": [
+              7,
+              3
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-runner-02.png",
+            "sha256": "9579e7ed46728d1e7dc9684b8a320f49108ab806804f07f0bb16c3fd54e4148c",
+            "size": [
+              352,
+              224
+            ],
+            "position": [
+              7,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tall",
+        "gutterX": 941,
+        "cropRectsInCells": [
+          [
+            344,
+            45,
+            786,
+            783
+          ],
+          [
+            266,
+            103,
+            694,
+            779
+          ]
+        ],
+        "sharedScale": 0.4715447154471545,
+        "renderSha256": "96050052c77ec35c0fe3b2d57f2f2f0686b84bc9d92a3668119d99eb8f0bf8c0",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-tall-01.png",
+            "sha256": "2ad04c540b56f6bb4469e6d1f2a5ad9a7fff225f271b12792460530547bd0d55",
+            "size": [
+              264,
+              352
+            ],
+            "position": [
+              28,
+              2
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-tall-02.png",
+            "sha256": "67b59068c3ef730ecec037475ede00fe73e74eec4ebacac6bf9486267613bbd1",
+            "size": [
+              264,
+              352
+            ],
+            "position": [
+              31,
+              31
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

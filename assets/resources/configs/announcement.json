@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "announcement": {
+    "id": "v0.1.0-20261011-7834ff",
+    "version": "0.0.6",
+    "date": "2026-10-12",
+    "newGames": [
+      {
+        "gameId": "cyblockbees",
+        "gameName": "挡住蜜蜂",
+        "text": "你能保护狗头不被蜜蜂蛰到吗？"
+      }
+    ],
+    "features": [
+      {
+        "gameId": "meowdoku",
+        "gameName": "猫咪数独",
+        "text": "增加困难模式，快来挑战！"
+      },
+      {
+        "gameId": "game2048",
+        "gameName": "霓虹 2048",
+        "text": "画面焕新，流畅度提升！"
+      },
+      {
+        "gameId": "doodle-jump",
+        "gameName": "纸片跳跃",
+        "text": "画面焕新，游玩逻辑优化！"
+      }
+    ],
+    "fixes": []
+  }
+}

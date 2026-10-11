@@ -11,6 +11,7 @@ import type {
     Unsubscribe,
 } from '../core/types/CommonTypes';
 import type { AccelerometerSample, Platform } from './Platform';
+import type { PlatformAudioContext } from './PlatformAudio';
 
 interface MiniGameSafeArea {
     readonly left: number;
@@ -139,6 +140,7 @@ interface MiniGameAccelerometerOptions {
 }
 
 export interface MiniGameApi {
+    createWebAudioContext?(): PlatformAudioContext;
     getSystemInfoSync(): MiniGameSystemInfo;
     getMenuButtonBoundingClientRect?(): MiniGameMenuButtonRect;
     getLaunchOptionsSync?(): MiniGameLaunchOptions;
@@ -199,6 +201,9 @@ export interface MiniGamePlatformOptions {
 /** 小游戏共享能力；具体平台负责提供 API 和平台差异。 */
 export class MiniGamePlatform implements Platform {
     readonly id: string;
+    createAudioContext(): PlatformAudioContext | undefined {
+        return this.api?.createWebAudioContext?.();
+    }
     private readonly platformOptions: MiniGamePlatformOptions;
 
     private readonly events = new EventBus<MiniGamePlatformEvents>();

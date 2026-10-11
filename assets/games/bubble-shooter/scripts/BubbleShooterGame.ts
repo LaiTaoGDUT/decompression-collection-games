@@ -720,9 +720,11 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private fire(event: EventTouch): void {
         if (event.getID() !== this.heldTouch?.id && event.getID() !== this.activeTouch) return;
-        if (!this.canInteract()) { this.cancelAim(event); return; }
-        if (this.activeTouch === undefined) this.activeTouch=event.getID();
-        this.aim(event);
+        const aim = this.lastAim;
+        if (!this.canInteract() || !aim || aim.revision !== this.model.revision
+            || aim.item !== this.selectedItem || aim.region !== this.round.region) { this.cancelAim(event); return; }
+        // Commit the displayed trajectory. TOUCH_END can report a shifted position
+        // without a preceding TOUCH_MOVE, so tracing again here changes the landing unseen.
         const shot=this.pendingShot;
         this.activeTouch=undefined;
         this.pendingShot=undefined;

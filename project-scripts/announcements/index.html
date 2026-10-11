@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>版本公告编辑</title>
+<style>
+:root {
+    --bg: #faf6f0; --panel: #ffffff; --ink: #3b2a20; --muted: #8a7566; --line: #ecdfd2;
+    --accent: #e8743b; --accent-ink: #ffffff; --active: #2f9e6e; --danger: #c8484f; --soft: #fff3e8;
+    --new: #e8743b; --feature: #2b9cb0; --fix: #6d8d3a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+button:disabled { opacity: .5; cursor: default; }
+.app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+aside { border-right: 1px solid var(--line); background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+aside h1 { font-size: 18px; margin: 0; }
+.list { display: flex; flex-direction: column; gap: 8px; overflow: auto; }
+.item { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: var(--panel); text-align: left; }
+.item.selected { border-color: var(--accent); background: var(--soft); }
+.item .top { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.item .meta { color: var(--muted); font-size: 12px; }
+.badge { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--active); color: #fff; font-weight: 600; }
+main { padding: 20px 28px 40px; max-width: 1180px; }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.toolbar .spacer { flex: 1; }
+.status { color: var(--muted); font-size: 13px; }
+.status.error { color: var(--danger); }
+.status.ok { color: var(--active); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.fields { display: flex; gap: 16px; flex-wrap: wrap; }
+label.field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+label.field input { width: 180px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); }
+.section { margin-top: 16px; }
+.section h3 { margin: 0 0 8px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.section h3 .dot { width: 10px; height: 10px; border-radius: 50%; }
+.section h3 .count { color: var(--muted); font-weight: 400; font-size: 12px; }
+.entry { display: grid; grid-template-columns: 150px minmax(180px, 1fr) auto auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.entry select, .entry input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; min-width: 0; }
+.entry .counter { font-size: 12px; color: var(--muted); width: 44px; text-align: right; }
+.entry .counter.warn { color: var(--danger); }
+.empty { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.preview h4 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.phone { background: #fbf2e4; border: 2px solid #e9b586; border-radius: 18px; padding: 14px 16px; }
+.phone .title { text-align: center; font-weight: 800; font-size: 18px; color: #d4572a; }
+.phone .sub { text-align: center; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.phone .body { max-height: 420px; overflow-y: auto; margin-top: 8px; }
+.phone .section-title { display: flex; align-items: center; gap: 8px; margin: 14px 0 7px; font-weight: 800; font-size: 14px; }
+.phone .section-title:first-child { margin-top: 0; }
+.phone .section-title::after { content: ''; flex: 1; height: 2px; border-radius: 1px; background: currentColor; opacity: 0.25; }
+.phone .cards { display: flex; flex-direction: column; gap: 8px; }
+.phone .entry-card { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 12px; background: #fff; box-shadow: 0 2px 0 #f0ddc4; }
+.phone .cover { flex: 0 0 84px; height: 63px; border-radius: 8px; overflow: hidden; }
+.phone .cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.phone .cover img.contain { object-fit: contain; padding: 5px; }
+.phone .entry-name { font-weight: 700; font-size: 13px; }
+.phone .entry-text { font-size: 12.5px; }
+@media (max-width: 1100px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+    main { padding: 16px; }
+}
+pre.plain { white-space: pre-wrap; background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 12px; font: 13px/1.6 inherit; margin: 0; min-height: 60px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+    <aside>
+        <h1>版本公告</h1>
+        <button class="primary" id="create">＋ 新增公告</button>
+        <div class="list" id="list"></div>
+    </aside>
+    <main>
+        <div class="toolbar">
+            <strong id="heading">新公告</strong>
+            <span class="status" id="status"></span>
+            <span class="spacer"></span>
+            <button id="copy">复制纯文本</button>
+            <button id="save" class="primary">保存</button>
+            <button id="activate">设为生效</button>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="fields">
+                    <label class="field">版本号<input id="version" placeholder="如 0.2.0"></label>
+                    <label class="field">日期<input id="date" type="date"></label>
+                </div>
+                <div id="sections"></div>
+                <p class="hint">每个模块可添加 0 到多个游戏，每个游戏写一句话；没有内容的模块不会在游戏内展示，也不会出现在纯文本里。</p>
+            </div>
+            <div class="preview">
+                <div class="card">
+                    <h4>弹窗预览</h4>
+                    <div class="phone" id="phone"></div>
+                </div>
+                <div class="card" style="margin-top:16px">
+                    <h4>纯文本（审核信息）</h4>
+                    <pre class="plain" id="plain"></pre>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+const BOOT = /*__BOOT__*/ null;
+const SECTION_COLORS = { newGames: 'var(--new)', features: 'var(--feature)', fixes: 'var(--fix)' };
+const SECTION_CHIPS = { newGames: '#ffe2cc', features: '#d1f1f3', fixes: '#e3f0cd' };
+let state = null;
+const coverUrls = new Map();
+let selectedId = null;
+let draft = null;
+let dirty = false;
+
+const $ = (id) => document.getElementById(id);
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+async function api(path, body) {
+    const response = await fetch(BOOT.baseUrl + path, {
+        method: body ? 'POST' : 'GET',
+        headers: { Authorization: 'Bearer ' + BOOT.token, 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '请求失败');
+    return data;
+}
+
+function setStatus(text, kind = '') {
+    const node = $('status');
+    node.textContent = text;
+    node.className = 'status ' + kind;
+}
+
+function blankDraft() {
+    const value = { version: state.appVersion, date: today() };
+    state.sections.forEach((section) => { value[section.key] = []; });
+    return value;
+}
+
+function cloneDraft(item) {
+    const value = { version: item.version, date: item.date };
+    state.sections.forEach((section) => { value[section.key] = item[section.key].map((entry) => ({ ...entry })); });
+    return value;
+}
+
+function targets(section) {
+    return section.allowCollection ? [state.collection, ...state.games] : state.games;
+}
+
+function nameOf(gameId) {
+    if (gameId === state.collection.id) return state.collection.name;
+    return state.games.find((game) => game.id === gameId)?.name ?? '';
+}
+
+function plainText(value) {
+    return state.sections.map((section) => {
+        const entries = value[section.key].filter((entry) => entry.gameId && entry.text.trim());
+        if (!entries.length) return '';
+        return ['【' + section.title + '】', ...entries.map((entry, index) => (
+            `${index + 1}. ${nameOf(entry.gameId)}：${entry.text.trim()}`
+        ))].join('\n');
+    }).filter(Boolean).join('\n\n');
+}
+
+function confirmDiscard() {
+    return !dirty || confirm('当前公告有未保存的修改，确定放弃吗？');
+}
+
+function select(id) {
+    if (!confirmDiscard()) return;
+    selectedId = id;
+    const item = state.announcements.find((entry) => entry.id === id);
+    draft = item ? cloneDraft(item) : blankDraft();
+    dirty = false;
+    setStatus('');
+    render();
+}
+
+function markDirty() {
+    dirty = true;
+    setStatus('未保存');
+    renderPreview();
+    renderToolbar();
+}
+
+function renderList() {
+    const list = $('list');
+    list.textContent = '';
+    if (!state.announcements.length) {
+        list.innerHTML = '<div class="empty">还没有公告，点击“新增公告”。</div>';
+    }
+    state.announcements.forEach((item) => {
+        const node = document.createElement('button');
+        node.className = 'item' + (item.id === selectedId ? ' selected' : '');
+        const counts = state.sections.map((section) => `${section.title} ${item[section.key].length}`).join(' · ');
+        node.innerHTML = '<div class="top"><span></span></div><div class="meta"></div><div class="meta"></div>';
+        node.querySelector('.top span').textContent = 'v' + item.version;
+        if (item.id === state.activeId) node.querySelector('.top').insertAdjacentHTML('beforeend', '<span class="badge">生效中</span>');
+        const metas = node.querySelectorAll('.meta');
+        metas[0].textContent = item.date;
+        metas[1].textContent = counts;
+        node.onclick = () => select(item.id);
+        list.appendChild(node);
+    });
+}
+
+function renderSections() {
+    const container = $('sections');
+    container.textContent = '';
+    state.sections.forEach((section) => {
+        const entries = draft[section.key];
+        const block = document.createElement('div');
+        block.className = 'section';
+        block.innerHTML = `<h3><span class="dot" style="background:${SECTION_COLORS[section.key]}"></span><span></span><span class="count"></span></h3>`;
+        block.querySelector('h3 span:nth-child(2)').textContent = section.title;
+        block.querySelector('.count').textContent = entries.length ? `${entries.length} 条` : '无内容，不展示';
+        entries.forEach((entry, index) => {
+            const row = document.createElement('div');
+            row.className = 'entry';
+            const selectNode = document.createElement('select');
+            selectNode.innerHTML = '<option value="">选择游戏…</option>';
+            targets(section).forEach((target) => {
+                const option = document.createElement('option');
+                option.value = target.id;
+                option.textContent = target.name;
+                const taken = entries.some((other, otherIndex) => otherIndex !== index && other.gameId === target.id);
+                option.disabled = taken;
+                selectNode.appendChild(option);
+            });
+            selectNode.value = entry.gameId;
+            selectNode.onchange = () => { entry.gameId = selectNode.value; markDirty(); renderSections(); };
+            const input = document.createElement('input');
+            input.placeholder = '一句话说明，如：新增每日挑战关卡';
+            input.value = entry.text;
+            input.maxLength = state.maxEntryLength;
+            const counter = document.createElement('span');
+            const updateCounter = () => {
+                const length = input.value.trim().length;
+                counter.textContent = `${length}/${state.maxEntryLength}`;
+                counter.className = 'counter' + (length > 30 ? ' warn' : '');
+                counter.title = length > 30 ? '建议控制在 30 字以内，弹窗里一眼能看完' : '';
+            };
+            updateCounter();
+            input.oninput = () => { entry.text = input.value; updateCounter(); markDirty(); };
+            const remove = document.createElement('button');
+            remove.className = 'ghost';
+            remove.textContent = '删除';
+            remove.onclick = () => { entries.splice(index, 1); markDirty(); renderSections(); };
+            row.append(selectNode, input, counter, remove);
+            block.appendChild(row);
+        });
+        const add = document.createElement('button');
+        add.textContent = '＋ 添加游戏';
+        add.onclick = () => { entries.push({ gameId: '', text: '' }); markDirty(); renderSections(); };
+        block.appendChild(add);
+        container.appendChild(block);
+    });
+}
+
+/** 封面图需要页面令牌，取回后转成本地 URL 并按游戏缓存。 */
+function coverUrl(gameId) {
+    if (!coverUrls.has(gameId)) {
+        coverUrls.set(gameId, fetch(BOOT.baseUrl + '/api/cover?id=' + encodeURIComponent(gameId), {
+            headers: { Authorization: 'Bearer ' + BOOT.token },
+        }).then((response) => (response.ok ? response.blob() : null))
+            .then((blob) => (blob ? URL.createObjectURL(blob) : null))
+            .catch(() => null));
+    }
+    return coverUrls.get(gameId);
+}
+
+function renderPreview() {
+    const phone = $('phone');
+    phone.textContent = '';
+    const title = document.createElement('div');
+    title.className = 'title';
+    title.textContent = '更新公告';
+    const sub = document.createElement('div');
+    sub.className = 'sub';
+    sub.textContent = `v${draft.version} · ${draft.date.replace(/-/g, '.')}`;
+    phone.append(title, sub);
+    const sections = state.sections
+        .map((section) => ({ ...section, entries: draft[section.key].filter((entry) => entry.gameId && entry.text.trim()) }))
+        .filter((section) => section.entries.length);
+    // 与游戏内一样：有内容的模块从上到下排列，超长时在弹窗内滚动。
+    const body = document.createElement('div');
+    body.className = 'body';
+    sections.forEach((section) => {
+        const heading = document.createElement('div');
+        heading.className = 'section-title';
+        heading.style.color = SECTION_COLORS[section.key];
+        heading.textContent = section.title;
+        const cards = document.createElement('div');
+        cards.className = 'cards';
+        section.entries.forEach((entry) => {
+            const card = document.createElement('div');
+            card.className = 'entry-card';
+            const cover = document.createElement('div');
+            cover.className = 'cover';
+            cover.style.background = SECTION_CHIPS[section.key];
+            const image = document.createElement('img');
+            image.alt = '';
+            image.hidden = true;
+            if (entry.gameId === state.collection.id) image.className = 'contain';
+            coverUrl(entry.gameId).then((url) => { if (url) { image.src = url; image.hidden = false; } });
+            cover.appendChild(image);
+            const text = document.createElement('div');
+            const name = document.createElement('div');
+            name.className = 'entry-name';
+            name.style.color = SECTION_COLORS[section.key];
+            name.textContent = nameOf(entry.gameId);
+            const line = document.createElement('div');
+            line.className = 'entry-text';
+            line.textContent = entry.text.trim();
+            text.append(name, line);
+            card.append(cover, text);
+            cards.appendChild(card);
+        });
+        body.append(heading, cards);
+    });
+    if (sections.length) phone.appendChild(body);
+    $('plain').textContent = plainText(draft) || '（暂无内容）';
+}
+
+function renderToolbar() {
+    const item = state.announcements.find((entry) => entry.id === selectedId);
+    $('heading').textContent = item ? `v${item.version}（${item.date}）` : '新公告';
+    $('activate').disabled = !item || dirty || item.id === state.activeId;
+    $('activate').textContent = item && item.id === state.activeId ? '已生效' : '设为生效';
+}
+
+function render() {
+    $('version').value = draft.version;
+    $('date').value = draft.date;
+    renderList();
+    renderSections();
+    renderPreview();
+    renderToolbar();
+}
+
+function describeSync(result) {
+    if (!result.runtimeChanged) return '已保存';
+    if (result.refreshed) return '已保存并同步到游戏，Cocos 资源已刷新';
+    return '已保存并写入游戏配置，但 Cocos 刷新失败：' + result.refreshError;
+}
+
+$('create').onclick = () => select(null);
+$('version').oninput = (event) => { draft.version = event.target.value; markDirty(); };
+$('date').oninput = (event) => { draft.date = event.target.value; markDirty(); };
+$('save').onclick = async () => {
+    try {
+        setStatus('保存中…');
+        const result = await api('/api/save', { id: selectedId, announcement: draft });
+        state = result.state;
+        selectedId = result.id;
+        dirty = false;
+        draft = cloneDraft(state.announcements.find((entry) => entry.id === selectedId));
+        render();
+        setStatus(describeSync(result), result.runtimeChanged && !result.refreshed ? 'error' : 'ok');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+};
+$('activate').onclick = async () => {
+    const item = state.announcements.find((entry) => entry.id === selectedId);
+    if (!item || !confirm(`让 v${item.version} 的公告在游戏内生效？玩家首次进入新版本会自动弹出。`)) return;
+    try {
+        setStatus('生效中…');
+        const result = await api('/api/activate', { id: selectedId });
+        state = result.state;
+        render();
+        setStatus(result.refreshed ? '已生效，Cocos 资源已刷新' : '已写入游戏配置，但 Cocos 刷新失败：' + result.refreshError,
+            result.refreshed ? 'ok' : 'error');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+};
+$('copy').onclick = async () => {
+    const text = plainText(draft);
+    if (!text) return setStatus('没有可复制的内容', 'error');
+    try {
+        await navigator.clipboard.writeText(text);
+        setStatus('纯文本已复制', 'ok');
+    } catch {
+        const range = document.createRange();
+        range.selectNodeContents($('plain'));
+        getSelection().removeAllRanges();
+        getSelection().addRange(range);
+        setStatus('浏览器拒绝写入剪贴板，已选中文本，请按 Ctrl/⌘+C', 'error');
+    }
+};
+window.addEventListener('beforeunload', (event) => { if (dirty) event.preventDefault(); });
+
+api('/api/state').then((data) => {
+    state = data;
+    selectedId = state.activeId ?? state.announcements[0]?.id ?? null;
+    const item = state.announcements.find((entry) => entry.id === selectedId);
+    draft = item ? cloneDraft(item) : blankDraft();
+    render();
+}).catch((error) => setStatus(error.message, 'error'));
+</script>
+</body>
+</html>

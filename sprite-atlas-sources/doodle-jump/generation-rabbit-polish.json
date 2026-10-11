@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-11",
+  "mode": "built-in image_gen",
+  "theme": "纸片兔子与珍稀金萝卜",
+  "prompts": [
+    {
+      "asset": "cover",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": false,
+      "prompt": "Use case: precise-object-edit. Asset: game lobby cover and loading artwork, landscape 4:3. Image 1 is the edit target; image 2 is the exact new player identity. Replace the teal old character at left with the cream paper rabbit from image 2, retaining its oval black eyes, pink inner ears, coral scarf and charcoal wax-crayon outlines. The rabbit is jumping rightward, slightly larger and central-left. Replace the paper airplane above the middle-right platform with an orange carrot projectile. Add one precious golden carrot floating clearly above a teal platform near the rabbit, with a soft golden radiant halo and small star gleams. Preserve image 1's warm ruled notebook paper, ascending teal platforms, spring, shield and coral one-eyed monster, paper cutout/crayon texture, playful clear composition. Do not add text or UI or watermark. Flat 2D paper illustration, no 3D. Full opaque cover, same 4:3 framing."
+    },
+    {
+      "asset": "gold",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/collectibles/golden-carrot.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit. Asset: rare collectible sprite for paper rabbit jumping game. Edit target is this golden carrot. Make this instantly recognizable as a precious golden treasure, distinct from an ordinary orange carrot. Preserve carrot silhouette and teal leaf crown, angled slightly to the right, bold charcoal wax-crayon outline, warm flecked paper cutout style and cream paper rim. Change the root to luminous metallic yellow-gold with amber facets, a broad ivory gleaming highlight and clean sparkling gold surface; a little jewel-like shine, three small crisp four-point gold/ivory star glints around it. No face, labels, text, crown, coins or container. Keep a clear carrot, strong readable shape at 54 px tall. Isolated actual transparent RGBA, no large glow background; a separate halo will be drawn by the game. One sprite centered with transparent margin."
+    },
+    {
+      "asset": "rocket",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/player-rocket.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: compositing. Asset: one complete rabbit-with-rocket player sprite. Image 1 is the exact cream rabbit identity; image 2 is a matching teal/coral paper rocket reference. Draw one naturally integrated illustration of the SAME rabbit riding and holding a small upright rocket: rocket below the rabbit's body, rabbit's front paws grip the upper rocket, knees/feet straddle its upper side fins, rabbit's chest/head/face and long ears remain fully visible above the rocket nose. Use a compact rocket with teal body, coral nose and coral side fins, golden trim, charcoal crayon outlines and cream cut-paper rim. No giant empty black porthole over the rabbit, no disconnected limbs or floating rocket pasted over its face. Rabbit cream fur, oval black eyes, pink inner ears, coral scarf facing right, keep facial expression and proportions. Entire rabbit plus entire compact rocket visible as a single game sprite with generous transparent margins on a portrait composition inside the canvas. Maintain flat paper/crayon texture. Do not include flame/trail, background, text, watermark or extra characters; flame is separate animation. Actual transparent RGBA."
+    },
+    {
+      "asset": "jetpack",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/player-jetpack.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: compositing. Asset: one complete rabbit-with-jetpack player sprite. Image 1 is the edit target and exact rabbit identity; image 2 is the jetpack equipment/style reference. Preserve the rabbit face, long pink inner ears, cream fur, oval black eyes, coral scarf, proportions, paper texture and crayon cutout style. Draw the same rabbit flying rightwards naturally wearing a compact teal/coral twin-cylinder jetpack attached directly to its BACK left side: short visible tan shoulder strap wrapping around rabbit shoulder/chest, cylinders behind the body, rabbit's rear paw/body overlap in front of pack, nozzle pointing down near the hips. Rabbit body and front paws remain fully visible; no pack pasted over its face. Matching flight pose with feet slightly trailing down. One continuous integrated illustration, flat 2D, charcoal outline and ivory cut-paper edge. Full rabbit and gear visible with transparent margin; no flame/trail, text, watermark, extra characters or background. Actual transparent RGBA."
+    },
+    {
+      "asset": "shoesJumping",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit. Asset: rabbit wearing spring shoes, ascending animation frame. This is the edit target and exact rabbit. Keep the rabbit's head, face, ears, scarf, front paws, body, existing pose, silhouette proportions and position unchanged. Replace both bare hind feet with two small naturally fitted spring shoes: teal fabric slipper cuffs hug the feet, a compact gold zigzag metal spring extends below each cuff, small ochre sole at bottom. Feet enter shoes naturally; no floating shoes or disconnected feet. No other clothing change. Preserve charcoal wax-crayon outlines, cream paper edge, flecked cut-paper texture. Entire original rabbit plus both shoes fully visible, same scale and generous transparent margin, no additional graphics, background, text or watermark. Transparent RGBA."
+    },
+    {
+      "asset": "shoesFalling",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/player/rabbit-falling.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit. Asset: rabbit wearing spring shoes, falling animation frame. This is the edit target and exact rabbit. Keep the rabbit's head, face, ears, scarf, front paws, body, crouched falling pose, silhouette proportions and position unchanged. Replace both bare hind feet with two small naturally fitted spring shoes: teal fabric slipper cuffs hug the visible feet, compact gold zigzag metal springs extend below each cuff, small ochre soles at bottom. Match the cuff/gold-spring/sole system of the game's spring shoes. Feet enter shoes naturally; no floating shoes or disconnected feet. Preserve charcoal wax-crayon outlines, cream paper edge and flecked cut-paper texture. Whole rabbit and shoes fully visible with transparent margin; no extra graphics, background, text or watermark. Transparent RGBA."
+    },
+    {
+      "asset": "jetpackFlame",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/effects/jetpack-flames.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit. Asset: flame-only effect sprite that is drawn under the integrated rabbit jetpack. Edit target is the old two-nozzle flame sprite. Replace it with ONE compact downward-pointing jet flame, matching this coral-orange/yellow wax-crayon paper style. Remove ALL teal cylinders, coral nozzle rims, metal parts and detached streaks; these parts are already painted on the rabbit. A single continuous orange flame plume with golden yellow center, tapering down, ratio about 1:2, cream paper rim and charcoal/crayon detail. Flat 2D, small crisp sprite, full flame with transparent margin. No hardware, character, labels, text, watermark or background. Actual transparent RGBA."
+    },
+    {
+      "asset": "rocketFlame",
+      "referenced_image_paths": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/doodle-jump/visual/effects/rocket-flame.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit. Asset: flame-only rocket propulsion effect drawn at the rocket's bottom nozzle. Replace the old separated smoke/streak shapes with ONE continuous downward-pointing rocket flame plume. Upper end is a compact flat rounded bright yellow ignition edge, orange/crayon coral outer tongues flare then taper to a pointed tail below. Ratio about 1:1.6. Warm golden yellow core, orange outer edge, subtle paper texture, charcoal crayon linework and a fine cream cut-paper rim to match the rabbit's teal/coral paper rocket. No rocket, no nozzles, no cylinders, no separate trail or detached sparks, no characters or text. Crisp sprite, entire plume with generous transparent margin, actual transparent RGBA."
+    }
+  ],
+  "coverFinalEdit": {
+    "referenced_image_paths": [
+      "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-fe92c6a5-3247-4cb5-92b1-f118ad1112e6.png",
+      "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-ac4f3003-0d0e-4b88-b5a8-6a0ee6ea9952.png"
+    ],
+    "transparent_background": false,
+    "prompt": "Use case: precise-object-edit. Asset: final 4:3 game lobby cover and loading artwork. Image 1 is the edit target; image 2 is the exact rare golden carrot sprite reference. Change ONLY the large carrot inside the radiant golden halo beside the rabbit (upper center-right). Replace that orange carrot with the clearly metallic YELLOW-GOLD carrot of image 2: bright golden facets, broad ivory highlight, teal leaf crown, gleaming jewel-like gold surface, small four-point glints. Keep its position and size and gold background halo, with root floating in the halo. It must unmistakably be precious gold, different from the ordinary orange carrot projectile on the lower-right platform. Preserve all other pixels/composition: the cream rabbit and coral scarf, platforms, notebook, orange projectile, monster, spring, shield, paper cutout crayon style. No text, watermark, new objects or background changes. Opaque landscape 4:3."
+  },
+  "normalizationTool": "tools/doodle-jump/prepare-rabbit-polish-assets.py",
+  "atlasBuilder": "sprite-atlas-sources/build.py",
+  "assets": [
+    {
+      "asset": "visual/covers/lobby-cover-rabbit.png",
+      "sourceRender": "visual/covers/source-renders/polish/lobby-cover-rabbit.png",
+      "assetSha256": "9dfba552c0aea8428478bbf915bf87a8dc3354850488063f4213575314dc997a"
+    },
+    {
+      "asset": "visual/collectibles/golden-carrot.png",
+      "sourceRender": "visual/collectibles/source-renders/polish/golden-carrot.png",
+      "assetSha256": "347f314e068bccaa9ea1207b249f1792b8bf75e21351b68bf0c9f7b52a73006f"
+    },
+    {
+      "asset": "visual/player/rabbit-rocket.png",
+      "sourceRender": "visual/player/source-renders/polish/rabbit-rocket.png",
+      "assetSha256": "7ff5ab4240318573973cb21aaa1ac62f3b96862f08d874daa6df49bcb871efe6"
+    },
+    {
+      "asset": "visual/player/rabbit-jetpack.png",
+      "sourceRender": "visual/player/source-renders/polish/rabbit-jetpack.png",
+      "assetSha256": "726350ac75804f8adeaeef651ec69406b4899b4e1c0d01500212681cdf2595b8"
+    },
+    {
+      "asset": "visual/player/rabbit-shoes-jumping.png",
+      "sourceRender": "visual/player/source-renders/polish/rabbit-shoes-jumping.png",
+      "assetSha256": "b0cef7929b1588e38adb9c58115ccdcc21b8672ff76f131d1744f6347a7d1c65"
+    },
+    {
+      "asset": "visual/player/rabbit-shoes-falling.png",
+      "sourceRender": "visual/player/source-renders/polish/rabbit-shoes-falling.png",
+      "assetSha256": "e07419f6b1ed6d766c8a99aa64292de893a4a21e69f70fef512608d0a91654d5"
+    },
+    {
+      "asset": "visual/effects/rocket-flame.png",
+      "sourceRender": "visual/effects/source-renders/polish/rocket-flame.png",
+      "assetSha256": "838ac8d17dc794e4aee2d25ee7cc32362be13b0e19b5e18badb2f5966d7de17b"
+    },
+    {
+      "asset": "visual/effects/jetpack-flames.png",
+      "sourceRender": "visual/effects/source-renders/polish/jetpack-flames.png",
+      "assetSha256": "af0f7f5a521a4d7aa7681f9278edc44c68076bb6a1e7c0bef3980ec418ce829c"
+    }
+  ],
+  "runtimeCover": "assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png",
+  "loadingArtwork": "shared loading view uses manifest cover; game loading overlay composes current player/collectible sprites after atlas load",
+  "visualEffects": "pooled native Graphics halo/rays/sparkles, transforms and opacity only during frame updates",
+  "pickupFlightSeconds": {
+    "headGather": 0.22,
+    "headHold": 0.08,
+    "headToHud": 0.44
+  },
+  "originalReferenceArchive": {
+    "assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png": "visual/covers/retired/lobby-cover-original.png",
+    "sprite-atlas-sources/doodle-jump/visual/collectibles/golden-carrot.png": "visual/collectibles/retired/golden-carrot-v1.png",
+    "sprite-atlas-sources/doodle-jump/visual/effects/rocket-flame.png": "visual/effects/retired/rocket-flame-original.png",
+    "sprite-atlas-sources/doodle-jump/visual/effects/jetpack-flames.png": "visual/effects/retired/jetpack-flames-original.png"
+  },
+  "flightDebris": "Jetpack and rocket use the existing pure rocket-paper-scraps sprite; the former jetpack-paper-scraps sprite baked in duplicate nozzles/flames and is no longer packed or loaded.",
+  "floatingPlacement": "golden carrot collision/render center is carrier +58; deterministic lateral clearance from neighboring platform bodies, keeps selected side and resumes layout offset; fully obstructed positions are skipped without consuming extra RNG"
+}

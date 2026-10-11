@@ -1,0 +1,634 @@
+{
+  "ball": {
+    "height": 113,
+    "source": "visual/game/ball-v1.png",
+    "standalone": false,
+    "unity": "ball2",
+    "uuid": "42038087-fea0-5e4b-a3f2-043b18b9e534",
+    "width": 93
+  },
+  "bar-fill": {
+    "height": 36,
+    "source": "visual/ui/bar-fill-v1.png",
+    "standalone": false,
+    "unity": "JGjindutiao_lv",
+    "uuid": "5d8c19ad-6767-5e9f-8611-d402b36530ec",
+    "width": 44
+  },
+  "bar-track": {
+    "height": 36,
+    "source": "visual/ui/bar-track-v1.png",
+    "standalone": false,
+    "unity": "JGjindutiao_di",
+    "uuid": "07f8dd82-6350-5795-a5fd-e2663c33cf2f",
+    "width": 44
+  },
+  "bee": {
+    "height": 107,
+    "source": "visual/game/bee-v1.png",
+    "standalone": false,
+    "unity": "MiFeng_0",
+    "uuid": "17a9e2f7-704d-591b-8406-945d1c7ff257",
+    "width": 148
+  },
+  "bee-die": {
+    "height": 99,
+    "source": "visual/game/bee-die-v1.png",
+    "standalone": false,
+    "unity": "mifeng_die",
+    "uuid": "dd19176a-c105-5ee3-9790-a7dfd3eda1b6",
+    "width": 140
+  },
+  "black-hole": {
+    "height": 152,
+    "source": "visual/game/black-hole-v1.png",
+    "standalone": false,
+    "unity": "heidong",
+    "uuid": "cedfe904-b906-5ef4-be1c-3f8d42e3d14b",
+    "width": 156
+  },
+  "bomb": {
+    "height": 149,
+    "source": "visual/game/bomb-v1.png",
+    "standalone": false,
+    "unity": "zhadan",
+    "uuid": "cca2a3d3-292b-52a6-8b94-de31e271ca05",
+    "width": 142
+  },
+  "box-1": {
+    "height": 75,
+    "source": "visual/game/box-1-v1.png",
+    "standalone": false,
+    "unity": "box_1",
+    "uuid": "6637c3fb-a881-5aa7-9a72-9bc79b421395",
+    "width": 218
+  },
+  "box-2": {
+    "height": 75,
+    "source": "visual/game/box-2-v1.png",
+    "standalone": false,
+    "unity": "box_2",
+    "uuid": "076e42ec-e7f5-5661-a882-097fc9909bb6",
+    "width": 123
+  },
+  "box-3": {
+    "height": 75,
+    "source": "visual/game/box-3-v1.png",
+    "standalone": false,
+    "unity": "box_3",
+    "uuid": "a5b5a6d4-f90d-5857-800c-2651873a5e26",
+    "width": 74
+  },
+  "box-inner": {
+    "height": 256,
+    "source": "visual/game/box-inner-v1.png",
+    "standalone": false,
+    "unity": "box_in",
+    "uuid": "d25f8f7c-2f90-563d-a5b4-aa7400562dc5",
+    "width": 256
+  },
+  "box-outline": {
+    "height": 64,
+    "source": "visual/game/box-outline-v1.png",
+    "standalone": false,
+    "unity": "box outline",
+    "uuid": "27d9f415-4294-5e24-aac7-14c016423737",
+    "width": 128
+  },
+  "brick-1": {
+    "height": 42,
+    "source": "visual/game/brick-1-v1.png",
+    "standalone": false,
+    "unity": "brick_1",
+    "uuid": "3928ad7c-6afe-58c7-846c-8bdcd55edd27",
+    "width": 44
+  },
+  "brick-2": {
+    "height": 43,
+    "source": "visual/game/brick-2-v1.png",
+    "standalone": false,
+    "unity": "brick_2",
+    "uuid": "993b62d5-f59a-5606-9d62-d2cba84dd397",
+    "width": 217
+  },
+  "cloud-1": {
+    "height": 211,
+    "source": "visual/backdrop/cloud-1-v1.png",
+    "standalone": false,
+    "unity": "cloud_1",
+    "uuid": "f59fb093-53bd-5ac1-b9f8-b8d43c1255ae",
+    "width": 404
+  },
+  "cloud-2": {
+    "height": 285,
+    "source": "visual/backdrop/cloud-2-v1.png",
+    "standalone": false,
+    "unity": "cloud_2",
+    "uuid": "170cb4e3-7ed7-50e5-882c-3ca99068abfc",
+    "width": 519
+  },
+  "cloud-3": {
+    "height": 214,
+    "source": "visual/backdrop/cloud-3-v1.png",
+    "standalone": false,
+    "unity": "cloud_3",
+    "uuid": "418b1f01-16d9-5bb4-8cbb-84968e2bdad6",
+    "width": 509
+  },
+  "dog-beaten": {
+    "height": 185,
+    "source": "visual/game/dog-beaten-v1.png",
+    "standalone": false,
+    "unity": "dog_beaten",
+    "uuid": "cf6d25b7-48c4-5f07-8c3d-381b9fc8aec1",
+    "width": 180
+  },
+  "dog-idle": {
+    "height": 185,
+    "source": "visual/game/dog-idle-v1.png",
+    "standalone": false,
+    "unity": "GouTou_0",
+    "uuid": "a40c6766-5063-5af6-ac52-0e15c497413f",
+    "width": 180
+  },
+  "dog-lose": {
+    "height": 185,
+    "source": "visual/game/dog-lose-v1.png",
+    "standalone": false,
+    "unity": "shibai_0",
+    "uuid": "f0426bff-3ae3-5ac3-81a3-74af4311cabf",
+    "width": 180
+  },
+  "dog-scared": {
+    "height": 185,
+    "source": "visual/game/dog-scared-v1.png",
+    "standalone": false,
+    "unity": "jingkong_0",
+    "uuid": "a949d568-40a0-59bd-9395-1ab805227fa7",
+    "width": 180
+  },
+  "dog-win": {
+    "height": 185,
+    "source": "visual/game/dog-win-v1.png",
+    "standalone": false,
+    "unity": "shengli_0",
+    "uuid": "59c6aeea-77f7-50b0-9ac8-7dc41835634a",
+    "width": 180
+  },
+  "fx-bubble": {
+    "height": 256,
+    "source": "visual/effect/fx-bubble-v1.png",
+    "standalone": false,
+    "unity": "f_paopao_003",
+    "uuid": "8e012660-b8ed-55aa-9c7f-96280b345f88",
+    "width": 256
+  },
+  "fx-glow-1": {
+    "height": 256,
+    "source": "visual/effect/fx-glow-1-v1.png",
+    "standalone": false,
+    "unity": "f_bb_glow01",
+    "uuid": "b48b93e2-1a7b-5147-8f2a-f28c5ec2df8c",
+    "width": 256
+  },
+  "fx-glow-2": {
+    "height": 256,
+    "source": "visual/effect/fx-glow-2-v1.png",
+    "standalone": false,
+    "unity": "f_bb_glow02",
+    "uuid": "8fd81629-b9b3-514d-9c6d-dc93c54f3982",
+    "width": 256
+  },
+  "fx-glow-3": {
+    "height": 64,
+    "source": "visual/effect/fx-glow-3-v1.png",
+    "standalone": false,
+    "unity": "f_glow_zy_002",
+    "uuid": "cb752368-bd1f-5fd8-b0ed-a0537d980510",
+    "width": 64
+  },
+  "fx-noise": {
+    "height": 512,
+    "source": "visual/effect/fx-noise-v1.png",
+    "standalone": false,
+    "unity": "louds_Noise-CyBlockBees",
+    "uuid": "59d3e9e6-816a-51d5-b743-b3e636c698f9",
+    "width": 512
+  },
+  "fx-noise-poison": {
+    "height": 512,
+    "source": "visual/effect/fx-noise-poison-v1.png",
+    "standalone": false,
+    "unity": "louds_Noise-CyBlockBees_poison",
+    "uuid": "a0de0457-9ebd-5773-8b97-226ae3e4f35e",
+    "width": 512
+  },
+  "fx-prop": {
+    "height": 128,
+    "source": "visual/effect/fx-prop-v1.png",
+    "standalone": false,
+    "unity": "f_wuti_010",
+    "uuid": "98205824-9c05-5ff0-8be2-8dbc4129e281",
+    "width": 256
+  },
+  "fx-ring": {
+    "height": 256,
+    "source": "visual/effect/fx-ring-v1.png",
+    "standalone": false,
+    "unity": "f_bb_yuanhuan01",
+    "uuid": "0001b370-faed-5f0a-9573-d726bdc0f433",
+    "width": 256
+  },
+  "fx-ripple": {
+    "height": 256,
+    "source": "visual/effect/fx-ripple-v1.png",
+    "standalone": false,
+    "unity": "f_bb_wenli01",
+    "uuid": "f8875268-0aa0-514c-afc2-18ae07d73184",
+    "width": 64
+  },
+  "fx-sequence-1": {
+    "height": 128,
+    "source": "visual/effect/fx-sequence-1-v1.png",
+    "standalone": false,
+    "unity": "f_bb_xulie01",
+    "uuid": "63106d1f-7b5a-5f0d-9568-7f65cc5eeb22",
+    "width": 128
+  },
+  "fx-sequence-2": {
+    "height": 128,
+    "source": "visual/effect/fx-sequence-2-v1.png",
+    "standalone": false,
+    "unity": "f_xulie_014",
+    "uuid": "1ee181b0-445c-5fe2-a417-7c350fef57e7",
+    "width": 256
+  },
+  "fx-sequence-3": {
+    "height": 128,
+    "source": "visual/effect/fx-sequence-3-v1.png",
+    "standalone": false,
+    "unity": "f_xulie_wjj_048",
+    "uuid": "924526b4-c70c-52bb-bdd2-5c6f51078645",
+    "width": 128
+  },
+  "fx-sequence-4": {
+    "height": 128,
+    "source": "visual/effect/fx-sequence-4-v1.png",
+    "standalone": false,
+    "unity": "f_xulie_wjj_054",
+    "uuid": "61218ff7-a672-5ec0-b4d9-e72f518b467e",
+    "width": 128
+  },
+  "fx-smoke": {
+    "height": 256,
+    "source": "visual/effect/fx-smoke-v1.png",
+    "standalone": false,
+    "unity": "f_bb_smoke01",
+    "uuid": "8ee3a2db-fee0-5980-a76b-92937fe9a10c",
+    "width": 256
+  },
+  "fx-spark": {
+    "height": 128,
+    "source": "visual/effect/fx-spark-v1.png",
+    "standalone": false,
+    "unity": "f_bb_lizi01",
+    "uuid": "17f08a36-54f0-5fcd-a382-89fc26e2548c",
+    "width": 256
+  },
+  "fx-swirl": {
+    "height": 256,
+    "source": "visual/effect/fx-swirl-v1.png",
+    "standalone": false,
+    "unity": "f_bb_xuanzhuan01",
+    "uuid": "ea57a5a9-a619-54f5-a0e5-15b8a0d24c55",
+    "width": 256
+  },
+  "fx-wind": {
+    "height": 256,
+    "source": "visual/effect/fx-wind-v1.png",
+    "standalone": false,
+    "unity": "f_bb_wind02",
+    "uuid": "e4e0ffdd-fd3e-5604-aace-9d08beea795f",
+    "width": 256
+  },
+  "grass-1": {
+    "height": 214,
+    "source": "visual/backdrop/grass-1-v1.png",
+    "standalone": false,
+    "unity": "grass01_0",
+    "uuid": "bcb68c03-df0b-55b9-a39b-68857cf7e50b",
+    "width": 176
+  },
+  "grass-2": {
+    "height": 231,
+    "source": "visual/backdrop/grass-2-v1.png",
+    "standalone": false,
+    "unity": "grass02_0",
+    "uuid": "e83fb64d-3666-5a65-9fc9-3c2064920ae0",
+    "width": 271
+  },
+  "grass-3": {
+    "height": 231,
+    "source": "visual/backdrop/grass-3-v1.png",
+    "standalone": false,
+    "unity": "grass03_0",
+    "uuid": "2fed1b43-1bff-5f48-b0d5-f2fbcd693204",
+    "width": 197
+  },
+  "grass-outline-1": {
+    "height": 64,
+    "source": "visual/backdrop/grass-outline-1-v1.png",
+    "standalone": false,
+    "unity": "Grass Outline 1",
+    "uuid": "f2f39869-4130-55d9-a01c-7f280fb59366",
+    "width": 128
+  },
+  "grass-outline-2": {
+    "height": 64,
+    "source": "visual/backdrop/grass-outline-2-v1.png",
+    "standalone": false,
+    "unity": "Grass Outline 1_2",
+    "uuid": "f83a24b2-e051-5fad-a96d-5cf74841b5d2",
+    "width": 128
+  },
+  "ground": {
+    "height": 512,
+    "source": "visual/backdrop/ground-v1.png",
+    "standalone": false,
+    "unity": "ground_1",
+    "uuid": "27b066df-aee2-52db-9410-e6a72fb48349",
+    "width": 512
+  },
+  "hand": {
+    "height": 256,
+    "source": "visual/ui/hand-v1.png",
+    "standalone": false,
+    "unity": "cartoon hand",
+    "uuid": "ee5fbd12-8cfe-5d89-ac0b-9aa15b5e1240",
+    "width": 256
+  },
+  "hive-a": {
+    "height": 185,
+    "source": "visual/game/hive-a-v1.png",
+    "standalone": false,
+    "unity": "honeycomb",
+    "uuid": "4549daad-5adb-5c99-a177-9ea0f96fd2af",
+    "width": 153
+  },
+  "hive-b": {
+    "height": 185,
+    "source": "visual/game/hive-b-v1.png",
+    "standalone": false,
+    "unity": "honeycomb2",
+    "uuid": "6f17e04d-69b7-5a6f-a9a4-3ca65afbdbd3",
+    "width": 153
+  },
+  "hive-fan-1": {
+    "height": 172,
+    "source": "visual/game/hive-fan-1-v1.png",
+    "standalone": false,
+    "unity": "fengshan_1",
+    "uuid": "d9ab8321-b140-55e3-b801-a9633e13b8ba",
+    "width": 266
+  },
+  "hive-fan-2": {
+    "height": 172,
+    "source": "visual/game/hive-fan-2-v1.png",
+    "standalone": false,
+    "unity": "fengshan_2",
+    "uuid": "2e279b53-f399-59f8-93aa-a6ba5bc2a945",
+    "width": 266
+  },
+  "ice-1": {
+    "height": 56,
+    "source": "visual/game/ice-1-v1.png",
+    "standalone": false,
+    "unity": "ice2-1",
+    "uuid": "3e2226be-dc0b-5832-bbd7-071ff073d340",
+    "width": 55
+  },
+  "ice-2": {
+    "height": 56,
+    "source": "visual/game/ice-2-v1.png",
+    "standalone": false,
+    "unity": "ice2-2",
+    "uuid": "a8e358b6-48c1-5b1a-a837-7ee3ae020ab3",
+    "width": 56
+  },
+  "ice-3": {
+    "height": 41,
+    "source": "visual/game/ice-3-v1.png",
+    "standalone": false,
+    "unity": "ice2-3",
+    "uuid": "75b592d6-2c8d-545a-8908-81d7362727f8",
+    "width": 57
+  },
+  "icon-pencil": {
+    "height": 60,
+    "source": "visual/ui/icon-pencil-v1.png",
+    "standalone": false,
+    "unity": "JGqianbi",
+    "uuid": "ad0885d5-d312-5166-ab5d-d52c01c0ff8c",
+    "width": 56
+  },
+  "knife": {
+    "height": 359,
+    "source": "visual/game/knife-v1.png",
+    "standalone": false,
+    "unity": "xiaodao",
+    "uuid": "324bf2a0-86d7-5ccc-b99e-5cb6f5b1fb1b",
+    "width": 97
+  },
+  "move-arrow": {
+    "height": 54,
+    "source": "visual/game/move-arrow-v1.png",
+    "standalone": false,
+    "unity": "move",
+    "uuid": "c1bf3d22-acec-5c36-9105-6bed2792ff36",
+    "width": 118
+  },
+  "platform-cube": {
+    "height": 200,
+    "source": "visual/backdrop/platform-cube-v1.png",
+    "standalone": false,
+    "unity": "floor_cube 1",
+    "uuid": "69d0461a-09bd-5596-9694-697648542297",
+    "width": 216
+  },
+  "platform-round": {
+    "height": 89,
+    "source": "visual/backdrop/platform-round-v1.png",
+    "standalone": false,
+    "unity": "floor_round",
+    "uuid": "f551b868-c296-59fb-875f-14fe8edb925c",
+    "width": 89
+  },
+  "saw-gear": {
+    "height": 128,
+    "source": "visual/game/saw-gear-v1.png",
+    "standalone": false,
+    "unity": "chilun",
+    "uuid": "52bca5f3-f61d-5058-8130-a14193a46d31",
+    "width": 128
+  },
+  "saw-spin": {
+    "height": 79,
+    "source": "visual/game/saw-spin-v1.png",
+    "standalone": false,
+    "unity": "typespin01",
+    "uuid": "296868c1-7c2f-501d-a54b-6aec1194d29e",
+    "width": 232
+  },
+  "sky": {
+    "height": 2048,
+    "source": "visual/backdrop/sky-v1.png",
+    "standalone": true,
+    "unity": "sky_1",
+    "uuid": "36636fff-70c7-5401-991e-58bbb217092d",
+    "width": 1024
+  },
+  "solid-red": {
+    "height": 512,
+    "source": "visual/game/solid-red-v1.png",
+    "standalone": false,
+    "unity": "red",
+    "uuid": "f9ae8d84-35bb-587e-b4bc-c4b863ddb0d0",
+    "width": 512
+  },
+  "spider-1": {
+    "height": 148,
+    "source": "visual/game/spider-1-v1.png",
+    "standalone": false,
+    "unity": "zhizhu_1",
+    "uuid": "d9cfdb1f-6351-5d66-8144-f8f0b4a92dac",
+    "width": 155
+  },
+  "spider-2": {
+    "height": 149,
+    "source": "visual/game/spider-2-v1.png",
+    "standalone": false,
+    "unity": "zhizhu_2",
+    "uuid": "55f7dace-940b-51a0-83a3-7bf26156322a",
+    "width": 159
+  },
+  "spider-3": {
+    "height": 149,
+    "source": "visual/game/spider-3-v1.png",
+    "standalone": false,
+    "unity": "zhizhu_3",
+    "uuid": "efcb3b5f-3b64-5c17-882f-ecd3984dba78",
+    "width": 165
+  },
+  "spider-4": {
+    "height": 149,
+    "source": "visual/game/spider-4-v1.png",
+    "standalone": false,
+    "unity": "zhizhu_4",
+    "uuid": "8babaf00-2ef8-5803-9919-85f7c7e64b6e",
+    "width": 169
+  },
+  "spider-5": {
+    "height": 149,
+    "source": "visual/game/spider-5-v1.png",
+    "standalone": false,
+    "unity": "zhizhu_5",
+    "uuid": "0b2df98f-0528-564c-99ea-5024aefbcdc6",
+    "width": 172
+  },
+  "spider-6": {
+    "height": 38,
+    "source": "visual/game/spider-6-v1.png",
+    "standalone": false,
+    "unity": "zhizhu_6",
+    "uuid": "558e3eb6-e47c-5c7a-824c-510f8f8ecde8",
+    "width": 38
+  },
+  "spike": {
+    "height": 101,
+    "source": "visual/game/spike-v1.png",
+    "standalone": false,
+    "unity": "dici",
+    "uuid": "c44708d5-ce42-5d80-a9ea-1ab769dd78cc",
+    "width": 57
+  },
+  "spiky-ball-1": {
+    "height": 205,
+    "source": "visual/game/spiky-ball-1-v1.png",
+    "standalone": false,
+    "unity": "ciqiu_1",
+    "uuid": "8c87a6ee-bff2-5ef0-8cd1-15b7f33a043a",
+    "width": 205
+  },
+  "spiky-ball-2": {
+    "height": 31,
+    "source": "visual/game/spiky-ball-2-v1.png",
+    "standalone": false,
+    "unity": "ciqiu_2",
+    "uuid": "b37d475d-7fc9-5f95-95be-343748de08e1",
+    "width": 30
+  },
+  "spiky-ball-3": {
+    "height": 19,
+    "source": "visual/game/spiky-ball-3-v1.png",
+    "standalone": false,
+    "unity": "ciqiu_3",
+    "uuid": "291d662d-3c87-509c-8537-e7996fb9158b",
+    "width": 205
+  },
+  "star-off": {
+    "height": 53,
+    "source": "visual/ui/star-off-v1.png",
+    "standalone": false,
+    "unity": "JGxingxing_hui",
+    "uuid": "aea44c89-9c55-59cc-b874-0d5557c0f7c7",
+    "width": 48
+  },
+  "star-on": {
+    "height": 53,
+    "source": "visual/ui/star-on-v1.png",
+    "standalone": false,
+    "unity": "JGxingxing",
+    "uuid": "69b3a464-fc31-5669-9403-7ca7b946ceb9",
+    "width": 48
+  },
+  "stone": {
+    "height": 205,
+    "source": "visual/game/stone-v1.png",
+    "standalone": false,
+    "unity": "shitou",
+    "uuid": "f954d76b-44de-5ffa-8a6f-419dbcae1f81",
+    "width": 183
+  },
+  "timer-fill": {
+    "height": 109,
+    "source": "visual/ui/timer-fill-v1.png",
+    "standalone": false,
+    "unity": "JGdaojishi_lv",
+    "uuid": "13bc3f8b-95a6-53e7-bb5e-f1d7ece3b755",
+    "width": 98
+  },
+  "timer-track": {
+    "height": 109,
+    "source": "visual/ui/timer-track-v1.png",
+    "standalone": false,
+    "unity": "JGdaojishi_kong",
+    "uuid": "ebd0b715-d259-592c-acb2-80b5cd809dbe",
+    "width": 98
+  },
+  "tree": {
+    "height": 943,
+    "source": "visual/backdrop/tree-v1.png",
+    "standalone": false,
+    "unity": "tree",
+    "uuid": "a54b9a3f-f15d-5269-90d7-c2bf89070477",
+    "width": 471
+  },
+  "water": {
+    "height": 458,
+    "source": "visual/backdrop/water-v1.png",
+    "standalone": false,
+    "unity": "water",
+    "uuid": "c4a72840-8434-5c2b-9126-b07715367568",
+    "width": 720
+  }
+}

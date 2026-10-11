@@ -36,7 +36,7 @@ export interface MeowdokuLevelDefinition {
  * 区域按行展开后紧接答案，高半字节在先；关卡号由顺序恢复。
  * 使用纯 JS 解码，浏览器与微信小游戏均不依赖 atob / Buffer / wx。
  */
-function decodeMeowdokuLevels(encoded: string, count: number): readonly MeowdokuLevelDefinition[] {
+export function decodeMeowdokuLevels(encoded: string, count: number): readonly MeowdokuLevelDefinition[] {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded)) {
         throw new Error('Invalid Meowdoku level bank Base64.');

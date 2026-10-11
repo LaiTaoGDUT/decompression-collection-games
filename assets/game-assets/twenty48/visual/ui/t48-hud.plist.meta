@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "3a16a": {
+      "importer": "sprite-frame",
+      "uuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f@3a16a",
+      "displayName": "",
+      "id": "3a16a",
+      "name": "t48-hud-card-amber-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 247,
+        "height": 117,
+        "rawWidth": 247,
+        "rawHeight": 117,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "78e11f28-b713-5dea-8a82-091a2effb3e2@6c48a",
+        "atlasUuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "57430": {
+      "importer": "sprite-frame",
+      "uuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f@57430",
+      "displayName": "",
+      "id": "57430",
+      "name": "t48-hud-card-cyan-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 253,
+        "trimY": 2,
+        "width": 247,
+        "height": 117,
+        "rawWidth": 247,
+        "rawHeight": 117,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "78e11f28-b713-5dea-8a82-091a2effb3e2@6c48a",
+        "atlasUuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "t48-hud.png",
+    "format": 2,
+    "uuid": "ed37ba01-16b3-5faf-947e-3d32c6608c9f",
+    "textureUuid": "78e11f28-b713-5dea-8a82-091a2effb3e2@6c48a"
+  }
+}

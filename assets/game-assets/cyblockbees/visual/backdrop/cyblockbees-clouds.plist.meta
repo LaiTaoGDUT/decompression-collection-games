@@ -1,0 +1,155 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "0a21b": {
+      "importer": "sprite-frame",
+      "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f@0a21b",
+      "displayName": "",
+      "id": "0a21b",
+      "name": "cloud-1-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 496,
+        "trimY": 2,
+        "width": 220,
+        "height": 115,
+        "rawWidth": 220,
+        "rawHeight": 115,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "dc355c10-91ef-5eec-a81d-90a2f5aa7b0a@6c48a",
+        "atlasUuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "5feeb": {
+      "importer": "sprite-frame",
+      "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f@5feeb",
+      "displayName": "",
+      "id": "5feeb",
+      "name": "cloud-2-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 250,
+        "height": 137,
+        "rawWidth": 250,
+        "rawHeight": 137,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "dc355c10-91ef-5eec-a81d-90a2f5aa7b0a@6c48a",
+        "atlasUuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "5be5c": {
+      "importer": "sprite-frame",
+      "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f@5be5c",
+      "displayName": "",
+      "id": "5be5c",
+      "name": "cloud-3-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 256,
+        "trimY": 2,
+        "width": 236,
+        "height": 99,
+        "rawWidth": 236,
+        "rawHeight": 99,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "dc355c10-91ef-5eec-a81d-90a2f5aa7b0a@6c48a",
+        "atlasUuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "cyblockbees-clouds.png",
+    "format": 2,
+    "uuid": "fcce63a3-7bc9-530c-a67e-c13e2fe18c8f",
+    "textureUuid": "dc355c10-91ef-5eec-a81d-90a2f5aa7b0a@6c48a"
+  }
+}

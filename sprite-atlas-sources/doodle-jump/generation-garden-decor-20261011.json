@@ -1,0 +1,68 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-11",
+  "theme": "Warm paper garden",
+  "integration": "Preserve RGBA; crop transparent padding; fit cutout into a 240 x 240 canvas with 12px margins; build via sprite-atlas-sources/build.py.",
+  "assets": [
+    {
+      "key": "wildflowers",
+      "source": "warm-wildflowers.png",
+      "subject": "a small compact meadow wildflower clump with two cream-white daisies with muted ochre centers, one tiny dusty-coral blossom, short curved sage stems and a few broad muted-teal leaves. The two daisies and leafy base form a balanced gently rounded composition.",
+      "prompt": "Use case: illustration-story. Asset type: a single transparent botanical scenery sprite for the first warm-paper garden background of the mobile game 纸片跳跃. Input images: image 1 is the old stationery decoration EDIT TARGET: completely replace its subject with the botanical plant described below, retaining only the hand-drawn cut-paper material and clear centered framing. Image 2 is the current lobby cover REFERENCE for garden foliage, pencil texture and palette; image 3 is the rabbit REFERENCE ONLY for the storybook drawing language; image 4 is the warm ruled-paper background REFERENCE for scenery color harmony. The old stationery object must be absent. Draw only the botanical subject described below, a small airy vignette centered in a square canvas with generous clean transparent padding. Match the cover's soft hand-cut ivory paper rim, fine dark olive pencil outlines, natural colored-pencil hatching and gentle shallow paper shadow. This is scenery behind a jumping rabbit, so use subdued sage green and muted teal greens, delicate warm cream accents, simple readable silhouettes at 100px wide, and no thick heavy black outlines or strong contrast. Keep one coherent clump of foliage, with little empty space between the elements, all connected naturally by stems, fully visible without cropping. Genuine transparent background. No rabbit, no characters, no enemies, no carrot, no collectible, no glow or sparkle, no platform, no ground strip, no plant pot, no stationery, no text, no border or rectangular sticker backing, no notebook background, no grid, no symbols, no watermark. Botanical subject: a small compact meadow wildflower clump with two cream-white daisies with muted ochre centers, one tiny dusty-coral blossom, short curved sage stems and a few broad muted-teal leaves. The two daisies and leafy base form a balanced gently rounded composition.",
+      "previousSource": "warm-binder-clip.png",
+      "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-c2a3a08c-a5e5-4fbb-8c3d-2ca7b5b0fb9d.png",
+      "rawSource": "visual/backgrounds/decor-v2/source-renders/garden-20261011/warm-wildflowers.png",
+      "authoredSource": "visual/backgrounds/decor-v2/warm-wildflowers.png",
+      "size": [
+        240,
+        240
+      ],
+      "sha256": "d2e76c28b58fd5f962534929a2c97c6aff65935a93b0cfc9efa6104882b2841a"
+    },
+    {
+      "key": "grass",
+      "source": "warm-grass.png",
+      "subject": "one small charming garden grass tuft with seven curved rounded-tip blades of differing heights and three short broad leaves near its base. Use soft sage and muted teal, a natural fan-shaped silhouette, and very delicate olive pencil marks. No soil or ground line.",
+      "prompt": "Use case: illustration-story. Asset type: a single transparent botanical scenery sprite for the first warm-paper garden background of the mobile game 纸片跳跃. Input images: image 1 is the old stationery decoration EDIT TARGET: completely replace its subject with the botanical plant described below, retaining only the hand-drawn cut-paper material and clear centered framing. Image 2 is the current lobby cover REFERENCE for garden foliage, pencil texture and palette; image 3 is the rabbit REFERENCE ONLY for the storybook drawing language; image 4 is the warm ruled-paper background REFERENCE for scenery color harmony. The old stationery object must be absent. Draw only the botanical subject described below, a small airy vignette centered in a square canvas with generous clean transparent padding. Match the cover's soft hand-cut ivory paper rim, fine dark olive pencil outlines, natural colored-pencil hatching and gentle shallow paper shadow. This is scenery behind a jumping rabbit, so use subdued sage green and muted teal greens, delicate warm cream accents, simple readable silhouettes at 100px wide, and no thick heavy black outlines or strong contrast. Keep one coherent clump of foliage, with little empty space between the elements, all connected naturally by stems, fully visible without cropping. Genuine transparent background. No rabbit, no characters, no enemies, no carrot, no collectible, no glow or sparkle, no platform, no ground strip, no plant pot, no stationery, no text, no border or rectangular sticker backing, no notebook background, no grid, no symbols, no watermark. Botanical subject: one small charming garden grass tuft with seven curved rounded-tip blades of differing heights and three short broad leaves near its base. Use soft sage and muted teal, a natural fan-shaped silhouette, and very delicate olive pencil marks. No soil or ground line.",
+      "previousSource": "warm-push-pin.png",
+      "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-42b2ed50-4e96-4a94-b431-2fb2397253f1.png",
+      "rawSource": "visual/backgrounds/decor-v2/source-renders/garden-20261011/warm-grass.png",
+      "authoredSource": "visual/backgrounds/decor-v2/warm-grass.png",
+      "size": [
+        240,
+        240
+      ],
+      "sha256": "cc29ba40d86d95d1e40cc6b289c23097966f9e539e8c82ba5cf0513f7fbbc2cc"
+    },
+    {
+      "key": "clover",
+      "source": "warm-clover.png",
+      "subject": "one three-leaf clover sprig cluster with one larger three-leaf head and two smaller three-leaf heads on short thin bent stems, each clover head consists of exactly three heart-shaped green leaflets. Use muted sage and warm teal leaf surfaces with delicate pencil veins. No four-leaf clover or lucky symbols.",
+      "prompt": "Use case: illustration-story. Asset type: a single transparent botanical scenery sprite for the first warm-paper garden background of the mobile game 纸片跳跃. Input images: image 1 is the old stationery decoration EDIT TARGET: completely replace its subject with the botanical plant described below, retaining only the hand-drawn cut-paper material and clear centered framing. Image 2 is the current lobby cover REFERENCE for garden foliage, pencil texture and palette; image 3 is the rabbit REFERENCE ONLY for the storybook drawing language; image 4 is the warm ruled-paper background REFERENCE for scenery color harmony. The old stationery object must be absent. Draw only the botanical subject described below, a small airy vignette centered in a square canvas with generous clean transparent padding. Match the cover's soft hand-cut ivory paper rim, fine dark olive pencil outlines, natural colored-pencil hatching and gentle shallow paper shadow. This is scenery behind a jumping rabbit, so use subdued sage green and muted teal greens, delicate warm cream accents, simple readable silhouettes at 100px wide, and no thick heavy black outlines or strong contrast. Keep one coherent clump of foliage, with little empty space between the elements, all connected naturally by stems, fully visible without cropping. Genuine transparent background. No rabbit, no characters, no enemies, no carrot, no collectible, no glow or sparkle, no platform, no ground strip, no plant pot, no stationery, no text, no border or rectangular sticker backing, no notebook background, no grid, no symbols, no watermark. Botanical subject: one three-leaf clover sprig cluster with one larger three-leaf head and two smaller three-leaf heads on short thin bent stems, each clover head consists of exactly three heart-shaped green leaflets. Use muted sage and warm teal leaf surfaces with delicate pencil veins. No four-leaf clover or lucky symbols.",
+      "previousSource": "warm-paperclip.png",
+      "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-bfb7de76-bdf4-4bf7-a349-948ab2423f58.png",
+      "rawSource": "visual/backgrounds/decor-v2/source-renders/garden-20261011/warm-clover.png",
+      "authoredSource": "visual/backgrounds/decor-v2/warm-clover.png",
+      "size": [
+        240,
+        240
+      ],
+      "sha256": "422b269a51d0816878cc86b5a08100c37e20800a83aee44d4b10a6a9fd114625"
+    },
+    {
+      "key": "leaf-sprig",
+      "source": "warm-leaf-sprig.png",
+      "subject": "one soft curved garden leaf sprig with five broad oval sage and muted teal leaves on a single slender branching stem, two alternating pairs and one tip leaf. Delicate pencil veins, gently asymmetrical but compact and readable, no flowers and no buds with bright colors.",
+      "prompt": "Use case: illustration-story. Asset type: a single transparent botanical scenery sprite for the first warm-paper garden background of the mobile game 纸片跳跃. Input images: image 1 is the old stationery decoration EDIT TARGET: completely replace its subject with the botanical plant described below, retaining only the hand-drawn cut-paper material and clear centered framing. Image 2 is the current lobby cover REFERENCE for garden foliage, pencil texture and palette; image 3 is the rabbit REFERENCE ONLY for the storybook drawing language; image 4 is the warm ruled-paper background REFERENCE for scenery color harmony. The old stationery object must be absent. Draw only the botanical subject described below, a small airy vignette centered in a square canvas with generous clean transparent padding. Match the cover's soft hand-cut ivory paper rim, fine dark olive pencil outlines, natural colored-pencil hatching and gentle shallow paper shadow. This is scenery behind a jumping rabbit, so use subdued sage green and muted teal greens, delicate warm cream accents, simple readable silhouettes at 100px wide, and no thick heavy black outlines or strong contrast. Keep one coherent clump of foliage, with little empty space between the elements, all connected naturally by stems, fully visible without cropping. Genuine transparent background. No rabbit, no characters, no enemies, no carrot, no collectible, no glow or sparkle, no platform, no ground strip, no plant pot, no stationery, no text, no border or rectangular sticker backing, no notebook background, no grid, no symbols, no watermark. Botanical subject: one soft curved garden leaf sprig with five broad oval sage and muted teal leaves on a single slender branching stem, two alternating pairs and one tip leaf. Delicate pencil veins, gently asymmetrical but compact and readable, no flowers and no buds with bright colors.",
+      "previousSource": "warm-pencil-spiral.png",
+      "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-ff5bfa02-ab6e-4708-8b0b-c28dde53a1f3.png",
+      "rawSource": "visual/backgrounds/decor-v2/source-renders/garden-20261011/warm-leaf-sprig.png",
+      "authoredSource": "visual/backgrounds/decor-v2/warm-leaf-sprig.png",
+      "size": [
+        240,
+        240
+      ],
+      "sha256": "4d11339a0bc98cf8c617d89efabee2860ccf37a95aae416fd901fb8a8280fb94"
+    }
+  ]
+}

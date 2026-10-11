@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-11",
+  "mode": "built-in image_gen",
+  "transparentBackground": true,
+  "promptRecording": "Normalized generation/edit specifications for the selected eight outputs.",
+  "theme": {
+    "name": "纸片兔子与金萝卜",
+    "keywords": [
+      "纸片剪贴",
+      "蜡笔线条",
+      "奶油白兔子",
+      "珊瑚围巾",
+      "青绿竹蜻蜓",
+      "金色收集物"
+    ],
+    "characterAnimation": "jump/fall plus two integrated propeller frames"
+  },
+  "assets": [
+    {
+      "asset": "visual/player/rabbit-jumping.png",
+      "sourceRender": "visual/player/source-renders/rabbit-jumping.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. Rabbit ascending jump pose: knees tucked, ears upright/backward, scarf trailing; entire rabbit visible with generous transparent margin.",
+      "assetSha256": "18d733da1a1ba5987cbf7fe5ff35e4cf8c770b2f3077cb4905f97ef9621c2ef6"
+    },
+    {
+      "asset": "visual/player/rabbit-falling.png",
+      "sourceRender": "visual/player/source-renders/rabbit-falling.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. Matching rabbit falling pose: body extended downward, legs/feet lowered; preserve the same head, proportions, scarf, outline and shared canvas as the jumping frame.",
+      "assetSha256": "f93db66aa0bdea00683697b3a618ffa6af21c0c9d75fd4dafde4fa3b6d426093"
+    },
+    {
+      "asset": "visual/player/rabbit-propeller.png",
+      "sourceRender": "visual/player/source-renders/rabbit-propeller.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. Matching rabbit flying with a bamboo propeller worn on its head; curved ochre band follows the forehead, ears rise behind the band, one short central shaft and two teal bamboo blades. Draw rabbit and headgear together in one contiguous illustration, natural overlaps and attachment.",
+      "assetSha256": "bdeeea0df12e5e318ce6b50ea3f8728b903a470559f0d7dc0ab8c4741f584f81"
+    },
+    {
+      "asset": "visual/player/rabbit-propeller-spin.png",
+      "sourceRender": "visual/player/source-renders/rabbit-propeller-spin.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. Second propeller rotation frame based on integrated rabbit/hat reference. Preserve rabbit, ears, face, scarf, limbs, body, band, shaft, crop and placement. Change only rotor blade orientation to a foreshortened angle for a clear two-frame spin.",
+      "assetSha256": "ef297be2f588f7c0af021c337649149885aa433b91ba50dab6c24ecf39a54dd3"
+    },
+    {
+      "asset": "visual/projectiles/carrot-bullet.png",
+      "sourceRender": "visual/projectiles/source-renders/carrot-bullet.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. A single orange carrot bullet pointing right, short teal leaf cluster on left, bold charcoal crayon outline and ivory paper rim; flat wide projectile silhouette, transparent background.",
+      "assetSha256": "de28be68f71287716b30675f94ad4ffe91c056f0538aa1a6246f5a01ec69209a"
+    },
+    {
+      "asset": "visual/collectibles/golden-carrot.png",
+      "sourceRender": "visual/collectibles/source-renders/golden-carrot.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. A single collectible golden-yellow carrot angled slightly right, teal leaf crown, thick charcoal crayon outline and ivory paper rim, two small gold sparkle marks; transparent background, readable on notebook paper.",
+      "assetSha256": "ca792f076a28d3871879c9b0cf01d829c83ab531774dbc908197c354a1899a97"
+    },
+    {
+      "asset": "visual/items/pickup-propeller-hat-v2.png",
+      "sourceRender": "visual/items/source-renders/pickup-propeller-hat-v2.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. Standalone headgear pickup matching integrated rabbit rotor: curved ochre forehead band, short central shaft, two teal bamboo blades, transparent background, no separate character or extra components.",
+      "assetSha256": "33d3d0eecc49184f7af8d6698e72c872875eddba229b46f4fec1a50f0ae408f5"
+    },
+    {
+      "asset": "visual/ui/hud/carrot-card.png",
+      "sourceRender": "visual/ui/hud/source-renders/carrot-card.png",
+      "promptSpecification": "Transparent RGBA game sprite; cream cut-paper rabbit, black oval eyes, pink inner ears, coral red scarf, thick charcoal wax-crayon outlines, warm flecked paper texture and teal accents; flat side view, facing right; no text, watermark, photorealism, gradients or 3D. Warm flecked paper HUD card with charcoal irregular outline, coral diagonal striped tape at top left; blank left half reserved for an independently rendered collectible icon, black crayon rectangular count window on right, transparent exterior, no baked-in words or numbers.",
+      "assetSha256": "05e3a120e28164710d5d104d8d34fc726c60ae0e08416352dba31caae8d2f224"
+    }
+  ],
+  "normalizationTool": "tools/doodle-jump/prepare-rabbit-assets.py",
+  "atlasBuilder": "sprite-atlas-sources/build.py",
+  "sharedCharacterCanvas": [
+    264,
+    320
+  ]
+}

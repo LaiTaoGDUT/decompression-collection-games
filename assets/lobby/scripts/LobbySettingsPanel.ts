@@ -10,7 +10,6 @@ import {
     Node,
     Sprite,
     SpriteFrame,
-    sys,
     Texture2D,
     tween,
     Tween,
@@ -25,11 +24,10 @@ import type { AudioService } from '../../services/audio/AudioService';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import type { StorageService } from '../../services/storage/StorageService';
 import {
-    calculateLobbySettingsEntryMetrics,
-    LOBBY_DESIGN_WIDTH,
-    LOBBY_DESIGN_HEIGHT,
-    LOBBY_SETTINGS_ENTRY_SIZE,
+    LOBBY_HEADER_BUTTON_HEIGHT,
+    LOBBY_HEADER_BUTTON_WIDTH,
 } from '../../shared/ui/LobbyBrandLayout';
+import { drawLobbyModalOverlay, LOBBY_MODAL_MOTION } from './LobbyModalMotion';
 
 interface LobbySettingsServices {
     readonly audio: AudioService;
@@ -75,46 +73,56 @@ const SETTINGS_PANEL_HEIGHT = 620;
 const SETTINGS_PANEL_CORNER_RADIUS = 34;
 const SETTINGS_CLOSE_SIZE = 64;
 const SETTINGS_CLOSE_MARGIN = 20;
-const SETTINGS_PANEL_COLLAPSED_SCALE_X = 0.88;
-const SETTINGS_PANEL_COLLAPSED_SCALE_Y = 0.74;
-const SETTINGS_PANEL_OPEN_DURATION = 0.24;
 
 /** L1 settings UI. It only talks to public services and owns no game node. */
 export class LobbySettingsPanel {
+    private entry: Node | null = null;
     private root: Node | null = null;
     private panel: Node | null = null;
-    private settingsEntry: Node | null = null;
     private services?: LobbySettingsServices;
     private errorLabel?: Label;
     private readonly rows = new Map<SettingKey, SettingRow>();
     private readonly ownedFrames: SpriteFrame[] = [];
     private loadToken = 0;
     private transitionToken = 0;
+    private readonly overlay = { opacity: 0 };
+    private opened = false;
 
-    mount(contentRoot: Node, services: LobbySettingsServices): void {
+    /** entrySlot 是大厅顶部栏左列的槽位，入口按设计尺寸挂在槽位中心。 */
+    mount(contentRoot: Node, entrySlot: Node, services: LobbySettingsServices): void {
         if (this.root?.isValid) {
             this.services = services;
-            this.layoutSettingsEntry();
             this.refresh();
             return;
         }
 
         this.services = services;
-        this.createSettingsEntry(contentRoot);
+        this.createSettingsEntry(entrySlot);
         this.root = this.createPanel(contentRoot);
         this.root.active = false;
-        view.on('canvas-resize', this.handleCanvasResize, this);
+        view.on('canvas-resize', this.drawOverlay, this);
     }
 
     unmount(): void {
-        view.off('canvas-resize', this.handleCanvasResize, this);
+        ++this.transitionToken;
+        this.opened = false;
+        view.off('canvas-resize', this.drawOverlay, this);
+        Tween.stopAllByTarget(this.overlay);
         if (this.panel?.isValid) {
             Tween.stopAllByTarget(this.panel);
         }
+        if (this.root?.isValid) {
+            this.root.active = false;
+            this.root.destroy();
+        }
+        if (this.entry?.isValid) {
+            this.entry.active = false;
+            this.entry.destroy();
+        }
         this.rows.clear();
+        this.entry = null;
         this.root = null;
         this.panel = null;
-        this.settingsEntry = null;
         this.services = undefined;
         this.errorLabel = undefined;
         this.loadToken += 1;
@@ -122,90 +130,25 @@ export class LobbySettingsPanel {
         this.ownedFrames.length = 0;
     }
 
-    private createSettingsEntry(
-        contentRoot: Node,
-    ): void {
-        const fullscreenParent = contentRoot.parent?.parent ?? contentRoot;
-        const existing = fullscreenParent.getChildByName('SettingsEntry')
-            ?? contentRoot.getChildByName('SettingsEntry');
-        if (existing) {
-            if (existing.parent !== fullscreenParent) {
-                existing.setParent(fullscreenParent);
-            }
-            this.settingsEntry = existing;
-            this.ensureSettingsEntrySkin(existing);
-            this.layoutSettingsEntry();
-            return;
-        }
-
+    private createSettingsEntry(slot: Node): void {
         const entry = new Node('SettingsEntry');
-        entry.layer = contentRoot.layer;
-        fullscreenParent.addChild(entry);
-        entry.addComponent(UITransform).setContentSize(
-            LOBBY_SETTINGS_ENTRY_SIZE,
-            LOBBY_SETTINGS_ENTRY_SIZE * 134 / 128,
-        );
-        this.ensureSettingsEntrySkin(entry);
+        this.entry = entry;
+        entry.layer = slot.layer;
+        slot.addChild(entry);
+        entry.addComponent(UITransform).setContentSize(LOBBY_HEADER_BUTTON_WIDTH, LOBBY_HEADER_BUTTON_HEIGHT);
+        const skin = new Node('SettingsEntrySkin');
+        skin.layer = entry.layer;
+        entry.addChild(skin);
+        skin.addComponent(UITransform).setContentSize(LOBBY_HEADER_BUTTON_WIDTH, LOBBY_HEADER_BUTTON_HEIGHT);
+        const sprite = skin.addComponent(Sprite);
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.loadSprite(UI_ASSET_PATHS.settings, sprite);
 
         const button = entry.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.96;
         button.duration = 0.09;
         entry.on(Button.EventType.CLICK, this.open, this);
-        this.settingsEntry = entry;
-        this.layoutSettingsEntry();
-    }
-
-    private ensureSettingsEntrySkin(entry: Node): void {
-        let skin = entry.getChildByName('SettingsEntrySkin');
-        if (!skin) {
-            skin = new Node('SettingsEntrySkin');
-            skin.layer = entry.layer;
-            entry.addChild(skin);
-            skin.addComponent(UITransform);
-            skin.addComponent(Sprite);
-        }
-        const sprite = skin.getComponent(Sprite)!;
-        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        skin.setSiblingIndex(0);
-        skin.getComponent(UITransform)?.setContentSize(
-            LOBBY_SETTINGS_ENTRY_SIZE,
-            LOBBY_SETTINGS_ENTRY_SIZE * 134 / 128,
-        );
-        this.loadSprite(UI_ASSET_PATHS.settings, sprite);
-    }
-
-    private layoutSettingsEntry(): void {
-        const entry = this.settingsEntry;
-        const services = this.services;
-        if (!entry?.isValid || !services) {
-            return;
-        }
-
-        const visibleSize = view.getVisibleSize();
-        const parentSize = entry.parent?.getComponent(UITransform)?.contentSize;
-        const width = Math.max(1, visibleSize.width || parentSize?.width || LOBBY_DESIGN_WIDTH);
-        const height = Math.max(1, visibleSize.height || parentSize?.height || LOBBY_DESIGN_HEIGHT);
-        const safeRect = sys.getSafeAreaRect();
-        const scaleX = visibleSize.width > 0 ? width / visibleSize.width : 1;
-        const scaleY = visibleSize.height > 0 ? height / visibleSize.height : 1;
-        const systemSafeTop = Math.max(0, visibleSize.height - safeRect.y - safeRect.height) * scaleY;
-        const systemSafeRight = Math.max(0, visibleSize.width - safeRect.x - safeRect.width) * scaleX;
-        const metrics = calculateLobbySettingsEntryMetrics(
-            width,
-            height,
-            services.platform.getLayoutInfo(),
-            {
-                top: systemSafeTop,
-                right: systemSafeRight,
-            },
-        );
-        entry.getComponent(UITransform)?.setContentSize(
-            LOBBY_SETTINGS_ENTRY_SIZE,
-            LOBBY_SETTINGS_ENTRY_SIZE * 134 / 128,
-        );
-        entry.setScale(metrics.scale, metrics.scale, 1);
-        entry.setPosition(metrics.x, metrics.y);
     }
 
     private createPanel(contentRoot: Node): Node {
@@ -229,10 +172,7 @@ export class LobbySettingsPanel {
         // so clicks and touches cannot reach the game cards underneath it.
         root.addComponent(BlockInputEvents);
 
-        const overlay = root.addComponent(Graphics);
-        overlay.fillColor = COLOR.overlay;
-        overlay.rect(-500, -1000, 1000, 2000);
-        overlay.fill();
+        root.addComponent(Graphics);
 
         const panel = new Node('SettingsPanel');
         panel.layer = root.layer;
@@ -375,28 +315,35 @@ export class LobbySettingsPanel {
     private readonly open = (): void => {
         const root = this.root;
         const panel = this.panel;
-        if (!root || !panel?.isValid) {
+        if (!root?.isValid || !panel?.isValid || this.opened) {
             return;
         }
+        this.opened = true;
         const transitionToken = ++this.transitionToken;
         this.refresh();
         this.services?.feedback.vibrate('light');
         this.services?.feedback.play('popup');
-        if (this.settingsEntry) {
-            this.settingsEntry.active = false;
-        }
         root.active = true;
         Tween.stopAllByTarget(panel);
+        Tween.stopAllByTarget(this.overlay);
+        this.overlay.opacity = 0;
+        this.drawOverlay();
         panel.setScale(
-            SETTINGS_PANEL_COLLAPSED_SCALE_X,
-            SETTINGS_PANEL_COLLAPSED_SCALE_Y,
+            LOBBY_MODAL_MOTION.collapsedScaleX,
+            LOBBY_MODAL_MOTION.collapsedScaleY,
             1,
         );
+        tween(this.overlay)
+            .to(LOBBY_MODAL_MOTION.openDuration, { opacity: 1 }, {
+                easing: LOBBY_MODAL_MOTION.overlayOpenEasing,
+                onUpdate: this.drawOverlay,
+            })
+            .start();
         tween(panel)
             .to(
-                SETTINGS_PANEL_OPEN_DURATION,
+                LOBBY_MODAL_MOTION.openDuration,
                 { scale: new Vec3(1, 1, 1) },
-                { easing: 'backOut' },
+                { easing: LOBBY_MODAL_MOTION.openEasing },
             )
             .call(() => {
                 if (transitionToken === this.transitionToken && panel.isValid) {
@@ -409,21 +356,23 @@ export class LobbySettingsPanel {
     private readonly close = (): void => {
         const root = this.root;
         const panel = this.panel;
-        if (!root?.active || !panel?.isValid) {
+        if (!this.opened || !root?.isValid || !panel?.isValid) {
             return;
         }
+        this.opened = false;
         ++this.transitionToken;
         this.services?.feedback.play('uiButton');
         Tween.stopAllByTarget(panel);
+        Tween.stopAllByTarget(this.overlay);
         panel.setScale(1, 1, 1);
         root.active = false;
-        if (this.settingsEntry?.isValid) {
-            this.settingsEntry.active = true;
-        }
     };
 
-    private readonly handleCanvasResize = (): void => {
-        this.layoutSettingsEntry();
+    private readonly drawOverlay = (): void => {
+        const root = this.root;
+        if (!root?.isValid) return;
+        root.getComponent(Widget)!.updateAlignment();
+        drawLobbyModalOverlay(root, COLOR.overlay, this.overlay.opacity);
     };
 
     private toggle(key: SettingKey): void {

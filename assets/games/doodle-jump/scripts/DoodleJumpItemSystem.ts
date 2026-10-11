@@ -2,6 +2,7 @@ import type {
     DoodleJumpGameplayConfig,
     DoodleJumpItemType,
 } from './DoodleJumpConfig';
+import { referenceFlightAcceleration, stepDoodleJumpVertical } from './DoodleJumpReferenceRules';
 import type { DoodleJumpRandomStreams } from './DoodleJumpRandom';
 import type {
     DoodleJumpWorldIndex,
@@ -23,9 +24,13 @@ export interface DoodleJumpItemSnapshot {
     readonly radius: number;
     readonly anchorPlatformId: string;
     readonly phase: number;
+    readonly activationCount?: number;
+    readonly compressionFrames?: number;
 }
 
 export interface DoodleJumpItemStatusSnapshot {
+    /** Completed tickets; capacity-deferred tickets must survive a save. */
+    readonly evaluatedPlatformIds?: readonly string[];
     readonly landingPower?: DoodleJumpLandingPower;
     readonly flightPower?: DoodleJumpFlightPower;
     readonly flightRemainingSeconds: number;
@@ -34,7 +39,15 @@ export interface DoodleJumpItemStatusSnapshot {
     readonly trampolineJumpProgress: number;
     readonly headStartRemainingSeconds: number;
     readonly itemPickupCount: number;
+    readonly jetpackRocketPickupCount: number;
     readonly usedHeadStart: boolean;
+    readonly springShoesRemainingSeconds: number;
+    readonly shoeBounceFrame: number;
+    readonly trampolineCompressionFrames: number;
+    readonly flightVelocity: number;
+    readonly inheritedFlightVelocity: boolean;
+    readonly flightJustStarted: boolean;
+    readonly pendingLaunchVelocity?: number;
 }
 
 export interface DoodleJumpItemPhysics {
@@ -42,6 +55,25 @@ export interface DoodleJumpItemPhysics {
     readonly fixedVerticalVelocity?: number;
     readonly minimumVerticalVelocity?: number;
     readonly platformCollisionEnabled: boolean;
+    readonly initialVerticalVelocity?: number;
+}
+
+/** The same takeover rule drives live motion and the generation forecast. */
+function flightMotion(
+    config: DoodleJumpGameplayConfig, type: DoodleJumpFlightPower, velocityY: number,
+    flightVelocity: number, inherited: boolean, justStarted: boolean, frame: number,
+): Readonly<{ gravity: number; initialVerticalVelocity?: number; inherited: boolean }> {
+    let initialVerticalVelocity: number | undefined;
+    if (justStarted) {
+        initialVerticalVelocity = type === 'rocket' ? 0 : Math.max(velocityY, flightVelocity);
+        velocityY = initialVerticalVelocity;
+        inherited = velocityY > flightVelocity;
+    }
+    if (inherited && velocityY <= flightVelocity) {
+        inherited = false; initialVerticalVelocity = flightVelocity;
+    }
+    return { initialVerticalVelocity, inherited, gravity: inherited ? config.player.gravity
+        : referenceFlightAcceleration(type, frame + 1e-7) * 3600 * config.design.width / 320 };
 }
 
 export interface DoodleJumpItemEvent {
@@ -61,6 +93,8 @@ interface MutableItem {
     y: number;
     anchorOffsetX: number;
     anchorOffsetY: number;
+    activationCount: number;
+    compressionFrames: number;
 }
 
 interface MutableItemPresentation {
@@ -71,6 +105,8 @@ interface MutableItemPresentation {
     radius: number;
     anchorPlatformId: string;
     phase: number;
+    activationCount: number;
+    compressionFrames: number;
 }
 
 interface MutableItemStatus {
@@ -82,7 +118,14 @@ interface MutableItemStatus {
     trampolineJumpProgress: number;
     headStartRemainingSeconds: number;
     itemPickupCount: number;
+    jetpackRocketPickupCount: number;
     usedHeadStart: boolean;
+    springShoesRemainingSeconds: number;
+    shoeBounceFrame: number;
+    trampolineCompressionFrames: number;
+    flightVelocity: number;
+    inheritedFlightVelocity: boolean;
+    flightJustStarted: boolean;
 }
 
 const FLIGHT_TYPES: readonly DoodleJumpFlightPower[] = Object.freeze([
@@ -90,15 +133,6 @@ const FLIGHT_TYPES: readonly DoodleJumpFlightPower[] = Object.freeze([
     'propeller-hat',
     'rocket',
 ]);
-const ITEM_SELECTION_TYPES: readonly DoodleJumpItemType[] = Object.freeze([
-    'spring',
-    'trampoline',
-    'jetpack',
-    'propeller-hat',
-    'rocket',
-    'shield',
-]);
-
 function isFlightPower(type: DoodleJumpItemType): type is DoodleJumpFlightPower {
     return FLIGHT_TYPES.indexOf(type as DoodleJumpFlightPower) >= 0;
 }
@@ -117,9 +151,18 @@ export class DoodleJumpItemSystem {
         trampolineJumpProgress: 0,
         headStartRemainingSeconds: 0,
         itemPickupCount: 0,
+        jetpackRocketPickupCount: 0,
         usedHeadStart: false,
+        springShoesRemainingSeconds: 0, shoeBounceFrame: -1, trampolineCompressionFrames: 0,
+        flightVelocity: 0, inheritedFlightVelocity: false, flightJustStarted: false,
     };
-    private readonly physicsByPower: Readonly<Record<'none' | 'head-start' | DoodleJumpFlightPower, DoodleJumpItemPhysics>>;
+    private springShoesRemainingSeconds = 0;
+    private shoeBounceFrame = -1;
+    private trampolineCompressionFrames = 0;
+    private pendingLaunchVelocity?: number;
+    private flightVelocity = 0;
+    private inheritedFlightVelocity = false;
+    private flightJustStarted = false;
     private nextItemId = 1;
     private landingPower?: DoodleJumpLandingPower;
     private flightPower?: DoodleJumpFlightPower;
@@ -130,34 +173,13 @@ export class DoodleJumpItemSystem {
     private trampolineJumpDurationSeconds = 0;
     private headStartRemainingSeconds = 0;
     private itemPickupCount = 0;
+    private jetpackRocketPickupCount = 0;
     private usedHeadStart = false;
 
     constructor(
         private readonly config: DoodleJumpGameplayConfig,
         private readonly randomStreams: DoodleJumpRandomStreams,
-    ) {
-        // 同一局的配置不可变，按道具状态复用只读物理参数。
-        this.physicsByPower = Object.freeze({
-            'none': Object.freeze({ gravity: config.player.gravity, platformCollisionEnabled: true }),
-            'head-start': Object.freeze({
-                gravity: 0, fixedVerticalVelocity: config.items.headStart.verticalVelocity,
-                platformCollisionEnabled: false,
-            }),
-            'jetpack': Object.freeze({
-                gravity: 0, fixedVerticalVelocity: config.items.jetpack.verticalVelocity,
-                platformCollisionEnabled: false,
-            }),
-            'rocket': Object.freeze({
-                gravity: 0, fixedVerticalVelocity: config.items.rocket.verticalVelocity,
-                platformCollisionEnabled: false,
-            }),
-            'propeller-hat': Object.freeze({
-                gravity: -config.items.propellerHat.gravity,
-                minimumVerticalVelocity: config.items.propellerHat.minimumVerticalVelocity,
-                platformCollisionEnabled: true,
-            }),
-        });
-    }
+    ) {}
 
     reset(): void {
         this.items.length = 0;
@@ -173,10 +195,16 @@ export class DoodleJumpItemSystem {
         this.trampolineJumpDurationSeconds = 0;
         this.headStartRemainingSeconds = 0;
         this.itemPickupCount = 0;
+        this.jetpackRocketPickupCount = 0;
         this.usedHeadStart = false;
+        this.springShoesRemainingSeconds = 0; this.shoeBounceFrame = -1;
+        this.trampolineCompressionFrames = 0; this.pendingLaunchVelocity = undefined;
+        this.flightVelocity = 0; this.inheritedFlightVelocity = false; this.flightJustStarted = false;
         const preset = this.config.items.debugPowerPreset;
         if (preset === 'spring' || preset === 'trampoline') {
             this.landingPower = preset;
+        } else if (preset === 'spring-shoes') {
+            this.springShoesRemainingSeconds = this.config.items.springShoes.durationSeconds;
         } else if (preset === 'shield') {
             this.shieldRemainingSeconds = this.config.items.shield.durationSeconds;
         } else if (preset === 'head-start') {
@@ -195,16 +223,23 @@ export class DoodleJumpItemSystem {
         this.items.length = 0;
         this.events.length = 0;
         this.evaluatedPlatformIds.clear();
-        world.platforms.forEach((platform) => this.evaluatedPlatformIds.add(platform.id));
+        const evaluatedIds = status.evaluatedPlatformIds
+            ?? world.platforms.map((platform) => platform.id);
+        evaluatedIds.forEach((id) => {
+            if (world.platformById.has(id)) this.evaluatedPlatformIds.add(id);
+        });
         let maximumId = 0;
         snapshots.forEach((snapshot) => {
             if (!world.platformById.has(snapshot.anchorPlatformId)) return;
+            this.evaluatedPlatformIds.add(snapshot.anchorPlatformId);
             const parsedId = Number(snapshot.id.replace(/^I/, ''));
             if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
             this.items.push({
                 ...snapshot,
                 anchorOffsetX: Number.NaN,
                 anchorOffsetY: Number.NaN,
+                activationCount: snapshot.activationCount ?? 0,
+                compressionFrames: snapshot.compressionFrames ?? 0,
             });
         });
         this.nextItemId = maximumId + 1;
@@ -227,7 +262,15 @@ export class DoodleJumpItemSystem {
             * Math.max(0, Math.min(1, status.trampolineJumpProgress));
         this.headStartRemainingSeconds = Math.max(0, status.headStartRemainingSeconds);
         this.itemPickupCount = Math.max(0, Math.floor(status.itemPickupCount));
+        this.jetpackRocketPickupCount = Math.max(0, Math.floor(status.jetpackRocketPickupCount));
         this.usedHeadStart = status.usedHeadStart;
+        this.springShoesRemainingSeconds = Math.max(0, status.springShoesRemainingSeconds);
+        this.shoeBounceFrame = status.shoeBounceFrame;
+        this.trampolineCompressionFrames = status.trampolineCompressionFrames;
+        this.flightVelocity = status.flightVelocity;
+        this.inheritedFlightVelocity = status.inheritedFlightVelocity;
+        this.flightJustStarted = status.flightJustStarted;
+        this.pendingLaunchVelocity = status.pendingLaunchVelocity;
     }
 
     updateTimers(
@@ -237,25 +280,29 @@ export class DoodleJumpItemSystem {
         playerVelocityY: number,
     ): void {
         const delta = Math.max(0, deltaSeconds);
+        for (const item of this.items) item.compressionFrames = Math.max(0, item.compressionFrames - 1);
         if (this.flightPower) {
+            const frame = (this.getPoweredDurationSeconds(this.flightPower) - this.flightRemainingSeconds) * 60;
+            this.flightVelocity += referenceFlightAcceleration(this.flightPower, frame + 1e-7)
+                * 3600 * (this.config.design.width / 320) * delta;
             this.flightRemainingSeconds = Math.max(0, this.flightRemainingSeconds - delta);
-            // Keep the original powered phase and trajectory unchanged. Once
-            // powered lift ends, retain the equipment while normal gravity
-            // performs the already-existing coast, then detach at the apex.
-            if (this.flightRemainingSeconds <= 0 && playerVelocityY <= 0) {
+            if (this.flightRemainingSeconds < 1e-7) {
                 const ended = this.flightPower;
-                this.flightPower = undefined;
-                this.events.push(Object.freeze({
-                    type: 'power-end',
-                    itemType: ended,
-                    x: playerX,
-                    y: playerY,
-                }));
+                this.flightPower = undefined; this.flightRemainingSeconds = 0;
+                this.events.push(Object.freeze({ type: 'power-end', itemType: ended, x: playerX, y: playerY }));
             }
         }
-        this.shieldRemainingSeconds = Math.max(0, this.shieldRemainingSeconds - delta);
-        if (this.trampolineJumpActive) this.trampolineJumpElapsedSeconds += delta;
-        this.headStartRemainingSeconds = Math.max(0, this.headStartRemainingSeconds - delta);
+        this.shieldRemainingSeconds = this.countdown(this.shieldRemainingSeconds, delta);
+        this.springShoesRemainingSeconds = this.countdown(this.springShoesRemainingSeconds, delta);
+        if (this.shoeBounceFrame >= 0 && ++this.shoeBounceFrame >= 5) this.shoeBounceFrame = -1;
+        if (this.trampolineCompressionFrames > 0) {
+            this.trampolineCompressionFrames -= 1;
+            if (this.trampolineCompressionFrames === 0) this.pendingLaunchVelocity = this.config.items.trampoline.bounceVelocity;
+        } else if (this.trampolineJumpActive) {
+            this.trampolineJumpElapsedSeconds += delta;
+            if (playerVelocityY <= 0 && !this.pendingLaunchVelocity) this.cancelTrampolineJump();
+        }
+        this.headStartRemainingSeconds = this.countdown(this.headStartRemainingSeconds, delta);
     }
 
     updateExisting(
@@ -283,59 +330,124 @@ export class DoodleJumpItemSystem {
     }
 
     resolvePickups(
-        playerX: number,
-        playerY: number,
-        playerWidth: number,
-        playerHeight: number,
-    ): void {
-        const halfWidth = playerWidth / 2;
-        const halfHeight = playerHeight / 2;
+        playerX: number, playerY: number, playerWidth: number, playerHeight: number,
+        previousFootY = playerY - playerHeight / 2, velocityY = 0,
+    ): Readonly<{ velocityY: number; surfaceY?: number; playerX?: number; playerY?: number }> | undefined {
+        let result: Readonly<{ velocityY: number; surfaceY?: number; playerX?: number; playerY?: number }> | undefined;
         for (let index = this.items.length - 1; index >= 0; index -= 1) {
             const item = this.items[index];
-            const closestX = Math.max(playerX - halfWidth, Math.min(item.x, playerX + halfWidth));
-            const closestY = Math.max(playerY - halfHeight, Math.min(item.y, playerY + halfHeight));
-            const deltaX = item.x - closestX;
-            const deltaY = item.y - closestY;
-            if (deltaX * deltaX + deltaY * deltaY > item.radius * item.radius) continue;
-            if (this.hasFlightInvincibility() && isFlightPower(item.type)) continue;
-            this.items.splice(index, 1);
-            this.itemPickupCount += 1;
-            this.applyPickup(item.type, item.x, item.y);
+            const [width, height] = this.itemCollisionSize(item.type);
+            const surfaceY = item.y + height / 2;
+            const footY = playerY - playerHeight / 2;
+            if (Math.abs(item.x - playerX) > width / 2 + playerWidth / 2) continue;
+            const landingItem = item.type === 'spring' || item.type === 'trampoline' || item.type === 'spring-shoes';
+            if (landingItem) {
+                if (velocityY >= 0 || footY >= previousFootY || previousFootY < surfaceY || footY > surfaceY
+                    || item.compressionFrames > 0 || result) continue;
+            } else if (playerY + playerHeight / 2 < item.y - height / 2 || footY > surfaceY) continue;
+            if (this.hasFlightInvincibility()) continue;
+            // Native kind 5 stays attached after its 3-frame compression. It is
+            // a reusable landing surface, unlike spring kind 0 -> spent kind 1.
+            if (item.type !== 'trampoline') this.items.splice(index, 1);
+            if (item.activationCount === 0) {
+                this.itemPickupCount += 1;
+                this.events.push(Object.freeze({ type: 'pickup', itemType: item.type, x: item.x, y: item.y }));
+            }
+            item.activationCount += 1;
+            if (item.type === 'trampoline') item.compressionFrames = 3;
+            if (item.type === 'spring' || item.type === 'trampoline') {
+                this.landingPower = item.type;
+                result = { velocityY: this.consumeLandingPower(playerX, surfaceY) ?? 0, surfaceY };
+            } else if (item.type === 'shield') {
+                this.shieldRemainingSeconds = this.config.items.shield.durationSeconds;
+            } else if (item.type === 'spring-shoes') {
+                this.springShoesRemainingSeconds = this.config.items.springShoes.durationSeconds;
+            } else {
+                if (item.type === 'jetpack' || item.type === 'rocket') this.jetpackRocketPickupCount += 1;
+                this.activateFlight(item.type);
+                const initial = item.type === 'rocket' ? 0 : Math.max(velocityY, this.flightVelocity);
+                this.inheritedFlightVelocity = initial > this.flightVelocity;
+                this.flightJustStarted = false;
+                result = item.type === 'rocket' ? { velocityY: initial, playerX: item.x, playerY: item.y }
+                    : { velocityY: initial };
+            }
         }
+        return result;
     }
 
-    getPhysics(): DoodleJumpItemPhysics {
-        if (this.headStartRemainingSeconds > 0) return this.physicsByPower['head-start'];
-        if (this.flightPower && this.flightRemainingSeconds > 0) {
-            return this.physicsByPower[this.flightPower];
+    getPhysics(velocityY = this.config.player.bounceVelocity): DoodleJumpItemPhysics {
+        if (this.headStartRemainingSeconds > 0) return { gravity: 0,
+            fixedVerticalVelocity: this.config.items.headStart.verticalVelocity, platformCollisionEnabled: false };
+        if (this.pendingLaunchVelocity !== undefined) {
+            const initialVerticalVelocity = this.pendingLaunchVelocity;
+            this.pendingLaunchVelocity = undefined;
+            return { gravity: this.config.player.gravity, initialVerticalVelocity, platformCollisionEnabled: false };
         }
-        return this.physicsByPower.none;
+        if (this.trampolineCompressionFrames > 0) return { gravity: 0, fixedVerticalVelocity: 0, platformCollisionEnabled: false };
+        if (this.shoeBounceFrame >= 0) {
+            // The native boot compresses for two frames, then releases through 8/11/14 px per frame.
+            const velocities = [-4, -4, 8, 11, 14];
+            return { gravity: 0, fixedVerticalVelocity: velocities[this.shoeBounceFrame] / 14 * this.config.items.springShoes.bounceVelocity,
+                platformCollisionEnabled: false };
+        }
+        if (!this.flightPower) return { gravity: this.config.player.gravity, platformCollisionEnabled: true };
+        const frame = (this.getPoweredDurationSeconds(this.flightPower) - this.flightRemainingSeconds) * 60;
+        const motion = flightMotion(this.config, this.flightPower, velocityY, this.flightVelocity,
+            this.inheritedFlightVelocity, this.flightJustStarted, frame);
+        this.inheritedFlightVelocity = motion.inherited; this.flightJustStarted = false;
+        return { gravity: motion.gravity, initialVerticalVelocity: motion.initialVerticalVelocity, platformCollisionEnabled: false };
+    }
+
+    /** Includes the normal-gravity coast after power expiry; this never changes live item state. */
+    forecastFlightApex(playerY: number, velocityY: number): number | undefined {
+        const type = this.flightPower;
+        if (!type) return undefined;
+        const delta = this.config.fixedStep.seconds;
+        const duration = this.getPoweredDurationSeconds(type);
+        const scale = this.config.design.width / 320;
+        let remaining = this.flightRemainingSeconds;
+        let flightVelocity = this.flightVelocity;
+        let inherited = this.inheritedFlightVelocity;
+        let justStarted = this.flightJustStarted;
+        let y = playerY; let apex = y;
+        while (remaining > 1e-7) {
+            const frame = (duration - remaining) * 60;
+            const motion = flightMotion(this.config, type, velocityY, flightVelocity, inherited, justStarted, frame);
+            inherited = motion.inherited; justStarted = false;
+            const step = stepDoodleJumpVertical(motion.initialVerticalVelocity ?? velocityY,
+                motion.gravity, delta, this.config.player.terminalFallVelocity);
+            y += step.displacement; velocityY = step.velocity;
+            apex = Math.max(apex, y);
+            flightVelocity += referenceFlightAcceleration(type, frame + 1e-7) * 3600 * scale * delta;
+            remaining -= delta;
+        }
+        if (velocityY > 0) {
+            const coastFrames = Math.ceil(velocityY / (-this.config.player.gravity * delta));
+            const coast = stepDoodleJumpVertical(velocityY, this.config.player.gravity,
+                coastFrames * delta, this.config.player.terminalFallVelocity);
+            apex = Math.max(apex, y + coast.displacement);
+        }
+        return apex;
     }
 
     consumeLandingPower(x: number, y: number): number | undefined {
         const power = this.landingPower;
-        this.trampolineJumpActive = false;
-        this.trampolineJumpElapsedSeconds = 0;
-        this.trampolineJumpDurationSeconds = 0;
-        if (!power) return undefined;
         this.landingPower = undefined;
-        this.events.push(Object.freeze({
-            type: 'landing-boost',
-            itemType: power,
-            x,
-            y,
-        }));
+        this.cancelTrampolineJump();
+        if (power) this.events.push(Object.freeze({ type: 'landing-boost', itemType: power, x, y }));
         if (power === 'trampoline') {
-            const bounceVelocity = this.config.items.trampoline.bounceVelocity;
-            const gravityMagnitude = Math.max(1, Math.abs(this.config.player.gravity));
+            this.trampolineCompressionFrames = 3;
             this.trampolineJumpActive = true;
-            // Complete the visual turn exactly at the ballistic apex. The
-            // fixed-step velocity crosses from positive to non-positive in the
-            // same step that this elapsed duration reaches one.
-            this.trampolineJumpDurationSeconds = bounceVelocity / gravityMagnitude;
-            return bounceVelocity;
+            this.trampolineJumpDurationSeconds = this.config.items.trampoline.bounceVelocity / Math.abs(this.config.player.gravity);
+            return 0;
         }
-        return this.config.items.spring.bounceVelocity;
+        if (power === 'spring') return this.config.items.spring.bounceVelocity;
+        if (this.springShoesRemainingSeconds > 0) {
+            this.shoeBounceFrame = 0;
+            this.events.push(Object.freeze({ type: 'landing-boost', itemType: 'spring-shoes', x, y }));
+            return 0;
+        }
+        return undefined;
     }
 
     activateHeadStart(): void {
@@ -373,6 +485,7 @@ export class DoodleJumpItemSystem {
         this.trampolineJumpActive = false;
         this.trampolineJumpElapsedSeconds = 0;
         this.trampolineJumpDurationSeconds = 0;
+        this.trampolineCompressionFrames = 0; this.pendingLaunchVelocity = undefined;
     }
 
     drainEvents(): readonly DoodleJumpItemEvent[] {
@@ -389,6 +502,8 @@ export class DoodleJumpItemSystem {
             radius: item.radius,
             anchorPlatformId: item.anchorPlatformId,
             phase: item.phase,
+            activationCount: item.activationCount,
+            compressionFrames: item.compressionFrames,
         })));
     }
 
@@ -405,6 +520,8 @@ export class DoodleJumpItemSystem {
                     radius: item.radius,
                     anchorPlatformId: item.anchorPlatformId,
                     phase: item.phase,
+                    activationCount: item.activationCount,
+                    compressionFrames: item.compressionFrames,
                 };
                 this.presentationItems[index] = presentation;
             }
@@ -415,6 +532,8 @@ export class DoodleJumpItemSystem {
             presentation.radius = item.radius;
             presentation.anchorPlatformId = item.anchorPlatformId;
             presentation.phase = item.phase;
+            presentation.activationCount = item.activationCount;
+            presentation.compressionFrames = item.compressionFrames;
         }
         this.presentationItems.length = this.items.length;
         return this.presentationItems;
@@ -422,6 +541,7 @@ export class DoodleJumpItemSystem {
 
     getStatus(): DoodleJumpItemStatusSnapshot {
         return Object.freeze({
+            evaluatedPlatformIds: Object.freeze(Array.from(this.evaluatedPlatformIds)),
             landingPower: this.landingPower,
             flightPower: this.flightPower,
             flightRemainingSeconds: this.flightRemainingSeconds,
@@ -436,7 +556,12 @@ export class DoodleJumpItemSystem {
                 : 0,
             headStartRemainingSeconds: this.headStartRemainingSeconds,
             itemPickupCount: this.itemPickupCount,
+            jetpackRocketPickupCount: this.jetpackRocketPickupCount,
             usedHeadStart: this.usedHeadStart,
+            springShoesRemainingSeconds: this.springShoesRemainingSeconds, shoeBounceFrame: this.shoeBounceFrame,
+            trampolineCompressionFrames: this.trampolineCompressionFrames, flightVelocity: this.flightVelocity,
+            inheritedFlightVelocity: this.inheritedFlightVelocity, flightJustStarted: this.flightJustStarted,
+            pendingLaunchVelocity: this.pendingLaunchVelocity,
         });
     }
 
@@ -455,7 +580,14 @@ export class DoodleJumpItemSystem {
             : 0;
         this.presentationStatus.headStartRemainingSeconds = this.headStartRemainingSeconds;
         this.presentationStatus.itemPickupCount = this.itemPickupCount;
+        this.presentationStatus.jetpackRocketPickupCount = this.jetpackRocketPickupCount;
         this.presentationStatus.usedHeadStart = this.usedHeadStart;
+        this.presentationStatus.springShoesRemainingSeconds = this.springShoesRemainingSeconds;
+        this.presentationStatus.shoeBounceFrame = this.shoeBounceFrame;
+        this.presentationStatus.trampolineCompressionFrames = this.trampolineCompressionFrames;
+        this.presentationStatus.flightVelocity = this.flightVelocity;
+        this.presentationStatus.inheritedFlightVelocity = this.inheritedFlightVelocity;
+        this.presentationStatus.flightJustStarted = this.flightJustStarted;
         return this.presentationStatus;
     }
 
@@ -497,29 +629,29 @@ export class DoodleJumpItemSystem {
         ));
     }
 
-    private applyPickup(type: DoodleJumpItemType, x: number, y: number): void {
-        this.events.push(Object.freeze({ type: 'pickup', itemType: type, x, y }));
-        if (type === 'spring') {
-            if (this.landingPower !== 'trampoline') this.landingPower = 'spring';
-            return;
-        }
-        if (type === 'trampoline') {
-            this.landingPower = 'trampoline';
-            return;
-        }
-        if (type === 'shield') {
-            this.shieldRemainingSeconds = this.config.items.shield.durationSeconds;
-            return;
-        }
-        this.activateFlight(type);
+    private countdown(remaining: number, delta: number): number {
+        const next = remaining - delta;
+        return next < 1e-7 ? 0 : next;
     }
 
     private activateFlight(type: DoodleJumpFlightPower): void {
-        this.cancelTrampolineJump();
+        this.cancelTrampolineJump(); this.shoeBounceFrame = -1;
         this.headStartRemainingSeconds = 0;
         this.flightPower = type;
         this.flightRemainingSeconds = this.getPoweredDurationSeconds(type);
+        this.flightVelocity = type === 'jetpack' ? this.config.items.jetpack.verticalVelocity
+            : type === 'propeller-hat' ? this.config.items.propellerHat.minimumVerticalVelocity : 0;
+        this.inheritedFlightVelocity = false; this.flightJustStarted = true;
         this.events.push(Object.freeze({ type: 'power-start', itemType: type, x: 0, y: 0 }));
+    }
+
+    private itemCollisionSize(type: DoodleJumpItemType): readonly [number, number] {
+        const scale = this.config.design.width / 320;
+        const sizes: Readonly<Record<DoodleJumpItemType, readonly [number, number]>> = {
+            spring: [18, 20], trampoline: [28, 16], jetpack: [26, 34], 'propeller-hat': [30, 44],
+            shield: [36, 62], 'spring-shoes': [16, 20], rocket: [21, 25],
+        };
+        return [sizes[type][0] * scale, sizes[type][1] * scale];
     }
 
     private getPoweredDurationSeconds(type: DoodleJumpFlightPower): number {
@@ -539,19 +671,16 @@ export class DoodleJumpItemSystem {
         }
     }
 
-    private updateAttachedItems(
-        platformById: ReadonlyMap<string, DoodleJumpItemPlatform>,
-    ): void {
-        this.items.forEach((item) => {
+    private updateAttachedItems(platformById: ReadonlyMap<string, DoodleJumpItemPlatform>): void {
+        for (let index = this.items.length - 1; index >= 0; index -= 1) {
+            const item = this.items[index];
             const platform = platformById.get(item.anchorPlatformId);
-            if (!platform || !platform.collisionEnabled || platform.consumed) return;
+            if (!platform || platform.consumed) { this.items.splice(index, 1); continue; }
             if (!Number.isFinite(item.anchorOffsetX) || !Number.isFinite(item.anchorOffsetY)) {
-                item.anchorOffsetX = item.x - platform.x;
-                item.anchorOffsetY = item.y - platform.y;
+                item.anchorOffsetX = item.x - platform.x; item.anchorOffsetY = item.y - platform.y;
             }
-            item.x = platform.x + item.anchorOffsetX;
-            item.y = platform.y + item.anchorOffsetY;
-        });
+            item.x = platform.x + item.anchorOffsetX; item.y = platform.y + item.anchorOffsetY;
+        }
     }
 
     private purgeEvaluatedPlatforms(
@@ -562,123 +691,34 @@ export class DoodleJumpItemSystem {
         });
     }
 
-    private evaluateNewPlatforms(
-        platforms: readonly DoodleJumpItemPlatform[],
-        cameraBottomY: number,
-        cameraTopY: number,
-        occupiedBodies: readonly DoodleJumpItemOccupiedBody[],
-    ): void {
+    private evaluateNewPlatforms(platforms: readonly DoodleJumpItemPlatform[], cameraBottomY: number,
+        _cameraTopY: number, _occupiedBodies: readonly DoodleJumpItemOccupiedBody[]): void {
         if (!this.config.items.enabled) return;
-        for (let index = 0; index < platforms.length; index += 1) {
-            const platform = platforms[index];
+        for (const platform of platforms) {
             if (this.evaluatedPlatformIds.has(platform.id)) continue;
-            if (platform.y < cameraBottomY
-                || platform.y <= cameraTopY + this.config.items.spawnAboveScreenMargin) {
+            if (platform.spawnPlan?.content !== 'item' || !platform.spawnPlan.itemType
+                || platform.y < cameraBottomY || platform.consumed) {
                 this.evaluatedPlatformIds.add(platform.id);
                 continue;
             }
+            // Opening rows can already be on screen. Their boost was used to
+            // generate the next gap, so visibility must never cancel the ticket.
+            if (this.items.length >= this.config.items.maximumActive) continue;
+            const type = this.config.items.typeOverride === 'auto' ? platform.spawnPlan.itemType : this.config.items.typeOverride;
+            this.items.push(this.createItem(type, platform));
             this.evaluatedPlatformIds.add(platform.id);
-            if (platform.spawnPlan?.content !== 'item'
-                || this.items.length >= this.config.items.maximumActive
-                || !platform.collisionEnabled
-                || platform.consumed
-                || platform.type === 'breakable'
-                || platform.type === 'disappearing'
-                || platform.type === 'exploding') continue;
-            if (occupiedBodies.some((body) => body.anchorPlatformId === platform.id)) continue;
-            const heightMeters = Math.max(0, (platform.y - this.startWorldY()) / 100);
-            const type = this.pickItemType(heightMeters);
-            if (!type) continue;
-            const item = this.createItem(type, platform, occupiedBodies);
-            if (!item) continue;
-            if (this.items.some((candidate) => (
-                Math.abs(candidate.y - item.y) < this.config.items.minimumVerticalSeparation
-            ))) continue;
-            this.items.push(item);
         }
     }
 
-    private pickItemType(heightMeters: number): DoodleJumpItemType | undefined {
-        const override = this.config.items.typeOverride;
-        if (override !== 'auto') return this.isUnlocked(override, heightMeters) ? override : undefined;
-        const band = this.config.items.weightBands.find((candidate) => (
-            heightMeters >= candidate.startMeters && heightMeters < candidate.endMeters
-        ));
-        if (!band) return undefined;
-        let total = 0;
-        let fallback: DoodleJumpItemType | undefined;
-        for (let index = 0; index < ITEM_SELECTION_TYPES.length; index += 1) {
-            const type = ITEM_SELECTION_TYPES[index];
-            const weight = this.itemWeight(type, band);
-            if (weight <= 0 || !this.isUnlocked(type, heightMeters)) continue;
-            total += weight;
-            fallback = type;
-        }
-        if (total <= 0) return undefined;
-        let roll = this.randomStreams.next('item') * total;
-        for (let index = 0; index < ITEM_SELECTION_TYPES.length; index += 1) {
-            const type = ITEM_SELECTION_TYPES[index];
-            const weight = this.itemWeight(type, band);
-            if (weight <= 0 || !this.isUnlocked(type, heightMeters)) continue;
-            roll -= weight;
-            if (roll < 0) return type;
-        }
-        return fallback;
-    }
-
-    private itemWeight(
-        type: DoodleJumpItemType,
-        band: DoodleJumpGameplayConfig['items']['weightBands'][number],
-    ): number {
-        if (type === 'spring') return band.spring;
-        if (type === 'trampoline') return band.trampoline;
-        if (type === 'jetpack') return band.jetpack;
-        if (type === 'propeller-hat') return band.propellerHat;
-        if (type === 'rocket') return band.rocket;
-        return band.shield;
-    }
-
-    private createItem(
-        type: DoodleJumpItemType,
-        platform: DoodleJumpItemPlatform,
-        occupiedBodies: readonly DoodleJumpItemOccupiedBody[],
-    ): MutableItem | undefined {
-        const radius = this.config.items.pickupRadius;
-        const safeHalfWidth = Math.max(0, platform.width / 2 - radius - 8);
-        const offsetX = (this.randomStreams.next('item') * 2 - 1) * safeHalfWidth;
-        const offsetY = type === 'spring' || type === 'trampoline' ? radius
-            : this.config.items.minimumAbovePlatform
-            + this.randomStreams.next('item')
-            * (this.config.items.maximumAbovePlatform - this.config.items.minimumAbovePlatform);
-        const x = platform.x + offsetX;
-        const y = platform.y + offsetY;
-        if (occupiedBodies.some((body) => (
-            Math.abs(body.x - x) <= body.width / 2 + radius + 12
-            && Math.abs(body.y - y) <= body.height / 2 + radius + 12
-        ))) return undefined;
-        const id = `I${this.nextItemId}`;
-        this.nextItemId += 1;
-        return {
-            id,
-            type,
-            x,
-            y,
-            radius,
-            anchorPlatformId: platform.id,
-            phase: this.randomStreams.next('item'),
-            anchorOffsetX: offsetX,
-            anchorOffsetY: offsetY,
-        };
-    }
-
-    private isUnlocked(type: DoodleJumpItemType, heightMeters: number): boolean {
-        const unlock = type === 'spring' ? this.config.items.spring.unlockHeightMeters
-            : type === 'trampoline' ? this.config.items.trampoline.unlockHeightMeters
-                : type === 'jetpack' ? this.config.items.jetpack.unlockHeightMeters
-                    : type === 'propeller-hat' ? this.config.items.propellerHat.unlockHeightMeters
-                        : type === 'rocket' ? this.config.items.rocket.unlockHeightMeters
-                            : this.config.items.shield.unlockHeightMeters;
-        return heightMeters >= unlock;
+    private createItem(type: DoodleJumpItemType, platform: DoodleJumpItemPlatform): MutableItem {
+        const [width, height] = this.itemCollisionSize(type);
+        const offsetX = platform.spawnPlan?.itemOffsetX
+            ?? (this.randomStreams.next('item') * 2 - 1) * Math.max(0, platform.width / 2 - width / 2 - 8);
+        const offsetY = platform.spawnPlan?.itemOffsetY ?? height / 2;
+        return { id: `I${this.nextItemId++}`, type, x: platform.x + offsetX, y: platform.y + offsetY,
+            radius: Math.max(width, height) / 2, anchorPlatformId: platform.id,
+            phase: this.randomStreams.next('item'), anchorOffsetX: offsetX, anchorOffsetY: offsetY,
+            activationCount: 0, compressionFrames: 0 };
     }
 
     private startWorldY(): number {

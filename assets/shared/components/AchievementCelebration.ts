@@ -1,5 +1,5 @@
-import { _decorator, BlockInputEvents, Color, Component, Graphics, Label, Node, Sprite, tween, Tween, UIOpacity,
-    UITransform, Vec3, view } from 'cc';
+import { _decorator, BlockInputEvents, Color, Component, Graphics, Label, Node, Sprite, tween,
+    Tween, UIOpacity, UITransform, Vec3, view } from 'cc';
 import type { GameManifest } from '../../runtime/GameManifest';
 import type { GameRuntime } from '../../runtime/GameRuntime';
 import type { AchievementService } from '../../services/achievements/AchievementService';
@@ -147,52 +147,22 @@ export class AchievementCelebration extends Component {
         root.addComponent(BlockInputEvents);
         root.addComponent(Graphics);
         this.overlay = root;
-        createAchievementImage(root, 'AwardBackground', 'award-background', 750, 1334, services.art, 'cover');
-        const rays = achievementNode(root, 'StarlightRays', 900, 900);
-        const rayGraphics = rays.addComponent(Graphics);
-        rayGraphics.fillColor = new Color(255, 225, 158, 10);
-        for (let i = 0; i < 18; i++) {
-            const angle = i * Math.PI * 2 / 18;
-            rayGraphics.moveTo(Math.cos(angle) * 150, Math.sin(angle) * 150);
-            rayGraphics.lineTo(Math.cos(angle - 0.035) * 530, Math.sin(angle - 0.035) * 530);
-            rayGraphics.lineTo(Math.cos(angle + 0.035) * 530, Math.sin(angle + 0.035) * 530);
-            rayGraphics.close(); rayGraphics.fill();
-        }
-        const rayOpacity = rays.addComponent(UIOpacity);
-        rayOpacity.opacity = 0;
-        tween(rayOpacity).delay(0.2).to(1.4, { opacity: locked ? 90 : 255 }, { easing: 'sineOut' }).start();
-        this.rays = rays;
+        this.createAwardBackdrop(root);
 
         const content = achievementNode(root, 'AwardContent', CONTENT_WIDTH, CONTENT_HEIGHT);
         this.content = content;
         const manifests = services.manifests();
         if (!locked) {
             const eyebrow = mode === 'award'
-                ? `你的第 ${manifests.filter(game => !!services.achievements.getRecord(game)?.unlockedAt).length} 座专属奖杯`
+                ? `你的第 ${services.achievements.collection(manifests).filter(game => !!services.achievements.getRecord(game)?.unlockedAt).length} 座专属奖杯`
                 : `我的珍藏 · ${achievementSerial(manifests, manifest)}`;
             achievementLabel(content, 'AwardEyebrow', eyebrow, 0, 458, 560, 34, 23, '#E6CB8E');
         }
-        if (mode === 'award') this.createRibbonTitle(content);
-        else this.createQuietTitle(content, locked ? '待点亮' : '荣耀回顾', locked);
+        this.createQuietTitle(content, mode === 'award' ? '成就达成' : locked ? '待点亮' : '荣耀回顾', locked);
 
         const stage = achievementNode(content, 'TrophyStage', 480, 480);
         stage.setPosition(0, STAGE_Y);
-        const glow = stage.addComponent(Graphics);
-        for (let i = 10; i >= 1; i--) {
-            glow.fillColor = new Color(247, 199, 107, 3 + Math.floor((10 - i) * 0.7));
-            glow.circle(0, 0, 135 + i * 15); glow.fill();
-        }
-        this.halo = createAchievementImage(stage, 'CelestialHalo', 'award-halo', 500, 500, services.art);
-        const haloOpacity = this.halo.addComponent(UIOpacity);
-        haloOpacity.opacity = 0;
-        const haloPeak = locked ? 80 : 215, haloLow = locked ? 50 : 155;
-        tween(haloOpacity).delay(0.25).to(1.25, { opacity: haloPeak }, { easing: 'sineOut' })
-            .then(tween(haloOpacity).to(2.2, { opacity: haloLow }).to(2.2, { opacity: haloPeak }).repeatForever()).start();
-        this.innerHalo = createAchievementImage(stage, 'InnerHalo', 'award-halo', 390, 390, services.art);
-        this.innerHalo.angle = 12;
-        const innerOpacity = this.innerHalo.addComponent(UIOpacity);
-        innerOpacity.opacity = 0;
-        tween(innerOpacity).delay(0.4).to(1.3, { opacity: locked ? 36 : 88 }).start();
+        this.createStageHalo(stage, locked);
         if (!locked) {
             this.createRevealBloom(stage);
             this.createSparkles(stage);
@@ -237,29 +207,46 @@ export class AchievementCelebration extends Component {
         this.layout();
     }
 
-    /** 首次领奖：金色绶带标题，两端折角飘带。 */
-    private createRibbonTitle(parent: Node): void {
-        const ribbon = achievementNode(parent, 'AwardRibbon', 520, 110);
-        ribbon.setPosition(0, TITLE_Y);
-        const g = ribbon.addComponent(Graphics);
-        const tail = (side: number): void => {
-            g.fillColor = new Color(160, 110, 44, 255);
-            g.moveTo(side * 196, 20); g.lineTo(side * 258, 20); g.lineTo(side * 236, -6);
-            g.lineTo(side * 258, -32); g.lineTo(side * 196, -32); g.close(); g.fill();
-            g.fillColor = new Color(118, 78, 30, 255);
-            g.moveTo(side * 196, -32); g.lineTo(side * 214, -32); g.lineTo(side * 214, -46); g.close(); g.fill();
-        };
-        tail(-1); tail(1);
-        fillRoundRect(g, 0, -6, 440, 80, 16, hexColor('#C89A48'));
-        fillRoundRect(g, 0, -2, 428, 80, 14, hexColor('#F2CB77'));
-        fillRoundRect(g, 0, 20, 400, 22, 10, new Color(255, 240, 200, 120));
-        strokeRoundRect(g, 0, -2, 414, 66, 10, new Color(255, 246, 214, 170), 2);
-        achievementLabel(ribbon, 'AwardTitle', '成就达成', 0, -2, 380, 70, 48, '#5A3712', true);
-        ribbon.setScale(0.6, 0.6, 1);
-        tween(ribbon).delay(0.15).to(0.45, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+    /** 领奖背景与暖金星芒。 */
+    private createAwardBackdrop(root: Node): void {
+        createAchievementImage(root, 'AwardBackground', 'award-background', 750, 1334, this.services!.art, 'cover');
+        const rays = achievementNode(root, 'StarlightRays', 900, 900);
+        const g = rays.addComponent(Graphics);
+        g.fillColor = new Color(255, 225, 158, 10);
+        for (let i = 0; i < 18; i++) {
+            const angle = i * Math.PI * 2 / 18;
+            g.moveTo(Math.cos(angle) * 150, Math.sin(angle) * 150);
+            g.lineTo(Math.cos(angle - 0.035) * 530, Math.sin(angle - 0.035) * 530);
+            g.lineTo(Math.cos(angle + 0.035) * 530, Math.sin(angle + 0.035) * 530);
+            g.close(); g.fill();
+        }
+        const opacity = rays.addComponent(UIOpacity);
+        opacity.opacity = 0;
+        tween(opacity).delay(0.2).to(1.4, { opacity: this.mode === 'locked' ? 90 : 255 }, { easing: 'sineOut' }).start();
+        this.rays = rays;
     }
 
-    /** 回顾与未获得详情：安静的标题与两侧细金线，不重复领奖时的绶带；未获得时改用淡紫灰。 */
+    private createStageHalo(stage: Node, locked: boolean): void {
+        const glow = stage.addComponent(Graphics);
+        for (let i = 10; i >= 1; i--) {
+            const alpha = 3 + Math.floor((10 - i) * 0.7);
+            glow.fillColor = new Color(247, 199, 107, alpha);
+            glow.circle(0, 0, 135 + i * 15); glow.fill();
+        }
+        this.halo = createAchievementImage(stage, 'CelestialHalo', 'award-halo', 500, 500, this.services!.art);
+        this.innerHalo = createAchievementImage(stage, 'InnerHalo', 'award-halo', 390, 390, this.services!.art);
+        const haloOpacity = this.halo.addComponent(UIOpacity);
+        haloOpacity.opacity = 0;
+        const haloPeak = locked ? 80 : 215, haloLow = locked ? 50 : 155;
+        tween(haloOpacity).delay(0.25).to(1.25, { opacity: haloPeak }, { easing: 'sineOut' })
+            .then(tween(haloOpacity).to(2.2, { opacity: haloLow }).to(2.2, { opacity: haloPeak }).repeatForever()).start();
+        this.innerHalo.angle = 12;
+        const innerOpacity = this.innerHalo.addComponent(UIOpacity);
+        innerOpacity.opacity = 0;
+        tween(innerOpacity).delay(0.4).to(1.3, { opacity: locked ? 36 : 88 }).start();
+    }
+
+    /** 领奖与详情统一使用文字、投影和两侧细线；未获得时改用淡紫灰。 */
     private createQuietTitle(parent: Node, text: string, muted: boolean): void {
         achievementLabel(parent, 'AwardTitleShadow', text, 0, TITLE_Y - 4, 460, 80, 54, muted ? '#2C2740' : '#5C4424', true);
         achievementLabel(parent, 'AwardTitle', text, 0, TITLE_Y, 460, 80, 54, muted ? '#D9D1E8' : '#FFF0BF', true);
@@ -278,7 +265,8 @@ export class AchievementCelebration extends Component {
     private createPlaque(parent: Node, manifest: GameManifest, mode: PresentationMode): void {
         const definition = manifest.achievement!;
         const plaque = achievementNode(parent, 'AwardPlaque', PLAQUE_WIDTH, PLAQUE_HEIGHT);
-        plaque.setPosition(0, PLAQUE_Y - 24);
+        const plaqueY = PLAQUE_Y;
+        plaque.setPosition(0, plaqueY - 24);
         const g = plaque.addComponent(Graphics);
         fillRoundRect(g, 0, 0, PLAQUE_WIDTH, PLAQUE_HEIGHT, 34, new Color(20, 18, 44, 205));
         strokeRoundRect(g, 0, 0, PLAQUE_WIDTH - 2, PLAQUE_HEIGHT - 2, 33, new Color(233, 190, 106, 200), 2);
@@ -320,7 +308,7 @@ export class AchievementCelebration extends Component {
         const opacity = plaque.addComponent(UIOpacity);
         opacity.opacity = 0;
         tween(opacity).delay(delay).to(duration, { opacity: 255 }, { easing: 'sineOut' }).start();
-        tween(plaque).delay(delay).to(duration, { position: new Vec3(0, PLAQUE_Y, 0) }, { easing: 'cubicOut' }).start();
+        tween(plaque).delay(delay).to(duration, { position: new Vec3(0, plaqueY, 0) }, { easing: 'cubicOut' }).start();
     }
 
     private createRevealBloom(parent: Node): void {
@@ -339,7 +327,8 @@ export class AchievementCelebration extends Component {
 
     private createSparkles(parent: Node): void {
         for (let i = 0; i < 32; i++) {
-            const spark = this.createSpark(parent, 'AwardBurst-' + i, 4 + i % 4, i % 5 === 0 ? '#FFF8DE' : '#EDCA82');
+            const spark = this.createSpark(parent, 'AwardBurst-' + i, 4 + i % 4,
+                i % 5 === 0 ? '#FFF8DE' : '#EDCA82');
             const opacity = spark.addComponent(UIOpacity);
             opacity.opacity = 0;
             const angle = i * Math.PI * 2 / 32;
@@ -448,8 +437,8 @@ export class AchievementCelebration extends Component {
         const graphics = root.getComponent(Graphics)!;
         graphics.clear(); graphics.fillColor = new Color(18, 22, 43, 255);
         graphics.rect(-width / 2, -height / 2, width, height); graphics.fill();
-        const background = root.getChildByName('AwardBackground')!.getComponent(Sprite)!;
-        this.services.art.fit(background, width, height, 'cover');
+        const background = root.getChildByName('AwardBackground')?.getComponent(Sprite);
+        if (background) this.services.art.fit(background, width, height, 'cover');
         const safe = calculateVerticalSafeBounds(height, this.services.platform.getLayoutInfo(), 20);
         const scale = Math.min(1, (width - 40) / CONTENT_WIDTH,
             Math.max(1, safe.topY - safe.bottomY - 24) / CONTENT_HEIGHT);

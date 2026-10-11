@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""生成 `assets/games/meowdoku/scripts/MeowdokuLevels.ts` 的关卡序列。
+"""生成猫咪数独普通与困难模式的独立关卡序列。
 
 数据来源是 Meowdoku（com.oakever.meowdoku）Android 包里的题库 json。这些 json
 在运行时用固定串循环异或（见原作 `scripts/module/bank/model/level_bank_io.gd`），
@@ -14,10 +14,13 @@
     # 或者指向已经解密的题库目录
     python3 project-scripts/meowdoku/build-level-bank.py --banks /tmp/meowdoku-levels
 
+    # 独立困难模式：SuperHard 题库，前 rank4 后 rank5，默认 200 关
+    python3 project-scripts/meowdoku/build-level-bank.py --banks /tmp/meowdoku-levels --mode hard
+
     # 只校验不写文件
     python3 project-scripts/meowdoku/build-level-bank.py --banks ... --check
 
-出题规则（题源、筛题与原作默认组 NLControlStrategy 一致；边长与难度是本项目
+普通模式出题规则（题源、筛题与原作默认组 NLControlStrategy 一致；边长与难度是本项目
 为 3000 关固化的确定曲线，不随机、不做 DDA；前 2000 关保持原有题目与顺序）：
 
 1. 边长：1..10 关 = 4/5/6/6/8/6/7/8/9/7（原作教学段）；之后按阶段每 10 关一组循环，
@@ -35,6 +38,9 @@
    任何题池被取空都直接报错，不回绕、不出重复题。
 6. 1..10 关按 `LevelData.compute_prefill` 预置一只猫。
 7. 不出原作特殊关（SP / LK 图案题）、11x11 以上的盘，也不用 A/B 实验组的题库。
+
+困难模式只取 `bankDataSuperHard`，所有题均为 11x11。先按原库顺序取全部 rank4，
+再取 rank5，包含 N/H tier；不混入普通题库、不预置猫，旋转/镜像去重后不回绕。
 """
 
 from __future__ import annotations
@@ -103,6 +109,9 @@ TRANSFORM_COUNT = 8
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DEFAULT_OUTPUT = os.path.join(
     REPO_ROOT, "assets", "games", "meowdoku", "scripts", "MeowdokuLevels.ts"
+)
+DEFAULT_HARD_OUTPUT = os.path.join(
+    REPO_ROOT, "assets", "games", "meowdoku", "scripts", "MeowdokuHardLevels.ts"
 )
 
 
@@ -178,6 +187,10 @@ class Banks:
         data = self._load(f"bankDataGC{size}x{size}.json")
         levels = data.get("levels", []) if isinstance(data, dict) else []
         return [entry for entry in levels if int(entry.get("r", 0)) == rank]
+
+    def super_hard(self) -> list:
+        data = self._load("bankDataSuperHard.json")
+        return list(data.get("levels", [])) if isinstance(data, dict) else []
 
     def lk_modified(self, size: int, rank: int, strict: bool) -> list:
         """原作 `LevelData.build_pools` 的 lk_mod 池：难关按 `r` 严格匹配，否则按 `maxR`。"""
@@ -462,6 +475,36 @@ def generate(banks: Banks, count: int) -> tuple[list[dict], dict]:
     return levels, {"usage": usage, "cursor": remaining}
 
 
+def generate_hard(banks: Banks, count: int) -> list[dict]:
+    """独立困难序列：先取全部 rank4，再按原库顺序取 rank5，不筛 tier、不回绕。"""
+    pool = banks.super_hard()
+    seen = set()
+    levels = []
+    for rank in (4, 5):
+        for index, entry in enumerate(pool):
+            if int(entry.get("r", 0)) != rank:
+                continue
+            regions = [[int(v) for v in row] for row in entry["regionMap"]]
+            solution = [int(v) for v in entry["solution"]]
+            if len(regions) != 11 or any(len(row) != 11 for row in regions):
+                raise SystemExit(f"SuperHard 第 {index + 1} 题不是 11x11")
+            if not validate_solution(regions, solution):
+                raise SystemExit(f"SuperHard 第 {index + 1} 题的答案不合法")
+            puzzle = canonical_puzzle(regions)
+            if puzzle in seen:
+                continue
+            seen.add(puzzle)
+            levels.append({
+                "level": len(levels) + 1, "size": 11, "rank": rank,
+                "seed": int(entry.get("seed", 0)), "source": "superhard", "bankIndex": index + 1,
+                "regions": regions, "solution": solution, "prefill": None,
+                "colorMap": compute_color_map(11, regions),
+            })
+            if len(levels) == count:
+                return levels
+    raise SystemExit(f"SuperHard 去重后只有 {len(levels)} 题，无法生成 {count} 关")
+
+
 HEADER = '''/**
  * Meowdoku 关卡序列（离线生成，运行时只读）。
  *
@@ -502,7 +545,7 @@ DECODER = '''/**
  * 区域按行展开后紧接答案，高半字节在先；关卡号由顺序恢复。
  * 使用纯 JS 解码，浏览器与微信小游戏均不依赖 atob / Buffer / wx。
  */
-function decodeMeowdokuLevels(encoded: string, count: number): readonly MeowdokuLevelDefinition[] {
+export function decodeMeowdokuLevels(encoded: string, count: number): readonly MeowdokuLevelDefinition[] {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded)) {
         throw new Error('Invalid Meowdoku level bank Base64.');
@@ -606,12 +649,25 @@ def pack_levels(levels: list[dict]) -> bytes:
     return bytes(data)
 
 
-def render(levels: list[dict]) -> str:
+def render(levels: list[dict], hard: bool = False) -> str:
     encoded = base64.b64encode(pack_levels(levels)).decode("ascii")
     chunks = [encoded[i:i + 1024] for i in range(0, len(encoded), 1024)] or [""]
     payload = " +\n".join("    '" + chunk + "'" for chunk in chunks)
-    return (HEADER + DECODER
-            + "\nexport const MEOWDOKU_LEVELS: readonly MeowdokuLevelDefinition[] = decodeMeowdokuLevels(\n"
+    header = HEADER + DECODER
+    name = "MEOWDOKU_LEVELS"
+    if hard:
+        rank4_count = sum(entry["rank"] == 4 for entry in levels)
+        header = f'''/**
+ * 猫咪数独独立困难题库（离线生成，运行时只读）。
+ * 原版 bankDataSuperHard：全部 11×11；前 {rank4_count} 关 rank4，之后 rank5。
+ * 按原库顺序取题，不混入普通题池、不预置猫，同题含旋转/镜像只出现一次。
+ * 重新生成：python3 project-scripts/meowdoku/build-level-bank.py --banks <题库目录> --mode hard
+ */
+import {{ decodeMeowdokuLevels, type MeowdokuLevelDefinition }} from './MeowdokuLevels';
+'''
+        name = "MEOWDOKU_HARD_LEVELS"
+    return (header
+            + f"\nexport const {name}: readonly MeowdokuLevelDefinition[] = decodeMeowdokuLevels(\n"
             + payload + f",\n    {len(levels)},\n);\n")
 
 
@@ -620,16 +676,26 @@ def main() -> int:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--xapk", help="Meowdoku 的 xapk 或 apk 路径")
     source.add_argument("--banks", help="已经解密的 bankData*.json 目录")
-    parser.add_argument("--count", type=int, default=3000, help="生成多少关（默认 3000）")
-    parser.add_argument("--output", default=DEFAULT_OUTPUT, help="输出 TS 路径")
+    parser.add_argument("--mode", choices=("normal", "hard"), default="normal", help="普通或困难模式")
+    parser.add_argument("--count", type=int, help="生成多少关（普通默认 3000，困难默认 200）")
+    parser.add_argument("--output", help="输出 TS 路径（按模式选择默认文件）")
     parser.add_argument("--check", action="store_true", help="只校验现有输出是否一致")
     parser.add_argument("--report", action="store_true", help="打印逐关来源与预置信息")
     args = parser.parse_args()
+    hard = args.mode == "hard"
+    args.count = args.count if args.count is not None else (200 if hard else 3000)
+    args.output = args.output or (DEFAULT_HARD_OUTPUT if hard else DEFAULT_OUTPUT)
+    if args.count < 1:
+        parser.error("关卡数必须大于 0")
 
     files = extract_bank_files(args.xapk) if args.xapk else load_bank_files(args.banks)
     banks = Banks(files)
-    levels, stats = generate(banks, args.count)
-    rendered = render(levels)
+    if hard:
+        levels = generate_hard(banks, args.count)
+        stats = {"usage": {}, "cursor": {}}
+    else:
+        levels, stats = generate(banks, args.count)
+    rendered = render(levels, hard)
 
     if args.report:
         for entry in levels:
@@ -643,11 +709,15 @@ def main() -> int:
             )
 
     print(f"关卡数 {len(levels)}（整份序列内无重复题）")
-    print("题池用量（边长, rank, tier, 第51关起）: 已交付 / 池大小")
+    if hard:
+        print("SuperHard 难度分布:", dict(Counter(entry["rank"] for entry in levels)))
+    else:
+        print("题池用量（边长, rank, tier, 第51关起）: 已交付 / 池大小")
     for key in sorted(stats["usage"]):
         used, total = stats["usage"][key]
         print("  %2dx%-2d r%d %-2s %-5s %5d / %5d" % (key[0], key[0], key[1], key[2] or "-", "main" if key[3] else "early", used, total))
-    print("各题池游标（含被筛掉的题）:")
+    if not hard:
+        print("各题池游标（含被筛掉的题）:")
     for key in sorted(stats["cursor"]):
         print("  %2dx%-2d r%d %-2s -> %d" % (key[0], key[0], key[1], key[2] or "-", stats["cursor"][key]))
 

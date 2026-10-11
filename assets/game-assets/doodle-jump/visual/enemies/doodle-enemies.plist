@@ -4,83 +4,239 @@
 <dict>
 	<key>frames</key>
 	<dict>
-		<key>enemy-hover-01</key>
+		<key>enemy-bouncer-01</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,406},{341,436}}</string>
+			<string>{{2,2},{224,81}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{341,436}}</string>
+			<string>{{0.0,0.0},{224,81}}</string>
 			<key>sourceSize</key>
-			<string>{341,436}</string>
+			<string>{224,81}</string>
+		</dict>
+		<key>enemy-bouncer-02</key>
+		<dict>
+			<key>frame</key>
+			<string>{{230,2},{224,81}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{224,81}}</string>
+			<key>sourceSize</key>
+			<string>{224,81}</string>
+		</dict>
+		<key>enemy-flyer-01</key>
+		<dict>
+			<key>frame</key>
+			<string>{{458,2},{162,219}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{162,219}}</string>
+			<key>sourceSize</key>
+			<string>{162,219}</string>
+		</dict>
+		<key>enemy-flyer-02</key>
+		<dict>
+			<key>frame</key>
+			<string>{{624,2},{162,219}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{162,219}}</string>
+			<key>sourceSize</key>
+			<string>{162,219}</string>
+		</dict>
+		<key>enemy-hopper-01</key>
+		<dict>
+			<key>frame</key>
+			<string>{{874,428},{110,86}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{110,86}}</string>
+			<key>sourceSize</key>
+			<string>{110,86}</string>
+		</dict>
+		<key>enemy-hopper-02</key>
+		<dict>
+			<key>frame</key>
+			<string>{{874,518},{110,86}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{110,86}}</string>
+			<key>sourceSize</key>
+			<string>{110,86}</string>
+		</dict>
+		<key>enemy-hover-01</key>
+		<dict>
+			<key>frame</key>
+			<string>{{684,339},{91,119}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{91,119}}</string>
+			<key>sourceSize</key>
+			<string>{91,119}</string>
 		</dict>
 		<key>enemy-hover-02</key>
 		<dict>
 			<key>frame</key>
-			<string>{{347,406},{341,436}}</string>
+			<string>{{779,428},{91,119}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{341,436}}</string>
+			<string>{{0.0,0.0},{91,119}}</string>
 			<key>sourceSize</key>
-			<string>{341,436}</string>
+			<string>{91,119}</string>
 		</dict>
 		<key>enemy-large-01</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{457,400}}</string>
+			<string>{{2,224},{195,143}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{457,400}}</string>
+			<string>{{0.0,0.0},{195,143}}</string>
 			<key>sourceSize</key>
-			<string>{457,400}</string>
+			<string>{195,143}</string>
 		</dict>
 		<key>enemy-large-02</key>
 		<dict>
 			<key>frame</key>
-			<string>{{463,2},{457,400}}</string>
+			<string>{{201,224},{195,143}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{457,400}}</string>
+			<string>{{0.0,0.0},{195,143}}</string>
 			<key>sourceSize</key>
-			<string>{457,400}</string>
+			<string>{195,143}</string>
+		</dict>
+		<key>enemy-runner-01</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,87},{209,133}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{209,133}}</string>
+			<key>sourceSize</key>
+			<string>{209,133}</string>
+		</dict>
+		<key>enemy-runner-02</key>
+		<dict>
+			<key>frame</key>
+			<string>{{215,87},{209,133}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{209,133}}</string>
+			<key>sourceSize</key>
+			<string>{209,133}</string>
+		</dict>
+		<key>enemy-small-01</key>
+		<dict>
+			<key>frame</key>
+			<string>{{400,339},{138,124}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{138,124}}</string>
+			<key>sourceSize</key>
+			<string>{138,124}</string>
+		</dict>
+		<key>enemy-small-02</key>
+		<dict>
+			<key>frame</key>
+			<string>{{542,339},{138,124}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{138,124}}</string>
+			<key>sourceSize</key>
+			<string>{138,124}</string>
+		</dict>
+		<key>enemy-tall-01</key>
+		<dict>
+			<key>frame</key>
+			<string>{{790,2},{157,209}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{157,209}}</string>
+			<key>sourceSize</key>
+			<string>{157,209}</string>
+		</dict>
+		<key>enemy-tall-02</key>
+		<dict>
+			<key>frame</key>
+			<string>{{790,215},{157,209}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{157,209}}</string>
+			<key>sourceSize</key>
+			<string>{157,209}</string>
 		</dict>
 		<key>enemy-weaver-01</key>
 		<dict>
 			<key>frame</key>
-			<string>{{692,406},{320,256}}</string>
+			<string>{{400,225},{190,110}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{320,256}}</string>
+			<string>{{0.0,0.0},{190,110}}</string>
 			<key>sourceSize</key>
-			<string>{320,256}</string>
+			<string>{190,110}</string>
 		</dict>
 		<key>enemy-weaver-02</key>
 		<dict>
 			<key>frame</key>
-			<string>{{692,666},{320,256}}</string>
+			<string>{{594,225},{190,110}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{320,256}}</string>
+			<string>{{0.0,0.0},{190,110}}</string>
 			<key>sourceSize</key>
-			<string>{320,256}</string>
+			<string>{190,110}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -90,7 +246,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-enemies.png</string>
 		<key>size</key>
-		<string>{1014,924}</string>
+		<string>{986,606}</string>
 		<key>textureFileName</key>
 		<string>doodle-enemies.png</string>
 	</dict>

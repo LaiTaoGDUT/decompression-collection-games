@@ -1,5 +1,6 @@
-import { Asset, assetManager, AssetManager, AudioClip, Rect, Size, SpriteFrame, Texture2D } from 'cc';
+import { Asset, assetManager, AssetManager, AudioClip, BufferAsset, Rect, Size, SpriteFrame, Texture2D } from 'cc';
 import { loadAutoAtlasFrames, type AutoAtlasFrameRequest } from './AutoAtlasLoader';
+import type { PackedAudioBank } from '../audio/PackedAudioBank';
 
 type AssetConstructor<T extends Asset> = new (...args: any[]) => T;
 
@@ -87,6 +88,7 @@ export class AssetService {
     >();
     private readonly preparedDirectories = new Set<string>();
     private readonly pendingAudio = new Map<string, Promise<AudioClip>>();
+    private readonly packedAudio = new Map<string, Promise<PackedAudioBank>>();
     private readonly pendingAssets = new Map<string, Map<AssetConstructor<Asset>, Promise<Asset>>>();
     private readonly pendingAssetGroups = new Map<Promise<unknown>, string>();
     private readonly retainedAssets = new Map<string, Set<Asset>>();
@@ -210,6 +212,25 @@ export class AssetService {
         return load;
     }
 
+    /** 音效包加载、解码去重；派生缓冲纳入 Bundle 的退出等待与统一释放。 */
+    loadPackedAudio(name: string, path: string,
+        decode: (data: ArrayBuffer) => Promise<PackedAudioBank>): Promise<PackedAudioBank> {
+        const bundleName = normalizeBundleName(name), key = `${bundleName}\u0000${path}`;
+        const cached = this.packedAudio.get(key);
+        if (cached) return cached;
+        const load = (async (): Promise<PackedAudioBank> => {
+            const source = await this.loadAsset(bundleName, path, BufferAsset);
+            return this.trackRuntimeAsset(bundleName, await decode(source.buffer()));
+        })();
+        this.packedAudio.set(key, load);
+        this.pendingAssetGroups.set(load, bundleName);
+        void load.then(() => this.pendingAssetGroups.delete(load), () => {
+            this.pendingAssetGroups.delete(load);
+            if (this.packedAudio.get(key) === load) this.packedAudio.delete(key);
+        });
+        return load;
+    }
+
     /** Typed asset requests share the bundle's ownership and release barrier. */
     loadAsset<T extends Asset>(name: string, path: string, type: AssetConstructor<T>): Promise<T> {
         const bundleName = normalizeBundleName(name);
@@ -220,7 +241,7 @@ export class AssetService {
         const bundle = this.provider.getBundle(bundleName);
         if (!bundle) return Promise.reject(new Error(`Asset bundle unavailable: ${bundleName}.`));
         const load = new Promise<T>((resolve, reject) => {
-            bundle.load(path, type, (error, asset) => {
+            const complete = (error: Error | null, asset: T): void => {
                 if (error || !asset) {
                     reject(error ?? new Error(`Missing asset: ${bundleName}/${path}`));
                     return;
@@ -235,7 +256,12 @@ export class AssetService {
                     retained.add(asset);
                 }
                 resolve(asset);
-            });
+            };
+            // loadDir 已完成的资源可以直接取得；再次 bundle.load 即使命中缓存，
+            // 也会把回调排到下一帧，令逐帧创建的 UI 每张卡额外等待一帧。
+            const cached = bundle.get(path, type);
+            if (cached) complete(null, cached);
+            else bundle.load(path, type, complete);
         });
         if (!requests) {
             requests = new Map();
@@ -477,6 +503,9 @@ export class AssetService {
             if (group.bundleName === bundleName) this.directoryGroups.delete(key);
         });
         this.clearPreparedDirectories(bundleName);
+        this.packedAudio.forEach((_load, key) => {
+            if (key.startsWith(`${bundleName}\u0000`)) this.packedAudio.delete(key);
+        });
 
         const bundle = this.provider.getBundle(bundleName);
 

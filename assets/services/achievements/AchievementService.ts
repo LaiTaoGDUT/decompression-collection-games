@@ -5,9 +5,15 @@ import type { AchievementSaveData, StorageService } from '../storage/StorageServ
 export class AchievementService {
     constructor(private readonly storage: StorageService, private readonly now: () => number = Date.now) {}
 
+    collection(manifests: readonly GameManifest[]): GameManifest[] {
+        return manifests.filter(manifest => !!manifest.achievement);
+    }
+
     getRecord(manifest: GameManifest): AchievementSaveData | undefined {
+        const definition = manifest.achievement;
+        if (!definition) return undefined;
         const saved = this.storage.getAchievement(manifest.id);
-        return saved?.achievementId === manifest.achievement?.id ? saved : undefined;
+        return saved?.achievementId === definition.id ? saved : undefined;
     }
 
     report(manifest: GameManifest, metric: string, value: number): boolean {
@@ -18,17 +24,15 @@ export class AchievementService {
         const progress = Math.min(definition.target, Math.max(previous?.progress ?? 0, value));
         if (progress <= (previous?.progress ?? 0)) return false;
         const unlockedAt = progress >= definition.target ? Math.max(1, this.now()) : undefined;
-        this.storage.writeAchievement(manifest.id, {
-            achievementId: definition.id, progress,
-            ...(unlockedAt ? { unlockedAt } : {}),
-        });
+        this.storage.writeAchievement(manifest.id, { achievementId: definition.id, progress,
+            ...(unlockedAt ? { unlockedAt } : {}) });
         // 领奖前落盘；底层临时失败时 StorageService 保留待写快照并自动重试。
         if (unlockedAt) this.flush();
         return !!unlockedAt;
     }
 
     pending(manifests: readonly GameManifest[]): GameManifest | undefined {
-        return manifests.find(manifest => {
+        return this.collection(manifests).find(manifest => {
             const record = this.getRecord(manifest);
             return !!record?.unlockedAt && !record.celebratedAt;
         });

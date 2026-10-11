@@ -135,7 +135,7 @@ export const MEOWDOKU_WIN_TOAST_THRESHOLDS: Readonly<Record<number, Readonly<{ p
     11: Object.freeze({ p5: 60, p10: 65, p20: 71 }),
     12: Object.freeze({ p5: 70, p10: 75, p20: 80 }),
 });
-/** 4 = 首战无叉无草稿的专属奖励，0 = 零失误，1..3 = 普通通关步数档，-1 = 不弹。 */
+/** 4 = 此关历史无叉、无草稿、零失误的专属奖励，0 = 本局零失误，1..3 = 普通通关步数档，-1 = 不弹。 */
 export type MeowdokuWinToastTier = 0 | 1 | 2 | 3 | 4 | -1;
 export function meowdokuWinToastTier(size: number, steps: number, perfect: boolean, genius = false): MeowdokuWinToastTier {
     if (size <= 0) return -1;
@@ -191,7 +191,7 @@ export const MEOWDOKU_WIN_TOAST_MESSAGES: readonly (readonly string[])[] = Objec
         "表现不错，推理很漂亮。",
     ]),
     Object.freeze([
-        '首战完美！不画叉、不用草稿！\n天才猫侦探，非你莫属！',
+        '不画叉、不用草稿，零失误！\n天才猫侦探，非你莫属！',
     ]),
 ]);
 
@@ -333,13 +333,13 @@ export const MEOWDOKU_COLORS = Object.freeze({
     resultCardStroke: new Color(255, 236, 220, 52),
     resultLabel: new Color(236, 206, 188, 255),
     resultValue: new Color(255, 255, 255, 255),
-    /** 结算页关卡胶囊。 */
-    resultChip: new Color(86, 56, 46, 240),
-    resultChipText: new Color(255, 236, 220, 255),
+    /** 玩法与弹窗共用的关卡胶囊：普通模式沿用原 HUD 的白底、暖棕字。 */
+    levelChip: Color.WHITE,
+    levelChipText: new Color(122, 72, 72, 255),
     /** 「完美通关」金色胶囊。 */
     resultPerfect: new Color(255, 206, 64, 255),
     resultPerfectText: new Color(122, 62, 8, 255),
-    /** 首战无叉无草稿的紫色专属称号。 */
+    /** 此关历史无叉、无草稿、零失误的紫色专属称号。 */
     resultGenius: new Color(224, 158, 255, 255),
     resultGeniusText: new Color(82, 30, 116, 255),
     /** 失败页进度：高亮数字、进度条轨道与填充。 */
@@ -353,9 +353,37 @@ export const MEOWDOKU_COLORS = Object.freeze({
     /** 选关页：未解锁关卡的格子底色与文字。 */
     levelLocked: new Color(236, 228, 221, 255),
     levelLockedText: new Color(196, 178, 170, 255),
-    /** 首战专属通关关卡：浅紫底、紫色厚边，搭配金色呼吸星芒。 */
+    /** 专属通关关卡：浅紫底、紫色厚边，搭配金色呼吸星芒。 */
     levelGenius: new Color(239, 207, 255, 255),
     levelGeniusEdge: new Color(171, 104, 205, 255),
+});
+
+/**
+ * 困难模式 · 莓果：以单一莓红为强调色，搭配偏冷的粉白纸面与淡莓灰未解锁格子。
+ * 选关页、玩法与弹窗的关卡胶囊、结算印章统一使用同一莓红色相，避免两套红色互相打架。
+ */
+export const MEOWDOKU_HARD_MODE_COLORS: typeof MEOWDOKU_COLORS = Object.freeze({
+    ...MEOWDOKU_COLORS,
+    page: new Color(248, 242, 244, 255),
+    board: new Color(255, 252, 253, 255),
+    title: new Color(98, 40, 62, 255),
+    subtitle: new Color(166, 124, 140, 255),
+    ruleText: new Color(150, 58, 92, 255),
+    rulePill: new Color(252, 236, 242, 255),
+    hudButton: new Color(252, 232, 239, 255),
+    hudIcon: new Color(150, 58, 92, 255),
+    hudShadow: new Color(120, 32, 66, 26),
+    panelShadow: new Color(120, 32, 66, 34),
+    winButton: new Color(190, 52, 96, 255),
+    primaryEdge: new Color(146, 32, 70, 255),
+    secondaryEdge: new Color(238, 204, 217, 255),
+    levelLocked: new Color(241, 231, 235, 255),
+    levelLockedText: new Color(190, 160, 173, 255),
+    levelGenius: new Color(246, 214, 228, 255),
+    levelGeniusEdge: new Color(196, 96, 140, 255),
+    levelChip: new Color(190, 52, 96, 255),
+    levelChipText: Color.WHITE,
+    resultGeniusText: new Color(122, 34, 72, 255),
 });
 
 /**
@@ -464,7 +492,7 @@ export const MEOWDOKU_ASSET_PATHS = Object.freeze({
     winCat: 'visual/ui/meowdoku-result-win-cat-v1/texture',
     winCatHop: 'visual/ui/meowdoku-result-win-cat-hop-v1/texture',
     winCatWink: 'visual/ui/meowdoku-result-win-cat-wink-v1/texture',
-    /** 首次不画叉、不用草稿且完美通关的「天才猫侦探」专属猫咪。 */
+    /** 此关历史无手画叉、无草稿、零失误通关的「天才猫侦探」专属猫咪。 */
     winGeniusCat: 'visual/ui/meowdoku-result-genius-cat-v2/texture',
     likeHand: 'visual/ui/meowdoku-like-hand-v1/texture',
 });
@@ -561,8 +589,8 @@ export const MEOWDOKU_TILE = Object.freeze({
 });
 
 /**
- * 连击反馈改用 Label。文案与 10 档连击配音对应，配色与同档配音一起定义，
- * 3 连击从第 1 档开始，超过第 10 档循环回到第 1 档。
+ * 连击反馈改用 Label。文案与 9 档连击配音对应，配色与同档配音一起定义，
+ * 3 连击从第 1 档开始，11 连击为 Breathtaking，12 连击循环回到第 1 档。
  */
 export const MEOWDOKU_ENCOURAGEMENTS = Object.freeze([
     Object.freeze({ text: 'Nice', color: new Color(80, 189, 88, 255), voice: 'voice1' }),
@@ -573,7 +601,6 @@ export const MEOWDOKU_ENCOURAGEMENTS = Object.freeze([
     Object.freeze({ text: 'Unbelievable', color: new Color(177, 103, 226, 255), voice: 'voice6' }),
     Object.freeze({ text: 'Unreal', color: new Color(255, 222, 43, 255), voice: 'voice7' }),
     Object.freeze({ text: 'Insane', color: new Color(224, 107, 161, 255), voice: 'voice8' }),
-    Object.freeze({ text: 'Epic', color: new Color(179, 126, 255, 255), voice: 'voice9' }),
     Object.freeze({ text: 'Breathtaking', color: new Color(49, 169, 210, 255), voice: 'voice10' }),
 ]);
 
@@ -845,6 +872,36 @@ export const MEOWDOKU_RESULT_PAGE = Object.freeze({
     midRatio: 0.2,
 });
 
+/** 困难模式结算印章：莓红双圆环和文字带暖白柔影、透明底；位于猫图右下角，随结算列等比适配。 */
+export const MEOWDOKU_HARD_RESULT_STAMP = Object.freeze({
+    diameter: 168,
+    outerBorder: 7,
+    innerBorder: 3,
+    borderInset: 11,
+    fontSize: 58,
+    letterSpacing: 4,
+    ink: new Color(230, 70, 118, 255),
+    shadowColor: new Color(255, 246, 232, 144),
+    shadowOffset: 2,
+    shadowBlur: 3,
+    shadowLayers: 3,
+    angle: -12,
+    catOffsetX: 0.32,
+    catOffsetY: 0.34,
+    /** 等猫出场落定后盖下：快速压扁、短暂回弹，再固定。 */
+    delay: 0.64,
+    startScale: 1.85,
+    startAngle: 2,
+    lift: 44,
+    fadeDuration: 0.07,
+    pressDuration: 0.16,
+    pressScaleX: 1.04,
+    pressScaleY: 0.86,
+    reboundDuration: 0.08,
+    reboundScale: 1.06,
+    settleDuration: 0.14,
+});
+
 /**
  * 规则高亮（原作 `base_game_page.gd::_play_rule_highlight`）：`modulate.a` 从
  * `RULE_HL_FLOOR = 0.4` 到 1 按 `sin(t * PI)` 脉冲，周期 `RULE_HL_PERIOD = 0.6`，
@@ -1071,6 +1128,7 @@ export const MEOWDOKU_DIM_ALPHA = 0.25;
 export const MEOWDOKU_COPY = Object.freeze({
     /** 关卡标题。 */
     levelTitle: (level: number): string => `第 ${level} 关`,
+    hardResultStamp: '困难',
     rulePerColor: '一种颜色一只猫',
     rulePerLine: '同行同列各一只',
     ruleNoTouch: '猫咪不能相邻',
@@ -1141,6 +1199,8 @@ export const MEOWDOKU_COPY = Object.freeze({
     pauseSelectLevel: '选择关卡',
     /** 选关页。 */
     levelSelectTitle: '选择关卡',
+    modeNormal: '普通模式',
+    modeHard: '困难模式',
     levelSelectProgress: (cleared: number, total: number): string => `已通关 ${cleared} / ${total}`,
     levelSelectCurrent: '进行中',
     levelSelectLatest: "新解锁",
@@ -1187,7 +1247,7 @@ export const MEOWDOKU_COPY = Object.freeze({
     /** 零失误通关时通关页关卡号旁的金色胶囊。 */
     perfectWin: '完美通关',
     geniusWin: '天才猫侦探',
-    geniusWinTitle: '一眼封神',
+    geniusWinTitle: '喵喵满分',
     /** 第一关引导的步骤文案，取自原作 `TUTORIAL_*`。 */
     tutorialSteps: Object.freeze([
         '双击或长按格子放一只猫咪。',

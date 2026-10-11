@@ -1,0 +1,862 @@
+{
+  "games": {
+    "cyblockbees": [
+      {
+        "path": "visual/game/cyblockbees-dog",
+        "frames": [
+          {
+            "source": "visual/game/dog-idle-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-scared-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-win-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-lose-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-beaten-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/bee-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              64,
+              46
+            ]
+          },
+          {
+            "source": "visual/game/bee-die-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              64,
+              45
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-props-1",
+        "frames": [
+          {
+            "source": "visual/game/box-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 15,
+              "borderBottom": 14,
+              "borderRight": 15,
+              "borderTop": 15
+            }
+          },
+          {
+            "source": "visual/game/box-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderBottom": 14,
+              "borderRight": 16,
+              "borderTop": 15
+            }
+          },
+          {
+            "source": "visual/game/box-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderBottom": 15,
+              "borderRight": 16,
+              "borderTop": 14
+            }
+          },
+          {
+            "source": "visual/game/box-inner-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 15,
+              "borderBottom": 14,
+              "borderRight": 15,
+              "borderTop": 15
+            },
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/game/box-outline-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/brick-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/brick-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 5,
+              "borderBottom": 5,
+              "borderRight": 5,
+              "borderTop": 5
+            }
+          },
+          {
+            "source": "visual/game/ice-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              40,
+              41
+            ]
+          },
+          {
+            "source": "visual/game/ice-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              41,
+              41
+            ]
+          },
+          {
+            "source": "visual/game/ice-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              42,
+              30
+            ]
+          },
+          {
+            "source": "visual/game/spike-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              36,
+              64
+            ]
+          },
+          {
+            "source": "visual/game/saw-gear-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              116,
+              116
+            ]
+          },
+          {
+            "source": "visual/game/saw-spin-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              44
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-props-2",
+        "frames": [
+          {
+            "source": "visual/game/knife-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              32,
+              118
+            ]
+          },
+          {
+            "source": "visual/game/bomb-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              104,
+              109
+            ]
+          },
+          {
+            "source": "visual/game/black-hole-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              132,
+              129
+            ]
+          },
+          {
+            "source": "visual/game/ball-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/spiky-ball-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              144,
+              144
+            ]
+          },
+          {
+            "source": "visual/game/spiky-ball-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/spiky-ball-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/stone-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/move-arrow-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderBottom": 16,
+              "borderRight": 16,
+              "borderTop": 16
+            }
+          },
+          {
+            "source": "visual/game/solid-red-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-spider",
+        "frames": [
+          {
+            "source": "visual/game/spider-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              80,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              80,
+              75
+            ]
+          },
+          {
+            "source": "visual/game/spider-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              84,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-4-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              86,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-5-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              88,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-6-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              16,
+              16
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-hive",
+        "frames": [
+          {
+            "source": "visual/game/hive-a-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/hive-b-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              108,
+              131
+            ]
+          },
+          {
+            "source": "visual/game/hive-fan-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              156,
+              101
+            ]
+          },
+          {
+            "source": "visual/game/hive-fan-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              156,
+              101
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/cyblockbees-terrain",
+        "frames": [
+          {
+            "source": "visual/backdrop/ground-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/backdrop/platform-round-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/backdrop/platform-cube-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/backdrop/grass-1-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              96,
+              117
+            ]
+          },
+          {
+            "source": "visual/backdrop/grass-2-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              106,
+              90
+            ]
+          },
+          {
+            "source": "visual/backdrop/grass-3-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              96,
+              113
+            ]
+          },
+          {
+            "source": "visual/backdrop/grass-outline-1-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/backdrop/grass-outline-2-v1.png",
+            "geometry": "full",
+            "insets": {}
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/cyblockbees-clouds",
+        "frames": [
+          {
+            "source": "visual/backdrop/cloud-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              220,
+              115
+            ]
+          },
+          {
+            "source": "visual/backdrop/cloud-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              250,
+              137
+            ]
+          },
+          {
+            "source": "visual/backdrop/cloud-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              236,
+              99
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/cyblockbees-landscape",
+        "frames": [
+          {
+            "source": "visual/backdrop/water-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/backdrop/tree-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              420,
+              841
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/cyblockbees-hud",
+        "frames": [
+          {
+            "source": "visual/ui/icon-pencil-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/bar-fill-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 18,
+              "borderBottom": 17,
+              "borderRight": 18,
+              "borderTop": 17
+            }
+          },
+          {
+            "source": "visual/ui/bar-track-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 17,
+              "borderBottom": 17,
+              "borderRight": 18,
+              "borderTop": 17
+            }
+          },
+          {
+            "source": "visual/ui/timer-fill-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/timer-track-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/star-on-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/star-off-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/hand-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              96,
+              96
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/effect/cyblockbees-fx",
+        "frames": [
+          {
+            "source": "visual/effect/fx-glow-1-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-glow-2-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-glow-3-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-spark-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              64
+            ]
+          },
+          {
+            "source": "visual/effect/fx-smoke-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-ripple-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              32,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-wind-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-swirl-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-sequence-1-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-ring-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-bubble-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-prop-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              64
+            ]
+          },
+          {
+            "source": "visual/effect/fx-sequence-2-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              64
+            ]
+          },
+          {
+            "source": "visual/effect/fx-sequence-3-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-sequence-4-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-noise-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-noise-poison-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

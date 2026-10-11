@@ -9,7 +9,11 @@
     "verify:tap-package": "node tests/tap/package.cjs",
     "copy:review": "node project-scripts/copy-review/server.cjs",
     "verify:copy-review": "node project-scripts/copy-review/verify.cjs",
+    "announcements": "node project-scripts/announcements/server.cjs",
+    "verify:announcements": "node project-scripts/announcements/verify.cjs",
     "verify:game-bundles": "node project-scripts/verify-game-bundles.js",
+    "verify:lobby-tags": "node tools/verify-lobby-tags.cjs",
+    "verify:audio": "node project-scripts/audio/verify-packed-audio.cjs",
     "verify:wechat-package-size": "node project-scripts/verify-wechat-package-size.js",
     "verify:fonts": "node project-scripts/verify-fonts.cjs && node project-scripts/fonts/verify-coverage.cjs"
   },

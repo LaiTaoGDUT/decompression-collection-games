@@ -1,9 +1,15 @@
 import { DoodleJumpLevelGenerator } from './DoodleJumpLevelGenerator';
+import { DoodleJumpCollectibleSystem, type DoodleJumpCollectibleSnapshot,
+    type DoodleJumpCollectibleState, type DoodleJumpCollectibleEvent } from './DoodleJumpCollectibleSystem';
 import {
     DOODLE_JUMP_RULES_VERSION,
     reflectedPlatformX,
     referenceMovingSpeed,
     stepDoodleJumpVertical,
+    stepDoodleJumpHorizontal,
+    referenceFootTouchesPlatform,
+    referenceSine,
+    referenceShiftEasing,
     type DoodleJumpGenerationState,
     type DoodleJumpSpawnPlan,
 } from './DoodleJumpReferenceRules';
@@ -46,7 +52,6 @@ import type {
 export type DoodleJumpFailureReason =
     | 'fall'
     | 'monster-contact'
-    | 'spikes'
     | DoodleJumpHazardFailureReason;
 
 export interface DoodleJumpProjectileTargetHit {
@@ -54,6 +59,43 @@ export interface DoodleJumpProjectileTargetHit {
     readonly enemyHit?: DoodleJumpProjectileHitResult;
     readonly x: number;
     readonly y: number;
+}
+
+export interface DoodleJumpProjectileSnapshot {
+    readonly id: number;
+    readonly x: number;
+    readonly y: number;
+    readonly velocityX: number;
+    readonly velocityY: number;
+    readonly remainingSeconds: number;
+}
+interface MutableProjectile {
+    id: number; x: number; y: number; previousX: number; previousY: number;
+    velocityX: number; velocityY: number; remainingSeconds: number;
+}
+
+export interface DoodleJumpPlatformEffectState {
+    motionActivatedAt: number;
+    restX: number;
+    restY: number;
+    shiftStartedAt: number;
+    shiftFromX: number;
+    shiftFromY: number;
+    shiftTargetX: number;
+    shiftTargetY: number;
+    shiftDurationSeconds: number;
+    portalFadingIn: boolean;
+    shiftProgress: number;
+    shakePhase: number;
+    shakeRate: number;
+    shiftTimerFrames: number;
+}
+
+function initialPlatformEffect(config: DoodleJumpFixedPlatformConfig): DoodleJumpPlatformEffectState {
+    return { motionActivatedAt: -1, restX: config.x, restY: config.y, shiftStartedAt: -1,
+        shiftFromX: config.x, shiftFromY: config.y, shiftTargetX: config.x, shiftTargetY: config.y,
+        shiftDurationSeconds: 0, portalFadingIn: false, shiftProgress: 0, shakePhase: -1,
+        shakeRate: 12 + hashDoodleJumpSeed(config.id) % 5, shiftTimerFrames: -1 };
 }
 
 export interface DoodleJumpPlatformSnapshot {
@@ -72,6 +114,7 @@ export interface DoodleJumpPlatformSnapshot {
     readonly warningProgress: number;
     readonly consumeAt?: number;
     readonly effectStartedAt?: number;
+    readonly effectState?: Readonly<DoodleJumpPlatformEffectState>;
     readonly predecessorId?: string;
     readonly generationAttempts: number;
     readonly degraded: boolean;
@@ -80,7 +123,13 @@ export interface DoodleJumpPlatformSnapshot {
 }
 
 export interface DoodleJumpSimulationSnapshot {
+    readonly collectibles: readonly DoodleJumpCollectibleSnapshot[];
+    readonly collectibleState: DoodleJumpCollectibleState;
     readonly rulesVersion: number;
+    readonly filteredTilt: number;
+    readonly projectiles: readonly DoodleJumpProjectileSnapshot[];
+    readonly nextProjectileId: number;
+    readonly shotCooldownFrames: number;
     readonly generationState: DoodleJumpGenerationState;
     readonly playerX: number;
     readonly playerY: number;
@@ -108,6 +157,9 @@ export interface DoodleJumpSimulationSnapshot {
 }
 
 export interface DoodleJumpSimulationPresentationView {
+    readonly collectibles: readonly DoodleJumpCollectibleSnapshot[];
+    readonly collectedCarrotCount: number;
+    readonly projectiles: readonly DoodleJumpProjectileSnapshot[];
     readonly playerX: number;
     readonly playerY: number;
     readonly velocityX: number;
@@ -138,6 +190,7 @@ interface MutablePlatformPresentation {
     y: number;
     baseX: number;
     baseY: number;
+    spawnPlan?: DoodleJumpSpawnPlan;
     width: number;
     collisionEnabled: boolean;
     consumed: boolean;
@@ -150,6 +203,9 @@ interface MutablePlatformPresentation {
 }
 
 interface MutableSimulationPresentationView {
+    collectibles: readonly DoodleJumpCollectibleSnapshot[];
+    collectedCarrotCount: number;
+    projectiles: readonly DoodleJumpProjectileSnapshot[];
     playerX: number;
     playerY: number;
     velocityX: number;
@@ -188,6 +244,7 @@ interface MutablePlatform {
     consumed: boolean;
     consumeAt: number;
     effectStartedAt: number;
+    effectState: DoodleJumpPlatformEffectState;
     warningProgress: number;
     predecessorId?: string;
     generationAttempts: number;
@@ -213,46 +270,7 @@ interface PresentedPosition {
     y: number;
 }
 
-const SHIFTING_PLATFORM_HOLD_SECONDS = 0.65;
-const SHIFTING_PLATFORM_TRANSITION_SECONDS = 0.28;
-const SHIFTING_PLATFORM_CYCLE_SECONDS = SHIFTING_PLATFORM_HOLD_SECONDS * 4
-    + SHIFTING_PLATFORM_TRANSITION_SECONDS * 4;
-
-function moveTowards(current: number, target: number, maximumDelta: number): number {
-    if (current < target) return Math.min(target, current + maximumDelta);
-    if (current > target) return Math.max(target, current - maximumDelta);
-    return current;
-}
-
-function shiftingPlatformSegmentAt(elapsedSeconds: number): number {
-    const cycle = elapsedSeconds % SHIFTING_PLATFORM_CYCLE_SECONDS;
-    const hold = SHIFTING_PLATFORM_HOLD_SECONDS;
-    const transition = SHIFTING_PLATFORM_TRANSITION_SECONDS;
-    const firstTransitionEnd = hold + transition;
-    const secondHoldEnd = firstTransitionEnd + hold;
-    const secondTransitionEnd = secondHoldEnd + transition;
-    const thirdHoldEnd = secondTransitionEnd + hold;
-    const returnToSecondEnd = thirdHoldEnd + transition;
-    const secondReturnHoldEnd = returnToSecondEnd + hold;
-
-    if (cycle < hold) return 0;
-    if (cycle < firstTransitionEnd) return (cycle - hold) / transition;
-    if (cycle < secondHoldEnd) return 1;
-    if (cycle < secondTransitionEnd) return 1 + (cycle - secondHoldEnd) / transition;
-    if (cycle < thirdHoldEnd) return 2;
-    if (cycle < returnToSecondEnd) return 2 - (cycle - thirdHoldEnd) / transition;
-    if (cycle < secondReturnHoldEnd) return 1;
-    return 1 - (cycle - secondReturnHoldEnd) / transition;
-}
-
 export class DoodleJumpSimulation {
-    // 配置不可变；弱引用缓存同时覆盖正式平台与可达性预测的临时候选，
-    // 被淘汰的平台/候选不会因为缓存而在长局中一直驻留。
-    private readonly motionProfiles = new WeakMap<DoodleJumpFixedPlatformConfig, Readonly<{
-        amplitude: number;
-        periodSeconds: number;
-        phaseRadians: number;
-    }>>();
     private readonly platforms: MutablePlatform[];
     private readonly worldPlatforms: IndexedWorldPlatform[] = [];
     private readonly platformById = new Map<string, IndexedWorldPlatform>();
@@ -267,18 +285,30 @@ export class DoodleJumpSimulation {
     private readonly combat: DoodleJumpCombatSystem;
     private readonly hazards: DoodleJumpHazardSystem;
     private readonly items: DoodleJumpItemSystem;
+    private readonly collectibles: DoodleJumpCollectibleSystem;
     private readonly levelGenerator: DoodleJumpLevelGenerator;
     private generatorCursor = 0;
     private generatedLayerCount = 0;
     private latestMainLayer: MutablePlatform[] = [];
     private degradedGenerationCount = 0;
-    private nextGeneratedId = 8;
+    private nextGeneratedId = 1;
     private accumulator = 0;
     private elapsedSeconds = 0;
     private droppedFrameSeconds = 0;
     private playerX = 375;
     private playerY = 114;
     private velocityX = 0;
+    private filteredTilt = 0;
+    private readonly projectiles: MutableProjectile[] = [];
+    private readonly presentationProjectiles: MutableProjectile[] = [];
+    private nextProjectileId = 1;
+    private shotCooldownFrames = 0;
+    private shotsFired = 0;
+    private fireHeld = false;
+    private fireAimX = 0;
+    private fireAimY = 1;
+    private queuedShot?: { x: number; y: number };
+
     private velocityY = 1000;
     private cameraBottomY = 0;
     private maxAbsoluteWorldY = 114;
@@ -303,6 +333,7 @@ export class DoodleJumpSimulation {
     private readonly previousEnemyPositions = new Map<string, InterpolationOrigin>();
     private readonly previousItemPositions = new Map<string, InterpolationOrigin>();
     private readonly previousHazardPositions = new Map<string, InterpolationOrigin>();
+    private readonly previousCollectiblePositions = new Map<string, InterpolationOrigin>();
 
     constructor(private readonly config: DoodleJumpGameplayConfig, seed: string | number = 1) {
         this.initialSeed = hashDoodleJumpSeed(seed) || 1;
@@ -311,12 +342,16 @@ export class DoodleJumpSimulation {
         this.combat = new DoodleJumpCombatSystem(config, this.randomStreams);
         this.hazards = new DoodleJumpHazardSystem(config, this.randomStreams);
         this.items = new DoodleJumpItemSystem(config, this.randomStreams);
+        this.collectibles = new DoodleJumpCollectibleSystem(config);
         this.platforms = [];
         this.worldIndex = {
             platforms: this.worldPlatforms,
             platformById: this.platformById,
         };
         this.presentationView = {
+            collectibles: this.collectibles.getPresentationCollectibles(),
+            collectedCarrotCount: 0,
+            projectiles: this.presentationProjectiles,
             playerX: this.playerX,
             playerY: this.playerY,
             velocityX: this.velocityX,
@@ -347,10 +382,13 @@ export class DoodleJumpSimulation {
         this.interpolationReady = false;
         this.elapsedSeconds = 0;
         this.droppedFrameSeconds = 0;
+        this.clearProjectiles();
+        this.nextProjectileId = 1;
         const start = this.config.fixedPlatforms[0];
         this.playerX = start.x;
         this.playerY = start.y + this.config.player.collisionHeight / 2;
         this.velocityX = 0;
+        this.filteredTilt = 0;
         this.velocityY = this.config.player.bounceVelocity;
         this.cameraBottomY = 0;
         this.maxAbsoluteWorldY = this.playerY;
@@ -365,10 +403,11 @@ export class DoodleJumpSimulation {
         this.combat.reset();
         this.hazards.reset();
         this.items.reset();
+        this.collectibles.reset();
         this.generatorCursor = 0;
         this.generatedLayerCount = 0;
         this.degradedGenerationCount = 0;
-        this.nextGeneratedId = 8;
+        this.nextGeneratedId = this.config.fixedPlatforms.length;
         this.platforms.length = 0;
         this.config.fixedPlatforms.forEach((platform, index) => {
             this.platforms.push({
@@ -381,6 +420,7 @@ export class DoodleJumpSimulation {
                 consumed: false,
                 consumeAt: 0,
                 effectStartedAt: 0,
+                effectState: initialPlatformEffect(platform),
                 warningProgress: 0,
                 predecessorId: index > 0
                     ? this.config.fixedPlatforms[index - 1].id
@@ -388,7 +428,7 @@ export class DoodleJumpSimulation {
                 generationAttempts: 0,
                 degraded: false,
                 mainRoute: true,
-                layerIndex: index - 7,
+                layerIndex: index + 1 - this.config.fixedPlatforms.length,
             });
         });
         this.platforms.forEach((platform, index) => {
@@ -399,12 +439,13 @@ export class DoodleJumpSimulation {
             platform.consumed = false;
             platform.consumeAt = 0;
             platform.effectStartedAt = 0;
+            platform.effectState = initialPlatformEffect(platform.config);
             platform.warningProgress = 0;
             platform.predecessorId = index > 0 ? this.platforms[index - 1].config.id : undefined;
             platform.generationAttempts = 0;
             platform.degraded = false;
             platform.mainRoute = true;
-            platform.layerIndex = index - 7;
+            platform.layerIndex = index + 1 - this.config.fixedPlatforms.length;
         });
         const fixedMainPlatforms = this.platforms.slice();
         this.generatedLayerCount = 0;
@@ -442,6 +483,28 @@ export class DoodleJumpSimulation {
         this.playerX = finite(snapshot.playerX, 'playerX');
         this.playerY = finite(snapshot.playerY, 'playerY');
         this.velocityX = finite(snapshot.velocityX, 'velocityX');
+        this.filteredTilt = finite(snapshot.filteredTilt, 'filteredTilt');
+        this.clearProjectiles();
+        if (!Array.isArray(snapshot.projectiles) || snapshot.projectiles.length > 128
+            || !Number.isSafeInteger(snapshot.nextProjectileId) || snapshot.nextProjectileId < 1
+            || !Number.isSafeInteger(snapshot.shotCooldownFrames) || snapshot.shotCooldownFrames < 0) {
+            throw new Error('Invalid restored projectile state.');
+        }
+        this.nextProjectileId = snapshot.nextProjectileId;
+        this.shotCooldownFrames = snapshot.shotCooldownFrames;
+        const projectileIds = new Set<number>();
+        for (const projectile of snapshot.projectiles) {
+            if (!Number.isSafeInteger(projectile.id) || projectile.id < 1
+                || projectile.id >= this.nextProjectileId || projectileIds.has(projectile.id)) {
+                throw new Error('Invalid restored projectile ID.');
+            }
+            projectileIds.add(projectile.id);
+            const x = finite(projectile.x, 'projectile.x'), y = finite(projectile.y, 'projectile.y');
+            this.projectiles.push({ id: projectile.id, x, y, previousX: x, previousY: y,
+                velocityX: finite(projectile.velocityX, 'projectile.velocityX'),
+                velocityY: finite(projectile.velocityY, 'projectile.velocityY'),
+                remainingSeconds: Math.max(0, finite(projectile.remainingSeconds, 'projectile.remainingSeconds')) });
+        }
         this.velocityY = finite(snapshot.velocityY, 'velocityY');
         this.cameraBottomY = finite(snapshot.cameraBottomY, 'cameraBottomY');
         this.maxAbsoluteWorldY = Math.max(
@@ -460,7 +523,7 @@ export class DoodleJumpSimulation {
             Math.floor(snapshot.degradedGenerationCount),
         );
         this.platforms.length = 0;
-        let maximumGeneratedId = 7;
+        let maximumGeneratedId = this.config.fixedPlatforms.length - 1;
         snapshot.platforms.forEach((platform) => {
             const generatedId = Number(/^(?:G|resurrect-safe-)(\d+)$/.exec(platform.id)?.[1]);
             if (Number.isInteger(generatedId)) maximumGeneratedId = Math.max(
@@ -469,8 +532,7 @@ export class DoodleJumpSimulation {
             );
             const restoredX = finite(platform.x, `platform ${platform.id} x`);
             const restoredY = finite(platform.y, `platform ${platform.id} y`);
-            // Width is a rule, not per-platform state; rebuild it from the current config.
-            // Large-monster widening is re-applied after combat is restored.
+            // Native platforms share one width, except the starter floor.
             const restoredWidth = this.baseWidthFor(platform.id);
             const zeroOriginConfig: DoodleJumpFixedPlatformConfig = Object.freeze({
                 id: platform.id,
@@ -507,6 +569,7 @@ export class DoodleJumpSimulation {
                 consumed: platform.consumed,
                 consumeAt: finite(platform.consumeAt ?? 0, `platform ${platform.id} consumeAt`),
                 effectStartedAt: finite(platform.effectStartedAt ?? 0, `platform ${platform.id} effectStartedAt`),
+                effectState: { ...initialPlatformEffect(config), ...platform.effectState },
                 warningProgress: Math.max(0, platform.warningProgress),
                 predecessorId: platform.predecessorId,
                 generationAttempts: Math.max(0, Math.floor(platform.generationAttempts)),
@@ -533,7 +596,6 @@ export class DoodleJumpSimulation {
             this.elapsedSeconds,
             this.worldIndex,
         );
-        this.applyLargeMonsterPlatformWidths();
         this.hazards.restore(
             snapshot.hazards,
             snapshot.hazardStats,
@@ -545,6 +607,7 @@ export class DoodleJumpSimulation {
             snapshot.itemStatus,
             this.worldIndex,
         );
+        this.collectibles.restore(snapshot.collectibles, snapshot.collectibleState, this.worldIndex);
         this.worldNeedsPreStepReconcile = false;
     }
 
@@ -559,7 +622,8 @@ export class DoodleJumpSimulation {
             && steps < this.config.fixedStep.maxSubSteps
             && !this.fatalReason) {
             this.captureInterpolationOrigin();
-            this.step(fixedDelta, Math.max(-1, Math.min(1, horizontalInput)), visibleHeight);
+            this.step(fixedDelta, Number.isFinite(horizontalInput)
+                ? Math.max(-1 / this.config.sensor.fullTilt, Math.min(1 / this.config.sensor.fullTilt, horizontalInput)) : 0, visibleHeight);
             this.accumulator -= fixedDelta;
             steps += 1;
         }
@@ -572,7 +636,7 @@ export class DoodleJumpSimulation {
     /**
      * Builds the round's initial world for the real viewport before play
      * starts. Without this the first gameplay step would generate every layer
-     * above the fixed route and spawn its monsters, hazards and items in one
+     * above the starting floor and spawn its monsters, hazards and items in one
      * frame, which is the hitch on the first jump after spawning.
      */
     prepareWorld(visibleHeight: number): void {
@@ -596,13 +660,65 @@ export class DoodleJumpSimulation {
         return this.cameraBottomY;
     }
 
+    queueShot(aimX: number, aimY: number): void {
+        if (!this.fatalReason) this.queuedShot = this.normalizedAim(aimX, aimY);
+    }
+
+    setFireHeld(held: boolean, aimX: number, aimY: number): void {
+        this.fireHeld = held;
+        const aim = this.normalizedAim(aimX, aimY);
+        this.fireAimX = aim.x; this.fireAimY = aim.y;
+    }
+
+    clearFireInput(discardQueuedShot = true): void {
+        this.fireHeld = false;
+        if (discardQueuedShot) this.queuedShot = undefined;
+    }
+
+    clearProjectiles(): void {
+        this.projectiles.length = 0; this.presentationProjectiles.length = 0;
+        this.shotCooldownFrames = 0; this.shotsFired = 0; this.clearFireInput();
+    }
+
+    drainShotsFired(): number { const count = this.shotsFired; this.shotsFired = 0; return count; }
+
+    private normalizedAim(x: number, y: number): { x: number; y: number } {
+        const length = Math.hypot(x, y);
+        return Number.isFinite(length) && length > 1e-6 ? { x: x / length, y: y / length } : { x: 0, y: 1 };
+    }
+
+    private updateProjectiles(delta: number, visibleHeight: number): void {
+        if (this.shotCooldownFrames > 0) this.shotCooldownFrames -= 1;
+        // Resolve existing bullets before player contact, using the same physics clock.
+        for (let index = this.projectiles.length - 1; index >= 0; index -= 1) {
+            const projectile = this.projectiles[index];
+            projectile.previousX = projectile.x; projectile.previousY = projectile.y;
+            projectile.x += projectile.velocityX * delta; projectile.y += projectile.velocityY * delta;
+            projectile.remainingSeconds -= delta;
+            const hit = this.hitEnemyByProjectileSweep(projectile.previousX, projectile.previousY, projectile.x, projectile.y);
+            if (hit || projectile.remainingSeconds <= 1e-8
+                || projectile.y <= this.cameraBottomY - 160
+                || projectile.y >= this.cameraBottomY + visibleHeight + 160) this.projectiles.splice(index, 1);
+        }
+        const queued = this.queuedShot;
+        this.queuedShot = undefined;
+        if ((!queued && !this.fireHeld) || this.shotCooldownFrames > 0 || this.hazards.isPlayerCaptured()) return;
+        const aim = queued ?? { x: this.fireAimX, y: this.fireAimY };
+        const x = this.playerX + aim.x * 34, y = this.playerY + aim.y * 34;
+        this.projectiles.push({ id: this.nextProjectileId++, x, y, previousX: x, previousY: y,
+            velocityX: aim.x * this.config.shooting.speed, velocityY: aim.y * this.config.shooting.speed,
+            remainingSeconds: this.config.shooting.lifetimeSeconds });
+        this.shotCooldownFrames = Math.ceil(this.config.shooting.cooldownMs / (delta * 1000));
+        this.shotsFired += 1;
+    }
+
     hitEnemyByProjectileSweep(
         fromX: number,
         fromY: number,
         toX: number,
         toY: number,
     ): DoodleJumpProjectileTargetHit | undefined {
-        if (this.fatalReason) return undefined;
+        if (this.fatalReason || this.hazards.isPlayerCaptured()) return undefined;
         const ufoHit = this.hazards.hitUfoByProjectileSweep(fromX, fromY, toX, toY);
         if (ufoHit) {
             return Object.freeze({
@@ -713,6 +829,7 @@ export class DoodleJumpSimulation {
                 consumed: false,
                 consumeAt: 0,
                 effectStartedAt: 0,
+                effectState: initialPlatformEffect(generatedConfig),
                 warningProgress: 0,
                 predecessorId: undefined,
                 generationAttempts: 0,
@@ -731,6 +848,8 @@ export class DoodleJumpSimulation {
         this.playerX = target.x;
         this.playerY = target.y + this.config.player.collisionHeight / 2;
         this.velocityX = 0;
+        this.filteredTilt = 0;
+        this.clearProjectiles();
         this.velocityY = this.config.resurrection.launchVelocity;
         this.accumulator = 0;
         this.interpolationReady = false;
@@ -768,7 +887,14 @@ export class DoodleJumpSimulation {
         // Lifecycle and persistence boundary: callers may retain this deeply
         // frozen value without observing later simulation mutations.
         return Object.freeze({
+            collectibles: this.collectibles.getSnapshots(),
+            collectibleState: this.collectibles.getState(),
             rulesVersion: DOODLE_JUMP_RULES_VERSION,
+            filteredTilt: this.filteredTilt,
+            projectiles: Object.freeze(this.projectiles.map(({ id, x, y, velocityX, velocityY, remainingSeconds }) =>
+                Object.freeze({ id, x, y, velocityX, velocityY, remainingSeconds }))),
+            nextProjectileId: this.nextProjectileId,
+            shotCooldownFrames: this.shotCooldownFrames,
             generationState: this.levelGenerator.getSnapshot(),
             playerX: this.playerX,
             playerY: this.playerY,
@@ -807,6 +933,7 @@ export class DoodleJumpSimulation {
                 warningProgress: platform.warningProgress,
                 consumeAt: platform.consumeAt,
                 effectStartedAt: platform.effectStartedAt,
+                effectState: Object.freeze({ ...platform.effectState }),
                 predecessorId: platform.predecessorId,
                 generationAttempts: platform.generationAttempts,
                 degraded: platform.degraded,
@@ -831,6 +958,7 @@ export class DoodleJumpSimulation {
                     y: platform.y,
                     baseX: platform.config.x,
                     baseY: platform.config.y,
+                    spawnPlan: platform.config.spawnPlan,
                     width: platform.width,
                     collisionEnabled: platform.collisionEnabled,
                     consumed: platform.consumed,
@@ -849,6 +977,7 @@ export class DoodleJumpSimulation {
             presentation.y = platform.y;
             presentation.baseX = platform.config.x;
             presentation.baseY = platform.config.y;
+            presentation.spawnPlan = platform.config.spawnPlan;
             presentation.width = platform.width;
             presentation.collisionEnabled = platform.collisionEnabled;
             presentation.consumed = platform.consumed;
@@ -875,14 +1004,33 @@ export class DoodleJumpSimulation {
         this.presentationView.hazardStats = this.hazards.getPresentationStats();
         this.presentationView.items = this.items.getPresentationItems();
         this.presentationView.itemStatus = this.items.getPresentationStatus();
+        this.presentationView.collectibles = this.collectibles.getPresentationCollectibles();
+        this.presentationView.collectedCarrotCount = this.collectibles.getCount();
         this.presentationView.seed = this.initialSeed;
         this.presentationView.generatorCursor = this.generatorCursor;
         this.presentationView.degradedGenerationCount = this.degradedGenerationCount;
         this.presentationView.itemRandomCursor = this.randomStreams.getCursor('item');
         this.presentationView.platforms = this.presentationPlatforms;
         this.presentationView.enemies = this.combat.getPresentationEnemies();
+        const alpha = this.interpolationReady ? Math.min(1, this.accumulator / this.config.fixedStep.seconds) : 1;
+        for (let index = 0; index < this.projectiles.length; index += 1) {
+            const projectile = this.projectiles[index];
+            const presented = this.presentationProjectiles[index] ?? { ...projectile };
+            Object.assign(presented, projectile);
+            presented.x = projectile.previousX + (projectile.x - projectile.previousX) * alpha;
+            presented.y = projectile.previousY + (projectile.y - projectile.previousY) * alpha;
+            this.presentationProjectiles[index] = presented;
+        }
+        this.presentationProjectiles.length = this.projectiles.length;
         this.applyPresentationInterpolation();
         return this.presentationView;
+    }
+
+    /** Input only needs the displayed player X, without rebuilding every entity's render view. */
+    getPresentedPlayerX(): number {
+        if (!this.interpolationReady) return this.playerX;
+        const alpha = Math.max(0, Math.min(1, this.accumulator / this.config.fixedStep.seconds));
+        return this.interpolateContinuous(this.previousPlayerX, this.playerX, alpha);
     }
 
     private captureInterpolationOrigin(): void {
@@ -920,6 +1068,8 @@ export class DoodleJumpSimulation {
         this.pruneInterpolationOrigins(this.previousEnemyPositions, stamp);
         this.pruneInterpolationOrigins(this.previousItemPositions, stamp);
         this.pruneInterpolationOrigins(this.previousHazardPositions, stamp);
+        this.recordInterpolationOrigins(this.previousCollectiblePositions, this.collectibles.getPresentationCollectibles(), stamp);
+        this.pruneInterpolationOrigins(this.previousCollectiblePositions, stamp);
         this.interpolationReady = true;
     }
 
@@ -990,6 +1140,8 @@ export class DoodleJumpSimulation {
             this.previousHazardPositions,
             alpha,
         );
+        this.interpolatePositions(view.collectibles as unknown as PresentedPosition[],
+            this.previousCollectiblePositions, alpha);
     }
 
     private interpolatePositions(
@@ -1014,14 +1166,17 @@ export class DoodleJumpSimulation {
         return from + (to - from) * alpha;
     }
 
+    drainCollectibleEvents(): readonly DoodleJumpCollectibleEvent[] {
+        return this.collectibles.drainEvents();
+    }
+
     private step(delta: number, input: number, visibleHeight: number): void {
         this.elapsedSeconds += delta;
         this.monsterContactGraceRemaining = Math.max(
             0,
             this.monsterContactGraceRemaining - delta,
         );
-        this.updatePlatforms(delta);
-        this.items.updateTimers(delta, this.playerX, this.playerY, this.velocityY);
+        this.updatePlatforms(delta, visibleHeight);
         this.updateWorldSystems(
             delta,
             this.cameraBottomY,
@@ -1029,22 +1184,20 @@ export class DoodleJumpSimulation {
             this.worldNeedsPreStepReconcile,
         );
         this.worldNeedsPreStepReconcile = false;
+        this.updateProjectiles(delta, visibleHeight);
         const player = this.config.player;
-        if (Math.abs(input) > 0.0001) {
-            this.velocityX = moveTowards(
-                this.velocityX,
-                input * player.maxHorizontalSpeed,
-                player.horizontalAcceleration * delta,
-            );
-        } else {
-            this.velocityX = moveTowards(
-                this.velocityX,
-                0,
-                player.horizontalDeceleration * delta,
-            );
-        }
+        const scale = this.config.design.width / 320;
+        const steering = stepDoodleJumpHorizontal(this.filteredTilt, input * this.config.sensor.fullTilt,
+            delta, this.config.sensor.smoothingSeconds,
+            player.maxHorizontalSpeed / (this.config.sensor.fullTilt * 60 * scale), scale);
+        this.filteredTilt = steering.filteredTilt;
+        this.velocityX = steering.velocity;
+        const previousPlayerX = this.playerX;
+        const previousPlayerY = this.playerY;
         const previousFootY = this.playerY - player.collisionHeight / 2;
-        const itemPhysics = this.items.getPhysics();
+        const captured = this.hazards.isPlayerCaptured();
+        const itemPhysics = this.items.getPhysics(this.velocityY);
+        if (itemPhysics.initialVerticalVelocity !== undefined) this.velocityY = itemPhysics.initialVerticalVelocity;
         const blackHoleAttraction = this.hazards.resolveBlackHoleAttraction(this.playerX, this.playerY);
         this.velocityX += blackHoleAttraction.accelerationX * delta;
         this.velocityY += blackHoleAttraction.accelerationY * delta;
@@ -1062,23 +1215,32 @@ export class DoodleJumpSimulation {
                 this.velocityY = Math.max(itemPhysics.minimumVerticalVelocity, this.velocityY);
             }
         }
-        this.playerX += this.velocityX * delta;
-        this.playerY += verticalDisplacement;
+        if (captured) { this.velocityX = 0; this.velocityY = 0; }
+        else { this.playerX += this.velocityX * delta; this.playerY += verticalDisplacement; }
+        this.items.updateTimers(delta, this.playerX, this.playerY, this.velocityY);
         if (this.playerX < player.wrapLeft) this.playerX += player.wrapDistance;
         if (this.playerX > player.wrapRight) this.playerX -= player.wrapDistance;
+        this.collectibles.reconcileWorld(this.worldIndex, this.cameraBottomY);
+        if (!captured) this.collectibles.resolvePickups(previousPlayerX, previousPlayerY, this.playerX, this.playerY);
         const collisionVelocityY = this.velocityY;
         const collisionPlayerY = this.playerY;
         // Platform-anchored landing items must be collected before resolving
         // the same downward platform contact. Otherwise spring/trampoline is
         // stored until a later landing and appears to do nothing on pickup.
-        this.items.resolvePickups(
+        const pickup = captured ? undefined : this.items.resolvePickups(
             this.playerX,
             this.playerY,
             player.collisionWidth,
-            player.collisionHeight,
+            player.collisionHeight, previousFootY, this.velocityY,
         );
-        if (this.velocityY <= 0 && itemPhysics.platformCollisionEnabled) {
-            this.resolveLanding(previousFootY);
+        if (pickup) {
+            this.velocityY = pickup.velocityY;
+            if (pickup.surfaceY !== undefined) this.playerY = pickup.surfaceY + player.collisionHeight / 2;
+            if (pickup.playerX !== undefined) this.playerX = pickup.playerX;
+            if (pickup.playerY !== undefined) this.playerY = pickup.playerY;
+        }
+        if (!captured && !pickup && this.velocityY <= 0 && itemPhysics.platformCollisionEnabled) {
+            this.resolveLanding(previousFootY, previousPlayerX);
         }
         const combatResult = this.combat.resolvePlayerCollision(
             this.playerX,
@@ -1091,21 +1253,11 @@ export class DoodleJumpSimulation {
         if (combatResult.outcome === 'stomp') {
             this.playerY = (combatResult.bounceSurfaceY ?? collisionPlayerY)
                 + player.collisionHeight / 2;
-            this.velocityY = player.bounceVelocity;
+            this.velocityY = 11 * 60 * this.config.design.width / 320;
         }
         const playerInvincible = this.items.hasFlightInvincibility()
             || this.items.hasTrampolineInvincibility()
             || this.items.hasShield();
-        const spikedPlatform = this.findSpikedPlatformContact(
-            previousFootY + player.collisionHeight / 2,
-            collisionPlayerY,
-        );
-        if (spikedPlatform && !playerInvincible) {
-            this.fatalReason = 'spikes';
-            this.fatalFocusX = spikedPlatform.x;
-            this.fatalFocusY = spikedPlatform.y - this.config.platformBehavior.spiked.collisionDepth;
-            return;
-        }
         const hazardResult = this.hazards.resolvePlayer(
             delta,
             this.playerX,
@@ -1115,6 +1267,17 @@ export class DoodleJumpSimulation {
             player.collisionHeight,
             playerInvincible,
         );
+        if (hazardResult.capturedPlayerX !== undefined && hazardResult.capturedPlayerY !== undefined) {
+            this.playerX = hazardResult.capturedPlayerX; this.playerY = hazardResult.capturedPlayerY;
+            this.velocityX = 0; this.velocityY = 0;
+        }
+        if (hazardResult.bounceSurfaceY !== undefined) {
+            this.playerY = hazardResult.bounceSurfaceY + player.collisionHeight / 2;
+            this.velocityY = 11 * 60 * this.config.design.width / 320;
+        }
+        if (combatResult.outcome === 'contact' && playerInvincible && combatResult.enemyId) {
+            this.combat.defeatContactEnemy(combatResult.enemyId);
+        }
         this.velocityX += hazardResult.accelerationX * delta;
         this.velocityY += hazardResult.accelerationY * delta;
         if (hazardResult.fatalReason) {
@@ -1143,66 +1306,159 @@ export class DoodleJumpSimulation {
         );
     }
 
-    private updatePlatforms(_delta: number): void {
-        this.platforms.forEach((platform) => {
-            if (platform.config.type === 'moving') {
-                platform.x = this.platformXAt(platform.config, this.elapsedSeconds);
-            } else if (platform.config.type === 'shifting') {
-                const segment = shiftingPlatformSegmentAt(this.elapsedSeconds);
-                platform.x = platform.config.x + (segment - 1) * 70;
+    private updatePlatforms(delta: number, visibleHeight: number): void {
+        const scale = this.config.design.width / 320;
+        for (const platform of this.platforms) {
+            if (platform.config.spawnPlan?.entityOnly || platform.consumed) continue;
+            const state = platform.effectState;
+            const type = platform.config.type;
+            if (type === 'moving') platform.x = this.platformXAt(platform.config, this.elapsedSeconds);
+            if (type === 'vertical-moving') {
+                const raw = platform.config.spawnPlan?.referenceRawType ?? 12;
+                const downwardRange = raw % 2 === 1 ? (raw >= 14 ? 130 : 200) * scale : 0;
+                if (state.motionActivatedAt < 0 && platform.config.y - downwardRange - this.cameraBottomY < visibleHeight + 10 * scale)
+                    state.motionActivatedAt = this.elapsedSeconds;
+                if (state.motionActivatedAt >= 0) platform.y = this.verticalPlatformY(platform.config,
+                    this.elapsedSeconds - state.motionActivatedAt);
+            }
+            const shaking = type === 'shifting' && platform.config.spawnPlan?.referenceRawType === 41;
+            if (shaking && state.shiftTimerFrames >= 400) {
+                // Native shaking moves toward the target from the PREVIOUS position,
+                // with a shrinking ratio, then snaps once the per-frame change is <0.2.
+                const f = Math.fround;
+                state.shiftTimerFrames = f(state.shiftTimerFrames - delta * 60);
+                const previousX = f(platform.x / scale), targetX = f(state.shiftTargetX / scale);
+                const ratio = f(f(state.shiftTimerFrames - 400) * f(0.012658228));
+                let x = f(targetX + f(previousX - targetX) * ratio);
+                if (state.shiftTimerFrames < 470 && Math.abs(previousX - x) < 0.2) {
+                    x = targetX; state.shakePhase = previousX <= targetX ? 180 : 0;
+                    state.shiftTimerFrames = -1; state.shiftStartedAt = -1; state.restX = state.shiftTargetX;
+                }
+                platform.x = x * scale;
+            } else if (state.shiftStartedAt >= 0) {
+                const progress = Math.min(1, state.shiftProgress);
+                const eased = referenceShiftEasing(progress);
+                platform.x = Math.fround(state.shiftFromX / scale
+                    + Math.fround((state.shiftTargetX - state.shiftFromX) / scale) * eased) * scale;
+                platform.y = Math.fround(state.shiftFromY / scale
+                    + Math.fround((state.shiftTargetY - state.shiftFromY) / scale) * eased) * scale;
+                state.shiftProgress = Math.min(1, Math.fround(state.shiftProgress + Math.fround(delta / state.shiftDurationSeconds)));
+                if (state.shiftProgress >= 1) {
+                    state.restX = platform.x; state.restY = platform.y; state.shiftStartedAt = -1;
+                    if (type === 'teleport') platform.collisionEnabled = true;
+                }
+            } else if (type === 'shifting') {
+                if (shaking) {
+                    if (state.shakePhase < 0) { state.restX = Math.trunc(platform.x / scale) * scale; state.shakePhase = 0; }
+                    platform.x = Math.fround(state.restX / scale + Math.fround(referenceSine(state.shakePhase) * 5)) * scale;
+                    state.shakePhase = Math.fround(state.shakePhase + delta * 60 * state.shakeRate);
+                    if (state.shakePhase >= 360) state.shakePhase -= 360;
+                } else platform.x = state.restX;
+            }
+            if (type === 'exploding') {
+                if (platform.effectStartedAt > 0) {
+                    const progress = Math.min(1, (this.elapsedSeconds - platform.effectStartedAt) / (13 / 60));
+                    platform.warningProgress = 1 + progress;
+                    if (progress >= 1) platform.consumed = true;
+                    continue;
+                }
+                const threshold = platform.config.spawnPlan?.referenceRawType === 16 ? 150 * scale : visibleHeight + 10 * scale;
+                if (platform.consumeAt <= 0 && platform.y - this.cameraBottomY < threshold)
+                    platform.consumeAt = this.elapsedSeconds + (platform.config.spawnPlan?.referenceRawType === 16 ? 60
+                        : 60 + hashDoodleJumpSeed(platform.config.id) % 120) / 60;
+                if (platform.consumeAt <= 0) continue;
+                const remaining = platform.consumeAt - this.elapsedSeconds;
+                platform.warningProgress = Math.max(0, Math.min(1, 1 - remaining));
+                if (remaining <= 3 / 60) {
+                    platform.collisionEnabled = false; platform.effectStartedAt = this.elapsedSeconds; platform.warningProgress = 1.001;
+                }
+                continue;
+            }
+            if (platform.consumeAt <= 0) continue;
+            if (type === 'breakable') platform.y -= 3.5 * scale * delta * 60;
+            const duration = type === 'breakable' ? 50 / 60 : this.config.platformBehavior.teleport.fadeSeconds;
+            const progress = Math.max(0, Math.min(1, 1 - (platform.consumeAt - this.elapsedSeconds) / duration));
+            platform.warningProgress = state.portalFadingIn ? 1 - progress : progress;
+            if (this.elapsedSeconds + 1e-7 < platform.consumeAt) continue;
+            if (state.portalFadingIn) {
+                state.portalFadingIn = false; platform.consumeAt = 0; platform.collisionEnabled = true; platform.warningProgress = 0;
             } else {
-                platform.x = platform.config.x;
+                platform.collisionEnabled = false; platform.consumed = true; platform.warningProgress = 1;
             }
-            platform.y = this.platformYAt(platform.config, this.elapsedSeconds);
-            if (platform.consumed) return;
-            if (platform.config.type === 'exploding' && platform.effectStartedAt > 0) {
-                const effectProgress = Math.max(
-                    0,
-                    Math.min(1, (this.elapsedSeconds - platform.effectStartedAt) / 0.32),
-                );
-                platform.warningProgress = 1 + effectProgress;
-                if (effectProgress >= 1) platform.consumed = true;
-                return;
-            }
-            if (platform.consumeAt <= 0) return;
-            const remaining = platform.consumeAt - this.elapsedSeconds;
-            const warningDuration = platform.config.type === 'breakable' ? 0.45
-                : platform.config.type === 'disappearing' ? 0.35
-                    : platform.config.type === 'exploding'
-                        ? this.config.platformBehavior.explodingDelaySeconds
-                        : 0.15;
-            platform.warningProgress = remaining <= warningDuration
-                ? Math.max(0, Math.min(1, 1 - remaining / warningDuration))
-                : 0;
-            if (remaining > 0) return;
-            platform.collisionEnabled = false;
-            if (platform.config.type === 'exploding') {
-                platform.effectStartedAt = this.elapsedSeconds;
-                platform.warningProgress = 1.001;
-                return;
-            }
-            platform.consumed = true;
-            platform.warningProgress = 1;
-        });
+        }
     }
 
-    private resolveLanding(previousFootY: number): void {
+    private activatePlatformLandingEffect(platform: MutablePlatform): void {
+        if (platform.config.type === 'shifting') {
+            const scale = this.config.design.width / 320;
+            const shaking = platform.config.spawnPlan?.referenceRawType === 41;
+            const challenge = Math.min(1, this.cameraBottomY / scale / 25000);
+            for (const target of this.platforms) {
+                if (target.config.type !== 'shifting' || target.consumed
+                    || (target.config.spawnPlan?.referenceRawType === 41) !== shaking) continue;
+                const state = target.effectState;
+                const minimumDistance = shaking ? 50 : Math.trunc(5 + challenge * 45);
+                const maximumDistance = shaking ? 115 : Math.trunc(50 + challenge * 65);
+                const distance = minimumDistance + Math.floor(this.nextPlatformRandom() * (maximumDistance - minimumDistance));
+                const origin = Math.trunc((shaking
+                    ? state.shiftTimerFrames >= 400 ? state.shiftTargetX : state.restX
+                    : target.x) / scale);
+                let x: number;
+                if (shaking) {
+                    x = origin + (this.nextPlatformRandom() < 0.5 ? distance : -distance);
+                    if (x <= 32) x += 225; else if (x >= 259) x -= 225;
+                } else {
+                    const moveLeft = origin + distance > 287 || this.nextPlatformRandom() < 0.5;
+                    x = origin + (moveLeft ? -distance : distance);
+                    if (x <= 33) x = Math.min(origin + distance, 287);
+                }
+                state.shiftProgress = 0;
+                if (shaking) { state.shiftTimerFrames = 480; state.shakeRate = 12 + Math.floor(this.nextPlatformRandom() * 5); }
+                state.shiftStartedAt = this.elapsedSeconds; state.shiftFromX = target.x; state.shiftFromY = target.y;
+                state.shiftTargetX = x * scale; state.shiftTargetY = target.y;
+                state.shiftDurationSeconds = shaking ? 79 / 60 : 1 / ((0.025 + 0.035 * challenge) * 60);
+            }
+        }
+        if (platform.config.type !== 'teleport') return;
+        const plan = platform.config.spawnPlan;
+        const next = this.platforms.find((candidate) => candidate !== platform && candidate.config.type === 'teleport'
+            && candidate.config.spawnPlan?.patternId === plan?.patternId
+            && candidate.config.spawnPlan?.segmentId === plan?.segmentId && !candidate.consumed
+            && !candidate.collisionEnabled && candidate.consumeAt <= 0 && candidate.config.spawnPlan?.initialHidden);
+        const moving = plan?.referenceRawType === 53;
+        if (moving && next) {
+            const state = platform.effectState;
+            state.shiftProgress = 0;
+            state.shiftStartedAt = this.elapsedSeconds; state.shiftFromX = platform.x; state.shiftFromY = platform.y;
+            state.shiftTargetX = next.x; state.shiftTargetY = next.y; state.shiftDurationSeconds = 1 / (0.06 * 60);
+            platform.collisionEnabled = false; next.consumed = true;
+            return;
+        }
+        if (moving) return;
+        platform.collisionEnabled = false;
+        platform.consumeAt = this.elapsedSeconds + this.config.platformBehavior.teleport.fadeSeconds;
+        if (next) {
+            next.effectState.portalFadingIn = true;
+            next.consumeAt = this.elapsedSeconds + this.config.platformBehavior.teleport.fadeSeconds;
+        }
+    }
+
+    private resolveLanding(previousFootY: number, previousPlayerX: number): void {
         const currentFootY = this.playerY - this.config.player.collisionHeight / 2;
-        const halfPlayerWidth = this.config.player.collisionWidth / 2;
+        const scale = this.config.design.width / 320;
+        const wrapped = Math.abs(this.playerX - previousPlayerX) > this.config.design.width / 2;
+        const sweep = (!wrapped && Math.abs(this.velocityX * this.config.fixedStep.seconds) > 18 * scale)
+            || previousFootY - currentFootY > 9 * scale + 1e-6;
         for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
             const platform = this.platforms[index];
             if (!platform.collisionEnabled) continue;
             const topY = platform.y;
             if (topY < this.cameraBottomY) continue;
-            if (previousFootY < topY || currentFootY > topY) continue;
-            // A landing needs at least one quarter of the player's body width
-            // to overlap the platform. More than three quarters hanging outside
-            // is treated as a miss instead of an edge catch.
-            const horizontalReach = platform.width / 2 + halfPlayerWidth / 2;
-            if (Math.abs(this.playerX - platform.x) > horizontalReach) continue;
+            if (!referenceFootTouchesPlatform(previousPlayerX, this.playerX, previousFootY, currentFootY,
+                this.config.player.collisionWidth, platform.x, topY, platform.width, scale, sweep)) continue;
             if (platform.config.type === 'breakable') {
                 platform.collisionEnabled = false;
-                platform.consumeAt = this.elapsedSeconds + 0.45;
+                platform.consumeAt = this.elapsedSeconds + 50 / 60;
                 platform.warningProgress = 0;
                 this.lastLandedPlatformId = platform.config.id;
                 return;
@@ -1213,75 +1469,82 @@ export class DoodleJumpSimulation {
             this.lastLandedPlatformId = platform.config.id;
             this.landingCount += 1;
             if (platform.consumeAt <= 0 && platform.config.type === 'disappearing') {
-                platform.consumeAt = this.elapsedSeconds + 0.35;
+                platform.collisionEnabled = false;
+                platform.consumeAt = this.elapsedSeconds + 10 / 60;
             }
-            if (platform.consumeAt <= 0 && platform.config.type === 'exploding') {
-                platform.consumeAt = this.elapsedSeconds
-                    + this.config.platformBehavior.explodingDelaySeconds;
-            }
+            this.activatePlatformLandingEffect(platform);
             return;
         }
-    }
-
-    private findSpikedPlatformContact(
-        previousPlayerY: number,
-        currentPlayerY: number,
-    ): MutablePlatform | undefined {
-        const halfPlayerWidth = this.config.player.collisionWidth / 2;
-        const halfPlayerHeight = this.config.player.collisionHeight / 2;
-        const collisionDepth = this.config.platformBehavior.spiked.collisionDepth;
-        const previousTopY = previousPlayerY + halfPlayerHeight;
-        const currentTopY = currentPlayerY + halfPlayerHeight;
-        const previousBottomY = previousPlayerY - halfPlayerHeight;
-        const currentBottomY = currentPlayerY - halfPlayerHeight;
-        for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
-            const platform = this.platforms[index];
-            if (platform.config.type !== 'spiked'
-                || !platform.collisionEnabled
-                || platform.consumed) continue;
-            if (previousPlayerY >= platform.y && currentPlayerY >= platform.y) continue;
-            if (Math.abs(this.playerX - platform.x)
-                > platform.width / 2 + halfPlayerWidth) continue;
-            const spikeBaseY = platform.y - 12;
-            const spikeTipY = platform.y - collisionDepth;
-            const sweptTopY = Math.max(previousTopY, currentTopY);
-            const sweptBottomY = Math.min(previousBottomY, currentBottomY);
-            if (sweptTopY < spikeTipY || sweptBottomY > spikeBaseY) continue;
-            return platform;
-        }
-        return undefined;
     }
 
     private ensureGenerated(visibleHeight: number): void {
         if (!this.config.generation.enabled) return;
         const generationTop = this.cameraBottomY
-            + Math.max(1, visibleHeight)
-            + this.config.generation.preloadAboveScreen;
+            + Math.max(500 * this.config.design.width / 320,
+                Math.max(1, visibleHeight) + this.config.generation.preloadAboveScreen);
         let highest = this.findHighestPlatform();
+        if (highest.config.y >= generationTop) return;
+        this.levelGenerator.beginGenerationPass();
+        const apex = this.items.forecastFlightApex(this.playerY, this.velocityY);
+        const flightLandingWindow = apex === undefined ? undefined : {
+            minimumY: Math.max(this.cameraBottomY, apex - this.cameraAnchorHeight(visibleHeight))
+                + this.config.player.collisionHeight / 2,
+            maximumY: apex - this.config.player.collisionHeight,
+        };
         while (highest.config.y < generationTop
             && this.platforms.length < this.config.generation.maxActivePlatforms) {
-            highest = this.generateReachablePlatform(highest);
-            this.platforms.push(highest);
+            this.platforms.push(this.generateReachablePlatform(highest, flightLandingWindow));
+            highest = this.findHighestPlatform();
         }
     }
 
-    private generateReachablePlatform(previous: MutablePlatform): MutablePlatform {
-        const planned = this.levelGenerator.next(previous.config.y, this.cameraBottomY);
+    private generateReachablePlatform(
+        previous: MutablePlatform,
+        flightLandingWindow?: Readonly<{ minimumY: number; maximumY: number }>,
+    ): MutablePlatform {
+        const itemStatus = this.items.getStatus();
+        const planned = this.levelGenerator.next(previous.config.y, this.cameraBottomY, {
+            flightPower: itemStatus.flightPower,
+            flightLandingWindow,
+            shieldActive: itemStatus.shieldRemainingSeconds > 0,
+            jetpackRocketPickupCount: itemStatus.jetpackRocketPickupCount,
+        });
         const nextLayer = this.generatedLayerCount + 1;
-        const routePrevious = this.latestMainLayer[0] ?? previous;
+        // Authored relay chains and vertical platforms can advance through
+        // positions that an ordinary-jump-only validator cannot mark mainRoute.
+        // Base the next procedural row on the highest landing anchor in the
+        // current chunk, rather than retaining a predecessor from an old chunk.
+        const anchors = this.platforms.filter((platform) => !platform.config.spawnPlan?.entityOnly
+            && platform.config.type !== 'breakable');
+        const routePrevious = anchors.length > 0 ? anchors.reduce((highest, platform) =>
+            platform.config.y > highest.config.y ? platform : highest) : previous;
         const jumpHeight = this.config.player.bounceVelocity ** 2 / (-2 * this.config.player.gravity)
             + this.config.player.bounceVelocity * this.config.fixedStep.seconds / 2;
         let type = this.config.generation.platformTypeOverride === 'auto'
             ? planned.type : this.config.generation.platformTypeOverride;
         // A broken platform is optional scenery. Recover before a run of fragile
         // platforms can consume the entire ordinary-jump height budget.
-        if (type === 'breakable' && planned.y - routePrevious.config.y > jumpHeight * 0.65) type = 'normal';
+        if (type === 'breakable'
+            && planned.y - routePrevious.config.y > jumpHeight) type = 'normal';
         const width = this.config.platformBehavior.standardWidth;
+        if (planned.spawnPlan.patternId !== undefined || planned.spawnPlan.entityOnly) {
+            const candidate: DoodleJumpFixedPlatformConfig = Object.freeze({ id: `G${this.nextGeneratedId++}`,
+                x: planned.x, y: planned.y, width, type: planned.type, movingVelocity: planned.movingVelocity,
+                motionStartSeconds: this.elapsedSeconds, spawnPlan: planned.spawnPlan });
+            const mainRoute = !planned.spawnPlan.entityOnly && !planned.spawnPlan.initialHidden && type !== 'breakable'
+                && planned.y > routePrevious.config.y && this.isCandidateReachable(routePrevious, candidate);
+            const platform = this.createGeneratedPlatform(candidate, routePrevious.config.id, 1, false, mainRoute, nextLayer);
+            this.generatorCursor += 1; this.generatedLayerCount = nextLayer;
+            if (mainRoute) this.latestMainLayer = [platform];
+            return platform;
+        }
         const limit = this.config.generation.forceDegradedFallback ? 0 : this.config.generation.maxCandidateAttempts;
         for (let attempt = 1; attempt <= limit; attempt += 1) {
             const candidate: DoodleJumpFixedPlatformConfig = Object.freeze({
                 id: `G${this.nextGeneratedId}`,
-                x: this.clampPlatformX(attempt === 1 ? planned.x : this.nextPlatformRandom() * this.config.design.width, width, type),
+                x: attempt === 1 ? planned.x : (Math.floor(this.nextPlatformRandom()
+                    * (320 - Math.floor(width / (this.config.design.width / 320))))
+                    + Math.floor(width / (this.config.design.width / 320) / 2)) * this.config.design.width / 320,
                 y: planned.y,
                 width,
                 type,
@@ -1302,8 +1565,8 @@ export class DoodleJumpSimulation {
         // player; retain segment ownership even when adapting its geometry.
         const candidate: DoodleJumpFixedPlatformConfig = Object.freeze({
             id: `G${this.nextGeneratedId}`,
-            x: this.clampPlatformX(routePrevious.x, width, 'normal'),
-            y: Math.min(planned.y, previous.config.y + 40),
+            x: this.clampPlatformX(routePrevious.x, width),
+            y: Math.min(planned.y, routePrevious.config.y + 40),
             width,
             type: 'normal',
             spawnPlan: planned.spawnPlan,
@@ -1348,17 +1611,22 @@ export class DoodleJumpSimulation {
         mainRoute: boolean,
         layerIndex: number,
     ): MutablePlatform {
+        // The next segment must start at this accepted position, including a
+        // recovery's lower Y. Advancing from the rejected proposal accumulates
+        // height debt and eventually places an authored chunk above an empty gap.
+        this.levelGenerator.acceptPlacement(config);
         return {
             config,
             generated: true,
             width: config.width,
             x: config.x,
             y: config.y,
-            collisionEnabled: true,
+            collisionEnabled: !config.spawnPlan?.entityOnly && !config.spawnPlan?.initialHidden,
             consumed: false,
             consumeAt: 0,
             effectStartedAt: 0,
-            warningProgress: 0,
+            effectState: initialPlatformEffect(config),
+            warningProgress: config.spawnPlan?.initialHidden ? 1 : 0,
             predecessorId,
             generationAttempts,
             degraded,
@@ -1367,20 +1635,9 @@ export class DoodleJumpSimulation {
         };
     }
 
-    private clampPlatformX(x: number, width: number, type: DoodleJumpPlatformType): number {
-        const padding = type === 'shifting' ? 70 : 0;
-        return Math.max(width / 2 + padding, Math.min(this.config.design.width - width / 2 - padding, x));
-    }
-
-    private applyLargeMonsterPlatformWidths(): void {
-        this.platforms.forEach((platform) => {
-            if (platform.config.type !== 'normal'
-                || !this.combat.hasLargeMonsterOnPlatform(platform.config.id)) return;
-            platform.width = Math.max(
-                platform.width,
-                this.config.platformBehavior.largeMonsterWidth,
-            );
-        });
+    private clampPlatformX(x: number, width: number): number {
+        const halfWidth = Math.floor(width / (this.config.design.width / 320) / 2) * this.config.design.width / 320;
+        return Math.max(halfWidth, Math.min(this.config.design.width - halfWidth, x));
     }
 
     private updateWorldSystems(
@@ -1399,7 +1656,6 @@ export class DoodleJumpSimulation {
                 this.combatOccupiedScratch,
             );
         }
-        this.applyLargeMonsterPlatformWidths();
         this.hazards.updateExisting(
             delta,
             this.elapsedSeconds,
@@ -1431,6 +1687,7 @@ export class DoodleJumpSimulation {
     }
 
     private reconcileWorldSystems(cameraBottomY: number, cameraTopY: number): void {
+        this.collectibles.reconcileWorld(this.worldIndex, cameraBottomY);
         this.fillCombatOccupiedScratch();
         this.combat.reconcileWorld(
             this.worldIndex,
@@ -1438,7 +1695,6 @@ export class DoodleJumpSimulation {
             cameraTopY,
             this.combatOccupiedScratch,
         );
-        this.applyLargeMonsterPlatformWidths();
         this.fillHazardOccupiedScratch();
         this.hazards.reconcileWorld(
             this.worldIndex,
@@ -1479,6 +1735,9 @@ export class DoodleJumpSimulation {
             -direction,
             2,
         ];
+        // Validate an achievable launch with the same steering/foot logic as
+        // the live player. A bad edge landing is player difficulty, not a reason
+        // to reroll every otherwise playable native platform arrangement.
         return this.isCandidateReachableWithStrategies(previous, candidate, strategies);
     }
 
@@ -1486,37 +1745,36 @@ export class DoodleJumpSimulation {
         previous: MutablePlatform,
         candidate: DoodleJumpFixedPlatformConfig,
         strategies: readonly number[],
+        maximumInput = 1,
+        launchX = previous.x,
+        launchVelocityX = 0,
     ): boolean {
         const verticalGap = candidate.y - previous.config.y;
         if (verticalGap <= 0) return false;
         const player = this.config.player;
         const delta = this.config.fixedStep.seconds;
         const direction = candidate.x >= previous.x ? 1 : -1;
+        const scale = this.config.design.width / 320;
+        const gain = player.maxHorizontalSpeed / (this.config.sensor.fullTilt * 60 * scale);
         for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex += 1) {
-            let x = previous.x;
+            let x = launchX;
             let y = previous.y + player.collisionHeight / 2;
-            let velocityX = 0;
+            let velocityX = launchVelocityX;
+            let filteredTilt = launchVelocityX / (gain * 60 * scale);
             let velocityY = player.bounceVelocity;
             let elapsed = 0;
             while (elapsed < 2) {
                 const previousFootY = y - player.collisionHeight / 2;
                 const strategy = strategies[strategyIndex];
-                const input = strategy === 2
+                const requestedInput = strategy === 2
                     ? (elapsed < 0.55 ? direction : -direction)
                     : strategy;
-                if (Math.abs(input) > 0.0001) {
-                    velocityX = moveTowards(
-                        velocityX,
-                        input * player.maxHorizontalSpeed,
-                        player.horizontalAcceleration * delta,
-                    );
-                } else {
-                    velocityX = moveTowards(
-                        velocityX,
-                        0,
-                        player.horizontalDeceleration * delta,
-                    );
-                }
+                const targetInput = Math.max(-maximumInput, Math.min(maximumInput, requestedInput));
+                const horizontal = stepDoodleJumpHorizontal(filteredTilt, targetInput * this.config.sensor.fullTilt,
+                    delta, this.config.sensor.smoothingSeconds, gain, scale);
+                filteredTilt = horizontal.filteredTilt;
+                velocityX = horizontal.velocity;
+                const previousX = x;
                 const vertical = stepDoodleJumpVertical(velocityY, player.gravity, delta, player.terminalFallVelocity);
                 velocityY = vertical.velocity;
                 x += velocityX * delta;
@@ -1526,21 +1784,13 @@ export class DoodleJumpSimulation {
                 elapsed += delta;
                 const targetX = this.platformXAt(candidate, this.elapsedSeconds + elapsed);
                 const targetY = this.platformYAt(candidate, this.elapsedSeconds + elapsed);
-                const previousTargetY = this.platformYAt(
-                    candidate,
-                    this.elapsedSeconds + elapsed - delta,
-                );
                 const currentFootY = y - player.collisionHeight / 2;
-                const safeLandingReach = Math.max(
-                    24,
-                    candidate.width / 2 - player.collisionWidth * 0.15,
-                );
-                if (velocityY <= 0
-                    && previousFootY >= previousTargetY
-                    && currentFootY <= targetY) {
-                    if (Math.abs(x - targetX) <= safeLandingReach) return true;
-                    break;
-                }
+                const sweep = Math.abs(x - previousX) <= this.config.design.width / 2
+                    && Math.abs(velocityX * delta) > 18 * scale
+                    || previousFootY - currentFootY > 9 * scale + 1e-6;
+                if (velocityY <= 0 && referenceFootTouchesPlatform(previousX, x, previousFootY, currentFootY,
+                    player.collisionWidth, targetX, targetY, candidate.width, scale, sweep)) return true;
+                if (velocityY <= 0 && currentFootY + 2 * scale < targetY) break;
             }
         }
         return false;
@@ -1555,60 +1805,30 @@ export class DoodleJumpSimulation {
             return reflectedPlatformX(config.x, velocity,
                 elapsedSeconds - (config.motionStartSeconds ?? 0), this.config.design.width);
         }
-        if (config.type !== 'shifting') return config.x;
-        const segment = shiftingPlatformSegmentAt(elapsedSeconds);
-        return config.x + (segment - 1) * 70;
+        return config.x;
     }
 
     private platformYAt(config: DoodleJumpFixedPlatformConfig, elapsedSeconds: number): number {
         if (config.type !== 'vertical-moving') return config.y;
-        const profile = this.verticalMovingPlatformProfile(config);
-        return config.y + Math.sin(
-            elapsedSeconds * Math.PI * 2 / profile.periodSeconds + profile.phaseRadians,
-        ) * profile.amplitude;
+        const platform = this.platforms.find((candidate) => candidate.config.id === config.id);
+        const activatedAt = platform?.effectState.motionActivatedAt;
+        return this.verticalPlatformY(config, elapsedSeconds - (activatedAt !== undefined && activatedAt >= 0
+            ? activatedAt : this.elapsedSeconds));
     }
 
-    private verticalMovingPlatformProfile(config: DoodleJumpFixedPlatformConfig): Readonly<{
-        amplitude: number;
-        periodSeconds: number;
-        phaseRadians: number;
-    }> {
-        const cached = this.motionProfiles.get(config);
-        if (cached) return cached;
-        const settings = this.config.platformBehavior.verticalMoving;
-        const hash = hashDoodleJumpSeed(`${config.id}:vertical-moving`);
-        const amplitudeRange = settings.maximumAmplitude - settings.minimumAmplitude;
-        const periodRange = settings.maximumPeriodSeconds - settings.minimumPeriodSeconds;
-        const profile = Object.freeze({
-            amplitude: settings.minimumAmplitude + (hash % 1001) / 1000 * amplitudeRange,
-            periodSeconds: (settings.minimumPeriodSeconds
-                + ((hash >>> 10) % 1001) / 1000 * periodRange)
-                / this.platformSpeedMultiplier(config.y),
-            phaseRadians: ((hash >>> 20) % 1001) / 1000 * Math.PI * 2,
-        });
-        this.motionProfiles.set(config, profile);
-        return profile;
-    }
-
-    private platformChallengeProgress(heightMeters: number): number {
-        const settings = this.config.platformBehavior.challenge;
-        return Math.max(0, Math.min(1,
-            (heightMeters - settings.startHeightMeters)
-                / (settings.capHeightMeters - settings.startHeightMeters),
-        ));
-    }
-
-    private platformSpeedMultiplier(worldY: number): number {
-        const heightMeters = Math.max(0, (worldY - 114) / 100);
-        return 1 + this.platformChallengeProgress(heightMeters)
-            * this.config.platformBehavior.challenge.movingSpeedBonus;
+    private verticalPlatformY(config: DoodleJumpFixedPlatformConfig, seconds: number): number {
+        const rawType = config.spawnPlan?.referenceRawType ?? 12;
+        const range = rawType === 14 || rawType === 15 ? 130 : 200;
+        const phase = ((Math.max(0, seconds) * 60) % (range * 2));
+        const offset = phase <= range ? phase : range * 2 - phase;
+        return config.y + (rawType % 2 === 0 ? 1 : -1) * offset * this.config.design.width / 320;
     }
 
     private recyclePlatforms(): void {
         const recycleY = this.cameraBottomY - this.config.camera.recycleBelow;
         for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
             const platform = this.platforms[index];
-            if (platform.config.y >= recycleY) continue;
+            if (Math.max(platform.config.y, platform.y) >= recycleY) continue;
             this.platforms.splice(index, 1);
         }
         this.enforcePlatformBudget();

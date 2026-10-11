@@ -3,7 +3,8 @@
 
 Requires Pillow. Authoring images live outside assets, so prepareBundle cannot
 download both the source images and the atlas. Unchanged pages retain their
-existing (Tinify-compressed) bytes. No rotation, resizing or palette conversion.
+existing (Tinify-compressed) bytes. Optional manifest resize keeps authoring
+images intact. No rotation or palette conversion.
 """
 from __future__ import annotations
 
@@ -45,6 +46,24 @@ def compressed_uuid(value):
         number = int(digits[i:i + 3], 16)
         result += alphabet[number >> 6] + alphabet[number & 63]
     return result + ('@' + suffix[0] if suffix else '')
+
+
+def imported_frame_ids(meta):
+    """Prefer Cocos' child identity over our pre-import provisional identity.
+
+    The first plist import may retain the MD5(name) entry and append the real
+    importer entry. Either entry can come first, so insertion order cannot
+    determine which ID to preserve on subsequent builds.
+    """
+    result = {}
+    for sid, child in meta.get('subMetas', {}).items():
+        name = child.get('name')
+        if child.get('importer') != 'sprite-frame' or not isinstance(name, str):
+            continue
+        provisional = hashlib.md5(name.encode()).hexdigest()[:5]
+        if name not in result or (result[name] == provisional and sid != provisional):
+            result[name] = sid
+    return result
 
 
 def source_file(game, relative):
@@ -91,6 +110,24 @@ def load_frame(game, entry):
         raise ValueError(f'Invalid source rectangle: {source}: {rect}')
     pixels = image.crop((x, y, x + w, y + h))
     data.update(entry.get('insets', {}))
+    if 'resize' in entry:
+        size = entry['resize']
+        if (not isinstance(size, list) or len(size) != 2
+                or any(type(v) is not int or v <= 0 for v in size)):
+            raise ValueError(f'Invalid resize dimensions: {source}: {size}')
+        rw, rh = size
+        if rw > w or rh > h or abs(rw * h - rh * w) > max(w, h):
+            raise ValueError(f'Resize must downsample proportionally: {source}: {size}')
+        sx, sy = rw / w, rh / h
+        pixels = pixels.resize((rw, rh), Image.Resampling.LANCZOS)
+        data.update(width=rw, height=rh,
+                    rawWidth=max(rw, round(data['rawWidth'] * sx)),
+                    rawHeight=max(rh, round(data['rawHeight'] * sy)),
+                    offsetX=data.get('offsetX', 0) * sx,
+                    offsetY=data.get('offsetY', 0) * sy)
+        for side, scale in [('Top', sy), ('Bottom', sy), ('Left', sx), ('Right', sx)]:
+            key = 'border' + side
+            data[key] = round(data.get(key, 0) * scale)
     name = entry.get('name', source.stem + ('-' + entry['frame'] if 'frame' in entry else ''))
     return dict(name=name, image=pixels, data=data, aliases=aliases, old_uuids=old_uuids,
                 source=entry['source'], source_rect=rect)
@@ -138,7 +175,7 @@ def pack(frames, limit):
     return pages
 
 
-def build_group(game, group, previous, outputs, mapping, rewrites):
+def build_group(game, group, previous, outputs, mapping, rewrites, editor_metadata=None):
     frames = [load_frame(game, entry) for entry in group['frames']]
     if len({f['name'] for f in frames}) != len(frames):
         raise ValueError('Duplicate frame name: ' + group['path'])
@@ -154,7 +191,9 @@ def build_group(game, group, previous, outputs, mapping, rewrites):
         metas = {}
         records = []
         existing_meta = read_json(output.with_suffix('.plist.meta')) if output.with_suffix('.plist.meta').exists() else {}
-        existing_ids = {m['name']: k for k, m in existing_meta.get('subMetas', {}).items()}
+        # Preserve the actual importer identity, even when Cocos appended it
+        # after the provisional entry, and write its intended packing settings.
+        existing_ids = imported_frame_ids(existing_meta)
         for f in placed:
             x, y = f['x'], f['y']
             pixels = f['image']
@@ -204,8 +243,12 @@ def build_group(game, group, previous, outputs, mapping, rewrites):
                    userData=dict(type='texture', fixAlphaTransparencyArtifacts=False, hasAlpha=True, redirect=texture_uuid)))
         output.with_suffix('.plist').write_bytes(plistlib.dumps(dict(frames=plist_frames, metadata=dict(
             format=2, realTextureFileName=png.name, textureFileName=png.name, size=f'{{{width},{height}}}'))))
-        write_json(output.with_suffix('.plist.meta'), dict(ver='1.0.8', importer='sprite-atlas', imported=True, uuid=atlas_uuid,
-                   files=['.json'], subMetas=metas, userData=dict(atlasTextureName=png.name, format=2, uuid=atlas_uuid, textureUuid=texture_uuid)))
+        atlas_meta = dict(ver='1.0.8', importer='sprite-atlas', imported=True, uuid=atlas_uuid,
+                          files=['.json'], subMetas=metas,
+                          userData=dict(atlasTextureName=png.name, format=2, uuid=atlas_uuid, textureUuid=texture_uuid))
+        write_json(output.with_suffix('.plist.meta'), atlas_meta)
+        if editor_metadata is not None:
+            editor_metadata['db://assets/game-assets/' + game + '/' + path + '.plist'] = atlas_meta
         outputs[key] = dict(rawHash=raw_hash, imageUuid=image_uuid, size=[width, height], frames=records)
 
 
@@ -223,10 +266,30 @@ def rewrite_references(rewrites):
     return count
 
 
+def collect_compression_inputs(games):
+    inputs = set()
+    for game in games:
+        for plist in (ROOT / 'assets/game-assets' / game).rglob('*.plist'):
+            metadata = plistlib.loads(plist.read_bytes()).get('metadata', {})
+            filename = metadata.get('textureFileName') or metadata.get('realTextureFileName')
+            if not isinstance(filename, str) or not filename.strip():
+                raise ValueError(f'Atlas metadata does not declare a texture file: {plist}')
+            texture = plist.parent / filename
+            if not texture.is_file():
+                raise FileNotFoundError(f'Atlas texture does not exist: {plist}: {texture}')
+            inputs.add(str(texture.relative_to(ROOT)))
+    for game, pattern in [('catch', 'visual/items/*.png'), ('meowdoku', 'visual/cat/*.png'),
+                          ('meowdoku', 'visual/effect/meowdoku-tile-v2.png')]:
+        inputs.update(str(p.relative_to(ROOT)) for p in (ROOT / 'assets/game-assets' / game).glob(pattern))
+    return sorted(inputs)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify', action='store_true', help='Validate imported atlas geometry without modifying anything.')
     parser.add_argument('--sync-imports', action='store_true', help='Record Cocos-assigned child UUIDs after asset refresh.')
+    parser.add_argument('--editor-metadata-output', type=Path,
+                        help='Export generated atlas metadata for saving through the running Cocos asset database.')
     args = parser.parse_args()
     manifest = read_json(ATLAS_ROOT / 'manifest.json')
     state_path = ATLAS_ROOT / 'generated.json'
@@ -236,8 +299,9 @@ def main():
         for key, page in previous.items():
             game, relative = key.split('/', 1)
             meta = read_json((ROOT / 'assets/game-assets' / game / relative).with_suffix('.plist.meta'))
+            imported_ids = imported_frame_ids(meta)
             for frame in page['frames']:
-                imported = next(m['uuid'] for m in meta['subMetas'].values() if m['name'] == frame['name'])
+                imported = meta['subMetas'][imported_ids[frame['name']]]['uuid']
                 if frame['uuid'] != imported: rewrites[frame['uuid']] = imported
                 frame['uuid'] = imported
         changed = rewrite_references(rewrites)
@@ -250,11 +314,18 @@ def main():
         print(f'Synchronized {len(rewrites)} imported frame UUIDs; rewired {changed} scene/prefab files.')
         return
     if args.verify:
+        if read_json(ATLAS_ROOT / 'compression-inputs.json') != collect_compression_inputs(manifest['games']):
+            raise ValueError('Compression input list is stale; run sprite-atlas-sources/build.py to regenerate it.')
         for key, page in previous.items():
             game, relative = key.split('/', 1)
             root = ROOT / 'assets/game-assets' / game / relative
-            assert Image.open(root.with_suffix('.png')).size == tuple(page['size']), key
+            with Image.open(root.with_suffix('.png')) as image:
+                assert image.size == tuple(page['size']), key
             meta = read_json(root.with_suffix('.plist.meta'))
+            imported_frames = [m for m in meta['subMetas'].values() if m['importer'] == 'sprite-frame']
+            imported_names = [m['name'] for m in imported_frames]
+            assert len(imported_names) == len(set(imported_names)), (key, 'duplicate imported frame names')
+            assert set(imported_names) == {f['name'] for f in page['frames']}, (key, 'unexpected imported frames')
             for f in page['frames']:
                 sub = next(m for m in meta['subMetas'].values() if m['name'] == f['name'])
                 d = sub['userData']
@@ -265,12 +336,13 @@ def main():
                 assert sub['uuid'] == f['uuid'], (key, f['name'], 'uuid')
                 assert d['imageUuidOrDatabaseUri'] == page['imageUuid'] + '@6c48a', (key, f['name'], 'texture')
                 assert not d['packable'], (key, f['name'], 'repacking')
-        print(f'Validated {len(previous)} pages / {sum(len(p["frames"]) for p in previous.values())} imported frames.')
+        print(f'Validated {len(previous)} pages / {sum(len(p["frames"]) for p in previous.values())} imported frames and compression inputs.')
         return
     outputs, rewrites = {}, {}
+    editor_metadata = {} if args.editor_metadata_output else None
     for game, groups in manifest['games'].items():
         mapping = {}
-        for group in groups: build_group(game, group, previous, outputs, mapping, rewrites)
+        for group in groups: build_group(game, group, previous, outputs, mapping, rewrites, editor_metadata)
         script = ROOT / 'assets/games' / game / 'scripts/PackedSpritePaths.ts'
         script.write_text('// Generated by sprite-atlas-sources/build.py. Source keys are authoring identifiers.\n'
                           + 'export const PACKED_SPRITE_PATHS: Readonly<Record<string, string>> = Object.freeze('\
@@ -308,15 +380,9 @@ def main():
             if path.exists(): path.unlink()
     write_json(state_path, outputs)
     write_json(ATLAS_ROOT / 'uuid-migrations.json', rewrites)
-    compression_inputs = {str((ROOT / 'assets/game-assets' / key.split('/')[0]
-                              / (key.split('/', 1)[1] + '.png')).relative_to(ROOT)) for key in outputs}
-    for game in manifest['games']:
-        for plist in (ROOT / 'assets/game-assets' / game).rglob('*.plist'):
-            compression_inputs.add(str(plist.with_suffix('.png').relative_to(ROOT)))
-    for game, pattern in [('catch', 'visual/items/*.png'), ('meowdoku', 'visual/cat/*.png'),
-                          ('meowdoku', 'visual/effect/meowdoku-tile-v2.png')]:
-        compression_inputs.update(str(p.relative_to(ROOT)) for p in (ROOT / 'assets/game-assets' / game).glob(pattern))
-    write_json(ATLAS_ROOT / 'compression-inputs.json', sorted(compression_inputs))
+    write_json(ATLAS_ROOT / 'compression-inputs.json', collect_compression_inputs(manifest['games']))
+    if args.editor_metadata_output:
+        write_json(args.editor_metadata_output, editor_metadata)
     print(f'Built {len(outputs)} pages / {sum(len(p["frames"]) for p in outputs.values())} frames; rewired {changed} scene/prefab files.')
 
 

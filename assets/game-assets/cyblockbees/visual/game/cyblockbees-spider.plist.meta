@@ -1,0 +1,293 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "68427664-45c8-5baa-addc-53eae02c1467",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "fb614": {
+      "importer": "sprite-frame",
+      "uuid": "68427664-45c8-5baa-addc-53eae02c1467@fb614",
+      "displayName": "",
+      "id": "fb614",
+      "name": "spider-1-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 272,
+        "trimY": 2,
+        "width": 80,
+        "height": 76,
+        "rawWidth": 80,
+        "rawHeight": 76,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a",
+        "atlasUuid": "68427664-45c8-5baa-addc-53eae02c1467",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "9467c": {
+      "importer": "sprite-frame",
+      "uuid": "68427664-45c8-5baa-addc-53eae02c1467@9467c",
+      "displayName": "",
+      "id": "9467c",
+      "name": "spider-2-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 356,
+        "trimY": 2,
+        "width": 80,
+        "height": 75,
+        "rawWidth": 80,
+        "rawHeight": 75,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a",
+        "atlasUuid": "68427664-45c8-5baa-addc-53eae02c1467",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9038": {
+      "importer": "sprite-frame",
+      "uuid": "68427664-45c8-5baa-addc-53eae02c1467@f9038",
+      "displayName": "",
+      "id": "f9038",
+      "name": "spider-3-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 184,
+        "trimY": 2,
+        "width": 84,
+        "height": 76,
+        "rawWidth": 84,
+        "rawHeight": 76,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a",
+        "atlasUuid": "68427664-45c8-5baa-addc-53eae02c1467",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "cb515": {
+      "importer": "sprite-frame",
+      "uuid": "68427664-45c8-5baa-addc-53eae02c1467@cb515",
+      "displayName": "",
+      "id": "cb515",
+      "name": "spider-4-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 94,
+        "trimY": 2,
+        "width": 86,
+        "height": 76,
+        "rawWidth": 86,
+        "rawHeight": 76,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a",
+        "atlasUuid": "68427664-45c8-5baa-addc-53eae02c1467",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "56c45": {
+      "importer": "sprite-frame",
+      "uuid": "68427664-45c8-5baa-addc-53eae02c1467@56c45",
+      "displayName": "",
+      "id": "56c45",
+      "name": "spider-5-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 88,
+        "height": 76,
+        "rawWidth": 88,
+        "rawHeight": 76,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a",
+        "atlasUuid": "68427664-45c8-5baa-addc-53eae02c1467",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f8c20": {
+      "importer": "sprite-frame",
+      "uuid": "68427664-45c8-5baa-addc-53eae02c1467@f8c20",
+      "displayName": "",
+      "id": "f8c20",
+      "name": "spider-6-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 440,
+        "trimY": 2,
+        "width": 16,
+        "height": 16,
+        "rawWidth": 16,
+        "rawHeight": 16,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a",
+        "atlasUuid": "68427664-45c8-5baa-addc-53eae02c1467",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "cyblockbees-spider.png",
+    "format": 2,
+    "uuid": "68427664-45c8-5baa-addc-53eae02c1467",
+    "textureUuid": "0fcf9ea6-1bf1-5b07-98d9-afcbe8af6357@6c48a"
+  }
+}

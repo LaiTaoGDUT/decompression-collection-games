@@ -45,6 +45,10 @@
 - 新增或更新小游戏 Sprite 图集，统一使用 [sprite-atlas-sources/build.py](sprite-atlas-sources/build.py) 生成；不要手工修改成品图集或恢复 Bundle 内的源散图。
 - 原始图片、原始 `.meta` 和原图集定义保存在 `sprite-atlas-sources/<游戏>/visual/<模块>`，位于 `assets` 外；保存源图片不会自动执行合图。
 
+## 目录规范
+
+不要把任何工具代码都扔到 `project-scripts/` 目录，这个目录只存未来仍会被使用的脚本。不满足条件的的放到 `tools/` 目录。
+
 ## 改动完成门槛
 
 - 最低完成门槛：TypeScript 无编译错误、`git diff --check` 通过。

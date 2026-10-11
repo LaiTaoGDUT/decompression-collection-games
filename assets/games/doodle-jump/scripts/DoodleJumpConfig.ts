@@ -11,13 +11,13 @@ export type DoodleJumpPlatformType =
     | 'disappearing'
     | 'shifting'
     | 'exploding'
-    | 'spiked';
+    | 'teleport';
 
-export const DOODLE_JUMP_ENEMY_TYPES = ['small', 'large', 'hover', 'hopper', 'weaver'] as const;
+export const DOODLE_JUMP_ENEMY_TYPES = ['small', 'hopper', 'hover', 'weaver', 'large', 'flyer', 'bouncer', 'runner', 'tall'] as const;
 export type DoodleJumpEnemyType = typeof DOODLE_JUMP_ENEMY_TYPES[number];
 
 export function isDoodleJumpFlyingEnemy(type: DoodleJumpEnemyType): boolean {
-    return type === 'hover' || type === 'weaver';
+    return type === 'hover' || type === 'weaver' || type === 'flyer';
 }
 export type DoodleJumpHazardType = 'ufo' | 'black-hole' | 'bear-trap';
 export type DoodleJumpItemType =
@@ -26,31 +26,14 @@ export type DoodleJumpItemType =
     | 'jetpack'
     | 'propeller-hat'
     | 'rocket'
+    | 'spring-shoes'
     | 'shield';
 export type DoodleJumpPowerPreset = DoodleJumpItemType | 'head-start' | 'none';
-
-export interface DoodleJumpItemWeightBand {
-    readonly startMeters: number;
-    readonly endMeters: number;
-    readonly spring: number;
-    readonly trampoline: number;
-    readonly jetpack: number;
-    readonly propellerHat: number;
-    readonly rocket: number;
-    readonly shield: number;
-}
 
 export interface DoodleJumpEnemyTypeConfig {
     readonly health: number;
     readonly width: number;
     readonly height: number;
-    readonly unlockHeightMeters: number;
-    readonly horizontalRange: number;
-    readonly verticalRange: number;
-    readonly anchorHeight: number;
-    readonly cycleSeconds: number;
-    readonly headZoneHeight: number;
-    readonly killScore: number;
 }
 
 export interface DoodleJumpVisualQualityProfile {
@@ -85,8 +68,7 @@ export interface DoodleJumpGameplayConfig {
         gravity: number;
         bounceVelocity: number;
         terminalFallVelocity: number;
-        horizontalAcceleration: number;
-        horizontalDeceleration: number;
+        /** Speed at keyboard/H5 full input; physical sensor tilt remains proportional beyond fullTilt. */
         maxHorizontalSpeed: number;
         collisionWidth: number;
         collisionHeight: number;
@@ -106,9 +88,7 @@ export interface DoodleJumpGameplayConfig {
     readonly camera: Readonly<{
         anchorHeight: number;
         maximumAnchorHeightRatio: number;
-        preGenerateJumpHeights: number;
         recycleBelow: number;
-        floatingOriginThreshold: number;
     }>;
     readonly shooting: Readonly<{
         cooldownMs: number;
@@ -117,35 +97,18 @@ export interface DoodleJumpGameplayConfig {
         nearAimFallbackDistance: number;
         poolSoftTarget: number;
     }>;
+    readonly collectibles: Readonly<{
+        enabled: boolean;
+        hoverOffsetY: number;
+        gatherSeconds: number;
+        headHoldSeconds: number;
+        flightSeconds: number;
+    }>;
     readonly platformBehavior: Readonly<{
         /** Every platform except the starter floor uses this width. */
         standardWidth: number;
-        /** The only widened platform: a normal platform carrying a large monster. */
-        largeMonsterWidth: number;
-        explodingDelaySeconds: number;
-        challenge: Readonly<{
-            startHeightMeters: number;
-            capHeightMeters: number;
-            movingSpeedBonus: number;
-            movingChanceBonus: number;
-            shiftingChanceBonus: number;
-            fragileChanceBonus: number;
-        }>;
-        verticalMoving: Readonly<{
-            unlockHeightMeters: number;
-            spawnChanceAtUnlock: number;
-            spawnChanceAtCap: number;
-            chanceCapHeightMeters: number;
-            minimumAmplitude: number;
-            maximumAmplitude: number;
-            minimumPeriodSeconds: number;
-            maximumPeriodSeconds: number;
-        }>;
-        spiked: Readonly<{
-            unlockHeightMeters: number;
-            spawnChance: number;
-            collisionDepth: number;
-        }>;
+        visualHeight: number;
+        teleport: Readonly<{ fadeSeconds: number }>;
     }>;
     readonly visualQuality: Readonly<Record<
         'low' | 'medium' | 'high',
@@ -154,60 +117,40 @@ export interface DoodleJumpGameplayConfig {
     readonly enemies: Readonly<{
         enabled: boolean;
 
-        difficultyCapHeightMeters: number;
         maximumActive: number;
-        twoActiveHeightMeters: number;
-        threeActiveHeightMeters: number;
         recycleBelow: number;
         spawnAboveScreenMargin: number;
-        minimumVerticalSeparationAtUnlock: number;
-        minimumVerticalSeparation: number;
         hitFlashSeconds: number;
-        stompBonus: number;
         small: DoodleJumpEnemyTypeConfig;
         large: DoodleJumpEnemyTypeConfig;
         hover: DoodleJumpEnemyTypeConfig;
         hopper: DoodleJumpEnemyTypeConfig;
         weaver: DoodleJumpEnemyTypeConfig;
+        flyer: DoodleJumpEnemyTypeConfig;
+        bouncer: DoodleJumpEnemyTypeConfig;
+        runner: DoodleJumpEnemyTypeConfig;
+        tall: DoodleJumpEnemyTypeConfig;
     }>;
     readonly hazards: Readonly<{
         enabled: boolean;
         typeOverride: DoodleJumpHazardType | 'auto';
 
-        difficultyCapHeightMeters: number;
         maximumActive: number;
-        twoActiveHeightMeters: number;
         recycleBelow: number;
         spawnAboveScreenMargin: number;
-        minimumVerticalSeparationAtUnlock: number;
-        minimumVerticalSeparation: number;
         ufo: Readonly<{
-            unlockHeightMeters: number;
-            maximumActive: number;
             width: number;
             height: number;
             beamWidth: number;
             beamLength: number;
-            horizontalSpeed: number;
             lockSeconds: number;
-            pullAcceleration: number;
             abductionSeconds: number;
-            leaveResetSeconds: number;
-            hitPauseSeconds: number;
-            interruptScore: number;
-            spawnMinimumAbovePlayer: number;
-            spawnMaximumAbovePlayer: number;
         }>;
         blackHole: Readonly<{
-            unlockHeightMeters: number;
-            maximumActive: number;
             outerRadius: number;
             coreRadius: number;
-            maximumPullAcceleration: number;
         }>;
         bearTrap: Readonly<{
-            unlockHeightMeters: number;
-            maximumActive: number;
             width: number;
             height: number;
             minimumRemainingLandingWidth: number;
@@ -221,31 +164,22 @@ export interface DoodleJumpGameplayConfig {
         maximumActive: number;
         recycleBelow: number;
         spawnAboveScreenMargin: number;
-        minimumVerticalSeparation: number;
-        pickupRadius: number;
-        minimumAbovePlatform: number;
-        maximumAbovePlatform: number;
-        spring: Readonly<{ unlockHeightMeters: number; bounceVelocity: number }>;
-        trampoline: Readonly<{ unlockHeightMeters: number; bounceVelocity: number }>;
+        spring: Readonly<{ bounceVelocity: number }>;
+        trampoline: Readonly<{ bounceVelocity: number }>;
         jetpack: Readonly<{
-            unlockHeightMeters: number;
             durationSeconds: number;
             verticalVelocity: number;
         }>;
         propellerHat: Readonly<{
-            unlockHeightMeters: number;
             durationSeconds: number;
-            gravity: number;
             minimumVerticalVelocity: number;
         }>;
         rocket: Readonly<{
-            unlockHeightMeters: number;
             durationSeconds: number;
-            verticalVelocity: number;
         }>;
-        shield: Readonly<{ unlockHeightMeters: number; durationSeconds: number }>;
+        shield: Readonly<{ durationSeconds: number }>;
+        springShoes: Readonly<{ durationSeconds: number; bounceVelocity: number }>;
         headStart: Readonly<{ durationSeconds: number; verticalVelocity: number }>;
-        weightBands: readonly DoodleJumpItemWeightBand[];
     }>;
     readonly resurrection: Readonly<{
         placement: string;
@@ -261,10 +195,6 @@ export interface DoodleJumpGameplayConfig {
         forceDegradedFallback: boolean;
         seedOverride: number;
         platformTypeOverride: DoodleJumpPlatformType | 'auto';
-        authoredPatternChance: number;
-        specialPlatformChancePerSegment: number;
-        itemChancePerSegment: number;
-        hazardChancePerSegment: number;
         preloadAboveScreen: number;
         maxCandidateAttempts: number;
         maxActivePlatforms: number;
@@ -280,7 +210,7 @@ const PLATFORM_TYPES: readonly DoodleJumpPlatformType[] = Object.freeze([
     'disappearing',
     'shifting',
     'exploding',
-    'spiked',
+    'teleport',
 ]);
 
 const ITEM_TYPES: readonly DoodleJumpItemType[] = Object.freeze([
@@ -290,6 +220,7 @@ const ITEM_TYPES: readonly DoodleJumpItemType[] = Object.freeze([
     'propeller-hat',
     'rocket',
     'shield',
+    'spring-shoes',
 ]);
 
 function asRecord(value: unknown, path: string): Readonly<Record<string, unknown>> {
@@ -362,16 +293,6 @@ function parseEnemyTypeConfig(value: unknown, path: string): DoodleJumpEnemyType
         health: positiveInteger(record.health, `${path}.health`),
         width: positiveNumber(record.width, `${path}.width`),
         height: positiveNumber(record.height, `${path}.height`),
-        unlockHeightMeters: nonNegativeInteger(
-            record.unlockHeightMeters,
-            `${path}.unlockHeightMeters`,
-        ),
-        horizontalRange: positiveNumber(record.horizontalRange, `${path}.horizontalRange`),
-        verticalRange: finiteNumber(record.verticalRange, `${path}.verticalRange`),
-        anchorHeight: finiteNumber(record.anchorHeight, `${path}.anchorHeight`),
-        cycleSeconds: positiveNumber(record.cycleSeconds, `${path}.cycleSeconds`),
-        headZoneHeight: positiveNumber(record.headZoneHeight, `${path}.headZoneHeight`),
-        killScore: positiveInteger(record.killScore, `${path}.killScore`),
     });
 }
 
@@ -393,33 +314,6 @@ function parseVisualQualityProfile(
         effectScale,
         uiMotion: booleanValue(value.uiMotion, `${path}.uiMotion`),
     });
-}
-
-function parseItemWeightBand(value: unknown, index: number): DoodleJumpItemWeightBand {
-    const path = `items.weightBands[${index}]`;
-    const record = asRecord(value, path);
-    const readWeight = (key: string): number => {
-        const weight = finiteNumber(record[key], `${path}.${key}`);
-        if (weight < 0) throw new Error(`${path}.${key} must be non-negative.`);
-        return weight;
-    };
-    const startMeters = nonNegativeInteger(record.startMeters, `${path}.startMeters`);
-    const endMeters = positiveInteger(record.endMeters, `${path}.endMeters`);
-    if (endMeters <= startMeters) throw new Error(`${path} must have endMeters > startMeters.`);
-    const band = Object.freeze({
-        startMeters,
-        endMeters,
-        spring: readWeight('spring'),
-        trampoline: readWeight('trampoline'),
-        jetpack: readWeight('jetpack'),
-        propellerHat: readWeight('propellerHat'),
-        rocket: readWeight('rocket'),
-        shield: readWeight('shield'),
-    });
-    const total = band.spring + band.trampoline + band.jetpack
-        + band.propellerHat + band.rocket + band.shield;
-    if (total <= 0) throw new Error(`${path} must contain at least one positive weight.`);
-    return band;
 }
 
 function parsePlatform(
@@ -456,29 +350,9 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const sensor = asRecord(root.sensor, 'sensor');
     const camera = asRecord(root.camera, 'camera');
     const shooting = asRecord(root.shooting, 'shooting');
+    const collectibles = asRecord(root.collectibles, 'collectibles');
     const platformBehavior = asRecord(root.platformBehavior, 'platformBehavior');
-    const verticalMoving = asRecord(
-        platformBehavior.verticalMoving,
-        'platformBehavior.verticalMoving',
-    );
-    const challenge = asRecord(platformBehavior.challenge, 'platformBehavior.challenge');
-    const challengeStart = nonNegativeInteger(challenge.startHeightMeters, 'platformBehavior.challenge.startHeightMeters');
-    const challengeCap = positiveNumber(challenge.capHeightMeters, 'platformBehavior.challenge.capHeightMeters');
-    const challengeSettings = Object.freeze({
-        startHeightMeters: challengeStart,
-        capHeightMeters: challengeCap,
-        movingSpeedBonus: unitRatio(challenge.movingSpeedBonus, 'platformBehavior.challenge.movingSpeedBonus'),
-        movingChanceBonus: unitRatio(challenge.movingChanceBonus, 'platformBehavior.challenge.movingChanceBonus'),
-        shiftingChanceBonus: unitRatio(challenge.shiftingChanceBonus, 'platformBehavior.challenge.shiftingChanceBonus'),
-        fragileChanceBonus: unitRatio(challenge.fragileChanceBonus, 'platformBehavior.challenge.fragileChanceBonus'),
-    });
-    if (challengeCap <= challengeStart
-        || challengeSettings.movingSpeedBonus > 0.25
-        || challengeSettings.movingChanceBonus + challengeSettings.shiftingChanceBonus > 0.2
-        || challengeSettings.fragileChanceBonus > 0.15) {
-        throw new Error('Platform challenge must rise gradually within safe motion and probability budgets.');
-    }
-    const spiked = asRecord(platformBehavior.spiked, 'platformBehavior.spiked');
+    const teleport = asRecord(platformBehavior.teleport, 'platformBehavior.teleport');
     const visualQuality = asRecord(root.visualQuality, 'visualQuality');
     const lowVisualQuality = asRecord(visualQuality.low, 'visualQuality.low');
     const mediumVisualQuality = asRecord(visualQuality.medium, 'visualQuality.medium');
@@ -495,27 +369,19 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const propellerHat = asRecord(items.propellerHat, 'items.propellerHat');
     const rocket = asRecord(items.rocket, 'items.rocket');
     const shield = asRecord(items.shield, 'items.shield');
+    const springShoes = asRecord(items.springShoes, 'items.springShoes');
     const headStart = asRecord(items.headStart, 'items.headStart');
     const resurrection = asRecord(root.resurrection, 'resurrection');
     const generation = asRecord(root.generation, 'generation');
-    if (!Array.isArray(root.fixedPlatforms) || root.fixedPlatforms.length !== 8) {
-        throw new Error('fixedPlatforms must contain exactly P0-P7.');
+    if (!Array.isArray(root.fixedPlatforms) || root.fixedPlatforms.length === 0) {
+        throw new Error('fixedPlatforms must contain a starter floor.');
     }
     const designWidth = positiveNumber(design.width, 'design.width');
     const standardPlatformWidth = positiveNumber(
         platformBehavior.standardWidth,
         'platformBehavior.standardWidth',
     );
-    const largeMonsterPlatformWidth = positiveNumber(
-        platformBehavior.largeMonsterWidth,
-        'platformBehavior.largeMonsterWidth',
-    );
-    if (standardPlatformWidth > designWidth || largeMonsterPlatformWidth > designWidth) {
-        throw new Error('Platform widths must fit within design.width.');
-    }
-    if (largeMonsterPlatformWidth < standardPlatformWidth) {
-        throw new Error('platformBehavior.largeMonsterWidth must not be narrower than standardWidth.');
-    }
+    if (standardPlatformWidth > designWidth) throw new Error('Platform width exceeds the playfield.');
     const platforms = root.fixedPlatforms.map((platform, index) => parsePlatform(
         platform,
         index,
@@ -528,7 +394,7 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         ids.add(platform.id);
     });
     const schemaVersion = positiveInteger(root.schemaVersion, 'schemaVersion');
-    if (schemaVersion !== 1) throw new Error(`Unsupported gameplay schemaVersion ${schemaVersion}.`);
+    if (schemaVersion !== 5) throw new Error(`Unsupported gameplay schemaVersion ${schemaVersion}.`);
     const wrapLeft = finiteNumber(player.wrapLeft, 'player.wrapLeft');
     const wrapRight = finiteNumber(player.wrapRight, 'player.wrapRight');
     const wrapDistance = positiveNumber(player.wrapDistance, 'player.wrapDistance');
@@ -566,8 +432,8 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     if (maxCandidateAttempts > 24) {
         throw new Error('generation.maxCandidateAttempts must not exceed 24.');
     }
-    if (maxActivePlatforms < 8) {
-        throw new Error('generation.maxActivePlatforms must keep at least the fixed P0-P7 set.');
+    if (maxActivePlatforms < 8 || maxActivePlatforms > 100) {
+        throw new Error('generation.maxActivePlatforms must fit the 8-100 platform pool.');
     }
     const platformTypeOverride = nonEmptyString(
         generation.platformTypeOverride,
@@ -577,166 +443,15 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         && PLATFORM_TYPES.indexOf(platformTypeOverride) < 0) {
         throw new Error(`Unsupported generation.platformTypeOverride: ${platformTypeOverride}.`);
     }
-    const verticalMovingUnlock = nonNegativeInteger(
-        verticalMoving.unlockHeightMeters,
-        'platformBehavior.verticalMoving.unlockHeightMeters',
-    );
-    const verticalMovingChanceAtUnlock = unitRatio(
-        verticalMoving.spawnChanceAtUnlock,
-        'platformBehavior.verticalMoving.spawnChanceAtUnlock',
-    );
-    const verticalMovingChanceAtCap = unitRatio(
-        verticalMoving.spawnChanceAtCap,
-        'platformBehavior.verticalMoving.spawnChanceAtCap',
-    );
-    const verticalMovingChanceCapHeight = positiveNumber(
-        verticalMoving.chanceCapHeightMeters,
-        'platformBehavior.verticalMoving.chanceCapHeightMeters',
-    );
-    const verticalMovingMinimumAmplitude = positiveNumber(
-        verticalMoving.minimumAmplitude,
-        'platformBehavior.verticalMoving.minimumAmplitude',
-    );
-    const verticalMovingMaximumAmplitude = positiveNumber(
-        verticalMoving.maximumAmplitude,
-        'platformBehavior.verticalMoving.maximumAmplitude',
-    );
-    const verticalMovingMinimumPeriod = positiveNumber(
-        verticalMoving.minimumPeriodSeconds,
-        'platformBehavior.verticalMoving.minimumPeriodSeconds',
-    );
-    const verticalMovingMaximumPeriod = positiveNumber(
-        verticalMoving.maximumPeriodSeconds,
-        'platformBehavior.verticalMoving.maximumPeriodSeconds',
-    );
-    if (verticalMovingChanceAtCap < verticalMovingChanceAtUnlock
-        || verticalMovingChanceCapHeight <= verticalMovingUnlock
-        || verticalMovingMaximumAmplitude < verticalMovingMinimumAmplitude
-        || verticalMovingMaximumPeriod < verticalMovingMinimumPeriod) {
-        throw new Error('Vertical-moving platform difficulty and motion ranges are invalid.');
-    }
     const smallEnemy = parseEnemyTypeConfig(enemies.small, 'enemies.small');
     const largeEnemy = parseEnemyTypeConfig(enemies.large, 'enemies.large');
     const hoverEnemy = parseEnemyTypeConfig(enemies.hover, 'enemies.hover');
     const hopperEnemy = parseEnemyTypeConfig(enemies.hopper, 'enemies.hopper');
     const weaverEnemy = parseEnemyTypeConfig(enemies.weaver, 'enemies.weaver');
-    if (hopperEnemy.verticalRange <= 0
-        || weaverEnemy.anchorHeight - weaverEnemy.verticalRange < weaverEnemy.height / 2) {
-        throw new Error('New enemy motion must remain above its anchor platform.');
-    }
-    if (smallEnemy.unlockHeightMeters !== 70
-        || largeEnemy.unlockHeightMeters !== 220
-        || hoverEnemy.unlockHeightMeters !== 150) {
-        throw new Error('Enemy unlock heights must remain Small 70m, Large 220m, Hover 150m.');
-    }
-    if (largeMonsterPlatformWidth < largeEnemy.width + 16) {
-        throw new Error('platformBehavior.largeMonsterWidth must leave standing room for a large monster.');
-    }
-    const maximumActiveEnemies = positiveInteger(
-        enemies.maximumActive,
-        'enemies.maximumActive',
-    );
-    if (maximumActiveEnemies > 3) {
-        throw new Error('enemies.maximumActive must not exceed the three-enemy budget.');
-    }
-    const enemyDifficultyCapHeight = positiveNumber(
-        enemies.difficultyCapHeightMeters,
-        'enemies.difficultyCapHeightMeters',
-    );
-    const enemyTwoActiveHeight = positiveNumber(
-        enemies.twoActiveHeightMeters,
-        'enemies.twoActiveHeightMeters',
-    );
-    const enemyThreeActiveHeight = positiveNumber(
-        enemies.threeActiveHeightMeters,
-        'enemies.threeActiveHeightMeters',
-    );
-    const enemyInitialSeparation = positiveNumber(
-        enemies.minimumVerticalSeparationAtUnlock,
-        'enemies.minimumVerticalSeparationAtUnlock',
-    );
-    const enemyFinalSeparation = positiveNumber(
-        enemies.minimumVerticalSeparation,
-        'enemies.minimumVerticalSeparation',
-    );
-    if (enemyDifficultyCapHeight <= smallEnemy.unlockHeightMeters
-        || enemyTwoActiveHeight >= enemyThreeActiveHeight
-        || enemyThreeActiveHeight > enemyDifficultyCapHeight
-        || enemyInitialSeparation < enemyFinalSeparation) {
-        throw new Error('Enemy difficulty curve must rise gradually and stop at its configured cap.');
-    }
-    const ufoUnlockHeight = nonNegativeInteger(
-        ufo.unlockHeightMeters,
-        'hazards.ufo.unlockHeightMeters',
-    );
-    const blackHoleUnlockHeight = nonNegativeInteger(
-        blackHole.unlockHeightMeters,
-        'hazards.blackHole.unlockHeightMeters',
-    );
-    const bearTrapUnlockHeight = nonNegativeInteger(
-        bearTrap.unlockHeightMeters,
-        'hazards.bearTrap.unlockHeightMeters',
-    );
-    if (ufoUnlockHeight !== 600
-        || blackHoleUnlockHeight !== 250
-        || bearTrapUnlockHeight !== 180) {
-        throw new Error('Hazard unlock heights must remain UFO 600m, Black Hole 250m, Bear Trap 180m.');
-    }
-    const ufoMaximumActive = positiveInteger(ufo.maximumActive, 'hazards.ufo.maximumActive');
-    const blackHoleMaximumActive = positiveInteger(
-        blackHole.maximumActive,
-        'hazards.blackHole.maximumActive',
-    );
-    const bearTrapMaximumActive = positiveInteger(
-        bearTrap.maximumActive,
-        'hazards.bearTrap.maximumActive',
-    );
-    if (ufoMaximumActive > 2
-        || blackHoleMaximumActive > 2
-        || bearTrapMaximumActive > 2) {
-        throw new Error('Each hazard type maximumActive must not exceed 2.');
-    }
-    const maximumActiveHazards = positiveInteger(
-        hazards.maximumActive,
-        'hazards.maximumActive',
-    );
-    const hazardDifficultyCapHeight = positiveNumber(
-        hazards.difficultyCapHeightMeters,
-        'hazards.difficultyCapHeightMeters',
-    );
-    const hazardTwoActiveHeight = positiveNumber(
-        hazards.twoActiveHeightMeters,
-        'hazards.twoActiveHeightMeters',
-    );
-    const hazardInitialSeparation = positiveNumber(
-        hazards.minimumVerticalSeparationAtUnlock,
-        'hazards.minimumVerticalSeparationAtUnlock',
-    );
-    const hazardFinalSeparation = positiveNumber(
-        hazards.minimumVerticalSeparation,
-        'hazards.minimumVerticalSeparation',
-    );
-    if (maximumActiveHazards > 2
-        || hazardDifficultyCapHeight <= Math.min(
-            ufoUnlockHeight,
-            blackHoleUnlockHeight,
-            bearTrapUnlockHeight,
-        )
-        || hazardTwoActiveHeight > hazardDifficultyCapHeight
-        || hazardInitialSeparation < hazardFinalSeparation) {
-        throw new Error('Hazard difficulty curve must rise gradually and stop at its configured cap.');
-    }
-    const ufoSpawnMinimum = positiveNumber(
-        ufo.spawnMinimumAbovePlayer,
-        'hazards.ufo.spawnMinimumAbovePlayer',
-    );
-    const ufoSpawnMaximum = positiveNumber(
-        ufo.spawnMaximumAbovePlayer,
-        'hazards.ufo.spawnMaximumAbovePlayer',
-    );
-    if (ufoSpawnMaximum <= ufoSpawnMinimum) {
-        throw new Error('hazards.ufo.spawnMaximumAbovePlayer must exceed the minimum.');
-    }
+    const flyerEnemy = parseEnemyTypeConfig(enemies.flyer, 'enemies.flyer');
+    const maximumActiveEnemies = positiveInteger(enemies.maximumActive, 'enemies.maximumActive');
+    const maximumActiveHazards = positiveInteger(hazards.maximumActive, 'hazards.maximumActive');
+    if (maximumActiveEnemies > 8 || maximumActiveHazards > 8) throw new Error('Entity pools must not exceed 8.');
     const blackHoleOuterRadius = positiveNumber(
         blackHole.outerRadius,
         'hazards.blackHole.outerRadius',
@@ -786,28 +501,8 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         && ITEM_TYPES.indexOf(debugPowerPreset as DoodleJumpItemType) < 0) {
         throw new Error(`Unsupported items.debugPowerPreset: ${debugPowerPreset}.`);
     }
-    if (!Array.isArray(items.weightBands) || items.weightBands.length !== 6) {
-        throw new Error('items.weightBands must contain exactly six height bands.');
-    }
-    const weightBands = items.weightBands.map(parseItemWeightBand);
-    weightBands.forEach((band, index) => {
-        if (index > 0 && weightBands[index - 1].endMeters !== band.startMeters) {
-            throw new Error('items.weightBands must be contiguous and ordered.');
-        }
-    });
     const itemMaximumActive = positiveInteger(items.maximumActive, 'items.maximumActive');
-    if (itemMaximumActive > 5) throw new Error('items.maximumActive must not exceed 5.');
-    const minimumAbovePlatform = positiveNumber(
-        items.minimumAbovePlatform,
-        'items.minimumAbovePlatform',
-    );
-    const maximumAbovePlatform = positiveNumber(
-        items.maximumAbovePlatform,
-        'items.maximumAbovePlatform',
-    );
-    if (maximumAbovePlatform <= minimumAbovePlatform) {
-        throw new Error('items.maximumAbovePlatform must exceed the minimum.');
-    }
+    if (itemMaximumActive > 8) throw new Error('items.maximumActive must not exceed 8.');
     const jetpackDurationSeconds = positiveNumber(
         jetpack.durationSeconds,
         'items.jetpack.durationSeconds',
@@ -820,10 +515,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         propellerHat.durationSeconds,
         'items.propellerHat.durationSeconds',
     );
-    const propellerHatGravity = positiveNumber(
-        propellerHat.gravity,
-        'items.propellerHat.gravity',
-    );
     const propellerHatMinimumVelocity = positiveNumber(
         propellerHat.minimumVerticalVelocity,
         'items.propellerHat.minimumVerticalVelocity',
@@ -832,42 +523,7 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         rocket.durationSeconds,
         'items.rocket.durationSeconds',
     );
-    const rocketVerticalVelocity = positiveNumber(
-        rocket.verticalVelocity,
-        'items.rocket.verticalVelocity',
-    );
-    if (Math.abs(jetpackDurationSeconds - propellerHatDurationSeconds) > 0.0001
-        || Math.abs(jetpackDurationSeconds - rocketDurationSeconds) > 0.0001) {
-        throw new Error('Jetpack, Propeller Hat, and Rocket durations must remain equal.');
-    }
-    const inheritedMaximumVelocity = positiveNumber(
-        trampoline.bounceVelocity,
-        'items.trampoline.bounceVelocity',
-    );
-    const propellerDecelerationSeconds = Math.min(
-        propellerHatDurationSeconds,
-        Math.max(
-            0,
-            (inheritedMaximumVelocity - propellerHatMinimumVelocity) / propellerHatGravity,
-        ),
-    );
-    const propellerFinalVelocity = Math.max(
-        propellerHatMinimumVelocity,
-        inheritedMaximumVelocity
-            - propellerHatGravity * propellerDecelerationSeconds,
-    );
-    const maximumPropellerHeight = (
-        (inheritedMaximumVelocity + propellerFinalVelocity) / 2
-        * propellerDecelerationSeconds
-    ) + propellerHatMinimumVelocity
-        * (propellerHatDurationSeconds - propellerDecelerationSeconds);
-    const jetpackHeight = jetpackDurationSeconds * jetpackVerticalVelocity;
-    const rocketHeight = rocketDurationSeconds * rocketVerticalVelocity;
-    if (!(rocketHeight > jetpackHeight && jetpackHeight > maximumPropellerHeight)) {
-        throw new Error(
-            'Flight item heights must remain Rocket > Jetpack > maximum Propeller Hat.',
-        );
-    }
+
     return Object.freeze({
         schemaVersion,
         design: Object.freeze({
@@ -882,8 +538,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             gravity,
             bounceVelocity,
             terminalFallVelocity,
-            horizontalAcceleration: positiveNumber(player.horizontalAcceleration, 'player.horizontalAcceleration'),
-            horizontalDeceleration: positiveNumber(player.horizontalDeceleration, 'player.horizontalDeceleration'),
             maxHorizontalSpeed: positiveNumber(player.maxHorizontalSpeed, 'player.maxHorizontalSpeed'),
             collisionWidth: positiveNumber(player.collisionWidth, 'player.collisionWidth'),
             collisionHeight: positiveNumber(player.collisionHeight, 'player.collisionHeight'),
@@ -896,16 +550,14 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             calibrationWindowMs: positiveNumber(sensor.calibrationWindowMs, 'sensor.calibrationWindowMs'),
             timeoutMs: positiveNumber(sensor.timeoutMs, 'sensor.timeoutMs'),
             staleTimeoutMs: positiveNumber(sensor.staleTimeoutMs, 'sensor.staleTimeoutMs'),
-            deadZone: positiveNumber(sensor.deadZone, 'sensor.deadZone'),
+            deadZone: unitRatio(sensor.deadZone, 'sensor.deadZone'),
             fullTilt: positiveNumber(sensor.fullTilt, 'sensor.fullTilt'),
             smoothingSeconds: positiveNumber(sensor.smoothingSeconds, 'sensor.smoothingSeconds'),
         }),
         camera: Object.freeze({
             anchorHeight: positiveNumber(camera.anchorHeight, 'camera.anchorHeight'),
             maximumAnchorHeightRatio: ratio(camera.maximumAnchorHeightRatio, 'camera.maximumAnchorHeightRatio'),
-            preGenerateJumpHeights: positiveNumber(camera.preGenerateJumpHeights, 'camera.preGenerateJumpHeights'),
             recycleBelow: positiveNumber(camera.recycleBelow, 'camera.recycleBelow'),
-            floatingOriginThreshold: positiveNumber(camera.floatingOriginThreshold, 'camera.floatingOriginThreshold'),
         }),
         shooting: Object.freeze({
             cooldownMs: positiveNumber(shooting.cooldownMs, 'shooting.cooldownMs'),
@@ -914,38 +566,16 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             nearAimFallbackDistance: positiveNumber(shooting.nearAimFallbackDistance, 'shooting.nearAimFallbackDistance'),
             poolSoftTarget: positiveInteger(shooting.poolSoftTarget, 'shooting.poolSoftTarget'),
         }),
-        platformBehavior: Object.freeze({
-            challenge: challengeSettings,
-            standardWidth: standardPlatformWidth,
-            largeMonsterWidth: largeMonsterPlatformWidth,
-            explodingDelaySeconds: positiveNumber(
-                platformBehavior.explodingDelaySeconds,
-                'platformBehavior.explodingDelaySeconds',
-            ),
-            verticalMoving: Object.freeze({
-                unlockHeightMeters: verticalMovingUnlock,
-                spawnChanceAtUnlock: verticalMovingChanceAtUnlock,
-                spawnChanceAtCap: verticalMovingChanceAtCap,
-                chanceCapHeightMeters: verticalMovingChanceCapHeight,
-                minimumAmplitude: verticalMovingMinimumAmplitude,
-                maximumAmplitude: verticalMovingMaximumAmplitude,
-                minimumPeriodSeconds: verticalMovingMinimumPeriod,
-                maximumPeriodSeconds: verticalMovingMaximumPeriod,
-            }),
-            spiked: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    spiked.unlockHeightMeters,
-                    'platformBehavior.spiked.unlockHeightMeters',
-                ),
-                spawnChance: unitRatio(
-                    spiked.spawnChance,
-                    'platformBehavior.spiked.spawnChance',
-                ),
-                collisionDepth: positiveNumber(
-                    spiked.collisionDepth,
-                    'platformBehavior.spiked.collisionDepth',
-                ),
-            }),
+        collectibles: Object.freeze({
+            enabled: booleanValue(collectibles.enabled, 'collectibles.enabled'),
+            hoverOffsetY: positiveNumber(collectibles.hoverOffsetY, 'collectibles.hoverOffsetY'),
+            gatherSeconds: positiveNumber(collectibles.gatherSeconds, 'collectibles.gatherSeconds'),
+            headHoldSeconds: positiveNumber(collectibles.headHoldSeconds, 'collectibles.headHoldSeconds'),
+            flightSeconds: positiveNumber(collectibles.flightSeconds, 'collectibles.flightSeconds'),
+        }),
+        platformBehavior: Object.freeze({ standardWidth: standardPlatformWidth,
+            visualHeight: positiveNumber(platformBehavior.visualHeight, 'platformBehavior.visualHeight'),
+            teleport: Object.freeze({ fadeSeconds: positiveNumber(teleport.fadeSeconds, 'platformBehavior.teleport.fadeSeconds') }),
         }),
         visualQuality: Object.freeze({
             low: parseVisualQualityProfile(lowVisualQuality, 'visualQuality.low'),
@@ -953,93 +583,30 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             high: parseVisualQualityProfile(highVisualQuality, 'visualQuality.high'),
         }),
         enemies: Object.freeze({
-            enabled: booleanValue(enemies.enabled, 'enemies.enabled'),
-            difficultyCapHeightMeters: enemyDifficultyCapHeight,
-            maximumActive: maximumActiveEnemies,
-            twoActiveHeightMeters: enemyTwoActiveHeight,
-            threeActiveHeightMeters: enemyThreeActiveHeight,
+            enabled: booleanValue(enemies.enabled, 'enemies.enabled'), maximumActive: maximumActiveEnemies,
             recycleBelow: positiveNumber(enemies.recycleBelow, 'enemies.recycleBelow'),
-            spawnAboveScreenMargin: positiveNumber(
-                enemies.spawnAboveScreenMargin,
-                'enemies.spawnAboveScreenMargin',
-            ),
-            minimumVerticalSeparationAtUnlock: enemyInitialSeparation,
-            minimumVerticalSeparation: enemyFinalSeparation,
+            spawnAboveScreenMargin: positiveNumber(enemies.spawnAboveScreenMargin, 'enemies.spawnAboveScreenMargin'),
             hitFlashSeconds: positiveNumber(enemies.hitFlashSeconds, 'enemies.hitFlashSeconds'),
-            stompBonus: positiveInteger(enemies.stompBonus, 'enemies.stompBonus'),
-            small: smallEnemy,
-            large: largeEnemy,
-            hover: hoverEnemy,
-            hopper: hopperEnemy,
-            weaver: weaverEnemy,
+            small: smallEnemy, large: largeEnemy, hover: hoverEnemy, hopper: hopperEnemy, weaver: weaverEnemy, flyer: flyerEnemy,
+            bouncer: parseEnemyTypeConfig(enemies.bouncer, 'enemies.bouncer'),
+            runner: parseEnemyTypeConfig(enemies.runner, 'enemies.runner'),
+            tall: parseEnemyTypeConfig(enemies.tall, 'enemies.tall'),
         }),
         hazards: Object.freeze({
-            enabled: booleanValue(hazards.enabled, 'hazards.enabled'),
-            typeOverride: hazardTypeOverride,
-            difficultyCapHeightMeters: hazardDifficultyCapHeight,
+            enabled: booleanValue(hazards.enabled, 'hazards.enabled'), typeOverride: hazardTypeOverride,
             maximumActive: maximumActiveHazards,
-            twoActiveHeightMeters: hazardTwoActiveHeight,
             recycleBelow: positiveNumber(hazards.recycleBelow, 'hazards.recycleBelow'),
-            spawnAboveScreenMargin: positiveNumber(
-                hazards.spawnAboveScreenMargin,
-                'hazards.spawnAboveScreenMargin',
-            ),
-            minimumVerticalSeparationAtUnlock: hazardInitialSeparation,
-            minimumVerticalSeparation: hazardFinalSeparation,
+            spawnAboveScreenMargin: positiveNumber(hazards.spawnAboveScreenMargin, 'hazards.spawnAboveScreenMargin'),
             ufo: Object.freeze({
-                unlockHeightMeters: ufoUnlockHeight,
-                maximumActive: ufoMaximumActive,
-                width: positiveNumber(ufo.width, 'hazards.ufo.width'),
-                height: positiveNumber(ufo.height, 'hazards.ufo.height'),
-                beamWidth: positiveNumber(ufo.beamWidth, 'hazards.ufo.beamWidth'),
-                beamLength: positiveNumber(ufo.beamLength, 'hazards.ufo.beamLength'),
-                horizontalSpeed: positiveNumber(
-                    ufo.horizontalSpeed,
-                    'hazards.ufo.horizontalSpeed',
-                ),
+                width: positiveNumber(ufo.width, 'hazards.ufo.width'), height: positiveNumber(ufo.height, 'hazards.ufo.height'),
+                beamWidth: positiveNumber(ufo.beamWidth, 'hazards.ufo.beamWidth'), beamLength: positiveNumber(ufo.beamLength, 'hazards.ufo.beamLength'),
                 lockSeconds: positiveNumber(ufo.lockSeconds, 'hazards.ufo.lockSeconds'),
-                pullAcceleration: positiveNumber(
-                    ufo.pullAcceleration,
-                    'hazards.ufo.pullAcceleration',
-                ),
-                abductionSeconds: positiveNumber(
-                    ufo.abductionSeconds,
-                    'hazards.ufo.abductionSeconds',
-                ),
-                leaveResetSeconds: positiveNumber(
-                    ufo.leaveResetSeconds,
-                    'hazards.ufo.leaveResetSeconds',
-                ),
-                hitPauseSeconds: positiveNumber(
-                    ufo.hitPauseSeconds,
-                    'hazards.ufo.hitPauseSeconds',
-                ),
-                interruptScore: positiveInteger(
-                    ufo.interruptScore,
-                    'hazards.ufo.interruptScore',
-                ),
-                spawnMinimumAbovePlayer: ufoSpawnMinimum,
-                spawnMaximumAbovePlayer: ufoSpawnMaximum,
+                abductionSeconds: positiveNumber(ufo.abductionSeconds, 'hazards.ufo.abductionSeconds'),
             }),
-            blackHole: Object.freeze({
-                unlockHeightMeters: blackHoleUnlockHeight,
-                maximumActive: blackHoleMaximumActive,
-                outerRadius: blackHoleOuterRadius,
-                coreRadius: blackHoleCoreRadius,
-                maximumPullAcceleration: positiveNumber(
-                    blackHole.maximumPullAcceleration,
-                    'hazards.blackHole.maximumPullAcceleration',
-                ),
-            }),
+            blackHole: Object.freeze({ outerRadius: blackHoleOuterRadius, coreRadius: blackHoleCoreRadius }),
             bearTrap: Object.freeze({
-                unlockHeightMeters: bearTrapUnlockHeight,
-                maximumActive: bearTrapMaximumActive,
-                width: positiveNumber(bearTrap.width, 'hazards.bearTrap.width'),
-                height: positiveNumber(bearTrap.height, 'hazards.bearTrap.height'),
-                minimumRemainingLandingWidth: positiveNumber(
-                    bearTrap.minimumRemainingLandingWidth,
-                    'hazards.bearTrap.minimumRemainingLandingWidth',
-                ),
+                width: positiveNumber(bearTrap.width, 'hazards.bearTrap.width'), height: positiveNumber(bearTrap.height, 'hazards.bearTrap.height'),
+                minimumRemainingLandingWidth: positiveNumber(bearTrap.minimumRemainingLandingWidth, 'hazards.bearTrap.minimumRemainingLandingWidth'),
             }),
         }),
         items: Object.freeze({
@@ -1056,67 +623,38 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
                 items.spawnAboveScreenMargin,
                 'items.spawnAboveScreenMargin',
             ),
-            minimumVerticalSeparation: positiveNumber(
-                items.minimumVerticalSeparation,
-                'items.minimumVerticalSeparation',
-            ),
-            pickupRadius: positiveNumber(items.pickupRadius, 'items.pickupRadius'),
-            minimumAbovePlatform,
-            maximumAbovePlatform,
             spring: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    spring.unlockHeightMeters,
-                    'items.spring.unlockHeightMeters',
-                ),
                 bounceVelocity: positiveNumber(
                     spring.bounceVelocity,
                     'items.spring.bounceVelocity',
                 ),
             }),
             trampoline: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    trampoline.unlockHeightMeters,
-                    'items.trampoline.unlockHeightMeters',
-                ),
                 bounceVelocity: positiveNumber(
                     trampoline.bounceVelocity,
                     'items.trampoline.bounceVelocity',
                 ),
             }),
             jetpack: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    jetpack.unlockHeightMeters,
-                    'items.jetpack.unlockHeightMeters',
-                ),
                 durationSeconds: jetpackDurationSeconds,
                 verticalVelocity: jetpackVerticalVelocity,
             }),
             propellerHat: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    propellerHat.unlockHeightMeters,
-                    'items.propellerHat.unlockHeightMeters',
-                ),
                 durationSeconds: propellerHatDurationSeconds,
-                gravity: propellerHatGravity,
                 minimumVerticalVelocity: propellerHatMinimumVelocity,
             }),
             rocket: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    rocket.unlockHeightMeters,
-                    'items.rocket.unlockHeightMeters',
-                ),
                 durationSeconds: rocketDurationSeconds,
-                verticalVelocity: rocketVerticalVelocity,
             }),
             shield: Object.freeze({
-                unlockHeightMeters: nonNegativeInteger(
-                    shield.unlockHeightMeters,
-                    'items.shield.unlockHeightMeters',
-                ),
                 durationSeconds: positiveNumber(
                     shield.durationSeconds,
                     'items.shield.durationSeconds',
                 ),
+            }),
+            springShoes: Object.freeze({
+                durationSeconds: positiveNumber(springShoes.durationSeconds, 'items.springShoes.durationSeconds'),
+                bounceVelocity: positiveNumber(springShoes.bounceVelocity, 'items.springShoes.bounceVelocity'),
             }),
             headStart: Object.freeze({
                 durationSeconds: positiveNumber(
@@ -1128,7 +666,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
                     'items.headStart.verticalVelocity',
                 ),
             }),
-            weightBands: Object.freeze(weightBands),
         }),
         resurrection: Object.freeze({
             placement: nonEmptyString(resurrection.placement, 'resurrection.placement'),
@@ -1156,10 +693,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             ),
             seedOverride: nonNegativeInteger(generation.seedOverride, 'generation.seedOverride'),
             platformTypeOverride,
-            authoredPatternChance: unitRatio(generation.authoredPatternChance, 'generation.authoredPatternChance'),
-            specialPlatformChancePerSegment: unitRatio(generation.specialPlatformChancePerSegment, 'generation.specialPlatformChancePerSegment'),
-            itemChancePerSegment: unitRatio(generation.itemChancePerSegment, 'generation.itemChancePerSegment'),
-            hazardChancePerSegment: unitRatio(generation.hazardChancePerSegment, 'generation.hazardChancePerSegment'),
             preloadAboveScreen: positiveNumber(
                 generation.preloadAboveScreen,
                 'generation.preloadAboveScreen',

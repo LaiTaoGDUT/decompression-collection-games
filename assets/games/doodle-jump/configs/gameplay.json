@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 5,
   "design": {
     "width": 750,
     "height": 1334
@@ -11,14 +11,12 @@
   "player": {
     "gravity": -2025,
     "bounceVelocity": 1265.625,
-    "horizontalAcceleration": 2100,
-    "horizontalDeceleration": 1500,
-    "maxHorizontalSpeed": 420,
-    "collisionWidth": 52,
-    "collisionHeight": 68,
-    "wrapLeft": -26,
-    "wrapRight": 776,
-    "wrapDistance": 802,
+    "maxHorizontalSpeed": 438.75,
+    "collisionWidth": 65.625,
+    "collisionHeight": 82.03125,
+    "wrapLeft": -2.34375,
+    "wrapRight": 747.65625,
+    "wrapDistance": 750,
     "terminalFallVelocity": -1265.625
   },
   "sensor": {
@@ -26,15 +24,13 @@
     "calibrationWindowMs": 600,
     "timeoutMs": 1500,
     "staleTimeoutMs": 1500,
-    "deadZone": 0.04,
-    "fullTilt": 0.18,
-    "smoothingSeconds": 0.08
+    "deadZone": 0,
+    "fullTilt": 0.15,
+    "smoothingSeconds": 0.0428572
   },
   "camera": {
-    "preGenerateJumpHeights": 1.5,
     "recycleBelow": 420,
-    "floatingOriginThreshold": 20000,
-    "anchorHeight": 726.5625,
+    "anchorHeight": 704.296875,
     "maximumAnchorHeightRatio": 0.72
   },
   "shooting": {
@@ -46,30 +42,9 @@
   },
   "platformBehavior": {
     "standardWidth": 133.59375,
-    "largeMonsterWidth": 184,
-    "explodingDelaySeconds": 1.5,
-    "challenge": {
-      "startHeightMeters": 120,
-      "capHeightMeters": 700,
-      "movingSpeedBonus": 0.1,
-      "movingChanceBonus": 0.04,
-      "shiftingChanceBonus": 0.02,
-      "fragileChanceBonus": 0.04
-    },
-    "verticalMoving": {
-      "unlockHeightMeters": 120,
-      "spawnChanceAtUnlock": 0.04,
-      "spawnChanceAtCap": 0.18,
-      "chanceCapHeightMeters": 950,
-      "minimumAmplitude": 34,
-      "maximumAmplitude": 54,
-      "minimumPeriodSeconds": 1.4,
-      "maximumPeriodSeconds": 2.2
-    },
-    "spiked": {
-      "unlockHeightMeters": 600,
-      "spawnChance": 0.1,
-      "collisionDepth": 54
+    "visualHeight": 42,
+    "teleport": {
+      "fadeSeconds": 0.16666666666666666
     }
   },
   "visualQuality": {
@@ -94,114 +69,75 @@
   },
   "enemies": {
     "enabled": true,
-    "difficultyCapHeightMeters": 900,
-    "maximumActive": 3,
-    "twoActiveHeightMeters": 320,
-    "threeActiveHeightMeters": 700,
+    "maximumActive": 8,
     "recycleBelow": 420,
     "spawnAboveScreenMargin": 24,
-    "minimumVerticalSeparationAtUnlock": 720,
-    "minimumVerticalSeparation": 360,
     "hitFlashSeconds": 0.12,
-    "stompBonus": 25,
     "small": {
-      "health": 2,
-      "width": 72,
-      "height": 66.6666666667,
-      "unlockHeightMeters": 70,
-      "horizontalRange": 42,
-      "verticalRange": 0,
-      "anchorHeight": 0,
-      "cycleSeconds": 2.8,
-      "headZoneHeight": 21.3333333333,
-      "killScore": 50
+      "health": 1,
+      "width": 65.625,
+      "height": 56.25
     },
     "large": {
-      "health": 4,
-      "width": 104,
-      "height": 93.3333333333,
-      "unlockHeightMeters": 220,
-      "horizontalRange": 28,
-      "verticalRange": 0,
-      "anchorHeight": 0,
-      "cycleSeconds": 3.8,
-      "headZoneHeight": 24,
-      "killScore": 100
+      "health": 2,
+      "width": 164.0625,
+      "height": 93.75
     },
     "hover": {
       "health": 1,
-      "width": 77.3333333333,
-      "height": 64,
-      "unlockHeightMeters": 150,
-      "horizontalRange": 70,
-      "verticalRange": 18,
-      "anchorHeight": 90,
-      "cycleSeconds": 3.2,
-      "headZoneHeight": 21.3333333333,
-      "killScore": 75
+      "width": 60.9375,
+      "height": 70.3125
     },
     "hopper": {
-      "health": 2,
-      "width": 68,
-      "height": 64,
-      "unlockHeightMeters": 190,
-      "horizontalRange": 32,
-      "verticalRange": 76,
-      "anchorHeight": 0,
-      "cycleSeconds": 2.6,
-      "headZoneHeight": 22,
-      "killScore": 85
+      "health": 1,
+      "width": 65.625,
+      "height": 42.1875
     },
     "weaver": {
+      "health": 1,
+      "width": 135.9375,
+      "height": 60.9375
+    },
+    "flyer": {
+      "health": 5,
+      "width": 84.375,
+      "height": 93.75
+    },
+    "bouncer": {
+      "health": 3,
+      "width": 201.5625,
+      "height": 53.90625
+    },
+    "runner": {
+      "health": 1,
+      "width": 131.25,
+      "height": 89.0625
+    },
+    "tall": {
       "health": 2,
-      "width": 82,
-      "height": 62,
-      "unlockHeightMeters": 340,
-      "horizontalRange": 112,
-      "verticalRange": 34,
-      "anchorHeight": 112,
-      "cycleSeconds": 3.4,
-      "headZoneHeight": 20,
-      "killScore": 110
+      "width": 84.375,
+      "height": 185.15625
     }
   },
   "hazards": {
     "enabled": true,
     "typeOverride": "auto",
-    "difficultyCapHeightMeters": 1000,
-    "maximumActive": 2,
-    "twoActiveHeightMeters": 600,
+    "maximumActive": 6,
     "recycleBelow": 420,
     "spawnAboveScreenMargin": 48,
-    "minimumVerticalSeparationAtUnlock": 960,
-    "minimumVerticalSeparation": 540,
     "ufo": {
-      "unlockHeightMeters": 600,
-      "maximumActive": 2,
-      "width": 116,
-      "height": 66,
-      "beamWidth": 176,
-      "beamLength": 430,
-      "horizontalSpeed": 130,
-      "lockSeconds": 0.5,
-      "pullAcceleration": 460,
-      "abductionSeconds": 1.5,
-      "leaveResetSeconds": 0.1,
-      "hitPauseSeconds": 0.18,
-      "interruptScore": 20,
-      "spawnMinimumAbovePlayer": 160,
-      "spawnMaximumAbovePlayer": 300
+      "width": 178.125,
+      "height": 65.625,
+      "beamWidth": 164.0625,
+      "beamLength": 117.1875,
+      "lockSeconds": 0.016666666666666666,
+      "abductionSeconds": 0.6666666666666666
     },
     "blackHole": {
-      "unlockHeightMeters": 250,
-      "maximumActive": 2,
-      "outerRadius": 250,
-      "coreRadius": 42,
-      "maximumPullAcceleration": 4200
+      "outerRadius": 51.5625,
+      "coreRadius": 23.4375
     },
     "bearTrap": {
-      "unlockHeightMeters": 180,
-      "maximumActive": 2,
       "width": 54,
       "height": 24,
       "minimumRemainingLandingWidth": 52
@@ -212,107 +148,37 @@
     "typeOverride": "auto",
     "debugPowerPreset": "none",
     "debugHeadStartCount": 0,
-    "maximumActive": 3,
+    "maximumActive": 8,
     "recycleBelow": 420,
     "spawnAboveScreenMargin": 24,
-    "minimumVerticalSeparation": 360,
-    "pickupRadius": 28,
-    "minimumAbovePlatform": 20,
-    "maximumAbovePlatform": 70,
     "spring": {
-      "unlockHeightMeters": 0,
-      "bounceVelocity": 1740
+      "bounceVelocity": 2109.375
     },
     "trampoline": {
-      "unlockHeightMeters": 70,
-      "bounceVelocity": 2160
+      "bounceVelocity": 2531.25
     },
     "jetpack": {
-      "unlockHeightMeters": 120,
-      "durationSeconds": 1.8,
-      "verticalVelocity": 1666.6666666666667
+      "durationSeconds": 3.0,
+      "verticalVelocity": 1265.625
     },
     "propellerHat": {
-      "unlockHeightMeters": 120,
-      "durationSeconds": 1.8,
-      "gravity": 1000,
-      "minimumVerticalVelocity": 871.7797887081347
+      "durationSeconds": 3.3333333333333335,
+      "minimumVerticalVelocity": 281.25
     },
     "rocket": {
-      "unlockHeightMeters": 180,
-      "durationSeconds": 1.8,
-      "verticalVelocity": 2222.222222222222
+      "durationSeconds": 4.916666666666667
     },
     "shield": {
-      "unlockHeightMeters": 70,
-      "durationSeconds": 6.0
+      "durationSeconds": 10.0
     },
     "headStart": {
       "durationSeconds": 1.2,
       "verticalVelocity": 1450
     },
-    "weightBands": [
-      {
-        "startMeters": 0,
-        "endMeters": 70,
-        "spring": 100,
-        "trampoline": 0,
-        "jetpack": 0,
-        "propellerHat": 0,
-        "rocket": 0,
-        "shield": 0
-      },
-      {
-        "startMeters": 70,
-        "endMeters": 120,
-        "spring": 55,
-        "trampoline": 30,
-        "jetpack": 0,
-        "propellerHat": 0,
-        "rocket": 0,
-        "shield": 15
-      },
-      {
-        "startMeters": 120,
-        "endMeters": 150,
-        "spring": 30,
-        "trampoline": 20,
-        "jetpack": 20,
-        "propellerHat": 15,
-        "rocket": 0,
-        "shield": 15
-      },
-      {
-        "startMeters": 150,
-        "endMeters": 180,
-        "spring": 30,
-        "trampoline": 20,
-        "jetpack": 20,
-        "propellerHat": 15,
-        "rocket": 0,
-        "shield": 15
-      },
-      {
-        "startMeters": 180,
-        "endMeters": 250,
-        "spring": 20,
-        "trampoline": 15,
-        "jetpack": 20,
-        "propellerHat": 15,
-        "rocket": 8,
-        "shield": 15
-      },
-      {
-        "startMeters": 250,
-        "endMeters": 1000000,
-        "spring": 15,
-        "trampoline": 10,
-        "jetpack": 20,
-        "propellerHat": 15,
-        "rocket": 10,
-        "shield": 20
-      }
-    ]
+    "springShoes": {
+      "durationSeconds": 8.333333333333334,
+      "bounceVelocity": 1968.75
+    }
   },
   "resurrection": {
     "placement": "doodle-jump-revive",
@@ -328,13 +194,9 @@
     "forceDegradedFallback": false,
     "seedOverride": 0,
     "platformTypeOverride": "auto",
-    "preloadAboveScreen": 620,
+    "preloadAboveScreen": 46.875,
     "maxCandidateAttempts": 24,
-    "maxActivePlatforms": 100,
-    "authoredPatternChance": 0.4,
-    "specialPlatformChancePerSegment": 0.65,
-    "itemChancePerSegment": 0.65,
-    "hazardChancePerSegment": 0.45
+    "maxActivePlatforms": 100
   },
   "fixedPlatforms": [
     {
@@ -342,48 +204,13 @@
       "x": 375,
       "y": 42,
       "type": "normal"
-    },
-    {
-      "id": "P1",
-      "x": 250,
-      "y": 127,
-      "type": "normal"
-    },
-    {
-      "id": "P2",
-      "x": 400,
-      "y": 212,
-      "type": "normal"
-    },
-    {
-      "id": "P3",
-      "x": 500,
-      "y": 297,
-      "type": "normal"
-    },
-    {
-      "id": "P4",
-      "x": 450,
-      "y": 382,
-      "type": "normal"
-    },
-    {
-      "id": "P5",
-      "x": 300,
-      "y": 467,
-      "type": "normal"
-    },
-    {
-      "id": "P6",
-      "x": 360,
-      "y": 552,
-      "type": "normal"
-    },
-    {
-      "id": "P7",
-      "x": 250,
-      "y": 637,
-      "type": "normal"
     }
-  ]
+  ],
+  "collectibles": {
+    "enabled": true,
+    "hoverOffsetY": 58,
+    "gatherSeconds": 0.22,
+    "headHoldSeconds": 0.08,
+    "flightSeconds": 0.44
+  }
 }

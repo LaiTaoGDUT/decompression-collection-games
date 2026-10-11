@@ -7,6 +7,7 @@ import type {
     SafeArea,
     Unsubscribe,
 } from '../core/types/CommonTypes';
+import type { PlatformAudioContext } from './PlatformAudio';
 
 export interface AccelerometerSample {
     readonly x: number;
@@ -53,6 +54,8 @@ export interface Platform {
     getSafeArea(): SafeArea;
     getLayoutInfo(): PlatformLayoutInfo;
     getLaunchOptions(): LaunchOptions;
+    /** 公共音频服务拥有上下文和生命周期；业务代码不访问平台音频 SDK。 */
+    createAudioContext?(): PlatformAudioContext | undefined;
     pickLocalImage(): Promise<LocalImageSelection | null>;
     /** 将本地图片裁成正方形并按请求尺寸输出 JPEG 临时文件。 */
     cropLocalImage(request: LocalImageCropRequest): Promise<LocalImageSelection | null>;

@@ -1,5 +1,8 @@
 import type { AudioClip, AudioSource } from 'cc';
 import type { StorageService, UserSettings } from '../storage/StorageService';
+import type { PlatformAudioContext } from '../../platform/PlatformAudio';
+import { PackedAudioBank, PackedAudioDecodeCancellation, PackedAudioEffect } from './PackedAudioBank';
+import { PackedAudioVoices } from './PackedAudioVoices';
 
 export interface AudioChannel {
     clip: AudioClip | null;
@@ -14,12 +17,13 @@ export interface AudioChannel {
 }
 
 export interface AudioEffectScope {
-    play(clip: AudioClip, volume: number): void;
+    play(clip: AudioClip | PackedAudioEffect, volume: number): void;
     stop(): void;
     dispose(): void;
 }
 /** 长提示音的独立声部：后台暂停后继续，关闭展示或禁用音效后彻底停止。 */
 export interface AudioPresentationScope extends AudioEffectScope {
+    play(clip: AudioClip, volume: number): void;
     pause(): void;
     resume(): void;
 }
@@ -103,6 +107,10 @@ export class AudioService {
     private readonly voiceScopes = new Map<AudioVoiceScope, 'effect' | 'music'>();
     private musicGain = 1;
     private readonly musicUnscaledVolumes = new WeakMap<MusicChannel, number>();
+    private packedAudioContext?: PlatformAudioContext;
+    private packedFallbackScope?: AudioEffectScope;
+    private disposed = false;
+    private readonly packedDecodes = new Set<PackedAudioDecodeCancellation>();
 
     constructor(
         primaryMusicChannel: MusicChannel,
@@ -111,6 +119,7 @@ export class AudioService {
         private readonly createEffectChannel?: () => ScopedAudioChannel,
         /** Second music channel; enables true crossfades in transitionMusic(). */
         crossfadeMusicChannel?: MusicChannel,
+        private readonly createAudioContext?: () => PlatformAudioContext | undefined,
     ) {
         this.musicChannel = primaryMusicChannel;
         this.musicChannels = crossfadeMusicChannel ? [primaryMusicChannel, crossfadeMusicChannel] : [primaryMusicChannel];
@@ -242,11 +251,16 @@ export class AudioService {
         this.pausedByGame = false;
     }
 
-    playEffect(clip: AudioClip, volumeScale = 1): void {
+    playEffect(clip: AudioClip | PackedAudioEffect, volumeScale = 1): void {
         if (!this.soundEnabled) {
             return;
         }
 
+        if (clip instanceof PackedAudioEffect) {
+            this.packedFallbackScope ??= this.createEffectScope();
+            this.packedFallbackScope?.play(clip, volumeScale);
+            return;
+        }
         this.effectChannel.playOneShot(
             clip,
             Math.max(0, Math.min(1, volumeScale)),
@@ -309,12 +323,20 @@ export class AudioService {
     /** Owned, stoppable effects for games whose sounds must not outlive their session. */
     createEffectScope(): AudioEffectScope | undefined {
         const create = this.createEffectChannel;
-        if (!create) return undefined;
+        if (!create && !this.createAudioContext) return undefined;
         const voices: ScopedAudioChannel[] = [];
         let cursor = 0, disposed = false;
+        const packed = new PackedAudioVoices(() => this.getPackedAudioContext(),
+            () => !disposed && !this.disposed && this.soundEnabled && !this.pausedByBackground);
         const scope: AudioEffectScope = {
             play: (clip, volume) => {
                 if (disposed || !this.soundEnabled || this.pausedByBackground) return;
+                if (clip instanceof PackedAudioEffect) {
+                    const buffer = clip.buffer;
+                    if (buffer) packed.play(buffer, volume);
+                    return;
+                }
+                if (!create) return;
                 // Select against the fixed voice budget. Using the growing
                 // array length here repeatedly selects voice 0 during warmup.
                 // Do not infer availability from `playing`: Cocos starts a
@@ -326,7 +348,10 @@ export class AudioService {
                 voice.stop(); voice.clip = clip; voice.loop = false;
                 voice.volume = Math.max(0, Math.min(1, volume)); voice.play();
             },
-            stop: () => voices.forEach(v => { v.channel.stop(); v.channel.clip = null; }),
+            stop: () => {
+                packed.stop();
+                voices.forEach(v => { v.channel.stop(); v.channel.clip = null; });
+            },
             dispose: () => {
                 if (disposed) return;
                 disposed = true; scope.stop(); voices.forEach(v => v.dispose()); voices.length = 0;
@@ -335,6 +360,24 @@ export class AudioService {
         };
         this.effectScopes.add(scope);
         return scope;
+    }
+
+    /** 整个包只下载一次；每个原始 MP3 单独解码，保持原来的声音和自然结束时机。 */
+    async decodePackedAudio(data: ArrayBuffer): Promise<PackedAudioBank> {
+        const context = this.getPackedAudioContext(), cancellation = new PackedAudioDecodeCancellation();
+        this.packedDecodes.add(cancellation);
+        try {
+            const bank = await PackedAudioBank.decode(data, context, cancellation);
+            if (this.disposed) { bank.destroy(); throw new Error('Audio service disposed while decoding.'); }
+            return bank;
+        } finally { this.packedDecodes.delete(cancellation); }
+    }
+
+    private getPackedAudioContext(): PlatformAudioContext {
+        if (this.disposed) throw new Error('Audio service is disposed.');
+        if (!this.packedAudioContext) this.packedAudioContext = this.createAudioContext?.();
+        if (!this.packedAudioContext) throw new Error('This platform does not support packed WebAudio effects.');
+        return this.packedAudioContext;
     }
 
     createPresentationScope(): AudioPresentationScope | undefined {
@@ -469,11 +512,21 @@ export class AudioService {
     }
 
     dispose(): void {
+        this.disposed = true;
+        Array.from(this.packedDecodes).forEach(decode => decode.cancel());
+        this.packedDecodes.clear();
         Array.from(this.effectScopes).forEach(scope => scope.dispose());
         Array.from(this.presentationScopes).forEach(scope => scope.dispose());
         Array.from(this.voiceScopes.keys()).forEach(scope => scope.dispose());
         this.stopMusic();
         this.effectChannel.stop();
+        this.packedFallbackScope = undefined;
+        const context = this.packedAudioContext;
+        this.packedAudioContext = undefined;
+        if (context) {
+            try { void Promise.resolve(context.close()).catch(() => undefined); }
+            catch (_error: unknown) { /* 原生上下文已关闭时保持幂等释放。 */ }
+        }
     }
 
     private isMusicAudible(): boolean {

@@ -1,4 +1,4 @@
-export type DoodleJumpRandomStreamName = 'platform' | 'enemy' | 'item' | 'cosmetic';
+export type DoodleJumpRandomStreamName = 'platform' | 'enemy' | 'item' | 'collectible' | 'cosmetic';
 
 export interface DoodleJumpRandomStreamSnapshot {
     readonly seed: number;
@@ -9,6 +9,7 @@ export interface DoodleJumpRandomStreamsSnapshot {
     readonly platform: DoodleJumpRandomStreamSnapshot;
     readonly enemy: DoodleJumpRandomStreamSnapshot;
     readonly item: DoodleJumpRandomStreamSnapshot;
+    readonly collectible: DoodleJumpRandomStreamSnapshot;
     readonly cosmetic: DoodleJumpRandomStreamSnapshot;
 }
 
@@ -21,6 +22,11 @@ export function hashDoodleJumpSeed(value: string | number): number {
         hash = Math.imul(hash, 16777619);
     }
     return hash >>> 0;
+}
+
+/** A replay keeps its saved seed; every new round within a session gets a new one. */
+export function createDoodleJumpRoundSeed(sessionId: string, roundIndex: number, seedOverride = 0): number {
+    return hashDoodleJumpSeed(seedOverride > 0 ? seedOverride : `${sessionId}:round:${roundIndex}`) || 1;
 }
 
 class DoodleJumpRandomStream {
@@ -79,6 +85,7 @@ export class DoodleJumpRandomStreams {
             platform: new DoodleJumpRandomStream(derive('platform')),
             enemy: new DoodleJumpRandomStream(derive('enemy')),
             item: new DoodleJumpRandomStream(derive('item')),
+            collectible: new DoodleJumpRandomStream(derive('collectible')),
             cosmetic: new DoodleJumpRandomStream(derive('cosmetic')),
         });
     }
@@ -87,6 +94,7 @@ export class DoodleJumpRandomStreams {
         this.streams.platform.reset();
         this.streams.enemy.reset();
         this.streams.item.reset();
+        this.streams.collectible.reset();
         this.streams.cosmetic.reset();
     }
 
@@ -103,6 +111,7 @@ export class DoodleJumpRandomStreams {
             platform: this.streams.platform.getSnapshot(),
             enemy: this.streams.enemy.getSnapshot(),
             item: this.streams.item.getSnapshot(),
+            collectible: this.streams.collectible.getSnapshot(),
             cosmetic: this.streams.cosmetic.getSnapshot(),
         });
     }
@@ -111,6 +120,7 @@ export class DoodleJumpRandomStreams {
         this.streams.platform.restore(snapshot.platform);
         this.streams.enemy.restore(snapshot.enemy);
         this.streams.item.restore(snapshot.item);
+        this.streams.collectible.restore(snapshot.collectible);
         this.streams.cosmetic.restore(snapshot.cosmetic);
     }
 }

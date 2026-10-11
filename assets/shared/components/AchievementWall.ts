@@ -7,8 +7,10 @@ import type { AchievementWallMusic } from '../../services/achievements/Achieveme
 import type { Platform } from '../../platform/Platform';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import { calculateVerticalSafeBounds } from '../ui/PlatformSafeLayout';
-import { achievementLabel, achievementNode, createAchievementImage, createAchievementTrophy, fillRoundRect, hexColor,
-    makeAchievementButton, shadeColor, strokeRoundRect, ACHIEVEMENT_COLORS as COLORS } from './AchievementArtwork';
+import { LOBBY_SHOWCASE_HEIGHT } from '../ui/LobbyBrandLayout';
+import { achievementLabel, achievementNode, createAchievementImage, createAchievementTrophy,
+    createAchievementTrophyGlow, fillRoundRect, hexColor, makeAchievementButton, shadeColor, strokeRoundRect,
+    ACHIEVEMENT_COLORS as COLORS } from './AchievementArtwork';
 
 interface WallServices {
     readonly achievements: AchievementService;
@@ -22,7 +24,7 @@ interface WallServices {
 }
 
 /** 大厅展柜条的设计高度；宽度跟随大厅网格。 */
-const SHOWCASE_HEIGHT = 124;
+const SHOWCASE_HEIGHT = LOBBY_SHOWCASE_HEIGHT;
 /** 展览柜以 750 设计宽度排版：外框宽度、每层三格、层高与内衬留白。 */
 const CABINET_WIDTH = 700;
 const CABINET_FRAME = 22;
@@ -33,9 +35,10 @@ const CABINET_PADDING_BOTTOM = 44;
 /** cabinet-shelf.png 为 1200 × 139，木板占 2～69 行，其下是投影。 */
 const SHELF_ART_RATIO = 139 / 1200;
 const SHELF_PLANK_TOP = 2 / 139;
-/** 台面后沿到底座落点的深度，以及奖杯图底座基线距画布底边的比例。 */
+/** 台面后沿到底座落点的深度。 */
 const SHELF_SURFACE_DEPTH = 10;
-const TROPHY_BASELINE_MARGIN = 0.025;
+/** 奖杯图底座下沿距图片顶部的比例。 */
+const TROPHY_BASELINE = 421 / 432;
 const PAGE_TOP_GAP = 6;
 const TITLE_TO_CABINET_GAP = 14;
 const PAGE_BOTTOM_GAP = 24;
@@ -67,7 +70,7 @@ export class AchievementWall {
     mount(overlayParent: Node, showcaseParent: Node, games: readonly GameManifest[], services: WallServices,
         enterGame: (manifest: GameManifest) => void): void {
         this.parent = overlayParent;
-        this.games = games.filter(game => !!game.achievement);
+        this.games = services.achievements.collection(games);
         this.services = services;
         this.enterGame = enterGame;
         if (this.games.length > 0) this.entry = this.createShowcase(showcaseParent);
@@ -266,7 +269,8 @@ export class AchievementWall {
                 lights.ellipse(x, plankTop + 4, 26 + i * 12, 6 + i * 3); lights.fill();
             }
         }
-        const slot = achievementNode(row, `AchievementCard-${game.id}`, cellWidth - 8, SHELF_HEIGHT - 10);
+        const slot = achievementNode(row, `AchievementCard-${game.id}`,
+            cellWidth - 8, SHELF_HEIGHT - 10);
         slot.setPosition(x, 0);
         const trophySize = 196;
         // 隔板台面有透视进深：底座落在台面中线，而不是后沿。
@@ -278,8 +282,11 @@ export class AchievementWall {
             contact.ellipse(0, 0, 28 + i * 13, 4 + i * 2.5); contact.fill();
         }
         const niche = achievementNode(slot, 'DisplayNiche', trophySize, trophySize);
-        // 奖杯图统一以画布高度 97.5% 处为底座基线。
-        niche.setPosition(0, baseY + trophySize / 2 - trophySize * TROPHY_BASELINE_MARGIN);
+        // 让图片内的实体底座落在同一台面上，而不是对齐带透明留白的画布底边。
+        niche.setPosition(0, baseY + trophySize * (TROPHY_BASELINE - 0.5));
+        if (unlocked) {
+            createAchievementTrophyGlow(niche, 'TrophyGlow');
+        }
         const trophy = createAchievementTrophy(niche, definition, services.art, !unlocked, trophySize);
         if (!unlocked) {
             const lock = achievementNode(niche, 'LockedBadge', 40, 40);

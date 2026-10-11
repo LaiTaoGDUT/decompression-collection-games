@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "962c19ea-94c3-55e2-ad30-f81d01ed4982",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "ca865": {
+      "importer": "sprite-frame",
+      "uuid": "962c19ea-94c3-55e2-ad30-f81d01ed4982@ca865",
+      "displayName": "",
+      "id": "ca865",
+      "name": "water-v1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 720,
+        "height": 458,
+        "rawWidth": 720,
+        "rawHeight": 458,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "79202246-fb1d-57af-96b1-5c40e1b3c1ba@6c48a",
+        "atlasUuid": "962c19ea-94c3-55e2-ad30-f81d01ed4982",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "cyblockbees-landscape-2.png",
+    "format": 2,
+    "uuid": "962c19ea-94c3-55e2-ad30-f81d01ed4982",
+    "textureUuid": "79202246-fb1d-57af-96b1-5c40e1b3c1ba@6c48a"
+  }
+}

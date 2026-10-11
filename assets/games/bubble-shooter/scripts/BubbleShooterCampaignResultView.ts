@@ -91,7 +91,7 @@ export class BubbleShooterCampaignResultView {
         this.best.node.active = !!this.best.string;
         this.captions[0].string = this.won ? (round.level.routeIndex === 120 ? '挑战无尽' : '下一关') : '再挑战';
         this.captions[1].string = this.won ? '再挑战' : '选择关卡';
-        this.captions[2].string = this.won ? '选择关卡' : '返回';
+        this.captions[2].string = this.won ? '选择关卡' : '返回主页';
         this.stars.forEach(n => { n.active = false; }); this.sparks.clear(); this.shots.string = '用了 0 发';
         this.reflow();
         this.root.active = true; this.root.setSiblingIndex(this.root.parent!.children.length - 1);

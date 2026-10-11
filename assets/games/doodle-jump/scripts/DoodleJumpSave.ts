@@ -7,19 +7,20 @@ import { DOODLE_JUMP_RULES_VERSION } from './DoodleJumpReferenceRules';
 
 export const DOODLE_JUMP_GAME_ID = 'doodle-jump';
 export const DOODLE_JUMP_SAVE_DATA_VERSION = 1;
-export const DOODLE_JUMP_GAME_DATA_VERSION = 3;
+export const DOODLE_JUMP_GAME_DATA_VERSION = 4;
 export const DOODLE_JUMP_SETTINGS_VERSION = 1;
 
 export type DoodleJumpSensorSensitivity = 0.75 | 1 | 1.25;
 
 export interface DoodleJumpRunHistoryBaseline {
     readonly playCount: number;
-    readonly highScore: number;
+    readonly bestCarrotCount: number;
     readonly lastPlayedAt: number;
     readonly bestHeightMeters: number;
     readonly bestKillCount: number;
     readonly totalShots: number;
     readonly totalKills: number;
+    readonly totalCarrots: number;
 }
 
 export interface DoodleJumpActiveRound {
@@ -33,12 +34,13 @@ export interface DoodleJumpActiveRound {
 
 export interface DoodleJumpSaveState {
     readonly playCount: number;
-    readonly highScore: number;
+    readonly bestCarrotCount: number;
     readonly lastPlayedAt: number;
     readonly bestHeightMeters: number;
     readonly bestKillCount: number;
     readonly totalShots: number;
     readonly totalKills: number;
+    readonly totalCarrots: number;
     readonly sensorInvert: boolean;
     readonly sensorSensitivity: DoodleJumpSensorSensitivity;
     readonly tutorialCompleted: boolean;
@@ -50,7 +52,7 @@ export interface DoodleJumpSaveState {
 export interface DoodleJumpRunHistory {
     readonly shots: number;
     readonly kills: number;
-    readonly score: number;
+    readonly carrots: number;
     readonly maxHeightMeters: number;
     readonly completed: boolean;
     readonly playedAt: number;
@@ -59,7 +61,7 @@ export interface DoodleJumpRunHistory {
 
 export interface DoodleJumpRunSaveResult {
     readonly save: DoodleJumpSaveState;
-    readonly isNewBestScore: boolean;
+    readonly isNewBestCarrotCount: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -107,6 +109,8 @@ function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
             || !Array.isArray(snapshot.enemies)
             || !Array.isArray(snapshot.hazards)
             || !Array.isArray(snapshot.items)
+            || !Array.isArray(snapshot.collectibles)
+            || !isRecord(snapshot.collectibleState)
             || !isRecord(snapshot.randomStreams)) return undefined;
         const baseline = value.historyBaseline;
         return Object.freeze({
@@ -114,12 +118,13 @@ function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
             savedAt: finiteTimestamp(value.savedAt, 'custom.activeRound.savedAt'),
             historyBaseline: Object.freeze({
                 playCount: nonNegativeInteger(baseline.playCount, 'activeRound.historyBaseline.playCount'),
-                highScore: nonNegativeInteger(baseline.highScore, 'activeRound.historyBaseline.highScore'),
+                bestCarrotCount: nonNegativeInteger(baseline.bestCarrotCount, 'activeRound.historyBaseline.bestCarrotCount'),
                 lastPlayedAt: finiteTimestamp(baseline.lastPlayedAt, 'activeRound.historyBaseline.lastPlayedAt'),
                 bestHeightMeters: nonNegativeInteger(baseline.bestHeightMeters, 'activeRound.historyBaseline.bestHeightMeters'),
                 bestKillCount: nonNegativeInteger(baseline.bestKillCount, 'activeRound.historyBaseline.bestKillCount'),
                 totalShots: nonNegativeInteger(baseline.totalShots, 'activeRound.historyBaseline.totalShots'),
                 totalKills: nonNegativeInteger(baseline.totalKills, 'activeRound.historyBaseline.totalKills'),
+                totalCarrots: nonNegativeInteger(baseline.totalCarrots, 'activeRound.historyBaseline.totalCarrots'),
             }),
             runShotCount: nonNegativeInteger(value.runShotCount, 'custom.activeRound.runShotCount'),
             successfulRevives: nonNegativeInteger(
@@ -137,12 +142,13 @@ function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
 function defaultSave(): DoodleJumpSaveState {
     return Object.freeze({
         playCount: 0,
-        highScore: 0,
+        bestCarrotCount: 0,
         lastPlayedAt: 0,
         bestHeightMeters: 0,
         bestKillCount: 0,
         totalShots: 0,
         totalKills: 0,
+        totalCarrots: 0,
         sensorInvert: false,
         sensorSensitivity: 1,
         tutorialCompleted: false,
@@ -156,13 +162,13 @@ function parseSave(data: GameSaveData): DoodleJumpSaveState {
         throw new Error(`Unsupported dataVersion ${data.dataVersion}.`);
     }
     const custom = data.custom;
-    if (!isRecord(custom) || custom.gameDataVersion !== DOODLE_JUMP_GAME_DATA_VERSION
+    if (!isRecord(custom) || (custom.gameDataVersion !== DOODLE_JUMP_GAME_DATA_VERSION && custom.gameDataVersion !== 3)
         || custom.settingsVersion !== DOODLE_JUMP_SETTINGS_VERSION) {
         throw new Error('Unsupported Doodle Jump save version.');
     }
     return Object.freeze({
             playCount: nonNegativeInteger(data.playCount, 'playCount'),
-            highScore: nonNegativeInteger(data.highScore, 'highScore'),
+            bestCarrotCount: custom.gameDataVersion === 3 ? 0 : nonNegativeInteger(data.highScore, 'bestCarrotCount'),
             lastPlayedAt: finiteTimestamp(data.lastPlayedAt, 'lastPlayedAt'),
             bestHeightMeters: nonNegativeInteger(
                 custom.bestHeightMeters,
@@ -174,6 +180,7 @@ function parseSave(data: GameSaveData): DoodleJumpSaveState {
             ),
             totalShots: nonNegativeInteger(custom.totalShots, 'custom.totalShots'),
             totalKills: nonNegativeInteger(custom.totalKills, 'custom.totalKills'),
+            totalCarrots: custom.gameDataVersion === 3 ? 0 : nonNegativeInteger(custom.totalCarrots, 'custom.totalCarrots'),
             sensorInvert: booleanField(custom.sensorInvert, 'custom.sensorInvert'),
             sensorSensitivity: sensitivityField(custom.sensorSensitivity),
             tutorialCompleted: booleanField(
@@ -193,7 +200,8 @@ export function toDoodleJumpGameSaveData(save: DoodleJumpSaveState): GameSaveDat
     return Object.freeze({
         dataVersion: DOODLE_JUMP_SAVE_DATA_VERSION,
         playCount: save.playCount,
-        highScore: save.highScore,
+        // The shared storage contract calls its numeric record highScore; here it stores a carrot count only.
+        highScore: save.bestCarrotCount,
         lastPlayedAt: save.lastPlayedAt,
         custom: Object.freeze({
             gameDataVersion: DOODLE_JUMP_GAME_DATA_VERSION,
@@ -201,6 +209,7 @@ export function toDoodleJumpGameSaveData(save: DoodleJumpSaveState): GameSaveDat
             bestKillCount: save.bestKillCount,
             totalShots: save.totalShots,
             totalKills: save.totalKills,
+            totalCarrots: save.totalCarrots,
             sensorInvert: save.sensorInvert,
             sensorSensitivity: save.sensorSensitivity,
             tutorialCompleted: save.tutorialCompleted,
@@ -234,29 +243,24 @@ export function buildDoodleJumpRunSave(
 ): DoodleJumpRunSaveResult {
     const shots = Math.max(0, Math.floor(history.shots));
     const kills = Math.max(0, Math.floor(history.kills));
-    const score = Math.max(0, Math.floor(history.score));
+    const carrots = Math.max(0, Math.floor(history.carrots));
     const height = Math.max(0, Math.floor(history.maxHeightMeters));
     const playedAt = Math.max(0, Math.floor(history.playedAt));
-    const isNewBestScore = history.completed && (
-        score > baseline.highScore
-        || (score === baseline.highScore && height > baseline.bestHeightMeters)
-        || (score === baseline.highScore
-            && height === baseline.bestHeightMeters
-            && kills > baseline.bestKillCount)
-    );
+    const isNewBestCarrotCount = history.completed && carrots > baseline.bestCarrotCount;
     return Object.freeze({
         save: Object.freeze({
             ...baseline,
             playCount: baseline.playCount + 1,
-            highScore: Math.max(baseline.highScore, score),
+            bestCarrotCount: Math.max(baseline.bestCarrotCount, carrots),
             lastPlayedAt: playedAt,
             bestHeightMeters: Math.max(baseline.bestHeightMeters, height),
             bestKillCount: Math.max(baseline.bestKillCount, kills),
             totalShots: baseline.totalShots + shots,
             totalKills: baseline.totalKills + kills,
+            totalCarrots: baseline.totalCarrots + carrots,
             activeRound: history.completed ? undefined : history.activeRound,
         }),
-        isNewBestScore,
+        isNewBestCarrotCount,
     });
 }
 

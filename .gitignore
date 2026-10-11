@@ -38,4 +38,4 @@ __pycache__/
 *.pyc
 output/
 tinypng-output/
-tools_copy/
+tools/

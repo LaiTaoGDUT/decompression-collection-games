@@ -56,6 +56,9 @@ const LEGACY_LOADING_RESERVED_GAP = 12;
 const LEGACY_LOADING_TITLE_WIDTH = 450;
 const LEGACY_LOADING_TITLE_HEIGHT = 300;
 const LEGACY_LOADING_TITLE_TOP_GAP = 12;
+/** 启动页标题位于屏幕上方三分之一处，尺寸独立于大厅顶部栏里的小标题，只共用等比缩放。 */
+const STARTUP_TITLE_WIDTH = 600;
+const STARTUP_TITLE_HEIGHT = 198;
 const LOBBY_STARTUP_PROGRESS_NODE_HEIGHT = 48;
 const LOBBY_STARTUP_PROGRESS_BAR_HEIGHT = 42;
 const LOBBY_STARTUP_PROGRESS_FILL_HEIGHT = 29;
@@ -301,6 +304,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     private realProgress = 0;
     private layoutMetrics?: LoadingLayoutMetrics;
     private platformLayout?: PlatformLayoutInfo;
+    private readonly completionWaiters = new Set<() => void>();
 
     protected onLoad(): void {
         if (!this.node.getComponent(BlockInputEvents)) {
@@ -421,11 +425,23 @@ export class LoadingView extends Component implements LoadingPresenter {
         }
     }
 
+    /** 等到完成态实际绘制，不用固定停留时间推测进度动画是否结束。 */
+    waitForCompletion(): Promise<void> {
+        if (!this.node.active || this.progress >= 1) return Promise.resolve();
+        return new Promise<void>(resolve => this.completionWaiters.add(resolve));
+    }
+
+    private finishCompletionWaiters(): void {
+        for (const finish of Array.from(this.completionWaiters)) finish();
+        this.completionWaiters.clear();
+    }
+
     /**
      * 收起加载层。默认先让弹窗缩小淡出，再淡出遮罩，柔和地露出下方已就绪的
      * 大厅/游戏画面；淡出期间不再拦截输入，再次 show 会立即打断淡出。
      */
     hide(animated = true): void {
+        this.finishCompletionWaiters();
         const wasRestart = this.restartMode;
         this.restartMode = false;
         this.progressLoadToken += 1;
@@ -454,6 +470,7 @@ export class LoadingView extends Component implements LoadingPresenter {
 
     /** 将加载层置顶并恢复为完全可见、拦截输入的状态，同时打断未完成的淡出。 */
     private presentLayer(updateAlignment = true): void {
+        this.finishCompletionWaiters();
         const interruptedDismiss = this.dismissing;
         this.resetTransition();
         if (interruptedDismiss) this.releaseCoverFrame();
@@ -463,6 +480,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     private finishHide(): void {
+        this.finishCompletionWaiters();
         this.resetTransition();
         this.lobbyTransitionMode = false;
         this.releaseCoverFrame();
@@ -1014,8 +1032,8 @@ export class LoadingView extends Component implements LoadingPresenter {
                 this.startupTitleBaseY + this.titleFloatOffset(),
             );
             startupTitle.getComponent(UITransform)?.setContentSize(
-                brand?.width ?? LEGACY_LOADING_TITLE_WIDTH * scale,
-                brand?.height ?? LEGACY_LOADING_TITLE_HEIGHT * scale,
+                brand ? STARTUP_TITLE_WIDTH * brand.scale : LEGACY_LOADING_TITLE_WIDTH * scale,
+                brand ? STARTUP_TITLE_HEIGHT * brand.scale : LEGACY_LOADING_TITLE_HEIGHT * scale,
             );
         }
 
@@ -1350,8 +1368,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.progressAnimationStart = this.progress;
         this.progressAnimationElapsed = 0;
         const distance = target - this.progress;
-        // 完成态必须赶在 GameRuntime 的 160/180ms 收尾停留时间内抵达 100%；
-        // 其余阶段按距离调整时长，避免短步进发黏、长跳变突兀。
+        // 完成态通过 waitForCompletion 接通实际动画终点；其余阶段按距离调整时长。
         this.progressAnimationDuration = target >= 1
             ? 0.14
             : clamp(0.1 + distance * 0.22, 0.1, 0.24);
@@ -1383,6 +1400,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             this.stopProgressAnimation();
         }
         this.drawProgressFill();
+        if (this.progress >= 1) this.finishCompletionWaiters();
     }
 
     /** 进度轨道中心在所属容器（StartupContent 或 GameDialog）内的纵坐标。 */
@@ -1538,6 +1556,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         bundle.load(path, Texture2D, (error, texture) => {
             if (token !== this.progressLoadToken || !this.node.isValid || error || !texture) return;
             const frame = new SpriteFrame();
+            frame.packable = false;
             frame.texture = texture;
             this.ownedCoverFrame = frame;
             if (this.coverSprite) {
@@ -1559,6 +1578,8 @@ export class LoadingView extends Component implements LoadingPresenter {
             bundle.load(path, Texture2D, (error, texture) => {
                 if (token !== this.progressLoadToken || !this.node.isValid || error || !texture) return;
                 const frame = new SpriteFrame();
+                // 常驻启动页不能随场景动态图集重置而重复拷贝/上传大图。
+                frame.packable = false;
                 frame.texture = texture;
                 this.ownedStartupFrames.push(frame);
                 sprite.spriteFrame = frame;
@@ -1589,6 +1610,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             bundle.load(path, Texture2D, (error, texture) => {
                 if (error || !texture || token !== this.warmLoadToken || !this.node.isValid) return;
                 const frame = new SpriteFrame();
+                frame.packable = false;
                 frame.texture = texture;
                 [frame.insetLeft, frame.insetRight, frame.insetTop, frame.insetBottom] = insets;
                 this.ownedWarmFrames.push(frame);

@@ -7,54 +7,80 @@
 		<key>pickup-jetpack</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{356,474}}</string>
+			<string>{{2,449},{68,90}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{356,474}}</string>
+			<string>{{0.0,0.0},{68,90}}</string>
 			<key>sourceSize</key>
-			<string>{356,474}</string>
+			<string>{68,90}</string>
+		</dict>
+		<key>pickup-propeller-hat-v2</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,543},{80,50}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{80,50}}</string>
+			<key>sourceSize</key>
+			<string>{80,50}</string>
 		</dict>
 		<key>pickup-rocket</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,480},{304,474}}</string>
+			<string>{{2,2},{174,271}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{304,474}}</string>
+			<string>{{0.0,0.0},{174,271}}</string>
 			<key>sourceSize</key>
-			<string>{304,474}</string>
+			<string>{174,271}</string>
+		</dict>
+		<key>pickup-shield</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,277},{94,96}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{94,96}}</string>
+			<key>sourceSize</key>
+			<string>{94,96}</string>
 		</dict>
 		<key>pickup-spring-v2</key>
 		<dict>
 			<key>frame</key>
-			<string>{{362,2},{329,404}}</string>
+			<string>{{74,449},{55,68}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{329,404}}</string>
+			<string>{{0.0,0.0},{55,68}}</string>
 			<key>sourceSize</key>
-			<string>{329,404}</string>
+			<string>{55,68}</string>
 		</dict>
 		<key>pickup-trampoline</key>
 		<dict>
 			<key>frame</key>
-			<string>{{310,480},{420,309}}</string>
+			<string>{{2,377},{92,68}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{420,309}}</string>
+			<string>{{0.0,0.0},{92,68}}</string>
 			<key>sourceSize</key>
-			<string>{420,309}</string>
+			<string>{92,68}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -64,7 +90,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-items.png</string>
 		<key>size</key>
-		<string>{732,956}</string>
+		<string>{178,595}</string>
 		<key>textureFileName</key>
 		<string>doodle-items.png</string>
 	</dict>

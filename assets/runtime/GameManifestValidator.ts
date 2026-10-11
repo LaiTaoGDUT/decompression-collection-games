@@ -1,4 +1,4 @@
-import { TROPHY_STYLES, type AchievementDefinition, type GameManifest } from './GameManifest';
+import { LOBBY_PROMOTION_TAGS, TROPHY_STYLES, type AchievementDefinition, type GameManifest, type LobbyPromotionTag } from './GameManifest';
 import { isSemanticVersion } from '../core/version/SemanticVersion';
 
 const SUPPORTED_SCHEMA_VERSION = 3;
@@ -37,6 +37,25 @@ function createResult(
         manifests: Object.freeze(manifests),
         errors: Object.freeze(errors),
     });
+}
+
+function readAchievement(raw: unknown, field: string, errors: ManifestValidationError[]): AchievementDefinition | undefined {
+    if (!isRecord(raw)) { addError(errors, field, 'must be an object'); return undefined; }
+    for (const key of ['id', 'name', 'description', 'metric']) {
+        if (typeof raw[key] !== 'string' || !(raw[key] as string).trim())
+            addError(errors, `${field}.${key}`, 'must be a non-empty string');
+    }
+    if (typeof raw.id === 'string' && !ID_PATTERN.test(raw.id))
+        addError(errors, `${field}.id`, 'must be a stable identifier');
+    if (typeof raw.target !== 'number' || !Number.isFinite(raw.target) || raw.target <= 0)
+        addError(errors, `${field}.target`, 'must be a positive finite number');
+    if (typeof raw.unit !== 'string') addError(errors, `${field}.unit`, 'must be a string');
+    if (TROPHY_STYLES.indexOf(raw.trophy as AchievementDefinition['trophy']) < 0)
+        addError(errors, `${field}.trophy`, 'must be a supported trophy style');
+    if (typeof raw.color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(raw.color))
+        addError(errors, `${field}.color`, 'must be a six-digit hex color');
+    return Object.freeze({ id: raw.id, name: raw.name, description: raw.description,
+        metric: raw.metric, target: raw.target, unit: raw.unit, trophy: raw.trophy, color: raw.color }) as AchievementDefinition;
 }
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -130,6 +149,29 @@ function readStringArray(
     });
 
     return items;
+}
+
+function readLobbyTags(
+    source: UnknownRecord,
+    prefix: string,
+    errors: ManifestValidationError[],
+): readonly LobbyPromotionTag[] | undefined {
+    if (source.lobbyTags === undefined) {
+        // 旧清单的单标签统一转换为数组，运行时只使用 lobbyTags。
+        const tag = source.lobbyTag === undefined ? undefined : readEnum(
+            source, 'lobbyTag', `${prefix}.lobbyTag`, LOBBY_PROMOTION_TAGS, errors);
+        return tag ? [tag] : undefined;
+    }
+
+    if (source.lobbyTag !== undefined) {
+        addError(errors, `${prefix}.lobbyTag`, 'use lobbyTags instead of configuring both fields');
+    }
+    const tags = readStringArray(source, 'lobbyTags', `${prefix}.lobbyTags`, errors,
+        (tag) => LOBBY_PROMOTION_TAGS.indexOf(tag as LobbyPromotionTag) >= 0);
+    if (tags && new Set(tags).size !== tags.length) {
+        addError(errors, `${prefix}.lobbyTags`, 'must contain unique promotion tags');
+    }
+    return tags as readonly LobbyPromotionTag[] | undefined;
 }
 
 function isResourcePath(value: string): boolean {
@@ -268,28 +310,9 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
     if (resourceDirectories && (resourceDirectories.length === 0 || new Set(resourceDirectories).size !== resourceDirectories.length))
         addError(errors, `${prefix}.resourceDirectories`, 'must contain unique resource directories');
     const tags = readStringArray(value, 'tags', `${prefix}.tags`, errors);
-    let achievement: AchievementDefinition | undefined;
-    if (value.achievement !== undefined) {
-        const raw = value.achievement;
-        if (!isRecord(raw)) addError(errors, `${prefix}.achievement`, 'must be an object');
-        else {
-            for (const key of ['id', 'name', 'description', 'metric']) {
-                if (typeof raw[key] !== 'string' || !(raw[key] as string).trim())
-                    addError(errors, `${prefix}.achievement.${key}`, 'must be a non-empty string');
-            }
-            if (typeof raw.id === 'string' && !ID_PATTERN.test(raw.id))
-                addError(errors, `${prefix}.achievement.id`, 'must be a stable identifier');
-            if (typeof raw.target !== 'number' || !Number.isFinite(raw.target) || raw.target <= 0)
-                addError(errors, `${prefix}.achievement.target`, 'must be a positive finite number');
-            if (typeof raw.unit !== 'string') addError(errors, `${prefix}.achievement.unit`, 'must be a string');
-            if (TROPHY_STYLES.indexOf(raw.trophy as AchievementDefinition['trophy']) < 0)
-                addError(errors, `${prefix}.achievement.trophy`, 'must be a supported trophy style');
-            if (typeof raw.color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(raw.color))
-                addError(errors, `${prefix}.achievement.color`, 'must be a six-digit hex color');
-            achievement = Object.freeze({ id: raw.id, name: raw.name, description: raw.description,
-                metric: raw.metric, target: raw.target, unit: raw.unit, trophy: raw.trophy, color: raw.color }) as AchievementDefinition;
-        }
-    }
+    const lobbyTags = readLobbyTags(value, prefix, errors);
+    const achievement = value.achievement === undefined ? undefined
+        : readAchievement(value.achievement, `${prefix}.achievement`, errors);
     const initializeTimeoutMs = value.initializeTimeoutMs;
     if (initializeTimeoutMs !== undefined && (typeof initializeTimeoutMs !== 'number'
         || !Number.isInteger(initializeTimeoutMs) || initializeTimeoutMs < 1000 || initializeTimeoutMs > 120000)) {
@@ -354,6 +377,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         visibility: visibility!,
         preload: Object.freeze([...(preload ?? [])]),
         tags: Object.freeze([...(tags ?? [])]),
+        ...(lobbyTags ? { lobbyTags: Object.freeze(Array.from(lobbyTags)) } : {}),
     });
 
     return { id, manifest, errors };

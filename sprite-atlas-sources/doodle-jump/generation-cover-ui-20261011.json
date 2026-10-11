@@ -1,0 +1,21 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-11",
+  "prompt": "Use case: illustration-story. Asset type: final 4:3 landscape cover illustration for the lobby card and loading cover of the mobile game 纸片跳跃. Image 1 is the old cover to completely redesign. Image 2 is the exact new rabbit identity; image 3 is the rare golden carrot collectible; image 4 is the current garden bee enemy. Redraw the entire cover with a fresh, cohesive, very readable composition at small mobile thumbnail size, keeping this game's warm hand-drawn paper-cut storybook visual language. A large joyful cream-white rabbit with the SAME long pink ears, dark pencil outline, black oval eye, small blush cheek and flowing red scarf jumps upward from a mint-teal paper platform toward one floating precious GOLDEN carrot with teal leaves, warm soft golden halo and little sparkling stars. Show a few clearly separated rising teal stitched paper platforms, one recognizable red coil spring on a lower platform, and one small grumpy garden bee off the route to suggest playful challenge. The rabbit and the glowing gold collectible are the two strongest focal points. Integrate subtle upward curved motion strokes, a warm ivory notebook-paper background with delicate ruled lines and a few small watercolor garden leaves along the bottom corners. Crisp dark pencil outlines, colored-pencil texture, visible paper rims and shallow cut-paper shadows matching the reference sprites. Calm background, airy spacing, clean silhouette, good separation, all important subjects safely inside the central 85% of the landscape so cropping into the existing rounded card remains safe. Overall illustration, not a UI screenshot. NO ordinary orange carrot anywhere, NO carrot bullets, NO projectile, NO gun, NO shooting, NO shield icon, NO red cyclops monster, NO text, NO title, NO typography, NO buttons, NO frame border, NO badges, NO watermarks. Use a 4:3 landscape image.",
+  "references": [
+    "assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png",
+    "sprite-atlas-sources/doodle-jump/visual/player/rabbit-jumping.png",
+    "sprite-atlas-sources/doodle-jump/visual/collectibles/golden-carrot.png",
+    "sprite-atlas-sources/doodle-jump/visual/enemies/enemy-hover-01.png"
+  ],
+  "generatedOriginal": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-11d3ffdd-6fa1-452d-9ad8-b9ee44406804.png",
+  "rawSource": "sprite-atlas-sources/doodle-jump/visual/covers/source-renders/lobby-20261011/lobby-cover-rabbit.png",
+  "authoredImage": "sprite-atlas-sources/doodle-jump/visual/covers/lobby-cover-rabbit.png",
+  "runtimeImage": "assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png",
+  "integration": "Fit 4:3 to 540 x 405 with Lanczos; preserve runtime metadata.",
+  "size": [
+    540,
+    405
+  ],
+  "sha256": "35e6c8776e860c9f680473fa3861078f3d2a5c84af2a5e3fc9b74416d73b1d9b"
+}

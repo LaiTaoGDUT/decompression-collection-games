@@ -1,5 +1,8 @@
 import type { DevicePerformanceTier } from '../core/types/CommonTypes';
 
+export const LOBBY_PROMOTION_TAGS = ['hot', 'new'] as const;
+export type LobbyPromotionTag = (typeof LOBBY_PROMOTION_TAGS)[number];
+
 export const TROPHY_STYLES = ['watermelon', 'rook', 'neon', 'puzzle', 'tidy', 'rocket', 'bubble', 'cat'] as const;
 export type TrophyStyle = (typeof TROPHY_STYLES)[number];
 
@@ -68,4 +71,7 @@ export interface GameManifest {
 
     /** 用于大厅筛选和内容分组，不参与运行逻辑。 */
     readonly tags: readonly string[];
+
+    /** 大厅推广标签可同时配置 NEW、HOT；优先显示 NEW，成功打开当前内容版本后回退到 HOT。 */
+    readonly lobbyTags?: readonly LobbyPromotionTag[];
 }

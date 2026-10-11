@@ -29,6 +29,13 @@ export type MeowdokuDraftMark = 'mark' | 'cat';
 /** 单击即时预览须等双击窗口结束才确认为手画叉；自动补叉独立统计。 */
 export type MeowdokuMarkOrigin = 'manual' | 'auto' | 'tap-preview';
 
+/** 与棋盘分开保存的操作记录；每关累计历史由游戏存档合并维护。 */
+export interface MeowdokuChallengeHistory {
+    readonly manualMarksUsed: boolean;
+    readonly draftUsed: boolean;
+    readonly wrongGuessMade: boolean;
+}
+
 /** 一次格子状态变更，供视图播放对应反馈。 */
 export interface MeowdokuCellChange {
     readonly row: number;
@@ -334,15 +341,18 @@ export class MeowdokuModel {
     /** 使用历史与当前格子分开保存，撤叉、取消草稿不能恢复专属奖励资格。 */
     private manualMarksUsedValue = false;
     private draftUsedValue = false;
+    private wrongGuessMadeValue = false;
 
     get usedManualMarks(): boolean { return this.manualMarksUsedValue; }
     get usedDraft(): boolean { return this.draftUsedValue; }
+    get hasWrongGuess(): boolean { return this.wrongGuessMadeValue; }
 
     recordDraftUse(): void { this.draftUsedValue = true; }
 
-    restoreChallengeUsage(manualMarksUsed: boolean, draftUsed: boolean): void {
+    restoreChallengeUsage(manualMarksUsed: boolean, draftUsed: boolean, wrongGuessMade = false): void {
         this.manualMarksUsedValue = this.manualMarksUsedValue || manualMarksUsed;
         this.draftUsedValue = this.draftUsedValue || draftUsed;
+        this.wrongGuessMadeValue = this.wrongGuessMadeValue || wrongGuessMade;
     }
 
     private constructor(
@@ -402,6 +412,7 @@ export class MeowdokuModel {
 
     /** 原作 `_on_wrong_guess` 的计数部分：扣命、清连击、记错。 */
     loseLife(): boolean {
+        this.wrongGuessMadeValue = true;
         this.mistakesValue += 1;
         this.comboValue = 0;
         this.livesValue = Math.max(0, this.livesValue - 1);
@@ -486,7 +497,8 @@ export class MeowdokuModel {
 
     /** 提示条与结算页共用：找齐猫且零失误；旧存档中的红叉同样代表失误。 */
     get isPerfectClear(): boolean {
-        return this.isComplete && this.mistakesValue === 0 && !this.cells.some(cell => cell === 'error');
+        return this.isComplete && !this.wrongGuessMadeValue && this.mistakesValue === 0
+            && !this.cells.some(cell => cell === 'error');
     }
 
     placedCats(): readonly (readonly [number, number])[] {
@@ -551,6 +563,7 @@ export class MeowdokuModel {
      */
     markCellError(row: number, col: number): void {
         if (!this.isInside(row, col)) return;
+        this.wrongGuessMadeValue = true;
         this.setValue(row * this.size + col, 'error', undefined);
     }
 
@@ -602,6 +615,8 @@ export class MeowdokuModel {
         const index = row * this.size + col;
         if (!this.isSolutionCell(row, col)) {
             // 原作 `play_error_feedback`：错误格进入 ERROR 状态，红叉常驻。
+            // 在错误动画扣命前记录，退出或重开也不能丢失这次找错。
+            this.wrongGuessMadeValue = true;
             this.setValue(index, 'error', undefined);
             return 'wrong';
         }
@@ -625,14 +640,20 @@ export class MeowdokuModel {
     }
 
     /** 恢复存档；数据不合法时返回 false 并由调用方回退到新开局。 */
-    restore(snapshot: readonly MeowdokuCellState[]): boolean {
+    restore(snapshot: readonly MeowdokuCellState[], challenge?: MeowdokuChallengeHistory): boolean {
         if (snapshot.length !== this.cells.length) return false;
         for (const cell of snapshot) {
             if (cell !== 'empty' && cell !== 'mark' && cell !== 'error' && cell !== 'cat') return false;
         }
+        if (challenge) {
+            this.restoreChallengeUsage(challenge.manualMarksUsed, challenge.draftUsed, challenge.wrongGuessMade);
+        }
         for (let index = 0; index < snapshot.length; index += 1) {
             const cell = snapshot[index]!;
-            if (cell === 'mark') this.manualMarksUsedValue = true;
+            // 新快照有明确使用记录，自动补叉不能在续玩时被误记成手画叉。
+            if (cell === 'mark' && challenge?.manualMarksUsed !== false) this.manualMarksUsedValue = true;
+            // 明确记录优先；旧已通关关卡可保留上线前的红叉，但从新功能启用后重新计历史。
+            if (cell === 'error' && challenge?.wrongGuessMade !== false) this.wrongGuessMadeValue = true;
             this.setValue(index, cell, cell === 'mark' ? 'manual' : undefined);
         }
         for (const [row, col] of this.board.prefill) {

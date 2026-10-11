@@ -92,10 +92,13 @@ export const MEOWDOKU_CAT_BAR_MAX_WIDTH = 760 * MEOWDOKU_SOURCE_SCALE;
 export const MEOWDOKU_CAT_GROUP_GAP = 30 * MEOWDOKU_SOURCE_SCALE;
 /** 头像与剪影等比铺满槽位，较旧比例放大约 15%；保持列表底板高度和槽位间距。 */
 export const MEOWDOKU_CAT_COLOR_RATIO = 1;
-/** 体力胶囊（原作 `health_progress_bar.tscn`）。 */
+/** 三颗心体力胶囊的原作基准尺寸（`health_progress_bar.tscn`）。 */
 export const MEOWDOKU_LIFE_LIST_WIDTH = 260 * MEOWDOKU_SOURCE_SCALE;
 export const MEOWDOKU_LIFE_SLOT_MAX = 60 * MEOWDOKU_SOURCE_SCALE;
 export const MEOWDOKU_LIFE_SLOT_PITCH = 69 * MEOWDOKU_SOURCE_SCALE;
+/** 沿用原作左右内边距，生命面板宽度按当前模式的生命上限计算。 */
+export const MEOWDOKU_LIFE_LIST_PADDING = (MEOWDOKU_LIFE_LIST_WIDTH
+    - MEOWDOKU_LIFE_SLOT_MAX - MEOWDOKU_LIFE_SLOT_PITCH * (MEOWDOKU_DEFAULT_LIVES - 1)) / 2;
 /**
  * 底部道具栏：和顶部规则条同宽的白色圆角底板，里面只横排两块奶油色道具卡
  * （图标 + 名称 + 说明 + 右侧数量 / 广告角标），设计像素。草稿是常驻免费模式，不放在道具旁边。
@@ -255,6 +258,7 @@ export function calculateMeowdokuLayoutFromPlatform(
     platformLayout?: PlatformLayoutInfo,
     systemInsets: Pick<MeowdokuLayoutInsets, 'safeTop' | 'safeBottom' | 'safeLeft' | 'safeRight'> = {},
     boardSize = MEOWDOKU_BOARD_ENLARGE_MIN_SIZE,
+    lifeLimit = MEOWDOKU_DEFAULT_LIVES,
 ): MeowdokuLayoutMetrics {
     const safeArea = platformLayout?.safeArea;
     return calculateMeowdokuLayout(canvasWidth, canvasHeight, {
@@ -269,7 +273,7 @@ export function calculateMeowdokuLayoutFromPlatform(
             canvasWidth - (safeArea?.right ?? canvasWidth),
         ),
         topRightReservedBottom: platformLayout?.topRightReservedArea?.bottom,
-    }, boardSize);
+    }, boardSize, lifeLimit);
 }
 
 /**
@@ -283,6 +287,7 @@ export function calculateMeowdokuLayout(
     canvasHeight: number,
     insets: MeowdokuLayoutInsets = {},
     boardSize = MEOWDOKU_BOARD_ENLARGE_MIN_SIZE,
+    lifeLimit = MEOWDOKU_DEFAULT_LIVES,
 ): MeowdokuLayoutMetrics {
     const width = Math.max(1, canvasWidth);
     const height = Math.max(1, canvasHeight);
@@ -306,10 +311,12 @@ export function calculateMeowdokuLayout(
     const levelChipLeft = -contentWidth / 2 + hudEdgeInset;
     const levelChipWidth = MEOWDOKU_LEVEL_CHIP_WIDTH * fitScale;
 
-    // 体力胶囊（原作 `HeartBg`：260×84，里面三个 60×60 红心槽、间距 69）。
+    // 体力胶囊按生命上限容纳红心，保留原作槽位尺寸、间距与左右内边距。
+    const lifeCount = Math.max(1, Math.floor(lifeLimit));
     const lifeSlotSize = MEOWDOKU_LIFE_SLOT_MAX * fitScale;
     const lifeSlotGap = Math.max(1, MEOWDOKU_LIFE_SLOT_PITCH * fitScale - lifeSlotSize);
-    const lifeListWidth = MEOWDOKU_LIFE_LIST_WIDTH * fitScale;
+    const lifeSlotsWidth = lifeSlotSize * lifeCount + lifeSlotGap * (lifeCount - 1);
+    const lifeListWidth = lifeSlotsWidth + MEOWDOKU_LIFE_LIST_PADDING * 2 * fitScale;
 
     // 猫咪列表宽度：原作 `solve_metrics(total, 760)`。
     const catCount = Math.max(1, Math.min(12, boardSize));
@@ -349,8 +356,6 @@ export function calculateMeowdokuLayout(
     // 顶栏：体力胶囊紧挨在暂停按钮左侧。
     const lifeListRight = pauseX - pauseSize / 2 - MEOWDOKU_HUD_ITEM_GAP * fitScale;
     const lifeListLeft = lifeListRight - lifeListWidth;
-    const lifeSlotsWidth = lifeSlotSize * MEOWDOKU_DEFAULT_LIVES
-        + lifeSlotGap * (MEOWDOKU_DEFAULT_LIVES - 1);
     const lifeSlotsFirstX = lifeListLeft + (lifeListWidth - lifeSlotsWidth) / 2 + lifeSlotSize / 2;
 
     // 底部道具栏固定贴在底部安全区之上，只放两张消耗道具卡。

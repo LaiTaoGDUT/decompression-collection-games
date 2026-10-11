@@ -1,5 +1,6 @@
 import { _decorator, AudioClip } from 'cc';
 import type { AudioService, AudioEffectScope } from '../../../services/audio/AudioService';
+import type { PackedAudioEffect } from '../../../services/audio/PackedAudioBank';
 const { ccclass, property } = _decorator;
 
 export const CLOUD_CUES = ['normal-music', 'boss-music', 'shot', 'bounce', 'attach', 'pop', 'drop',
@@ -12,6 +13,8 @@ export type CloudCue = typeof CLOUD_CUES[number];
 export class BubbleShooterAudioSlot {
     @property cue = '';
     @property({ type: [AudioClip] }) clips: AudioClip[] = [];
+    /** 运行时音效包条目；不把解码缓冲序列化到场景。 */
+    packedClips?: readonly PackedAudioEffect[];
     @property volume = .7;
     @property startSeconds?: number = 0;
 }
@@ -40,7 +43,8 @@ export class BubbleShooterAudio {
         if (now - (this.last.get(cue) ?? -Infinity) < (cue === 'boss-hit' ? 120 : 65)) return;
         this.last.set(cue, now);
         const slot = this.slots.get(cue), index = this.sequence.get(cue) ?? 0;
-        const clip = slot?.clips.length ? slot.clips[index % slot.clips.length] : undefined;
+        const clips = slot?.packedClips?.length ? slot.packedClips : slot?.clips;
+        const clip = clips?.length ? clips[index % clips.length] : undefined;
         if (slot && clip) {
             if (this.effects) this.effects.play(clip, slot.volume);
             else this.service?.playEffect(clip, slot.volume);

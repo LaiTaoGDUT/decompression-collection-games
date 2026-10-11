@@ -97,6 +97,7 @@ export function adaptTapMiniGameApi(api: TapMiniGameApi): MiniGameApi {
         chooseMedia,
         createImage: bind('createImage'),
         createCanvas: bind('createCanvas'),
+        createWebAudioContext: bind('createWebAudioContext'),
         env: api.env,
         getFileSystemManager: bind('getFileSystemManager'),
         onShow: bind('onShow'),

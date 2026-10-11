@@ -1,4 +1,5 @@
 import {
+    Component,
     Director,
     director,
     type AssetManager,
@@ -20,6 +21,7 @@ import type {
     MiniGameResultModel,
 } from './MiniGame';
 import { GameSession } from './GameSession';
+import type { ScenePresentationEntry } from './ScenePresentation';
 
 export interface SceneDirector {
     runScene(
@@ -43,6 +45,7 @@ export interface LoadingPresenter {
     showLobbyTransition?(): void;
     showRestart?(message: string): void;
     updateProgress(message: string, progress: number): void;
+    waitForCompletion?(): Promise<void>;
     hideLobbyTransition?(): void;
     hideRestart?(): void;
     hide(): void;
@@ -133,6 +136,7 @@ export class GameRuntimeError extends Error {
 
 /** 编排大厅启动和单局游戏进入流程。 */
 export class GameRuntime {
+    private enteringLobby?: Promise<void>;
     private entering?: Promise<void>;
     private leaving?: Promise<void>;
     private restarting?: Promise<void>;
@@ -176,7 +180,18 @@ export class GameRuntime {
         return this.completedResult;
     }
 
-    async enterLobby(showLoading = true): Promise<void> {
+    enterLobby(showLoading = true): Promise<void> {
+        if (this.enteringLobby) return this.enteringLobby;
+        const entering = this.performEnterLobby(showLoading);
+        this.enteringLobby = entering;
+        const clear = (): void => {
+            if (this.enteringLobby === entering) this.enteringLobby = undefined;
+        };
+        void entering.then(clear, clear);
+        return entering;
+    }
+
+    private async performEnterLobby(showLoading: boolean): Promise<void> {
         if (!showLoading) {
             await this.enterLobbyScene();
             return;
@@ -198,9 +213,15 @@ export class GameRuntime {
                 );
             });
             this.loading?.updateProgress('大厅资源准备完成', 0.68);
-            await this.loadAndLaunchBundleScene(bundle, 'scenes/Lobby');
+            const scene = await this.loadAndLaunchBundleScene(bundle, 'scenes/Lobby');
+            this.loading?.updateProgress('正在整理大厅界面', 0.78);
+            await this.prepareLobbyPresentation(scene);
             this.loading?.updateProgress('欢迎回来，马上开始放松', 1);
-            await new Promise<void>((resolve) => setTimeout(resolve, 160));
+            await this.withTimeout(
+                this.loading?.waitForCompletion?.() ?? Promise.resolve(),
+                this.timeouts.sceneLoadMs,
+                'lobby loading completion',
+            );
 
             if (!this.stateMachine.transition('lobby')) {
                 throw new Error(
@@ -214,13 +235,28 @@ export class GameRuntime {
 
     private async enterLobbyScene(): Promise<void> {
         await this.assets.prepareBundle('lobby-covers', 'visual');
-        await this.loadAndLaunchScene('lobby', 'scenes/Lobby');
+        const scene = await this.loadAndLaunchScene('lobby', 'scenes/Lobby');
+        await this.prepareLobbyPresentation(scene);
 
         if (!this.stateMachine.transition('lobby')) {
             throw new Error(
                 `Cannot enter lobby from state "${this.stateMachine.currentState}".`,
             );
         }
+    }
+
+    private async prepareLobbyPresentation(scene: Scene): Promise<void> {
+        const entries = scene.getComponentsInChildren(Component)
+            .map(component => component as Component & Partial<ScenePresentationEntry>)
+            .filter(component => typeof component.presentationReady?.then === 'function');
+        if (entries.length === 0) {
+            throw new Error('Lobby scene is missing its presentation entry.');
+        }
+        await this.withTimeout(
+            Promise.all(entries.map(entry => entry.presentationReady)),
+            this.timeouts.initializeMs,
+            'lobby presentation',
+        );
     }
 
     enterGame(manifest: GameManifest): Promise<void> {
@@ -670,6 +706,8 @@ export class GameRuntime {
                         ...previous,
                         lastPlayedAt: Date.now(),
                     });
+                    // 仅成功打开当前内容版本后隐藏 NEW；加载失败或旧版本访问均不算。
+                    storage.dismissNewBadge(manifest.id, manifest.version);
                     this.flushStorage('game history');
                 }
             } catch (error: unknown) {

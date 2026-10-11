@@ -145,7 +145,7 @@
     "showDevelopmentGames": true
   },
   "fonts": {
-    "enabled": true,
+    "enabled": false,
     "validateCoverage": false,
     "loadTimeoutMs": 10000
   }

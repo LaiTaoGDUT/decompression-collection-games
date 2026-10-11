@@ -4,57 +4,57 @@
 <dict>
 	<key>frames</key>
 	<dict>
-		<key>warm-binder-clip</key>
+		<key>warm-clover</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,328},{362,369}}</string>
+			<string>{{2,2},{152,152}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{362,369}}</string>
+			<string>{{0.0,0.0},{152,152}}</string>
 			<key>sourceSize</key>
-			<string>{362,369}</string>
+			<string>{152,152}</string>
 		</dict>
-		<key>warm-paperclip</key>
+		<key>warm-grass</key>
 		<dict>
 			<key>frame</key>
-			<string>{{368,366},{364,366}}</string>
+			<string>{{158,2},{152,152}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{364,366}}</string>
+			<string>{{0.0,0.0},{152,152}}</string>
 			<key>sourceSize</key>
-			<string>{364,366}</string>
+			<string>{152,152}</string>
 		</dict>
-		<key>warm-pencil-spiral</key>
+		<key>warm-leaf-sprig</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{384,322}}</string>
+			<string>{{314,2},{152,152}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{384,322}}</string>
+			<string>{{0.0,0.0},{152,152}}</string>
 			<key>sourceSize</key>
-			<string>{384,322}</string>
+			<string>{152,152}</string>
 		</dict>
-		<key>warm-push-pin</key>
+		<key>warm-wildflowers</key>
 		<dict>
 			<key>frame</key>
-			<string>{{390,2},{379,360}}</string>
+			<string>{{470,2},{152,152}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{379,360}}</string>
+			<string>{{0.0,0.0},{152,152}}</string>
 			<key>sourceSize</key>
-			<string>{379,360}</string>
+			<string>{152,152}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -64,7 +64,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-warm.png</string>
 		<key>size</key>
-		<string>{771,734}</string>
+		<string>{624,156}</string>
 		<key>textureFileName</key>
 		<string>doodle-warm.png</string>
 	</dict>

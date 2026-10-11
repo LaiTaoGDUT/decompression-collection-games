@@ -79,7 +79,8 @@ export async function loadBubbleTransitionAssets(assets: AssetService) {
 }
 
 /** A validated set of frames acquired exclusively through the session AssetService. */
-export async function loadBubbleRegion(assets: AssetService, region: BubbleRegion, audio: Pick<AudioService, 'isMusicEnabled' | 'isSoundEnabled'>) {
+export async function loadBubbleRegion(assets: AssetService, region: BubbleRegion,
+    audio: Pick<AudioService, 'isMusicEnabled' | 'isSoundEnabled' | 'decodePackedAudio'>) {
     await assets.prepareBundle('game-bubble-shooter-assets','visual/common', undefined, { excludeAudio: true });
     const bundle=await assets.prepareBundle('game-bubble-shooter-assets',`visual/regions/${region}`, undefined, { excludeAudio: true });
     const get=(path:string):SpriteFrame=>{
@@ -118,11 +119,15 @@ export async function loadBubbleRegion(assets: AssetService, region: BubbleRegio
         if(!frame)throw new Error('Missing common combo banner '+tier);
         return frame;
     });
-    const comboAudioSlots: BubbleShooterAudioSlot[] = await Promise.all((audio.isSoundEnabled ? [6,7,8,9,10] : []).map(async tier => ({
+    // 每个区域只需公共包和当前主题包；音乐仍按原路径独立加载。
+    const [commonAudio, regionalAudio] = audio.isSoundEnabled ? await Promise.all(
+        ['common', region].map(name => assets.loadPackedAudio('game-bubble-shooter-assets',
+            `audio-banks/${name}`, data => audio.decodePackedAudio(data)))) : [];
+    const comboAudioSlots: BubbleShooterAudioSlot[] = (audio.isSoundEnabled ? [6,7,8,9,10] : []).map(tier => ({
         cue: ('combo-'+tier) as CloudCue,
-        clips: [await assets.loadAudioClip('game-bubble-shooter-assets', `visual/common/combo/combo-${tier}`)],
+        clips: [], packedClips: [commonAudio!.effect(`visual/common/combo/combo-${tier}`)],
         volume: .65,
-    })));
+    }));
     const modalAtlas=region==='toy'?'modal/boss-panel-v7':region==='magic'?'modal/boss-panel-v8':'modal/boss-panel-v2';
     const modalFrames = {top: part(modalAtlas,'top'), middle: part(modalAtlas,'middle'), bottom: part(modalAtlas,'bottom')};
     const bossAlert=region==='cloud'?get('visual/common/transition/boss-alert'):part(region==='toy'?'transition/alert-v7':region==='magic'?'transition/alert-v8':'transition/alert-v5','alert');
@@ -143,10 +148,14 @@ export async function loadBubbleRegion(assets: AssetService, region: BubbleRegio
     const audioSlots: BubbleShooterAudioSlot[] = await Promise.all(bubbleAudioEntries(region)
         .filter(({cue}) => cue.endsWith('-music')
             ? audio.isMusicEnabled : audio.isSoundEnabled)
-        .map(async ({cue,paths,volume,startSeconds = 0}) => ({
-            cue, volume, startSeconds, clips: await Promise.all(paths.map(path =>
-                assets.loadAudioClip('game-bubble-shooter-assets', path))),
-        })));
+        .map(async ({cue,paths,volume,startSeconds = 0}) => {
+            if (cue.endsWith('-music')) return {
+                cue, volume, startSeconds, clips: await Promise.all(paths.map(path =>
+                    assets.loadAudioClip('game-bubble-shooter-assets', path))),
+            };
+            return { cue, volume, startSeconds, clips: [], packedClips: paths.map(path =>
+                (path.startsWith('visual/common/') ? commonAudio! : regionalAudio!).effect(path)) };
+        }));
     const pack = {region,regional,part,scoreIcons,rulesIcon,audioSlots,comboFrames,comboAudioSlots,bossAlert,modalFrames,sceneFrame(path:string):SpriteFrame|null {
         if(region==='ocean' && path==='visual/common/items/item-button-base')return regional('hud/item-base');
         if((region==='toy'||region==='magic') && path==='visual/common/items/item-button-base')return part('launcher/controls-v2','item');

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Cocos 3.8.8 WeChat atlas dependencies and native PNG bytes."""
+"""Validate Cocos 3.8.8 WeChat atlas dependencies and native image bytes."""
 import hashlib
 import json
 import sys
@@ -50,7 +50,7 @@ for relative in inputs:
     source = ROOT / relative
     image_uuid = read_json(Path(str(source) + '.meta'))['uuid']
     game = source.parts[len(ROOT.parts) + 2]
-    files = list((bundles[game] / 'native').rglob(image_uuid + '.*.png'))
+    files = list((bundles[game] / 'native').rglob(image_uuid + '.*' + source.suffix))
     assert len(files) == 1 and files[0].read_bytes() == source.read_bytes(), relative
     assert hashlib.md5(source.read_bytes()).hexdigest().startswith(files[0].name.split('.')[-2]), relative
 

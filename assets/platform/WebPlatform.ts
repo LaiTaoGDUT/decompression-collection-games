@@ -10,6 +10,7 @@ import type {
     Unsubscribe,
 } from '../core/types/CommonTypes';
 import type { AccelerometerSample, Platform } from './Platform';
+import type { PlatformAudioContext } from './PlatformAudio';
 
 interface WebPlatformEvents {
     readonly show: void;
@@ -47,6 +48,13 @@ const DEFAULT_DEVICE_PROFILE: DeviceProfile = Object.freeze({
 /** Creator 浏览器预览和普通 Web 环境使用的平台实现。 */
 export class WebPlatform implements Platform {
     readonly id = 'web';
+
+    createAudioContext(): PlatformAudioContext | undefined {
+        if (typeof window === 'undefined') return undefined;
+        const ctor = window.AudioContext
+            ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        return ctor ? new ctor() as unknown as PlatformAudioContext : undefined;
+    }
 
     private readonly events = new EventBus<WebPlatformEvents>();
     private readonly safeArea: SafeArea;

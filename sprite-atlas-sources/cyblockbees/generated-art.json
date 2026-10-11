@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "tool": "image_gen",
+  "style": "蜂巢贴纸：深棕 #603A20 粗描边、扁平色块、每个色区至多一块高光与一块阴影；冰与水用深蓝描边，云用淡蓝描边。",
+  "overrides": {
+    "dog-idle": {
+      "source": "generated/dog-flat.png",
+      "width": 180,
+      "height": 185,
+      "padding": 3,
+      "prompt": "A FLAT VECTOR-STYLE 2D game sprite: front-facing round Shiba dog HEAD ONLY. Squat circular face, small triangle ears with pink interiors. Half-lidded horizontal sleepy eyes and smug tiny smile, small triangular brown nose, cream-white lower muzzle and cheeks, three small dots on each cheek. Solid mustard yellow #F5CB62 face, solid ivory #FFFEF0 muzzle, solid pink #F3B8B4 inner ears, uniform dark brown #704822 outline and facial features. Exactly FOUR solid fill colors plus transparent alpha. Extremely simple, like a flat Flash-game clipart sticker. Absolutely zero gradients, zero shading, zero highlights, zero lighting, zero shadow, zero texture. Every color region must be a single constant flat solid color. No glossy or 3D appearance. Clean readable silhouette at 180x185 pixels. Transparent background, complete ears and head, no body, no text."
+    },
+    "dog-scared": {
+      "source": "generated/dog-scared-flat.png",
+      "width": 180,
+      "height": 185,
+      "padding": 3,
+      "mode": "edit",
+      "reference": "visual/game/dog-idle-v1.png",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent PNG expression sprite for a portrait 2D Cocos game. Input image 1 is the existing dog-head sprite to edit. Preserve the EXACT same front-facing Shiba head identity, squat round silhouette, ear positions and pink ear interiors, yellow coat, ivory lower muzzle, brown triangular nose, six brown cheek dots, outline thickness, composition and framing. Change ONLY facial expression as described below. Keep the head fully contained with transparent margin, no body. Flat Flash-game/vector-like cartoon, clean solid flat color regions; absolutely NO 3D, shading, gradients, lighting, texture, glossy highlights, shadows or background. Exactly one complete head, same outer contour as the input. No text, symbols, props, scenery or additional characters. Expression must be very readable at 180x185 px and distinct from the reference sleepy expression. Maintain transparent alpha background.\nExpression: Frightened by approaching bees: two wide round ivory eyes with small dark-brown pupils, raised worried eyebrows and a small open dark-brown O mouth under the nose. One small ivory sweat drop INSIDE the upper right cheek, not outside the silhouette. Keep nose and existing muzzle/cheek dots unchanged."
+    },
+    "dog-beaten": {
+      "source": "generated/dog-beaten-flat.png",
+      "width": 180,
+      "height": 185,
+      "padding": 3,
+      "mode": "edit",
+      "reference": "visual/game/dog-idle-v1.png",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent PNG expression sprite for a portrait 2D Cocos game. Input image 1 is the existing dog-head sprite to edit. Preserve the EXACT same front-facing Shiba head identity, squat round silhouette, ear positions and pink ear interiors, yellow coat, ivory lower muzzle, brown triangular nose, six brown cheek dots, outline thickness, composition and framing. Change ONLY facial expression as described below. Keep the head fully contained with transparent margin, no body. Flat Flash-game/vector-like cartoon, clean solid flat color regions; absolutely NO 3D, shading, gradients, lighting, texture, glossy highlights, shadows or background. Exactly one complete head, same outer contour as the input. No text, symbols, props, scenery or additional characters. Expression must be very readable at 180x185 px and distinct from the reference sleepy expression. Maintain transparent alpha background.\nExpression: First bee sting, hurt and wincing: squeezed shut asymmetric eyes and furrowed eyebrows, a small crooked grimacing mouth beneath the nose, a small flat muted-red sting mark inside one yellow cheek. The dog is visibly hurt but alert; no tears, bandage or external bump. Keep nose and muzzle/cheek dots unchanged."
+    },
+    "dog-win": {
+      "source": "generated/dog-win-flat.png",
+      "width": 180,
+      "height": 185,
+      "padding": 3,
+      "mode": "edit",
+      "reference": "visual/game/dog-idle-v1.png",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent PNG expression sprite for a portrait 2D Cocos game. Input image 1 is the existing dog-head sprite to edit. Preserve the EXACT same front-facing Shiba head identity, squat round silhouette, ear positions and pink ear interiors, yellow coat, ivory lower muzzle, brown triangular nose, six brown cheek dots, outline thickness, composition and framing. Change ONLY facial expression as described below. Keep the head fully contained with transparent margin, no body. Flat Flash-game/vector-like cartoon, clean solid flat color regions; absolutely NO 3D, shading, gradients, lighting, texture, glossy highlights, shadows or background. Exactly one complete head, same outer contour as the input. No text, symbols, props, scenery or additional characters. Expression must be very readable at 180x185 px and distinct from the reference sleepy expression. Maintain transparent alpha background.\nExpression: Victory after safely surviving: joyful upward-curved closed eyes, relaxed raised eyebrows, a broad happy grin below the nose with one simple ivory tooth band inside a dark-brown mouth. A cheerful celebratory face with no stars, sparkles or other additions. Keep nose and muzzle/cheek dots unchanged.",
+      "edits": [
+        {
+          "mode": "edit",
+          "reference": "generated/dog-win-before-repair-180x185.png",
+          "prompt": "Use case: precise-object-edit. Edit this transparent PNG winning dog-head game sprite. Preserve exactly the same silhouette, framing, front-facing identity, ear geometry and pink ear interiors, brown outlines, six cheek dots, ivory muzzle, triangular nose, closed happy arch eyes, eyebrows and wide smiling mouth. Fix ONLY the yellow coat fill: remove the blurry dark/translucent spot between the eyebrows in the center forehead and make the entire yellow fur region one completely SOLID flat mustard yellow color #F5CB62, matching the flat cartoon style. The image must have fully opaque flat colored regions INSIDE the outer brown contour, alpha 255 throughout the complete head including forehead, ears, muzzle and facial features. Transparent alpha is permitted ONLY OUTSIDE the head outline, with normal antialiasing at the outer edge. No translucent holes or patches inside the face. Uniform dark brown #704822 outlines/features, flat ivory #FFFEF0 muzzle, flat pink #F3B8B4 inner ears. Exactly four flat colors plus outside transparency. No lighting, no highlights, no glare, no shadow, no gradients, no texture, no glossy finish, no 3D. Keep the existing victory expression unchanged. One head only, no body, no text, no props. Render cleanly for a 180x185 pixel static 2D game sprite."
+        }
+      ]
+    },
+    "dog-lose": {
+      "source": "generated/dog-lose-flat.png",
+      "width": 180,
+      "height": 185,
+      "padding": 3,
+      "mode": "edit",
+      "reference": "visual/game/dog-idle-v1.png",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent PNG expression sprite for a portrait 2D Cocos game. Input image 1 is the existing dog-head sprite to edit. Preserve the EXACT same front-facing Shiba head identity, squat round silhouette, ear positions and pink ear interiors, yellow coat, ivory lower muzzle, brown triangular nose, six brown cheek dots, outline thickness, composition and framing. Change ONLY facial expression as described below. Keep the head fully contained with transparent margin, no body. Flat Flash-game/vector-like cartoon, clean solid flat color regions; absolutely NO 3D, shading, gradients, lighting, texture, glossy highlights, shadows or background. Exactly one complete head, same outer contour as the input. No text, symbols, props, scenery or additional characters. Expression must be very readable at 180x185 px and distinct from the reference sleepy expression. Maintain transparent alpha background.\nExpression: Defeat after the second sting or hazard: visibly sad crying face, drooping worried eyebrows, closed downward-curved eyes with two flat pale-blue tears drawn INSIDE the face under the eyes, and a clear downturned frown beneath the nose. Keep the ears, nose and muzzle/cheek dots unchanged; no body and no outside tear particles."
+    },
+    "bee": {
+      "source": "generated/sticker/bee.png",
+      "width": 148,
+      "height": 107,
+      "exact": true,
+      "generated": "generated/ai/bee.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cute chubby cartoon honeybee flying, side view facing LEFT exactly like image 1: big round white eyes with dark pupils on the left, yellow body with two dark-brown stripes, small pointy stinger at the right end, one pale translucent-looking wing (draw it flat pale blue-white) on top.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "bee-die": {
+      "source": "generated/sticker/bee-die.png",
+      "width": 140,
+      "height": 99,
+      "exact": true,
+      "generated": "generated/ai/bee-die.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: the same cute cartoon honeybee knocked out, side view facing LEFT exactly like image 1: body desaturated to pale grey-yellow with grey stripes, eyes drawn as dizzy spirals or X marks, wing drooping. Same footprint as image 1.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "hive-a": {
+      "source": "generated/sticker/hive-a.png",
+      "width": 153,
+      "height": 185,
+      "exact": true,
+      "generated": "generated/ai/hive-a.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon beehive (skep) exactly like image 1: rounded stacked honey-colored rings getting wider at the bottom, a large dark round entrance hole in the middle-left, a few small dots. Warm honey yellow #FFC740 with darker amber ring shading.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "hive-b": {
+      "source": "generated/sticker/hive-b.png",
+      "width": 153,
+      "height": 185,
+      "exact": true,
+      "generated": "generated/ai/hive-a.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon beehive (skep) exactly like image 1: rounded stacked honey-colored rings getting wider at the bottom, a large dark round entrance hole in the middle-left, a few small dots. Warm honey yellow #FFC740 with darker amber ring shading.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "hive-fan-1": {
+      "source": "generated/sticker/hive-fan-1.png",
+      "width": 266,
+      "height": 172,
+      "exact": true,
+      "generated": "generated/ai/hive-fan-1.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a round flat cartoon fan platform seen from a 3/4 top view exactly like image 1: a short wide lavender drum/cylinder with a cream top face showing a pinwheel swirl of lavender blades. Lavender #B9A3E8, cream #FFF6DE.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "spider-1": {
+      "source": "generated/sticker/spider-1.png",
+      "width": 155,
+      "height": 148,
+      "exact": true,
+      "generated": "generated/ai/spider-1.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cute cartoon spider hanging, front view exactly like image 1: round purple body with lighter magenta spots on top, eight curved dark-purple legs spread around, two big white round eyes at the bottom of the body (leave the eye whites EMPTY white with no pupils, pupils are a separate sprite).\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "ball": {
+      "source": "generated/sticker/ball.png",
+      "width": 93,
+      "height": 113,
+      "exact": true,
+      "generated": "generated/ai/ball.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cute shiny cartoon balloon exactly like image 1: round orange-peach balloon with a small knot at the bottom, one flat white highlight oval at upper left. Color #FFB55E.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "bomb": {
+      "source": "generated/sticker/bomb.png",
+      "width": 142,
+      "height": 149,
+      "exact": true,
+      "generated": "generated/ai/bomb.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon round bomb exactly like image 1: dark navy-purple sphere with a wide honey-yellow band across it, a short metal cap on the upper right with a curly orange fuse.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "knife": {
+      "source": "generated/sticker/knife.png",
+      "width": 97,
+      "height": 359,
+      "exact": true,
+      "generated": "generated/ai/knife.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a vertical cartoon kitchen knife pointing DOWN exactly like image 1: orange-red handle at the top with a small guard, long light steel-blue blade with a slightly serrated back edge and a pointed tip at the bottom.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "saw-gear": {
+      "source": "generated/sticker/saw-gear.png",
+      "width": 128,
+      "height": 128,
+      "exact": true,
+      "generated": "generated/ai/saw-gear.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon circular saw blade exactly like image 1: light steel-grey disc with many sharp triangular teeth around the rim, a darker hexagonal hub bolt in the center.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "spike": {
+      "source": "generated/sticker/spike.png",
+      "width": 57,
+      "height": 101,
+      "exact": true,
+      "generated": "generated/ai/spike.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon ground spike / drill cone pointing UP exactly like image 1: tall narrow silver-grey cone with two darker spiral bands.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "spiky-ball-1": {
+      "source": "generated/sticker/spiky-ball-1.png",
+      "width": 205,
+      "height": 205,
+      "exact": true,
+      "generated": "generated/ai/spiky-ball-1.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon spiked iron mace ball exactly like image 1: round steel-grey ball with several short sharp cone spikes around it and one small light highlight.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "stone": {
+      "source": "generated/sticker/stone.png",
+      "width": 183,
+      "height": 205,
+      "exact": true,
+      "generated": "generated/ai/stone.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon boulder exactly like image 1: chunky faceted grey rock with a few flat lighter and darker facets.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "tree": {
+      "source": "generated/sticker/tree.png",
+      "width": 471,
+      "height": 943,
+      "exact": true,
+      "generated": "generated/ai/tree.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a tall cartoon tree trunk exactly like image 1: straight brown vertical trunk with simple wood grain lines, one short bare branch sticking out to the left, a dark knot hole. Keep it exactly as tall and narrow as image 1.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    },
+    "box-1": {
+      "source": "generated/sticker/box-1.png",
+      "width": 218,
+      "height": 75,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "box-2": {
+      "source": "generated/sticker/box-2.png",
+      "width": 123,
+      "height": 75,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "box-3": {
+      "source": "generated/sticker/box-3.png",
+      "width": 74,
+      "height": 75,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "box-inner": {
+      "source": "generated/sticker/box-inner.png",
+      "width": 256,
+      "height": 256,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "brick-1": {
+      "source": "generated/sticker/brick-1.png",
+      "width": 44,
+      "height": 42,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "brick-2": {
+      "source": "generated/sticker/brick-2.png",
+      "width": 217,
+      "height": 43,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "ice-1": {
+      "source": "generated/sticker/ice-1.png",
+      "width": 55,
+      "height": 56,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "ice-2": {
+      "source": "generated/sticker/ice-2.png",
+      "width": 56,
+      "height": 56,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "ice-3": {
+      "source": "generated/sticker/ice-3.png",
+      "width": 57,
+      "height": 41,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "move-arrow": {
+      "source": "generated/sticker/move-arrow.png",
+      "width": 118,
+      "height": 54,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "platform-round": {
+      "source": "generated/sticker/platform-round.png",
+      "width": 89,
+      "height": 89,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "platform-cube": {
+      "source": "generated/sticker/platform-cube.png",
+      "width": 216,
+      "height": 200,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "ground": {
+      "source": "generated/sticker/ground.png",
+      "width": 512,
+      "height": 512,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "grass-outline-1": {
+      "source": "generated/sticker/grass-outline-1.png",
+      "width": 128,
+      "height": 64,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "grass-outline-2": {
+      "source": "generated/sticker/grass-outline-2.png",
+      "width": 128,
+      "height": 64,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "grass-1": {
+      "source": "generated/sticker/grass-1.png",
+      "width": 176,
+      "height": 214,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "grass-2": {
+      "source": "generated/sticker/grass-2.png",
+      "width": 271,
+      "height": 231,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "grass-3": {
+      "source": "generated/sticker/grass-3.png",
+      "width": 197,
+      "height": 231,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "cloud-1": {
+      "source": "generated/sticker/cloud-1.png",
+      "width": 404,
+      "height": 211,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "cloud-2": {
+      "source": "generated/sticker/cloud-2.png",
+      "width": 519,
+      "height": 285,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "cloud-3": {
+      "source": "generated/sticker/cloud-3.png",
+      "width": 509,
+      "height": 214,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "water": {
+      "source": "generated/sticker/water.png",
+      "width": 720,
+      "height": 458,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "spiky-ball-2": {
+      "source": "generated/sticker/spiky-ball-2.png",
+      "width": 30,
+      "height": 31,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "spiky-ball-3": {
+      "source": "generated/sticker/spiky-ball-3.png",
+      "width": 205,
+      "height": 19,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "spider-6": {
+      "source": "generated/sticker/spider-6.png",
+      "width": 38,
+      "height": 38,
+      "exact": true,
+      "drawn": "project-scripts/cyblockbees/restyle-art.py"
+    },
+    "black-hole": {
+      "source": "generated/sticker/black-hole.png",
+      "width": 156,
+      "height": 152,
+      "exact": true,
+      "generated": "generated/ai/black-hole.png",
+      "prompt": "Use case: restyle a game sprite. Input image 1 is the ORIGINAL sprite to redraw: keep its exact silhouette footprint, orientation, proportions, pose and the position of every part (it must still line up with the same physics collider), only redraw it in the new style. Input image 2 is a STYLE reference only, do not copy its subject. Subject: a cartoon black hole / vortex exactly like image 1: round swirling spiral of dark brown-black arms with a slightly lighter edge, readable as a whirlpool.\nStyle: flat 2D casual mobile-game sticker art matching reference image 2 (the Shiba dog head): bold uniform dark-brown outline (#603A20) of the same visual weight, simple rounded cartoon shapes, flat solid color fills, at most one flat lighter highlight shape and one flat darker shade shape per color region (cel style). Absolutely no gradients, no airbrush, no texture, no photoreal or 3D render look, no glow, no drop shadow, no ground shadow. Exactly one object, centered, fully inside the canvas with a small transparent margin. Transparent background (real alpha). No text, no watermark, no extra objects."
+    }
+  }
+}

@@ -32,12 +32,17 @@ export class DoodleJumpInputController {
     private samples: number[] = [];
     private neutralX = 0;
     private rawX = 0;
-    private smoothedInput = 0;
+    private horizontalInput = 0;
     private lastSampleAt = 0;
     private keyboardLeft = false;
     private keyboardRight = false;
     private keyboardFire = false;
     private keyboardMode = false;
+    private pointerStartX = 0;
+    private pointerStartPlayerX = 0;
+    private pointerTargetX = 0;
+    private pointerActive = false;
+    private pointerMoved = false;
     private enabled = false;
     private disposed = false;
     private calibrationFinish?: (result: DoodleJumpCalibrationResult) => void;
@@ -55,7 +60,8 @@ export class DoodleJumpInputController {
         this.samples = [];
         this.rawX = 0;
         this.neutralX = 0;
-        this.smoothedInput = 0;
+        this.horizontalInput = 0;
+        this.endPointerDrag();
         this.lastSampleAt = 0;
         this.calibrationStartedAt = Date.now();
         if (!this.platform.supportsAccelerometer()) {
@@ -99,9 +105,45 @@ export class DoodleJumpInputController {
     setEnabled(enabled: boolean): void {
         this.enabled = enabled;
         if (!enabled) {
-            this.smoothedInput = 0;
+            this.horizontalInput = 0;
             this.keyboardFire = false;
+            this.endPointerDrag();
         }
+    }
+
+    supportsPointerControl(): boolean {
+        return this.platform.id === 'web';
+    }
+
+    beginPointerDrag(pointerX: number, playerX: number): void {
+        if (!this.enabled || !this.supportsPointerControl()) return;
+        this.pointerStartX = pointerX;
+        this.pointerStartPlayerX = playerX;
+        this.pointerTargetX = playerX;
+        this.pointerActive = true;
+        this.pointerMoved = false;
+    }
+
+    movePointerDrag(pointerX: number): boolean {
+        if (!this.pointerActive) return false;
+        const displacement = pointerX - this.pointerStartX;
+        this.pointerMoved = this.pointerMoved || Math.abs(displacement) >= 8;
+        if (this.pointerMoved) {
+            const halfWidth = this.config.player.collisionWidth / 2;
+            this.pointerTargetX = Math.max(halfWidth, Math.min(
+                this.config.design.width - halfWidth,
+                this.pointerStartPlayerX + displacement,
+            ));
+        }
+        return this.pointerMoved;
+    }
+
+    endPointerDrag(): boolean {
+        const moved = this.pointerMoved;
+        if (this.pointerActive) this.horizontalInput = 0;
+        this.pointerActive = false;
+        this.pointerMoved = false;
+        return moved;
     }
 
     isKeyboardFireHeld(): boolean {
@@ -120,30 +162,33 @@ export class DoodleJumpInputController {
         });
     }
 
-    update(deltaSeconds: number, sensitivity: number, invert: boolean): number {
+    update(_deltaSeconds: number, sensitivity: number, invert: boolean, playerX?: number): number {
         if (!this.enabled) return 0;
+        if (this.pointerActive && this.pointerMoved && playerX !== undefined) {
+            // Follow the finger's displacement without teleporting on press.
+            // Feed the same fixed-step steering filter used by tilt and keyboard input.
+            const distance = this.pointerTargetX - playerX;
+            this.horizontalInput = Math.abs(distance) < 1 ? 0 : Math.max(-1, Math.min(
+                1,
+                distance / (this.config.player.maxHorizontalSpeed * 0.125),
+            ));
+            return this.horizontalInput;
+        }
         let target = 0;
         if (this.keyboardMode) {
             target = (this.keyboardRight ? 1 : 0) - (this.keyboardLeft ? 1 : 0);
         } else {
-            let tilt = this.rawX - this.neutralX;
+            let tilt = (this.rawX - this.neutralX) * sensitivity;
             if (invert) tilt = -tilt;
-            const absolute = Math.abs(tilt);
-            if (absolute > this.config.sensor.deadZone) {
-                target = absolute >= this.config.sensor.fullTilt
-                    ? Math.sign(tilt)
-                    : Math.sign(tilt) * (
-                        (absolute - this.config.sensor.deadZone)
-                        / (this.config.sensor.fullTilt - this.config.sensor.deadZone)
-                    );
+            // The platform service reports g. Preserve stronger tilts instead of
+            // saturating at fullTilt; that value sets the H5/keyboard steering scale.
+            if (Math.abs(tilt) > this.config.sensor.deadZone) {
+                target = Math.max(-1, Math.min(1, tilt)) / this.config.sensor.fullTilt;
             }
-            target = Math.max(-1, Math.min(1, target * sensitivity));
         }
-        const alpha = 1 - Math.exp(
-            -Math.max(0, deltaSeconds) / this.config.sensor.smoothingSeconds,
-        );
-        this.smoothedInput += (target - this.smoothedInput) * alpha;
-        return this.smoothedInput;
+        // Filtering belongs to the 60-Hz simulation, never the render/sensor cadence.
+        this.horizontalInput = target;
+        return target;
     }
 
     hasStaleSensor(now = Date.now()): boolean {
@@ -156,6 +201,7 @@ export class DoodleJumpInputController {
         if (this.disposed) return;
         this.disposed = true;
         this.enabled = false;
+        this.endPointerDrag();
         input.off(Input.EventType.KEY_DOWN, this.handleKeyDown, this);
         input.off(Input.EventType.KEY_UP, this.handleKeyUp, this);
         this.stopSensorSession();

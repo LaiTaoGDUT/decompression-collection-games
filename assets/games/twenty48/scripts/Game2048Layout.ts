@@ -1,4 +1,4 @@
-import type { PlatformLayoutInfo } from '../../../core/types/CommonTypes';
+import type { PlatformLayoutInfo, PlatformUiRect } from '../../../core/types/CommonTypes';
 
 export const GAME_2048_DESIGN_WIDTH = 750;
 export const GAME_2048_DESIGN_HEIGHT = 1334;
@@ -6,14 +6,26 @@ export const GAME_2048_BACKGROUND_ASPECT = GAME_2048_DESIGN_WIDTH / GAME_2048_DE
 // 顶部 HUD 使用全屏可见宽度；棋盘外框仍保留约 23 个设计坐标的横向间距。
 export const GAME_2048_BOARD_SIZE = 680;
 export const GAME_2048_BOARD_NODE_SIZE = GAME_2048_BOARD_SIZE + 24;
-// 标题 Logo 与两张分数卡片的整体视觉宽度对齐（220×2 + 两侧间距 32），保持素材约 3:1 比例。
+// 标题节点保留霓虹灯管的原始构图比例（约 3.43:1）；实际显示由 titleScale 缩放。
 export const GAME_2048_TITLE_WIDTH = 472;
-export const GAME_2048_TITLE_HEIGHT = 472 / 3;
+export const GAME_2048_TITLE_HEIGHT = 472 * 275 / 944;
 export const GAME_2048_SCORE_CARD_WIDTH = 220;
 export const GAME_2048_SCORE_CARD_HEIGHT = 104;
 export const GAME_2048_PAUSE_TOUCH_SIZE = 88;
-export const GAME_2048_PAUSE_ICON_SIZE = 64;
+/** 暂停图标（切角霓虹框，含外发光）的显示尺寸；触摸热区仍为 GAME_2048_PAUSE_TOUCH_SIZE。 */
+export const GAME_2048_PAUSE_ICON_SIZE = 80;
 export const GAME_2048_PAUSE_EDGE_INSET = 24;
+/** 顶栏标题高度；宽度按素材 3:1 比例。标题与暂停按钮同一行，位于胶囊下方。 */
+export const GAME_2048_TOP_BAR_TITLE_HEIGHT = 104;
+/** 分数卡与棋盘之间的距离；顶排棋子上方的 "+N" 和连击标记会飘进这段留白。 */
+const GAME_2048_HUD_BOARD_MIN_GAP = 80;
+/** 棋盘下方危险提示的高度与间距。 */
+const GAME_2048_HINT_HEIGHT = 42;
+const GAME_2048_HINT_GAP = 14;
+/** 底部操作栏：居中的撤销按钮，位于危险提示下方。 */
+export const GAME_2048_ACTION_BAR_ITEM_WIDTH = 300;
+export const GAME_2048_ACTION_BAR_ITEM_HEIGHT = 80;
+const GAME_2048_ACTION_BAR_GAP = 10;
 // 屏幕底部避让系统上滑退出手势的保护带（设计像素）：起点落在其中的滑动不再参与合成。
 export const GAME_2048_BOTTOM_SWIPE_EXCLUSION = 128;
 
@@ -22,7 +34,8 @@ export interface Game2048LayoutInsets {
     readonly safeBottom?: number;
     readonly safeLeft?: number;
     readonly safeRight?: number;
-    readonly topRightReservedBottom?: number;
+    /** 微信右上角胶囊按钮区域（设计坐标，自屏幕顶部量起）。 */
+    readonly topRightReserved?: PlatformUiRect;
 }
 
 export interface Game2048LayoutMetrics {
@@ -37,6 +50,8 @@ export interface Game2048LayoutMetrics {
     readonly fitScale: number;
     readonly titleX: number;
     readonly titleY: number;
+    /** 标题节点（按 GAME_2048_TITLE_WIDTH × HEIGHT 搭建）的整体缩放。 */
+    readonly titleScale: number;
     readonly pauseX: number;
     readonly pauseY: number;
     readonly scoreLeftX: number;
@@ -46,6 +61,9 @@ export interface Game2048LayoutMetrics {
     readonly boardY: number;
     readonly boardScale: number;
     readonly boardWorldSize: number;
+    /** 底部操作栏（撤销按钮）的中心。 */
+    readonly actionBarY: number;
+    readonly undoButtonX: number;
     readonly hintX: number;
     readonly hintY: number;
     readonly hintWidth: number;
@@ -104,7 +122,10 @@ function normalizeInsets(
 }
 
 /**
- * 2048 的 UI 使用宽度基准缩放；只有棋盘会继续受底部安全区约束而缩小。
+ * 2048 的布局自上而下分三段，所有尺寸按宽度基准（fitWidth）缩放：
+ * 1. 顶栏：位于微信胶囊下方，居中标题与右侧暂停按钮在同一行、竖直居中对齐；
+ * 2. 玩法组：分数卡 + 留白 + 棋盘 + 危险提示 + 底部操作栏，作为一个整体在顶栏下方到底部安全区之间竖直居中；
+ *    高度不足时只等比缩小棋盘，高屏把富余空间均分到玩法组上下。
  * 所有坐标均为绑定 UI Camera 后的 Canvas 坐标，原点在画布中心。
  */
 export function calculateGame2048Layout(
@@ -115,69 +136,59 @@ export function calculateGame2048Layout(
     const width = Math.max(1, canvasWidth);
     const height = Math.max(1, canvasHeight);
     const normalized = normalizeInsets(width, height, insets);
-    // 2048 的标题、分数和暂停操作区按屏幕可见宽度布局，不额外扣除左右系统安全区。
-    // 顶部胶囊和上下安全区仍由 safeTop/safeBottom 参与纵向计算。
+    // 横向按屏幕可见宽度布局，不额外扣除左右系统安全区；纵向避让顶部胶囊和上下安全区。
     const contentWidth = width;
     const contentX = 0;
     const fitScale = Math.max(0.001, contentWidth / GAME_2048_DESIGN_WIDTH);
+    const toY = (fromTop: number) => height / 2 - fromTop;
 
-    const titleHeight = GAME_2048_TITLE_HEIGHT * fitScale;
-    const pauseWidth = GAME_2048_PAUSE_TOUCH_SIZE * fitScale;
+    // 1. 顶栏：整行位于胶囊下方（无胶囊时贴着顶部安全区），标题居中、暂停按钮贴右边缘，两者竖直居中对齐。
+    const capsule = insets.topRightReserved;
     const pauseHeight = GAME_2048_PAUSE_TOUCH_SIZE * fitScale;
-    const reservedBottom = Math.max(0, insets.topRightReservedBottom ?? 0);
-    // 标题需要同时避让顶部安全区和微信胶囊，额外留出 12 设计像素缓冲。
-    const titleTopFromTop = Math.max(normalized.safeTop, reservedBottom) + 12 * fitScale;
-    const titleCenterFromTop = titleTopFromTop + titleHeight / 2;
-    const pauseDefaultCenterFromTop = normalized.safeTop + 116 * fitScale;
-    const pauseReservedCenterFromTop = reservedBottom + 10 * fitScale + pauseHeight / 2;
-    const pauseCenterFromTop = Math.max(pauseDefaultCenterFromTop, pauseReservedCenterFromTop);
-    const titleY = height / 2 - titleCenterFromTop;
-    const pauseY = height / 2 - pauseCenterFromTop;
-    // 暂停图标独立于屏幕右边缘，触摸热区右侧保留 24 个设计像素。
-    const pauseX = contentX + contentWidth / 2
-        - pauseWidth / 2
-        - GAME_2048_PAUSE_EDGE_INSET * fitScale;
+    const titleTargetHeight = GAME_2048_TOP_BAR_TITLE_HEIGHT * fitScale;
+    const rowHeight = Math.max(pauseHeight, titleTargetHeight);
+    const rowTop = Math.max(normalized.safeTop, capsule ? capsule.bottom : 0) + 10 * fitScale;
+    const barCenterFromTop = rowTop + rowHeight / 2;
+    const pauseX = contentX + contentWidth / 2 - GAME_2048_PAUSE_EDGE_INSET * fitScale - pauseHeight / 2;
+    // 标题宽度不超过到暂停按钮左缘的两倍，避免与按钮相碰。
+    const pauseLeftFromCenter = pauseX - pauseHeight / 2 - contentX;
+    const titleMaxWidth = Math.max(0, 2 * (pauseLeftFromCenter - 16 * fitScale));
+    const titleHeight = Math.min(titleTargetHeight, titleMaxWidth * GAME_2048_TITLE_HEIGHT / GAME_2048_TITLE_WIDTH);
+    const titleScale = Math.max(0.001, titleHeight / GAME_2048_TITLE_HEIGHT);
+    const barBottomFromTop = rowTop + rowHeight;
+    const pauseCenterFromTop = barCenterFromTop;
 
-    const topBlockBottomFromTop = Math.max(
-        titleCenterFromTop + titleHeight / 2,
-        pauseCenterFromTop + pauseHeight / 2,
-    );
+    // 2. 玩法组整体居中：分数卡与棋盘之间保持固定间距，不随屏幕高度拉开。
     const scoreHeight = GAME_2048_SCORE_CARD_HEIGHT * fitScale;
-    const scoreCenterFromTop = topBlockBottomFromTop + 24 * fitScale + scoreHeight / 2;
-    const scoreY = height / 2 - scoreCenterFromTop;
-    const scoreLeftX = contentX - 126 * fitScale;
-    const scoreRightX = contentX + 126 * fitScale;
-
-    const scoreBottomFromTop = scoreCenterFromTop + scoreHeight / 2;
-    const boardTopFromTop = scoreBottomFromTop + 72 * fitScale;
-    const hintHeight = 42 * fitScale;
-    const hintBelowBoard = 70 * fitScale;
-    const bottomPadding = 12 * fitScale;
-    const availableToBottom = height - normalized.safeBottom - bottomPadding - boardTopFromTop;
-    const boardOuterHalf = GAME_2048_BOARD_NODE_SIZE / 2;
-    const boardSurfaceHalf = GAME_2048_BOARD_SIZE / 2;
-    const hintHalf = hintHeight / 2;
-    const boardScaleForOuter = availableToBottom / GAME_2048_BOARD_NODE_SIZE;
-    const boardScaleForHint = (
-        availableToBottom - hintBelowBoard - hintHalf
-    ) / (boardOuterHalf + boardSurfaceHalf);
+    const hudGap = GAME_2048_HUD_BOARD_MIN_GAP * fitScale;
+    const hintHeight = GAME_2048_HINT_HEIGHT * fitScale;
+    const hintBlock = (GAME_2048_HINT_GAP + GAME_2048_HINT_HEIGHT) * fitScale;
+    const actionBarHeight = GAME_2048_ACTION_BAR_ITEM_HEIGHT * fitScale;
+    const actionBarBlock = GAME_2048_ACTION_BAR_GAP * fitScale + actionBarHeight;
+    const regionTop = barBottomFromTop + 24 * fitScale;
+    const regionBottom = height - normalized.safeBottom - 12 * fitScale;
+    const regionHeight = Math.max(1, regionBottom - regionTop);
+    const fixedHeight = scoreHeight + hudGap + hintBlock + actionBarBlock;
     const boardScale = Math.max(
         0.01,
-        Math.min(fitScale, boardScaleForOuter, boardScaleForHint),
+        Math.min(fitScale, (regionHeight - fixedHeight) / GAME_2048_BOARD_NODE_SIZE),
     );
-    const boardWorldSize = GAME_2048_BOARD_SIZE * boardScale;
-    const boardY = height / 2 - boardTopFromTop - boardOuterHalf * boardScale;
-    const hintX = contentX;
-    const hintY = boardY - boardSurfaceHalf * boardScale - hintBelowBoard;
-    // 底部手势保护带从屏幕下沿向上计算，且不允许越过棋盘下沿：
-    // 矮屏上棋盘会被压缩，保护带必须同步收窄，保证最后一排棋子仍可正常滑动。
-    const boardBottomGap = Math.max(
-        0,
-        height - (boardTopFromTop + GAME_2048_BOARD_NODE_SIZE * boardScale),
-    );
+    const boardOuter = GAME_2048_BOARD_NODE_SIZE * boardScale;
+    const groupTop = regionTop + Math.max(0, (regionHeight - (fixedHeight + boardOuter)) / 2);
+    const scoreCenterFromTop = groupTop + scoreHeight / 2;
+    const scoreBottomFromTop = groupTop + scoreHeight;
+    const boardTopFromTop = scoreBottomFromTop + hudGap;
+    const boardCenterFromTop = boardTopFromTop + boardOuter / 2;
+    const boardBottomFromTop = boardTopFromTop + boardOuter;
+    const boardSurfaceBottomFromTop = boardCenterFromTop + (GAME_2048_BOARD_SIZE / 2) * boardScale;
+    const hintCenterFromTop = boardSurfaceBottomFromTop + GAME_2048_HINT_GAP * fitScale + hintHeight / 2;
+    const actionBarCenterFromTop = hintCenterFromTop + hintHeight / 2
+        + GAME_2048_ACTION_BAR_GAP * fitScale + actionBarHeight / 2;
+
+    // 底部手势保护带从屏幕下沿向上计算，且不允许越过棋盘下沿，保证最后一排棋子仍可正常滑动。
     const bottomSwipeExclusion = Math.min(
         GAME_2048_BOTTOM_SWIPE_EXCLUSION * fitScale,
-        boardBottomGap,
+        Math.max(0, height - boardBottomFromTop),
     );
 
     const background = calculateGame2048BackgroundCover(width, height);
@@ -189,18 +200,21 @@ export function calculateGame2048Layout(
         contentWidth,
         fitScale,
         titleX: contentX,
-        titleY,
+        titleY: toY(barCenterFromTop),
+        titleScale,
         pauseX,
-        pauseY,
-        scoreLeftX,
-        scoreRightX,
-        scoreY,
+        pauseY: toY(pauseCenterFromTop),
+        scoreLeftX: contentX - 126 * fitScale,
+        scoreRightX: contentX + 126 * fitScale,
+        scoreY: toY(scoreCenterFromTop),
         boardX: contentX,
-        boardY,
+        boardY: toY(boardCenterFromTop),
         boardScale,
-        boardWorldSize,
-        hintX,
-        hintY,
+        boardWorldSize: GAME_2048_BOARD_SIZE * boardScale,
+        actionBarY: toY(actionBarCenterFromTop),
+        undoButtonX: contentX,
+        hintX: contentX,
+        hintY: toY(hintCenterFromTop),
         hintWidth: Math.max(1, contentWidth - 64 * fitScale),
         hintHeight,
         backgroundWidth: background.width,
@@ -221,6 +235,6 @@ export function calculateGame2048LayoutFromPlatform(
         safeBottom: Math.max(systemInsets.safeBottom ?? 0, canvasHeight - (safeArea?.bottom ?? canvasHeight)),
         safeLeft: Math.max(systemInsets.safeLeft ?? 0, safeArea?.left ?? 0),
         safeRight: Math.max(systemInsets.safeRight ?? 0, canvasWidth - (safeArea?.right ?? canvasWidth)),
-        topRightReservedBottom: platformLayout?.topRightReservedArea?.bottom,
+        topRightReserved: platformLayout?.topRightReservedArea,
     });
 }

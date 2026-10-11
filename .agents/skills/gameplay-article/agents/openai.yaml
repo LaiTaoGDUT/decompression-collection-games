@@ -1,0 +1,4 @@
+interface:
+  display_name: "游戏玩法介绍"
+  short_description: "为指定小游戏生成玩法介绍、统一格式封面和正文配图，可直接发布到游戏圈"
+  default_prompt: "使用 $gameplay-article 为猫咪数独生成一篇玩法介绍，包含统一封面、正文配图和可复制的标题正文。"

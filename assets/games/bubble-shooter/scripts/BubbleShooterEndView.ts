@@ -96,7 +96,7 @@ export class BubbleShooterEndView {
         this.secondary = this.art.button('Secondary', false);
         this.secondaryText = this.label('Text', '', this.secondary, 0, 2, 430, 56, 30, this.art.ink);
         this.tertiary = this.art.button('Exit', false);
-        this.label('Text', '返回', this.tertiary, 0, 2, 430, 56, 30, this.art.ink);
+        this.label('Text', '返回主页', this.tertiary, 0, 2, 430, 56, 30, this.art.ink);
         this.tertiary.active = false;
         this.roundRestart = this.art.button('RestartRound', false);
         this.label('Text', "重玩当前轮", this.roundRestart, 0, 2, 430, 56, 30, this.art.ink);
@@ -143,7 +143,7 @@ export class BubbleShooterEndView {
         this.primaryText.node.parent!.getComponent(UITransform)!.setContentSize(totalWidth, 62);
         this.video.setPosition(-totalWidth / 2 + iconWidth / 2, 0);
         this.primaryText.node.setPosition((iconWidth + gap) / 2, 0);
-        this.secondaryText.string = pause ? '从头开始' : result ? '返回' : '结束本局';
+        this.secondaryText.string = pause ? '从头开始' : result ? '返回主页' : '结束本局';
         this.showNote(message || (result || pause ? '' : '本局可复活 1 次'));
         this.syncEnabled();
     }

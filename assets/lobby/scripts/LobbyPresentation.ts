@@ -7,20 +7,10 @@ import {
     SpriteFrame,
     UITransform,
     view,
-    Widget,
 } from 'cc';
 import { calculateLobbyBackgroundCover } from './LobbyVisualLayout';
 import type { AssetService } from '../../services/asset/AssetService';
 import { LOBBY_BACKGROUND_BUNDLE, LOBBY_BACKGROUND_PATH } from '../../shared/ui/LobbyArtwork';
-import {
-    calculateLobbyBrandMetrics,
-    LOBBY_BRAND_HEIGHT,
-    LOBBY_BRAND_WIDTH,
-    LOBBY_DESIGN_HEIGHT,
-    LOBBY_DESIGN_WIDTH,
-} from '../../shared/ui/LobbyBrandLayout';
-
-const BRAND_EMBLEM_ASSET_PATH = 'visual/branding/lobby-cn-title-logo-v3/texture';
 const BACKGROUND_FALLBACK = new Color(249, 210, 170, 255);
 
 /** Builds a light, playful mini-game lobby while keeping the L1 palette. */
@@ -29,9 +19,7 @@ export class LobbyPresentation {
     private fallbackNode: Node | null = null;
     private artworkNode: Node | null = null;
     private atmosphereNode: Node | null = null;
-    private brandEmblemNode: Node | null = null;
     private ownedBackgroundFrame?: SpriteFrame;
-    private ownedBrandFrame?: SpriteFrame;
     private assets?: AssetService;
     private generation = 0;
     private mounted = false;
@@ -54,11 +42,9 @@ export class LobbyPresentation {
         this.createFallback(backgroundRoot);
         this.createArtwork(backgroundRoot);
         this.createAtmosphere(backgroundRoot);
-        this.createBrandArea(contentRoot);
         this.layoutBackground();
         view.on('canvas-resize', this.handleCanvasResize, this);
         this.loadBackgroundArtwork();
-        this.loadBrandArtwork();
     }
 
     unmount(): void {
@@ -74,21 +60,12 @@ export class LobbyPresentation {
         if (sprite) {
             sprite.spriteFrame = null;
         }
-        const brandSprite = this.brandEmblemNode?.isValid
-            ? this.brandEmblemNode.getComponent(Sprite)
-            : null;
-        if (brandSprite) {
-            brandSprite.spriteFrame = null;
-        }
         if (this.ownedBackgroundFrame) this.assets?.releaseRuntimeAsset(this.ownedBackgroundFrame);
         this.ownedBackgroundFrame = undefined;
-        if (this.ownedBrandFrame) this.assets?.releaseRuntimeAsset(this.ownedBrandFrame);
-        this.ownedBrandFrame = undefined;
         this.backgroundRoot = null;
         this.fallbackNode = null;
         this.artworkNode = null;
         this.atmosphereNode = null;
-        this.brandEmblemNode = null;
         this.assets = undefined;
     }
 
@@ -132,60 +109,6 @@ export class LobbyPresentation {
         this.atmosphereNode = node;
     }
 
-    private createBrandArea(contentRoot: Node): void {
-        const existing = contentRoot.getChildByName('BrandArea');
-        if (existing) {
-            this.brandEmblemNode = existing.getChildByName('BrandEmblem');
-            this.layoutBrand(LOBBY_DESIGN_WIDTH, LOBBY_DESIGN_HEIGHT);
-            return;
-        }
-        const brand = new Node('BrandArea');
-        brand.layer = contentRoot.layer;
-        contentRoot.addChild(brand);
-        brand.setSiblingIndex(0);
-        const transform = brand.addComponent(UITransform);
-        transform.setContentSize(670, 330);
-        transform.setAnchorPoint(0.5, 1);
-        const widget = brand.addComponent(Widget);
-        widget.enabled = false;
-
-        const emblem = new Node('BrandEmblem');
-        emblem.layer = brand.layer;
-        brand.addChild(emblem);
-        emblem.setPosition(0, 0);
-        emblem.addComponent(UITransform).setContentSize(
-            LOBBY_BRAND_WIDTH,
-            LOBBY_BRAND_HEIGHT,
-        );
-        const emblemSprite = emblem.addComponent(Sprite);
-        emblemSprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        this.brandEmblemNode = emblem;
-        this.layoutBrand(LOBBY_DESIGN_WIDTH, LOBBY_DESIGN_HEIGHT);
-    }
-
-    /** 将品牌区固定在 ScrollView content 顶部，并与启动页共享 logo 几何。 */
-    layoutBrand(contentWidth: number, contentHeight: number): void {
-        const emblem = this.brandEmblemNode;
-        const brand = emblem?.parent;
-        const brandTransform = brand?.getComponent(UITransform);
-        const emblemTransform = emblem?.getComponent(UITransform);
-        if (!brand || !brandTransform || !emblem || !emblemTransform) {
-            return;
-        }
-
-        const metrics = calculateLobbyBrandMetrics(contentWidth, contentHeight);
-        const widget = brand.getComponent(Widget);
-        if (widget) {
-            widget.enabled = false;
-        }
-        brandTransform.setAnchorPoint(0.5, 1);
-        brandTransform.setContentSize(Math.max(1, contentWidth), metrics.areaHeight);
-        brand.setPosition(0, 0);
-        emblemTransform.setAnchorPoint(0.5, 0.5);
-        emblemTransform.setContentSize(metrics.width, metrics.height);
-        emblem.setPosition(0, -metrics.centerFromTop);
-    }
-
     private loadBackgroundArtwork(): void {
         const assets = this.assets;
         if (!assets) return;
@@ -205,27 +128,6 @@ export class LobbyPresentation {
             this.ownedBackgroundFrame = frame;
             sprite.spriteFrame = frame;
             this.layoutBackground();
-        }).catch(() => {});
-    }
-
-    private loadBrandArtwork(): void {
-        const assets = this.assets;
-        if (!assets) return;
-        const generation = this.generation;
-        void assets.loadSpriteFrame('lobby-covers', BRAND_EMBLEM_ASSET_PATH, 'texture').then(frame => {
-            const node = this.brandEmblemNode;
-            if (!this.mounted || generation !== this.generation || !node?.isValid) {
-                assets.releaseRuntimeAsset(frame);
-                return;
-            }
-            const sprite = node.getComponent(Sprite);
-            if (!sprite) {
-                assets.releaseRuntimeAsset(frame);
-                return;
-            }
-            if (this.ownedBrandFrame) assets.releaseRuntimeAsset(this.ownedBrandFrame);
-            this.ownedBrandFrame = frame;
-            sprite.spriteFrame = frame;
         }).catch(() => {});
     }
 
