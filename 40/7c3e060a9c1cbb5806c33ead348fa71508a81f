@@ -1,0 +1,32 @@
+assets/app/App.ts
+  s_6296ccde468fe2::t_2ab42fd227e3fa 473
+assets/games/cyblockbees/scripts/CyBlockBeesBoard.ts
+  s_6296ccde468fe2::t_d6a039b9f2412f 44-47,76,107,592-594,596,619-620,622-625,627-629,631-634,1189,1215-1216,1219,1226,1236,1253,1257-1261,1310-1311,1314-1332,1334-1339,1343-1347,1350,1354,1413-1434,1550
+  s_6296ccde468fe2::t_7125e24bcf50c6 621,626,630,635-638,1340-1342,1348-1349
+assets/shared/components/LoadingView.ts
+  s_6296ccde468fe2::t_2ab42fd227e3fa 33,53-56,298-300,365,426-430,480-483,655,1090-1091,1641-1664
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "407c3e060a9c1cbb5806c33ead348fa71508a81f",
+  "prompts": {},
+  "logical_commit_id": "407c3e060a9c1cbb5806c33ead348fa71508a81f",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_6296ccde468fe2": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a12b5a-b591-7444-bd5a-040d54714872",
+        "model": "deepseek-v4.1-flash"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 15419,
+      "total_deletions": 18127
+    }
+  }
+}
