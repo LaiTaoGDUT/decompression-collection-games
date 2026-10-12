@@ -470,6 +470,7 @@ export class App extends Component {
         const platform = services.get(PLATFORM_SERVICE);
         const loadingView = find('Canvas/LoadingLayer', this.node)
             ?.getComponent(LoadingView);
+        loadingView?.setAssetService(services.get(ASSET_SERVICE));
         loadingView?.setPlatformLayout(platform.getLayoutInfo());
         const errorView = find('Canvas/ErrorLayer', this.node)
             ?.getComponent(ErrorView);

@@ -77,7 +77,7 @@
     },
     "totalTime": 500,
     "background": {
-      "image": "project://settings/launch-background-wechat.jpg",
+      "image": "project://settings/插屏背景2.jpg",
       "type": "custom"
     },
     "displayRatio": 0.6

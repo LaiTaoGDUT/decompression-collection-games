@@ -30,6 +30,7 @@ import type {
     LoadingPresenter,
 } from '../../runtime/GameRuntime';
 import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
+import type { AssetService } from '../../services/asset/AssetService';
 import { LOBBY_BACKGROUND_PATH } from '../ui/LobbyArtwork';
 import {
     calculateLobbyBrandMetrics,
@@ -49,7 +50,10 @@ const COLORS = {
 };
 
 const STARTUP_TITLE_PATH = 'loading/loading-lobby-title-v1/texture';
-const LOADING_PANEL_PATH = 'loading/warm/loading-panel/texture';
+const LOADING_PANEL_BUNDLE = 'lobby-covers';
+const LOADING_PANEL_PATH = 'visual/ui/loading-panel/texture';
+/** 面板纹理减半后，以双倍节点缩放保持九宫格边框原有的显示尺寸。 */
+const LOADING_PANEL_ART_SCALE = 2;
 const LOADING_TRACK_PATH = 'loading/warm/loading-progress-track/texture';
 const LOADING_FILL_PATH = 'loading/warm/loading-progress-fill/texture';
 const LEGACY_LOADING_RESERVED_GAP = 12;
@@ -291,6 +295,9 @@ export class LoadingView extends Component implements LoadingPresenter {
     private ownedStartupFrames: SpriteFrame[] = [];
     private readonly ownedWarmFrames: SpriteFrame[] = [];
     private warmLoadToken = 0;
+    private assets?: AssetService;
+    private ownedPanelFrame?: SpriteFrame;
+    private panelArtworkLoad?: Promise<void>;
     private variant: 'game' | 'lobby' = 'game';
     private gameDescription = '';
     private restartMode = false;
@@ -355,6 +362,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         if (this.variant === 'lobby') {
             this.loadStartupArtwork();
         } else {
+            this.loadPanelArtwork();
             this.loadCover(model.cover ?? undefined);
             this.popDialog();
         }
@@ -415,6 +423,11 @@ export class LoadingView extends Component implements LoadingPresenter {
         }
     }
 
+    /** 面板皮肤随大厅远程资源准备，由公共服务统一持有和释放。 */
+    setAssetService(assets: AssetService): void {
+        this.assets = assets;
+    }
+
     updateProgress(message: string, progress: number): void {
         if (!this.node.active || this.restartMode || this.lobbyTransitionMode) return;
         this.setMessage(message);
@@ -464,6 +477,10 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.hide(false);
         this.releaseStartupFrames();
         this.warmLoadToken += 1;
+        if (this.loadingPanelSprite) this.loadingPanelSprite.spriteFrame = null;
+        if (this.ownedPanelFrame) this.assets?.releaseRuntimeAsset(this.ownedPanelFrame);
+        this.ownedPanelFrame = undefined;
+        this.assets = undefined;
         this.ownedWarmFrames.forEach((frame) => frame.destroy());
         this.ownedWarmFrames.length = 0;
     }
@@ -635,6 +652,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.loadingPanelSprite = this.ensureSkinSprite(loadingPanel, 'LoadingPanelSkin');
         this.loadingPanelSprite.sizeMode = Sprite.SizeMode.CUSTOM;
         this.loadingPanelSprite.type = Sprite.Type.SLICED;
+        this.loadingPanelSprite.node.setScale(LOADING_PANEL_ART_SCALE, LOADING_PANEL_ART_SCALE, 1);
         const coverFrame = ensureGraphics('LoadingCoverFrame');
         let clip = coverFrame.getChildByName('CoverClip');
         if (!clip) {
@@ -1069,8 +1087,8 @@ export class LoadingView extends Component implements LoadingPresenter {
         );
         this.loadingPanelSprite?.node.setPosition(0, 0);
         this.loadingPanelSprite?.node.getComponent(UITransform)?.setContentSize(
-            metrics.panelWidth,
-            metrics.panelHeight,
+            metrics.panelWidth / LOADING_PANEL_ART_SCALE,
+            metrics.panelHeight / LOADING_PANEL_ART_SCALE,
         );
         if (this.loadingPanelSprite?.spriteFrame) {
             this.loadingPanelSprite.enabled = true;
@@ -1618,9 +1636,32 @@ export class LoadingView extends Component implements LoadingPresenter {
                 if (this.node.active && !this.restartMode) this.layoutAndDraw();
             });
         };
-        load(LOADING_PANEL_PATH, this.loadingPanelSprite, [30, 30, 68, 68]);
         load(LOADING_TRACK_PATH, this.progressTrackSprite, [18, 18, 0, 0]);
         load(LOADING_FILL_PATH, this.progressFillSprite, [16, 16, 0, 0]);
+    }
+
+    private loadPanelArtwork(): void {
+        const assets = this.assets;
+        const sprite = this.loadingPanelSprite;
+        if (!assets || !sprite || sprite.spriteFrame || this.panelArtworkLoad) return;
+        const token = this.warmLoadToken;
+        const load = assets.loadSpriteFrame(LOADING_PANEL_BUNDLE, LOADING_PANEL_PATH, 'texture')
+            .then(frame => {
+                if (token !== this.warmLoadToken || !this.node.isValid || this.assets !== assets) {
+                    assets.releaseRuntimeAsset(frame);
+                    return;
+                }
+                [frame.insetLeft, frame.insetRight, frame.insetTop, frame.insetBottom] = [15, 15, 34, 34];
+                this.ownedPanelFrame = frame;
+                sprite.spriteFrame = frame;
+                if (this.node.active && !this.restartMode) this.layoutAndDraw();
+            })
+            // 皮肤失败时继续使用 Graphics 面板，下次展示允许重试。
+            .catch(() => {});
+        this.panelArtworkLoad = load;
+        void load.then(() => {
+            if (this.panelArtworkLoad === load) this.panelArtworkLoad = undefined;
+        });
     }
 
     private ensureSkinSprite(parent: Node, name: string): Sprite {

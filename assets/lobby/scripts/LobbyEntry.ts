@@ -161,7 +161,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         const feedback = services.get(FEEDBACK_SERVICE);
         this.feedback = feedback;
         const overlayParent = this.node.parent?.parent ?? this.node;
-        this.settingsPanel.mount(this.node, this.header.slot('Settings')!, {
+        this.settingsPanel.mount(overlayParent, this.header.slot('Settings')!, {
             audio,
             feedback,
             storage,

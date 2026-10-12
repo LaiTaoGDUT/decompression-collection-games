@@ -17,7 +17,6 @@ import {
     Vec3,
     VerticalTextAlignment,
     view,
-    Widget,
 } from 'cc';
 import type { Platform } from '../../platform/Platform';
 import type { AudioService } from '../../services/audio/AudioService';
@@ -29,6 +28,7 @@ import {
     LOBBY_HEADER_TOOLBAR_WIDTH,
 } from '../../shared/ui/LobbyBrandLayout';
 import { drawLobbyModalOverlay, LOBBY_MODAL_MOTION } from './LobbyModalMotion';
+import { calculateVerticalSafeBounds } from '../../shared/ui/PlatformSafeLayout';
 
 interface LobbySettingsServices {
     readonly audio: AudioService;
@@ -87,10 +87,11 @@ export class LobbySettingsPanel {
     private loadToken = 0;
     private transitionToken = 0;
     private readonly overlay = { opacity: 0 };
+    private panelScale = 1;
     private opened = false;
 
     /** entrySlot 是大厅顶部栏左列的槽位，入口按设计尺寸挂在槽位中心。 */
-    mount(contentRoot: Node, entrySlot: Node, services: LobbySettingsServices): void {
+    mount(overlayParent: Node, entrySlot: Node, services: LobbySettingsServices): void {
         if (this.root?.isValid) {
             this.services = services;
             this.refresh();
@@ -99,15 +100,15 @@ export class LobbySettingsPanel {
 
         this.services = services;
         this.createSettingsEntry(entrySlot);
-        this.root = this.createPanel(contentRoot);
+        this.root = this.createPanel(overlayParent);
         this.root.active = false;
-        view.on('canvas-resize', this.drawOverlay, this);
+        view.on('canvas-resize', this.layout, this);
     }
 
     unmount(): void {
         ++this.transitionToken;
         this.opened = false;
-        view.off('canvas-resize', this.drawOverlay, this);
+        view.off('canvas-resize', this.layout, this);
         Tween.stopAllByTarget(this.overlay);
         if (this.panel?.isValid) {
             Tween.stopAllByTarget(this.panel);
@@ -153,21 +154,12 @@ export class LobbySettingsPanel {
         entry.on(Button.EventType.CLICK, this.open, this);
     }
 
-    private createPanel(contentRoot: Node): Node {
+    private createPanel(overlayParent: Node): Node {
         const root = new Node('SettingsModal');
-        root.layer = contentRoot.layer;
-        contentRoot.addChild(root);
-        root.setSiblingIndex(contentRoot.children.length - 1);
+        root.layer = overlayParent.layer;
+        overlayParent.addChild(root);
+        root.setSiblingIndex(overlayParent.children.length - 1);
         root.addComponent(UITransform).setContentSize(750, 1334);
-        const widget = root.addComponent(Widget);
-        widget.isAlignTop = true;
-        widget.isAlignBottom = true;
-        widget.isAlignLeft = true;
-        widget.isAlignRight = true;
-        widget.top = 0;
-        widget.bottom = 0;
-        widget.left = 0;
-        widget.right = 0;
 
         // Graphics only draws the dimmed backdrop; it does not participate in
         // Cocos' input blocking. Keep the modal's full-screen hit area active
@@ -329,10 +321,10 @@ export class LobbySettingsPanel {
         Tween.stopAllByTarget(panel);
         Tween.stopAllByTarget(this.overlay);
         this.overlay.opacity = 0;
-        this.drawOverlay();
+        this.layout();
         panel.setScale(
-            LOBBY_MODAL_MOTION.collapsedScaleX,
-            LOBBY_MODAL_MOTION.collapsedScaleY,
+            LOBBY_MODAL_MOTION.collapsedScaleX * this.panelScale,
+            LOBBY_MODAL_MOTION.collapsedScaleY * this.panelScale,
             1,
         );
         tween(this.overlay)
@@ -344,12 +336,12 @@ export class LobbySettingsPanel {
         tween(panel)
             .to(
                 LOBBY_MODAL_MOTION.openDuration,
-                { scale: new Vec3(1, 1, 1) },
+                { scale: new Vec3(this.panelScale, this.panelScale, 1) },
                 { easing: LOBBY_MODAL_MOTION.openEasing },
             )
             .call(() => {
                 if (transitionToken === this.transitionToken && panel.isValid) {
-                    panel.setScale(1, 1, 1);
+                    panel.setScale(this.panelScale, this.panelScale, 1);
                 }
             })
             .start();
@@ -366,15 +358,36 @@ export class LobbySettingsPanel {
         this.services?.feedback.play('uiButton');
         Tween.stopAllByTarget(panel);
         Tween.stopAllByTarget(this.overlay);
-        panel.setScale(1, 1, 1);
+        panel.setScale(this.panelScale, this.panelScale, 1);
         root.active = false;
     };
 
     private readonly drawOverlay = (): void => {
         const root = this.root;
         if (!root?.isValid) return;
-        root.getComponent(Widget)!.updateAlignment();
         drawLobbyModalOverlay(root, COLOR.overlay, this.overlay.opacity);
+    };
+
+    private readonly layout = (): void => {
+        const root = this.root;
+        const panel = this.panel;
+        const services = this.services;
+        if (!root?.isValid || !panel?.isValid || !services) return;
+        // 遮罩和触摸拦截覆盖整个屏幕；只有面板内容避让上下安全区。
+        const size = view.getVisibleSize();
+        const width = size.width || 750;
+        const height = size.height || 1334;
+        root.getComponent(UITransform)!.setContentSize(width, height);
+        this.drawOverlay();
+        const safe = calculateVerticalSafeBounds(height, services.platform.getLayoutInfo(), 12);
+        this.panelScale = Math.max(0, Math.min(
+            1,
+            width / 750,
+            (safe.topY - safe.bottomY - 24) / SETTINGS_PANEL_HEIGHT,
+        ));
+        Tween.stopAllByTarget(panel);
+        panel.setPosition(0, (safe.topY + safe.bottomY) / 2);
+        panel.setScale(this.panelScale, this.panelScale, 1);
     };
 
     private toggle(key: SettingKey): void {

@@ -41,6 +41,10 @@ interface ActorPaths {
 interface DrawingGuide {
     root: Node; stroke: Graphics; finger: Node; opacity: UIOpacity; points: Vec2[]; time: number;
 }
+interface BoardBroadPhase {
+    batchTransforms(action: () => void): void;
+    restore(): void;
+}
 export interface CyBlockBeesBoardCallbacks {
     onDogStung(element: CyBlockBeesElement, cause: string): void;
     onDogHurt?(): void;
@@ -69,7 +73,7 @@ export class CyBlockBeesBoard {
     private readonly originalMatrix = new Map<number, number>();
     private readonly physicsBefore: { enabled: boolean; auto: boolean; gravity: Vec2;
         fixedTimeStep: number; velocityIterations: number; positionIterations: number };
-    private readonly restoreBroadPhase: () => void;
+    private readonly broadPhase: BoardBroadPhase;
     private draft: Graphics;
     private ropes: Graphics;
     private spriteOf: (slug: string) => SpriteFrame | undefined = () => undefined;
@@ -100,7 +104,7 @@ export class CyBlockBeesBoard {
         const system = PhysicsSystem2D.instance;
         this.physicsBefore = { enabled: system.enable, auto: system.autoSimulation, gravity: system.gravity.clone(),
             fixedTimeStep: system.fixedTimeStep, velocityIterations: system.velocityIterations, positionIterations: system.positionIterations };
-        this.restoreBroadPhase = configureBox2DBroadPhase(system);
+        this.broadPhase = configureBox2DBroadPhase(system);
         system.enable = false;
         system.autoSimulation = false;
         system.fixedTimeStep = CYBLOCKBEES_RULES.physicsTimeStep;
@@ -585,8 +589,11 @@ export class CyBlockBeesBoard {
      * 所有 fixture，并对相同刚体反复 SetTransform / FindNewContacts。
      */
     syncSceneToPhysics(): void {
-        this.byNode.forEach(a => {
+        // SetTransform 会立即 FindNewContacts。先提交全部刚体，再查询一次，
+        // 接触仍在本次 Step 前创建，不能让每只转向蜜蜂重复查询整个世界。
+        this.broadPhase.batchTransforms(() => this.byNode.forEach(a => {
             if (!a.node.activeInHierarchy || !a.body.enabledInHierarchy) return;
+            if (!a.node.hasChangedFlags) return;
             const adapter = a.body.impl as unknown as {
                 impl: { GetPosition(): { x: number; y: number }; GetAngle(): number };
                 nodeTransformChanged(flags: number): void;
@@ -609,6 +616,26 @@ export class CyBlockBeesBoard {
                 if (a.physicsScale) a.physicsScale.set(scale); else a.physicsScale = scale.clone();
                 this.normalizeMass(a);
             }
+        }));
+    }
+    /** 保留每个子步的玩法坐标，只回写真正变化的位置和朝向。
+     * 引擎默认还会对静态地形和固定朝向蜂重复写旋转，产生无效的节点变换事件。
+     */
+    syncPhysicsToScene(): void {
+        this.byNode.forEach(a => {
+            if (!a.node.activeInHierarchy || !a.body.enabledInHierarchy) return;
+            const native = a.body.impl?.impl as { GetPosition(): { x: number; y: number }; GetAngle(): number } | undefined;
+            if (!native) return;
+            const p = native.GetPosition(), x = p.x * PTM, y = p.y * PTM, position = a.node.worldPosition;
+            const moved = Math.abs(position.x - x) > 1e-7 || Math.abs(position.y - y) > 1e-7 || position.z !== 0;
+            const angle = native.GetAngle(), s = Math.sin(angle / 2), c = Math.cos(angle / 2), rotation = a.node.worldRotation;
+            // q 与 -q 表示同一旋转；避免跨过一整圈时重复写入等价四元数。
+            const delta = Math.min((rotation.z - s) ** 2 + (rotation.w - c) ** 2,
+                (rotation.z + s) ** 2 + (rotation.w + c) ** 2);
+            const rotated = rotation.x ** 2 + rotation.y ** 2 + delta > 1e-16;
+            // 先读取两项，再写入。写位置后立即读 worldRotation 会额外刷新一次世界矩阵。
+            if (moved) a.node.setWorldPosition(x, y, 0);
+            if (rotated) a.node.setWorldRotationFromEuler(0, 0, angle * DEG);
         });
     }
     /** 每个游戏帧控制一次蜜蜂，朝向在随后的物理输入同步中提交。 */
@@ -1159,7 +1186,7 @@ export class CyBlockBeesBoard {
         this.draftPoints = []; this.draftTail = undefined; this.draftDirty = false;
         this.draftSpine.clear();
         this.root.destroy();
-        this.restoreBroadPhase();
+        this.broadPhase.restore();
         const system = PhysicsSystem2D.instance;
         this.originalMatrix.forEach((mask, group) => { system.collisionMatrix[group] = mask; }); this.originalMatrix.clear();
         system.gravity = this.physicsBefore.gravity; system.autoSimulation = this.physicsBefore.auto; system.enable = this.physicsBefore.enabled; physicsAccumulator = 0;
@@ -1185,16 +1212,18 @@ function boundsOverlap(a: PathBounds, b: PathBounds): boolean {
  * 将 Box2D 已有的同刚体排除提前到候选收集阶段；有效对仍按原代理顺序去重提交。
  * 本后端 AABB.Contains 的比较方向反了，使正常运动反复重插代理，大幅运动又可能
  * 漏掉边界更新。MoveProxy 使用正确的包含关系，保留原来的 .1 m 余量和两倍位移预测。
+ * 树的刚体/形状摘要随插入、移除和平衡增量维护，不能在每只蜂 SetTransform 后
+ * 重新遍历整棵树。多个输入变换合并查询，但必须在 Step 前完成接触创建。
  * 这些适配仅在本游戏的 Session 内生效，退出关卡后恢复原实现。
  */
-function configureBox2DBroadPhase(system: PhysicsSystem2D): () => void {
+function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
     interface NativeFixture { GetBody(): object; GetType(): number; m_proxies: { treeNode: Proxy | null }[]; }
     interface ProxyData { fixture: NativeFixture; childIndex: number; }
     interface Bounds {
         lowerBound: { x: number; y: number }; upperBound: { x: number; y: number };
         TestOverlap(other: Bounds): boolean;
     }
-    interface Proxy { m_id: number; aabb: Bounds; userData: ProxyData; child1: Proxy | null; child2: Proxy | null; }
+    interface Proxy { m_id: number; aabb: Bounds; userData: ProxyData; parent: Proxy | null; child1: Proxy | null; child2: Proxy | null; }
     interface Pair { proxyA: Proxy; proxyB: Proxy; }
     interface BroadPhase {
         m_moveCount: number;
@@ -1204,7 +1233,7 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): () => void {
         m_pairBuffer: Pair[];
         m_tree: { m_root: Proxy | null; m_insertionCount: number;
             MoveProxy(proxy: Proxy, bounds: Bounds, displacement: { x: number; y: number }): boolean;
-            RemoveLeaf(proxy: Proxy): void; InsertLeaf(proxy: Proxy): void };
+            RemoveLeaf(proxy: Proxy): void; InsertLeaf(proxy: Proxy): void; Balance(proxy: Proxy): Proxy };
         UnBufferMove(proxy: Proxy): void;
         UpdatePairs(callback: (a: ProxyData, b: ProxyData) => void): void;
     }
@@ -1221,9 +1250,15 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): () => void {
     const contactTypes = manager.m_contactFactory.m_registers;
     const compatibleTypes = contactTypes.map(row => row.reduce((mask, entry, type) => entry.createFcn ? mask | (1 << type) : mask, 0));
     const tree = broad.m_tree, originalMovement = tree.MoveProxy;
+    const originalInsert = tree.InsertLeaf, originalRemove = tree.RemoveLeaf, originalBalance = tree.Balance;
     const originalRemoval = broad.UnBufferMove, originalPairs = broad.UpdatePairs;
     const originalFind = manager.FindNewContacts, originalAdd = manager.AddPair;
     const originalDestroy = manager.Destroy;
+    let batching = false, pendingFind = false;
+    manager.FindNewContacts = function (): void {
+        if (batching) { pendingFind = true; return; }
+        originalFind.call(this);
+    };
     tree.MoveProxy = function (proxy: Proxy, bounds: Bounds, displacement: { x: number; y: number }): boolean {
         const fat = proxy.aabb;
         if (fat.lowerBound.x <= bounds.lowerBound.x && fat.lowerBound.y <= bounds.lowerBound.y
@@ -1272,28 +1307,51 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): () => void {
     broad.UnBufferMove = function (proxy: Proxy): void {
         for (let i = 0; i < this.m_moveCount; i++) if (this.m_moveBuffer[i] === proxy) this.m_moveBuffer[i] = null;
     };
-    let owners = new WeakMap<Proxy, object | null>(), shapeTypes = new WeakMap<Proxy, number>(), insertionCount = -1, proxyCount = -1;
+    let owners = new WeakMap<Proxy, object | null>(), shapeTypes = new WeakMap<Proxy, number>();
+    let dirtySummaries = new WeakSet<Proxy>();
     interface BodyQueries { proxies: Proxy[]; compatibleTypes: number; lowerX: number; lowerY: number; upperX: number; upperY: number; }
     const stack: Proxy[] = [], matching: Proxy[] = [], queries = new Set<Proxy>(), groups = new Map<object, BodyQueries>();
-    const summarize = (node: Proxy): object | null => {
-        let body: object | null;
-        if (!node.child1) { body = node.userData.fixture.GetBody(); shapeTypes.set(node, 1 << node.userData.fixture.GetType()); }
-        else {
-            const first = summarize(node.child1), second = summarize(node.child2!);
-            body = first === second ? first : null;
-            shapeTypes.set(node, shapeTypes.get(node.child1)! | shapeTypes.get(node.child2!)!);
+    const summarize = (node: Proxy): void => {
+        if (!node.child1) {
+            owners.set(node, node.userData.fixture.GetBody());
+            shapeTypes.set(node, 1 << node.userData.fixture.GetType());
+            return;
         }
-        owners.set(node, body); return body;
+        const first = owners.get(node.child1), second = owners.get(node.child2!);
+        owners.set(node, first === second ? first! : null);
+        shapeTypes.set(node, shapeTypes.get(node.child1)! | shapeTypes.get(node.child2!)!);
+    };
+    const initializeSummary = (node: Proxy): void => {
+        if (node.child1) { initializeSummary(node.child1); initializeSummary(node.child2!); }
+        summarize(node);
+    };
+    if (tree.m_root) initializeSummary(tree.m_root);
+    const refreshSummary = (node: Proxy): void => {
+        if (!dirtySummaries.has(node)) return;
+        if (node.child1) { refreshSummary(node.child1); refreshSummary(node.child2!); }
+        summarize(node); dirtySummaries.delete(node);
+    };
+    tree.InsertLeaf = function (leaf: Proxy): void {
+        // 池中的树节点会复用，叶子每次插入都从当前 fixture 重建身份。
+        summarize(leaf); originalInsert.call(this, leaf);
+    };
+    tree.Balance = function (node: Proxy): Proxy {
+        const root = originalBalance.call(this, node);
+        // 插入/移除自底向上经过全部祖先；旋转同时使旧根和新根失效。
+        // 一个子步内长线可移动数百片，查询前再统一刷新，避免重复更新共有祖先。
+        dirtySummaries.add(node); dirtySummaries.add(root);
+        return root;
+    };
+    tree.RemoveLeaf = function (leaf: Proxy): void {
+        const freedParent = leaf === this.m_root ? null : leaf.parent;
+        originalRemove.call(this, leaf);
+        owners.delete(leaf); shapeTypes.delete(leaf); dirtySummaries.delete(leaf);
+        if (freedParent) { owners.delete(freedParent); shapeTypes.delete(freedParent); dirtySummaries.delete(freedParent); }
     };
     broad.UpdatePairs = function (callback: (a: ProxyData, b: ProxyData) => void): void {
         const pairs = this.m_pairBuffer; let count = 0;
         const root = this.m_tree.m_root;
-        // 插入/移动会增加 insertionCount，移除会改变 proxyCount；按树结构变化重新汇总。
-        // 同一刚体的整棵子树可直接跳过，避免密集自重叠笔迹的平方级叶子遍历。
-        if (root && this.m_moveCount && (insertionCount !== this.m_tree.m_insertionCount || proxyCount !== this.m_proxyCount)) {
-            owners = new WeakMap(); shapeTypes = new WeakMap(); summarize(root);
-            insertionCount = this.m_tree.m_insertionCount; proxyCount = this.m_proxyCount;
-        }
+        if (root) refreshSummary(root);
         queries.clear(); groups.clear();
         for (let i = 0; i < this.m_moveCount; i++) {
             const query = this.m_moveBuffer[i]; if (!query) continue;
@@ -1352,13 +1410,28 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): () => void {
             while (i < count && pairs[i].proxyA.m_id === pair.proxyA.m_id && pairs[i].proxyB.m_id === pair.proxyB.m_id) i++;
         }
     };
-    return () => {
-        tree.MoveProxy = originalMovement;
-        broad.UnBufferMove = originalRemoval; broad.UpdatePairs = originalPairs;
-        manager.FindNewContacts = originalFind; manager.AddPair = originalAdd; manager.Destroy = originalDestroy;
-        contacts = new WeakMap();
-        owners = new WeakMap(); shapeTypes = new WeakMap(); queries.clear(); groups.clear(); stack.length = 0; matching.length = 0;
-        broad.m_pairBuffer.length = 0; broad.m_pairCount = 0;
+    return {
+        batchTransforms(action): void {
+            // 嵌套提交共享外层查询；异常也要恢复查询能力并提交已改变的代理。
+            if (batching) { action(); return; }
+            batching = true;
+            try { action(); }
+            finally {
+                batching = false;
+                if (pendingFind) { pendingFind = false; originalFind.call(manager); }
+            }
+        },
+        restore(): void {
+            tree.MoveProxy = originalMovement; tree.InsertLeaf = originalInsert;
+            tree.RemoveLeaf = originalRemove; tree.Balance = originalBalance;
+            broad.UnBufferMove = originalRemoval; broad.UpdatePairs = originalPairs;
+            manager.FindNewContacts = originalFind; manager.AddPair = originalAdd; manager.Destroy = originalDestroy;
+            contacts = new WeakMap();
+            owners = new WeakMap(); shapeTypes = new WeakMap(); queries.clear(); groups.clear(); stack.length = 0; matching.length = 0;
+            dirtySummaries = new WeakSet();
+            broad.m_pairBuffer.length = 0; broad.m_pairCount = 0;
+            batching = pendingFind = false;
+        },
     };
 }
 function pairs(path: readonly number[], scale = 1): Vec2[] {
@@ -1474,7 +1547,7 @@ export function stepBoardPhysics(dt: number, board: CyBlockBeesBoard): void {
         try {
             world.step(fixed, s.velocityIterations, s.positionIterations);
             // 与 Cocos postUpdate 一样，物理结果回写仍属于物理步，不能被当成新的输入变换。
-            world.syncPhysicsToScene();
+            board.syncPhysicsToScene();
         }
         finally { stepping._steping = false; flush(); }
         board.afterPhysics(); physicsAccumulator = Math.max(0, physicsAccumulator - fixed);
