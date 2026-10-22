@@ -76,7 +76,8 @@ export class CloudSaveService {
         this.state = {
             version: 1, device: valid ? previous.device as string : newDevice(), seq: valid ? uint(previous.seq) : 0,
             enabled: valid && previous.enabled === true,
-            restore: valid ? previous.restore === 'done' ? 'done' : 'pending' : hasLocal ? 'done' : 'pending',
+            restore: storage.needsCloudRestore ? 'pending'
+                : valid ? previous.restore === 'done' ? 'done' : 'pending' : hasLocal ? 'done' : 'pending',
             totalMs: valid ? uint(previous.totalMs) : 0, gameMs: valid ? numbers(previous.gameMs) : {},
             days: valid ? numbers(previous.days) : {}, levelPeaks: valid ? numbers(previous.levelPeaks) : this.levels(),
             unsavedClears: valid ? uint(previous.unsavedClears) : 0, lastUploadAt: valid ? uint(previous.lastUploadAt) : 0,
@@ -254,6 +255,8 @@ export class CloudSaveService {
                 requested:unsavedClears >= 25 || this.achievements() !== ackAchievements };
             this.persist(); this.options.storage.flush(); this.failures = 0; this.nextAttempt = 0;
         } catch (error: unknown) {
+            // 只有等待回大厅的有效响应可以复用；损坏响应下次必须重新拉取。
+            this.loaded = undefined;
             if (!this.disposed) {
                 this.failures++; this.nextAttempt = this.now() + Math.min(300000, 15000 * Math.pow(2, Math.min(this.failures-1,5)));
                 console.warn('[CloudSave] Deferred; local progress and upload queue retained.', error instanceof Error ? error.message : 'Cloud request failed');
@@ -266,7 +269,11 @@ export class CloudSaveService {
 
     private applyRestore(response: Record<string, unknown>): void {
         const storage = this.options.storage;
-        if (!response.found) { this.state = { ...this.state, restore:'done' }; this.evaluate(); this.persist(); return; }
+        if (!response.found) {
+            this.state = { ...this.state, restore:'done' };
+            this.evaluate(); this.persist(); storage.completeCloudRestore(); storage.flush();
+            return;
+        }
         if (!response.m || typeof response.m !== 'object' || Array.isArray(response.m) || typeof response.a !== 'string')
             throw new Error('Incomplete cloud restore response.');
         const modules = strings(response.m), dates = decodeAchievements(typeof response.a === 'string' ? response.a : EMPTY_ACHIEVEMENTS);

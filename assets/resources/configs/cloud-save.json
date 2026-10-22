@@ -53,24 +53,24 @@
       "numbers": [
         {
           "path": "custom.meowdokuCleared",
-          "max": 500,
+          "max": 3000,
           "metric": "cleared-level",
           "restoreAlso": [
             {
               "path": "custom.meowdokuUnlocked",
               "offset": 1,
-              "max": 500
+              "max": 3000
             }
           ]
         },
         {
           "path": "custom.meowdokuHard.cleared",
-          "max": 500,
+          "max": 200,
           "restoreAlso": [
             {
               "path": "custom.meowdokuHard.unlocked",
               "offset": 1,
-              "max": 500
+              "max": 200
             }
           ]
         }

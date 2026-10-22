@@ -36,6 +36,8 @@ export interface UserData {
     readonly cloudSave?: unknown;
     /** 设备本地的更新提醒授权回执与自动提示冷却；不参与云进度同步。 */
     readonly updateReminder?: UpdateReminderSaveData;
+    /** 本地记录有损坏时，即使仍有正常进度，也须在云服务可用后尝试恢复。 */
+    readonly cloudRestorePending?: true;
 }
 
 export interface UpdateReminderSaveData {
@@ -119,51 +121,55 @@ function isGameSaveData(value: unknown): value is GameSaveData {
     return dataVersion >= 1 && playCount >= 0;
 }
 
-function parseUserData(value: unknown): UserData | undefined {
+interface ParsedUserData {
+    readonly data: UserData;
+    readonly damaged: boolean;
+}
+
+function parseUserData(value: unknown): ParsedUserData | undefined {
     if (!isRecord(value)
-        || value.schemaVersion !== USER_DATA_SCHEMA_VERSION
-        || !isRecord(value.settings)
-        || !isRecord(value.games)
-        || !isRecord(value.achievements)) {
+        || value.schemaVersion !== USER_DATA_SCHEMA_VERSION) {
         return undefined;
     }
 
-    const settings = value.settings;
-
-    if (!isBoolean(settings.musicEnabled)
+    const settings = isRecord(value.settings) ? value.settings : {};
+    let damaged = !isRecord(value.settings) || !isRecord(value.games) || !isRecord(value.achievements)
+        || !isBoolean(settings.musicEnabled)
         || !isBoolean(settings.soundEnabled)
-        || !isBoolean(settings.vibrationEnabled)) {
-        return undefined;
-    }
+        || !isBoolean(settings.vibrationEnabled);
 
     const games: Record<string, GameSaveData> = {};
     const achievements: Record<string, AchievementSaveData> = {};
-    const storedAchievements = value.achievements;
+    const storedAchievements = isRecord(value.achievements) ? value.achievements : {};
     for (const gameId of Object.keys(storedAchievements)) {
         const record = storedAchievements[gameId];
         // 单条成就损坏不应清空正常的游戏存档。
         if (gameId.trim() && isAchievementSaveData(record)) {
             achievements[gameId] = Object.freeze({ ...record });
+        } else {
+            damaged = true;
         }
     }
 
-    for (const gameId of Object.keys(value.games)) {
-        const gameData = value.games[gameId];
+    const storedGames = isRecord(value.games) ? value.games : {};
+    for (const gameId of Object.keys(storedGames)) {
+        const gameData = storedGames[gameId];
         if (!gameId.trim() || !isGameSaveData(gameData)) {
-            return undefined;
+            damaged = true;
+            continue;
         }
 
         games[gameId] = cloneGameData(gameData);
     }
 
-    return freezeUserData({
+    const data = freezeUserData({
         schemaVersion: USER_DATA_SCHEMA_VERSION,
         settings: {
-            musicEnabled: settings.musicEnabled,
-            soundEnabled: settings.soundEnabled,
+            musicEnabled: isBoolean(settings.musicEnabled) ? settings.musicEnabled : DEFAULT_USER_DATA.settings.musicEnabled,
+            soundEnabled: isBoolean(settings.soundEnabled) ? settings.soundEnabled : DEFAULT_USER_DATA.settings.soundEnabled,
             musicVolumeLevel: normalizeAudioVolumeLevel(settings.musicVolumeLevel),
             soundVolumeLevel: normalizeAudioVolumeLevel(settings.soundVolumeLevel),
-            vibrationEnabled: settings.vibrationEnabled,
+            vibrationEnabled: isBoolean(settings.vibrationEnabled) ? settings.vibrationEnabled : DEFAULT_USER_DATA.settings.vibrationEnabled,
         },
         games,
         achievements,
@@ -172,7 +178,9 @@ function parseUserData(value: unknown): UserData | undefined {
         seenAnnouncementId: readSeenAnnouncementId(value.seenAnnouncementId),
         cloudSave: value.cloudSave,
         updateReminder: readUpdateReminder(value.updateReminder),
+        cloudRestorePending: damaged || value.cloudRestorePending === true ? true : undefined,
     });
+    return { data, damaged };
 }
 
 function readSeenAnnouncementId(value: unknown): string | undefined {
@@ -255,6 +263,7 @@ function freezeUserData(data: UserData): UserData {
         games: Object.freeze(games),
         achievements: Object.freeze(achievements),
         ...(data.cloudSave === undefined ? {} : { cloudSave: JSON.parse(JSON.stringify(data.cloudSave)) }),
+        ...(data.cloudRestorePending === true ? { cloudRestorePending: true } : {}),
         ...(readUpdateReminder(data.updateReminder) ? { updateReminder: readUpdateReminder(data.updateReminder) } : {}),
         dismissedNewGameVersions: readDismissedNewGameVersions(data.dismissedNewGameVersions),
         ...(readSeenAnnouncementId(data.seenAnnouncementId) === undefined
@@ -306,6 +315,8 @@ export class StorageService {
     private lastPersistAttemptAt = 0;
     private persistenceError?: StorageWriteError;
     private disposed = false;
+    /** 下次落盘前必须先备份，写备份失败时不能覆盖原始存档。 */
+    private recoverySource?: string;
 
     constructor(
         private readonly provider: StorageProvider = sys.localStorage,
@@ -317,20 +328,19 @@ export class StorageService {
 
     load(): UserData {
         this.ensureActive();
+        if (this.data) return this.data;
         const stored = this.provider.getItem(this.storageKey);
 
         if (stored !== null) {
+            let parsed: ParsedUserData | undefined;
             try {
-                const parsed = parseUserData(JSON.parse(stored));
-
-                if (parsed) {
-                    this.data = parsed;
-
-                    return parsed;
-                }
+                parsed = parseUserData(JSON.parse(stored));
             } catch {
-                // 损坏或不完整的存档统一恢复默认值并立即落盘。
+                // 无法解码的原文也必须保留，不能在云恢复之前用空存档覆盖。
             }
+            if (!parsed || parsed.damaged) this.recoverySource = stored;
+            this.data = parsed?.data ?? freezeUserData({ ...DEFAULT_USER_DATA, cloudRestorePending: true });
+            return this.data;
         }
 
         this.data = DEFAULT_USER_DATA;
@@ -340,6 +350,15 @@ export class StorageService {
 
     get snapshot(): UserData {
         return this.data ?? this.load();
+    }
+
+    get needsCloudRestore(): boolean {
+        return this.snapshot.cloudRestorePending === true;
+    }
+
+    /** 云端已明确返回无备份；网络失败不得调用，也不能清除原始备份。 */
+    completeCloudRestore(): void {
+        if (this.needsCloudRestore) this.commit({ ...this.snapshot, cloudRestorePending: undefined });
     }
 
     getGameData(gameId: string): GameSaveData | undefined {
@@ -439,7 +458,7 @@ export class StorageService {
         achievements: Readonly<Record<string, AchievementSaveData>>, cloudSave: unknown): void {
         Object.keys(games).forEach(id => { if (!isGameSaveData(games[id])) throw new Error('Invalid restored game.'); });
         Object.keys(achievements).forEach(id => { if (!isAchievementSaveData(achievements[id])) throw new Error('Invalid restored achievement.'); });
-        this.commit({ ...this.snapshot, games, achievements, cloudSave });
+        this.commit({ ...this.snapshot, games, achievements, cloudSave, cloudRestorePending: undefined });
         this.notifyChange('restore');
     }
 
@@ -556,6 +575,7 @@ export class StorageService {
         const payload = this.serialize(data);
         this.lastPersistAttemptAt = Date.now();
         try {
+            this.backupRecoverySource();
             this.provider.setItem(this.storageKey, payload);
             this.persistenceError = undefined;
         } catch (cause: unknown) {
@@ -573,6 +593,7 @@ export class StorageService {
 
         this.lastPersistAttemptAt = Date.now();
         try {
+            this.backupRecoverySource();
             this.provider.setItem(this.storageKey, pending.payload);
         } catch (cause: unknown) {
             const error = cause instanceof StorageWriteError
@@ -586,6 +607,12 @@ export class StorageService {
             this.pendingWrite = undefined;
         }
         this.persistenceError = undefined;
+    }
+
+    private backupRecoverySource(): void {
+        if (this.recoverySource === undefined) return;
+        this.provider.setItem(`${this.storageKey}.recovery`, this.recoverySource);
+        this.recoverySource = undefined;
     }
 
     private scheduleFlush(): void {

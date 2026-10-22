@@ -944,14 +944,15 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             };
         }
 
-        // 当前关卡（没有存档 = 第一次进游戏，直接进第 1 关）。
-        this.levelIndex = 0;
+        // 没有有效续玩关号时，从已通关进度继续；只有新玩家从第 1 关开始。
+        // 云恢复等只含通关数的存档也走这里，不能因缺少棋盘快照退回第 1 关。
+        this.levelIndex = this.levelIndexOf(this.unlockedLevel);
         const raw = scoped.progress;
-        if (typeof raw === 'object' && raw !== null) {
-            const record = raw as Record<string, unknown>;
-            const level = typeof record.level === 'number' && Number.isFinite(record.level)
-                ? Math.floor(record.level)
-                : 1;
+        const record = typeof raw === 'object' && raw !== null && !Array.isArray(raw)
+            ? raw as Record<string, unknown> : undefined;
+        const level = record?.level;
+        if (record && typeof level === 'number' && Number.isInteger(level)
+            && level >= 1 && level <= this.levelDefinitions().length) {
             this.levelIndex = this.levelIndexOf(level);
             const legacyClearedReplay = !hasChallengeHistory && level >= 1 && level <= this.clearedLevel;
             const cells = record.cells;
