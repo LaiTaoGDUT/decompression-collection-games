@@ -1,0 +1,13 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "fda78f4ec37103d96d2ba6c83e93f86e32b4a8a9",
+  "prompts": {},
+  "logical_commit_id": "fda78f4ec37103d96d2ba6c83e93f86e32b4a8a9",
+  "humans": {
+    "h_293365c3a5ebee": {
+      "author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
