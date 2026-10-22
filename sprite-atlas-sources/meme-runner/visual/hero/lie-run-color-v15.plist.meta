@@ -1,0 +1,388 @@
+{
+  "subMetas": {
+    "run-0": {
+      "importer": "sprite-frame",
+      "name": "run-0",
+      "uuid": "e05e7ca5-1f75-5152-ace1-21d0b805393c",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-1": {
+      "importer": "sprite-frame",
+      "name": "run-1",
+      "uuid": "fa3f4d09-1ff0-5cdc-82df-e1d03e891c2a",
+      "userData": {
+        "trimX": 640,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-2": {
+      "importer": "sprite-frame",
+      "name": "run-2",
+      "uuid": "464eec2e-7e14-5f5a-82af-8371e8b3a077",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-3": {
+      "importer": "sprite-frame",
+      "name": "run-3",
+      "uuid": "d2b3110b-be72-522f-813c-ee96768dded1",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-4": {
+      "importer": "sprite-frame",
+      "name": "run-4",
+      "uuid": "9f963d4e-70e0-5c70-b519-cc0052cc898e",
+      "userData": {
+        "trimX": 2560,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-5": {
+      "importer": "sprite-frame",
+      "name": "run-5",
+      "uuid": "213030aa-b20b-5578-96d7-f63730e55755",
+      "userData": {
+        "trimX": 3200,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-6": {
+      "importer": "sprite-frame",
+      "name": "run-6",
+      "uuid": "f50f26a6-9b06-5515-86ab-57f3065b9526",
+      "userData": {
+        "trimX": 0,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-7": {
+      "importer": "sprite-frame",
+      "name": "run-7",
+      "uuid": "3f1d3f1e-a359-5588-9266-8aeac365120f",
+      "userData": {
+        "trimX": 640,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-8": {
+      "importer": "sprite-frame",
+      "name": "run-8",
+      "uuid": "a5430e31-480f-5e95-8d3e-34e03d0cf338",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-9": {
+      "importer": "sprite-frame",
+      "name": "run-9",
+      "uuid": "5d926a49-3f57-52d3-ba43-3acc89a9ba99",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-10": {
+      "importer": "sprite-frame",
+      "name": "run-10",
+      "uuid": "6ef03f54-0f39-592e-80c3-0f3080b4b753",
+      "userData": {
+        "trimX": 2560,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-11": {
+      "importer": "sprite-frame",
+      "name": "run-11",
+      "uuid": "e1605a70-ad39-5bbf-a38a-3f0f2223e2fc",
+      "userData": {
+        "trimX": 3200,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-12": {
+      "importer": "sprite-frame",
+      "name": "run-12",
+      "uuid": "c4422de3-38f9-5400-b665-c98d262248b4",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-13": {
+      "importer": "sprite-frame",
+      "name": "run-13",
+      "uuid": "4ad20be8-50b0-5d17-8a57-3f4a8af1d94f",
+      "userData": {
+        "trimX": 640,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-14": {
+      "importer": "sprite-frame",
+      "name": "run-14",
+      "uuid": "24f4ddee-eb61-5312-9c2c-3cb31977bb49",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-15": {
+      "importer": "sprite-frame",
+      "name": "run-15",
+      "uuid": "32bb37dd-a785-5bef-9d75-5c33a5acbb97",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-16": {
+      "importer": "sprite-frame",
+      "name": "run-16",
+      "uuid": "36f7d337-9766-5023-afb8-fd04eff7fc4d",
+      "userData": {
+        "trimX": 2560,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-17": {
+      "importer": "sprite-frame",
+      "name": "run-17",
+      "uuid": "6e7df63a-df9e-5eaa-a674-650938f698fc",
+      "userData": {
+        "trimX": 3200,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-18": {
+      "importer": "sprite-frame",
+      "name": "run-18",
+      "uuid": "a0caa0c8-16d1-57c7-834a-8bf2e9b4ca31",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1728,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-19": {
+      "importer": "sprite-frame",
+      "name": "run-19",
+      "uuid": "53ab5969-2c6a-5ee0-8819-e0fa5991dedf",
+      "userData": {
+        "trimX": 640,
+        "trimY": 1728,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-20": {
+      "importer": "sprite-frame",
+      "name": "run-20",
+      "uuid": "892cff03-ce59-5f10-b9d5-f050af4333f8",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 1728,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-21": {
+      "importer": "sprite-frame",
+      "name": "run-21",
+      "uuid": "073cd31b-1a79-5d7b-96c0-f1220fd300c3",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 1728,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-22": {
+      "importer": "sprite-frame",
+      "name": "run-22",
+      "uuid": "39c11345-5ec3-50d1-9ca6-c2ef257c979c",
+      "userData": {
+        "trimX": 2560,
+        "trimY": 1728,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "run-23": {
+      "importer": "sprite-frame",
+      "name": "run-23",
+      "uuid": "c6b309be-b24d-5bc2-87fa-cf23f176e2da",
+      "userData": {
+        "trimX": 3200,
+        "trimY": 1728,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640.0,
+        "rawHeight": 576.0,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    }
+  }
+}

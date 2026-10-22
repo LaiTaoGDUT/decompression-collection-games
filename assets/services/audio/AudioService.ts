@@ -1,6 +1,7 @@
 import type { AudioClip, AudioSource } from 'cc';
 import type { StorageService, UserSettings } from '../storage/StorageService';
 import type { PlatformAudioContext } from '../../platform/PlatformAudio';
+import { AUDIO_VOLUME_DEFAULT_LEVEL, AUDIO_VOLUME_MIN_LEVEL, AUDIO_VOLUME_MAX_LEVEL, normalizeAudioVolumeLevel } from '../../core/types/AudioVolume';
 import { PackedAudioBank, PackedAudioDecodeCancellation, PackedAudioEffect } from './PackedAudioBank';
 import { PackedAudioVoices } from './PackedAudioVoices';
 
@@ -20,6 +21,10 @@ export interface AudioEffectScope {
     play(clip: AudioClip | PackedAudioEffect, volume: number): void;
     stop(): void;
     dispose(): void;
+}
+export interface AudioEffectScopeOptions {
+    /** 同一 clip 固定复用一个声部，避免交替 cue 时反复加载小程序播放器。 */
+    readonly reuseByClip?: boolean;
 }
 /** 长提示音的独立声部：后台暂停后继续，关闭展示或禁用音效后彻底停止。 */
 export interface AudioPresentationScope extends AudioEffectScope {
@@ -91,6 +96,8 @@ function musicStartSeconds(clip: AudioClip, seconds = 0): number {
 export class AudioService {
     private musicEnabled = true;
     private soundEnabled = true;
+    private musicLevel = AUDIO_VOLUME_DEFAULT_LEVEL;
+    private soundLevel = AUDIO_VOLUME_DEFAULT_LEVEL;
     private pausedByBackground = false;
     private pausedByGame = false;
     private currentMusic?: AudioClip;
@@ -105,6 +112,7 @@ export class AudioService {
     private readonly effectScopes = new Set<AudioEffectScope>();
     private readonly presentationScopes = new Set<AudioPresentationScope>();
     private readonly voiceScopes = new Map<AudioVoiceScope, 'effect' | 'music'>();
+    private readonly soundVolumeUpdaters = new Set<() => void>();
     private musicGain = 1;
     private readonly musicUnscaledVolumes = new WeakMap<MusicChannel, number>();
     private packedAudioContext?: PlatformAudioContext;
@@ -127,8 +135,13 @@ export class AudioService {
 
     initialize(): void {
         const settings = this.storage.snapshot.settings;
-        this.musicEnabled = settings.musicEnabled;
-        this.soundEnabled = settings.soundEnabled;
+        // 声音设置只保留 1–10 级；旧的关闭状态迁移为最低档，避免隐藏开关阻止滑条生效。
+        this.musicEnabled = true;
+        this.soundEnabled = true;
+        this.musicLevel = settings.musicEnabled ? normalizeAudioVolumeLevel(settings.musicVolumeLevel) : AUDIO_VOLUME_MIN_LEVEL;
+        this.soundLevel = settings.soundEnabled ? normalizeAudioVolumeLevel(settings.soundVolumeLevel) : AUDIO_VOLUME_MIN_LEVEL;
+        this.refreshMusicVolumes();
+        if (!settings.musicEnabled || !settings.soundEnabled) this.persistSettings();
     }
 
     get isMusicEnabled(): boolean {
@@ -139,19 +152,35 @@ export class AudioService {
         return this.soundEnabled;
     }
 
+    get musicVolumeLevel(): number { return this.musicLevel; }
+
+    get soundVolumeLevel(): number { return this.soundLevel; }
+
+    setMusicVolumeLevel(level: number, persist = true): void {
+        const next = normalizeAudioVolumeLevel(level, this.musicLevel);
+        if (next === this.musicLevel) return;
+        this.musicLevel = next;
+        this.refreshMusicVolumes();
+        if (persist) this.persistSettings();
+    }
+
+    setSoundVolumeLevel(level: number, persist = true): void {
+        const next = normalizeAudioVolumeLevel(level, this.soundLevel);
+        if (next === this.soundLevel) return;
+        this.soundLevel = next;
+        this.soundVolumeUpdaters.forEach(update => update());
+        this.voiceScopes.forEach((kind, scope) => { if (kind === 'effect') scope.setVolume(scope.volume); });
+        if (persist) this.persistSettings();
+    }
+
     get isBackgroundPaused(): boolean { return this.pausedByBackground; }
 
     /** 临时压低配乐；不切曲、不重置播放位置，也不打断正在进行的淡入淡出。 */
     setMusicGain(scale: number): void {
         const next = clampVolume(scale);
         if (next === this.musicGain) return;
-        const previous = this.musicGain;
         this.musicGain = next;
-        this.musicChannels.forEach(channel => {
-            const base = previous > 0 ? (channel.volume ?? 0) / previous : this.musicUnscaledVolumes.get(channel) ?? 0;
-            this.setMusicChannelVolume(channel, base);
-        });
-        this.voiceScopes.forEach((kind, scope) => { if (kind === 'music') scope.setVolume(scope.volume); });
+        this.refreshMusicVolumes();
     }
 
     playMusic(clip: AudioClip, volumeScale = 1, options: MusicPlaybackOptions = {}): void {
@@ -263,7 +292,7 @@ export class AudioService {
         }
         this.effectChannel.playOneShot(
             clip,
-            Math.max(0, Math.min(1, volumeScale)),
+            clampVolume(volumeScale) * this.soundLevel / AUDIO_VOLUME_MAX_LEVEL,
         );
     }
 
@@ -292,7 +321,9 @@ export class AudioService {
             },
             setVolume: gain => {
                 volume = clampVolume(gain);
-                voice.channel.volume = volume * (kind === 'music' ? this.musicGain : 1);
+                voice.channel.volume = volume * (kind === 'music'
+                    ? this.musicGain * this.musicLevel / AUDIO_VOLUME_MAX_LEVEL
+                    : this.soundLevel / AUDIO_VOLUME_MAX_LEVEL);
             },
             pause: () => {
                 if (disposed || !active || resumePending) return;
@@ -321,13 +352,19 @@ export class AudioService {
     }
 
     /** Owned, stoppable effects for games whose sounds must not outlive their session. */
-    createEffectScope(): AudioEffectScope | undefined {
+    createEffectScope(options: AudioEffectScopeOptions = {}): AudioEffectScope | undefined {
         const create = this.createEffectChannel;
         if (!create && !this.createAudioContext) return undefined;
         const voices: ScopedAudioChannel[] = [];
+        const volumes: number[] = [];
         let cursor = 0, disposed = false;
         const packed = new PackedAudioVoices(() => this.getPackedAudioContext(),
             () => !disposed && !this.disposed && this.soundEnabled && !this.pausedByBackground);
+        const updateVolume = (): void => {
+            const scale = this.soundLevel / AUDIO_VOLUME_MAX_LEVEL;
+            packed.setVolumeScale(scale);
+            voices.forEach((voice, index) => { voice.channel.volume = volumes[index] * scale; });
+        };
         const scope: AudioEffectScope = {
             play: (clip, volume) => {
                 if (disposed || !this.soundEnabled || this.pausedByBackground) return;
@@ -341,12 +378,18 @@ export class AudioService {
                 // array length here repeatedly selects voice 0 during warmup.
                 // Do not infer availability from `playing`: Cocos starts a
                 // freshly assigned clip asynchronously.
-                const index = cursor;
-                cursor = (cursor + 1) % 6;
+                let index = cursor;
+                if (options.reuseByClip) {
+                    const matching = voices.findIndex(v => v.channel.clip === clip);
+                    const empty = voices.findIndex(v => v.channel.clip === null);
+                    index = matching >= 0 ? matching : empty >= 0 ? empty : voices.length < 6 ? voices.length : cursor;
+                }
+                cursor = (index + 1) % 6;
                 if (!voices[index]) voices[index] = create();
                 const voice = voices[index]!.channel;
                 voice.stop(); voice.clip = clip; voice.loop = false;
-                voice.volume = Math.max(0, Math.min(1, volume)); voice.play();
+                volumes[index] = clampVolume(volume);
+                voice.volume = volumes[index] * this.soundLevel / AUDIO_VOLUME_MAX_LEVEL; voice.play();
             },
             stop: () => {
                 packed.stop();
@@ -354,11 +397,14 @@ export class AudioService {
             },
             dispose: () => {
                 if (disposed) return;
-                disposed = true; scope.stop(); voices.forEach(v => v.dispose()); voices.length = 0;
+                disposed = true; scope.stop(); voices.forEach(v => v.dispose()); voices.length = 0; volumes.length = 0;
                 this.effectScopes.delete(scope);
+                this.soundVolumeUpdaters.delete(updateVolume);
             },
         };
         this.effectScopes.add(scope);
+        this.soundVolumeUpdaters.add(updateVolume);
+        updateVolume();
         return scope;
     }
 
@@ -383,14 +429,16 @@ export class AudioService {
     createPresentationScope(): AudioPresentationScope | undefined {
         if (!this.createEffectChannel) return undefined;
         const voice = this.createEffectChannel();
-        let disposed = false, resumePending = false;
+        let disposed = false, resumePending = false, volume = 0;
+        const updateVolume = (): void => { voice.channel.volume = volume * this.soundLevel / AUDIO_VOLUME_MAX_LEVEL; };
         const scope: AudioPresentationScope = {
-            play: (clip, volume) => {
+            play: (clip, gain) => {
                 if (disposed || !this.soundEnabled || this.pausedByBackground) return;
                 scope.stop();
                 voice.channel.clip = clip;
                 voice.channel.loop = false;
-                voice.channel.volume = clampVolume(volume);
+                volume = clampVolume(gain);
+                updateVolume();
                 voice.channel.play();
             },
             pause: () => {
@@ -414,9 +462,11 @@ export class AudioService {
                 scope.stop();
                 voice.dispose();
                 this.presentationScopes.delete(scope);
+                this.soundVolumeUpdaters.delete(updateVolume);
             },
         };
         this.presentationScopes.add(scope);
+        this.soundVolumeUpdaters.add(updateVolume);
         return scope;
     }
 
@@ -554,8 +604,8 @@ export class AudioService {
         target: number,
     ): void {
         const startedAt = Date.now();
-        const outFrom = this.musicGain > 0 ? (outgoing.volume ?? 1) / this.musicGain : this.musicUnscaledVolumes.get(outgoing) ?? 0;
-        const inFrom = this.musicGain > 0 ? (incoming.volume ?? 0) / this.musicGain : this.musicUnscaledVolumes.get(incoming) ?? 0;
+        const outFrom = this.musicUnscaledVolumes.get(outgoing) ?? 1;
+        const inFrom = this.musicUnscaledVolumes.get(incoming) ?? 0;
         const next = this.currentMusic!;
         const startSeconds = this.currentMusicStart;
         const stopTimer = (): void => {
@@ -587,7 +637,12 @@ export class AudioService {
     private setMusicChannelVolume(channel: MusicChannel, volume: number): void {
         const base = clampVolume(volume);
         this.musicUnscaledVolumes.set(channel, base);
-        channel.volume = base * this.musicGain;
+        channel.volume = base * this.musicGain * this.musicLevel / AUDIO_VOLUME_MAX_LEVEL;
+    }
+
+    private refreshMusicVolumes(): void {
+        this.musicChannels.forEach(channel => this.setMusicChannelVolume(channel, this.musicUnscaledVolumes.get(channel) ?? 0));
+        this.voiceScopes.forEach((kind, scope) => { if (kind === 'music') scope.setVolume(scope.volume); });
     }
 
     private persistSettings(): void {
@@ -596,6 +651,8 @@ export class AudioService {
             ...current,
             musicEnabled: this.musicEnabled,
             soundEnabled: this.soundEnabled,
+            musicVolumeLevel: this.musicLevel,
+            soundVolumeLevel: this.soundLevel,
         };
         this.storage.writeSettings(settings);
     }

@@ -1,0 +1,42 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "date": "2026-10-15",
+  "request": "封面只保留背景和几颗水果果冻；按用户参考图错落分布，并呈现柔软形变。",
+  "inputRoles": {
+    "first": "Previous mint-background jelly cover: jelly material, friendly faces and simple background.",
+    "second": "User-provided image: staggered fruit placement and size hierarchy only."
+  },
+  "prompt": "watermelon-jelly-cover-soft-v2.prompt.txt",
+  "source": {
+    "path": "watermelon-jelly-cover-soft-v2.png",
+    "width": 1448,
+    "height": 1086
+  },
+  "delivery": {
+    "path": "assets/lobby-covers/visual/covers/watermelon/watermelon-jelly-cover-v4.jpg",
+    "width": 568,
+    "height": 426,
+    "format": "JPEG",
+    "existingAssetUuidPreserved": true
+  },
+  "sizing": "4:3; proportionally reduced to the shared loading dialog's maximum cover display size at the 750 × 1334 design resolution: (640 - 36 × 2) × 426 = 568 × 426.",
+  "composition": {
+    "background": "plain pale mint gradient",
+    "watermelon": "largest, lower right",
+    "lemon": "medium, upper left",
+    "strawberry": "small, lower left",
+    "blueberry": "tiny, upper right",
+    "fruitCount": 4
+  },
+  "material": "Soft translucent gelatin with visibly compressed silhouettes, bulging sides, flattened undersides and contact indentations.",
+  "compression": {
+    "tool": ".agents/skills/tinypng-batch/scripts/compress.py",
+    "provider": "Tinify API",
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "inputBytes": 339630,
+    "outputBytes": 52864,
+    "savedBytes": 286766
+  }
+}

@@ -318,6 +318,8 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
     const lobbyTags = readLobbyTags(value, prefix, errors);
     const achievement = value.achievement === undefined ? undefined
         : readAchievement(value.achievement, `${prefix}.achievement`, errors);
+    const twoPlayer = value.twoPlayer === undefined ? undefined
+        : readBoolean(value, 'twoPlayer', `${prefix}.twoPlayer`, errors);
     const initializeTimeoutMs = value.initializeTimeoutMs;
     if (initializeTimeoutMs !== undefined && (typeof initializeTimeoutMs !== 'number'
         || !Number.isInteger(initializeTimeoutMs) || initializeTimeoutMs < 1000 || initializeTimeoutMs > 120000)) {
@@ -382,6 +384,7 @@ function validateManifestEntry(value: unknown, index: number): ManifestEntryResu
         visibility: visibility!,
         preload: Object.freeze([...(preload ?? [])]),
         tags: Object.freeze([...(tags ?? [])]),
+        ...(twoPlayer ? { twoPlayer } : {}),
         ...(lobbyTags ? { lobbyTags: Object.freeze(Array.from(lobbyTags)) } : {}),
     });
 

@@ -10,6 +10,8 @@ import type {
     ResultPresenter,
     ResultViewModel,
 } from '../../runtime/GameRuntime';
+import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
+import { SafeOverlayLayout } from '../ui/SafeOverlayLayout';
 
 const { ccclass } = _decorator;
 
@@ -19,6 +21,8 @@ export class ResultView extends Component implements ResultPresenter {
     private model?: ResultViewModel;
     private buttons: Button[] = [];
     private busy = false;
+    private platformLayout?: PlatformLayoutInfo;
+    private safeContent?: SafeOverlayLayout;
 
     protected onLoad(): void {
         const widget = this.node.getComponent(Widget) ?? this.node.addComponent(Widget);
@@ -59,6 +63,18 @@ export class ResultView extends Component implements ResultPresenter {
         this.setBusy(false);
         this.node.active = true;
         this.node.setSiblingIndex(this.node.parent?.children.length ?? 0);
+        this.layout();
+    }
+
+    setPlatformLayout(layout: PlatformLayoutInfo): void {
+        this.platformLayout = layout;
+        if (this.node.active) this.layout();
+    }
+
+    private layout(): void {
+        this.safeContent ??= new SafeOverlayLayout(this.node);
+        this.safeContent.restore();
+        this.safeContent.fit(this.platformLayout);
     }
 
     hide(): void {

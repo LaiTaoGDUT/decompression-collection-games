@@ -7,67 +7,67 @@
 		<key>chess-endless-rewarded-video-icon-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{786,2},{120,115}}</string>
+			<string>{{182,2},{42,40}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{120,115}}</string>
+			<string>{{0.0,0.0},{42,40}}</string>
 			<key>sourceSize</key>
-			<string>{120,115}</string>
+			<string>{42,40}</string>
 		</dict>
 		<key>icon_close</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{192,192}}</string>
+			<string>{{126,2},{52,52}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{192,192}}</string>
+			<string>{{0.0,0.0},{52,52}}</string>
 			<key>sourceSize</key>
-			<string>{192,192}</string>
+			<string>{52,52}</string>
 		</dict>
 		<key>icon_help</key>
 		<dict>
 			<key>frame</key>
-			<string>{{198,2},{192,192}}</string>
+			<string>{{228,2},{40,40}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{192,192}}</string>
+			<string>{{0.0,0.0},{40,40}}</string>
 			<key>sourceSize</key>
-			<string>{192,192}</string>
+			<string>{40,40}</string>
 		</dict>
 		<key>icon_pause</key>
 		<dict>
 			<key>frame</key>
-			<string>{{394,2},{192,192}}</string>
+			<string>{{2,2},{58,58}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{192,192}}</string>
+			<string>{{0.0,0.0},{58,58}}</string>
 			<key>sourceSize</key>
-			<string>{192,192}</string>
+			<string>{58,58}</string>
 		</dict>
 		<key>icon_rules</key>
 		<dict>
 			<key>frame</key>
-			<string>{{590,2},{192,192}}</string>
+			<string>{{64,2},{58,58}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{192,192}}</string>
+			<string>{{0.0,0.0},{58,58}}</string>
 			<key>sourceSize</key>
-			<string>{192,192}</string>
+			<string>{58,58}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -77,7 +77,7 @@
 		<key>realTextureFileName</key>
 		<string>chess-controls.png</string>
 		<key>size</key>
-		<string>{908,196}</string>
+		<string>{270,62}</string>
 		<key>textureFileName</key>
 		<string>chess-controls.png</string>
 	</dict>

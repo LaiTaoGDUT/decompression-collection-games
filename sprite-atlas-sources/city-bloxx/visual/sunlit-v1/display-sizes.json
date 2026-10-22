@@ -1,0 +1,2838 @@
+{
+  "theme": "晴空微缩都市",
+  "frames": {
+    "floor-coral": {
+      "pixels": [
+        384,
+        384
+      ],
+      "scale": 0.3062200956937799,
+      "registration": "original mesh UV, unchanged"
+    },
+    "floor-blue": {
+      "pixels": [
+        384,
+        384
+      ],
+      "scale": 0.3062200956937799,
+      "registration": "original mesh UV, unchanged"
+    },
+    "floor-lobby": {
+      "pixels": [
+        384,
+        384
+      ],
+      "scale": 0.3062200956937799,
+      "registration": "original mesh UV, unchanged"
+    },
+    "ground": {
+      "pixels": [
+        128,
+        128
+      ],
+      "scale": 0.10207336523125997,
+      "registration": "original ground mesh UV, unchanged"
+    },
+    "cloud-streaks": {
+      "pixels": [
+        1942,
+        195
+      ],
+      "nativeCanvas": [
+        320,
+        32
+      ],
+      "nativeBounds": [
+        69,
+        5,
+        240,
+        25
+      ],
+      "subjectPixels": [
+        1038,
+        101
+      ],
+      "subjectOffset": [
+        419,
+        41
+      ],
+      "scale": 0.7117669753086419
+    },
+    "cloud-bank": {
+      "pixels": [
+        409,
+        103
+      ],
+      "nativeCanvas": [
+        64,
+        16
+      ],
+      "nativeBounds": [
+        3,
+        2,
+        62,
+        14
+      ],
+      "subjectPixels": [
+        377,
+        66
+      ],
+      "subjectOffset": [
+        19,
+        18
+      ],
+      "scale": 0.29273825698757766
+    },
+    "tree": {
+      "pixels": [
+        230,
+        230
+      ],
+      "nativeCanvas": [
+        64,
+        64
+      ],
+      "nativeBounds": [
+        6,
+        7,
+        57,
+        63
+      ],
+      "subjectPixels": [
+        183,
+        193
+      ],
+      "subjectOffset": [
+        22,
+        29
+      ],
+      "scale": 0.1675331352833638
+    },
+    "fence": {
+      "pixels": [
+        1039,
+        156
+      ],
+      "nativeCanvas": [
+        320,
+        48
+      ],
+      "nativeBounds": [
+        0,
+        14,
+        320,
+        48
+      ],
+      "subjectPixels": [
+        971,
+        110
+      ],
+      "subjectOffset": [
+        34,
+        46
+      ],
+      "scale": 0.48464912280701755
+    },
+    "crane-arm": {
+      "pixels": [
+        600,
+        285
+      ],
+      "sourceBounds": [
+        25,
+        25,
+        1522,
+        736
+      ],
+      "scale": 0.40080160320641284
+    },
+    "hook": {
+      "pixels": [
+        20,
+        48
+      ],
+      "sourceBounds": [
+        39,
+        15,
+        182,
+        351
+      ],
+      "scale": 0.14285714285714285
+    },
+    "sling": {
+      "pixels": [
+        148,
+        90
+      ],
+      "sourceBounds": [
+        73,
+        55,
+        535,
+        336
+      ],
+      "scale": 0.3202846975088968
+    },
+    "icon-city": {
+      "pixels": [
+        64,
+        61
+      ],
+      "sourceBounds": [
+        70,
+        75,
+        426,
+        414
+      ],
+      "scale": 0.1797752808988764
+    },
+    "icon-people": {
+      "pixels": [
+        60,
+        49
+      ],
+      "sourceBounds": [
+        71,
+        136,
+        413,
+        413
+      ],
+      "scale": 0.17543859649122806
+    },
+    "icon-heart": {
+      "pixels": [
+        36,
+        30
+      ],
+      "sourceBounds": [
+        85,
+        145,
+        401,
+        407
+      ],
+      "scale": 0.11392405063291139
+    },
+    "icon-spark": {
+      "pixels": [
+        30,
+        34
+      ],
+      "sourceBounds": [
+        106,
+        139,
+        320,
+        383
+      ],
+      "scale": 0.13934426229508196
+    },
+    "icon-home": {
+      "pixels": [
+        40,
+        36
+      ],
+      "sourceBounds": [
+        79,
+        90,
+        405,
+        384
+      ],
+      "scale": 0.12269938650306748
+    },
+    "icon-retry": {
+      "pixels": [
+        40,
+        38
+      ],
+      "sourceBounds": [
+        89,
+        95,
+        390,
+        384
+      ],
+      "scale": 0.132890365448505
+    },
+    "icon-video": {
+      "pixels": [
+        40,
+        30
+      ],
+      "sourceBounds": [
+        64,
+        112,
+        409,
+        374
+      ],
+      "scale": 0.11594202898550725
+    },
+    "icon-pause": {
+      "pixels": [
+        27,
+        32
+      ],
+      "sourceBounds": [
+        106,
+        108,
+        331,
+        374
+      ],
+      "scale": 0.12030075187969924
+    },
+    "resident-blue-0": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        3,
+        9,
+        22,
+        31
+      ],
+      "subjectPixels": [
+        28,
+        48
+      ],
+      "subjectOffset": [
+        9,
+        20
+      ],
+      "scale": 0.12726063829787232
+    },
+    "resident-blue-1": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        9,
+        19,
+        33
+      ],
+      "subjectPixels": [
+        28,
+        45
+      ],
+      "subjectOffset": [
+        7,
+        23
+      ],
+      "scale": 0.12222222222222222
+    },
+    "resident-blue-2": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        5,
+        9,
+        18,
+        34
+      ],
+      "subjectPixels": [
+        24,
+        40
+      ],
+      "subjectOffset": [
+        9,
+        27
+      ],
+      "scale": 0.10735735735735735
+    },
+    "resident-blue-3": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        5,
+        9,
+        21,
+        34
+      ],
+      "subjectPixels": [
+        29,
+        50
+      ],
+      "subjectOffset": [
+        9,
+        22
+      ],
+      "scale": 0.13153961136023914
+    },
+    "resident-blue-4": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        9,
+        21,
+        34
+      ],
+      "subjectPixels": [
+        31,
+        53
+      ],
+      "subjectOffset": [
+        7,
+        20
+      ],
+      "scale": 0.1403903903903904
+    },
+    "resident-blue-5": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        5,
+        7,
+        20,
+        32
+      ],
+      "subjectPixels": [
+        28,
+        47
+      ],
+      "subjectOffset": [
+        9,
+        19
+      ],
+      "scale": 0.12672811059907835
+    },
+    "resident-blue-6": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        7,
+        18,
+        32
+      ],
+      "subjectPixels": [
+        26,
+        42
+      ],
+      "subjectOffset": [
+        7,
+        21
+      ],
+      "scale": 0.11407407407407406
+    },
+    "resident-blue-7": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        5,
+        7,
+        20,
+        31
+      ],
+      "subjectPixels": [
+        28,
+        45
+      ],
+      "subjectOffset": [
+        9,
+        19
+      ],
+      "scale": 0.12222222222222222
+    },
+    "resident-blue-8": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        8,
+        23,
+        30
+      ],
+      "subjectPixels": [
+        29,
+        48
+      ],
+      "subjectOffset": [
+        10,
+        17
+      ],
+      "scale": 0.1293243243243243
+    },
+    "resident-blue-9": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        8,
+        24,
+        30
+      ],
+      "subjectPixels": [
+        29,
+        48
+      ],
+      "subjectOffset": [
+        11,
+        17
+      ],
+      "scale": 0.12726063829787232
+    },
+    "resident-red-0": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        2,
+        6,
+        21,
+        30
+      ],
+      "subjectPixels": [
+        33,
+        52
+      ],
+      "subjectOffset": [
+        5,
+        13
+      ],
+      "scale": 0.10807453416149067
+    },
+    "resident-red-1": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        3,
+        5,
+        24,
+        32
+      ],
+      "subjectPixels": [
+        35,
+        59
+      ],
+      "subjectOffset": [
+        7,
+        11
+      ],
+      "scale": 0.11469726562499999
+    },
+    "resident-red-2": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        5,
+        6,
+        18,
+        32
+      ],
+      "subjectPixels": [
+        24,
+        40
+      ],
+      "subjectOffset": [
+        9,
+        21
+      ],
+      "scale": 0.07738095238095238
+    },
+    "resident-red-3": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        3,
+        6,
+        19,
+        33
+      ],
+      "subjectPixels": [
+        29,
+        49
+      ],
+      "subjectOffset": [
+        6,
+        18
+      ],
+      "scale": 0.09554831704668838
+    },
+    "resident-red-4": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        8,
+        21,
+        31
+      ],
+      "subjectPixels": [
+        31,
+        50
+      ],
+      "subjectOffset": [
+        7,
+        17
+      ],
+      "scale": 0.10147058823529412
+    },
+    "resident-red-5": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        5,
+        7,
+        21,
+        34
+      ],
+      "subjectPixels": [
+        29,
+        59
+      ],
+      "subjectOffset": [
+        9,
+        15
+      ],
+      "scale": 0.12601931330472102
+    },
+    "resident-red-6": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        8,
+        17,
+        35
+      ],
+      "subjectPixels": [
+        24,
+        43
+      ],
+      "subjectOffset": [
+        7,
+        25
+      ],
+      "scale": 0.08481613285883748
+    },
+    "resident-red-7": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        4,
+        7,
+        19,
+        34
+      ],
+      "subjectPixels": [
+        28,
+        46
+      ],
+      "subjectOffset": [
+        7,
+        22
+      ],
+      "scale": 0.08928571428571429
+    },
+    "resident-red-8": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        3,
+        8,
+        22,
+        32
+      ],
+      "subjectPixels": [
+        31,
+        52
+      ],
+      "subjectOffset": [
+        7,
+        18
+      ],
+      "scale": 0.10195312499999999
+    },
+    "resident-red-9": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        2,
+        8,
+        21,
+        32
+      ],
+      "subjectPixels": [
+        29,
+        52
+      ],
+      "subjectOffset": [
+        7,
+        18
+      ],
+      "scale": 0.10609756097560975
+    },
+    "moon": {
+      "pixels": [
+        178,
+        178
+      ],
+      "nativeCanvas": [
+        64,
+        64
+      ],
+      "nativeBounds": [
+        10,
+        10,
+        54,
+        54
+      ],
+      "subjectPixels": [
+        122,
+        119
+      ],
+      "subjectOffset": [
+        28,
+        30
+      ],
+      "scale": 0.29774939172749393
+    },
+    "mars": {
+      "pixels": [
+        227,
+        227
+      ],
+      "nativeCanvas": [
+        64,
+        64
+      ],
+      "nativeBounds": [
+        12,
+        11,
+        53,
+        52
+      ],
+      "subjectPixels": [
+        145,
+        144
+      ],
+      "subjectOffset": [
+        43,
+        40
+      ],
+      "scale": 0.35126056763285024
+    },
+    "jupiter": {
+      "pixels": [
+        186,
+        189
+      ],
+      "nativeCanvas": [
+        75,
+        76
+      ],
+      "nativeBounds": [
+        1,
+        2,
+        74,
+        75
+      ],
+      "subjectPixels": [
+        181,
+        178
+      ],
+      "subjectOffset": [
+        2,
+        7
+      ],
+      "scale": 0.42102325581395345
+    },
+    "saturn": {
+      "pixels": [
+        380,
+        163
+      ],
+      "nativeCanvas": [
+        128,
+        55
+      ],
+      "nativeBounds": [
+        7,
+        3,
+        122,
+        52
+      ],
+      "subjectPixels": [
+        207,
+        145
+      ],
+      "subjectOffset": [
+        88,
+        9
+      ],
+      "scale": 0.42092226613965744
+    },
+    "uranus": {
+      "pixels": [
+        90,
+        185
+      ],
+      "nativeCanvas": [
+        78,
+        160
+      ],
+      "nativeBounds": [
+        3,
+        13,
+        75,
+        153
+      ],
+      "subjectPixels": [
+        83,
+        77
+      ],
+      "subjectOffset": [
+        3,
+        57
+      ],
+      "scale": 0.1681719090625973
+    },
+    "pluto": {
+      "pixels": [
+        141,
+        141
+      ],
+      "nativeCanvas": [
+        64,
+        64
+      ],
+      "nativeBounds": [
+        3,
+        3,
+        61,
+        61
+      ],
+      "subjectPixels": [
+        128,
+        126
+      ],
+      "subjectOffset": [
+        6,
+        8
+      ],
+      "scale": 0.4376070205479452
+    },
+    "airplane": {
+      "pixels": [
+        616,
+        88
+      ],
+      "nativeCanvas": [
+        168,
+        24
+      ],
+      "nativeBounds": [
+        7,
+        9,
+        161,
+        19
+      ],
+      "subjectPixels": [
+        565,
+        31
+      ],
+      "subjectOffset": [
+        26,
+        36
+      ],
+      "scale": 0.38996316758747696
+    },
+    "balloon": {
+      "pixels": [
+        115,
+        115
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        5,
+        1,
+        28,
+        30
+      ],
+      "subjectPixels": [
+        83,
+        74
+      ],
+      "subjectOffset": [
+        18,
+        19
+      ],
+      "scale": 0.20872790404040403
+    },
+    "blimp": {
+      "pixels": [
+        181,
+        91
+      ],
+      "nativeCanvas": [
+        64,
+        32
+      ],
+      "nativeBounds": [
+        6,
+        11,
+        51,
+        25
+      ],
+      "subjectPixels": [
+        69,
+        40
+      ],
+      "subjectOffset": [
+        46,
+        31
+      ],
+      "scale": 0.15023584905660378
+    },
+    "ufo": {
+      "pixels": [
+        118,
+        118
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        1,
+        5,
+        30,
+        29
+      ],
+      "subjectPixels": [
+        107,
+        79
+      ],
+      "subjectOffset": [
+        4,
+        23
+      ],
+      "scale": 0.22465861344537816
+    },
+    "station": {
+      "pixels": [
+        123,
+        123
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        7,
+        8,
+        26,
+        24
+      ],
+      "subjectPixels": [
+        73,
+        46
+      ],
+      "subjectOffset": [
+        27,
+        38
+      ],
+      "scale": 0.1573949353448276
+    },
+    "whale-0": {
+      "pixels": [
+        412,
+        103
+      ],
+      "nativeCanvas": [
+        128,
+        32
+      ],
+      "nativeBounds": [
+        1,
+        1,
+        112,
+        26
+      ],
+      "subjectPixels": [
+        135,
+        80
+      ],
+      "subjectOffset": [
+        114,
+        3
+      ],
+      "scale": 0.28135926573426573
+    },
+    "whale-1": {
+      "pixels": [
+        412,
+        103
+      ],
+      "nativeCanvas": [
+        128,
+        32
+      ],
+      "nativeBounds": [
+        0,
+        2,
+        107,
+        27
+      ],
+      "subjectPixels": [
+        185,
+        80
+      ],
+      "subjectOffset": [
+        80,
+        7
+      ],
+      "scale": 0.39836014851485146
+    },
+    "flyman-0": {
+      "pixels": [
+        99,
+        99
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        8,
+        12,
+        25,
+        22
+      ],
+      "subjectPixels": [
+        53,
+        28
+      ],
+      "subjectOffset": [
+        25,
+        39
+      ],
+      "scale": 0.07745765832106039
+    },
+    "flyman-1": {
+      "pixels": [
+        99,
+        99
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        8,
+        11,
+        25,
+        21
+      ],
+      "subjectPixels": [
+        53,
+        27
+      ],
+      "subjectOffset": [
+        25,
+        36
+      ],
+      "scale": 0.07470703125
+    },
+    "star": {
+      "pixels": [
+        45,
+        45
+      ],
+      "nativeCanvas": [
+        128,
+        128
+      ],
+      "nativeBounds": [
+        8,
+        5,
+        120,
+        110
+      ],
+      "subjectPixels": [
+        38,
+        37
+      ],
+      "subjectOffset": [
+        4,
+        2
+      ],
+      "source": "perfect-v5/burst-star-source.png",
+      "sourceBounds": [
+        36,
+        37,
+        1219,
+        1185
+      ],
+      "scale": 0.032155106707317076
+    },
+    "sky-purplestar": {
+      "pixels": [
+        142,
+        142
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        9,
+        9,
+        24,
+        24
+      ],
+      "subjectPixels": [
+        58,
+        67
+      ],
+      "subjectOffset": [
+        44,
+        40
+      ],
+      "scale": 0.2705792682926829
+    },
+    "sky-bluelestar": {
+      "pixels": [
+        61,
+        61
+      ],
+      "nativeCanvas": [
+        10,
+        10
+      ],
+      "nativeBounds": [
+        0,
+        0,
+        10,
+        10
+      ],
+      "subjectPixels": [
+        54,
+        61
+      ],
+      "subjectOffset": [
+        4,
+        0
+      ],
+      "scale": 0.24796747967479674
+    },
+    "sky-purplestar_little": {
+      "pixels": [
+        19,
+        19
+      ],
+      "nativeCanvas": [
+        3,
+        3
+      ],
+      "nativeBounds": [
+        0,
+        0,
+        3,
+        3
+      ],
+      "subjectPixels": [
+        17,
+        19
+      ],
+      "subjectOffset": [
+        1,
+        0
+      ],
+      "scale": 0.07723577235772358
+    },
+    "city-left-short-background-body": {
+      "pixels": [
+        22,
+        437
+      ],
+      "scale": 0.3384615384615385,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1494,
+        "top": 1494,
+        "bottom": 1761,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-left-cropped-blue": {
+      "pixels": [
+        7,
+        813
+      ],
+      "scale": 0.729802513464991,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 990,
+        "top": 990,
+        "bottom": 1191,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-left-needle-blue": {
+      "pixels": [
+        44,
+        1264
+      ],
+      "scale": 0.7077267637178052,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1530,
+        "top": 1530,
+        "bottom": 1851,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-short-blue": {
+      "pixels": [
+        52,
+        311
+      ],
+      "scale": 0.46074074074074073,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 605,
+        "top": 605,
+        "bottom": 727,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-left-tall-blue": {
+      "pixels": [
+        44,
+        1797
+      ],
+      "scale": 0.8839153959665519,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1727,
+        "top": 1727,
+        "bottom": 2093,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-middle-small-blue": {
+      "pixels": [
+        30,
+        976
+      ],
+      "scale": 0.7272727272727273,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1173,
+        "top": 1173,
+        "bottom": 1415,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-tall-flat-blue": {
+      "pixels": [
+        45,
+        1065
+      ],
+      "scale": 0.9761686526122824,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-a-source.png",
+      "bodyRepeat": {
+        "headerBottom": 921,
+        "top": 921,
+        "bottom": 1117,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-behind-observation-blue": {
+      "pixels": [
+        29,
+        629
+      ],
+      "scale": 0.4894941634241245,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-b-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1126,
+        "top": 1126,
+        "bottom": 1357,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-high-needle-blue": {
+      "pixels": [
+        29,
+        739
+      ],
+      "scale": 0.4897282968853545,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-b-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1304,
+        "top": 1304,
+        "bottom": 1576,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-behind-green-blue": {
+      "pixels": [
+        37,
+        303
+      ],
+      "scale": 0.4848,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-b-source.png",
+      "bodyRepeat": {
+        "headerBottom": 594,
+        "top": 594,
+        "bottom": 706,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-right-short-blue": {
+      "pixels": [
+        37,
+        710
+      ],
+      "scale": 0.48830811554332876,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-b-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1258,
+        "top": 1258,
+        "bottom": 1520,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-right-long-tower": {
+      "pixels": [
+        37,
+        2603
+      ],
+      "scale": 0.7254901960784313,
+      "registration": "whole generated building with its own facade material",
+      "source": "blue-b-source.png",
+      "bodyRepeat": {
+        "headerBottom": 325,
+        "top": 325,
+        "bottom": 499
+      }
+    },
+    "city-left-lower-gray-group": {
+      "pixels": [
+        207,
+        2063
+      ],
+      "scale": 0.9786527514231499,
+      "registration": "whole generated building with its own facade material",
+      "source": "left-base-source.png",
+      "bodyRepeat": null
+    },
+    "city-left-thin-gray": {
+      "pixels": [
+        30,
+        651
+      ],
+      "scale": 0.4086629001883239,
+      "registration": "whole generated building with its own facade material",
+      "source": "remaining-gray-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1371,
+        "top": 1371,
+        "bottom": 1658,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-left-dark-inset-tower": {
+      "pixels": [
+        200,
+        820
+      ],
+      "scale": 0.7604562737642585,
+      "registration": "whole generated building with its own facade material",
+      "source": "upper-gray-pair-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1691,
+        "top": 1691,
+        "bottom": 1914,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-central-observation-needle": {
+      "pixels": [
+        155,
+        1087
+      ],
+      "scale": 0.7241838774150566,
+      "registration": "whole generated building with its own facade material",
+      "source": "upper-gray-pair-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1300,
+        "top": 1300,
+        "bottom": 1570,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-right-stepped-tower": {
+      "pixels": [
+        163,
+        1871
+      ],
+      "scale": 0.9289970208540218,
+      "registration": "whole generated building with its own facade material",
+      "source": "right-tower-source.png",
+      "bodyRepeat": {
+        "headerBottom": 900,
+        "top": 900,
+        "bottom": 1100,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-middle-tall-gray": {
+      "pixels": [
+        185,
+        976
+      ],
+      "scale": 0.7144948755490483,
+      "registration": "whole generated building with its own facade material",
+      "source": "remaining-gray-source.png",
+      "bodyRepeat": {
+        "headerBottom": 1141,
+        "top": 1141,
+        "bottom": 1387,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-right-foreground-ledge": {
+      "pixels": [
+        303,
+        1974
+      ],
+      "scale": 0.9633967789165446,
+      "registration": "whole generated building with its own facade material",
+      "source": "right-ledge-source.png",
+      "bodyRepeat": null
+    },
+    "city-middle-plain-facade": {
+      "pixels": [
+        237,
+        1582
+      ],
+      "scale": 0.9404761904761905,
+      "registration": "whole generated building with its own facade material",
+      "source": "middle-facades-source.png",
+      "bodyRepeat": null
+    },
+    "city-left-light-facade": {
+      "pixels": [
+        193,
+        2055
+      ],
+      "scale": 0.9629803186504218,
+      "registration": "whole generated building with its own facade material",
+      "source": "light-facade-source.png",
+      "bodyRepeat": null
+    },
+    "city-left-wraparound-foreground-ledge": {
+      "pixels": [
+        207,
+        2063
+      ],
+      "scale": 0.9786527514231499,
+      "registration": "whole generated building with its own facade material",
+      "source": "left-base-source.png",
+      "bodyRepeat": null
+    },
+    "city-mauve-column": {
+      "pixels": [
+        66,
+        1094
+      ],
+      "scale": 0.7357094821788837,
+      "registration": "whole generated building with its own facade material",
+      "source": "remaining-gray-source.png",
+      "bodyRepeat": null
+    },
+    "city-lower-connecting-gray": {
+      "pixels": [
+        133,
+        244
+      ],
+      "scale": 0.48717948717948717,
+      "registration": "whole generated building with its own facade material",
+      "source": "remaining-gray-source.png",
+      "bodyRepeat": {
+        "headerBottom": 2025,
+        "top": 2025,
+        "bottom": 2125,
+        "extendToCanvasBottom": true
+      }
+    },
+    "city-lower-striped-facade": {
+      "pixels": [
+        266,
+        717
+      ],
+      "scale": 0.46198453608247425,
+      "registration": "whole generated building with its own facade material",
+      "source": "striped-facade-source.png",
+      "bodyRepeat": null
+    },
+    "combo-star-0": {
+      "pixels": [
+        148,
+        148
+      ],
+      "nativeCanvas": [
+        256.0,
+        256.0
+      ],
+      "source": "perfect-v5/floor-glints-source.png",
+      "marks": [
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            85,
+            26,
+            102,
+            43
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            49,
+            15
+          ],
+          "scale": 0.030809169278996865
+        },
+        {
+          "glyph": "large-x",
+          "nativeBounds": [
+            192,
+            53,
+            247,
+            108
+          ],
+          "pixels": [
+            32,
+            31
+          ],
+          "offset": [
+            111,
+            31
+          ],
+          "scale": 0.09635416666666666
+        },
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            20,
+            85,
+            38,
+            102
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            12,
+            49
+          ],
+          "scale": 0.030809169278996865
+        },
+        {
+          "glyph": "diagonal",
+          "nativeBounds": [
+            106,
+            85,
+            135,
+            113
+          ],
+          "pixels": [
+            17,
+            16
+          ],
+          "offset": [
+            61,
+            49
+          ],
+          "scale": 0.06178435114503816
+        },
+        {
+          "glyph": "large-x",
+          "nativeBounds": [
+            10,
+            171,
+            65,
+            226
+          ],
+          "pixels": [
+            32,
+            31
+          ],
+          "offset": [
+            6,
+            99
+          ],
+          "scale": 0.09635416666666666
+        },
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            160,
+            187,
+            177,
+            204
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            92,
+            108
+          ],
+          "scale": 0.030809169278996865
+        }
+      ],
+      "scale": 0.09635416666666666
+    },
+    "combo-star-1": {
+      "pixels": [
+        148,
+        148
+      ],
+      "nativeCanvas": [
+        256.0,
+        256.0
+      ],
+      "source": "perfect-v5/floor-glints-source.png",
+      "marks": [
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            270,
+            27,
+            287,
+            44
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            8,
+            16
+          ],
+          "scale": 0.030809169278996865
+        },
+        {
+          "glyph": "small-x",
+          "nativeBounds": [
+            459,
+            64,
+            491,
+            96
+          ],
+          "pixels": [
+            19,
+            18
+          ],
+          "offset": [
+            117,
+            37
+          ],
+          "scale": 0.0649122807017544
+        },
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            380,
+            90,
+            397,
+            107
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            72,
+            52
+          ],
+          "scale": 0.030809169278996865
+        },
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            406,
+            153,
+            422,
+            170
+          ],
+          "pixels": [
+            9,
+            10
+          ],
+          "offset": [
+            87,
+            88
+          ],
+          "scale": 0.029838709677419355
+        },
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            291,
+            184,
+            308,
+            201
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            20,
+            106
+          ],
+          "scale": 0.030809169278996865
+        },
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            443,
+            216,
+            460,
+            233
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            108,
+            125
+          ],
+          "scale": 0.030809169278996865
+        }
+      ],
+      "scale": 0.0649122807017544
+    },
+    "combo-star-2": {
+      "pixels": [
+        148,
+        148
+      ],
+      "nativeCanvas": [
+        256.0,
+        256.0
+      ],
+      "source": "perfect-v5/floor-glints-source.png",
+      "marks": [
+        {
+          "glyph": "plus",
+          "nativeBounds": [
+            138,
+            268,
+            155,
+            286
+          ],
+          "pixels": [
+            10,
+            10
+          ],
+          "offset": [
+            80,
+            7
+          ],
+          "scale": 0.03170362903225807
+        },
+        {
+          "glyph": "dot",
+          "nativeBounds": [
+            220,
+            323,
+            227,
+            329
+          ],
+          "pixels": [
+            3,
+            3
+          ],
+          "offset": [
+            128,
+            39
+          ],
+          "scale": 0.020404411764705883
+        }
+      ],
+      "scale": 0.03170362903225807
+    }
+  },
+  "textures": {
+    "floor-coral": {
+      "pixels": [
+        384,
+        384
+      ]
+    },
+    "floor-blue": {
+      "pixels": [
+        384,
+        384
+      ]
+    },
+    "floor-lobby": {
+      "pixels": [
+        384,
+        384
+      ]
+    },
+    "ground": {
+      "pixels": [
+        128,
+        128
+      ]
+    },
+    "city": {
+      "pixels": [
+        1183,
+        3549
+      ]
+    }
+  },
+  "skylineAssembly": {
+    "strategy": "whole generated buildings in native painter order",
+    "canvas": [
+      1183,
+      3549
+    ],
+    "nativeCanvas": [
+      160,
+      480
+    ],
+    "parts": [
+      {
+        "name": "left-short-background-body",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          124,
+          304,
+          189,
+          1788
+        ],
+        "nativeBox": [
+          42,
+          143,
+          45,
+          202
+        ],
+        "position": [
+          311,
+          1057
+        ],
+        "target": [
+          22,
+          437
+        ],
+        "scale": 0.3384615384615385,
+        "resized": [
+          22,
+          502
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1494,
+          "top": 1494,
+          "bottom": 1761,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2492
+      },
+      {
+        "name": "left-cropped-blue",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          41,
+          97,
+          60,
+          1211
+        ],
+        "nativeBox": [
+          0,
+          91,
+          1,
+          201
+        ],
+        "position": [
+          0,
+          673
+        ],
+        "target": [
+          7,
+          813
+        ],
+        "scale": 0.729802513464991,
+        "resized": [
+          14,
+          813
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 990,
+          "top": 990,
+          "bottom": 1191,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2876
+      },
+      {
+        "name": "left-needle-blue",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          123,
+          97,
+          190,
+          1883
+        ],
+        "nativeBox": [
+          9,
+          51,
+          15,
+          222
+        ],
+        "position": [
+          67,
+          377
+        ],
+        "target": [
+          44,
+          1264
+        ],
+        "scale": 0.7077267637178052,
+        "resized": [
+          47,
+          1264
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1530,
+          "top": 1530,
+          "bottom": 1851,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 3172
+      },
+      {
+        "name": "short-blue",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          232,
+          64,
+          345,
+          739
+        ],
+        "nativeBox": [
+          23,
+          79,
+          30,
+          121
+        ],
+        "position": [
+          170,
+          584
+        ],
+        "target": [
+          52,
+          311
+        ],
+        "scale": 0.46074074074074073,
+        "resized": [
+          52,
+          311
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 605,
+          "top": 605,
+          "bottom": 727,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2965
+      },
+      {
+        "name": "left-tall-blue",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          371,
+          97,
+          434,
+          2130
+        ],
+        "nativeBox": [
+          48,
+          89,
+          54,
+          332
+        ],
+        "position": [
+          355,
+          658
+        ],
+        "target": [
+          44,
+          1797
+        ],
+        "scale": 0.8839153959665519,
+        "resized": [
+          56,
+          1797
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1727,
+          "top": 1727,
+          "bottom": 2093,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2891
+      },
+      {
+        "name": "middle-small-blue",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          485,
+          97,
+          538,
+          1439
+        ],
+        "nativeBox": [
+          62,
+          134,
+          66,
+          266
+        ],
+        "position": [
+          458,
+          991
+        ],
+        "target": [
+          30,
+          976
+        ],
+        "scale": 0.7272727272727273,
+        "resized": [
+          39,
+          976
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1173,
+          "top": 1173,
+          "bottom": 1415,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2558
+      },
+      {
+        "name": "tall-flat-blue",
+        "source": "blue-a-source.png",
+        "sourceBox": [
+          607,
+          46,
+          670,
+          1137
+        ],
+        "nativeBox": [
+          87,
+          74,
+          93,
+          218
+        ],
+        "position": [
+          643,
+          547
+        ],
+        "target": [
+          45,
+          1065
+        ],
+        "scale": 0.9761686526122824,
+        "resized": [
+          61,
+          1065
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 921,
+          "top": 921,
+          "bottom": 1117,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 3002
+      },
+      {
+        "name": "behind-observation-blue",
+        "source": "blue-b-source.png",
+        "sourceBox": [
+          29,
+          95,
+          94,
+          1380
+        ],
+        "nativeBox": [
+          78,
+          133,
+          82,
+          218
+        ],
+        "position": [
+          577,
+          983
+        ],
+        "target": [
+          29,
+          629
+        ],
+        "scale": 0.4894941634241245,
+        "resized": [
+          32,
+          629
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1126,
+          "top": 1126,
+          "bottom": 1357,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2566
+      },
+      {
+        "name": "high-needle-blue",
+        "source": "blue-b-source.png",
+        "sourceBox": [
+          130,
+          94,
+          194,
+          1603
+        ],
+        "nativeBox": [
+          103,
+          33,
+          107,
+          133
+        ],
+        "position": [
+          762,
+          244
+        ],
+        "target": [
+          29,
+          739
+        ],
+        "scale": 0.4897282968853545,
+        "resized": [
+          31,
+          739
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1304,
+          "top": 1304,
+          "bottom": 1576,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 3305
+      },
+      {
+        "name": "behind-green-blue",
+        "source": "blue-b-source.png",
+        "sourceBox": [
+          252,
+          92,
+          330,
+          717
+        ],
+        "nativeBox": [
+          112,
+          114,
+          117,
+          155
+        ],
+        "position": [
+          828,
+          843
+        ],
+        "target": [
+          37,
+          303
+        ],
+        "scale": 0.4848,
+        "resized": [
+          38,
+          303
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 594,
+          "top": 594,
+          "bottom": 706,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2706
+      },
+      {
+        "name": "right-short-blue",
+        "source": "blue-b-source.png",
+        "sourceBox": [
+          369,
+          92,
+          450,
+          1546
+        ],
+        "nativeBox": [
+          127,
+          117,
+          132,
+          213
+        ],
+        "position": [
+          939,
+          865
+        ],
+        "target": [
+          37,
+          710
+        ],
+        "scale": 0.48830811554332876,
+        "resized": [
+          40,
+          710
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1258,
+          "top": 1258,
+          "bottom": 1520,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2684
+      },
+      {
+        "name": "right-long-tower",
+        "source": "blue-b-source.png",
+        "sourceBox": [
+          488,
+          95,
+          539,
+          2142
+        ],
+        "nativeBox": [
+          143,
+          128,
+          148,
+          480
+        ],
+        "position": [
+          1057,
+          946
+        ],
+        "target": [
+          37,
+          2603
+        ],
+        "scale": 0.7254901960784313,
+        "resized": [
+          37,
+          1485
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 325,
+          "top": 325,
+          "bottom": 499
+        },
+        "renderedHeight": 2603
+      },
+      {
+        "name": "left-lower-gray-group",
+        "source": "left-base-source.png",
+        "sourceBox": [
+          253,
+          32,
+          470,
+          2140
+        ],
+        "nativeBox": [
+          0,
+          201,
+          28,
+          480
+        ],
+        "position": [
+          0,
+          1486
+        ],
+        "target": [
+          207,
+          2063
+        ],
+        "scale": 0.9786527514231499,
+        "resized": [
+          212,
+          2063
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": null,
+        "renderedHeight": 2063
+      },
+      {
+        "name": "left-thin-gray",
+        "source": "remaining-gray-source.png",
+        "sourceBox": [
+          552,
+          94,
+          611,
+          1687
+        ],
+        "nativeBox": [
+          6,
+          125,
+          10,
+          213
+        ],
+        "position": [
+          44,
+          924
+        ],
+        "target": [
+          30,
+          651
+        ],
+        "scale": 0.4086629001883239,
+        "resized": [
+          24,
+          651
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1371,
+          "top": 1371,
+          "bottom": 1658,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2625
+      },
+      {
+        "name": "left-dark-inset-tower",
+        "source": "upper-gray-pair-source.png",
+        "sourceBox": [
+          29,
+          695,
+          292,
+          1936
+        ],
+        "nativeBox": [
+          15,
+          121,
+          42,
+          232
+        ],
+        "position": [
+          111,
+          895
+        ],
+        "target": [
+          200,
+          820
+        ],
+        "scale": 0.7604562737642585,
+        "resized": [
+          200,
+          944
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1691,
+          "top": 1691,
+          "bottom": 1914,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2654
+      },
+      {
+        "name": "central-observation-needle",
+        "source": "upper-gray-pair-source.png",
+        "sourceBox": [
+          451,
+          96,
+          665,
+          1597
+        ],
+        "nativeBox": [
+          65,
+          71,
+          86,
+          218
+        ],
+        "position": [
+          481,
+          525
+        ],
+        "target": [
+          155,
+          1087
+        ],
+        "scale": 0.7241838774150566,
+        "resized": [
+          155,
+          1087
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1300,
+          "top": 1300,
+          "bottom": 1570,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 3024
+      },
+      {
+        "name": "right-stepped-tower",
+        "source": "right-tower-source.png",
+        "sourceBox": [
+          275,
+          96,
+          449,
+          2110
+        ],
+        "nativeBox": [
+          97,
+          97,
+          119,
+          350
+        ],
+        "position": [
+          717,
+          717
+        ],
+        "target": [
+          163,
+          1871
+        ],
+        "scale": 0.9289970208540218,
+        "resized": [
+          162,
+          1871
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 900,
+          "top": 900,
+          "bottom": 1100,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 2832
+      },
+      {
+        "name": "middle-tall-gray",
+        "source": "remaining-gray-source.png",
+        "sourceBox": [
+          39,
+          46,
+          298,
+          1412
+        ],
+        "nativeBox": [
+          68,
+          218,
+          93,
+          350
+        ],
+        "position": [
+          503,
+          1612
+        ],
+        "target": [
+          185,
+          976
+        ],
+        "scale": 0.7144948755490483,
+        "resized": [
+          185,
+          976
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 1141,
+          "top": 1141,
+          "bottom": 1387,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 1937
+      },
+      {
+        "name": "right-foreground-ledge",
+        "source": "right-ledge-source.png",
+        "sourceBox": [
+          206,
+          73,
+          522,
+          2122
+        ],
+        "nativeBox": [
+          104,
+          213,
+          145,
+          480
+        ],
+        "position": [
+          769,
+          1575
+        ],
+        "target": [
+          303,
+          1974
+        ],
+        "scale": 0.9633967789165446,
+        "resized": [
+          304,
+          1974
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": null,
+        "renderedHeight": 1974
+      },
+      {
+        "name": "middle-plain-facade",
+        "source": "middle-facades-source.png",
+        "sourceBox": [
+          32,
+          364,
+          284,
+          2141
+        ],
+        "nativeBox": [
+          56,
+          266,
+          88,
+          480
+        ],
+        "position": [
+          414,
+          1967
+        ],
+        "target": [
+          237,
+          1582
+        ],
+        "scale": 0.9404761904761905,
+        "resized": [
+          237,
+          1671
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": null,
+        "renderedHeight": 1671
+      },
+      {
+        "name": "left-light-facade",
+        "source": "light-facade-source.png",
+        "sourceBox": [
+          260,
+          18,
+          463,
+          2152
+        ],
+        "nativeBox": [
+          21,
+          202,
+          47,
+          480
+        ],
+        "position": [
+          155,
+          1494
+        ],
+        "target": [
+          193,
+          2055
+        ],
+        "scale": 0.9629803186504218,
+        "resized": [
+          195,
+          2055
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": null,
+        "renderedHeight": 2055
+      },
+      {
+        "name": "left-wraparound-foreground-ledge",
+        "source": "left-base-source.png",
+        "sourceBox": [
+          253,
+          32,
+          470,
+          2140
+        ],
+        "nativeBox": [
+          0,
+          201,
+          28,
+          480
+        ],
+        "position": [
+          0,
+          1486
+        ],
+        "target": [
+          207,
+          2063
+        ],
+        "scale": 0.9786527514231499,
+        "resized": [
+          212,
+          2063
+        ],
+        "clipNativeBox": [
+          21,
+          300,
+          28,
+          315
+        ],
+        "bodyRepeat": null,
+        "renderedHeight": 2063
+      },
+      {
+        "name": "mauve-column",
+        "source": "remaining-gray-source.png",
+        "sourceBox": [
+          350,
+          94,
+          442,
+          1581
+        ],
+        "nativeBox": [
+          47,
+          332,
+          56,
+          480
+        ],
+        "position": [
+          348,
+          2455
+        ],
+        "target": [
+          66,
+          1094
+        ],
+        "scale": 0.7357094821788837,
+        "resized": [
+          68,
+          1094
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": null,
+        "renderedHeight": 1094
+      },
+      {
+        "name": "lower-connecting-gray",
+        "source": "remaining-gray-source.png",
+        "sourceBox": [
+          57,
+          1581,
+          330,
+          2135
+        ],
+        "nativeBox": [
+          88,
+          350,
+          106,
+          383
+        ],
+        "position": [
+          651,
+          2588
+        ],
+        "target": [
+          133,
+          244
+        ],
+        "scale": 0.48717948717948717,
+        "resized": [
+          133,
+          270
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": {
+          "headerBottom": 2025,
+          "top": 2025,
+          "bottom": 2125,
+          "extendToCanvasBottom": true
+        },
+        "renderedHeight": 961
+      },
+      {
+        "name": "lower-striped-facade",
+        "source": "striped-facade-source.png",
+        "sourceBox": [
+          112,
+          160,
+          751,
+          1712
+        ],
+        "nativeBox": [
+          80,
+          383,
+          116,
+          480
+        ],
+        "position": [
+          592,
+          2832
+        ],
+        "target": [
+          266,
+          717
+        ],
+        "scale": 0.46198453608247425,
+        "resized": [
+          295,
+          717
+        ],
+        "clipNativeBox": null,
+        "bodyRepeat": null,
+        "renderedHeight": 717
+      }
+    ],
+    "independentHorizontalFacadeJoins": 0,
+    "nearestPixelFills": 0,
+    "legacyRgbUsed": false,
+    "alpha": "generated building alpha only; no global silhouette replacement"
+  }
+}

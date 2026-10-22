@@ -1,0 +1,39 @@
+{
+  "generator": "OpenAI built-in imagegen",
+  "transparentBackground": false,
+  "referenceImages": [
+    "assets/lobby-covers/visual/covers/meowdoku/meowdoku-cover-v1.jpg"
+  ],
+  "prompt": "Use case: precise-object-edit.\nAsset type: existing 4:3 landscape lobby cover for the cat puzzle game Meowdoku.\nInput image 1 is the EDIT TARGET. Make a minimal, localized anatomy correction to the kitten's raised front paw next to the glowing bottom-right turquoise tile. The existing paw incorrectly shows the pink underside toward the viewer, giving a backwards, twisted-wrist gesture.\nPrimary request: The kitten is naturally reaching out and gently tapping the glowing bottom-right tile with the underside of its front paw. Redraw only that raised paw, wrist and connecting short foreleg as necessary: a softly curved, anatomically plausible foreleg reaches diagonally down and left from its shoulder; its little rounded toes contact the tile; the viewer sees the fluffy WHITE FUR ON THE BACK/TOP OF THE PAW and a soft side silhouette. The pink pads face AWAY from the camera, INTO the board, and are completely hidden. Match a real kitten resting a paw against an upright board. The paw must stay connected smoothly to the foreleg with no twisted joint. The contact position should clearly read as touching the glowing cyan tile. Keep the limb short and proportionate to this young kitten.\nInvariants: Preserve the entire original composition and landscape 4:3 aspect ratio. Preserve the kitten's identity, large blue eyes, grey and white fur, face, ears, expression, body, tail, all other paws, and position. Preserve the exact 5 by 5 board, all existing tile colors, cat head placements, white X placements, frame, perspective, golden glow, cozy knitted blanket, background plants, warm peach lighting, original soft plush 3D game illustration style and framing. Do not redesign or recolor the cover.\nAvoid: any visible pink pads on the reaching paw, waving palm facing the viewer, backward paw, upside-down paw, twisted wrist, human hands, fingers, long arm, extra paws or limbs, claws, added text, watermarks, or changes outside the small reaching-foreleg area.",
+  "constraints": {
+    "paw": "The reaching paw touches the glowing bottom-right tile; its furry back faces the viewer and the pads face into the board.",
+    "composition": "Preserve the 4:3 landscape cover, cat identity, 5 by 5 board, tile and marker arrangement, warm lighting and plush 3D style."
+  },
+  "postProcessing": {
+    "resize": {
+      "from": [
+        1448,
+        1086
+      ],
+      "to": [
+        308,
+        231
+      ],
+      "tool": "macOS sips --resampleWidth 308",
+      "layout": "At design width 750: grid width = 750 - 36 * 2 = 678; card width = (678 - 12) / 2 = 333; cover width = 333 * (320 - 12 * 2) / 320 = 308.025; round to 308 and preserve 4:3.",
+      "format": "JPEG",
+      "quality": 92
+    },
+    "compression": {
+      "provider": "TinyPNG / Tinify",
+      "script": ".agents/skills/tinypng-batch/scripts/compress.py",
+      "beforeBytes": 38000,
+      "afterBytes": 35432,
+      "processed": 1,
+      "cached": 0,
+      "failed": 0,
+      "savedBytes": 2568
+    }
+  },
+  "runtimeAsset": "assets/lobby-covers/visual/covers/meowdoku/meowdoku-cover-v2.jpg"
+}

@@ -1,0 +1,93 @@
+{
+  "comic-0": {
+    "path": "visual/revision-v26/comic/comic-0",
+    "size": [
+      768,
+      512
+    ]
+  },
+  "comic-1": {
+    "path": "visual/revision-v26/comic/comic-1",
+    "size": [
+      768,
+      512
+    ]
+  },
+  "comic-2": {
+    "path": "visual/revision-v26/comic/comic-2",
+    "size": [
+      768,
+      512
+    ]
+  },
+  "comic-3": {
+    "path": "visual/revision-v26/comic/comic-3",
+    "size": [
+      768,
+      512
+    ]
+  },
+  "soil-fill": {
+    "path": "visual/revision-v26/ground/soil-fill",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "power-magnet": {
+    "path": "visual/revision-v26/props-registered/power-magnet",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "power-shield": {
+    "path": "visual/revision-v26/props-registered/power-shield",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "power-star": {
+    "path": "visual/revision-v26/props-registered/power-star",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "spring-pad": {
+    "path": "visual/revision-v26/props-registered/spring-pad",
+    "size": [
+      88,
+      88
+    ]
+  },
+  "roller": {
+    "path": "visual/revision-v26/props-registered/roller",
+    "size": [
+      92,
+      92
+    ]
+  },
+  "steam-base": {
+    "path": "visual/revision-v26/props-registered/steam-base",
+    "size": [
+      100,
+      68
+    ]
+  },
+  "steam-jet": {
+    "path": "visual/revision-v26/props-registered/steam-jet",
+    "size": [
+      114,
+      174
+    ]
+  },
+  "pickup-spark": {
+    "path": "visual/revision-v26/props-registered/pickup-spark",
+    "size": [
+      36,
+      36
+    ]
+  }
+}

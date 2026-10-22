@@ -49,3 +49,12 @@ approval_mode = "approve"
 
 [mcp_servers.cocos-creator-stdio.tools.node_node_script_management]
 approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.debug_debug_logs]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.debug_debug_system]
+approval_mode = "approve"
+
+[mcp_servers.cocos-creator-stdio.tools.project_project_build_system]
+approval_mode = "approve"

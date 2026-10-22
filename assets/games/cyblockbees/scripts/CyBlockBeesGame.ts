@@ -11,6 +11,7 @@ import {
     ResolutionPolicy,
     SpriteFrame,
     UITransform,
+    UIOpacity,
     Vec2,
     Vec3,
     _decorator,
@@ -31,8 +32,8 @@ import type {
     MiniGameResultModel,
 } from '../../../runtime/MiniGame';
 import { calculateVerticalSafeBounds } from '../../../shared/ui/PlatformSafeLayout';
-import { CYBLOCKBEES_AUDIO_BANK, CYBLOCKBEES_BEE_LOOP } from './CyBlockBeesAudio';
-import { CyBlockBeesBoard, enableBoardPhysics, stepBoardPhysics } from './CyBlockBeesBoard';
+import { CYBLOCKBEES_AUDIO_BANK, CYBLOCKBEES_BEE_LOOP, CYBLOCKBEES_PENCIL_LOOP } from './CyBlockBeesAudio';
+import { CyBlockBeesBoard, enableBoardPhysics, planBoardPhysics, stepBoardPhysics } from './CyBlockBeesBoard';
 import {
     CYBLOCKBEES_STAR_THRESHOLDS,
     CYBLOCKBEES_STICKERS,
@@ -78,6 +79,10 @@ const SWIPE_START = 16;
 const SWIPE_TURN = 90;
 /** 蜂巢格子的外接圆半径与间距（缩放前的设计像素）。 */
 const HEX_RADIUS = 80;
+/** 蜂群碰撞触发的平台振动最短间隔（毫秒）。 */
+const BEE_VIBRATE_INTERVAL_MS = 250;
+/** 容纳低频触摸事件间隔；声音跟随原始手指移动，不受画线采样点间距影响。 */
+const PENCIL_MOVE_HOLD_SECONDS = .15;
 const HEX_GAP = 12;
 const HEX_DEPTH = 8;
 /** HUD 两行（按钮行 + 墨水条/秒表行）的总高度；其下方直到底部安全边界是玩法窗口。 */
@@ -191,6 +196,11 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     private restartToSelect = false;
     private flyClip?: AudioClip;
     private flyVoice?: AudioVoiceScope;
+    private pencilClip?: AudioClip;
+    private pencilVoice?: AudioVoiceScope;
+    private pencilIdleSeconds = Infinity;
+    private pencilVolume = 0;
+    private pencilLastPoint?: Vec2;
     private dogAlive = true;
     private failureHint = '';
     private hiveTimers: { element: CyBlockBeesLevel['elements'][number]; elapsed: number;
@@ -224,17 +234,26 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         );
         await this.audioBank.initialize();
         if (lifecycle !== this.lifecycle) return;
-        const flyClip = await context.services.assets.loadAudioClip(CYBLOCKBEES_RESOURCE_BUNDLE, CYBLOCKBEES_BEE_LOOP);
+        const [flyClip, pencilClip] = await Promise.all([
+            context.services.assets.loadAudioClip(CYBLOCKBEES_RESOURCE_BUNDLE, CYBLOCKBEES_BEE_LOOP),
+            context.services.assets.loadAudioClip(CYBLOCKBEES_RESOURCE_BUNDLE, CYBLOCKBEES_PENCIL_LOOP),
+        ]);
         if (lifecycle !== this.lifecycle) return;
         this.flyClip = flyClip;
         this.flyVoice = context.services.audio.createVoiceScope('effect');
+        this.pencilClip = pencilClip;
+        this.pencilVoice = context.services.audio.createVoiceScope('effect');
         this.state = 'ready';
+    }
+
+    isGameplayActive(): boolean {
+        return this.state === 'playing';
     }
 
     begin(): void {
         // initialize 已从存档定位最新解锁关，进入后直接开始该关的画线规划。
         this.startLevel(this.levelIndex);
-        // 兼容更新前已获得的三星成绩，进入游戏即可补齐成就进度。
+        // 当前存档或云恢复中的三星成绩同步到成就进度。
         this.reportThreeStarProgress();
     }
 
@@ -243,6 +262,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         this.state = 'paused';
         this.cancelDrawing();
         this.flyVoice?.pause();
+        this.audioBank?.stopEffects();
         enableBoardPhysics(false);
         return true;
     }
@@ -318,6 +338,10 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         this.flyVoice?.dispose();
         this.flyVoice = undefined;
         this.flyClip = undefined;
+        this.pencilVoice?.dispose();
+        this.pencilVoice = undefined;
+        this.pencilClip = undefined;
+        this.pencilLastPoint = undefined;
         this.audioBank?.dispose();
         this.audioBank = undefined;
         for (const frame of this.ownedFrames) {
@@ -337,13 +361,17 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
 
     protected update(deltaTime: number): void {
         if (this.state === 'disposed') return;
+        this.updateDrawingAudio(Math.max(0, Math.min(.1, deltaTime)));
         this.stepMotions(deltaTime);
         // 选关页在没有拖动和动画时，每帧最多预建一页。
         if (this.idleTasks.length && !this.carousel?.animating && !this.carousel?.dragging) this.idleTasks.shift()!();
         if (this.state !== 'playing' || !this.board) return;
-        const dt = Math.max(0, Math.min(CYBLOCKBEES_RULES.maxFrameDelta, deltaTime));
+        const frame = Math.max(0, Math.min(CYBLOCKBEES_RULES.maxFrameDelta, deltaTime));
+        // 物理放弃追赶的积压同时从游戏时间扣除；蜂群 AI、出蜂和倒计时与物理使用同一时钟。
+        const physics = this.roundStarted && frame > 0 ? planBoardPhysics(frame) : { dt: frame, steps: 0 };
+        const dt = physics.dt;
         this.board.updateFrame(dt);
-        if (this.roundStarted && dt > 0) stepBoardPhysics(dt, this.board);
+        stepBoardPhysics(physics.steps, this.board);
         this.board.renderFrame();
         if (this.inkDirty) this.updateInk();
         if (!this.roundStarted || dt <= 0) return;
@@ -418,14 +446,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         const context = this.context;
         if (!context) return;
         const stored = context.services.storage.getGameData(context.gameId);
-        this.save = readCyBlockBeesSave(stored?.custom);
-        if (stored && (stored.custom?.version === 1 || stored.custom?.version === 2)) {
-            // 迁移只更新编号和评分，不增加游玩次数；后续读取直接使用 v3。
-            context.services.storage.writeGameData(context.gameId, {
-                ...stored, highScore: this.save.cleared,
-                custom: this.save as unknown as Readonly<Record<string, unknown>>,
-            });
-        }
+        this.save = readCyBlockBeesSave(stored?.dataVersion === 1 ? stored.custom : undefined);
         this.levelIndex = Math.max(0, Math.min(CYBLOCKBEES_LEVELS.length - 1, this.save.unlocked - 1));
         this.page = Math.floor(this.levelIndex / this.pageSize);
     }
@@ -438,9 +459,11 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         this.save = Object.freeze(next);
         const context = this.context;
         if (!context) return;
-        const previous = context.services.storage.getGameData(context.gameId);
+        const stored = context.services.storage.getGameData(context.gameId);
+        const previous = stored?.dataVersion === 1 && stored.custom?.version === CYBLOCKBEES_SAVE_VERSION
+            ? stored : undefined;
         context.services.storage.writeGameData(context.gameId, {
-            dataVersion: previous?.dataVersion ?? 1,
+            dataVersion: 1,
             playCount: (previous?.playCount ?? 0) + 1,
             highScore: Math.max(previous?.highScore ?? 0, next.cleared),
             lastPlayedAt: Date.now(),
@@ -486,8 +509,8 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         this.ui.label(root, '选择关卡', -219, top - 272, 28, { bold: true, width: 250, align: 'left', color: P.text });
 
         const gridWidth = (LEVEL_COLUMNS + .5) * colStep;
-        // 容器宽度等于屏宽并用遮罩裁切：相邻页预建后一直保持激活、停在屏外，
-        // 滑入时不需要首次渲染文字，遮罩外的格子既不显示也不响应点击。
+        // 容器宽度等于屏宽并用遮罩裁切。相邻页保留激活及文字预建，
+        // 完全位于屏外时用透明度跳过渲染遍历，滑入时复用已有网格和纹理。
         const container = this.ui.node(root, 'level-pages', 0, (gridTop + gridBottom) / 2,
             CYBLOCKBEES_DESIGN_WIDTH, gridHeight * scale + 16);
         container.addComponent(Mask).type = Mask.Type.GRAPHICS_RECT;
@@ -513,6 +536,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         const existing = carousel.pages.get(page);
         if (existing?.isValid) return existing;
         const grid = this.ui.node(carousel.root, `level-grid-${page + 1}`, 0, 0, carousel.gridWidth, carousel.gridHeight);
+        grid.addComponent(UIOpacity);
         grid.setScale(carousel.scale, carousel.scale, 1);
         carousel.pages.set(page, grid);
         carousel.builtRows.set(page, 0);
@@ -540,8 +564,12 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     private placePages(): void {
         const carousel = this.carousel;
         if (!carousel) return;
-        for (const [page, grid] of Array.from(carousel.pages.entries()))
-            grid.setPosition((page - this.page) * CYBLOCKBEES_DESIGN_WIDTH + carousel.offset, 0, 0);
+        carousel.pages.forEach((grid, page) => {
+            const x = (page - this.page) * CYBLOCKBEES_DESIGN_WIDTH + carousel.offset;
+            if (grid.position.x !== x) grid.setPosition(x, 0, 0);
+            // 保留节点激活，避免反复 onDisable 销毁 Label 的 renderData。
+            grid.getComponent(UIOpacity)!.opacity = Math.abs(x) < CYBLOCKBEES_DESIGN_WIDTH ? 255 : 0;
+        });
     }
 
     /** 翻页栏：两侧箭头 + 页码圆点，页数过多时改为文字。 */
@@ -749,9 +777,10 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
                     this.context?.services.feedback.play('danger');
                     this.finish(false);
                 },
-                onBeeHitLine: () => this.context?.services.feedback.play('toggle'),
-                onBeeHitObstacle: () => this.context?.services.feedback.play('collision'),
-                onBeeEnterWater: () => this.context?.services.feedback.play('merge'),
+                // 蜂群连续撞线/落水时音效保持 80 ms 合并，平台振动另行限频，避免高频调用振动接口。
+                onBeeHitLine: () => this.context?.services.feedback.play('toggle', { minIntervalMs: 80, minVibrateIntervalMs: BEE_VIBRATE_INTERVAL_MS }),
+                onBeeHitObstacle: () => this.context?.services.feedback.play('collision', { minVibrateIntervalMs: BEE_VIBRATE_INTERVAL_MS }),
+                onBeeEnterWater: () => this.context?.services.feedback.play('merge', { minIntervalMs: 80, minVibrateIntervalMs: BEE_VIBRATE_INTERVAL_MS }),
                 onDogHurt: () => this.context?.services.feedback.play('danger'),
                 onExplosion: () => this.context?.services.feedback.play('milestone'),
             });
@@ -817,7 +846,10 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     }
 
     private stopLevel(): void {
+        this.stopDrawingAudio();
+        this.pencilLastPoint = undefined;
         this.flyVoice?.stop();
+        this.audioBank?.stopEffects();
         this.roundStarted = false;
         this.board?.destroy();
         this.board = undefined;
@@ -828,8 +860,11 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
     private finish(win: boolean): void {
         if (this.state !== 'playing') return;
         this.state = 'finished';
+        this.stopDrawingAudio();
+        this.pencilLastPoint = undefined;
         enableBoardPhysics(false);
         this.flyVoice?.stop();
+        this.audioBank?.stopEffects();
         this.board?.finish(win);
         if (!win && this.dogAlive && !this.board?.bonesCollected)
             this.failureHint = '还有小狗没有吃到骨头';
@@ -884,7 +919,8 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         this.draftPoints = [point];
         this.drawnLength = 0;
         this.board.setDraft(this.draftPoints);
-        this.context?.services.feedback.play('drop');
+        this.stopDrawingAudio();
+        this.pencilLastPoint = point;
         this.updateHud();
     }
 
@@ -893,16 +929,23 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         if (this.touchId !== undefined && event.getID?.() !== this.touchId) return;
         let point = this.eventToLocal(event);
         if (!point) return;
+        const previousTouch = this.pencilLastPoint;
+        this.pencilLastPoint = point;
         const last = this.draftPoints[this.draftPoints.length - 1];
         const distance = Vec2.distance(point, last);
-        if (distance < CYBLOCKBEES_RULES.minSegmentDistance * this.board.worldScale) return;
         const available = Math.max(0, this.drawBudget() - this.drawnLength) * this.board.worldScale;
-        if (available <= .001) return;
+        if (available <= .001) { this.stopDrawingAudio(); return; }
         if (distance > available) point = Vec2.lerp(new Vec2(), last, point, available / distance);
         if (this.board.isBlocked(point, last)) {
+            this.stopDrawingAudio();
             this.board.setDraft(this.draftPoints, point);
             return;
         }
+        // 慢画时许多触摸移动不足以新增线段，但笔尖仍在移动，持续书写声不能因此断开。
+        // 对比原始触摸位置，重复的静止事件不会误续声；极小坐标抖动忽略。
+        if (previousTouch && Vec2.distance(this.pencilLastPoint, previousTouch) > .001 * this.board.worldScale)
+            this.pulseDrawingAudio();
+        if (distance < CYBLOCKBEES_RULES.minSegmentDistance * this.board.worldScale) return;
         this.drawnLength += Vec2.distance(point, last) / this.board.worldScale;
         this.draftPoints.push(point);
         this.board.setDraft(this.draftPoints);
@@ -913,6 +956,8 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         if (!this.drawing || !this.board) return;
         if (event && this.touchId !== undefined && event.getID?.() !== this.touchId) return;
         if (event) this.onTouchMove(event);
+        this.stopDrawingAudio();
+        this.pencilLastPoint = undefined;
         this.drawing = false;
         this.touchId = undefined;
         if (this.draftPoints.length < 2) { this.cancelDrawing(); return; }
@@ -922,16 +967,45 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
         this.board.beginSimulation();
         enableBoardPhysics(true);
         if (this.hiveTimers.length && this.flyClip) this.flyVoice?.play(this.flyClip, .45, true);
-        this.context?.services.feedback.play('fold');
         this.updateHud();
     }
 
     private cancelDrawing(event?: { getID?(): number }): void {
         if (event && this.touchId !== undefined && event.getID?.() !== this.touchId) return;
+        this.stopDrawingAudio();
+        this.pencilLastPoint = undefined;
         this.drawing = false;
         this.touchId = undefined;
         this.draftPoints = [];
         if (!this.roundStarted) { this.drawnLength = 0; this.board?.setDraft([]); this.updateHud(); }
+    }
+
+    private pulseDrawingAudio(): void {
+        const voice = this.pencilVoice, clip = this.pencilClip;
+        if (!voice || !clip) return;
+        if (!voice.playing) {
+            if (!voice.play(clip, 0, true)) return;
+            this.pencilVolume = 0;
+        }
+        this.pencilIdleSeconds = 0;
+    }
+
+    private updateDrawingAudio(dt: number): void {
+        const voice = this.pencilVoice;
+        if (!voice?.playing) return;
+        if (!this.drawing || this.state !== 'playing') { this.stopDrawingAudio(); return; }
+        this.pencilIdleSeconds += dt;
+        const target = this.pencilIdleSeconds <= PENCIL_MOVE_HOLD_SECONDS ? 1 : 0;
+        // 25 ms 起音、20 ms 收尾，停笔时自然变轻，恢复移动时无需重建播放器。
+        this.pencilVolume += (target - this.pencilVolume) * (1 - Math.exp(-dt / (target ? .025 : .02)));
+        voice.setVolume(this.pencilVolume);
+        if (target === 0 && this.pencilVolume < .01) this.stopDrawingAudio();
+    }
+
+    private stopDrawingAudio(): void {
+        this.pencilIdleSeconds = Infinity;
+        this.pencilVolume = 0;
+        this.pencilVoice?.stop();
     }
 
     private drawBudget(): number {
@@ -985,7 +1059,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
             if (color !== this.clockLabelColor) { this.timerLabel.color = color; this.clockLabelColor = color; }
         }
         if (this.clock) {
-            const g = this.clock, ratio = this.timeTotal > 0 ? this.timeLeft / this.timeTotal : 1;
+            const g = this.clock, ratio = this.ui.stopwatchProgressRatio(32, this.timeTotal > 0 ? this.timeLeft / this.timeTotal : 1);
             if (this.lastClockDanger !== danger || this.lastClockRatio !== ratio) {
                 if (this.clockFace && this.lastClockDanger !== danger) {
                     this.clockFace.clear(); this.ui.paintStopwatchFace(this.clockFace, 32, danger);
@@ -995,7 +1069,7 @@ export class CyBlockBeesGame extends Component implements MiniGame<CyBlockBeesSe
             }
             // 最后三秒轻微跳动提醒。
             const beat = danger ? 1 + .07 * Math.max(0, Math.sin((this.timeLeft % 1) * Math.PI)) : 1;
-            this.clockFace?.node.setScale(beat, beat, 1);
+            if (this.clockFace && this.clockFace.node.scale.x !== beat) this.clockFace.node.setScale(beat, beat, 1);
         }
         this.updateInk();
     }

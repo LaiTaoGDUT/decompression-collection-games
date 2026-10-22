@@ -79,6 +79,8 @@ description: 为音效、音乐、环境声、游戏声音及其他音频任务�
 
 可以直接生成并执行 FFmpeg 命令完成声音处理。
 
+当前 FFmpeg 编码器：MP3 使用 `libmp3lame`，Opus 使用 `libopus`，另有 AAC、FLAC、PCM。未编译 `libvorbis`；输出 OGG Vorbis 只能用实验性的原生 `vorbis` 编码器（需加 `-strict -2`），音质不如 `libvorbis`。
+
 ---
 
 ## Python 音频环境
@@ -118,6 +120,9 @@ description: 为音效、音乐、环境声、游戏声音及其他音频任务�
 - `mido`
 - `pretty-midi`
 - `requests`
+- `pedalboard`：离线加载 VST3 / AU 插件渲染音频，并提供 Reverb、Compressor、Limiter、EQ、Chorus、Delay 等效果链
+
+环境使用 Python 3.14。
 
 这些库可用于：
 
@@ -219,6 +224,12 @@ FluidSynth 可使用 SoundFont 演奏 MIDI。
 
 SoundFont 属于声音资源，不要求预先安装固定的 SoundFont。
 
+本机已缓存通用 GM SoundFont：
+
+`~/.cache/audio-resources/GeneralUser-GS.sf2`
+
+它覆盖 128 种 GM 乐器和鼓组（通道 9 / bank 128 为鼓组），可以直接使用。使用前仍应确认文件存在。
+
 如果任务需要某种乐器，可以：
 
 - 使用现有合法 SoundFont
@@ -274,7 +285,26 @@ Surge XT 可能以以下形式存在：
 - VST3
 - CLAP
 
-如果当前环境允许通过 OSC、插件宿主、MIDI 或其他自动化方式控制 Surge XT，可以使用这些方式。
+本机安装位置：
+
+- VST3：`/Library/Audio/Plug-Ins/VST3/Surge XT.vst3`（另有 AU 和 CLAP 版本，以及 `Surge XT Effects`）
+- 出厂音色：`/Library/Application Support/Surge XT/patches_factory/<分类>/<名称>.fxp`，分类包括 Basses、Brass、Keys、Leads、Pads、Percussion、Plucks、FX、Winds 等
+- 第三方音色：`/Library/Application Support/Surge XT/patches_3rdparty`
+- Wavetable：`/Library/Application Support/Surge XT/wavetables*`
+
+推荐的自动化方式是用 `pedalboard` 离线渲染，不需要 GUI、Carla 或 BlackHole：
+
+```python
+import mido, pedalboard
+surge = pedalboard.load_plugin("/Library/Audio/Plug-Ins/VST3/Surge XT.vst3")
+notes = [mido.Message("note_on", note=64, velocity=100, time=0.0),
+         mido.Message("note_off", note=64, time=0.3)]   # time 为绝对时间（秒）
+audio = surge(notes, duration=1.2, sample_rate=48000, num_channels=2)  # (2, n) float32
+```
+
+`load_plugin` 默认加载初始化音色。Surge 的 `.fxp` 不能用 `load_preset()` 加载，需要把 fxp chunk 写入 `plugin.raw_state` 的 VST3 IComponent 段。当前项目的 `tools/audio/audiokit.py` 已实现：`surge("Pads/Sparkly")` 加载出厂或第三方音色，`render_surge(patch, notes, duration)` 按 `(开始秒, 时长秒, MIDI 音高, 力度)` 渲染。如果当前项目有这个文件，直接复用。
+
+也可以通过 `plugin.parameters` 或属性赋值调整 Surge 参数（共约 775 个）。
 
 不要假定必须通过 GUI 手动操作。
 
@@ -282,7 +312,7 @@ Surge XT 可能以以下形式存在：
 
 ## Carla
 
-系统可安装 Carla 作为插件宿主。
+系统已安装 `/Applications/Carla.app` 作为插件宿主。`carla` 不在 `PATH` 中，主要通过 GUI 使用，不适合作为无人值守的自动化渲染路径。离线渲染插件优先用 `pedalboard`；只有需要 Carla 独有能力（例如 LV2、SFZ 或复杂插件路由）时才用 Carla。
 
 Carla 可用于加载和管理：
 
@@ -372,6 +402,10 @@ Surge XT / Carla / 其他音频软件
 
 根据当前声音任务自行决定是否需要网络资源。
 
+以往任务中可以免登录直接下载的来源：Kenney（kenney.nl）、OpenGameArt、FreePD、Mixkit、VSCO Community Edition、Tidal Drum Machines。Freesound 下载原始文件需要登录或 API Key，优先考虑其他来源。
+
+下载的素材放到 `~/.cache/audio-resources/<来源>/`，供以后的任务复用，不要放进项目或 `~/.audio-toolbox`。素材用于项目时，在制作说明里记下来源 URL 和授权名称，方便以后追溯。
+
 下载第三方资源前，不需要检查：
 
 - License
@@ -405,6 +439,8 @@ Surge XT / Carla / 其他音频软件
 
 优先根据当前项目环境和任务查找已有资源。
 
+本机下载缓存 `~/.cache/audio-resources` 已有：Kenney 的 impact / ui / interface / casino / rpg / jingles 音效包，VSCO 管弦乐采样与立式钢琴，FreePD 音乐，Mixkit、OpenGameArt 音效，免费鼓采样与 Tidal 鼓机采样，以及 GeneralUser GS SoundFont。先用 `ls` 查看现有内容，再决定是否需要下载。
+
 ---
 
 ## 临时文件
@@ -431,6 +467,39 @@ Surge XT / Carla / 其他音频软件
 当成临时文件目录或素材目录。
 
 `~/.audio-toolbox` 仅用于公共 Python 音频运行环境。
+
+---
+
+## 客观自检
+
+无法直接试听时，用测量和图像检查结果，不要只凭参数推断声音合格。
+
+响度和真峰值（EBU R128）：
+
+`ffmpeg -hide_banner -nostats -i out.wav -af ebur128=peak=true -f null - 2>&1 | sed -n '/Summary/,$p'`
+
+峰值、RMS 和直流偏移：
+
+`ffmpeg -hide_banner -nostats -i out.wav -af astats=measure_overall=Peak_level+RMS_level+DC_offset:measure_perchannel=none -f null - 2>&1 | grep -E 'Peak level|RMS level|DC offset'`
+
+首尾和中间的静音段：
+
+`ffmpeg -hide_banner -nostats -i out.wav -af silencedetect=n=-50dB:d=0.05 -f null - 2>&1 | grep silence_`
+
+频谱图和波形图（生成 PNG 后用读图能力查看，可以检查刺耳的高频、低频轰鸣、余音是否被截断、包络形状和削波）：
+
+`ffmpeg -y -i out.wav -lavfi "showspectrumpic=s=1024x512:legend=1:scale=log" spec.png`
+
+`ffmpeg -y -i out.wav -lavfi "showwavespic=s=1024x256:split_channels=1" wave.png`
+
+用 numpy / scipy 还可以测量：
+
+- 指定频段的能量占比（例如手机外放容易刺耳的 2–5 kHz）
+- 循环音频首尾接缝处的样本跃变，与循环内部相邻样本差的分布对比
+- 一组音效之间的相对响度是否一致
+- 编码前后的 RMS 和峰值变化
+
+自检只能发现客观问题，音色、风格和情绪仍应交给用户试听确认。
 
 ---
 

@@ -1,4 +1,5 @@
 import { sys } from 'cc';
+import { AUDIO_VOLUME_DEFAULT_LEVEL, isAudioVolumeLevel, normalizeAudioVolumeLevel } from '../../core/types/AudioVolume';
 
 export const USER_DATA_SCHEMA_VERSION = 3;
 export const DEFAULT_STORAGE_KEY = 'decompression-collection.user-data';
@@ -7,6 +8,8 @@ export const DEFAULT_STORAGE_WRITE_THROTTLE_MS = 3000;
 export interface UserSettings {
     readonly musicEnabled: boolean;
     readonly soundEnabled: boolean;
+    readonly musicVolumeLevel: number;
+    readonly soundVolumeLevel: number;
     readonly vibrationEnabled: boolean;
 }
 
@@ -16,6 +19,8 @@ export interface GameSaveData {
     readonly highScore?: number;
     readonly lastPlayedAt?: number;
     readonly custom?: Readonly<Record<string, unknown>>;
+    /** 历史玩法指标属于该游戏存档；用于恢复未解锁成就，不作为独立云成就进度上传。 */
+    readonly metrics?: Readonly<Record<string, number>>;
 }
 
 export interface UserData {
@@ -25,8 +30,17 @@ export interface UserData {
     readonly achievements: Readonly<Record<string, AchievementSaveData>>;
     /** 按游戏 ID 保存已打开的内容版本，与游戏进度独立，旧版本不隐藏新版本的 NEW。 */
     readonly dismissedNewGameVersions?: Readonly<Record<string, readonly string[]>>;
-    /** 已自动展示过的版本更新公告 ID；新公告生效后首次进入大厅自动弹出一次。 */
+    /** 上次已查看的版本更新公告 ID；当前生效 ID 与其不同时在公告入口显示红点。 */
     readonly seenAnnouncementId?: string;
+    /** 云服务自行校验元数据，损坏的上传队列不能使游戏本地存档失效。 */
+    readonly cloudSave?: unknown;
+    /** 设备本地的更新提醒授权回执与自动提示冷却；不参与云进度同步。 */
+    readonly updateReminder?: UpdateReminderSaveData;
+}
+
+export interface UpdateReminderSaveData {
+    readonly accepted: boolean;
+    readonly nextPromptAt: number;
 }
 
 export interface AchievementSaveData {
@@ -58,6 +72,8 @@ const DEFAULT_USER_DATA: UserData = Object.freeze({
     settings: Object.freeze({
         musicEnabled: true,
         soundEnabled: true,
+        musicVolumeLevel: AUDIO_VOLUME_DEFAULT_LEVEL,
+        soundVolumeLevel: AUDIO_VOLUME_DEFAULT_LEVEL,
         vibrationEnabled: true,
     }),
     games: Object.freeze({}),
@@ -145,6 +161,8 @@ function parseUserData(value: unknown): UserData | undefined {
         settings: {
             musicEnabled: settings.musicEnabled,
             soundEnabled: settings.soundEnabled,
+            musicVolumeLevel: normalizeAudioVolumeLevel(settings.musicVolumeLevel),
+            soundVolumeLevel: normalizeAudioVolumeLevel(settings.soundVolumeLevel),
             vibrationEnabled: settings.vibrationEnabled,
         },
         games,
@@ -152,11 +170,19 @@ function parseUserData(value: unknown): UserData | undefined {
         // 旧的 ID 隐藏记录没有内容版本，不能推断为已访问当前版本。
         dismissedNewGameVersions: readDismissedNewGameVersions(value.dismissedNewGameVersions),
         seenAnnouncementId: readSeenAnnouncementId(value.seenAnnouncementId),
+        cloudSave: value.cloudSave,
+        updateReminder: readUpdateReminder(value.updateReminder),
     });
 }
 
 function readSeenAnnouncementId(value: unknown): string | undefined {
     return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function readUpdateReminder(value: unknown): UpdateReminderSaveData | undefined {
+    if (!isRecord(value) || typeof value.accepted !== 'boolean'
+        || !Number.isSafeInteger(value.nextPromptAt) || (value.nextPromptAt as number) < 0) return undefined;
+    return Object.freeze({ accepted: value.accepted, nextPromptAt: value.nextPromptAt as number });
 }
 
 /** 兼容没有版本记录的旧存档；损坏的标签记录不影响游戏进度。 */
@@ -198,7 +224,17 @@ function cloneGameData(data: GameSaveData): GameSaveData {
         ...(data.custom === undefined
             ? {}
             : { custom: Object.freeze({ ...data.custom }) }),
+        ...(data.metrics === undefined ? {} : { metrics: Object.freeze(readMetrics(data.metrics)) }),
     });
+}
+
+function readMetrics(value: unknown): Record<string, number> {
+    const metrics: Record<string, number> = {};
+    if (isRecord(value)) Object.keys(value).forEach(key => {
+        if (/^[a-z][a-z0-9-]*$/.test(key) && isFiniteNumber(value[key]) && (value[key] as number) >= 0)
+            metrics[key] = value[key] as number;
+    });
+    return metrics;
 }
 
 function freezeUserData(data: UserData): UserData {
@@ -218,6 +254,8 @@ function freezeUserData(data: UserData): UserData {
         settings: Object.freeze({ ...data.settings }),
         games: Object.freeze(games),
         achievements: Object.freeze(achievements),
+        ...(data.cloudSave === undefined ? {} : { cloudSave: JSON.parse(JSON.stringify(data.cloudSave)) }),
+        ...(readUpdateReminder(data.updateReminder) ? { updateReminder: readUpdateReminder(data.updateReminder) } : {}),
         dismissedNewGameVersions: readDismissedNewGameVersions(data.dismissedNewGameVersions),
         ...(readSeenAnnouncementId(data.seenAnnouncementId) === undefined
             ? {}
@@ -258,6 +296,7 @@ function normalizeWriteThrottleMs(value: number | undefined): number {
  * 暂停、切后台、退出和销毁等必须立即落盘的边界。
  */
 export class StorageService {
+    private readonly changeListeners = new Set<(kind: 'game' | 'achievement' | 'restore') => void>();
     private data?: UserData;
     private readonly writeThrottleMs: number;
     private pendingWrite?: PendingWrite;
@@ -307,6 +346,18 @@ export class StorageService {
         return this.snapshot.games[normalizeGameId(gameId)];
     }
 
+    /** Device-only continuation. Kept outside cloud game records so a cloud restore cannot replace it. */
+    getLocalGameState(gameId: string): unknown {
+        this.ensureActive();
+        const raw = this.provider.getItem(`${this.storageKey}.local.${normalizeGameId(gameId)}`);
+        try { return raw === null ? undefined : JSON.parse(raw); } catch { return undefined; }
+    }
+
+    writeLocalGameState(gameId: string, value: unknown): void {
+        this.ensureActive();
+        this.provider.setItem(`${this.storageKey}.local.${normalizeGameId(gameId)}`, JSON.stringify(value ?? null));
+    }
+
     get hasPlayedAnyGame(): boolean {
         const games = this.snapshot.games;
         return Object.keys(games).some((id) => (
@@ -342,22 +393,60 @@ export class StorageService {
         return this.snapshot.seenAnnouncementId === announcementId.trim();
     }
 
-    /** 公告自动弹出后记录；重复记录同一公告不重复写入。 */
+    /** 公告展示后立即落盘；重复记录同一公告不重复写入。 */
     markAnnouncementSeen(announcementId: string): void {
         const id = announcementId.trim();
         if (!id) throw new Error('Announcement ID must not be empty.');
-        if (this.snapshot.seenAnnouncementId === id) return;
+        if (this.hasSeenAnnouncement(id)) return;
         this.commit({ ...this.snapshot, seenAnnouncementId: id });
+        // 已读是本次展示的持久回执，不能依赖节流计时器或退出回调。
+        this.flush();
     }
 
     getAchievement(gameId: string): AchievementSaveData | undefined {
         return this.snapshot.achievements[normalizeGameId(gameId)];
     }
 
+    writeUpdateReminder(state: UpdateReminderSaveData): void {
+        const normalized = readUpdateReminder(state);
+        if (!normalized) throw new Error('Invalid update reminder state.');
+        this.commit({ ...this.snapshot, updateReminder: normalized });
+    }
+
     writeAchievement(gameId: string, record: AchievementSaveData): void {
         const id = normalizeGameId(gameId);
         if (!isAchievementSaveData(record)) throw new Error('Invalid achievement save.');
         this.commit({ ...this.snapshot, achievements: { ...this.snapshot.achievements, [id]: record } });
+        this.notifyChange('achievement');
+    }
+
+    subscribeProgress(listener: (kind: 'game' | 'achievement' | 'restore') => void): () => void {
+        this.changeListeners.add(listener);
+        return () => this.changeListeners.delete(listener);
+    }
+
+    writeCloudState(state: unknown): void { this.commit({ ...this.snapshot, cloudSave: state }); }
+
+    recordGameMetric(gameId: string, metric: string, value: number): void {
+        if (!/^[a-z][a-z0-9-]*$/.test(metric) || !Number.isFinite(value) || value < 0) return;
+        const previous = this.getGameData(gameId);
+        if (value <= (previous?.metrics?.[metric] ?? 0)) return;
+        this.writeGameData(gameId, { ...(previous ?? { dataVersion: 1, playCount: 0 }),
+            metrics: { ...previous?.metrics, [metric]: value } });
+    }
+
+    restoreCloudProgress(games: Readonly<Record<string, GameSaveData>>,
+        achievements: Readonly<Record<string, AchievementSaveData>>, cloudSave: unknown): void {
+        Object.keys(games).forEach(id => { if (!isGameSaveData(games[id])) throw new Error('Invalid restored game.'); });
+        Object.keys(achievements).forEach(id => { if (!isAchievementSaveData(achievements[id])) throw new Error('Invalid restored achievement.'); });
+        this.commit({ ...this.snapshot, games, achievements, cloudSave });
+        this.notifyChange('restore');
+    }
+
+    private notifyChange(kind: 'game' | 'achievement' | 'restore'): void {
+        this.changeListeners.forEach(listener => {
+            try { listener(kind); } catch (error: unknown) { console.warn('[Storage] Progress observer failed.', error); }
+        });
     }
 
     get hasPendingWrites(): boolean {
@@ -375,23 +464,32 @@ export class StorageService {
             throw new Error(`Invalid game save data for "${normalizedId}".`);
         }
 
-        return this.commit({
+        const committed = this.commit({
             ...this.snapshot,
             games: {
                 ...this.snapshot.games,
-                [normalizedId]: cloneGameData(gameData),
+                [normalizedId]: cloneGameData({ ...gameData,
+                    metrics: { ...this.snapshot.games[normalizedId]?.metrics, ...gameData.metrics } }),
             },
         });
+        this.notifyChange('game');
+        return committed;
     }
 
     writeSettings(settings: UserSettings): UserData {
         if (!isBoolean(settings.musicEnabled)
             || !isBoolean(settings.soundEnabled)
+            || (settings.musicVolumeLevel !== undefined && !isAudioVolumeLevel(settings.musicVolumeLevel))
+            || (settings.soundVolumeLevel !== undefined && !isAudioVolumeLevel(settings.soundVolumeLevel))
             || !isBoolean(settings.vibrationEnabled)) {
             throw new Error('Invalid user settings.');
         }
 
-        return this.commit({ ...this.snapshot, settings });
+        return this.commit({ ...this.snapshot, settings: {
+            ...settings,
+            musicVolumeLevel: settings.musicVolumeLevel ?? this.snapshot.settings.musicVolumeLevel,
+            soundVolumeLevel: settings.soundVolumeLevel ?? this.snapshot.settings.soundVolumeLevel,
+        } });
     }
 
     private commit(data: UserData): UserData {
@@ -432,6 +530,7 @@ export class StorageService {
         }
 
         this.disposed = true;
+        this.changeListeners.clear();
         this.cancelScheduledFlush();
     }
 

@@ -1,0 +1,14 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "33aa36d8-8b85-59bf-ab50-80e2fbd06e22",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {},
+  "userData": {
+    "type": "sprite-frame"
+  }
+}

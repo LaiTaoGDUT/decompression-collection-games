@@ -1,0 +1,40 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "date": "2026-10-15",
+  "request": "简化合成大西瓜封面，只保留一个背景和几颗水果果冻。",
+  "reference": "assets/lobby-covers/visual/covers/watermelon/watermelon-jelly-cover-v4.jpg (previous artwork)",
+  "prompt": "watermelon-jelly-cover-simple-v1.prompt.txt",
+  "source": {
+    "path": "watermelon-jelly-cover-simple-v1.png",
+    "width": 1448,
+    "height": 1086
+  },
+  "delivery": {
+    "path": "assets/lobby-covers/visual/covers/watermelon/watermelon-jelly-cover-v4.jpg",
+    "width": 568,
+    "height": 426,
+    "format": "JPEG",
+    "existingAssetUuidPreserved": true
+  },
+  "sizing": "4:3; scaled proportionally to the maximum cover size in the shared loading dialog at the 750 × 1334 lobby design resolution: 640 - 36 × 2 = 568 pixels wide.",
+  "compression": {
+    "tool": ".agents/skills/tinypng-batch/scripts/compress.py",
+    "provider": "Tinify API",
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "inputBytes": 334849,
+    "outputBytes": 45661,
+    "savedBytes": 289188
+  },
+  "composition": {
+    "background": "plain pale mint gradient",
+    "fruits": [
+      "watermelon",
+      "strawberry",
+      "orange",
+      "grape"
+    ],
+    "fruitCount": 4
+  }
+}

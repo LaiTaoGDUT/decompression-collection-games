@@ -1,0 +1,260 @@
+{
+  "subMetas": {
+    "dragon-0": {
+      "importer": "sprite-frame",
+      "name": "dragon-0",
+      "uuid": "bfad9116-7f4d-59ae-a3c2-87cafbdcdf27",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-1": {
+      "importer": "sprite-frame",
+      "name": "dragon-1",
+      "uuid": "6530b262-204a-5266-80ca-a31b64aad1a7",
+      "userData": {
+        "trimX": 896,
+        "trimY": 0,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-2": {
+      "importer": "sprite-frame",
+      "name": "dragon-2",
+      "uuid": "030946fe-04f2-5528-8839-c6c126d4d925",
+      "userData": {
+        "trimX": 1792,
+        "trimY": 0,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-3": {
+      "importer": "sprite-frame",
+      "name": "dragon-3",
+      "uuid": "f5acd830-7095-51c3-a16d-6160cb6964a0",
+      "userData": {
+        "trimX": 2688,
+        "trimY": 0,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-4": {
+      "importer": "sprite-frame",
+      "name": "dragon-4",
+      "uuid": "56505aed-aa01-548d-b865-005097c87a2c",
+      "userData": {
+        "trimX": 0,
+        "trimY": 512,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-5": {
+      "importer": "sprite-frame",
+      "name": "dragon-5",
+      "uuid": "57f23809-f4d2-5aae-bfbd-f8a5d9ee81b6",
+      "userData": {
+        "trimX": 896,
+        "trimY": 512,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-6": {
+      "importer": "sprite-frame",
+      "name": "dragon-6",
+      "uuid": "6d348b37-80d8-500c-9198-4dd14f009391",
+      "userData": {
+        "trimX": 1792,
+        "trimY": 512,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-7": {
+      "importer": "sprite-frame",
+      "name": "dragon-7",
+      "uuid": "858b010c-c37d-53d1-9c5e-3e7baec0d392",
+      "userData": {
+        "trimX": 2688,
+        "trimY": 512,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-8": {
+      "importer": "sprite-frame",
+      "name": "dragon-8",
+      "uuid": "a286168a-7926-5050-b6c1-d367957912c2",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1024,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-9": {
+      "importer": "sprite-frame",
+      "name": "dragon-9",
+      "uuid": "5b161d33-3048-5ebe-820b-f9cec97d5a78",
+      "userData": {
+        "trimX": 896,
+        "trimY": 1024,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-10": {
+      "importer": "sprite-frame",
+      "name": "dragon-10",
+      "uuid": "7963d2c8-a9cf-5aab-86cc-6c2c37ccfe15",
+      "userData": {
+        "trimX": 1792,
+        "trimY": 1024,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-11": {
+      "importer": "sprite-frame",
+      "name": "dragon-11",
+      "uuid": "600749ce-a64b-5786-97ee-b02b298c0344",
+      "userData": {
+        "trimX": 2688,
+        "trimY": 1024,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-12": {
+      "importer": "sprite-frame",
+      "name": "dragon-12",
+      "uuid": "8fd76608-3f0a-5239-81b1-58fc4d48ad03",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1536,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-13": {
+      "importer": "sprite-frame",
+      "name": "dragon-13",
+      "uuid": "0423b6a1-fa10-5e5a-98ae-5da8cf85807f",
+      "userData": {
+        "trimX": 896,
+        "trimY": 1536,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-14": {
+      "importer": "sprite-frame",
+      "name": "dragon-14",
+      "uuid": "b373217d-602b-54dd-a9ac-6841dcb6212e",
+      "userData": {
+        "trimX": 1792,
+        "trimY": 1536,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "dragon-15": {
+      "importer": "sprite-frame",
+      "name": "dragon-15",
+      "uuid": "6525473a-ed74-5964-832d-43a23012e554",
+      "userData": {
+        "trimX": 2688,
+        "trimY": 1536,
+        "width": 896,
+        "height": 512,
+        "rawWidth": 896,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

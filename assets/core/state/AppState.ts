@@ -19,7 +19,7 @@ export type AppState = (typeof APP_STATES)[number];
 export const APP_STATE_TRANSITIONS: Readonly<Record<AppState, readonly AppState[]>> = {
     booting: ['lobby', 'error'],
     lobby: ['loading-game'],
-    'loading-game': ['playing', 'error'],
+    'loading-game': ['playing', 'leaving-game', 'error'],
     playing: ['paused', 'restarting-game', 'leaving-game'],
     paused: ['playing', 'restarting-game', 'leaving-game'],
     'restarting-game': ['playing', 'leaving-game', 'error'],

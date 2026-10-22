@@ -7,52 +7,6 @@
     ".json"
   ],
   "subMetas": {
-    "74d12": {
-      "importer": "sprite-frame",
-      "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@74d12",
-      "displayName": "",
-      "id": "74d12",
-      "name": "pickup-jetpack",
-      "userData": {
-        "trimThreshold": 1,
-        "rotated": false,
-        "offsetX": 0,
-        "offsetY": 0,
-        "trimX": 2,
-        "trimY": 449,
-        "width": 68,
-        "height": 90,
-        "rawWidth": 68,
-        "rawHeight": 90,
-        "packable": false,
-        "pixelsToUnit": 100,
-        "pivotX": 0.5,
-        "pivotY": 0.5,
-        "meshType": 0,
-        "vertices": {
-          "rawPosition": [],
-          "indexes": [],
-          "uv": [],
-          "nuv": [],
-          "minPos": [],
-          "maxPos": []
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "50e440a9-1254-568f-a10c-8dd3fef1c56f@6c48a",
-        "atlasUuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b",
-        "trimType": "custom",
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0
-      },
-      "ver": "1.0.12",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {}
-    },
     "307cb": {
       "importer": "sprite-frame",
       "uuid": "f0ac2308-06ad-54cd-b960-4864e60ed28b@307cb",
@@ -65,7 +19,7 @@
         "offsetX": 0,
         "offsetY": 0,
         "trimX": 2,
-        "trimY": 543,
+        "trimY": 449,
         "width": 80,
         "height": 50,
         "rawWidth": 80,
@@ -202,8 +156,8 @@
         "rotated": false,
         "offsetX": 0,
         "offsetY": 0,
-        "trimX": 74,
-        "trimY": 449,
+        "trimX": 2,
+        "trimY": 503,
         "width": 55,
         "height": 68,
         "rawWidth": 55,

@@ -1,0 +1,100 @@
+{
+  "subMetas": {
+    "air-0": {
+      "importer": "sprite-frame",
+      "name": "air-0",
+      "uuid": "bf950362-5663-54ba-9caa-3d2e9d265d9a",
+      "userData": {
+        "trimX": 71,
+        "trimY": 13,
+        "width": 365,
+        "height": 427,
+        "rawWidth": 572.5490196078431,
+        "rawHeight": 512.4000000000001,
+        "offsetX": 32.15294117647059,
+        "offsetY": -47.01666666666665,
+        "rotated": false
+      }
+    },
+    "air-1": {
+      "importer": "sprite-frame",
+      "name": "air-1",
+      "uuid": "7574a201-9381-5f53-aea6-9eb3c6b773a3",
+      "userData": {
+        "trimX": 531,
+        "trimY": 13,
+        "width": 336,
+        "height": 358,
+        "rawWidth": 571.9148936170212,
+        "rawHeight": 515.52,
+        "offsetX": 40.13404255319146,
+        "offsetY": -15.339999999999979,
+        "rotated": false
+      }
+    },
+    "air-2": {
+      "importer": "sprite-frame",
+      "name": "air-2",
+      "uuid": "5f226fb6-5c15-55ff-8df5-a28c2a05e302",
+      "userData": {
+        "trimX": 975,
+        "trimY": 24,
+        "width": 312,
+        "height": 344,
+        "rawWidth": 573.7931034482758,
+        "rawHeight": 516.0,
+        "offsetX": 22.68620689655163,
+        "offsetY": -5.533333333333328,
+        "rotated": false
+      }
+    },
+    "air-5": {
+      "importer": "sprite-frame",
+      "name": "air-5",
+      "uuid": "ed888067-7b7d-509d-a697-dd80d8a19e63",
+      "userData": {
+        "trimX": 539,
+        "trimY": 446,
+        "width": 342,
+        "height": 400,
+        "rawWidth": 570.0,
+        "rawHeight": 514.2857142857142,
+        "offsetX": 49.47500000000003,
+        "offsetY": -60.142857142857125,
+        "rotated": false
+      }
+    },
+    "air-6": {
+      "importer": "sprite-frame",
+      "name": "air-6",
+      "uuid": "754b9443-b6f7-5ad8-a10c-b83aa4bd7dee",
+      "userData": {
+        "trimX": 969,
+        "trimY": 489,
+        "width": 356,
+        "height": 358,
+        "rawWidth": 569.5999999999999,
+        "rawHeight": 515.52,
+        "offsetX": 42.099999999999945,
+        "offsetY": -81.76000000000002,
+        "rotated": false
+      }
+    },
+    "air-7": {
+      "importer": "sprite-frame",
+      "name": "air-7",
+      "uuid": "7f0c9f3c-f11b-5ed4-a4f7-88dc4cc44265",
+      "userData": {
+        "trimX": 1411,
+        "trimY": 454,
+        "width": 333,
+        "height": 395,
+        "rawWidth": 572.9032258064517,
+        "rawHeight": 512.4324324324324,
+        "offsetX": 44.01935483870959,
+        "offsetY": -61.716216216216225,
+        "rotated": false
+      }
+    }
+  }
+}

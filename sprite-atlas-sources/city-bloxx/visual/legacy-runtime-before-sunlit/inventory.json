@@ -1,0 +1,90 @@
+[
+  {
+    "path": "visual/buildings/stone.png.meta",
+    "sha256": "571fd814080cfca49591fb9a67c42a19b712defc4c399dbb60fa0ee0213d2191"
+  },
+  {
+    "path": "visual/buildings/blue_house.png",
+    "sha256": "d7b6126e98805a5efabcb22aefabf52a6aef8303b1b0cfab0c0b4c59c642eb05"
+  },
+  {
+    "path": "visual/buildings/house_yellow_m.png.meta",
+    "sha256": "241b20fa3876ae9a319ceba34fcd893646b61cb8d37ae20d648f78263742f2b9"
+  },
+  {
+    "path": "visual/buildings/house_yellow_m.png",
+    "sha256": "d382cd033229fd7b7535727950261253234b7ff1b1012c75ec9546049065e516"
+  },
+  {
+    "path": "visual/buildings/house_yellow_B.png",
+    "sha256": "c8fd2495a2522e5aad74c6d7d61220f4193f0ce774e3bb3a7a4064f05b3f4bcd"
+  },
+  {
+    "path": "visual/buildings/stone.png",
+    "sha256": "add6f6689b3be0d55bbc85579248150874b433a36b406504aff7c915571c834a"
+  },
+  {
+    "path": "visual/buildings/house_yellow_B.png.meta",
+    "sha256": "7d1b91aa08fef4a6f64f79a5b6d8ec6d823b241d38b936bc5002a1e591715274"
+  },
+  {
+    "path": "visual/buildings/ground.png.meta",
+    "sha256": "460cd2d1f4058c0e6c2795e339e71236ffbf7107e5b3650b040076b8b3b6e2b2"
+  },
+  {
+    "path": "visual/buildings/ground.png",
+    "sha256": "8395667533a613e257fd693f8c7304e0bb4122a6e9e5d355eb0b11a20af61c80"
+  },
+  {
+    "path": "visual/buildings/blue_house.png.meta",
+    "sha256": "1c1133ddae9403db7dc320fc2c6f603e9e4d66d99afa949131d3e7cc1de1a48c"
+  },
+  {
+    "path": "visual/background/native-skyline.png.meta",
+    "sha256": "7a77e4e87e27e5504c7de6c87b5703d3a118658845b6a74d54f3b17d9ba6f113"
+  },
+  {
+    "path": "visual/background/city-day.png",
+    "sha256": "975c250156d92e35b3a989777730d9787d00a0fc198425e29b1103b6cdf5538a"
+  },
+  {
+    "path": "visual/background/native-skyline.png",
+    "sha256": "8a6bd31be11cd3e0ffa55417158edaedede75c0b9bae577e19dbc0eaaf455912"
+  },
+  {
+    "path": "visual/background/city-day.png.meta",
+    "sha256": "3f846c814cd3ece978661c0521defe81e175f094e3447b2a49e4534781edc8d6"
+  },
+  {
+    "path": "configs/buildings.json",
+    "sha256": "7f9900000427f617a3e26655c33aaddc2875d48d2990489441026c76e473a1fd"
+  },
+  {
+    "path": "configs/buildings.json.meta",
+    "sha256": "d4e9b2c2d83dc30eb1911a4cd9e4f3a80e7e7d13c168fc69df2bc8be46db51b0"
+  },
+  {
+    "path": "configs/ground.json",
+    "sha256": "65f30e9e048fc2386a63526b0bb1290e748856bb9f2af7ad047360c9a6fc953b"
+  },
+  {
+    "path": "configs/ground.json.meta",
+    "sha256": "3d97043d0ad22f734e7a669cfe21ca2d9e1abb0cd25122900b1ef11f962f3fc0"
+  },
+  {
+    "path": "configs/environment.json",
+    "sha256": "72e83c6e937fbc3637e757e8eeb250a4faef91c53ccaef850a6e77286d841657"
+  },
+  {
+    "path": "configs/environment.json.meta",
+    "sha256": "c3d4be8d0bb75a1b9aa680af54761e4a6bccab306b235273eb8daefa79b0575a"
+  },
+  {
+    "path": "fonts/native-combo.ttf",
+    "sha256": "a6b08ea9ce11ced8004f3eee9173f38e789300316aefad1563d098369780c2a8"
+  },
+  {
+    "path": "fonts/native-combo.ttf.meta",
+    "sha256": "b09be8079fa727c330656c0724ba8bd5f8e79e7b5d18c979bc7a0cdf77f89e92"
+  }
+]

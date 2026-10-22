@@ -1,0 +1,15 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "1db73128-543d-591a-979e-1b9a1f6b8927",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "bundleName": "game-pingpong",
+    "isBundle": true,
+    "isSubpackage": true,
+    "priority": 1,
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L"
+  }
+}

@@ -15,7 +15,6 @@ import {
     SpriteFrame,
     tween,
     Tween,
-    Vec2,
     UITransform,
     Vec3,
     VerticalTextAlignment,
@@ -42,6 +41,7 @@ const CARD_SKIN_PATH = LOBBY_CARD_SKIN.path;
 const RECENT_BADGE_PATH = 'visual/ui/lobby-recently-played-v2/texture';
 const HOT_BADGE_PATH = 'visual/ui/lobby-hot-v1/texture';
 const NEW_BADGE_PATH = 'visual/ui/lobby-new-v1/texture';
+const TWO_PLAYER_BADGE_PATH = 'visual/ui/lobby-two-player-vs-v1/texture';
 /**
  * 卡片底板九宫格边距（纹理像素）：上下保留圆角与底部厚边，只拉伸中段，
  * 卡片变高时圆角和厚边不变形。
@@ -54,6 +54,11 @@ const CARD_SKIN_INSETS = LOBBY_CARD_SKIN.insets;
 const RECENT_BADGE = { width: 160, angle: -8, overhangX: 4, overhangY: 8 } as const;
 /** HOT／NEW 缩小并向卡片右上角内收，保留少量纸边探出和斜贴效果。 */
 const PROMOTION_BADGE = { width: 100, angle: -14, overhangX: 8, overhangY: 18 } as const;
+/**
+ * 双人 VS 贴纸端正贴在封面左下角，四周与封面边缘保持内距，完全收在封面内（320 设计单位）。
+ * 宽度含贴纸自带的深色描边与投影。
+ */
+const TWO_PLAYER_BADGE = { width: 84, inset: 6 } as const;
 
 const COLORS = {
     surface: new Color(241, 135, 84, 255),
@@ -68,7 +73,6 @@ const COLORS = {
     coral: new Color(238, 133, 103, 255),
     butter: new Color(246, 199, 84, 255),
     paper: new Color(255, 246, 224, 255),
-    textShadow: new Color(66, 25, 15, 220),
     description: new Color(112, 55, 34, 255),
     statusTrack: new Color(236, 220, 200, 255),
     trophy: new Color(236, 172, 60, 255),
@@ -106,6 +110,7 @@ export class GameCardView extends Component {
     private recentBadge?: Sprite;
     private hotBadge?: Sprite;
     private newBadge?: Sprite;
+    private twoPlayerBadge?: Sprite;
     private badge?: LobbyGameBadge;
     private actionState: ActionState = 'ready';
     private assets?: AssetService;
@@ -144,7 +149,7 @@ export class GameCardView extends Component {
         this.stopCoverMotion();
         this.releaseOwnedCoverFrame();
         this.uiLoadToken += 1;
-        for (const sprite of [this.cardSkin, this.recentBadge, this.hotBadge, this.newBadge]) {
+        for (const sprite of [this.cardSkin, this.recentBadge, this.hotBadge, this.newBadge, this.twoPlayerBadge]) {
             if (sprite) sprite.spriteFrame = null;
         }
         this.ownedUiFrames.forEach((frame) => this.assets?.releaseRuntimeAsset(frame));
@@ -174,7 +179,6 @@ export class GameCardView extends Component {
         this.clickHandler = clickHandler;
         this.node.name = `GameCard-${manifest.id}`;
         this.requireLabel('NameLabel').string = manifest.name;
-        this.configureBadge('');
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(false);
@@ -200,12 +204,17 @@ export class GameCardView extends Component {
         this.requireLabel('DescriptionLabel').node.active = false;
         if (this.statusRoot) this.statusRoot.active = false;
         this.requireButton().interactable = false;
-        this.configureBadge('');
         this.layoutChildren();
         this.drawCard();
         this.drawCoverFallback(true);
         this.configured = true;
         this.loadUiArtwork();
+    }
+
+    setStatus(status: LobbyCardStatus | undefined): void {
+        this.status = status;
+        this.layoutStatusRow(calculateLobbyCardRows(this.cardWidth, this.cardHeight));
+        this.applyActionState(this.actionState);
     }
 
     setCardSize(width: number, height: number): void {
@@ -419,7 +428,7 @@ export class GameCardView extends Component {
         }
         if (recentBadge.parent !== badgeRoot) recentBadge.setParent(badgeRoot);
         this.recentBadge = recentBadge.getComponent(Sprite) ?? undefined;
-        const ensurePromotionBadge = (name: string): Sprite => {
+        const ensureStickerBadge = (name: string): Sprite => {
             let node = badgeRoot.getChildByName(name) ?? decor.getChildByName(name);
             if (!node) {
                 node = new Node(name);
@@ -431,19 +440,9 @@ export class GameCardView extends Component {
             if (node.parent !== badgeRoot) node.setParent(badgeRoot);
             return node.getComponent(Sprite)!;
         };
-        this.hotBadge = ensurePromotionBadge('HotBadge');
-        this.newBadge = ensurePromotionBadge('NewBadge');
-        let badge = decor.getChildByName('GenreBadge');
-        if (!badge) {
-            badge = new Node('GenreBadge');
-            badge.layer = parentLayer;
-            decor.addChild(badge);
-            badge.addComponent(UITransform);
-            const label = badge.addComponent(Label);
-            label.horizontalAlign = HorizontalTextAlignment.CENTER;
-            label.verticalAlign = VerticalTextAlignment.CENTER;
-            label.overflow = Label.Overflow.SHRINK;
-        }
+        this.hotBadge = ensureStickerBadge('HotBadge');
+        this.newBadge = ensureStickerBadge('NewBadge');
+        this.twoPlayerBadge = ensureStickerBadge('TwoPlayerBadge');
         this.structureReady = true;
     }
 
@@ -504,9 +503,6 @@ export class GameCardView extends Component {
         if (this.decorRoot) {
             this.decorRoot.setPosition(0, 0);
             this.decorRoot.getComponent(UITransform)?.setContentSize(this.cardWidth, this.cardHeight);
-            const badge = this.decorRoot.getChildByName('GenreBadge');
-            badge?.setPosition(innerWidth / 2 - 30, coverY + coverHeight / 2 - 28);
-            badge?.getComponent(UITransform)?.setContentSize(30, 30);
             this.drawDecor();
         }
         this.layoutBadges();
@@ -525,6 +521,7 @@ export class GameCardView extends Component {
         this.layoutRecentBadge();
         this.layoutPromotionBadge('hot', this.hotBadge);
         this.layoutPromotionBadge('new', this.newBadge);
+        this.layoutTwoPlayerBadge();
     }
 
     private layoutRecentBadge(): void {
@@ -561,6 +558,26 @@ export class GameCardView extends Component {
         node.setPosition(
             this.cardWidth / 2 - width / 2 + PROMOTION_BADGE.overhangX * scale,
             this.cardHeight / 2 - height / 2 + PROMOTION_BADGE.overhangY * scale,
+        );
+    }
+
+    /** 双人 VS 贴纸随卡片等比缩放，不倾斜，贴在封面左下角内侧。 */
+    private layoutTwoPlayerBadge(): void {
+        const sprite = this.twoPlayerBadge;
+        if (!sprite) return;
+        const node = sprite.node;
+        node.active = this.mode === 'game' && this.manifest?.twoPlayer === true;
+        if (!node.active) return;
+        const rows = calculateLobbyCardRows(this.cardWidth, this.cardHeight);
+        const width = TWO_PLAYER_BADGE.width * rows.scale;
+        const inset = TWO_PLAYER_BADGE.inset * rows.scale;
+        const texture = sprite.spriteFrame?.texture;
+        const height = width * (texture ? texture.height / texture.width : 0.86);
+        node.getComponent(UITransform)?.setContentSize(width, height);
+        node.angle = 0;
+        node.setPosition(
+            -rows.coverWidth / 2 + inset + width / 2,
+            rows.coverY - rows.coverHeight / 2 + inset + height / 2,
         );
     }
 
@@ -608,17 +625,6 @@ export class GameCardView extends Component {
 
     private configurePlainText(label: Label): void {
         label.enableShadow = false;
-        const outline = label.node.getComponent(LabelOutline);
-        if (outline) {
-            outline.enabled = false;
-        }
-    }
-
-    private configureTextShadow(label: Label): void {
-        label.enableShadow = true;
-        label.shadowColor = COLORS.textShadow;
-        label.shadowOffset = new Vec2(2, -3);
-        label.shadowBlur = 1;
         const outline = label.node.getComponent(LabelOutline);
         if (outline) {
             outline.enabled = false;
@@ -898,18 +904,6 @@ export class GameCardView extends Component {
         graphics.clear();
     }
 
-    private configureBadge(text: string): void {
-        const label = this.decorRoot?.getChildByName('GenreBadge')?.getComponent(Label);
-        if (!label) {
-            return;
-        }
-        label.string = text;
-        label.fontSize = 16;
-        label.lineHeight = 20;
-        label.color = Color.WHITE;
-        this.configureTextShadow(label);
-    }
-
     private loadCover(path: string): void {
         const token = ++this.coverLoadToken;
         const assets = this.assets;
@@ -965,6 +959,7 @@ export class GameCardView extends Component {
             load(RECENT_BADGE_PATH, this.recentBadge, () => this.layoutRecentBadge()),
             load(HOT_BADGE_PATH, this.hotBadge, () => this.layoutBadges()),
             load(NEW_BADGE_PATH, this.newBadge, () => this.layoutBadges()),
+            load(TWO_PLAYER_BADGE_PATH, this.twoPlayerBadge, () => this.layoutBadges()),
         ]).then(() => {});
         void this.uiArtworkReady.catch(() => {});
     }

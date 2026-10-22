@@ -42,6 +42,7 @@ import type { GameSaveData, StorageService } from '../../../services/storage/Sto
 import type { GameResult, LocalImageSelection } from '../../../core/types/CommonTypes';
 import { SlidingPuzzleCropController } from './SlidingPuzzleCropController';
 import { SlidingPuzzleModel } from './SlidingPuzzleModel';
+import { SlidingPuzzleOpening } from './SlidingPuzzleOpening';
 import {
     calculateSlidingPuzzleBackgroundCover,
     calculateSlidingPuzzleLayout,
@@ -86,6 +87,7 @@ type SlidingPuzzleState =
     | 'picking-image'
     | 'crop-editing'
     | 'starting'
+    | 'opening'
     | 'playing'
     | 'paused'
     | 'reference-preview'
@@ -351,6 +353,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private touchStartY = 0;
     private touchStartTileIndex = -1;
     private layout?: SlidingPuzzleLayoutMetrics;
+    private opening?: SlidingPuzzleOpening;
+    /** 与视图分开保存，暂停和尺寸变化后仍从同一时刻继续。 */
+    private openingElapsedSeconds?: number;
     private timerLabel?: Label;
     private movesLabel?: Label;
     private boardNode?: Node;
@@ -423,7 +428,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         });
         this.unsubscribeHide = context.services.platform.onHide(() => {
             context.services.audio.onHide();
-            if (this.state === 'playing') {
+            if (this.state === 'playing' || this.state === 'opening') {
                 context.requestPause();
             } else if (this.state === 'paused' || this.state === 'reference-preview') {
                 this.persistProgress();
@@ -466,6 +471,10 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         });
     }
 
+    isGameplayActive(): boolean {
+        return this.state === 'playing';
+    }
+
     begin(): void {
         if (this.state !== 'ready' && this.state !== 'setup') {
             return;
@@ -476,6 +485,12 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     update(deltaTime: number): void {
+        if (this.state === 'opening') {
+            const finished = this.opening?.update(deltaTime) ?? true;
+            this.openingElapsedSeconds = this.opening?.elapsedSeconds;
+            if (finished) this.finishOpening();
+            return;
+        }
         if (this.state !== 'playing' || this.inputLocked) {
             return;
         }
@@ -485,7 +500,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     pause(): boolean {
-        if (this.state !== 'playing') {
+        if (this.state !== 'playing' && this.state !== 'opening') {
             return false;
         }
 
@@ -502,12 +517,15 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             return;
         }
 
-        this.state = 'playing';
-        this.inputLocked = false;
+        this.state = this.openingElapsedSeconds === undefined ? 'playing' : 'opening';
+        this.inputLocked = this.state === 'opening';
         if (this.pauseButtonNode?.isValid) {
             this.pauseButtonNode.active = true;
         }
         this.hidePauseMenu();
+        if (this.displayModeSwitchNode?.isValid) {
+            this.displayModeSwitchNode.active = this.state === 'playing';
+        }
         this.context?.services.audio.resumeMusic();
     }
 
@@ -561,6 +579,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         if (!this.savedProgressDiscarded
             && (this.state === 'playing'
+                || this.state === 'opening'
                 || this.state === 'paused'
                 || this.state === 'reference-preview')) {
             this.persistProgress();
@@ -591,6 +610,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.clearSpriteFrameReferences(this.node);
         this.destroyOverlay();
         this.destroyDynamicView();
+        this.openingElapsedSeconds = undefined;
         this.releasePresetLibraryTextures();
         if (this.backgroundNode?.isValid) {
             this.backgroundNode.destroy();
@@ -865,6 +885,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
 
         // 选择页是可重复进入的入口；无论上一次选图是取消、失败还是
         // 页面重建，都要清掉遗留的输入锁，保证“从相册选择”可以再次触发。
+        this.openingElapsedSeconds = undefined;
         this.inputLocked = false;
         this.destroyDynamicView();
         this.releasePresetLibraryTextures();
@@ -1987,6 +2008,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     private async startRound(): Promise<void> {
         if (this.state === 'disposed'
             || this.state === 'starting'
+            || this.state === 'opening'
             || this.state === 'playing') {
             return;
         }
@@ -2017,11 +2039,12 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         } else if (this.selectedConfig.imageSource === 'local') {
             await this.persistCurrentLocalPuzzle();
         }
+        if ((this.state as SlidingPuzzleState) === 'disposed') return;
         this.model.reset(this.selectedSize);
         this.savedProgressDiscarded = false;
         this.context?.reportScore(0);
-        this.state = 'playing';
-        this.inputLocked = false;
+        this.state = 'opening';
+        this.openingElapsedSeconds = 0;
         this.showPlay();
         this.persistProgress();
         // 按钮音由发起开局的点击（开始拼图 / 弹窗按钮）即时播放，这里不再延迟补播。
@@ -2053,7 +2076,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
             },
         );
         this.pauseButtonNode = this.createIconButton(root, 'PauseButton', metrics.headerIconX, metrics.headerY, 'pauseIcon', PLAY_SIDE_ICON_SIZE, () => {
-            if (this.state === 'playing') {
+            if (this.state === 'playing' || this.state === 'opening') {
                 this.context?.services.feedback.play('uiButton');
                 this.context?.requestPause();
                 return;
@@ -2069,7 +2092,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
                 this.showResultView(resultModel);
             }
         });
-        this.pauseButtonNode.active = this.state === 'playing' || this.state === 'completed';
+        this.pauseButtonNode.active = this.state === 'playing' || this.state === 'opening' || this.state === 'completed';
 
         const board = new Node('Board');
         board.layer = this.node.layer;
@@ -2084,10 +2107,53 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.boardNode = board;
         this.rebuildTileFrames();
         this.renderBoard();
-        if (this.state === 'playing') {
+        if (this.state === 'playing' || this.openingElapsedSeconds !== undefined) {
             this.createDisplayModeSwitch(root);
+            this.displayModeSwitchNode!.active = this.state === 'playing';
         }
+        this.restoreOpening();
         this.refreshHud();
+    }
+
+    private restoreOpening(): void {
+        if (this.openingElapsedSeconds === undefined) return;
+        const metrics = this.layout;
+        if (!this.boardNode || !metrics || !this.imageTexture) {
+            this.finishOpening();
+            return;
+        }
+        this.opening = new SlidingPuzzleOpening(
+            this.boardNode,
+            this.imageTexture,
+            this.getCropRect(this.imageTexture, this.getActiveCrop()),
+            this.model.snapshot.board,
+            this.tileIndexByNode,
+            getBoardTileAreaSize(metrics.boardSize),
+            {
+                left: -metrics.viewportWidth / 2,
+                right: metrics.viewportWidth / 2,
+                bottom: -metrics.viewportHeight / 2 - metrics.boardCenterY,
+                top: metrics.viewportHeight / 2 - metrics.boardCenterY,
+            },
+            {
+                left: -metrics.viewportWidth / 2,
+                right: metrics.viewportWidth / 2,
+                bottom: -metrics.viewportHeight / 2 + metrics.safeBottom + 8 - metrics.boardCenterY,
+                top: metrics.headerY - SLIDING_PUZZLE_HUD_HEIGHT / 2 - 12 - metrics.boardCenterY,
+            },
+            this.openingElapsedSeconds,
+        );
+    }
+
+    private finishOpening(): void {
+        this.opening?.dispose();
+        this.opening = undefined;
+        this.openingElapsedSeconds = undefined;
+        if (this.state !== 'opening') return;
+        this.state = 'playing';
+        this.inputLocked = false;
+        this.resetTouchState();
+        if (this.displayModeSwitchNode?.isValid) this.displayModeSwitchNode.active = true;
     }
 
     /** 顶栏中间的纸卡信息条，与左右两个图标按钮同处一行，把纵向空间留给棋盘。 */
@@ -2946,6 +3012,7 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     }
 
     private showReferencePreview(): void {
+        if (this.openingElapsedSeconds !== undefined) return;
         if (this.state !== 'playing' && this.state !== 'paused' && this.state !== 'completed') {
             return;
         }
@@ -3784,10 +3851,11 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         // 暂停弹窗、结算弹窗的按钮都经由这里：接受点击的同时给出按钮音。
         this.context?.services.feedback.play('uiButton');
         this.uiActionPending = true;
-        // 延迟到当前触摸/鼠标事件完成后再切换场景、销毁弹窗或重建动态节点，
-        // 避免 Cocos 在事件传播期间重排节点导致偶发的点击无效。
-        void Promise.resolve()
-            .then(action)
+        // 返回大厅先同步进入运行层，让微信订阅仍处于 touchend 中；运行层随后
+        // 延后销毁 UI/切场景。其他操作仍延迟执行，避免事件传播中重建动态节点。
+        const invoke = async (): Promise<void> => { await action(); };
+        const pending = label === 'exit' ? invoke() : Promise.resolve().then(invoke);
+        void pending
             .then(
                 () => {
                     if (this.state !== 'disposed') {
@@ -4473,6 +4541,9 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
         this.destroyOverlay();
         this.buildBackground();
 
+        // 图片仍在加载时还没有正式局面，不能因 resize 提前建立旧棋盘。
+        if (previousState === 'starting') return;
+
         if (previousState === 'setup') {
             this.showSetup();
             return;
@@ -4503,6 +4574,8 @@ export class SlidingPuzzleGame extends Component implements MiniGame<SlidingPuzz
     };
 
     private destroyDynamicView(): void {
+        this.opening?.dispose();
+        this.opening = undefined;
         this.boardNode?.off(Node.EventType.TOUCH_START, this.handleTouchStart, this);
         this.boardNode?.off(Node.EventType.TOUCH_END, this.handleTouchEnd, this);
         this.boardNode?.off(Node.EventType.TOUCH_CANCEL, this.handleTouchCancel, this);

@@ -1,0 +1,9 @@
+Use case: precise-object-edit.
+Asset type: finished 4:3 landscape cover artwork for the Chinese casual fruit-merging game 合成大西瓜, displayed as a small lobby thumbnail.
+Input image 1: existing cover, edit target and reference for the fruit-jelly material, friendly faces and mint color family.
+Primary request: simplify this cover radically to ONE clean background and ONLY FOUR fruit-jelly characters. Keep the bright, squishy translucent fruit-jelly identity.
+Scene/backdrop: a seamless pale mint background with a very subtle smooth gradient and soft contact shadows only, no scenery or props.
+Subject: exactly one large round green watermelon jelly with a red cut-face and tiny black seeds, accompanied by exactly three smaller fruit jellies: a pink-red strawberry jelly, an orange jelly and a purple grape jelly. Each is a single simple rounded blob with tiny cute dark eyes, a small smile and soft rosy cheeks. No limbs. Watermelon is the clear main subject; all four fruits are fully visible.
+Style/medium: polished playful 3D casual-game art, softly translucent gelatin, rounded squishy silhouettes, restrained glossy highlights, saturated appetizing fruit colors.
+Composition/framing: balanced compact group centered in a 4:3 horizontal frame, watermelon slightly behind the three smaller fruits, about 70 percent of frame occupied by the group, comfortable clean negative space all around. Clear readable silhouettes at thumbnail size. Do not crop the fruit characters.
+Constraints: exactly FOUR fruit characters total, one plain mint background. Remove the container/tray, all other fruits, all splashes, flying droplets, bubbles, rainbows, sparkles, bokeh spots, leaf decorations and busy background detail. Natural small strawberry leaves or a small fruit stem attached to its own fruit are okay. No text, no letters, no logos, no border, no watermark, no buttons or UI. Output one complete finished opaque 4:3 artwork, not a collage or a mockup.

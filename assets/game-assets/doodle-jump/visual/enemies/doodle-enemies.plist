@@ -59,28 +59,28 @@
 		<key>enemy-hopper-01</key>
 		<dict>
 			<key>frame</key>
-			<string>{{874,428},{110,86}}</string>
+			<string>{{874,428},{110,87}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{110,86}}</string>
+			<string>{{0.0,0.0},{110,87}}</string>
 			<key>sourceSize</key>
-			<string>{110,86}</string>
+			<string>{110,87}</string>
 		</dict>
 		<key>enemy-hopper-02</key>
 		<dict>
 			<key>frame</key>
-			<string>{{874,518},{110,86}}</string>
+			<string>{{874,519},{110,87}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{110,86}}</string>
+			<string>{{0.0,0.0},{110,87}}</string>
 			<key>sourceSize</key>
-			<string>{110,86}</string>
+			<string>{110,87}</string>
 		</dict>
 		<key>enemy-hover-01</key>
 		<dict>
@@ -246,7 +246,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-enemies.png</string>
 		<key>size</key>
-		<string>{986,606}</string>
+		<string>{986,608}</string>
 		<key>textureFileName</key>
 		<string>doodle-enemies.png</string>
 	</dict>

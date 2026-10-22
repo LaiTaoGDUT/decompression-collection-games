@@ -1,0 +1,72 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "date": "2026-10-15",
+  "request": "增加容器装住水果，减小形变，水果外观与实机素材一致。",
+  "operation": "Reference-guided compositing with the four actual production sprite images.",
+  "prompt": "watermelon-jelly-cover-container-v3.prompt.txt",
+  "fruitReferences": [
+    {
+      "fruit": "watermelon",
+      "source": "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-10-fat-orange-idle-1-c6-v1.png",
+      "atlas": "assets/game-assets/watermelon/visual/cats/frames-c6/watermelon-fruits-2.plist",
+      "appearance": "Green striped jelly with a round red cut-face inset, seeds and small open smile."
+    },
+    {
+      "fruit": "lemon",
+      "source": "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-04-white-fluffy-idle-1-c6-v1.png",
+      "atlas": "assets/game-assets/watermelon/visual/cats/frames-c6/watermelon-fruits.plist",
+      "appearance": "Round yellow jelly with a lemon cross-section and one green leaf."
+    },
+    {
+      "fruit": "strawberry",
+      "source": "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-02-gray-tabby-idle-1-c6-v1.png",
+      "atlas": "assets/game-assets/watermelon/visual/cats/frames-c6/watermelon-fruits.plist",
+      "appearance": "Round pink strawberry jelly with seeds, green leafy cap and tiny smile."
+    },
+    {
+      "fruit": "grape",
+      "source": "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-01-calico-idle-1-c6-v1.png",
+      "atlas": "assets/game-assets/watermelon/visual/cats/frames-c6/watermelon-fruits.plist",
+      "appearance": "Round purple jelly with whole grapes inside, stem, leaf and tiny smile."
+    }
+  ],
+  "source": {
+    "path": "watermelon-jelly-cover-container-v3.png",
+    "width": 1448,
+    "height": 1086
+  },
+  "delivery": {
+    "path": "assets/lobby-covers/visual/covers/watermelon/watermelon-jelly-cover-v4.jpg",
+    "width": 568,
+    "height": 426,
+    "format": "JPEG",
+    "existingAssetUuidPreserved": true
+  },
+  "sizing": "4:3; proportionally reduced to 568 × 426, the maximum cover display size of the shared loading dialog at the 750 × 1334 design resolution.",
+  "composition": {
+    "background": "plain pale mint gradient",
+    "container": "one open-top transparent rounded rectangular vessel with visible rim, side walls, front wall and base",
+    "watermelon": "largest, lower right",
+    "lemon": "medium, upper left",
+    "strawberry": "smaller, lower left",
+    "grape": "smallest, upper right",
+    "fruitCount": 4
+  },
+  "deformation": "Mild flattening and slight contact indentation; silhouettes remain close to round.",
+  "compression": {
+    "tool": ".agents/skills/tinypng-batch/scripts/compress.py",
+    "provider": "Tinify API",
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "inputBytes": 362699,
+    "outputBytes": 53282,
+    "savedBytes": 309417
+  },
+  "validation": {
+    "typescript": "tsc --noEmit -p tsconfig.json passed",
+    "diffCheck": "git diff --check and git diff --cached --check passed",
+    "cocos": "Refreshed db://assets/lobby-covers/visual/covers/watermelon using cocos_creator_stdio",
+    "browser": "Lobby card loaded the 568 × 426 cover without page errors."
+  }
+}

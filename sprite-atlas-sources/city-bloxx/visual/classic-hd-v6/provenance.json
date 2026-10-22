@@ -1,0 +1,193 @@
+{
+  "theme": "经典晴空 · 高清重制",
+  "version": 6,
+  "direction": "保留原版造型、配色、构图与动画，以平滑高清材质替换像素块。",
+  "keywords": [
+    "经典造城",
+    "工程黄",
+    "海蓝玻璃",
+    "灰色城市",
+    "清晰细节"
+  ],
+  "palette": {
+    "yellow": "#F4BC00",
+    "blue": "#169BC0",
+    "stone": "#888C8B",
+    "uiBlue": "#3C9AE5",
+    "uiGold": "#FFCF45",
+    "uiCream": "#E7D3B8"
+  },
+  "typography": "沿用 native-hud / native-combo 和原字号层级",
+  "composition": "沿用原 750×1334 竖屏构图、相机、层级、四边安全区和所有控件尺寸",
+  "controls": "沿用阶梯角控件形状和原触控边界",
+  "motion": "沿用摆动、落层、居民帧率与特效时序",
+  "sound": "沿用现有 endless-music 音乐与音量",
+  "generation": "built-in image_gen",
+  "files": [
+    {
+      "name": "classic-tree",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-e75ce570-e7c1-4e86-949f-1c2722cba2c5.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-tree-source.png"
+    },
+    {
+      "name": "classic-fence",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-13fcbfa1-961c-47c1-81f5-03cd1e60077f.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-fence-source.png"
+    },
+    {
+      "name": "classic-crane",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-5d55ffc5-edf4-4a1c-aa83-16b64f4987d6.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-crane-source.png"
+    },
+    {
+      "name": "classic-connectors",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-7ce7ee4e-12be-4218-aea3-b6d6623fda81.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-connectors-source.png"
+    },
+    {
+      "name": "classic-icons",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-98758d6b-6e68-43f2-9a82-85b0a4192a6d.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-icons-source.png"
+    },
+    {
+      "name": "classic-whale",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-696d15df-2178-4a44-ad26-1a7b20b349d3.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-whale-source.png"
+    },
+    {
+      "name": "classic-yellow-floor",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-a160d153-e921-4dfa-9314-c958dc6fae12.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-yellow-floor-source.png"
+    },
+    {
+      "name": "classic-yellow-base",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-7bfec18f-5bec-4f31-82c3-6d5b79987b46.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-yellow-base-source.png"
+    },
+    {
+      "name": "classic-blue-house",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-d2ec8076-38dc-40d2-bdf9-7fea8f58300c.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-blue-house-source.png"
+    },
+    {
+      "name": "classic-resident-blue",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-14cd91c6-5c6d-4565-89c3-d5062402fccd.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-resident-blue-source.png"
+    },
+    {
+      "name": "classic-resident-red",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-bfc5b86e-2d2a-43c4-af20-a49e0fbef815.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-resident-red-source.png"
+    },
+    {
+      "name": "classic-gameover",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-41df7de7-157f-4efc-8a0e-990aae598f64.png",
+      "workspaceSource": "sprite-atlas-sources/city-bloxx/visual/classic-hd-v6/classic-gameover-source.png"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "classic-tree",
+      "prompt": "Use case: style-transfer\nAsset type: production transparent 2D game sprite, classic original HD remaster.\nInput image: edit target and exact shape/color reference.\nPrimary request: Redraw this exact classic game asset at high definition, replacing pixel stair steps and blocky shading with clean antialiased curves, crisp continuous lines and finely painted materials. This is a faithful remaster, not a redesign. Preserve subject identity, silhouette, proportions, side view, composition and color palette. Keep the original clean readable cartoon look with subtle dimensional shading.\nSpecific subject: the same single green deciduous tree. Broad rounded canopy, dark green shadowed lower leaves, fresh olive yellow-green light on upper foliage, narrow dark brown trunk in the same position. Refine leaf clusters into smooth rounded natural forms, no square pixel blocks. No added pot, ground, background, or glow.\nConstraints: real transparent background including holes, preserve alpha. No ground shadow rectangle, no opaque backdrop, no labels, no text, no watermark, no grid, no additional props. No pixel art or voxel blocks. No diffuse glow around edges. Keep full subject uncropped with a small transparent margin."
+    },
+    {
+      "name": "classic-fence",
+      "prompt": "Use case: style-transfer\nAsset type: production transparent 2D game sprite, classic original HD remaster.\nInput image: edit target and exact shape/color reference.\nPrimary request: Redraw this exact classic game asset at high definition, replacing pixel stair steps and blocky shading with clean antialiased curves, crisp continuous lines and finely painted materials. This is a faithful remaster, not a redesign. Preserve subject identity, silhouette, proportions, side view, composition and color palette. Keep the original clean readable cartoon look with subtle dimensional shading.\nSpecific subject: the complete very wide horizontal construction fence strip: gray wire mesh gate and green foliage on the LEFT, metallic gray gates CENTER, yellow corrugated construction fence on the RIGHT, red and white traffic cones at their same positions. Keep exactly the same full strip silhouette, panel widths and positions. Crisp thin metal mesh, smooth straight posts, bright yellow fence with subtle metallic highlights. No words or new symbols. Output at least 1600 pixels wide, original panoramic aspect ratio.\nConstraints: real transparent background including holes, preserve alpha. No ground shadow rectangle, no opaque backdrop, no labels, no text, no watermark, no grid, no additional props. No pixel art or voxel blocks. No diffuse glow around edges. Keep full subject uncropped with a small transparent margin."
+    },
+    {
+      "name": "classic-crane",
+      "prompt": "Use case: style-transfer\nAsset type: production transparent 2D game sprite, classic original HD remaster.\nInput image: edit target and exact shape/color reference.\nPrimary request: Redraw this exact classic game asset at high definition, replacing pixel stair steps and blocky shading with clean antialiased curves, crisp continuous lines and finely painted materials. This is a faithful remaster, not a redesign. Preserve subject identity, silhouette, proportions, side view, composition and color palette. Keep the original clean readable cartoon look with subtle dimensional shading.\nSpecific subject: the same long low golden yellow crane arm seen from its side, large round mechanism on LEFT, cables and tapered beam leading to the SMALL round joint on RIGHT. Keep the silhouette, all large/small mechanisms, panel positions and original yellow-black colors precisely. Smooth yellow enameled steel, clean dark gray cable, subtle beveled edges and bolts, not dirty or rusty.\nConstraints: real transparent background including holes, preserve alpha. No ground shadow rectangle, no opaque backdrop, no labels, no text, no watermark, no grid, no additional props. No pixel art or voxel blocks. No diffuse glow around edges. Keep full subject uncropped with a small transparent margin."
+    },
+    {
+      "name": "classic-icons",
+      "prompt": "Use case: style-transfer\nAsset type: transparent sprite sheet for the classic original City Bloxx high definition remaster.\nInput image: exact EDIT TARGET for silhouettes, color palette and arrangement.\nPrimary request: Remaster every pixelated shape into a crisp smooth high definition painted game sprite. Keep the ORIGINAL design and colors. Replace stair-stepped contours and blocky shading with smooth antialiased edges, continuous curves and subtle dimensional material shading. The result must look like the original asset rendered clearly, not pixel art.\nSpecific requirements: A sprite sheet with EXACTLY SIX separate icons, in the SAME uniform 3 columns by 2 rows. Top left: the gray and golden slender tower with a blank black horizontal number plate near its base, keep the number plate completely blank. Top middle: two simple golden yellow people silhouettes, same dark brown border. Top right: the same narrow gray and golden tiered skyscraper icon without a number plate. Bottom left: the same sky blue house icon with charcoal outline. Bottom middle: the same golden square retry tile with the exact white four-pane glyph from the reference. Bottom right: the same blue video tile with white play triangle and the letters AD at upper right. Text must be exactly AD, no other letters or words. Preserve exact icon identities, widths/heights and palette. Keep icons completely separated inside their cells with transparent margins.\nConstraints: real alpha transparent canvas and gaps, no opaque background, no grid, no cell outlines, no labels, no watermark. Keep the same grid arrangement exactly. Do not add, omit or merge any sprite. No glow haze outside objects. No excessive fine detail that obscures the icon at small size."
+    },
+    {
+      "name": "classic-connectors",
+      "prompt": "Use case: style-transfer\nAsset type: transparent sprite sheet for the classic original City Bloxx high definition remaster.\nInput image: exact EDIT TARGET for silhouettes, color palette and arrangement.\nPrimary request: Remaster every pixelated shape into a crisp smooth high definition painted game sprite. Keep the ORIGINAL design and colors. Replace stair-stepped contours and blocky shading with smooth antialiased edges, continuous curves and subtle dimensional material shading. The result must look like the original asset rendered clearly, not pixel art.\nSpecific requirements: A sprite sheet with exactly TWO suspended crane connectors in side-by-side cells. LEFT: the small round silver-gray pulley with bright yellow center, TWO VERY THIN black wire cables descend from the pulley to form the sides of a long narrow triangle, ending at the same baseline. Keep cables attached and clearly drawn, triangle connector is approximately three times taller than wide. RIGHT: the same silver round pulley with yellow center and its smooth solid gray J-shaped hook below, curling upward toward LEFT. Preserve both entire assemblies and their colors, shapes and dimensions, smooth circular pulleys and curved metal hook.\nConstraints: real alpha transparent canvas and gaps, no opaque background, no grid, no cell outlines, no labels, no watermark. Keep the same grid arrangement exactly. Do not add, omit or merge any sprite. No glow haze outside objects. No excessive fine detail that obscures the icon at small size."
+    },
+    {
+      "name": "classic-whale",
+      "prompt": "Use case: style-transfer\nAsset type: transparent sprite sheet for the classic original City Bloxx high definition remaster.\nInput image: exact EDIT TARGET for silhouettes, color palette and arrangement.\nPrimary request: Remaster every pixelated shape into a crisp smooth high definition painted game sprite. Keep the ORIGINAL design and colors. Replace stair-stepped contours and blocky shading with smooth antialiased edges, continuous curves and subtle dimensional material shading. The result must look like the original asset rendered clearly, not pixel art.\nSpecific requirements: A sprite sheet with exactly TWO animation frames arranged ONE column and TWO rows. Same long blue-gray whale-like dolphin swimming LEFT, pale silver belly and muzzle, dorsal fin on top, flippers below, forked tail on right. Upper frame has tail/flipper pose as upper reference; lower frame as lower reference. Keep same species, proportions, size, silhouette and blue-gray color. Several small luminous bubbles trail behind to the right in their same positions. Smooth finely painted skin and continuous curves, no pixels, no new decorations, both frames equally sized and aligned.\nConstraints: real alpha transparent canvas and gaps, no opaque background, no grid, no cell outlines, no labels, no watermark. Keep the same grid arrangement exactly. Do not add, omit or merge any sprite. No glow haze outside objects. No excessive fine detail that obscures the icon at small size."
+    },
+    {
+      "name": "classic-yellow-floor",
+      "prompt": "Use case: style-transfer\nAsset type: EXACT UV TEXTURE ATLAS for the existing 3D building mesh in City Bloxx.\nInput image: edit target. It is an unfolded UV texture atlas whose coordinates MUST remain unchanged.\nPrimary request: Faithful classic original high definition remaster. Keep EXACTLY the same geometry, UV island boundaries, rectangular swatches, doors, windows, mullions, cornices, balcony railings, relative positions and proportions. Preserve every original color family: yellow upper floor with two balcony/window facade panels, gray limestone surrounds, bright construction-yellow walls, black/bronze window frames, blue glass. Improve crispness, antialiasing, glass reflections, fine stone/plaster material quality and subtle dimensional edge shading. Preserve the classic original look and original SATURATION and HUES, no palette redesign.\nVERY IMPORTANT: no cream/ivory recoloring of gray regions and no orange recoloring of yellow walls. Bright yellow remains yellow. Cyan remains cyan. Every texture region stays exactly aligned with the source image, including the lower material color swatches and small inset marks. Straight edges should align precisely with source.\nConstraints: square full-bleed UV map, no margins, no frame, no perspective or isometric building, no new shapes or decorations, no words, no text, no logo. No pixel blocks or jagged contours. Opaque square texture."
+    },
+    {
+      "name": "classic-yellow-base",
+      "prompt": "Use case: style-transfer\nAsset type: EXACT UV TEXTURE ATLAS for the existing 3D building mesh in City Bloxx.\nInput image: edit target. It is an unfolded UV texture atlas whose coordinates MUST remain unchanged.\nPrimary request: Faithful classic original high definition remaster. Keep EXACTLY the same geometry, UV island boundaries, rectangular swatches, doors, windows, mullions, cornices, balcony railings, relative positions and proportions. Preserve every original color family: yellow ground floor with two tall glass door facade panels, gray limestone surrounds, bright construction-yellow walls, black/bronze frames, blue glass. Improve crispness, antialiasing, glass reflections, fine stone/plaster material quality and subtle dimensional edge shading. Preserve the classic original look and original SATURATION and HUES, no palette redesign.\nVERY IMPORTANT: no cream/ivory recoloring of gray regions and no orange recoloring of yellow walls. Bright yellow remains yellow. Cyan remains cyan. Every texture region stays exactly aligned with the source image, including the lower material color swatches and small inset marks. Straight edges should align precisely with source.\nConstraints: square full-bleed UV map, no margins, no frame, no perspective or isometric building, no new shapes or decorations, no words, no text, no logo. No pixel blocks or jagged contours. Opaque square texture."
+    },
+    {
+      "name": "classic-blue-house",
+      "prompt": "Use case: style-transfer\nAsset type: EXACT UV TEXTURE ATLAS for the existing 3D building mesh in City Bloxx.\nInput image: edit target. It is an unfolded UV texture atlas whose coordinates MUST remain unchanged.\nPrimary request: Faithful classic original high definition remaster. Keep EXACTLY the same geometry, UV island boundaries, rectangular swatches, doors, windows, mullions, cornices, balcony railings, relative positions and proportions. Preserve every original color family: cyan blue townhouse UV panels with pale gray-green stone trims, brown window frames and vivid turquoise blue glass. Improve crispness, antialiasing, glass reflections, fine stone/plaster material quality and subtle dimensional edge shading. Preserve the classic original look and original SATURATION and HUES, no palette redesign.\nVERY IMPORTANT: no cream/ivory recoloring of gray regions and no orange recoloring of yellow walls. Bright yellow remains yellow. Cyan remains cyan. Every texture region stays exactly aligned with the source image, including the lower material color swatches and small inset marks. Straight edges should align precisely with source.\nConstraints: square full-bleed UV map, no margins, no frame, no perspective or isometric building, no new shapes or decorations, no words, no text, no logo. No pixel blocks or jagged contours. Opaque square texture."
+    },
+    {
+      "name": "classic-resident-blue",
+      "prompt": "Use case: style-transfer\nAsset type: transparent character animation sprite sheet for the classic original City Bloxx HD remaster.\nInput image: edit target, exact pose/design/color/layout reference.\nPrimary request: Faithfully remaster the original pixelated art into clean smooth high definition painted game art. Keep original identity, design, poses, proportions and colors. Replace staircase edges and coarse square shading with smooth antialiased contours and subtle dimensional painted shading.\nSpecific requirements: EXACTLY 10 frames in a uniform 5 columns x 2 rows grid, read left to right across top then bottom row. The same ADULT man in teal blue shirt, dark blue trousers and brown shoes, hanging from a royal-blue umbrella with black stem using one raised arm. Preserve each reference pose and the rotation sequence. Adult body proportions, not a child, no new hat, readable smooth face/hair and garment shading. Every frame contains the full umbrella, hand and full body, consistent scale and aligned center. Keep every individual pose matched to its corresponding reference cell.\nConstraints: real alpha transparent background, no surrounding color glow or haze, no ground, no grid lines, no labels, no watermark. No added props or shapes. Preserve all source cells in their same arrangement. No pixel art."
+    },
+    {
+      "name": "classic-resident-red",
+      "prompt": "Use case: style-transfer\nAsset type: transparent character animation sprite sheet for the classic original City Bloxx HD remaster.\nInput image: edit target, exact pose/design/color/layout reference.\nPrimary request: Faithfully remaster the original pixelated art into clean smooth high definition painted game art. Keep original identity, design, poses, proportions and colors. Replace staircase edges and coarse square shading with smooth antialiased contours and subtle dimensional painted shading.\nSpecific requirements: EXACTLY 10 frames in a uniform 5 columns x 2 rows grid, read left to right across top then bottom row. The same ADULT resident in green shirt, warm brown-orange trousers and dark red shoes, hanging from a bright RED umbrella with black stem using one raised arm. Preserve each reference pose and the rotation sequence, including back-facing frames. Adult body proportions, not a child, no new hat, subtle smooth face/hair and garment shading. Every frame contains the full umbrella, hand and full body, consistent scale and aligned center. Keep every individual pose matched to its corresponding reference cell.\nConstraints: real alpha transparent background, no surrounding color glow or haze, no ground, no grid lines, no labels, no watermark. No added props or shapes. Preserve all source cells in their same arrangement. No pixel art."
+    },
+    {
+      "name": "classic-gameover",
+      "prompt": "Use case: style-transfer\nAsset type: transparent game result title lettering for the classic original City Bloxx HD remaster.\nInput image: edit target, exact pose/design/color/layout reference.\nPrimary request: Faithfully remaster the original pixelated art into clean smooth high definition painted game art. Keep original identity, design, poses, proportions and colors. Replace staircase edges and coarse square shading with smooth antialiased contours and subtle dimensional painted shading.\nSpecific requirements: The exact words GAME OVER in one single very wide horizontal row, all caps. Preserve the chunky tall condensed squared-off arcade letter shapes, bright golden-yellow fill, thin white outer keyline and small hard dark-navy down-right extruded shadow. Keep the same width to height ratio and two-word spacing. Precisely spelled G A M E [space] O V E R. Refine into crisp smooth high resolution letter contours with subtle golden surface shading, retain the squared classic style. No other text or symbols.\nConstraints: real alpha transparent background, no surrounding color glow or haze, no ground, no grid lines, no labels, no watermark. No added props or shapes. Preserve all source cells in their same arrangement. No pixel art."
+    }
+  ],
+  "integration": {
+    "textures": 3,
+    "spriteFrames": 34,
+    "nativeAtlasFrameCount": 43,
+    "sceneryAtlasFrameCount": 14,
+    "referenceCanvas": "750x1334",
+    "compression": {
+      "processed": 5,
+      "cached": 0,
+      "failed": 0,
+      "savedBytes": 1928099,
+      "files": [
+        {
+          "path": "assets/game-assets/city-bloxx/visual/background/native-skyline.png",
+          "beforeBytes": 1929735,
+          "afterBytes": 843798,
+          "sha256": "8a6bd31be11cd3e0ffa55417158edaedede75c0b9bae577e19dbc0eaaf455912"
+        },
+        {
+          "path": "assets/game-assets/city-bloxx/visual/buildings/blue_house.png",
+          "beforeBytes": 204910,
+          "afterBytes": 64275,
+          "sha256": "d7b6126e98805a5efabcb22aefabf52a6aef8303b1b0cfab0c0b4c59c642eb05"
+        },
+        {
+          "path": "assets/game-assets/city-bloxx/visual/buildings/house_yellow_B.png",
+          "beforeBytes": 209233,
+          "afterBytes": 74559,
+          "sha256": "c8fd2495a2522e5aad74c6d7d61220f4193f0ce774e3bb3a7a4064f05b3f4bcd"
+        },
+        {
+          "path": "assets/game-assets/city-bloxx/visual/buildings/house_yellow_m.png",
+          "beforeBytes": 209814,
+          "afterBytes": 75131,
+          "sha256": "d382cd033229fd7b7535727950261253234b7ff1b1012c75ec9546049065e516"
+        },
+        {
+          "path": "assets/game-assets/city-bloxx/visual/native/city-native.png",
+          "beforeBytes": 536077,
+          "afterBytes": 103907,
+          "sha256": "d6cddeafb3c68583d1fce09b696b20f088b51c134fe42841a33c2a2cfa147b9f"
+        }
+      ]
+    },
+    "validation": {
+      "typescript": "passed",
+      "diffCheck": "passed",
+      "modelChecks": 23,
+      "sceneryChecks": 5,
+      "browserChecks": 29,
+      "browserErrors": 0,
+      "mcpAssetRefresh": "passed",
+      "wechatBuildThisRevision": false
+    }
+  }
+}

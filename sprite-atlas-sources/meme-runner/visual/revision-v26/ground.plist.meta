@@ -1,0 +1,20 @@
+{
+  "subMetas": {
+    "soil-fill": {
+      "importer": "sprite-frame",
+      "name": "soil-fill",
+      "uuid": "1b6e3421-226c-57ee-84f8-9bbd27a95977",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 1254,
+        "height": 1254,
+        "rawWidth": 1254,
+        "rawHeight": 1254,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

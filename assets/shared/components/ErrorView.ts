@@ -18,6 +18,8 @@ import type {
     GameErrorModel,
     GameErrorPresenter,
 } from '../../runtime/GameRuntime';
+import type { PlatformLayoutInfo } from '../../core/types/CommonTypes';
+import { SafeOverlayLayout } from '../ui/SafeOverlayLayout';
 
 const { ccclass } = _decorator;
 
@@ -30,6 +32,13 @@ export class ErrorView extends Component implements GameErrorPresenter {
     private retryLabel?: Label;
     private lobbyLabel?: Label;
     private busy = false;
+    private platformLayout?: PlatformLayoutInfo;
+    private safeContent?: SafeOverlayLayout;
+
+    setPlatformLayout(layout: PlatformLayoutInfo): void {
+        this.platformLayout = layout;
+        if (this.node.active) this.layoutAndDraw();
+    }
 
     protected onLoad(): void {
         const widget = this.node.getComponent(Widget) ?? this.node.addComponent(Widget);
@@ -138,6 +147,8 @@ export class ErrorView extends Component implements GameErrorPresenter {
     }
 
     private layoutAndDraw(): void {
+        this.safeContent ??= new SafeOverlayLayout(this.node, ['ErrorBackdrop']);
+        this.safeContent.restore();
         const size = this.node.getComponent(UITransform)?.contentSize;
         const visibleSize = view.getVisibleSize();
         const width = Math.max(1, visibleSize.width || size?.width || 750);
@@ -190,6 +201,7 @@ export class ErrorView extends Component implements GameErrorPresenter {
         this.styleLabel('ErrorMessage', 23, new Color(113, 87, 73, 255), 0, -14, panelWidth - 96, 118, false);
         this.layoutButton(this.retryButton!, -132, -166, new Color(237, 127, 79, 255), Color.WHITE);
         this.layoutButton(this.lobbyButton!, 132, -166, new Color(255, 227, 173, 255), new Color(77, 47, 35, 255));
+        this.safeContent.fit(this.platformLayout);
     }
 
     private layoutButton(button: Button, x: number, y: number, fill: Color, text: Color): void {

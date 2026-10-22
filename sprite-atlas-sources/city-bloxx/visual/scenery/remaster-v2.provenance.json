@@ -1,0 +1,61 @@
+{
+  "tool": "image_gen.imagegen",
+  "date": "2026-10-19",
+  "source": "City Bloxx 0.7.8 supplied by user",
+  "images": [
+    {
+      "file": "crane-arm-hd-v2.png",
+      "generation": "exec-18f19bf6-d430-4fb8-ad81-2cb75ab7d7ac.png",
+      "reference": "diaoji",
+      "prompt_summary": "Faithful golden horizontal telescopic crane arm; no vertical mast; transparent."
+    },
+    {
+      "file": "residents-hd-v2.png",
+      "generation": "exec-239609a9-1a91-480e-8611-fb0d9be7057e.png",
+      "reference": "blue_people / red_people",
+      "prompt_summary": "5 columns, 4 rows; blue ten frames then red ten frames; side-view adult holding an umbrella; preserve silhouette and pose cycle."
+    },
+    {
+      "file": "skyline-hd-v2.png",
+      "generation": "exec-61e3fd35-82ed-44ed-a9c9-5b505e1ac5ed.png",
+      "reference": "bg_buldings2",
+      "prompt_summary": "Tall 1:3 original gray and blue clustered city facades; same silhouette; transparent; no street, ground or sky."
+    },
+    {
+      "file": "fence-hd-v2.png",
+      "generation": "exec-b8a8ecdc-22c7-4ade-95d5-aa611fdbbb51.png",
+      "reference": "bg_muban",
+      "prompt_summary": "Preserve original chain-link fence, central gray gate and mustard hoarding composition; tiny cones; transparent side view."
+    },
+    {
+      "file": "hud-icons-hd-v2.png",
+      "generation": "exec-804aed54-c227-477b-8a7e-f7017d8f0720.png",
+      "reference": "buliding_number / humen",
+      "prompt_summary": "Two columns: gray stepped tower with empty black gold-bordered score plate; two orange block people. Preserve shapes and palette; remove unrelated atlas edge fragments."
+    },
+    {
+      "file": "whale-tree-hd-v2.png",
+      "generation": "exec-86e71280-297e-45b8-812b-b03c354c7dbe.png",
+      "reference": "weel_0 / bg_tree",
+      "prompt_summary": "2 by 2: two blue-gray whale fin poses facing left with bubbles; two matching dark green tree clusters; transparent."
+    },
+    {
+      "file": "combo-stars-hd-v1.png",
+      "generation": "exec-f6a9416b-b2d4-40af-874b-3d6721819ec7.png",
+      "reference": "star_3 / star_city_1 (2x2, last frame empty)",
+      "prompt_summary": "Remaster gold four-point sparkles on a transparent 2x2 sheet; preserve six/six/two/zero sparkle counts; correct frame placement after first draft. Runtime uses original half-second cycle, house-local transform, color and size.",
+      "revision_of": "exec-71af8ccd-516e-4b8f-98c0-a577a0183385.png",
+      "prompt": "Edit the supplied 1280 by 1280 transparent sparkle animation sheet. Preserve the exact sparkle design, colors and transparency. Correct ONLY the positions and number of sparkles. Required final layout is a 2 by 2 grid with 640-pixel square cells, no visible borders. Top-left cell: exactly SIX sparkles centered at image coordinates (235,88) small, (73,235) small, (305,248) small, (548,205) large, (95,495) large, (423,493) small. Top-right cell: keep its six existing sparkles at (695,90) small, (968,245) small, (1188,203) large, (1035,405) small, (748,485) small, (1128,565) small. Bottom-left cell: exactly TWO sparkles, one small at (368,693) and one tiny dot at (560,815); the rest of this cell is fully transparent. Bottom-right cell completely transparent. In particular move the mistakenly placed large bottom-left star back up into the top-left frame at (95,495) and delete all unwanted bottom-left stars. No other changes. No text, grid, background, labels or extra particles. Square 1280 by 1280 transparent output."
+    }
+  ],
+  "exception": {
+    "asset": "flyman-0 / flyman-1",
+    "status": "resolved by built-in image generation; previous refusals retained as history",
+    "request_ids": [
+      "75371612-4f38-4c86-a353-bd8f372dedfe",
+      "ce205636-1f24-450b-8a43-1007e1b53297",
+      "4e329b01-9ed8-4df7-b378-fa17787c0539"
+    ],
+    "resolved_by": "flyman-hd-v5.png"
+  }
+}

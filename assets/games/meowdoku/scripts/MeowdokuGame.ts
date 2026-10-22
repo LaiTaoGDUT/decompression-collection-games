@@ -1,5 +1,6 @@
 import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
 import { setLabelBold } from '../../../services/font/FontBinding';
+import { DailyToolRewardAnimation } from '../../../shared/ui/DailyToolRewardAnimation';
 import {
     _decorator,
     BlockInputEvents,
@@ -300,6 +301,8 @@ const PILL_BUTTON_PALETTES: Readonly<Record<PillButtonStyle, PillButtonPalette>>
 interface OverlayEntry {
     readonly label: string;
     readonly action: () => void | Promise<void>;
+    /** 微信原生申请需要保留真实 touchend；节点销毁由运行层延后处理。 */
+    readonly requiresUserGesture?: boolean;
     /** 主操作用暖橙色实心按钮，其余用浅色描边按钮。 */
     readonly primary?: boolean;
     /** 引导用户发现困难模式的入口，已访问后统一隐藏角标。 */
@@ -416,6 +419,9 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     private pendingChallenge?: MeowdokuSavedProgress['challenge'];
     /** 道具库存（定位 / 提示），存在游戏存档里。 */
     private toolStock: MeowdokuToolStock = { locate: 0, hint: 0, day: '' };
+    private readonly dailyReward = new DailyToolRewardAnimation();
+    private dailyToolRewards: MeowdokuTool[] = [];
+    private dailyTutorialPending = false;
     /** 本关找猫步数：统计有效的双击或长按，包含放错和草稿中的找猫操作。 */
     private stepsUsed = 0;
     /** 整盘满标补叉阶段：此时不再判定「单元级 Clear」（原作排除 FULL_MARK_AUTO_CROSS）。 */
@@ -567,18 +573,22 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.state = 'ready';
     }
 
+    isGameplayActive(): boolean {
+        return this.state === 'playing';
+    }
+
     begin(): void {
         if (this.state !== 'ready') {
             throw new Error(`Cannot begin MeowdokuGame from ${this.state}.`);
         }
-        // 每日赠礼照发，但不再弹「获得 1 个道具」的提示（道具按钮上的角标本身就够了）。
-        this.grantDailyTool();
+        this.dailyToolRewards = this.grantDailyTools();
         // 进游戏总是直接进当前关卡（选关页不记存档）。
         const restored = this.pendingLevelCells;
         const lives = this.pendingLives;
         this.pendingLevelCells = undefined;
         this.pendingLives = undefined;
         this.startLevel(this.levelIndex, restored, lives, true);
+        this.showDailyToolReward();
         // 成就条件调整后，以已有通关进度恢复新条件下的成就，不要求重过旧关。
         if (this.mode !== 'hard') {
             this.context?.reportAchievementProgress('cleared-level', this.clearedLevel);
@@ -598,6 +608,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.resetBoardGesture();
         if (this.state !== 'paused') this.stateBeforePause = this.state;
         this.state = 'paused';
+        this.dailyReward.setVisible(false);
         this.inputLocked = true;
         this.tutorial?.pause();
         this.setFeedbackPaused(true);
@@ -608,6 +619,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     resume(): void {
         if (this.state !== 'paused') return;
         this.state = this.stateBeforePause === 'paused' ? 'playing' : this.stateBeforePause;
+        this.dailyReward.setVisible(true);
         this.inputLocked = this.state !== 'playing' || !!this.tutorial;
         this.tutorial?.resume();
         this.setFeedbackPaused(false);
@@ -621,6 +633,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             throw new Error(`Cannot restart MeowdokuGame from ${this.state}.`);
         }
         if (context) this.context = context;
+        this.finishDailyToolReward();
         this.destroyOverlay();
         this.resetBoardGesture();
         this.pendingLevelCells = undefined;
@@ -638,6 +651,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (this.state === 'disposed') return;
         if (this.node?.isValid) this.node.active = false;
         this.state = 'disposed';
+        this.finishDailyToolReward();
         this.pendingToolReward = undefined;
         this.model?.clearDraft();
         this.draftMode = false;
@@ -724,7 +738,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                     this.openLevelSelect();
                 },
             },
-            { label: MEOWDOKU_COPY.failLobby, action: () => model.exit() },
+            { label: MEOWDOKU_COPY.failLobby, requiresUserGesture: true, action: () => model.exit() },
         ], () => {
             // 从暂停弹窗返回：把输入锁解除。
             this.inputLocked = this.state !== 'playing';
@@ -740,7 +754,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.inputLocked = true;
         this.showOverlay(model.result.completed ? MEOWDOKU_COPY.clearTitle : '本局结束', undefined, [
             { label: '再来一局', action: () => model.restart(), primary: true },
-            { label: '返回大厅', action: () => model.returnToLobby() },
+            { label: '返回大厅', requiresUserGesture: true, action: () => model.returnToLobby() },
         ]);
     }
 
@@ -754,6 +768,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (this.state === 'disposed' || this.state === 'idle' || this.state === 'paused') return;
         const dt = Math.max(0, Math.min(0.1, deltaTime));
         if (dt <= 0) return;
+        if (this.dailyReward.active) {
+            this.dailyReward.advance(dt);
+            return;
+        }
         this.releaseRetiredPageNodes(24);
         if (this.state === 'selecting' && !this.levelSelectView?.modeAnimating) this.warmBoardCells();
         if (this.state === 'playing' || this.state === 'failing' || this.state === 'clearing') {
@@ -866,14 +884,13 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         const scoped: Record<string, unknown> = this.mode === 'hard'
             ? (typeof hard === 'object' && hard !== null && !Array.isArray(hard) ? hard as Record<string, unknown> : {})
             : {
-                unlocked: custom?.meowdokuUnlocked, cleared: custom?.meowdokuCleared,
+                cleared: custom?.meowdokuCleared,
                 progress: custom?.meowdokuProgress, fails: custom?.meowdokuFails,
                 challengeHistory: custom?.meowdokuChallengeHistory, geniusClears: custom?.meowdokuGeniusClears,
             };
         this.clearPendingProgress();
         this.failCounts = {};
-        // 版本 7 的旧存档只有解锁关卡，可据此恢复已通关关数；新增字段无需重置存档。
-        this.clearedLevel = this.readClearedLevel(scoped.unlocked, scoped.cleared, this.levelDefinitions().length);
+        this.clearedLevel = this.readClearedLevel(scoped.cleared, this.levelDefinitions().length);
         this.unlockedLevel = this.clampLevel(this.clearedLevel + 1);
         this.levelChallengeHistories = {};
         const histories = scoped.challengeHistory;
@@ -994,13 +1011,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.geniusClearedLevels = this.readGeniusClears(scoped.geniusClears, this.clearedLevel);
     }
 
-    /** 普通与困难存档沿用同一通关进度校验，兼容只有解锁关卡号的旧记录。 */
-    private readClearedLevel(unlocked: unknown, cleared: unknown, totalLevels: number): number {
-        const unlockedLevel = Math.max(1, Math.min(totalLevels,
-            typeof unlocked === 'number' && Number.isFinite(unlocked) ? Math.floor(unlocked) : 1));
-        return Math.max(unlockedLevel - 1,
-            typeof cleared === 'number' && Number.isFinite(cleared)
-                ? Math.max(0, Math.min(totalLevels, Math.floor(cleared))) : 0);
+    /** 普通与困难存档直接使用各自的通关进度。 */
+    private readClearedLevel(cleared: unknown, totalLevels: number): number {
+        return typeof cleared === 'number' && Number.isFinite(cleared)
+            ? Math.max(0, Math.min(totalLevels, Math.floor(cleared))) : 0;
     }
 
     /** 荣誉按模式内的有效关卡去重，未通关、越界与非 true 的记录不计入。 */
@@ -1133,7 +1147,11 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         const stored = storage.getGameData(context.gameId);
         const previous = stored?.dataVersion === MEOWDOKU_DATA_VERSION ? stored : undefined;
         // 写入时不带入其他版本的数据。
-        const custom: Record<string, unknown> = { ...(previous?.custom ?? {}) };
+        const custom: Record<string, unknown> = {};
+        for (const key of ['meowdokuUnlocked', 'meowdokuCleared', 'meowdokuProgress', 'meowdokuFails',
+            'meowdokuChallengeHistory', 'meowdokuGeniusClears', 'meowdokuTools', 'meowdokuHard']) {
+            if (previous?.custom?.[key] !== undefined) custom[key] = previous.custom[key];
+        }
         custom.meowdokuMode = this.mode;
         custom.meowdokuHardModeDiscovered = this.hardModeDiscovered;
         update(custom);
@@ -1187,6 +1205,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (!definition) {
             throw new Error(`MeowdokuGame has no level at index ${index}.`);
         }
+        if (this.dailyReward.active) this.finishDailyToolReward();
         if (this.mode === 'hard') this.discoverHardMode();
         this.levelRunId += 1;
         this.geniusClear = false;
@@ -1236,7 +1255,9 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         // 重复初始化；现在引导用的是引导盘，只建一次。
         const suppressTutorial = this.tutorialSuppressNext;
         this.tutorialSuppressNext = false;
-        if (this.mode !== 'hard' && definition.level === 1 && !suppressTutorial) {
+        const needsTutorial = this.mode !== 'hard' && definition.level === 1 && !suppressTutorial;
+        this.dailyTutorialPending = needsTutorial && this.dailyToolRewards.length > 0;
+        if (needsTutorial && this.dailyToolRewards.length === 0) {
             this.suppressBoardIntro = true;
             this.startTutorial();
             return;
@@ -1420,6 +1441,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         root.children.slice().forEach((child) => {
             if (child === this.backgroundNode) return;
             if (child === this.cellPoolRoot) return;
+            if (child === this.dailyReward.node) return;
             if (this.retiredPageRoots.has(child)) return;
             if (preserveTutorial && child === this.tutorial?.node) return;
             this.retirePageNode(child);
@@ -3844,8 +3866,8 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
      *   所以是「先上抛再落下」的弧线），时长 `_SE_FLY_DURATION = 0.57`。
      * - **拖尾**：`Line2D` 只保留目标路径最后 `fixed_trail_length = 120` 像素
      *   （`TrailGlow` 宽 120、`TrailAlp` / `TrailAdd` 宽 80），颜色从尾巴的透明淡黄
-     *   渐变到头部的橙色（`Gradient_hy2kp` / `Gradient_5troy`）。这里按同一条贝塞尔曲线
-     *   采样等价实现折线拖尾。
+     *   渐变到头部的橙色（`Gradient_hy2kp` / `Gradient_5troy`）。这里沿同一条贝塞尔曲线
+     *   往回量出尾点，把左淡右亮的彗尾贴图（宽光带 + 芯线各一张）从尾点拉伸到头部。
      * - **头部**：两枚旋转光点（`GlowAlp` / `GlowAdd`：0.5 缩放、0.8s 一圈）。
      * - **沿途**：小星点（`Stars`：life 0.35s、速度 ≤120、缩放 0.05~0.15）。
      * - **到达**：拖尾再停留 `_SE_TRAIL_LINGER = 0.067` 后释放，落点炸一圈
@@ -3883,56 +3905,28 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             out.x = lerp(pathX[index]!, pathX[index + 1]!, mix);
             out.y = lerp(pathY[index]!, pathY[index + 1]!, mix);
         };
-        // 渐变查表：原作的 `Gradient_hy2kp` 停靠点（尾部透明淡黄 → 头部橙色）。
-        const rampAt = (u: number): { color: Color; alpha: number } => {
-            let prev = fly.ramp[0]!;
-            for (const stop of fly.ramp) {
-                if (u <= stop.at) {
-                    const span = Math.max(1e-5, stop.at - prev.at);
-                    const mix = clamp((u - prev.at) / span, 0, 1);
-                    return {
-                        color: new Color(
-                            lerp(prev.color.r, stop.color.r, mix),
-                            lerp(prev.color.g, stop.color.g, mix),
-                            lerp(prev.color.b, stop.color.b, mix),
-                            255,
-                        ),
-                        alpha: lerp(prev.alpha, stop.alpha, mix),
-                    };
-                }
-                prev = stop;
-            }
-            const last = fly.ramp[fly.ramp.length - 1]!;
-            return { color: last.color.clone(), alpha: last.alpha };
+        // 拖尾：彗尾贴图本身就是「左端透明 → 右端亮」，整张从尾点拉伸到头部即是一道彗尾。
+        // 两层（宽光带垫底 + 芯线叠上）对应原作 `TrailGlow` / `TrailAlp`，各用一张 SIMPLE 精灵。
+        interface Ribbon { node: Node; transform: UITransform }
+        const makeRibbon = (name: string, width: number, color: Color): Ribbon => {
+            const node = new Node(name);
+            node.layer = this.node.layer;
+            node.setParent(layer);
+            const transform = node.addComponent(UITransform);
+            transform.setAnchorPoint(fly.trailHeadAnchor, 0.5);
+            transform.setContentSize(trailLength, width);
+            const sprite = node.addComponent(Sprite);
+            sprite.type = Sprite.Type.SIMPLE;
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.spriteFrame = trailFrame;
+            sprite.color = color.clone();
+            node.active = false;
+            return { node, transform };
         };
-
-        // 拖尾折线：`segments` 段 × 两层（宽光带 + 芯线），和原作的三条 Line2D 等价。
-        interface Ribbon { node: Node; transform: UITransform; opacity: UIOpacity; alpha: number }
-        const ribbon: Ribbon[] = [];
-        const makeRibbon = (height: number, name: string, alphaScale: number): Ribbon[] => {
-            const list: Ribbon[] = [];
-            for (let index = 0; index < fly.segments; index += 1) {
-                const node = new Node(name);
-                node.layer = this.node.layer;
-                node.setParent(layer);
-                const transform = node.addComponent(UITransform);
-                transform.setContentSize(trailLength, height);
-                const sprite = node.addComponent(Sprite);
-                sprite.type = Sprite.Type.TILED;
-                sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-                sprite.spriteFrame = trailFrame;
-                const ramp = rampAt((index + 1) / fly.segments);
-                sprite.color = ramp.color;
-                const opacity = node.addComponent(UIOpacity);
-                opacity.opacity = 0;
-                list.push({ node, transform, opacity,
-                    alpha: Math.round(255 * clamp(ramp.alpha, 0, 1) * alphaScale) });
-            }
-            return list;
-        };
-        const glowRibbon = makeRibbon(fly.glowWidth * k, 'ScoreFlyGlow', 0.55);
-        const coreRibbon = makeRibbon(fly.coreWidth * k, 'ScoreFlyCore', 1);
-        ribbon.push(...glowRibbon, ...coreRibbon);
+        const ribbons: Ribbon[] = [
+            makeRibbon('ScoreFlyGlow', fly.glowWidth * k * footprint, fly.trailGlowColor),
+            makeRibbon('ScoreFlyCore', fly.coreWidth * k * footprint, fly.trailCoreColor),
+        ];
 
         // 头部两枚旋转光点（`GlowAlp` / `GlowAdd`）。
         const headGlows: { node: Node; opacity: UIOpacity; spin: number }[] = [];
@@ -4002,50 +3996,21 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                 .start();
         };
 
-        const pointX = new Float32Array(fly.backSamples + 1);
-        const pointY = new Float32Array(fly.backSamples + 1);
-        const distances = new Float32Array(fly.backSamples + 1);
         const head = { x: 0, y: 0 };
+        const tail = { x: 0, y: 0 };
         const back = { x: 0, y: 0 };
-        const from = { x: 0, y: 0, angle: 0 };
-        const to = { x: 0, y: 0, angle: 0 };
-        let pointCount = 0;
-        let travelled = 0;
-        const pointAt = (distance: number, out: { x: number; y: number; angle: number }): void => {
-            const target = Math.min(distance, travelled);
-            for (let index = 1; index < pointCount; index += 1) {
-                if (target > distances[index]! && index < pointCount - 1) continue;
-                const span = distances[index]! - distances[index - 1]!;
-                const mix = span > 1e-4 ? clamp((target - distances[index - 1]!) / span, 0, 1) : 0;
-                const ax = pointX[index - 1]!;
-                const ay = pointY[index - 1]!;
-                const bx = pointX[index]!;
-                const by = pointY[index]!;
-                out.x = lerp(ax, bx, mix);
-                out.y = lerp(ay, by, mix);
-                out.angle = Math.atan2(by - ay, bx - ax) * (180 / Math.PI);
-                return;
-            }
-            out.x = pointX[pointCount - 1]!;
-            out.y = pointY[pointCount - 1]!;
-            out.angle = 0;
-        };
-        const updateRibbon = (list: Ribbon[], width: number): void => {
-            if (travelled <= 1) {
-                for (const entry of list) entry.opacity.opacity = 0;
-                return;
-            }
-            const segmentLength = Math.max(1, travelled / fly.segments);
-            for (let index = 0; index < list.length; index += 1) {
-                const entry = list[index]!;
+        const updateRibbons = (): void => {
+            const length = Math.hypot(head.x - tail.x, head.y - tail.y);
+            const visible = length > 1;
+            const angle = Math.atan2(head.y - tail.y, head.x - tail.x) * (180 / Math.PI);
+            for (const entry of ribbons) {
                 if (!entry.node.isValid) continue;
-                pointAt((index + 0.5) * segmentLength, from);
-                pointAt(Math.min((index + 1.5) * segmentLength, travelled), to);
-                const length = Math.max(1, Math.hypot(from.x - to.x, from.y - to.y) * 1.25);
-                entry.node.setPosition((from.x + to.x) / 2, (from.y + to.y) / 2, 0);
-                entry.node.angle = from.angle;
-                entry.transform.setContentSize(length, width);
-                entry.opacity.opacity = entry.alpha;
+                entry.node.active = visible;
+                if (!visible) continue;
+                // 锚点压在头部，贴图左端恰好落在尾点。
+                entry.node.setPosition(head.x, head.y, 0);
+                entry.node.angle = angle;
+                entry.transform.setContentSize(length / fly.trailHeadAnchor, entry.transform.height);
             }
         };
         const state = { t: 0 };
@@ -4069,27 +4034,20 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                         lastStarP = p;
                         emitStars(head.x, head.y);
                     }
-                    // 拖尾：从头部往回量 `trailLength` 像素，得到折线采样点。
-                    pointX[0] = head.x;
-                    pointY[0] = head.y;
-                    distances[0] = 0;
-                    pointCount = 1;
-                    travelled = 0;
-                    let previousX = head.x;
-                    let previousY = head.y;
+                    // 拖尾尾点：沿路径从头部往回量 `trailLength` 像素（刚起飞时停在起点）。
+                    tail.x = head.x;
+                    tail.y = head.y;
+                    let travelled = 0;
                     const stepT = 1 / (fly.backSamples * 2);
                     for (let index = 1; index <= fly.backSamples && travelled < trailLength; index += 1) {
                         sampleInto(p - index * stepT, back);
-                        travelled += Math.hypot(previousX - back.x, previousY - back.y);
-                        previousX = back.x;
-                        previousY = back.y;
-                        pointX[index] = back.x;
-                        pointY[index] = back.y;
-                        distances[index] = travelled;
-                        pointCount += 1;
+                        const step = Math.hypot(tail.x - back.x, tail.y - back.y);
+                        const mix = travelled + step > trailLength ? (trailLength - travelled) / step : 1;
+                        tail.x = lerp(tail.x, back.x, mix);
+                        tail.y = lerp(tail.y, back.y, mix);
+                        travelled += step * mix;
                     }
-                    updateRibbon(glowRibbon, fly.glowWidth * k * footprint);
-                    updateRibbon(coreRibbon, fly.coreWidth * k * footprint);
+                    updateRibbons();
                 },
             })
             .call(() => {
@@ -4101,7 +4059,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                 void pending;
                 this.scheduleOnce(() => {
                     if (layer.isValid) this.destroyNode(trailRoot);
-                    ribbon.forEach((entry) => {
+                    ribbons.forEach((entry) => {
                         if (entry.node.isValid) this.destroyNode(entry.node);
                     });
                     headGlows.forEach((entry) => {
@@ -4735,6 +4693,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         // 引导进行中：棋盘输入要放行（引导只认当前步骤允许的格子），
         // 否则 `inputLocked` 会把棋盘点不动。
         return this.state === 'playing'
+            && !this.dailyReward.active
             && (!!this.tutorial || (!this.inputLocked && !this.activeHint && !this.toolAdPending));
     }
 
@@ -5473,21 +5432,28 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         return MEOWDOKU_COPY.toolLocate;
     }
 
-    /** 刷新道具角标：有货显示红底数量，没货显示绿底「看广告领一个」。 */
+    private isAdsEnabled(): boolean {
+        const context = this.context;
+        return context?.services.ads?.isEnabledForGame(context.gameId) === true;
+    }
+
+    /** 刷新道具角标：只有真实库存用尽且广告开启时才显示广告入口。 */
     private syncToolButtons(): void {
         const tools: MeowdokuTool[] = ['locate', 'hint'];
-        const enabled = this.state === 'playing' && !this.inputLocked;
+        const adsEnabled = this.isAdsEnabled();
         for (const tool of tools) {
             const view = this.toolButtons.get(tool);
             if (!view) continue;
             if (view.icon.isValid) view.icon.color = Color.WHITE;
-            const count = this.toolStock[tool] ?? 0;
-            const hasTool = count > 0;
-            if (view.countRoot.isValid) view.countRoot.active = hasTool;
-            if (view.adRoot.isValid) view.adRoot.active = !hasTool;
-            if (hasTool && view.countLabel.isValid) {
+            const stock = Math.max(0, this.toolStock[tool] ?? 0);
+            const count = Math.max(0, stock - (this.dailyToolRewards.indexOf(tool) >= 0 ? 1 : 0));
+            const showAd = stock === 0 && adsEnabled;
+            if (view.countRoot.isValid) view.countRoot.active = !showAd;
+            if (view.adRoot.isValid) view.adRoot.active = showAd;
+            if (view.countLabel.isValid) {
                 view.countLabel.string = count > 99 ? '99+' : String(count);
             }
+            const enabled = this.state === 'playing' && !this.inputLocked && (stock > 0 || adsEnabled);
             if (view.node.isValid) view.node.setScale(enabled ? 1 : 0.96, enabled ? 1 : 0.96, 1);
         }
     }
@@ -5502,24 +5468,62 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         return true;
     }
 
-    /**
-     * 每天第一次进入游戏随机送一个道具（需求：每日首次进入获得随机一个道具）。
-     * 返回本次是否发过。
-     */
-    private grantDailyTool(): boolean {
+    /** 每天首次进入时找猫和提示各送一个，库存和领取日期一次保存。 */
+    private grantDailyTools(): MeowdokuTool[] {
         const today = todayStamp();
-        if (this.toolStock.day === today) return false;
-        const tool: MeowdokuTool = Math.random() < 0.5 ? 'locate' : 'hint';
+        if (this.toolStock.day === today) return [];
+        const tools: MeowdokuTool[] = ['locate', 'hint'];
         this.toolStock.day = today;
-        this.toolStock[tool] = (this.toolStock[tool] ?? 0) + 1;
+        for (const tool of tools) this.toolStock[tool] = (this.toolStock[tool] ?? 0) + 1;
         this.persistToolStock();
+        return tools;
+    }
+
+    private showDailyToolReward(): void {
+        const tools = this.dailyToolRewards, layout = this.layout;
+        if (tools.length === 0 || !layout || this.dailyReward.active) return;
+        this.dailyReward.start({
+            parent: this.node,
+            bounds: { width: layout.width, height: layout.height,
+                top: layout.height / 2 - layout.topInset, bottom: -layout.height / 2 + layout.safeBottom },
+            colors: { dim: new Color(70, 49, 46, 82), shadow: new Color(70, 49, 46, 35),
+                accent: MEOWDOKU_COLORS.hudAccent, text: Color.WHITE },
+            items: tools.map(tool => {
+                const frame = this.toolIconFrame(tool);
+                return {
+                    caption: `${this.toolLabel(tool)} +1`,
+                    createIcon: parent => {
+                        const icon = new Node('RewardIcon'); icon.layer = parent.layer; icon.setParent(parent);
+                        const aspect = frame && frame.rect.height > 0 ? frame.rect.width / frame.rect.height : 1;
+                        icon.addComponent(UITransform).setContentSize(aspect >= 1 ? 136 : 136 * aspect, aspect >= 1 ? 136 / aspect : 136);
+                        const sprite = icon.addComponent(Sprite); sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+                        sprite.spriteFrame = frame; sprite.color = Color.WHITE;
+                        return icon;
+                    },
+                    target: () => this.toolButtons.get(tool)?.node.getChildByName('IconBg')?.getChildByName('Icon') ?? undefined,
+                    onArrive: () => {
+                        this.dailyToolRewards = this.dailyToolRewards.filter(pending => pending !== tool);
+                        this.syncToolButtons();
+                    },
+                };
+            }),
+            onFinish: () => {
+                const tutorial = this.dailyTutorialPending;
+                this.dailyTutorialPending = false;
+                if (tutorial && this.state === 'playing') this.startTutorial();
+            },
+        });
+        this.context?.services.feedback.play('uiButton');
+    }
+
+    private finishDailyToolReward(): void {
+        this.dailyReward.dispose(); this.dailyToolRewards = []; this.dailyTutorialPending = false;
         this.syncToolButtons();
-        return true;
     }
 
     /** 数量为 0 时点道具：看一次激励广告换一个（原作 `game_ad_badge` 的绿色角标）。 */
     private async requestToolByAd(tool: MeowdokuTool): Promise<void> {
-        if (this.toolAdPending) return;
+        if (this.toolAdPending || !this.isAdsEnabled()) return;
         this.toolAdPending = true;
         this.context?.services.feedback.play('uiButton');
         // 看完广告**不补库存**，直接把这一次道具用掉（原作 `_on_ad_rewarded` 后立即执行道具）。
@@ -5566,7 +5570,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     /** 提示先求解再扣库存；无提示不消耗，也不发起广告。 */
     private pressTool(tool: MeowdokuTool): void {
         if (this.tutorial) return;
-        if (this.state !== 'playing' || this.inputLocked) return;
+        if (this.state !== 'playing' || this.inputLocked || this.dailyReward.active) return;
         if (this.toolAdPending || this.draftMode || this.activeHint || !this.model || this.model.isComplete) return;
         this.resetBoardGesture();
         if (tool === 'hint') {
@@ -5865,6 +5869,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     private handleLevelCleared(): void {
         const model = this.model;
         if (this.state !== 'playing' || !model?.isComplete) return;
+        this.context?.reportRoundFinished?.();
         this.recordLevelChallengeHistory();
         const history = this.levelChallengeHistories[String(model.level)];
         this.geniusClear = this.challengeTrackingActive && model.isPerfectClear
@@ -6335,7 +6340,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     /**
      * 失败页（原作 `game_fail_page.tscn` 的素材与文案）：和通关页同一套一整列版式——
      * 标题「生命值耗尽」→ 关卡胶囊 → 单次出场的失落布偶猫 → 鼓励语 → 找到进度（数字高亮 + 进度条）
-     * → 普通模式「看广告恢复红心 / 重新开始」，困难模式「重新开始 / 选择关卡」。
+     * → 普通模式且广告开启时「看广告恢复红心 / 重新开始」，其余情况「重新开始 / 选择关卡」。
      */
     private showFailPage(): void {
         this.destroyFailPage();
@@ -6391,22 +6396,23 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         cursor -= (spec.failCardHeight + spec.buttonsGap) * s;
 
         const buttonWidth = spec.buttonWidth * s;
-        const hard = this.mode === 'hard';
+        const canRevive = this.mode !== 'hard' && this.isAdsEnabled();
         const reviveHeight = spec.primaryButtonHeight * s;
         const revive = this.createPillButton(
             column,
-            hard ? 'Restart' : 'Revive',
+            canRevive ? 'Revive' : 'Restart',
             buttonWidth,
             reviveHeight,
-            hard ? MEOWDOKU_COPY.failRestart : MEOWDOKU_COPY.failRevive,
-            hard ? 'primary' : 'ad',
-            { fontSize: spec.primaryButtonFont * s, icon: hard ? undefined : this.visuals?.frames.iconAdPlay },
+            canRevive ? MEOWDOKU_COPY.failRevive : MEOWDOKU_COPY.failRestart,
+            canRevive ? 'ad' : 'primary',
+            { fontSize: spec.primaryButtonFont * s, icon: canRevive ? this.visuals?.frames.iconAdPlay : undefined },
         );
         revive.setPosition(0, cursor - reviveHeight / 2, 0);
         this.revealResultNode(revive, 0.66);
         this.bindButton(revive, () => {
             if (this.state !== 'failing') return;
-            if (hard) {
+            if (!canRevive) {
+                this.context?.reportRoundFinished?.();
                 this.destroyFailPage();
                 this.restartCurrentLevel();
             } else {
@@ -6418,10 +6424,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         const restartHeight = spec.secondaryButtonHeight * s;
         const restart = this.createPillButton(
             column,
-            hard ? 'SelectLevel' : 'Restart',
+            canRevive ? 'Restart' : 'SelectLevel',
             buttonWidth,
             restartHeight,
-            hard ? MEOWDOKU_COPY.pauseSelectLevel : MEOWDOKU_COPY.failRestart,
+            canRevive ? MEOWDOKU_COPY.failRestart : MEOWDOKU_COPY.pauseSelectLevel,
             'secondary',
             { fontSize: spec.secondaryButtonFont * s },
         );
@@ -6429,9 +6435,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.revealResultNode(restart, 0.76);
         this.bindButton(restart, () => {
             if (this.state !== 'failing') return;
+            this.context?.reportRoundFinished?.();
             this.destroyFailPage();
-            if (hard) this.openLevelSelect();
-            else this.restartCurrentLevel();
+            if (canRevive) this.restartCurrentLevel();
+            else this.openLevelSelect();
         });
     }
 
@@ -6443,7 +6450,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     private async requestRevive(): Promise<void> {
         const model = this.model;
         const runId = this.levelRunId;
-        if (this.mode === 'hard' || !this.isFailureState() || !model || this.revivePending) return;
+        if (this.mode === 'hard' || !this.isAdsEnabled() || !this.isFailureState() || !model || this.revivePending) return;
         this.revivePending = true;
         try {
             const ads = this.context?.services.ads;
@@ -7299,11 +7306,11 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             if (entry.hardModeNotice) this.createHardModeNotice(button, { diameter: 44 });
             cursor -= buttonHeight + buttonGap;
             this.bindButton(button, () => {
-                void Promise.resolve()
-                    .then(entry.action)
-                    .catch((error: unknown) => {
-                        // TODO: console.error('[MeowdokuGame] Overlay action failed.', error);
-                    });
+                const invoke = async (): Promise<void> => { await entry.action(); };
+                const pending = entry.requiresUserGesture ? invoke() : Promise.resolve().then(invoke);
+                void pending.catch((error: unknown) => {
+                    // TODO: console.error('[MeowdokuGame] Overlay action failed.', error);
+                });
             });
         });
 
@@ -8261,6 +8268,9 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             this.state = 'paused';
             this.inputLocked = true;
         }
+        const layout = this.requireLayout();
+        this.dailyReward.relayout({ width: layout.width, height: layout.height,
+            top: layout.height / 2 - layout.topInset, bottom: -layout.height / 2 + layout.safeBottom });
     };
 
     private requireLayout(): MeowdokuLayoutMetrics {

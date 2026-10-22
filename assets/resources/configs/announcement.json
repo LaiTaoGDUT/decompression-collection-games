@@ -1,33 +1,39 @@
 {
   "schemaVersion": 1,
   "announcement": {
-    "id": "v0.1.0-20261011-7834ff",
-    "version": "0.0.6",
-    "date": "2026-10-12",
+    "id": "v0.0.9-20261021-6d4451",
+    "version": "0.0.9",
+    "date": "2026-10-21",
     "newGames": [
       {
-        "gameId": "cyblockbees",
-        "gameName": "挡住蜜蜂",
-        "text": "你能保护狗头不被蜜蜂蛰到吗？"
+        "gameId": "flappy-dunk",
+        "gameName": "篮球灌篮",
+        "text": "点按振翅穿过篮圈，挑战连续空心灌篮！"
+      },
+      {
+        "gameId": "rotate-rings",
+        "gameName": "解个圆环",
+        "text": "转动圆环找准缺口，解开层层相扣的机关！"
+      },
+      {
+        "gameId": "ping-pong",
+        "gameName": "乒乓球对战",
+        "text": "挑战机器人，或叫上朋友同屏来一场乒乓对决！"
       }
     ],
     "features": [
       {
-        "gameId": "meowdoku",
-        "gameName": "猫咪数独",
-        "text": "增加困难模式，快来挑战！"
-      },
-      {
-        "gameId": "game2048",
-        "gameName": "霓虹 2048",
-        "text": "画面焕新，流畅度提升！"
-      },
-      {
-        "gameId": "doodle-jump",
-        "gameName": "纸片跳跃",
-        "text": "画面焕新，游玩逻辑优化！"
+        "gameId": "chess-endless",
+        "gameName": "棋逢对手",
+        "text": "优化斩将奖励与难度节奏，道具特效更带感！"
       }
     ],
-    "fixes": []
+    "fixes": [
+      {
+        "gameId": "cyblockbees",
+        "gameName": "保护狗头",
+        "text": "优化画线与蜂群运行，减少游玩卡顿。"
+      }
+    ]
   }
 }

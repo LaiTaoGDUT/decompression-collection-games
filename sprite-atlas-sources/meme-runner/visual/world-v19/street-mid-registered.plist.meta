@@ -1,0 +1,20 @@
+{
+  "subMetas": {
+    "street-mid": {
+      "importer": "sprite-frame",
+      "name": "street-mid",
+      "uuid": "29fd07af-56e0-503e-8d4d-763c41385f8f",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 2065,
+        "height": 618,
+        "rawWidth": 2065,
+        "rawHeight": 618,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "street-far": {
+    "path": "visual/world-v19/street-far/street-far",
+    "size": [
+      1334,
+      751
+    ]
+  },
+  "street-mid": {
+    "path": "visual/world-v19/street-mid-registered/street-mid",
+    "size": [
+      1002,
+      300
+    ]
+  },
+  "alley-far": {
+    "path": "visual/world-v19/alley-far/alley-far",
+    "size": [
+      1334,
+      751
+    ]
+  },
+  "alley-mid": {
+    "path": "visual/world-v19/alley-mid-registered/alley-mid",
+    "size": [
+      889,
+      300
+    ]
+  },
+  "roofs-far": {
+    "path": "visual/world-v19/roofs-far/roofs-far",
+    "size": [
+      1334,
+      751
+    ]
+  },
+  "roofs-mid": {
+    "path": "visual/world-v19/roofs-mid-registered/roofs-mid",
+    "size": [
+      1078,
+      300
+    ]
+  },
+  "night-far": {
+    "path": "visual/world-v19/night-far/night-far",
+    "size": [
+      1334,
+      751
+    ]
+  },
+  "night-mid": {
+    "path": "visual/world-v19/night-mid-registered/night-mid",
+    "size": [
+      1017,
+      300
+    ]
+  },
+  "street-ground": {
+    "path": "visual/world-v19/terrain-sheet/street-ground",
+    "size": [
+      320,
+      135
+    ]
+  },
+  "alley-ground": {
+    "path": "visual/world-v19/terrain-sheet/alley-ground",
+    "size": [
+      320,
+      136
+    ]
+  },
+  "roofs-ground": {
+    "path": "visual/world-v19/terrain-sheet/roofs-ground",
+    "size": [
+      320,
+      135
+    ]
+  },
+  "night-ground": {
+    "path": "visual/world-v19/terrain-sheet/night-ground",
+    "size": [
+      320,
+      136
+    ]
+  },
+  "street-roof": {
+    "path": "visual/world-v19/terrain-sheet/street-roof",
+    "size": [
+      180,
+      60
+    ]
+  },
+  "alley-roof": {
+    "path": "visual/world-v19/terrain-sheet/alley-roof",
+    "size": [
+      180,
+      60
+    ]
+  },
+  "roofs-roof": {
+    "path": "visual/world-v19/terrain-sheet/roofs-roof",
+    "size": [
+      180,
+      61
+    ]
+  },
+  "night-roof": {
+    "path": "visual/world-v19/terrain-sheet/night-roof",
+    "size": [
+      173,
+      64
+    ]
+  },
+  "cloud": {
+    "path": "visual/world-v19/details-registered/cloud",
+    "size": [
+      198,
+      128
+    ]
+  },
+  "planter": {
+    "path": "visual/world-v19/details-registered/planter",
+    "size": [
+      100,
+      77
+    ]
+  },
+  "lamp": {
+    "path": "visual/world-v19/details-registered/lamp",
+    "size": [
+      62,
+      210
+    ]
+  },
+  "bunting": {
+    "path": "visual/world-v19/details-registered/bunting",
+    "size": [
+      187,
+      90
+    ]
+  },
+  "cat-sign": {
+    "path": "visual/world-v19/details-registered/cat-sign",
+    "size": [
+      116,
+      149
+    ]
+  },
+  "tank": {
+    "path": "visual/world-v19/details-registered/tank",
+    "size": [
+      110,
+      180
+    ]
+  },
+  "vent": {
+    "path": "visual/world-v19/details-registered/vent",
+    "size": [
+      100,
+      69
+    ]
+  },
+  "lantern": {
+    "path": "visual/world-v19/details-registered/lantern",
+    "size": [
+      72,
+      132
+    ]
+  },
+  "bamboo": {
+    "path": "visual/world-v19/details-registered/bamboo",
+    "size": [
+      120,
+      159
+    ]
+  },
+  "banner": {
+    "path": "visual/world-v19/details-registered/banner",
+    "size": [
+      108,
+      140
+    ]
+  },
+  "finish": {
+    "path": "visual/world-v19/details-registered/finish",
+    "size": [
+      248,
+      220
+    ]
+  },
+  "star": {
+    "path": "visual/world-v19/details-registered/star",
+    "size": [
+      76,
+      74
+    ]
+  },
+  "fx-dust-0": {
+    "path": "visual/world-v19/effects-sheet/fx-dust-0",
+    "size": [
+      96,
+      64
+    ]
+  },
+  "fx-dust-1": {
+    "path": "visual/world-v19/effects-sheet/fx-dust-1",
+    "size": [
+      96,
+      64
+    ]
+  },
+  "fx-dust-2": {
+    "path": "visual/world-v19/effects-sheet/fx-dust-2",
+    "size": [
+      96,
+      64
+    ]
+  },
+  "fx-dust-3": {
+    "path": "visual/world-v19/effects-sheet/fx-dust-3",
+    "size": [
+      96,
+      64
+    ]
+  },
+  "fx-spark": {
+    "path": "visual/world-v19/effects-sheet/fx-spark",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-halo": {
+    "path": "visual/world-v19/effects-sheet/fx-halo",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-shard": {
+    "path": "visual/world-v19/effects-sheet/fx-shard",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-bounce": {
+    "path": "visual/world-v19/effects-sheet/fx-bounce",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-wood-0": {
+    "path": "visual/world-v19/effects-sheet/fx-wood-0",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-wood-1": {
+    "path": "visual/world-v19/effects-sheet/fx-wood-1",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-wood-2": {
+    "path": "visual/world-v19/effects-sheet/fx-wood-2",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-flash": {
+    "path": "visual/world-v19/effects-sheet/fx-flash",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-heart": {
+    "path": "visual/world-v19/effects-sheet/fx-heart",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-confetti-0": {
+    "path": "visual/world-v19/effects-sheet/fx-confetti-0",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-confetti-1": {
+    "path": "visual/world-v19/effects-sheet/fx-confetti-1",
+    "size": [
+      120,
+      80
+    ]
+  },
+  "fx-arc": {
+    "path": "visual/world-v19/effects-sheet/fx-arc",
+    "size": [
+      120,
+      80
+    ]
+  }
+}

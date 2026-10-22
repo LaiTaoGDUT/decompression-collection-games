@@ -17,7 +17,7 @@ export const DOODLE_JUMP_ENEMY_TYPES = ['small', 'hopper', 'hover', 'weaver', 'l
 export type DoodleJumpEnemyType = typeof DOODLE_JUMP_ENEMY_TYPES[number];
 
 export function isDoodleJumpFlyingEnemy(type: DoodleJumpEnemyType): boolean {
-    return type === 'hover' || type === 'weaver' || type === 'flyer';
+    return type !== 'bouncer' && type !== 'runner' && type !== 'tall';
 }
 export type DoodleJumpHazardType = 'ufo' | 'black-hole' | 'bear-trap';
 export type DoodleJumpItemType =
@@ -25,7 +25,6 @@ export type DoodleJumpItemType =
     | 'trampoline'
     | 'jetpack'
     | 'propeller-hat'
-    | 'rocket'
     | 'spring-shoes'
     | 'shield';
 export type DoodleJumpPowerPreset = DoodleJumpItemType | 'head-start' | 'none';
@@ -174,9 +173,6 @@ export interface DoodleJumpGameplayConfig {
             durationSeconds: number;
             minimumVerticalVelocity: number;
         }>;
-        rocket: Readonly<{
-            durationSeconds: number;
-        }>;
         shield: Readonly<{ durationSeconds: number }>;
         springShoes: Readonly<{ durationSeconds: number; bounceVelocity: number }>;
         headStart: Readonly<{ durationSeconds: number; verticalVelocity: number }>;
@@ -218,7 +214,6 @@ const ITEM_TYPES: readonly DoodleJumpItemType[] = Object.freeze([
     'trampoline',
     'jetpack',
     'propeller-hat',
-    'rocket',
     'shield',
     'spring-shoes',
 ]);
@@ -367,7 +362,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
     const trampoline = asRecord(items.trampoline, 'items.trampoline');
     const jetpack = asRecord(items.jetpack, 'items.jetpack');
     const propellerHat = asRecord(items.propellerHat, 'items.propellerHat');
-    const rocket = asRecord(items.rocket, 'items.rocket');
     const shield = asRecord(items.shield, 'items.shield');
     const springShoes = asRecord(items.springShoes, 'items.springShoes');
     const headStart = asRecord(items.headStart, 'items.headStart');
@@ -519,10 +513,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
         propellerHat.minimumVerticalVelocity,
         'items.propellerHat.minimumVerticalVelocity',
     );
-    const rocketDurationSeconds = positiveNumber(
-        rocket.durationSeconds,
-        'items.rocket.durationSeconds',
-    );
 
     return Object.freeze({
         schemaVersion,
@@ -642,9 +632,6 @@ export function parseDoodleJumpGameplayConfig(value: unknown): DoodleJumpGamepla
             propellerHat: Object.freeze({
                 durationSeconds: propellerHatDurationSeconds,
                 minimumVerticalVelocity: propellerHatMinimumVelocity,
-            }),
-            rocket: Object.freeze({
-                durationSeconds: rocketDurationSeconds,
             }),
             shield: Object.freeze({
                 durationSeconds: positiveNumber(

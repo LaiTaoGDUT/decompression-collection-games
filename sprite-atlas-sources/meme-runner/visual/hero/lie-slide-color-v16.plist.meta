@@ -1,0 +1,52 @@
+{
+  "subMetas": {
+    "slide-0": {
+      "importer": "sprite-frame",
+      "name": "slide-0",
+      "uuid": "d7c3f6a6-e418-508f-8280-de7d1e4d23d9",
+      "userData": {
+        "trimX": 26,
+        "trimY": 345,
+        "width": 593,
+        "height": 349,
+        "rawWidth": 729.8461538461538,
+        "rawHeight": 652.6753246753246,
+        "offsetX": -0.5384615384615553,
+        "offsetY": -154.83766233766235,
+        "rotated": false
+      }
+    },
+    "slide-1": {
+      "importer": "sprite-frame",
+      "name": "slide-1",
+      "uuid": "d148f69c-614d-579e-83df-2a9b23a9c687",
+      "userData": {
+        "trimX": 619,
+        "trimY": 460,
+        "width": 707,
+        "height": 256,
+        "rawWidth": 725.1282051282051,
+        "rawHeight": 658.2857142857143,
+        "offsetX": -5.5179487179486815,
+        "offsetY": -204.14285714285714,
+        "rotated": false
+      }
+    },
+    "slide-2": {
+      "importer": "sprite-frame",
+      "name": "slide-2",
+      "uuid": "50681835-132a-50dd-9901-c9bf2d6e6044",
+      "userData": {
+        "trimX": 1328,
+        "trimY": 327,
+        "width": 425,
+        "height": 376,
+        "rawWidth": 723.4042553191489,
+        "rawHeight": 652.3373493975904,
+        "offsetX": -3.761702127659674,
+        "offsetY": -141.1686746987952,
+        "rotated": false
+      }
+    }
+  }
+}

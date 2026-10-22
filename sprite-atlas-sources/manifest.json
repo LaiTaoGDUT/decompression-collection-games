@@ -111,35 +111,67 @@
         "frames": [
           {
             "source": "visual/pieces/piece_enemy_advisor.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
           },
           {
             "source": "visual/pieces/piece_enemy_cannon.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
           },
           {
             "source": "visual/pieces/piece_enemy_elephant.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
           },
           {
             "source": "visual/pieces/piece_enemy_general.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              75,
+              77
+            ]
           },
           {
             "source": "visual/pieces/piece_enemy_horse.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
           },
           {
             "source": "visual/pieces/piece_enemy_pawn.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
           },
           {
             "source": "visual/pieces/piece_enemy_rook.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
           },
           {
             "source": "visual/pieces/piece_player_rook.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              71,
+              67
+            ]
           }
         ]
       },
@@ -148,27 +180,51 @@
         "frames": [
           {
             "source": "visual/icons/icon_item_banish.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              100,
+              103
+            ]
           },
           {
             "source": "visual/icons/icon_item_cross_slash.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              102,
+              103
+            ]
           },
           {
             "source": "visual/icons/icon_item_delay.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              103,
+              100
+            ]
           },
           {
             "source": "visual/icons/icon_item_freeze.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              100,
+              103
+            ]
           },
           {
             "source": "visual/icons/icon_item_teleport.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              103,
+              102
+            ]
           },
           {
             "source": "visual/icons/icon_revive.png",
-            "geometry": "meta"
+            "geometry": "meta",
+            "resize": [
+              85,
+              86
+            ]
           }
         ]
       },
@@ -177,23 +233,43 @@
         "frames": [
           {
             "source": "visual/ui/chess-endless-rewarded-video-icon-v1.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              42,
+              40
+            ]
           },
           {
             "source": "visual/ui/icon_close.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              52,
+              52
+            ]
           },
           {
             "source": "visual/ui/icon_help.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              40,
+              40
+            ]
           },
           {
             "source": "visual/ui/icon_pause.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              58,
+              58
+            ]
           },
           {
             "source": "visual/ui/icon_rules.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              58,
+              58
+            ]
           }
         ]
       },
@@ -202,27 +278,51 @@
         "frames": [
           {
             "source": "visual/vfx/vfx_capture_burst.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              136,
+              136
+            ]
           },
           {
             "source": "visual/vfx/vfx_combo_burst.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              560,
+              233
+            ]
           },
           {
             "source": "visual/vfx/vfx_cross_slash.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              726,
+              137
+            ]
           },
           {
             "source": "visual/vfx/vfx_ink_particle.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              100,
+              100
+            ]
           },
           {
             "source": "visual/vfx/vfx_light_particle.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              130,
+              130
+            ]
           },
           {
             "source": "visual/vfx/vfx_wood_chip.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              100,
+              100
+            ]
           }
         ]
       },
@@ -231,27 +331,51 @@
         "frames": [
           {
             "source": "visual/vfx/vfx_item_banish.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              166,
+              166
+            ]
           },
           {
             "source": "visual/vfx/vfx_item_cross.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              170,
+              170
+            ]
           },
           {
             "source": "visual/vfx/vfx_item_delay.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              142,
+              142
+            ]
           },
           {
             "source": "visual/vfx/vfx_item_freeze.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              142,
+              142
+            ]
           },
           {
             "source": "visual/vfx/vfx_item_teleport.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              146,
+              146
+            ]
           },
           {
             "source": "visual/vfx/vfx_talisman.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              60,
+              60
+            ]
           }
         ]
       },
@@ -260,11 +384,19 @@
         "frames": [
           {
             "source": "visual/vfx/vfx_reward_chest_closed.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              336,
+              272
+            ]
           },
           {
             "source": "visual/vfx/vfx_reward_chest_open.png",
-            "geometry": "full"
+            "geometry": "full",
+            "resize": [
+              368,
+              298
+            ]
           }
         ]
       }
@@ -631,10 +763,6 @@
         "path": "visual/items/doodle-items",
         "frames": [
           {
-            "source": "visual/items/pickup-jetpack.png",
-            "geometry": "full"
-          },
-          {
             "source": "visual/items/pickup-propeller-hat-v2.png",
             "geometry": "full"
           },
@@ -777,10 +905,6 @@
         "frames": [
           {
             "source": "visual/ui/item-icons/head-start.png",
-            "geometry": "meta"
-          },
-          {
-            "source": "visual/ui/item-icons/jetpack.png",
             "geometry": "meta"
           },
           {
@@ -954,15 +1078,6 @@
         ]
       },
       {
-        "path": "visual/effects/doodle-jetpack",
-        "frames": [
-          {
-            "source": "visual/effects/jetpack-flames.png",
-            "geometry": "full"
-          }
-        ]
-      },
-      {
         "path": "visual/effects/doodle-enemy-impact",
         "frames": [
           {
@@ -1042,19 +1157,11 @@
             "geometry": "full"
           },
           {
-            "source": "visual/player/rabbit-jetpack.png",
-            "geometry": "full"
-          },
-          {
             "source": "visual/player/rabbit-shoes-jumping.png",
             "geometry": "full"
           },
           {
             "source": "visual/player/rabbit-shoes-falling.png",
-            "geometry": "full"
-          },
-          {
-            "source": "visual/player/player-jetpack.png",
             "geometry": "full"
           },
           {
@@ -2617,6 +2724,3306 @@
               "borderRight": 0,
               "borderTop": 0
             }
+          }
+        ]
+      }
+    ],
+    "rotate-rings": [
+      {
+        "path": "visual/ui/rings-ui",
+        "frames": [
+          {
+            "source": "visual/ui/btn_primary_blue.png",
+            "geometry": "full",
+            "resize": [
+              376,
+              96
+            ],
+            "insets": {
+              "borderLeft": 156,
+              "borderRight": 156,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_primary_orange.png",
+            "geometry": "full",
+            "resize": [
+              342,
+              96
+            ],
+            "insets": {
+              "borderLeft": 156,
+              "borderRight": 156,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_secondary.png",
+            "geometry": "full",
+            "resize": [
+              374,
+              96
+            ],
+            "insets": {
+              "borderLeft": 156,
+              "borderRight": 156,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/badge_lock.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_round_back.png",
+            "geometry": "full",
+            "resize": [
+              76,
+              76
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_round_settings.png",
+            "geometry": "full",
+            "resize": [
+              76,
+              76
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/prop_plate.png",
+            "geometry": "full",
+            "resize": [
+              132,
+              132
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/icon_hint.png",
+            "geometry": "full",
+            "resize": [
+              72,
+              83
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/icon_hint_large.png",
+            "geometry": "full",
+            "resize": [
+              148,
+              170
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/badge_number.png",
+            "geometry": "full",
+            "resize": [
+              48,
+              48
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/badge_ad.png",
+            "geometry": "full",
+            "resize": [
+              48,
+              48
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/icon_ad.png",
+            "geometry": "full",
+            "resize": [
+              44,
+              44
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/dialog_panel.png",
+            "geometry": "full",
+            "resize": [
+              203,
+              200
+            ],
+            "insets": {
+              "borderLeft": 132,
+              "borderRight": 132,
+              "borderTop": 132,
+              "borderBottom": 132
+            }
+          },
+          {
+            "source": "visual/ui/dialog_header.png",
+            "geometry": "full",
+            "resize": [
+              460,
+              90
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/guide_hand.png",
+            "geometry": "full",
+            "resize": [
+              100,
+              120
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/hard_flame.png",
+            "geometry": "full",
+            "resize": [
+              34,
+              42
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/rings-effects",
+        "frames": [
+          {
+            "source": "visual/effects/fx_sparkle.png",
+            "geometry": "full",
+            "resize": [
+              64,
+              64
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/fx_glow.png",
+            "geometry": "full",
+            "resize": [
+              256,
+              256
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_0.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_1.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_2.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_3.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_4.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_5.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_6.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_7.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "path": "visual/objects/rings-objects",
+        "frames": [
+          {
+            "source": "visual/objects/bomb.png",
+            "geometry": "full",
+            "resize": [
+              96,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/catch.png",
+            "geometry": "full",
+            "resize": [
+              92,
+              92
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/game-bg-mask.png",
+            "geometry": "full",
+            "resize": [
+              384,
+              384
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/ring-normal.png",
+            "geometry": "full",
+            "resize": [
+              768,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/ring-sdf.png",
+            "geometry": "full",
+            "resize": [
+              768,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/ring-texture.png",
+            "geometry": "full",
+            "resize": [
+              768,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      }
+    ],
+    "flappy-dunk": [
+      {
+        "path": "visual/objects/dunk-objects",
+        "frames": [
+          {
+            "source": "visual/objects/Ball.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/objects/Wing.png",
+            "geometry": "full",
+            "resize": [
+              44,
+              45
+            ]
+          },
+          {
+            "source": "visual/objects/Hoop_0.png",
+            "geometry": "full",
+            "resize": [
+              218,
+              40
+            ]
+          },
+          {
+            "source": "visual/objects/Hoop_1.png",
+            "geometry": "full",
+            "resize": [
+              218,
+              30
+            ]
+          },
+          {
+            "source": "visual/objects/Shield.png",
+            "geometry": "full",
+            "resize": [
+              63,
+              72
+            ]
+          },
+          {
+            "source": "visual/objects/BeyBlade.png",
+            "geometry": "full",
+            "resize": [
+              50,
+              48
+            ]
+          },
+          {
+            "source": "visual/objects/CircleBlur.png",
+            "geometry": "full",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/objects/BordoCircle.png",
+            "geometry": "full",
+            "resize": [
+              200,
+              200
+            ]
+          },
+          {
+            "source": "visual/objects/Cerchio_128.png",
+            "geometry": "full",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/objects/StarGlow1.png",
+            "geometry": "full",
+            "resize": [
+              200,
+              200
+            ]
+          },
+          {
+            "source": "visual/objects/Star2.png",
+            "geometry": "full",
+            "resize": [
+              118,
+              118
+            ]
+          },
+          {
+            "source": "visual/objects/DirectionArrow.png",
+            "geometry": "full",
+            "resize": [
+              170,
+              105
+            ]
+          },
+          {
+            "source": "visual/objects/RingHighlightSmall.png",
+            "geometry": "full",
+            "resize": [
+              57,
+              54
+            ]
+          },
+          {
+            "source": "visual/objects/NativeParticle207.png",
+            "geometry": "full",
+            "resize": [
+              64,
+              64
+            ]
+          },
+          {
+            "source": "visual/objects/NativeParticle205.png",
+            "geometry": "full",
+            "resize": [
+              64,
+              64
+            ]
+          },
+          {
+            "source": "visual/objects/Tris_X.png",
+            "geometry": "full",
+            "resize": [
+              170,
+              170
+            ]
+          },
+          {
+            "source": "visual/font/Glyph-48.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-49.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-50.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-51.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-52.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-53.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-54.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-55.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-56.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-57.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-43.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-83.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-87.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-73.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-72.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-33.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-120.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-112.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-108.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-97.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-115.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-104.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-105.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-101.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-100.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-99.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-116.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-118.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-80.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-76.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-65.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-88.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-69.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-68.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-67.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-84.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-86.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/Net.png",
+            "geometry": "full",
+            "resize": [
+              184,
+              64
+            ]
+          },
+          {
+            "source": "visual/objects/Moon.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ]
+          },
+          {
+            "source": "visual/objects/MoonBadge.png",
+            "geometry": "full",
+            "resize": [
+              56,
+              56
+            ]
+          },
+          {
+            "source": "visual/objects/IconPlay.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconRestart.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconHome.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconVideo.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconFlag.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconBall.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconPause.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconBack.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/font/Glyph-31354.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-24515.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-20837.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-32593.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-36830.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-20987.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-25252.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-30462.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-29983.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-25928.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-215.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/Ball_2.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/objects/Ball_3.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/font/Glyph-31726.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-29699.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-28748.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-26376.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-22812.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-22825.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-21488.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/Ball_4.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/objects/Ball_5.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          }
+        ]
+      }
+    ],
+    "pingpong": [
+      {
+        "path": "visual/objects/pingpong-objects",
+        "frames": [
+          {
+            "source": "visual/objects/paddle-red.png",
+            "geometry": "full",
+            "resize": [
+              155,
+              198
+            ]
+          },
+          {
+            "source": "visual/objects/paddle-black.png",
+            "geometry": "full",
+            "resize": [
+              155,
+              198
+            ]
+          },
+          {
+            "source": "visual/objects/Cerchio_128.png",
+            "geometry": "full",
+            "resize": [
+              69,
+              69
+            ]
+          },
+          {
+            "source": "visual/objects/Cerchio_128_Bucato.png",
+            "geometry": "full",
+            "resize": [
+              69,
+              69
+            ]
+          },
+          {
+            "source": "visual/objects/Impatto.png",
+            "geometry": "full",
+            "resize": [
+              24,
+              47
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/pingpong-backdrop",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/backdrop/arena-floor.png",
+            "geometry": "full",
+            "resize": [
+              750,
+              1334
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/pingpong-ready",
+        "frames": [
+          {
+            "source": "visual/ui/ready-hero-v2.png",
+            "geometry": "full",
+            "resize": [
+              456,
+              304
+            ]
+          }
+        ]
+      }
+    ],
+    "meme-runner": [
+      {
+        "path": "visual/hero/lie-frames-v16",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-0",
+            "name": "run-0",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-1",
+            "name": "run-1",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-2",
+            "name": "run-2",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-3",
+            "name": "run-3",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-4",
+            "name": "run-4",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-5",
+            "name": "run-5",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-6",
+            "name": "run-6",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-7",
+            "name": "run-7",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-8",
+            "name": "run-8",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-9",
+            "name": "run-9",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-10",
+            "name": "run-10",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-11",
+            "name": "run-11",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-12",
+            "name": "run-12",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-13",
+            "name": "run-13",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-14",
+            "name": "run-14",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-15",
+            "name": "run-15",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-16",
+            "name": "run-16",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-17",
+            "name": "run-17",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-18",
+            "name": "run-18",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-19",
+            "name": "run-19",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-20",
+            "name": "run-20",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-21",
+            "name": "run-21",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-22",
+            "name": "run-22",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-run-color-v15.png",
+            "frame": "run-23",
+            "name": "run-23",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-color-v16.png",
+            "frame": "air-0",
+            "name": "air-0",
+            "resize": [
+              102,
+              120
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-extra-color-v16.png",
+            "frame": "air-1",
+            "name": "air-1",
+            "resize": [
+              97,
+              107
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-color-v16.png",
+            "frame": "air-1",
+            "name": "air-2",
+            "resize": [
+              94,
+              100
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-color-v16.png",
+            "frame": "air-2",
+            "name": "air-3",
+            "resize": [
+              87,
+              96
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-extra-color-v16.png",
+            "frame": "air-6",
+            "name": "air-6",
+            "resize": [
+              97,
+              106
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-color-v16.png",
+            "frame": "air-5",
+            "name": "air-7",
+            "resize": [
+              96,
+              112
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-extra-color-v16.png",
+            "frame": "air-8",
+            "name": "air-8",
+            "resize": [
+              97,
+              114
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-color-v16.png",
+            "frame": "air-6",
+            "name": "air-9",
+            "resize": [
+              100,
+              100
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-color-v16.png",
+            "frame": "air-7",
+            "name": "air-10",
+            "resize": [
+              93,
+              111
+            ]
+          },
+          {
+            "source": "visual/hero/lie-air-extra-color-v16.png",
+            "frame": "air-11",
+            "name": "air-11",
+            "resize": [
+              92,
+              115
+            ]
+          },
+          {
+            "source": "visual/hero/lie-slide-extra-color-v16.png",
+            "frame": "slide-0",
+            "name": "slide-0",
+            "resize": [
+              114,
+              93
+            ]
+          },
+          {
+            "source": "visual/hero/lie-slide-color-v16.png",
+            "frame": "slide-0",
+            "name": "slide-1",
+            "resize": [
+              130,
+              77
+            ]
+          },
+          {
+            "source": "visual/hero/lie-slide-extra-color-v16.png",
+            "frame": "slide-2",
+            "name": "slide-2",
+            "resize": [
+              155,
+              54
+            ]
+          },
+          {
+            "source": "visual/hero/lie-slide-color-v16.png",
+            "frame": "slide-1",
+            "name": "slide-3",
+            "resize": [
+              156,
+              56
+            ]
+          },
+          {
+            "source": "visual/hero/lie-slide-color-v16.png",
+            "frame": "slide-2",
+            "name": "slide-4",
+            "resize": [
+              94,
+              83
+            ]
+          },
+          {
+            "source": "visual/hero/lie-slide-extra-color-v16.png",
+            "frame": "slide-5",
+            "name": "slide-5",
+            "resize": [
+              96,
+              105
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-0",
+            "name": "double-0",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-1",
+            "name": "double-1",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-2",
+            "name": "double-2",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-3",
+            "name": "double-3",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-4",
+            "name": "double-4",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-5",
+            "name": "double-5",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-6",
+            "name": "double-6",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/hero/lie-double-color-v16.png",
+            "frame": "double-7",
+            "name": "double-7",
+            "resize": [
+              160,
+              144
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/companions/cast-v17",
+        "maxSize": 656,
+        "frames": [
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-0",
+            "name": "extra-0",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-1",
+            "name": "extra-1",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-2",
+            "name": "extra-2",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-3",
+            "name": "extra-3",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-4",
+            "name": "extra-4",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-5",
+            "name": "extra-5",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-6",
+            "name": "extra-6",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-7",
+            "name": "extra-7",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-8",
+            "name": "extra-8",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-9",
+            "name": "extra-9",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-10",
+            "name": "extra-10",
+            "resize": [
+              160,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/extra-registered-v17.png",
+            "frame": "extra-11",
+            "name": "extra-11",
+            "resize": [
+              160,
+              144
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/world-v19/world-pieces",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-0",
+            "name": "fx-dust-0",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-1",
+            "name": "fx-dust-1",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-2",
+            "name": "fx-dust-2",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-3",
+            "name": "fx-dust-3",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-spark",
+            "name": "fx-spark",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-halo",
+            "name": "fx-halo",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-shard",
+            "name": "fx-shard",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-bounce",
+            "name": "fx-bounce",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-wood-0",
+            "name": "fx-wood-0",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-wood-1",
+            "name": "fx-wood-1",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-wood-2",
+            "name": "fx-wood-2",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-flash",
+            "name": "fx-flash",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-heart",
+            "name": "fx-heart",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-confetti-0",
+            "name": "fx-confetti-0",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-confetti-1",
+            "name": "fx-confetti-1",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-arc",
+            "name": "fx-arc",
+            "resize": [
+              120,
+              80
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/companions/kangaroo-v26",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-0",
+            "name": "kangaroo-0",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-1",
+            "name": "kangaroo-1",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-2",
+            "name": "kangaroo-2",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-3",
+            "name": "kangaroo-3",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-4",
+            "name": "kangaroo-4",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-5",
+            "name": "kangaroo-5",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-6",
+            "name": "kangaroo-6",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-7",
+            "name": "kangaroo-7",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-8",
+            "name": "kangaroo-8",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-9",
+            "name": "kangaroo-9",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-10",
+            "name": "kangaroo-10",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-11",
+            "name": "kangaroo-11",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-12",
+            "name": "kangaroo-12",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-13",
+            "name": "kangaroo-13",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-14",
+            "name": "kangaroo-14",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-15",
+            "name": "kangaroo-15",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-16",
+            "name": "kangaroo-16",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-17",
+            "name": "kangaroo-17",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-18",
+            "name": "kangaroo-18",
+            "resize": [
+              176,
+              176
+            ]
+          },
+          {
+            "source": "visual/companions/kangaroo-registered-v26.png",
+            "frame": "kangaroo-19",
+            "name": "kangaroo-19",
+            "resize": [
+              176,
+              176
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/companions/dragon-v26",
+        "maxSize": 912,
+        "frames": [
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-0",
+            "name": "dragon-0",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-1",
+            "name": "dragon-1",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-2",
+            "name": "dragon-2",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-3",
+            "name": "dragon-3",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-4",
+            "name": "dragon-4",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-5",
+            "name": "dragon-5",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-6",
+            "name": "dragon-6",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-7",
+            "name": "dragon-7",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-8",
+            "name": "dragon-8",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-9",
+            "name": "dragon-9",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-10",
+            "name": "dragon-10",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-11",
+            "name": "dragon-11",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-12",
+            "name": "dragon-12",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-13",
+            "name": "dragon-13",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-14",
+            "name": "dragon-14",
+            "resize": [
+              224,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/dragon-registered-v26.png",
+            "frame": "dragon-15",
+            "name": "dragon-15",
+            "resize": [
+              224,
+              128
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/companions/banana-v26",
+        "maxSize": 528,
+        "frames": [
+          {
+            "source": "visual/companions/banana-registered-v26.png",
+            "frame": "banana-0",
+            "name": "banana-0",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/banana-registered-v26.png",
+            "frame": "banana-1",
+            "name": "banana-1",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/banana-registered-v26.png",
+            "frame": "banana-16",
+            "name": "banana-16",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/banana-registered-v26.png",
+            "frame": "banana-17",
+            "name": "banana-17",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/banana-registered-v26.png",
+            "frame": "banana-18",
+            "name": "banana-18",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/companions/banana-registered-v26.png",
+            "frame": "banana-19",
+            "name": "banana-19",
+            "resize": [
+              128,
+              128
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/companions/bull-v26",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-16",
+            "name": "bull-16",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-17",
+            "name": "bull-17",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-18",
+            "name": "bull-18",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-19",
+            "name": "bull-19",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-20",
+            "name": "bull-20",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-21",
+            "name": "bull-21",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-22",
+            "name": "bull-22",
+            "resize": [
+              208,
+              144
+            ]
+          },
+          {
+            "source": "visual/companions/bull-registered-v26.png",
+            "frame": "bull-23",
+            "name": "bull-23",
+            "resize": [
+              208,
+              144
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/opening-v27/story",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/opening-v27/comic.png",
+            "frame": "comic-0",
+            "name": "comic-0",
+            "resize": [
+              648,
+              432
+            ]
+          },
+          {
+            "source": "visual/opening-v27/comic.png",
+            "frame": "comic-1",
+            "name": "comic-1",
+            "resize": [
+              648,
+              432
+            ]
+          },
+          {
+            "source": "visual/opening-v27/comic.png",
+            "frame": "comic-2",
+            "name": "comic-2",
+            "resize": [
+              648,
+              432
+            ]
+          },
+          {
+            "source": "visual/opening-v27/comic.png",
+            "frame": "comic-3",
+            "name": "comic-3",
+            "resize": [
+              648,
+              432
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v33/items",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v33/frames/shield-loop-0.png",
+            "name": "shield-loop-0"
+          },
+          {
+            "source": "visual/v33/frames/shield-loop-1.png",
+            "name": "shield-loop-1"
+          },
+          {
+            "source": "visual/v33/frames/shield-loop-2.png",
+            "name": "shield-loop-2"
+          },
+          {
+            "source": "visual/v33/frames/shield-loop-3.png",
+            "name": "shield-loop-3"
+          },
+          {
+            "source": "visual/v33/frames/nyan-0.png",
+            "name": "nyan-0"
+          },
+          {
+            "source": "visual/v33/frames/nyan-1.png",
+            "name": "nyan-1"
+          },
+          {
+            "source": "visual/v33/frames/nyan-2.png",
+            "name": "nyan-2"
+          },
+          {
+            "source": "visual/v33/frames/nyan-3.png",
+            "name": "nyan-3"
+          }
+        ]
+      },
+      {
+        "path": "visual/v33/characters",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v33/frames/popcat-0.png",
+            "name": "popcat-0"
+          },
+          {
+            "source": "visual/v33/frames/popcat-1.png",
+            "name": "popcat-1"
+          },
+          {
+            "source": "visual/v33/frames/popcat-2.png",
+            "name": "popcat-2"
+          },
+          {
+            "source": "visual/v33/frames/popcat-3.png",
+            "name": "popcat-3"
+          },
+          {
+            "source": "visual/v33/frames/dash-0.png",
+            "name": "dash-0"
+          },
+          {
+            "source": "visual/v33/frames/dash-1.png",
+            "name": "dash-1"
+          },
+          {
+            "source": "visual/v33/frames/dash-2.png",
+            "name": "dash-2"
+          },
+          {
+            "source": "visual/v33/frames/dash-3.png",
+            "name": "dash-3"
+          },
+          {
+            "source": "visual/v33/frames/spinner-0.png",
+            "name": "spinner-0"
+          },
+          {
+            "source": "visual/v33/frames/spinner-1.png",
+            "name": "spinner-1"
+          },
+          {
+            "source": "visual/v33/frames/spinner-2.png",
+            "name": "spinner-2"
+          },
+          {
+            "source": "visual/v33/frames/spinner-3.png",
+            "name": "spinner-3"
+          },
+          {
+            "source": "visual/v33/frames/spinner-4.png",
+            "name": "spinner-4"
+          },
+          {
+            "source": "visual/v33/frames/spinner-5.png",
+            "name": "spinner-5"
+          },
+          {
+            "source": "visual/v33/frames/spinner-6.png",
+            "name": "spinner-6"
+          },
+          {
+            "source": "visual/v33/frames/spinner-7.png",
+            "name": "spinner-7"
+          }
+        ]
+      },
+      {
+        "path": "visual/v34/bull",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v34/frames/bull-0.png",
+            "name": "bull-0"
+          },
+          {
+            "source": "visual/v34/frames/bull-1.png",
+            "name": "bull-1"
+          },
+          {
+            "source": "visual/v34/frames/bull-2.png",
+            "name": "bull-2"
+          },
+          {
+            "source": "visual/v34/frames/bull-3.png",
+            "name": "bull-3"
+          },
+          {
+            "source": "visual/v34/frames/bull-4.png",
+            "name": "bull-4"
+          },
+          {
+            "source": "visual/v34/frames/bull-5.png",
+            "name": "bull-5"
+          },
+          {
+            "source": "visual/v34/frames/bull-6.png",
+            "name": "bull-6"
+          },
+          {
+            "source": "visual/v34/frames/bull-7.png",
+            "name": "bull-7"
+          }
+        ]
+      },
+      {
+        "path": "visual/v34/effects",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v34/frames/nyan-warning.png",
+            "name": "nyan-warning"
+          }
+        ]
+      },
+      {
+        "path": "visual/dash-aura-v3/dash-aura",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-0.png",
+            "name": "dash-aura-0"
+          },
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-1.png",
+            "name": "dash-aura-1"
+          },
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-2.png",
+            "name": "dash-aura-2"
+          },
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-3.png",
+            "name": "dash-aura-3"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate.png",
+            "name": "crate"
+          },
+          {
+            "source": "visual/v38/frames/roller.png",
+            "name": "roller"
+          },
+          {
+            "source": "visual/v38/frames/spikes.png",
+            "name": "spikes"
+          },
+          {
+            "source": "visual/v38/frames/steam-base.png",
+            "name": "steam-base"
+          },
+          {
+            "source": "visual/v38/frames/steam-jet.png",
+            "name": "steam-jet"
+          },
+          {
+            "source": "visual/v38/frames/gate.png",
+            "name": "gate"
+          },
+          {
+            "source": "visual/v38/frames/bridge-planks.png",
+            "name": "bridge-planks"
+          },
+          {
+            "source": "visual/v38/frames/coin.png",
+            "name": "coin"
+          },
+          {
+            "source": "visual/v38/frames/coin-gold.png",
+            "name": "coin-gold"
+          },
+          {
+            "source": "visual/v38/frames/power-magnet.png",
+            "name": "power-magnet"
+          },
+          {
+            "source": "visual/v38/frames/power-shield.png",
+            "name": "power-shield"
+          },
+          {
+            "source": "visual/v38/frames/awning.png",
+            "name": "awning"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall.png",
+            "name": "pit-wall"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props-alley",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate-alley.png",
+            "name": "crate-alley"
+          },
+          {
+            "source": "visual/v38/frames/roller-alley.png",
+            "name": "roller-alley"
+          },
+          {
+            "source": "visual/v38/frames/spikes-alley.png",
+            "name": "spikes-alley"
+          },
+          {
+            "source": "visual/v38/frames/gate-alley.png",
+            "name": "gate-alley"
+          },
+          {
+            "source": "visual/v38/frames/awning-alley.png",
+            "name": "awning-alley"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall-alley.png",
+            "name": "pit-wall-alley"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props-roofs",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate-roofs.png",
+            "name": "crate-roofs"
+          },
+          {
+            "source": "visual/v38/frames/roller-roofs.png",
+            "name": "roller-roofs"
+          },
+          {
+            "source": "visual/v38/frames/spikes-roofs.png",
+            "name": "spikes-roofs"
+          },
+          {
+            "source": "visual/v38/frames/gate-roofs.png",
+            "name": "gate-roofs"
+          },
+          {
+            "source": "visual/v38/frames/awning-roofs.png",
+            "name": "awning-roofs"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall-roofs.png",
+            "name": "pit-wall-roofs"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props-night",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate-night.png",
+            "name": "crate-night"
+          },
+          {
+            "source": "visual/v38/frames/roller-night.png",
+            "name": "roller-night"
+          },
+          {
+            "source": "visual/v38/frames/spikes-night.png",
+            "name": "spikes-night"
+          },
+          {
+            "source": "visual/v38/frames/gate-night.png",
+            "name": "gate-night"
+          },
+          {
+            "source": "visual/v38/frames/awning-night.png",
+            "name": "awning-night"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall-night.png",
+            "name": "pit-wall-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/ground",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/ground-street.png",
+            "name": "ground-street"
+          },
+          {
+            "source": "visual/v38/frames/ground-alley.png",
+            "name": "ground-alley"
+          },
+          {
+            "source": "visual/v38/frames/ground-roofs.png",
+            "name": "ground-roofs"
+          },
+          {
+            "source": "visual/v38/frames/ground-night.png",
+            "name": "ground-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/backdrop-street",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/backdrop-street.png",
+            "name": "backdrop-street"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/backdrop-alley",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/backdrop-alley.png",
+            "name": "backdrop-alley"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/backdrop-roofs",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/backdrop-roofs.png",
+            "name": "backdrop-roofs"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/backdrop-night",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/backdrop-night.png",
+            "name": "backdrop-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/mid-street",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/mid-street-0.png",
+            "name": "mid-street-0"
+          },
+          {
+            "source": "visual/v38/frames/mid-street-1.png",
+            "name": "mid-street-1"
+          },
+          {
+            "source": "visual/v38/frames/mid-street-2.png",
+            "name": "mid-street-2"
+          },
+          {
+            "source": "visual/v38/frames/mid-street-3.png",
+            "name": "mid-street-3"
+          },
+          {
+            "source": "visual/v38/frames/mid-street-4.png",
+            "name": "mid-street-4"
+          },
+          {
+            "source": "visual/v38/frames/mid-street-5.png",
+            "name": "mid-street-5"
+          },
+          {
+            "source": "visual/v38/frames/plaza-street.png",
+            "name": "plaza-street"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/mid-alley",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/mid-alley-0.png",
+            "name": "mid-alley-0"
+          },
+          {
+            "source": "visual/v38/frames/mid-alley-1.png",
+            "name": "mid-alley-1"
+          },
+          {
+            "source": "visual/v38/frames/mid-alley-2.png",
+            "name": "mid-alley-2"
+          },
+          {
+            "source": "visual/v38/frames/mid-alley-3.png",
+            "name": "mid-alley-3"
+          },
+          {
+            "source": "visual/v38/frames/mid-alley-4.png",
+            "name": "mid-alley-4"
+          },
+          {
+            "source": "visual/v38/frames/mid-alley-5.png",
+            "name": "mid-alley-5"
+          },
+          {
+            "source": "visual/v38/frames/plaza-alley.png",
+            "name": "plaza-alley"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/mid-roofs",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/mid-roofs-0.png",
+            "name": "mid-roofs-0"
+          },
+          {
+            "source": "visual/v38/frames/mid-roofs-1.png",
+            "name": "mid-roofs-1"
+          },
+          {
+            "source": "visual/v38/frames/mid-roofs-2.png",
+            "name": "mid-roofs-2"
+          },
+          {
+            "source": "visual/v38/frames/mid-roofs-3.png",
+            "name": "mid-roofs-3"
+          },
+          {
+            "source": "visual/v38/frames/mid-roofs-4.png",
+            "name": "mid-roofs-4"
+          },
+          {
+            "source": "visual/v38/frames/mid-roofs-5.png",
+            "name": "mid-roofs-5"
+          },
+          {
+            "source": "visual/v38/frames/plaza-roofs.png",
+            "name": "plaza-roofs"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/mid-night",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/mid-night-0.png",
+            "name": "mid-night-0"
+          },
+          {
+            "source": "visual/v38/frames/mid-night-1.png",
+            "name": "mid-night-1"
+          },
+          {
+            "source": "visual/v38/frames/mid-night-2.png",
+            "name": "mid-night-2"
+          },
+          {
+            "source": "visual/v38/frames/mid-night-3.png",
+            "name": "mid-night-3"
+          },
+          {
+            "source": "visual/v38/frames/mid-night-4.png",
+            "name": "mid-night-4"
+          },
+          {
+            "source": "visual/v38/frames/mid-night-5.png",
+            "name": "mid-night-5"
+          },
+          {
+            "source": "visual/v38/frames/plaza-night.png",
+            "name": "plaza-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/foreground",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/fg-0.png",
+            "name": "fg-0"
+          },
+          {
+            "source": "visual/v38/frames/fg-1.png",
+            "name": "fg-1"
+          },
+          {
+            "source": "visual/v38/frames/fg-2.png",
+            "name": "fg-2"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/finish",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/arch.png",
+            "name": "arch"
+          },
+          {
+            "source": "visual/v38/frames/customer-wait.png",
+            "name": "customer-wait"
+          },
+          {
+            "source": "visual/v38/frames/customer-cheer.png",
+            "name": "customer-cheer"
+          },
+          {
+            "source": "visual/v38/frames/customer-tea.png",
+            "name": "customer-tea"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/hud",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/hud-panel.png",
+            "name": "hud-panel",
+            "insets": {
+              "borderLeft": 28,
+              "borderRight": 28,
+              "borderTop": 28,
+              "borderBottom": 28
+            }
+          },
+          {
+            "source": "visual/v38/frames/hud-track.png",
+            "name": "hud-track",
+            "insets": {
+              "borderLeft": 20,
+              "borderRight": 20,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/v38/frames/hud-fever-fill.png",
+            "name": "hud-fever-fill",
+            "insets": {
+              "borderLeft": 10,
+              "borderRight": 10,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/v38/frames/hud-route.png",
+            "name": "hud-route"
+          },
+          {
+            "source": "visual/v38/frames/hud-tag.png",
+            "name": "hud-tag"
+          },
+          {
+            "source": "visual/v38/frames/hud-pause.png",
+            "name": "hud-pause"
+          },
+          {
+            "source": "visual/v38/frames/hud-heart.png",
+            "name": "hud-heart"
+          },
+          {
+            "source": "visual/v38/frames/hud-kangaroo.png",
+            "name": "hud-kangaroo"
+          },
+          {
+            "source": "visual/v38/frames/hud-bag.png",
+            "name": "hud-bag"
+          },
+          {
+            "source": "visual/v38/frames/hud-house.png",
+            "name": "hud-house"
+          },
+          {
+            "source": "visual/v38/frames/hud-flame.png",
+            "name": "hud-flame"
+          },
+          {
+            "source": "visual/v38/frames/hud-button-slide.png",
+            "name": "hud-button-slide"
+          },
+          {
+            "source": "visual/v38/frames/hud-button-jump.png",
+            "name": "hud-button-jump"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/dialog",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/dlg-board.png",
+            "name": "dlg-board",
+            "insets": {
+              "borderLeft": 60,
+              "borderRight": 60,
+              "borderTop": 60,
+              "borderBottom": 60
+            }
+          },
+          {
+            "source": "visual/v38/frames/dlg-ribbon-win.png",
+            "name": "dlg-ribbon-win"
+          },
+          {
+            "source": "visual/v38/frames/dlg-ribbon-lose.png",
+            "name": "dlg-ribbon-lose"
+          },
+          {
+            "source": "visual/v38/frames/dlg-sign.png",
+            "name": "dlg-sign"
+          },
+          {
+            "source": "visual/v38/frames/dlg-receipt.png",
+            "name": "dlg-receipt"
+          },
+          {
+            "source": "visual/v38/frames/dlg-tag.png",
+            "name": "dlg-tag"
+          },
+          {
+            "source": "visual/v38/frames/dlg-stamp.png",
+            "name": "dlg-stamp"
+          },
+          {
+            "source": "visual/v38/frames/dlg-star.png",
+            "name": "dlg-star"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-replay.png",
+            "name": "dlg-btn-replay"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-play.png",
+            "name": "dlg-btn-play"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-home.png",
+            "name": "dlg-btn-home"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-restart.png",
+            "name": "dlg-btn-restart"
+          },
+          {
+            "source": "visual/v38/frames/dlg-title-win.png",
+            "name": "dlg-title-win"
+          },
+          {
+            "source": "visual/v38/frames/dlg-title-lose.png",
+            "name": "dlg-title-lose"
+          },
+          {
+            "source": "visual/v38/frames/dlg-title-pause.png",
+            "name": "dlg-title-pause"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-replay.png",
+            "name": "dlg-word-replay"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-home.png",
+            "name": "dlg-word-home"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-restart.png",
+            "name": "dlg-word-restart"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-resume.png",
+            "name": "dlg-word-resume"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-run.png",
+            "name": "dlg-word-run"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-delivery.png",
+            "name": "dlg-word-delivery"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-rating.png",
+            "name": "dlg-word-rating"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-total.png",
+            "name": "dlg-word-total"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-short.png",
+            "name": "dlg-word-short"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-meter.png",
+            "name": "dlg-word-meter"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-best.png",
+            "name": "dlg-word-best"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-time.png",
+            "name": "dlg-word-time"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-0.png",
+            "name": "dlg-digit-0"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-1.png",
+            "name": "dlg-digit-1"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-2.png",
+            "name": "dlg-digit-2"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-3.png",
+            "name": "dlg-digit-3"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-4.png",
+            "name": "dlg-digit-4"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-5.png",
+            "name": "dlg-digit-5"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-6.png",
+            "name": "dlg-digit-6"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-7.png",
+            "name": "dlg-digit-7"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-8.png",
+            "name": "dlg-digit-8"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-9.png",
+            "name": "dlg-digit-9"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-plus.png",
+            "name": "dlg-digit-plus"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-colon.png",
+            "name": "dlg-digit-colon"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/dialog-art",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/dlg-confetti.png",
+            "name": "dlg-confetti"
+          },
+          {
+            "source": "visual/v38/frames/dlg-art-win.png",
+            "name": "dlg-art-win"
+          },
+          {
+            "source": "visual/v38/frames/dlg-art-lose.png",
+            "name": "dlg-art-lose"
+          },
+          {
+            "source": "visual/v38/frames/dlg-art-pause.png",
+            "name": "dlg-art-pause"
+          }
+        ]
+      }
+    ],
+    "city-bloxx": [
+      {
+        "path": "visual/sunlit/city-sunlit",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/sunlit-v1/prepared/cloud-streaks.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/cloud-bank.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/tree.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/fence.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/crane-arm.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/hook.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sling.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-city.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-people.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-heart.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-spark.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-home.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-retry.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-video.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-pause.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-4.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-5.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-6.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-7.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-8.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-9.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-4.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-5.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-6.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-7.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-8.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-9.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/moon.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/mars.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/jupiter.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/saturn.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/uranus.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/pluto.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/airplane.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/balloon.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/blimp.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/ufo.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/station.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/whale-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/whale-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/flyman-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/flyman-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/star.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sky-purplestar.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sky-bluelestar.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sky-purplestar_little.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/combo-star-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/combo-star-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/combo-star-2.png",
+            "geometry": "full"
           }
         ]
       }

@@ -152,7 +152,7 @@
     "recycleBelow": 420,
     "spawnAboveScreenMargin": 24,
     "spring": {
-      "bounceVelocity": 2109.375
+      "bounceVelocity": 2179.6875
     },
     "trampoline": {
       "bounceVelocity": 2531.25
@@ -164,9 +164,6 @@
     "propellerHat": {
       "durationSeconds": 3.3333333333333335,
       "minimumVerticalVelocity": 281.25
-    },
-    "rocket": {
-      "durationSeconds": 4.916666666666667
     },
     "shield": {
       "durationSeconds": 10.0

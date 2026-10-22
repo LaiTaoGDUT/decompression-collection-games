@@ -1,0 +1,5 @@
+{
+  "prompt": "Edit target: the attached low-resolution five-point game particle star reference. Recreate precisely the SAME upright FIVE-POINT star as a crisp high-resolution 1024x1024 transparent PNG game sprite. Blue-gray background is only a viewing aid: remove it completely. Preserve the original broad five-point silhouette, orientation, proportions, and bright lemon-yellow solid fill with a thick vivid orange-red outer rim. Keep the star a flat two-color graphic. Replace pixel stair steps with clean straight edges and antialiasing. No beveled metallic shine, no white inner shine, no four-point sparkle, no face, no new rays, no bloom or glow outside its rim, no drop shadow. Transparent padding around all sides. The outer star tips and inner yellow star boundary must follow the reference accurately, with the upper point vertical, two lateral points, and two lower diagonal points. Center the mark; do not clip any tips.",
+  "reference": "local/city-bloxx-port/resources.assets-227-star_city-review.png",
+  "result": "perfect-star-hd-v2.png"
+}

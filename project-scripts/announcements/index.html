@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>版本公告编辑</title>
+<title>合集配置</title>
 <style>
 :root {
     --bg: #faf6f0; --panel: #ffffff; --ink: #3b2a20; --muted: #8a7566; --line: #ecdfd2;
@@ -12,13 +12,16 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
-button, input, select { font: inherit; color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
 button { cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; }
 button:hover { border-color: var(--accent); }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.danger { color: var(--danger); border-color: #f0c4c6; }
+button.danger:hover { border-color: var(--danger); background: #fff5f5; }
 button.ghost { border-color: transparent; background: transparent; color: var(--muted); }
 button:disabled { opacity: .5; cursor: default; }
-.app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+.app { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
 aside { border-right: 1px solid var(--line); background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 aside h1 { font-size: 18px; margin: 0; }
 .list { display: flex; flex-direction: column; gap: 8px; overflow: auto; }
@@ -72,21 +75,137 @@ label.field input { width: 180px; padding: 7px 10px; border: 1px solid var(--lin
 }
 pre.plain { white-space: pre-wrap; background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 12px; font: 13px/1.6 inherit; margin: 0; min-height: 60px; }
 .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg); border-radius: 10px; padding: 4px; }
+.tabs button { border: 0; background: transparent; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: white; }
+.sidebar-section { display: flex; flex-direction: column; gap: 12px; }
+.game-list .item .top { justify-content: space-between; }
+.game-tag { color: var(--accent); font-size: 11px; font-weight: 700; }
+.sidebar-note { color: var(--muted); font-size: 12px; margin: 0; }
+.game-search { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
+.game-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+.game-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+.game-fields .wide { grid-column: 1 / -1; }
+.game-fields .field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.game-fields .field input, .game-fields .field select, .game-fields .field textarea { width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); }
+.game-fields .field input[type="checkbox"] { width: auto; align-self: flex-start; accent-color: var(--accent); }
+.game-fields .field small { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.game-fields .field.invalid input, .game-fields .field.invalid select, .game-fields .field.invalid textarea { border-color: var(--danger); }
+.game-fields .field.invalid small { color: var(--danger); }
+.game-fields .checks { display: flex; align-items: center; gap: 20px; padding: 8px 0; }
+.game-fields .checks input { width: auto; accent-color: var(--accent); }
+.game-section { margin-bottom: 16px; }
+.game-section h2, .game-section summary { margin: 0; font-size: 15px; font-weight: 700; }
+.game-section summary { cursor: pointer; }
+.game-preview { position: sticky; top: 20px; }
+.game-preview h3 { margin: 0 0 12px; font-size: 14px; }
+.game-preview .cover-box { position: relative; border-radius: 10px; overflow: hidden; background: var(--soft); min-height: 160px; display: grid; place-items: center; }
+.game-preview img { display: block; width: 100%; max-height: 220px; object-fit: cover; }
+.game-preview .preview-badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px; background: var(--accent); color: white; border-radius: 6px; font-weight: 800; }
+.game-preview .preview-name { font-size: 19px; font-weight: 800; margin-top: 14px; }
+.game-preview .preview-description { color: var(--muted); margin: 6px 0 12px; overflow-wrap: anywhere; }
+.game-preview .preview-meta { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
+.game-errors { color: var(--danger); background: #fff2f2; border: 1px solid #f0c4c6; border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+.game-errors button { display: block; text-align: left; color: var(--danger); border: 0; background: transparent; padding: 5px 0; }
+@media (max-width: 1100px) { .game-grid { grid-template-columns: minmax(0, 1fr); } .game-preview { position: static; } }
+@media (max-width: 720px) { .game-fields { grid-template-columns: minmax(0, 1fr); } .entry { grid-template-columns: minmax(0, 1fr) auto auto; } .entry select { grid-column: 1 / -1; } }
 </style>
+<link rel="stylesheet" href="/editor.css">
 </head>
 <body>
 <div class="app">
     <aside>
-        <h1>版本公告</h1>
-        <button class="primary" id="create">＋ 新增公告</button>
-        <div class="list" id="list"></div>
+        <h1>合集配置</h1>
+        <p class="sidebar-note sidebar-intro">日常配置，集中修改与保存。</p>
+        <nav class="tabs" role="tablist" aria-label="配置类型">
+            <button id="tab-games" role="tab" aria-selected="true" aria-controls="game-workspace">游戏配置</button>
+            <button id="tab-announcements" role="tab" aria-selected="false" aria-controls="announcement-workspace">版本公告</button>
+            <button id="tab-ads" role="tab" aria-selected="false" aria-controls="ads-workspace">广告配置</button>
+            <button id="tab-release" role="tab" aria-selected="false" aria-controls="release-workspace">发布与调试</button>
+        </nav>
+        <div class="sidebar-section" id="game-sidebar">
+            <select id="game-picker" class="mobile-game-picker" aria-label="选择游戏"></select>
+            <input class="game-search" id="game-search" type="search" aria-label="搜索游戏" placeholder="搜索游戏名称或 ID">
+            <div class="list game-list" id="game-list"></div>
+            <p class="sidebar-note" id="game-count"></p>
+        </div>
+        <div class="sidebar-section" id="announcement-sidebar" hidden>
+            <button class="primary" id="create">＋ 新增公告</button>
+            <div class="list" id="list"></div>
+        </div>
+        <div class="sidebar-section" id="settings-sidebar" hidden>
+            <div class="card"><strong id="settings-sidebar-title"></strong><p class="sidebar-note" id="settings-sidebar-note"></p></div>
+        </div>
+        <p class="sidebar-note sidebar-footer">切换页面保留草稿。<br>每页分别保存，橙色圆点表示未保存。</p>
     </aside>
     <main>
+        <section id="game-workspace" role="tabpanel" aria-labelledby="tab-games">
+            <div class="toolbar">
+                <div class="toolbar-title"><strong id="game-heading">游戏配置</strong><small id="game-meta"></small></div>
+                <span class="status" id="game-status"></span>
+                <span class="spacer"></span>
+                <button id="game-reload">重新读取</button>
+                <button id="game-save" class="primary">保存游戏配置</button>
+            </div>
+            <div class="game-errors" id="game-errors" hidden></div>
+            <div class="game-grid">
+                <div>
+                    <div id="game-form"></div>
+                    <div class="card game-order-card">
+                        <div class="order-copy"><strong id="game-order">默认顺序</strong><p class="hint">最近游玩记录和 NEW 标签也会影响大厅排列。</p></div>
+                        <button id="game-up" title="调整清单里的默认顺序">上移</button>
+                        <button id="game-down" title="调整清单里的默认顺序">下移</button>
+                    </div>
+                </div>
+                <div class="game-preview">
+                    <div class="card">
+                        <h3>大厅展示预览</h3>
+                        <div id="game-preview"></div>
+                        <p class="hint">NEW 优先显示；成功进入当前版本后隐藏，配置了 HOT 时切换为 HOT。</p>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <strong>保存与生效</strong>
+                        <p class="hint">保存全部游戏的修改到 games.json，并刷新 Cocos。重新启动预览后读取新配置；微信端随下次构建发布生效。</p>
+                        <button id="game-refresh">重新刷新 Cocos</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="ads-workspace" role="tabpanel" aria-labelledby="tab-ads" hidden>
+            <div class="toolbar">
+                <div class="toolbar-title"><strong>广告配置</strong><small>游戏入口开关与激励视频广告位</small></div>
+                <span class="status" id="ads-status"></span>
+                <button id="ads-reload">重新读取</button>
+                <button id="ads-save" class="primary" disabled>保存广告配置</button>
+            </div>
+            <div class="game-errors" id="ads-errors" hidden></div>
+            <div class="settings-content">
+                <div class="settings-summary" id="ads-summary"></div>
+                <div id="ads-form"></div>
+                <div class="settings-footer"><span>保存到 app.json；重新启动预览后读取，微信端随下次构建发布生效。</span><button id="ads-refresh">重新刷新 Cocos</button></div>
+            </div>
+        </section>
+        <section id="release-workspace" role="tabpanel" aria-labelledby="tab-release" hidden>
+            <div class="toolbar">
+                <div class="toolbar-title"><strong>发布与调试</strong><small>合集版本、开发开关与字体设置</small></div>
+                <span class="status" id="release-status"></span>
+                <button id="release-reload">重新读取</button>
+                <button id="release-save" class="primary" disabled>保存发布配置</button>
+            </div>
+            <div class="game-errors" id="release-errors" hidden></div>
+            <div class="settings-content">
+                <div class="settings-summary" id="release-summary"></div>
+                <div id="release-form"></div>
+                <div class="settings-footer"><span>保存到 app.json；版本与运行时开关需重新启动预览或重新构建。</span><button id="release-refresh">重新刷新 Cocos</button></div>
+            </div>
+        </section>
+        <section id="announcement-workspace" role="tabpanel" aria-labelledby="tab-announcements" hidden>
         <div class="toolbar">
             <strong id="heading">新公告</strong>
             <span class="status" id="status"></span>
             <span class="spacer"></span>
             <button id="copy">复制纯文本</button>
+            <button id="remove" class="danger">删除</button>
             <button id="save" class="primary">保存</button>
             <button id="activate">设为生效</button>
         </div>
@@ -110,8 +229,11 @@ pre.plain { white-space: pre-wrap; background: #fff; border: 1px dashed var(--li
                 </div>
             </div>
         </div>
+        </section>
     </main>
 </div>
+<script src="/games.js"></script>
+<script src="/app.js"></script>
 <script>
 const BOOT = /*__BOOT__*/ null;
 const SECTION_COLORS = { newGames: 'var(--new)', features: 'var(--feature)', fixes: 'var(--fix)' };
@@ -132,7 +254,11 @@ async function api(path, body) {
         body: body ? JSON.stringify(body) : undefined,
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || '请求失败');
+    if (!response.ok) {
+        const error = new Error(data.error || '请求失败');
+        error.errors = data.errors || [];
+        throw error;
+    }
     return data;
 }
 
@@ -288,7 +414,7 @@ function renderPreview() {
     title.textContent = '更新公告';
     const sub = document.createElement('div');
     sub.className = 'sub';
-    sub.textContent = `v${draft.version} · ${draft.date.replace(/-/g, '.')}`;
+    sub.textContent = `v${draft.version}`;
     phone.append(title, sub);
     const sections = state.sections
         .map((section) => ({ ...section, entries: draft[section.key].filter((entry) => entry.gameId && entry.text.trim()) }))
@@ -336,8 +462,10 @@ function renderPreview() {
 function renderToolbar() {
     const item = state.announcements.find((entry) => entry.id === selectedId);
     $('heading').textContent = item ? `v${item.version}（${item.date}）` : '新公告';
+    $('remove').disabled = !item;
     $('activate').disabled = !item || dirty || item.id === state.activeId;
     $('activate').textContent = item && item.id === state.activeId ? '已生效' : '设为生效';
+    $('tab-announcements').dataset.dirty = String(dirty);
 }
 
 function render() {
@@ -355,10 +483,16 @@ function describeSync(result) {
     return '已保存并写入游戏配置，但 Cocos 刷新失败：' + result.refreshError;
 }
 
+function describeRemoval(result) {
+    if (!result.runtimeChanged) return '已删除';
+    if (result.refreshed) return '已删除，游戏内公告已清空，Cocos 资源已刷新';
+    return '已删除并清空游戏内公告，但 Cocos 刷新失败：' + result.refreshError;
+}
+
 $('create').onclick = () => select(null);
 $('version').oninput = (event) => { draft.version = event.target.value; markDirty(); };
 $('date').oninput = (event) => { draft.date = event.target.value; markDirty(); };
-$('save').onclick = async () => {
+$('save').onclick = () => withPending(async () => {
     try {
         setStatus('保存中…');
         const result = await api('/api/save', { id: selectedId, announcement: draft });
@@ -371,8 +505,29 @@ $('save').onclick = async () => {
     } catch (error) {
         setStatus(error.message, 'error');
     }
-};
-$('activate').onclick = async () => {
+});
+$('remove').onclick = () => withPending(async () => {
+    const item = state.announcements.find((entry) => entry.id === selectedId);
+    if (!item) return;
+    const message = item.id === state.activeId
+        ? `删除生效中的 v${item.version}？游戏内将不再显示公告。`
+        : `删除 v${item.version} 的公告？此操作不可恢复。`;
+    if (!confirm(dirty ? message + '\n未保存的修改也会一并丢弃。' : message)) return;
+    try {
+        setStatus('删除中…');
+        const result = await api('/api/delete', { id: selectedId });
+        state = result.state;
+        selectedId = state.activeId ?? state.announcements[0]?.id ?? null;
+        const next = state.announcements.find((entry) => entry.id === selectedId);
+        draft = next ? cloneDraft(next) : blankDraft();
+        dirty = false;
+        render();
+        setStatus(describeRemoval(result), result.runtimeChanged && !result.refreshed ? 'error' : 'ok');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+});
+$('activate').onclick = () => withPending(async () => {
     const item = state.announcements.find((entry) => entry.id === selectedId);
     if (!item || !confirm(`让 v${item.version} 的公告在游戏内生效？玩家首次进入新版本会自动弹出。`)) return;
     try {
@@ -385,7 +540,7 @@ $('activate').onclick = async () => {
     } catch (error) {
         setStatus(error.message, 'error');
     }
-};
+});
 $('copy').onclick = async () => {
     const text = plainText(draft);
     if (!text) return setStatus('没有可复制的内容', 'error');
@@ -400,15 +555,17 @@ $('copy').onclick = async () => {
         setStatus('浏览器拒绝写入剪贴板，已选中文本，请按 Ctrl/⌘+C', 'error');
     }
 };
-window.addEventListener('beforeunload', (event) => { if (dirty) event.preventDefault(); });
+window.addEventListener('beforeunload', (event) => { if (dirty || gamesDirty || appDirty() || pending) event.preventDefault(); });
 
-api('/api/state').then((data) => {
+Promise.all([api('/api/state'), api('/api/games'), api('/api/app')]).then(([data, games, app]) => {
     state = data;
     selectedId = state.activeId ?? state.announcements[0]?.id ?? null;
     const item = state.announcements.find((entry) => entry.id === selectedId);
     draft = item ? cloneDraft(item) : blankDraft();
+    setupGameEditor(games);
+    setupAppEditor(app);
     render();
-}).catch((error) => setStatus(error.message, 'error'));
+}).catch((error) => { setStatus(error.message, 'error'); setGameStatus(error.message, 'error'); setAppStatus('ads', error.message, 'error'); setAppStatus('release', error.message, 'error'); });
 </script>
 </body>
 </html>

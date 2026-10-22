@@ -1,0 +1,20 @@
+{
+  "subMetas": {
+    "night-mid": {
+      "importer": "sprite-frame",
+      "name": "night-mid",
+      "uuid": "fa0d8d16-68e3-5a7d-8500-b3834705a403",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 1909,
+        "height": 563,
+        "rawWidth": 1909,
+        "rawHeight": 563,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

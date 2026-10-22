@@ -228,7 +228,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.tutorialPending=!this.tutorialCompleted;
         this.campaignProgress = readCampaignProgress(stored?.custom?.campaign);
         const endless = stored?.custom?.endless as { activeRun?: unknown } | undefined;
-        const saved = endless?.activeRun ?? stored?.custom?.activeRound;
+        const saved = endless?.activeRun;
         if (!this.previewRegion && saved && typeof saved === 'object') {
             const record=saved as {round?:unknown;elapsed?:unknown};
             if(typeof record.elapsed==='number' && Number.isFinite(record.elapsed) && record.elapsed>=0 && this.round.restore(record.round,['cloud','ocean','toy','magic'])) {
@@ -237,7 +237,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         }
         const restartIntent = stored?.custom?.restartIntent as { mode?: string; levelId?: string } | undefined;
         const restartLevel = restartIntent?.mode === 'campaign' ? bubbleLevel(restartIntent.levelId ?? '') : undefined;
-        const selected = restartLevel;
+        const selected = restartLevel ?? (!this.previewRegion && !stored ? BUBBLE_LEVELS[0] : undefined);
         if (selected) {
             this.mode='campaign';this.campaignProgress={...this.campaignProgress,attemptSerial:this.campaignProgress.attemptSerial+1};
             this.campaignRound=new BubbleShooterCampaign(selected,context.sessionId+':'+this.campaignProgress.attemptSerial);
@@ -380,6 +380,10 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             this.bossHealthRoot!.getChildByName(name)!.getComponent(Sprite)!.spriteFrame = pack.region==='ocean'
                 ? pack.regional(`hud/${key}`) : pack.sceneFrame(`visual/common/hud/hud-boss-${key}`);
         }
+    }
+
+    isGameplayActive(): boolean {
+        return this.state === 'playing' && this.localPage === 'playing';
     }
 
     begin(): void {
@@ -1779,6 +1783,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
         this.selectedItem = undefined;
         this.node.getChildByName('Pause')!.active = false;
         if (page === 'result' && !this.finalResult) {
+            this.context?.reportRoundFinished?.();
             this.finalResult = Object.freeze({ score: this.round.score, duration: this.elapsed, completed: false,
                 extra: { cleared: this.cleared, completedRegions: this.round.completedRegions,
                     regionProgress: this.round.regionProgress, bossHealth: this.round.bossHealth } });
@@ -1940,6 +1945,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
 
     private showCampaignResult(): void {
         const round=this.campaignRound;if(!round||this.localPage==='result')return;
+        this.context?.reportRoundFinished?.();
         this.commitCheckpoint();this.flushProgress();this.cancelAim();this.state='completed';this.localPage='result';
         this.node.getChildByName('Pause')!.active=false;this.sound.music(round.outcome==='won'?'reward-music':undefined);
         this.cue(round.outcome==='won'?'reward':'failure');
@@ -2022,8 +2028,7 @@ export class BubbleShooterGame extends Component implements MiniGame<BubbleShoot
             const previous = stored?.dataVersion === BUBBLE_SHOOTER_DATA_VERSION ? stored : undefined;
             storage.writeGameData(context.gameId, {
                 dataVersion: BUBBLE_SHOOTER_DATA_VERSION, playCount: previous?.playCount ?? 0, highScore: Math.max(previous?.highScore ?? 0, this.bestScore),
-                lastPlayedAt: Date.now(), custom: { ...previous?.custom, tutorialCompleted:this.tutorialCompleted,
-                    activeRound: null, lastMode:this.mode,
+                lastPlayedAt: Date.now(), custom: { tutorialCompleted:this.tutorialCompleted,
                     endless:{activeRun:this.checkpoint??null},campaign:this.campaignProgress,
                     restartIntent:clearRestartIntent?null:previous?.custom?.restartIntent??null },
             });

@@ -1,0 +1,18 @@
+{
+  "tool": "image_gen.imagegen",
+  "transparent_background": true,
+  "requests": [
+    {
+      "output": "exec-6eb5853e-b10e-4fcf-8d23-7735878cf858.png",
+      "references": ["feiren_0-reference.png", "feiren_1-reference.png"],
+      "prompt": "Create a faithful high-resolution two-frame game sprite sheet based on the two supplied tiny reference sprites. The references are frame 0 and frame 1 of the same tiny adult construction worker flying horizontally to the RIGHT. Preserve the original compact silhouette, mustard yellow hard hat, orange/tan face and bare forearms, blue overalls/trousers and dark gray shoes. This is a small incidental background game character, simple cheerful flat 2D illustration. Frame 0 matches the first reference's downward forearm and bent legs; frame 1 matches the second reference's forward horizontal arm and raised forearm/hat silhouette. Reconstruct the blocky forms as clean crisp high-resolution shapes with restrained shading, without inventing a cape, wings, gadgets or extra clothing. Output a 1024 x 512 transparent PNG: two equal 512 x 512 cells in one horizontal row, no grid or text, both figures at exactly the same scale and baseline. In each cell the original 32 x 32 coordinate canvas is scaled 16 times: keep each figure centered, occupying approximately x=8..25 and y=11..22 in the original coordinate canvas. Maintain plenty of transparent space around each figure. Both frames must depict the same character facing right; keep pose-specific hands and legs distinct. No background, no ground, no shadows outside the sprite, no labels.",
+      "review": "Pose and palette retained; square tile contours and the invented blue face square required refinement. Not used in runtime."
+    },
+    {
+      "output": "exec-109060c2-f1d2-471d-b5ed-7b6943ee9e68.png",
+      "reference": "exec-6eb5853e-b10e-4fcf-8d23-7735878cf858.png",
+      "prompt": "Edit this two-frame transparent game sprite sheet. Preserve both figures' exact poses, size, positions, facing RIGHT, color palette, hard hats and two-cell layout. Improve ONLY the drawing finish: replace the large pixel-tile staircase contours and patchwork square shading with clean continuous high-resolution illustrated contours, restrained smooth shading, softly rounded helmet, recognizable tan forearms/hands and blue trouser legs. Keep the original compact block-shaped overall silhouette and proportions; no redesign, no new accessories. Remove the conspicuous blue square from each orange face; the face should remain a simple tan/orange profile under the hat brim, with no blue eye. The left frame has its nearer arm hanging down; the right frame has its nearer arm bent upward next to the hard hat. Match head and torso dimensions between the two frames. Leave all surrounding space fully transparent and remove any faint stray marks outside the figures. This is polished small 2D game art, not a mosaic, not pixel art and not a 3D render. No extra figures, text, grid, background or ground shadows.",
+      "saved_as": "flyman-hd-v5.png"
+    }
+  ]
+}

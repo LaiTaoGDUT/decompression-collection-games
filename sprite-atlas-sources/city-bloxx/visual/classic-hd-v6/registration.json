@@ -1,0 +1,1541 @@
+{
+  "cloud-streaks": {
+    "source": "visual/scenery/cloud-streaks.png",
+    "size": [
+      1942,
+      195
+    ],
+    "bounds": [
+      420,
+      34,
+      1454,
+      149
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "fd96af01-68a0-5fb5-91c8-095b00e7a944",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "cloud-bank": {
+    "source": "visual/scenery/cloud-bank.png",
+    "size": [
+      409,
+      103
+    ],
+    "bounds": [
+      19,
+      14,
+      396,
+      89
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "d1fcf792-6997-5a13-94ad-2e8660ccec61",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "airplane": {
+    "source": "visual/scenery/airplane.png",
+    "size": [
+      616,
+      88
+    ],
+    "bounds": [
+      26,
+      37,
+      590,
+      66
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "8d3ebf20-fc7d-53ce-99db-794f9ec4bd56",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "balloon": {
+    "source": "visual/scenery/balloon.png",
+    "size": [
+      115,
+      115
+    ],
+    "bounds": [
+      19,
+      3,
+      98,
+      107
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "6b023012-9e7e-5e4d-89e9-6f419d291f8c",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "blimp": {
+    "source": "visual/scenery/blimp.png",
+    "size": [
+      181,
+      91
+    ],
+    "bounds": [
+      17,
+      37,
+      144,
+      65
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "91a0d33f-40c4-5d75-8573-24a939bb51b9",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "moon": {
+    "source": "visual/scenery/moon.png",
+    "size": [
+      178,
+      178
+    ],
+    "bounds": [
+      28,
+      28,
+      150,
+      150
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "155807e2-8e34-5ba2-9d8e-ca62188f59e9",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "mars": {
+    "source": "visual/scenery/mars.png",
+    "size": [
+      227,
+      227
+    ],
+    "bounds": [
+      43,
+      39,
+      188,
+      184
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "4f1e2aa1-2868-5ebd-b576-946794552da5",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "jupiter": {
+    "source": "visual/scenery/jupiter.png",
+    "size": [
+      186,
+      189
+    ],
+    "bounds": [
+      2,
+      5,
+      183,
+      185
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "c541513d-0852-5f99-871c-a8d18390930f",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "saturn": {
+    "source": "visual/scenery/saturn.png",
+    "size": [
+      380,
+      163
+    ],
+    "bounds": [
+      21,
+      11,
+      362,
+      151
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "62222204-af0a-53da-9986-41cc54b5ad6f",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "uranus": {
+    "source": "visual/scenery/uranus.png",
+    "size": [
+      90,
+      185
+    ],
+    "bounds": [
+      4,
+      15,
+      86,
+      176
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "0599b5e9-2907-56bc-a2ef-a0e08e546f36",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "pluto": {
+    "source": "visual/scenery/pluto.png",
+    "size": [
+      141,
+      141
+    ],
+    "bounds": [
+      7,
+      7,
+      134,
+      134
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "c1a3b407-8b2b-5b72-a946-07ff39f8a963",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "ufo": {
+    "source": "visual/scenery/ufo.png",
+    "size": [
+      118,
+      118
+    ],
+    "bounds": [
+      4,
+      23,
+      110,
+      102
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "500b4bb6-4803-57e4-b21a-b6a1b6b16d40",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "station": {
+    "source": "visual/scenery/station.png",
+    "size": [
+      123,
+      123
+    ],
+    "bounds": [
+      27,
+      31,
+      100,
+      92
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "ee426a6e-c302-5c65-9622-45ec06005eee",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "star": {
+    "source": "visual/scenery/star.png",
+    "size": [
+      45,
+      45
+    ],
+    "bounds": [
+      3,
+      3,
+      42,
+      38
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "a002c68b-7ff7-5eb6-9fa2-121fce0e88e3",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "gameover": {
+    "source": "visual/native/gameover.png",
+    "size": [
+      456,
+      86
+    ],
+    "bounds": [
+      0,
+      0,
+      456,
+      86
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "fc578113-dc44-532c-86a9-bca9e95ca36b",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "buliding_number": {
+    "source": "visual/native/buliding_number.png",
+    "size": [
+      50,
+      93
+    ],
+    "bounds": [
+      0,
+      0,
+      50,
+      93
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "4cb55bc8-6ff0-582b-a3cf-9349e9fd8d5f",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "humen": {
+    "source": "visual/native/humen.png",
+    "size": [
+      61,
+      57
+    ],
+    "bounds": [
+      0,
+      0,
+      61,
+      57
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "7be988bd-ea76-5843-a074-1ab0a99ca331",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "fence": {
+    "source": "visual/native/fence.png",
+    "size": [
+      1039,
+      156
+    ],
+    "bounds": [
+      22,
+      46,
+      1018,
+      156
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "5fb97cd0-3419-5bbe-9958-437588f4e90a",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-0": {
+    "source": "visual/native/resident-blue-0.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      5,
+      24,
+      40,
+      64
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "06a78996-3d56-55a1-ae83-ea1305e74905",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-1": {
+    "source": "visual/native/resident-blue-1.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      24,
+      35,
+      68
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "0d99aa82-9b67-5197-95e0-98ea5032bab4",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-2": {
+    "source": "visual/native/resident-blue-2.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      9,
+      23,
+      33,
+      70
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "d2a77669-32ea-5c5c-ac95-afb4715313e8",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-3": {
+    "source": "visual/native/resident-blue-3.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      9,
+      22,
+      38,
+      71
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "41f0498a-8481-50a2-8f45-037234cec7f2",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-4": {
+    "source": "visual/native/resident-blue-4.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      25,
+      38,
+      68
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "2b6e2e7b-dd1b-59f0-ab00-9710d048c044",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-5": {
+    "source": "visual/native/resident-blue-5.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      9,
+      19,
+      37,
+      66
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "85d2e45d-1287-5b04-b2c4-a1f25853c7f3",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-6": {
+    "source": "visual/native/resident-blue-6.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      16,
+      33,
+      68
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "8aa1d2c1-40bf-50cd-9a7b-5332e95ab1a0",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-7": {
+    "source": "visual/native/resident-blue-7.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      9,
+      18,
+      37,
+      65
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "2ebc21c1-2886-5a50-b5db-7c36e86c9ee5",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-8": {
+    "source": "visual/native/resident-blue-8.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      21,
+      42,
+      62
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "784048d2-22ed-5775-ac29-4fb311d3722f",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-blue-9": {
+    "source": "visual/native/resident-blue-9.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      20,
+      44,
+      63
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "d265b961-7be3-5d5f-9711-dd3425e8eca7",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-0": {
+    "source": "visual/native/resident-red-0.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      4,
+      17,
+      39,
+      62
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "0ade1b38-c893-5878-a9d6-4a23f6416389",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-1": {
+    "source": "visual/native/resident-red-1.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      11,
+      11,
+      38,
+      70
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "e1e5b7ef-c337-53de-ae04-8ecb921617e4",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-2": {
+    "source": "visual/native/resident-red-2.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      9,
+      17,
+      33,
+      66
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "8909c046-1d61-5fc7-86ba-326d16bd1322",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-3": {
+    "source": "visual/native/resident-red-3.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      6,
+      15,
+      35,
+      69
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "1ce587a7-8174-52e2-b23f-036c8e5115bd",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-4": {
+    "source": "visual/native/resident-red-4.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      21,
+      38,
+      63
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "44c091a6-c743-54b9-b2a7-eca579740bee",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-5": {
+    "source": "visual/native/resident-red-5.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      9,
+      17,
+      38,
+      73
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "001c7cd9-2472-53e2-a563-bf90b483c9a9",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-6": {
+    "source": "visual/native/resident-red-6.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      23,
+      31,
+      71
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "9cd52122-fe47-56b1-b70d-4ad95787bf59",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-7": {
+    "source": "visual/native/resident-red-7.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      7,
+      18,
+      35,
+      71
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "9c6e94e0-352f-5032-b106-22defc41c497",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-8": {
+    "source": "visual/native/resident-red-8.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      5,
+      22,
+      40,
+      65
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "a39a1959-de04-5874-9be5-0bfbefab5b8e",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "resident-red-9": {
+    "source": "visual/native/resident-red-9.png",
+    "size": [
+      44,
+      87
+    ],
+    "bounds": [
+      4,
+      21,
+      39,
+      66
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "27942ce6-0a70-52e0-b266-a317a8c58a4d",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "crane-arm": {
+    "source": "visual/native/crane-arm.png",
+    "size": [
+      438,
+      88
+    ],
+    "bounds": [
+      17,
+      3,
+      430,
+      87
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "73682bba-c190-5d57-9814-42a89520d9c1",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "first-chain": {
+    "source": "visual/native/first-chain.png",
+    "size": [
+      57,
+      141
+    ],
+    "bounds": [
+      4,
+      0,
+      53,
+      141
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "8d804257-6784-5737-a755-c4629c4fcb01",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "native-hook": {
+    "source": "visual/native/native-hook.png",
+    "size": [
+      29,
+      54
+    ],
+    "bounds": [
+      2,
+      0,
+      27,
+      54
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "2e42299d-652d-58de-bce6-f7b1ffea0c2d",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "building": {
+    "source": "visual/native/building.png",
+    "size": [
+      34,
+      95
+    ],
+    "bounds": [
+      2,
+      0,
+      31,
+      95
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "a736eafe-16a7-501c-8fe3-b47be9f66347",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "home": {
+    "source": "visual/native/home.png",
+    "size": [
+      40,
+      48
+    ],
+    "bounds": [
+      0,
+      1,
+      40,
+      47
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "43f8e69d-58c2-50f0-a41e-98a84ea157a1",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "rankingicon02": {
+    "source": "visual/native/rankingicon02.png",
+    "size": [
+      50,
+      50
+    ],
+    "bounds": [
+      0,
+      0,
+      50,
+      50
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "9dd143af-77ba-5bfb-b050-c2e1418150d0",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "btn_quick": {
+    "source": "visual/native/btn_quick.png",
+    "size": [
+      41,
+      41
+    ],
+    "bounds": [
+      0,
+      0,
+      41,
+      41
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "caf441e6-0684-5d8b-b337-3cfeabc297d4",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "AD": {
+    "source": "visual/native/AD.png",
+    "size": [
+      45,
+      39
+    ],
+    "bounds": [
+      0,
+      0,
+      45,
+      39
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "5adfa04c-892c-5fa6-99e5-f3f202991b01",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "whale-0": {
+    "source": "visual/native/whale-0.png",
+    "size": [
+      412,
+      103
+    ],
+    "bounds": [
+      3,
+      4,
+      360,
+      82
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "f6fb31b2-ae5d-53f4-a62f-855876e573e6",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "whale-1": {
+    "source": "visual/native/whale-1.png",
+    "size": [
+      412,
+      103
+    ],
+    "bounds": [
+      0,
+      9,
+      344,
+      85
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "31484f12-f293-5146-8932-56bdc32262e2",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "tree": {
+    "source": "visual/native/tree.png",
+    "size": [
+      230,
+      230
+    ],
+    "bounds": [
+      22,
+      26,
+      205,
+      225
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "c16feb5e-1fb8-5569-b2e0-c2433b5b1156",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "flyman-0": {
+    "source": "visual/native/flyman-0.png",
+    "size": [
+      99,
+      99
+    ],
+    "bounds": [
+      25,
+      37,
+      77,
+      68
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "9c80a578-8e7f-5d9b-bdd3-b930f4c94b81",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "flyman-1": {
+    "source": "visual/native/flyman-1.png",
+    "size": [
+      99,
+      99
+    ],
+    "bounds": [
+      25,
+      34,
+      78,
+      64
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "21259e52-9a86-52c5-a75f-7d12d5b22d71",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "sky-purplestar": {
+    "source": "visual/native/sky-purplestar.png",
+    "size": [
+      142,
+      142
+    ],
+    "bounds": [
+      40,
+      40,
+      106,
+      107
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "2a24fc95-8eb4-5fd9-9151-360e2449d6e1",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "sky-purplestar_little": {
+    "source": "visual/native/sky-purplestar_little.png",
+    "size": [
+      19,
+      19
+    ],
+    "bounds": [
+      0,
+      0,
+      19,
+      19
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "8cd62161-40dc-532b-a7d7-30273eff9760",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "sky-bluelestar": {
+    "source": "visual/native/sky-bluelestar.png",
+    "size": [
+      61,
+      61
+    ],
+    "bounds": [
+      0,
+      1,
+      61,
+      60
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "ba5fddab-2570-54f4-af0f-eaea07dada04",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "combo-star-0": {
+    "source": "visual/native/combo-star-0.png",
+    "size": [
+      148,
+      148
+    ],
+    "bounds": [
+      6,
+      15,
+      143,
+      130
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "5150afca-90e7-5990-8035-c485e643f7cc",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "combo-star-1": {
+    "source": "visual/native/combo-star-1.png",
+    "size": [
+      148,
+      148
+    ],
+    "bounds": [
+      8,
+      16,
+      136,
+      135
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "6d9dd47e-844f-58dd-8820-216758797671",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  },
+  "combo-star-2": {
+    "source": "visual/native/combo-star-2.png",
+    "size": [
+      148,
+      148
+    ],
+    "bounds": [
+      80,
+      7,
+      131,
+      42
+    ],
+    "meta": {
+      "ver": "1.0.27",
+      "importer": "image",
+      "imported": true,
+      "uuid": "0a8a395f-2508-51db-9e93-318d669fe6f6",
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {},
+      "userData": {
+        "type": "sprite-frame"
+      }
+    }
+  }
+}

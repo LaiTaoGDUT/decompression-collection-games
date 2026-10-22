@@ -1,6 +1,7 @@
 import type { AudioClip } from 'cc';
 import type { Platform } from '../../platform/Platform';
-import type { AudioService } from '../audio/AudioService';
+import type { AudioEffectScope, AudioService } from '../audio/AudioService';
+import type { PackedAudioEffect } from '../audio/PackedAudioBank';
 import type { StorageService, UserSettings } from '../storage/StorageService';
 
 export type FeedbackCue =
@@ -30,17 +31,28 @@ export type FeedbackCue =
     | 'voice10';
 
 export interface FeedbackPlayOptions {
+    /** 同一 cue 的最短反馈间隔（毫秒），合并密集碰撞的音效和振动。 */
+    readonly minIntervalMs?: number;
+    /** 距上一次任意平台振动的最短间隔（毫秒）；未到间隔时仍播放音效，只跳过振动。 */
+    readonly minVibrateIntervalMs?: number;
     /** 保留音效，仅在当前反馈上关闭平台振动。 */
     readonly vibrate?: boolean;
     /** 本次播放的音量（0-1），默认 1；仅影响音效，不影响振动。 */
     readonly volume?: number;
+    /**
+     * 指定播放该 cue 的第几个素材（按素材数取模），用于让音高跟随玩法状态（如路线第几格）；
+     * 指定时不推进默认的轮播顺序。
+     */
+    readonly variant?: number;
 }
 
 /** 小游戏反馈公共边界：玩法不直接调用音频实例或平台振动 API。 */
 export class FeedbackService {
-    private readonly sounds = new Map<FeedbackCue, readonly AudioClip[]>();
+    private readonly sounds = new Map<FeedbackCue, readonly (AudioClip | PackedAudioEffect)[]>();
+    private readonly soundScopes = new Map<FeedbackCue, AudioEffectScope>();
     private readonly sequence = new Map<FeedbackCue, number>();
     private readonly lastPlayedAt = new Map<FeedbackCue, number>();
+    private lastVibratedAt = -Infinity;
 
     constructor(
         private readonly audio: AudioService,
@@ -49,50 +61,56 @@ export class FeedbackService {
         private readonly now: () => number = Date.now,
     ) {}
 
-    registerSound(cue: FeedbackCue, clip: AudioClip): void {
+    registerSound(cue: FeedbackCue, clip: AudioClip | PackedAudioEffect): void {
         this.registerSounds(cue, [clip]);
     }
 
-    registerSounds(cue: FeedbackCue, clips: readonly AudioClip[]): void {
+    registerSounds(cue: FeedbackCue, clips: readonly (AudioClip | PackedAudioEffect)[], scope?: AudioEffectScope): void {
         this.sounds.set(cue, Object.freeze([...clips]));
+        if (scope) this.soundScopes.set(cue, scope); else this.soundScopes.delete(cue);
         this.sequence.set(cue, 0);
     }
 
     unregisterSound(cue: FeedbackCue): void {
         this.sounds.delete(cue);
+        this.soundScopes.delete(cue);
         this.sequence.delete(cue);
         this.lastPlayedAt.delete(cue);
     }
 
     play(cue: FeedbackCue, options: FeedbackPlayOptions = {}): void {
         const now = this.now();
-        if (cue === 'collision' && now - (this.lastPlayedAt.get(cue) ?? -Infinity) < 80) {
+        const interval = Math.max(cue === 'collision' ? 80 : 0, options.minIntervalMs ?? 0);
+        if (interval > 0 && now - (this.lastPlayedAt.get(cue) ?? -Infinity) < interval) {
             return;
         }
         this.lastPlayedAt.set(cue, now);
         const clips = this.sounds.get(cue) ?? [];
-        const index = this.sequence.get(cue) ?? 0;
+        const variant = options.variant, pinned = variant !== undefined && Number.isFinite(variant);
+        const index = pinned ? Math.max(0, Math.floor(variant)) : this.sequence.get(cue) ?? 0;
         const clip = clips.length > 0 ? clips[index % clips.length] : undefined;
 
         if (clip) {
             // 全量对齐原作音量：`mark_wrong_1.ogg` 在 `SoundManager.play` 里也是原音量
             // （原来这里压到 0.62，听感像「没有音效」）。
-            this.audio.playEffect(clip, Math.max(0, Math.min(1, options.volume ?? 1)));
-            this.sequence.set(cue, index + 1);
+            const volume = Math.max(0, Math.min(1, options.volume ?? 1)), scope = this.soundScopes.get(cue);
+            if (scope) scope.play(clip, volume); else this.audio.playEffect(clip, volume);
+            if (!pinned) this.sequence.set(cue, index + 1);
         }
 
-        if (options.vibrate === false || !this.storage.snapshot.settings.vibrationEnabled) {
+        if (options.vibrate === false || !this.storage.snapshot.settings.vibrationEnabled
+            || now - this.lastVibratedAt < (options.minVibrateIntervalMs ?? 0)) {
             return;
         }
 
         if (cue === 'drop' || cue === 'uiButton' || cue === 'toggle') {
-            this.platform.vibrate('light');
+            this.vibrateNow('light', now);
         } else if (cue === 'merge' || cue === 'fold' || cue === 'chain' || cue === 'danger' || cue === 'collision') {
-            this.platform.vibrate('medium');
+            this.vibrateNow('medium', now);
         } else if (cue === 'milestone'
             || cue === 'failure'
             || cue === 'record') {
-            this.platform.vibrate('heavy');
+            this.vibrateNow('heavy', now);
         }
     }
 
@@ -102,6 +120,11 @@ export class FeedbackService {
             return;
         }
 
+        this.vibrateNow(type, this.now());
+    }
+
+    private vibrateNow(type: 'light' | 'medium' | 'heavy', now: number): void {
+        this.lastVibratedAt = now;
         this.platform.vibrate(type);
     }
 

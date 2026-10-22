@@ -1,0 +1,11 @@
+Use case: identity-preserve
+Asset type: 2D game sprite sheet, one complete character in every frame.
+Primary request: Expand the referenced chubby brown tabby cat's rigid 360-degree yaw turn from eight angles to SIXTEEN distinct evenly spaced angles. Render exactly sixteen whole cats in a 4-column by 4-row grid on a genuinely transparent canvas, with generous clean gaps and no labels.
+Input image 1 is the eight-angle approved character reference. Preserve this same kitten: round stocky torso, short legs, tiny cream paw toes, brown-gray tabby fur and dark stripes, cream muzzle/chest, big round dark eyes and amber rim, triangular ears, thick upward curled ringed tail. Same proportions and same toy-realistic soft fur finish throughout.
+Camera is locked near ground height, orthographic, looking almost horizontally at the cat. It is one single stationary model rotating around the center between its planted paws. No walking, bending, bouncing, head turning independently, expression changes, eye blinking, body size drift, pitch, or roll. Each frame is a modest 22.5-degree yaw change.
+Order left-to-right then top-to-bottom:
+row 1: strict right profile, right side tilted 22.5 degrees toward viewer, right front three-quarter (45), near front tilted right (67.5).
+row 2: exact front (90), near front tilted left (112.5), left front three-quarter (135), near left profile (157.5).
+row 3: strict left profile (180), left side tilted away (202.5), left rear three-quarter (225), near rear tilted left (247.5).
+row 4: exact rear (270), near rear tilted right (292.5), right rear three-quarter (315), near right profile turned away (337.5).
+Maintain equal character height and scale in all cells and the same paw baseline. Keep full body, every ear, every paw and the whole curled tail inside its own cell. Do not normalize width: a front view is naturally narrower than a side view. Tail rotates naturally with torso. Constant warm-neutral diffuse studio lighting, identical exposure and fur colors in all frames. Shadowless transparent background, clean anti-aliased silhouettes with preserved soft fur. No text, arrows, ground shadows, ghosting, motion blur, props, panel borders, extra paws or duplicated cats. High-quality game-ready painted raster drawings.

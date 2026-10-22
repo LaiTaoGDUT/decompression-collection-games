@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "02a015a6-35b8-53d5-8704-99f23d844154",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "ff4a2": {
+      "importer": "sprite-frame",
+      "uuid": "02a015a6-35b8-53d5-8704-99f23d844154@ff4a2",
+      "displayName": "",
+      "id": "ff4a2",
+      "name": "arena-floor",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 750,
+        "height": 1334,
+        "rawWidth": 750,
+        "rawHeight": 1334,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0f93f66e-9aef-5755-a0cb-c97a0605c9b8@6c48a",
+        "atlasUuid": "02a015a6-35b8-53d5-8704-99f23d844154",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "pingpong-backdrop.png",
+    "format": 2,
+    "uuid": "02a015a6-35b8-53d5-8704-99f23d844154",
+    "textureUuid": "0f93f66e-9aef-5755-a0cb-c97a0605c9b8@6c48a"
+  }
+}

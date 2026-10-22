@@ -1,6 +1,9 @@
 /** 取消订阅、事件监听或平台回调。重复调用应保持安全。 */
 export type Unsubscribe = () => void;
 
+/** 大厅固定竖屏；小游戏的方向由 Manifest 声明，运行层统一切换。 */
+export type ScreenOrientation = 'portrait' | 'landscape';
+
 /**
  * 以设计分辨率为坐标系的安全显示区域。
  * `right - left` 应等于 `width`，`bottom - top` 应等于 `height`。
@@ -29,6 +32,10 @@ export interface PlatformUiRect {
  * `topRightReservedArea` 在微信环境中对应右上角胶囊，后续平台也可复用该约束。
  */
 export interface PlatformLayoutInfo {
+    /** 当前场景声明的方向，决定是否避让左右安全区；省略时保留竖屏规则。 */
+    readonly orientation?: ScreenOrientation;
+    /** 安全区和胶囊坐标采用的当前 Fit Width 设计宽度；旧夹具省略时按 750。 */
+    readonly designWidth?: number;
     readonly safeArea: SafeArea;
     readonly topRightReservedArea?: PlatformUiRect;
 }

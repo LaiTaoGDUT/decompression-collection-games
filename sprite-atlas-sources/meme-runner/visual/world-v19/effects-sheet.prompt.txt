@@ -1,0 +1,7 @@
+Use case: stylized-concept. Asset type: game VFX sprite sheet for a warm playful plush 2D platform runner.
+Create EXACTLY 16 isolated effects in a precise 4-column x 4-row grid, each centered in its cell with wide transparent margins, no overlap, fully transparent background. Soft polished hand-painted tactile effects, clean silhouettes, luminous but not overexposed, no black outlines, no text or labels.
+Row 1: four successive frames of ONE small cream cotton dust puff expanding and dissipating, progressively more scattered and lighter, keep center fixed.
+Row 2 left to right: warm golden four-point sparkle; thin warm-gold elliptical impact halo; faceted small gold coin sparkle shard; mint-teal elastic bounce ring with a soft glow.
+Row 3: small warm wood splinter pointing up-right; small warm wood splinter pointing left; tiny broken wood chip; soft amber starburst impact flash.
+Row 4: soft coral heart; short teal fabric confetti curl; short coral fabric confetti curl; delicate cream curved air streak shaped like a quarter circle.
+These are small reusable effect sprites, not full illustrations. No character, no background plate, no gray/white boxes, no drawn checkerboard, no captions, no watermark. Genuine alpha transparency with smooth feathered edges.

@@ -49,8 +49,12 @@ export interface WeChatAdConfig {
     readonly desktopCleanupRewarded: AdPlacementConfig;
     readonly doodleJumpReviveRewarded: AdPlacementConfig;
     readonly bubbleShooterReviveRewarded: AdPlacementConfig;
+    readonly flappyDunkReviveRewarded: AdPlacementConfig;
     readonly game2048ClearSmallTilesRewarded: AdPlacementConfig;
     readonly meowdokuToolRewarded: AdPlacementConfig;
+    readonly multiColorFillHintRewarded: AdPlacementConfig;
+    readonly cityBloxxReviveRewarded: AdPlacementConfig;
+    readonly rotateRingsHintRewarded: AdPlacementConfig;
 }
 
 export interface AdsConfig {
@@ -70,6 +74,12 @@ export interface FontConfig {
 }
 
 export interface AppConfig {
+    readonly cloudSave: {
+        readonly enabled: boolean;
+        readonly environmentId: string;
+        readonly functionName: string;
+        readonly requestTimeoutMs: number;
+    };
     readonly schemaVersion: number;
     readonly appVersion: string;
     readonly defaultLanguage: string;
@@ -125,6 +135,7 @@ function normalizeValue<T>(fallback: T, value: unknown): T {
 }
 
 const APP_CONFIG_DEFAULTS: AppConfig = {
+    cloudSave: { enabled: false, environmentId: '', functionName: 'cloudSave', requestTimeoutMs: 10000 },
     schemaVersion: 3,
     appVersion: '0.1.0',
     defaultLanguage: 'zh-CN',
@@ -202,7 +213,11 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             catch: { enabled: true },
             'doodle-jump': { enabled: true },
             'bubble-shooter': { enabled: true },
+            'flappy-dunk': { enabled: true },
             meowdoku: { enabled: true },
+            'multi-color-fill': { enabled: true },
+            'city-bloxx': { enabled: true },
+            'rotate-rings': { enabled: true },
         },
         wechat: {
             watermelonReviveRewarded: {
@@ -220,12 +235,20 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             bubbleShooterReviveRewarded: {
                 adUnitId: '',
             },
+            flappyDunkReviveRewarded: {
+                adUnitId: '',
+            },
             game2048ClearSmallTilesRewarded: {
                 adUnitId: '',
             },
             meowdokuToolRewarded: {
                 adUnitId: '',
             },
+            multiColorFillHintRewarded: {
+                adUnitId: '',
+            },
+            cityBloxxReviveRewarded: { adUnitId: '' },
+            rotateRingsHintRewarded: { adUnitId: '' },
         },
         tap: { rewardedVideo: { adUnitId: '' } },
     },

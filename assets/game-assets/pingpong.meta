@@ -1,0 +1,15 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "2721cb2b-0417-5285-89b4-40c444ffbeee",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "bundleName": "game-pingpong-assets",
+    "isBundle": true,
+    "isSubpackage": false,
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy"
+  }
+}

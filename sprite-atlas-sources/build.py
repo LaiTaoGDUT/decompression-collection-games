@@ -232,21 +232,35 @@ def build_group(game, group, previous, outputs, mapping, rewrites, editor_metada
         raw_hash = hashlib.sha256(canvas.tobytes() + str(canvas.size).encode()).hexdigest()
         key = game + '/' + path
         png = output.with_suffix('.png')
-        if previous.get(key, {}).get('rawHash') != raw_hash or not png.exists():
+        unchanged = previous.get(key, {}).get('rawHash') == raw_hash and png.exists()
+        if not unchanged:
             canvas.save(png, optimize=True)
         texture_meta = dict(importer='texture', uuid=texture_uuid, displayName=output.name, id='6c48a', name='texture',
                             userData=dict(wrapModeS='clamp-to-edge', wrapModeT='clamp-to-edge', minfilter='linear', magfilter='linear',
                                           mipfilter='none', anisotropy=0, isUuid=True, imageUuidOrDatabaseUri=image_uuid, visible=False),
                             ver='1.0.22', imported=True, files=['.json'], subMetas={})
-        write_json(output.with_suffix('.png.meta'), dict(ver='1.0.27', importer='image', imported=True, uuid=image_uuid,
-                   files=['.json', '.png'], subMetas={'6c48a': texture_meta},
-                   userData=dict(type='texture', fixAlphaTransparencyArtifacts=False, hasAlpha=True, redirect=texture_uuid)))
-        output.with_suffix('.plist').write_bytes(plistlib.dumps(dict(frames=plist_frames, metadata=dict(
-            format=2, realTextureFileName=png.name, textureFileName=png.name, size=f'{{{width},{height}}}'))))
+        if not unchanged or not output.with_suffix('.png.meta').exists():
+            write_json(output.with_suffix('.png.meta'), dict(ver='1.0.27', importer='image', imported=True, uuid=image_uuid,
+                       files=['.json', '.png'], subMetas={'6c48a': texture_meta},
+                       userData=dict(type='texture', fixAlphaTransparencyArtifacts=False, hasAlpha=True, redirect=texture_uuid)))
+        if not unchanged or not output.with_suffix('.plist').exists():
+            output.with_suffix('.plist').write_bytes(plistlib.dumps(dict(frames=plist_frames, metadata=dict(
+                format=2, realTextureFileName=png.name, textureFileName=png.name, size=f'{{{width},{height}}}'))))
         atlas_meta = dict(ver='1.0.8', importer='sprite-atlas', imported=True, uuid=atlas_uuid,
                           files=['.json'], subMetas=metas,
                           userData=dict(atlasTextureName=png.name, format=2, uuid=atlas_uuid, textureUuid=texture_uuid))
-        write_json(output.with_suffix('.plist.meta'), atlas_meta)
+        # Cocos may reset sliced borders and packable on the first plist import.
+        # Preserve its formatting only when the imported geometry/settings still
+        # match the authoring data; unchanged pixels do not imply valid metadata.
+        settings_match = len(existing_meta.get('subMetas', {})) == len(metas) and all(
+            sid in existing_meta.get('subMetas', {})
+            and all(existing_meta['subMetas'][sid].get('userData', {}).get(field) == value
+                    for field, value in frame['userData'].items())
+            for sid, frame in metas.items())
+        if unchanged and existing_meta and settings_match:
+            atlas_meta = existing_meta
+        else:
+            write_json(output.with_suffix('.plist.meta'), atlas_meta)
         if editor_metadata is not None:
             editor_metadata['db://assets/game-assets/' + game + '/' + path + '.plist'] = atlas_meta
         outputs[key] = dict(rawHash=raw_hash, imageUuid=image_uuid, size=[width, height], frames=records)
@@ -288,16 +302,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify', action='store_true', help='Validate imported atlas geometry without modifying anything.')
     parser.add_argument('--sync-imports', action='store_true', help='Record Cocos-assigned child UUIDs after asset refresh.')
+    parser.add_argument('--game', action='append', help='Build only these games, preserving every other atlas and mapping.')
     parser.add_argument('--editor-metadata-output', type=Path,
                         help='Export generated atlas metadata for saving through the running Cocos asset database.')
     args = parser.parse_args()
     manifest = read_json(ATLAS_ROOT / 'manifest.json')
     state_path = ATLAS_ROOT / 'generated.json'
     previous = read_json(state_path) if state_path.exists() else {}
+    selected_games = set(args.game or manifest['games'])
+    if selected_games - manifest['games'].keys():
+        parser.error('Unknown games: ' + ', '.join(sorted(selected_games - manifest['games'].keys())))
     if args.sync_imports:
         rewrites = {}
         for key, page in previous.items():
             game, relative = key.split('/', 1)
+            if game not in selected_games: continue
             meta = read_json((ROOT / 'assets/game-assets' / game / relative).with_suffix('.plist.meta'))
             imported_ids = imported_frame_ids(meta)
             for frame in page['frames']:
@@ -318,6 +337,7 @@ def main():
             raise ValueError('Compression input list is stale; run sprite-atlas-sources/build.py to regenerate it.')
         for key, page in previous.items():
             game, relative = key.split('/', 1)
+            if game not in selected_games: continue
             root = ROOT / 'assets/game-assets' / game / relative
             with Image.open(root.with_suffix('.png')) as image:
                 assert image.size == tuple(page['size']), key
@@ -338,9 +358,11 @@ def main():
                 assert not d['packable'], (key, f['name'], 'repacking')
         print(f'Validated {len(previous)} pages / {sum(len(p["frames"]) for p in previous.values())} imported frames and compression inputs.')
         return
-    outputs, rewrites = {}, {}
+    outputs = {key: page for key, page in previous.items() if key.split('/', 1)[0] not in selected_games}
+    rewrites = {}
     editor_metadata = {} if args.editor_metadata_output else None
     for game, groups in manifest['games'].items():
+        if game not in selected_games: continue
         mapping = {}
         for group in groups: build_group(game, group, previous, outputs, mapping, rewrites, editor_metadata)
         script = ROOT / 'assets/games' / game / 'scripts/PackedSpritePaths.ts'
@@ -378,8 +400,14 @@ def main():
         for suffix in ('.png', '.png.meta', '.plist', '.plist.meta'):
             path = output.with_suffix(suffix)
             if path.exists(): path.unlink()
+    # Keep original manifest page order in selective builds to make changes reviewable.
+    outputs = {key: outputs[key] for key in previous if key in outputs} | {
+        key: value for key, value in outputs.items() if key not in previous}
     write_json(state_path, outputs)
-    write_json(ATLAS_ROOT / 'uuid-migrations.json', rewrites)
+    migrations_path = ATLAS_ROOT / 'uuid-migrations.json'
+    migrations = read_json(migrations_path) if args.game and migrations_path.exists() else {}
+    migrations.update(rewrites)
+    write_json(migrations_path, migrations)
     write_json(ATLAS_ROOT / 'compression-inputs.json', collect_compression_inputs(manifest['games']))
     if args.editor_metadata_output:
         write_json(args.editor_metadata_output, editor_metadata)

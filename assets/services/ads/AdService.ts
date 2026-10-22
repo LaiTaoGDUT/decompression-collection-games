@@ -8,8 +8,12 @@ export const AD_PLACEMENTS = Object.freeze({
     desktopCleanupRewarded: 'desktop-cleanup-rewarded',
     doodleJumpRevive: 'doodle-jump-revive',
     bubbleShooterRevive: 'bubble-shooter-revive',
+    flappyDunkRevive: 'flappy-dunk-revive',
     game2048ClearSmallTiles: 'game2048-clear-small-tiles',
     meowdokuTool: 'meowdoku-tool',
+    multiColorFillHint: 'multi-color-fill-hint',
+    cityBloxxRevive: 'city-bloxx-revive',
+    rotateRingsHint: 'rotate-rings-hint',
 } as const);
 
 export type AdOutcome = 'completed' | 'skipped' | 'failed';

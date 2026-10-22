@@ -1,0 +1,201 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "2e188": {
+      "importer": "sprite-frame",
+      "uuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77@2e188",
+      "displayName": "",
+      "id": "2e188",
+      "name": "dash-aura-0",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b945436d-9406-5e2e-abce-b04a42d2e895@6c48a",
+        "atlasUuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "55f80": {
+      "importer": "sprite-frame",
+      "uuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77@55f80",
+      "displayName": "",
+      "id": "55f80",
+      "name": "dash-aura-1",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 390,
+        "trimY": 2,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b945436d-9406-5e2e-abce-b04a42d2e895@6c48a",
+        "atlasUuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "cdf52": {
+      "importer": "sprite-frame",
+      "uuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77@cdf52",
+      "displayName": "",
+      "id": "cdf52",
+      "name": "dash-aura-2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 262,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b945436d-9406-5e2e-abce-b04a42d2e895@6c48a",
+        "atlasUuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "2ecb9": {
+      "importer": "sprite-frame",
+      "uuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77@2ecb9",
+      "displayName": "",
+      "id": "2ecb9",
+      "name": "dash-aura-3",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 522,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "b945436d-9406-5e2e-abce-b04a42d2e895@6c48a",
+        "atlasUuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "dash-aura.png",
+    "format": 2,
+    "uuid": "58f6dcea-b0c7-5699-a269-713bcfda7a77",
+    "textureUuid": "b945436d-9406-5e2e-abce-b04a42d2e895@6c48a"
+  }
+}

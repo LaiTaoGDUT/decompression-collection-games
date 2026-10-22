@@ -26,9 +26,10 @@ export interface DoodleJumpEnemySnapshot {
     readonly hurt: boolean;
     readonly hurtRemainingSeconds?: number;
     readonly animationPhase: number;
+    readonly facing?: -1 | 1;
     readonly anchorPlatformId: string;
-    readonly motionPhase?: number;
-    readonly anchorOffsetX?: number;
+    readonly motionPhase: number;
+    readonly anchorOffsetX: number;
     readonly originX?: number;
     readonly originY?: number;
     readonly spawnedAt?: number;
@@ -43,8 +44,8 @@ export interface DoodleJumpCombatStats {
     readonly stompCount: number;
     readonly smallMonsterKills: number;
     readonly largeMonsterKills: number;
-    readonly hopperMonsterKills?: number;
-    readonly weaverMonsterKills?: number;
+    readonly hopperMonsterKills: number;
+    readonly weaverMonsterKills: number;
     readonly hoverMonsterKills: number;
     readonly flyerMonsterKills?: number;
     readonly tallMonsterKills?: number;
@@ -92,6 +93,7 @@ interface MutableEnemy {
     health: number;
     x: number;
     y: number;
+    facing: -1 | 1;
     hurtUntil: number;
     previousY: number;
 }
@@ -107,9 +109,10 @@ interface MutableEnemyPresentation {
     maximumHealth: number;
     hurt: boolean;
     animationPhase: number;
+    facing: -1 | 1;
     anchorPlatformId: string;
-    motionPhase?: number;
-    anchorOffsetX?: number;
+    motionPhase: number;
+    anchorOffsetX: number;
 }
 
 interface MutableCombatStats {
@@ -228,6 +231,11 @@ export class DoodleJumpCombatSystem {
         elapsedSeconds: number,
         world: DoodleJumpWorldIndex,
     ): void {
+        if (!Number.isInteger(stats.hopperMonsterKills) || stats.hopperMonsterKills < 0
+            || !Number.isInteger(stats.weaverMonsterKills) || stats.weaverMonsterKills < 0
+            || snapshots.some(snapshot => !Number.isFinite(snapshot.motionPhase) || !Number.isFinite(snapshot.anchorOffsetX))) {
+            throw new Error('Invalid Doodle Jump combat snapshot.');
+        }
         this.reset();
         this.elapsedSeconds = Math.max(0, elapsedSeconds);
         this.hitCount = Math.max(0, Math.floor(stats.hitCount));
@@ -236,8 +244,8 @@ export class DoodleJumpCombatSystem {
         this.smallMonsterKills = Math.max(0, Math.floor(stats.smallMonsterKills));
         this.largeMonsterKills = Math.max(0, Math.floor(stats.largeMonsterKills));
         this.hoverMonsterKills = Math.max(0, Math.floor(stats.hoverMonsterKills));
-        this.hopperMonsterKills = Math.max(0, Math.floor(stats.hopperMonsterKills ?? 0));
-        this.weaverMonsterKills = Math.max(0, Math.floor(stats.weaverMonsterKills ?? 0));
+        this.hopperMonsterKills = stats.hopperMonsterKills;
+        this.weaverMonsterKills = stats.weaverMonsterKills;
         this.flyerMonsterKills = Math.max(0, Math.floor(stats.flyerMonsterKills ?? 0));
         this.tallMonsterKills = Math.max(0, Math.floor(stats.tallMonsterKills ?? 0));
         this.runnerMonsterKills = Math.max(0, Math.floor(stats.runnerMonsterKills ?? 0));
@@ -255,29 +263,32 @@ export class DoodleJumpCombatSystem {
             if (platform) this.evaluatedPlatformIds.add(snapshot.anchorPlatformId);
             const parsedId = Number(snapshot.id.replace(/^E/, ''));
             if (Number.isInteger(parsedId)) maximumId = Math.max(maximumId, parsedId);
+            const motionState = snapshot.motionState ? { ...snapshot.motionState }
+                : createReferenceMonsterMotion(snapshot.type,
+                    snapshot.x / (this.config.design.width / 320) - referenceEnemyOffset(snapshot.type)[0],
+                    snapshot.y / (this.config.design.width / 320) - referenceEnemyOffset(snapshot.type)[1],
+                    Math.floor(snapshot.motionPhase * 180 / Math.PI),
+                    Math.floor((snapshot.verticalPhase ?? 0) * 180 / Math.PI));
             this.enemies.push({
                 id: snapshot.id,
                 type: snapshot.type,
                 anchorPlatformId: snapshot.anchorPlatformId,
-                anchorOffsetX: snapshot.anchorOffsetX ?? 0,
-                phaseRadians: snapshot.motionPhase ?? snapshot.animationPhase * Math.PI * 2,
+                anchorOffsetX: snapshot.anchorOffsetX,
+                phaseRadians: snapshot.motionPhase,
                 animationPhase: snapshot.animationPhase,
                 originX: snapshot.originX ?? platform?.x ?? snapshot.x,
                 originY: snapshot.originY ?? platform?.y ?? snapshot.y,
                 spawnedAt: snapshot.spawnedAt ?? this.elapsedSeconds,
                 verticalPhase: snapshot.verticalPhase ?? 0,
-                motionState: snapshot.motionState ? { ...snapshot.motionState }
-                    : createReferenceMonsterMotion(snapshot.type,
-                        snapshot.x / (this.config.design.width / 320) - referenceEnemyOffset(snapshot.type)[0],
-                        snapshot.y / (this.config.design.width / 320) - referenceEnemyOffset(snapshot.type)[1],
-                        Math.floor((snapshot.motionPhase ?? 0) * 180 / Math.PI),
-                        Math.floor((snapshot.verticalPhase ?? 0) * 180 / Math.PI)),
+                motionState,
                 width: settings.width,
                 height: settings.height,
                 maximumHealth: settings.health,
                 health: Math.min(settings.health, Math.max(1, Math.floor(snapshot.health))),
                 x: snapshot.x,
                 y: snapshot.y,
+                facing: snapshot.facing === -1 || snapshot.facing === 1
+                    ? snapshot.facing : this.initialEnemyFacing(snapshot.type, motionState),
                 previousY: snapshot.y,
                 hurtUntil: snapshot.hurt ? this.elapsedSeconds + (snapshot.hurtRemainingSeconds ?? this.config.enemies.hitFlashSeconds) : 0,
             });
@@ -463,6 +474,7 @@ export class DoodleJumpCombatSystem {
             hurt: enemy.hurtUntil > this.elapsedSeconds,
             hurtRemainingSeconds: Math.max(0, enemy.hurtUntil - this.elapsedSeconds),
             animationPhase: enemy.animationPhase,
+            facing: enemy.facing,
             anchorPlatformId: enemy.anchorPlatformId,
             motionPhase: enemy.phaseRadians,
             anchorOffsetX: enemy.anchorOffsetX,
@@ -490,7 +502,10 @@ export class DoodleJumpCombatSystem {
                     maximumHealth: enemy.maximumHealth,
                     hurt: false,
                     animationPhase: enemy.animationPhase,
+                    facing: enemy.facing,
                     anchorPlatformId: enemy.anchorPlatformId,
+                    motionPhase: enemy.phaseRadians,
+                    anchorOffsetX: enemy.anchorOffsetX,
                 };
                 this.presentationEnemies[index] = presentation;
             }
@@ -504,6 +519,7 @@ export class DoodleJumpCombatSystem {
             presentation.maximumHealth = enemy.maximumHealth;
             presentation.hurt = enemy.hurtUntil > this.elapsedSeconds;
             presentation.animationPhase = enemy.animationPhase;
+            presentation.facing = enemy.facing;
             presentation.anchorPlatformId = enemy.anchorPlatformId;
             presentation.motionPhase = enemy.phaseRadians;
             presentation.anchorOffsetX = enemy.anchorOffsetX;
@@ -617,14 +633,28 @@ export class DoodleJumpCombatSystem {
             width: settings.width, height: settings.height,
             maximumHealth: settings.health, health: settings.health,
             motionState, x: originX, y: originY, previousY: originY, hurtUntil: 0,
+            facing: this.initialEnemyFacing(type, motionState),
         };
+    }
+
+    private initialEnemyFacing(type: DoodleJumpEnemyType, motionState: DoodleJumpMonsterMotionState): -1 | 1 {
+        const next = { ...motionState };
+        stepReferenceMonsterMotion(type, next);
+        return next.x < motionState.x ? -1 : 1;
     }
 
     private updateEnemyPositions(frames: number): void {
         const scale = this.config.design.width / 320;
         for (const enemy of this.enemies) {
             enemy.previousY = enemy.y;
-            for (let frame = 0; frame < frames; frame += 1) stepReferenceMonsterMotion(enemy.type, enemy.motionState);
+            for (let frame = 0; frame < frames; frame += 1) {
+                const previousX = enemy.motionState.x;
+                stepReferenceMonsterMotion(enemy.type, enemy.motionState);
+                const displacementX = enemy.motionState.x - previousX;
+                // Oscillation also moves species whose velocityX is zero. Keep
+                // the last facing while stationary, and use each physics step.
+                if (displacementX !== 0) enemy.facing = displacementX < 0 ? -1 : 1;
+            }
             const [offsetX, offsetY] = referenceEnemyOffset(enemy.type);
             enemy.x = (enemy.motionState.x + offsetX) * scale;
             enemy.y = (enemy.motionState.y + offsetY) * scale;

@@ -1,6 +1,8 @@
 export const BOARD_COLUMNS = 9;
 export const BOARD_ROWS = 10;
 export const MAX_BOARD_REINFORCEMENT_THRESHOLD = 16;
+/** 每种道具最多持有的数量；奖励满额的道具不会再出现在三选一中。 */
+export const ITEM_CAPACITY = 2;
 
 /**
  * 开局前两批增援提前入场，避免玩家在只有初始五枚敌棋的状态下空走太久。
@@ -13,10 +15,41 @@ const OPENING_REINFORCEMENT_PACING = Object.freeze({
 });
 
 /**
+ * 无尽难度曲线。每回合仍只移动一枚敌棋，压力来自三方面：
+ * 棋盘可容纳的敌棋数随难度增加、后期增援更密、AI 对玩家应手做一层推演。
+ */
+export const DIFFICULTY_TUNING = Object.freeze({
+    // 首只将军只需 4 批普通增援，让多数玩家在前几十回合就能斩将拿到道具。
+    firstGeneralTarget: 4,
+    // 难度 ≥ capacityGrowthStart 后，每 capacityGrowthEvery 级多容纳一枚普通增援。
+    capacityGrowthStart: 9,
+    capacityGrowthEvery: 3,
+    maxBoardCapacity: 22,
+    // 难度 ≥ lookaheadStart 后，AI 对单步评分最高的若干走法推演玩家的最佳应手。
+    lookaheadStart: 3,
+    lookaheadCandidates: 10,
+    lookaheadWeightPerLevel: 8,
+    lookaheadMaxWeight: 48,
+    // 普通棋逃离车线的倾向随难度衰减：后期敌棋更敢留在车线上封锁退路。
+    escapeDecayPerLevel: 0.03,
+    minimumEscapeFactor: 0.4,
+});
+
+/** 当前难度下普通增援还能入场时，棋盘上允许的敌棋数量上限。 */
+export function boardCapacity(difficulty: number): number {
+    if (difficulty < DIFFICULTY_TUNING.capacityGrowthStart) return MAX_BOARD_REINFORCEMENT_THRESHOLD;
+    const growth = 1 + Math.floor(
+        (difficulty - DIFFICULTY_TUNING.capacityGrowthStart) / DIFFICULTY_TUNING.capacityGrowthEvery,
+    );
+    return Math.min(DIFFICULTY_TUNING.maxBoardCapacity, MAX_BOARD_REINFORCEMENT_THRESHOLD + growth);
+}
+
+/**
  * 将军保护使用固定评分，不随隐藏难度递增。
  *
- * 普通棋脱离玩家车的直接威胁时会获得 `600 + 棋子价值 × 3`；
- * 马的有效脱险分为 690，高于将军的 680，因此固定配置下马比将更重要。
+ * 普通棋脱离玩家车的直接威胁时会获得 `(600 + 棋子价值 × 3) × 逃离系数`，
+ * 逃离系数从 1 随难度衰减到 0.4。难度 1 时马的有效脱险分为 690，高于将军的
+ * 680；后期普通棋更愿意留在车线上，将军的脱险优先级随之相对升高。
  */
 export const GENERAL_AI_SCORING = Object.freeze({
     // 将军成功脱离玩家车的直接威胁时获得的分数；马的有效脱险分仍更高。
@@ -297,7 +330,7 @@ function validateSnapshot(value: unknown): asserts value is ChessEndlessSnapshot
     requireSnapshotInteger(value.generalCounter, 'generalCounter');
     requireSnapshotInteger(value.generalTargetN, 'generalTargetN', 1);
     requireSnapshotInteger(value.generalKills, 'generalKills');
-    requireSnapshotInteger(value.nextPieceId, 'nextPieceId', 1);
+    const nextPieceId = requireSnapshotInteger(value.nextPieceId, 'nextPieceId', 1);
     requireSnapshotBoolean(value.generalActive, 'generalActive');
     requireSnapshotBoolean(value.reviveUsed, 'reviveUsed');
     requireSnapshotBoolean(value.usedItemThisTurn, 'usedItemThisTurn');
@@ -318,7 +351,7 @@ function validateSnapshot(value: unknown): asserts value is ChessEndlessSnapshot
     }
     const enemyIds = new Set<number>();
     const occupied = new Set<string>();
-    for (const [index, rawEnemy] of enemies.entries()) {
+    enemies.forEach((rawEnemy: unknown, index) => {
         if (!isRecord(rawEnemy)) {
             throw new Error(`Invalid chess snapshot enemy at index ${index}.`);
         }
@@ -330,6 +363,10 @@ function validateSnapshot(value: unknown): asserts value is ChessEndlessSnapshot
         if (enemyIds.has(id)) {
             throw new Error(`Duplicate chess snapshot enemy ID: ${id}.`);
         }
+        // 新增援从 nextPieceId 开始分配 ID；它不大于现有 ID 时新棋会与旧棋撞号。
+        if (id >= nextPieceId) {
+            throw new Error(`Chess snapshot enemy ID ${id} is not below nextPieceId.`);
+        }
         enemyIds.add(id);
         const positionValue = rawEnemy.position as Record<string, unknown>;
         const positionId = `${positionValue.column},${positionValue.row}`;
@@ -337,10 +374,12 @@ function validateSnapshot(value: unknown): asserts value is ChessEndlessSnapshot
             throw new Error(`Duplicate chess snapshot position: ${positionId}.`);
         }
         occupied.add(positionId);
-    }
+    });
 
+    // 车被吃时击杀者落在车的格子上，死亡（及随后结束）快照中两者重叠是合法状态。
     const playerPosition = value.playerPosition as Record<string, unknown>;
-    if (occupied.has(`${playerPosition.column},${playerPosition.row}`)) {
+    const playerCaptured = value.phase === 'dead' || value.phase === 'ended';
+    if (!playerCaptured && occupied.has(`${playerPosition.column},${playerPosition.row}`)) {
         throw new Error('Chess snapshot player overlaps an enemy.');
     }
 
@@ -366,7 +405,7 @@ function validateSnapshot(value: unknown): asserts value is ChessEndlessSnapshot
     }
     for (const item of ITEM_TYPES) {
         const count = requireSnapshotInteger(value.inventory[item], `inventory.${item}`);
-        if (count > 2) {
+        if (count > ITEM_CAPACITY) {
             throw new Error(`Chess snapshot inventory exceeds capacity: ${item}.`);
         }
     }
@@ -407,8 +446,160 @@ function positionKey(value: BoardPosition): string {
 }
 
 function isInside(value: BoardPosition): boolean {
-    return value.column >= 0 && value.column < BOARD_COLUMNS
-        && value.row >= 0 && value.row < BOARD_ROWS;
+    return isInsideCell(value.column, value.row);
+}
+
+function isInsideCell(column: number, row: number): boolean {
+    return column >= 0 && column < BOARD_COLUMNS && row >= 0 && row < BOARD_ROWS;
+}
+
+function cellIndex(column: number, row: number): number {
+    return row * BOARD_COLUMNS + column;
+}
+
+/**
+ * 规则推演用的棋盘占位表：按格子下标 O(1) 查询敌棋，替代逐枚扫描敌棋数组。
+ * 推演只临时改动格子占位或被模拟棋子的坐标，并在同一次调用内恢复，不再整盘克隆敌棋。
+ */
+class BoardOccupancy {
+    private readonly cells: (EnemyPiece | undefined)[] = new Array(BOARD_COLUMNS * BOARD_ROWS).fill(undefined);
+
+    constructor(readonly pieces: readonly EnemyPiece[]) {
+        for (const piece of pieces) {
+            this.cells[cellIndex(piece.position.column, piece.position.row)] = piece;
+        }
+    }
+
+    at(column: number, row: number): EnemyPiece | undefined {
+        return isInsideCell(column, row) ? this.cells[cellIndex(column, row)] : undefined;
+    }
+
+    /** 暂时清空一格（模拟该格敌棋被车吃掉），返回原占位供 `put` 恢复。 */
+    take(column: number, row: number): EnemyPiece | undefined {
+        const index = cellIndex(column, row);
+        const piece = this.cells[index];
+        this.cells[index] = undefined;
+        return piece;
+    }
+
+    put(piece: EnemyPiece | undefined, column: number, row: number): void {
+        this.cells[cellIndex(column, row)] = piece;
+    }
+
+    /** 棋子仍在棋盘上：被 `take` 暂时吃掉的棋子不再参与攻击判定。 */
+    holds(piece: EnemyPiece): boolean {
+        return this.cells[cellIndex(piece.position.column, piece.position.row)] === piece;
+    }
+
+    /** 把棋子挪到目标格；只用于推演副本，调用方负责再挪回原位。 */
+    relocate(piece: EnemyPiece, to: BoardPosition): void {
+        this.cells[cellIndex(piece.position.column, piece.position.row)] = undefined;
+        this.cells[cellIndex(to.column, to.row)] = piece;
+        piece.position = to;
+    }
+}
+
+function playerMoves(player: BoardPosition, board: BoardOccupancy): BoardPosition[] {
+    const moves: BoardPosition[] = [];
+    for (const direction of DIRECTIONS) {
+        let column = player.column + direction.column;
+        let row = player.row + direction.row;
+        while (isInsideCell(column, row)) {
+            moves.push(position(column, row));
+            if (board.at(column, row)) break;
+            column += direction.column;
+            row += direction.row;
+        }
+    }
+    return moves;
+}
+
+/** 车四个方向上第一枚敌棋，即车下一步可直接吃到的敌棋。 */
+function playerThreatenedIds(player: BoardPosition, board: BoardOccupancy): Set<number> {
+    const threatened = new Set<number>();
+    for (const direction of DIRECTIONS) {
+        let column = player.column + direction.column;
+        let row = player.row + direction.row;
+        while (isInsideCell(column, row)) {
+            const enemy = board.at(column, row);
+            if (enemy) {
+                threatened.add(enemy.id);
+                break;
+            }
+            column += direction.column;
+            row += direction.row;
+        }
+    }
+    return threatened;
+}
+
+function countBetween(from: BoardPosition, column: number, row: number, board: BoardOccupancy): number {
+    if (from.column !== column && from.row !== row) return -1;
+    const columnStep = Math.sign(column - from.column);
+    const rowStep = Math.sign(row - from.row);
+    let currentColumn = from.column + columnStep;
+    let currentRow = from.row + rowStep;
+    let count = 0;
+    while (currentColumn !== column || currentRow !== row) {
+        if (board.at(currentColumn, currentRow)) count += 1;
+        currentColumn += columnStep;
+        currentRow += rowStep;
+    }
+    return count;
+}
+
+function enemyCanCapture(piece: EnemyPiece, column: number, row: number, board: BoardOccupancy): boolean {
+    const deltaColumn = column - piece.position.column;
+    const deltaRow = row - piece.position.row;
+    const absColumn = Math.abs(deltaColumn);
+    const absRow = Math.abs(deltaRow);
+    if (piece.type === 'pawn' || piece.type === 'general') return absColumn + absRow === 1;
+    if (piece.type === 'advisor') return absColumn === 1 && absRow === 1;
+    if (piece.type === 'elephant') {
+        if (absColumn !== 2 || absRow !== 2) return false;
+        return !board.at(
+            piece.position.column + Math.sign(deltaColumn),
+            piece.position.row + Math.sign(deltaRow),
+        );
+    }
+    if (piece.type === 'horse') {
+        if (!((absColumn === 2 && absRow === 1) || (absColumn === 1 && absRow === 2))) return false;
+        return absColumn === 2
+            ? !board.at(piece.position.column + Math.sign(deltaColumn), piece.position.row)
+            : !board.at(piece.position.column, piece.position.row + Math.sign(deltaRow));
+    }
+    const between = countBetween(piece.position, column, row, board);
+    if (piece.type === 'rook') return between === 0;
+    if (piece.type === 'cannon') return between === 1;
+    return false;
+}
+
+/** 车落到该格（若有敌棋则吃掉）后，是否会被未定身的敌棋吃掉。 */
+function isLandingAttacked(column: number, row: number, board: BoardOccupancy): boolean {
+    const captured = board.take(column, row);
+    const attacked = board.pieces.some((piece) => (
+        board.holds(piece) && piece.frozenTurns <= 0 && enemyCanCapture(piece, column, row, board)
+    ));
+    board.put(captured, column, row);
+    return attacked;
+}
+
+function safePlayerMoves(player: BoardPosition, board: BoardOccupancy): BoardPosition[] {
+    return playerMoves(player, board).filter((target) => !isLandingAttacked(target.column, target.row, board));
+}
+
+/**
+ * 玩家最佳应手的活动空间：车走到某个安全落点（必要时吃子）后还剩几个安全落点，
+ * 取所有安全落点中的最大值。值越小，说明敌方越接近把车逼进死角。
+ */
+function bestReplyMobility(player: BoardPosition, board: BoardOccupancy): number {
+    let best = 0;
+    for (const target of safePlayerMoves(player, board)) {
+        const captured = board.take(target.column, target.row);
+        best = Math.max(best, safePlayerMoves(target, board).length);
+        board.put(captured, target.column, target.row);
+    }
+    return best;
 }
 
 function cloneEnemy(piece: EnemyPiece): EnemyPiece {
@@ -517,12 +708,29 @@ export class ChessEndlessModel {
     private state!: MutableState;
     private rng!: SeededRandom;
     private reviveSnapshot?: ChessEndlessSnapshot;
+    /** 快照整体冻结，可在两次状态变更之间复用；所有改动状态的公开方法都经过 `mutate`。 */
+    private cachedSnapshot?: ChessEndlessSnapshot;
 
     constructor(seed = 0x43484553) {
         this.reset(seed);
     }
 
     reset(seed = Date.now() >>> 0): ChessEndlessSnapshot {
+        this.mutate(() => this.resetState(seed));
+        return this.snapshot;
+    }
+
+    /** 在状态变更前后都丢弃快照缓存；中途抛错时也不会留下过期快照。 */
+    private mutate<T>(action: () => T): T {
+        this.cachedSnapshot = undefined;
+        try {
+            return action();
+        } finally {
+            this.cachedSnapshot = undefined;
+        }
+    }
+
+    private resetState(seed: number): void {
         this.rng = new SeededRandom(seed >>> 0);
         this.state = {
             seed: seed >>> 0,
@@ -541,7 +749,7 @@ export class ChessEndlessModel {
             difficultyLevel: 1,
             generalActive: false,
             generalCounter: 0,
-            generalTargetN: 8,
+            generalTargetN: DIFFICULTY_TUNING.firstGeneralTarget,
             generalKills: 0,
             inventory: emptyInventory(),
             reviveUsed: false,
@@ -554,16 +762,20 @@ export class ChessEndlessModel {
         this.placeInitialEnemies();
         this.queueNextReinforcement();
         this.reviveSnapshot = undefined;
-        return this.snapshot;
     }
 
     get snapshot(): ChessEndlessSnapshot {
+        this.cachedSnapshot ??= this.createSnapshot();
+        return this.cachedSnapshot;
+    }
+
+    private createSnapshot(): ChessEndlessSnapshot {
         const state = this.state;
         return Object.freeze({
             seed: state.seed,
             rngState: this.rng.state,
             playerPosition: copyPosition(state.playerPosition),
-            enemies: Object.freeze(state.enemies.map(cloneEnemy)),
+            enemies: Object.freeze(state.enemies.map((piece) => Object.freeze(cloneEnemy(piece)))),
             turnNumber: state.turnNumber,
             score: state.score,
             combo: state.combo,
@@ -615,226 +827,250 @@ export class ChessEndlessModel {
             }
         }
 
-        this.restore(snapshot);
-        this.reviveSnapshot = recoverySnapshot;
+        this.mutate(() => {
+            this.restore(snapshot);
+            this.reviveSnapshot = recoverySnapshot;
+        });
     }
 
     getPlayerLegalMoves(): readonly BoardPosition[] {
-        return Object.freeze(this.playerMoves(this.state.playerPosition, this.state.enemies));
+        return Object.freeze(playerMoves(this.state.playerPosition, this.boardOccupancy()));
     }
 
     getSafePlayerMoves(): readonly BoardPosition[] {
-        return Object.freeze(this.safePlayerMoves(this.state.playerPosition, this.state.enemies));
+        return Object.freeze(safePlayerMoves(this.state.playerPosition, this.boardOccupancy()));
+    }
+
+    /** 车原地不动时下一个敌方回合能吃掉车的敌棋 ID，用于威胁预警表现。 */
+    getPlayerAttackerIds(): readonly number[] {
+        const board = this.boardOccupancy();
+        const player = this.state.playerPosition;
+        return Object.freeze(this.state.enemies
+            .filter((piece) => piece.frozenTurns <= 0 && enemyCanCapture(piece, player.column, player.row, board))
+            .map((piece) => piece.id));
     }
 
     getDangerPositions(): readonly BoardPosition[] {
+        const board = this.boardOccupancy();
         const dangers: BoardPosition[] = [];
         for (let row = 0; row < BOARD_ROWS; row += 1) {
             for (let column = 0; column < BOARD_COLUMNS; column += 1) {
-                const candidate = position(column, row);
-                const remaining = this.state.enemies
-                    .filter((piece) => !samePosition(piece.position, candidate))
-                    .map(cloneEnemy);
-                if (remaining.some((piece) => (
-                    piece.frozenTurns <= 0 && this.enemyCanCapturePlayer(piece, candidate, remaining)
-                ))) dangers.push(candidate);
+                if (isLandingAttacked(column, row, board)) dangers.push(position(column, row));
             }
         }
         return Object.freeze(dangers);
     }
 
     useItem(item: ItemType, target?: BoardPosition | number): ItemUseResult {
-        if (this.state.phase !== 'player') throw new Error('Items may only be used during the player turn.');
-        if (this.state.usedItemThisTurn) throw new Error('Only one item may be used per player turn.');
-        if (this.state.inventory[item] <= 0) throw new Error(`${ITEM_DISPLAY[item]} is not available.`);
+        return this.mutate(() => {
+            if (this.state.phase !== 'player') throw new Error('Items may only be used during the player turn.');
+            if (this.state.usedItemThisTurn) throw new Error('Only one item may be used per player turn.');
+            if (this.state.inventory[item] <= 0) throw new Error(`${ITEM_DISPLAY[item]} is not available.`);
 
-        let result: ItemUseResult = { item };
-        if (item === 'crossSlash') {
-            this.state.pendingCrossSlash = true;
-        } else if (item === 'delay') {
-            if (this.state.reinforcementState === 'WAITING'
-                || this.state.reinforcementState === 'GENERAL_WAITING') {
-                throw new Error("增援已在等待入场，无法再延后。");
-            }
-            this.state.reinforcementTimer += 2;
-        } else if (item === 'teleport') {
-            if (!target || typeof target === 'number' || !isInside(target)) throw new Error('移形符需要一个棋盘空格。');
-            if (this.enemyAt(target)) throw new Error('移形符只能选择空格。');
-            this.state.playerPosition = copyPosition(target);
-            result = { item, target: copyPosition(target) };
-        } else {
-            if (typeof target !== 'number') throw new Error(`${ITEM_DISPLAY[item]}需要选择一枚敌棋。`);
-            const enemy = this.state.enemies.find((piece) => piece.id === target);
-            if (!enemy || enemy.type === 'general') throw new Error('该道具不能选择将。');
-            if (item === 'freeze') {
-                enemy.frozenTurns = Math.max(enemy.frozenTurns, 1);
-                result = { item, target: copyPosition(enemy.position) };
+            let result: ItemUseResult = { item };
+            if (item === 'crossSlash') {
+                this.state.pendingCrossSlash = true;
+            } else if (item === 'delay') {
+                if (this.state.reinforcementState === 'WAITING'
+                    || this.state.reinforcementState === 'GENERAL_WAITING') {
+                    throw new Error("增援已在等待入场，无法再延后。");
+                }
+                this.state.reinforcementTimer += 2;
+            } else if (item === 'teleport') {
+                if (!target || typeof target === 'number' || !isInside(target)) throw new Error('移形符需要一个棋盘空格。');
+                if (this.enemyAt(target)) throw new Error('移形符只能选择空格。');
+                this.state.playerPosition = copyPosition(target);
+                result = { item, target: copyPosition(target) };
             } else {
-                this.state.enemies = this.state.enemies.filter((piece) => piece.id !== enemy.id);
-                result = { item, target: copyPosition(enemy.position), removed: cloneEnemy(enemy) };
+                if (typeof target !== 'number') throw new Error(`${ITEM_DISPLAY[item]}需要选择一枚敌棋。`);
+                const enemy = this.state.enemies.find((piece) => piece.id === target);
+                if (!enemy || enemy.type === 'general') throw new Error('该道具不能选择将。');
+                if (item === 'freeze') {
+                    enemy.frozenTurns = Math.max(enemy.frozenTurns, 1);
+                    result = { item, target: copyPosition(enemy.position) };
+                } else {
+                    this.state.enemies = this.state.enemies.filter((piece) => piece.id !== enemy.id);
+                    result = { item, target: copyPosition(enemy.position), removed: cloneEnemy(enemy) };
+                }
             }
-        }
 
-        this.state.inventory[item] -= 1;
-        this.state.usedItemThisTurn = true;
-        return Object.freeze(result);
+            this.state.inventory[item] -= 1;
+            this.state.usedItemThisTurn = true;
+            return Object.freeze(result);
+        });
     }
 
     movePlayer(target: BoardPosition): PlayerMoveResult {
-        if (this.state.phase !== 'player') throw new Error('It is not the player turn.');
-        const legal = this.playerMoves(this.state.playerPosition, this.state.enemies);
-        if (!legal.some((candidate) => samePosition(candidate, target))) throw new Error('Illegal rook move.');
+        return this.mutate(() => {
+            if (this.state.phase !== 'player') throw new Error('It is not the player turn.');
+            const legal = playerMoves(this.state.playerPosition, this.boardOccupancy());
+            if (!legal.some((candidate) => samePosition(candidate, target))) throw new Error('Illegal rook move.');
 
-        const from = copyPosition(this.state.playerPosition);
-        const scoreBefore = this.state.score;
-        const capturedEnemy = this.enemyAt(target);
-        let captured: KillRecord | undefined;
+            const from = copyPosition(this.state.playerPosition);
+            const scoreBefore = this.state.score;
+            const capturedEnemy = this.enemyAt(target);
+            let captured: KillRecord | undefined;
 
-        if (capturedEnemy) {
-            this.state.combo += 1;
-            this.state.maxCombo = Math.max(this.state.maxCombo, this.state.combo);
-            captured = this.removeAndScore(capturedEnemy, 'normal');
-        } else {
-            this.state.combo = 0;
-        }
+            if (capturedEnemy) {
+                this.state.combo += 1;
+                this.state.maxCombo = Math.max(this.state.maxCombo, this.state.combo);
+                captured = this.removeAndScore(capturedEnemy, 'normal');
+            } else {
+                this.state.combo = 0;
+            }
 
-        this.state.playerPosition = copyPosition(target);
-        const crossSlashKills = this.state.pendingCrossSlash ? this.performCrossSlash() : [];
-        this.state.pendingCrossSlash = false;
-        const generalKilled = Boolean(captured?.piece.type === 'general')
-            || crossSlashKills.some((record) => record.piece.type === 'general');
-        let immediateSpawned: EnemyPiece[] = [];
-        let immediateReinforcementKind: 'normal' | 'general' | undefined;
-        if (this.state.enemies.length === 0) {
-            this.state.reinforcementTimer = 0;
-            const reinforcement = this.trySpawnQueuedReinforcement();
-            immediateSpawned = reinforcement.spawned;
-            immediateReinforcementKind = reinforcement.kind;
-        }
+            this.state.playerPosition = copyPosition(target);
+            const crossSlashKills = this.state.pendingCrossSlash ? this.performCrossSlash() : [];
+            this.state.pendingCrossSlash = false;
+            const generalKilled = Boolean(captured?.piece.type === 'general')
+                || crossSlashKills.some((record) => record.piece.type === 'general');
+            let immediateSpawned: EnemyPiece[] = [];
+            let immediateReinforcementKind: 'normal' | 'general' | undefined;
+            if (this.state.enemies.length === 0) {
+                this.state.reinforcementTimer = 0;
+                const reinforcement = this.trySpawnQueuedReinforcement();
+                immediateSpawned = reinforcement.spawned;
+                immediateReinforcementKind = reinforcement.kind;
+            }
 
-        if (this.state.pendingRewardChoices.length > 0) {
-            this.state.rewardResumePhase = 'enemy';
-            this.state.phase = 'reward';
-        } else {
-            this.state.phase = 'enemy';
-        }
+            if (this.state.pendingRewardChoices.length > 0) {
+                this.state.rewardResumePhase = 'enemy';
+                this.state.phase = 'reward';
+            } else {
+                this.state.phase = 'enemy';
+            }
 
-        return Object.freeze({
-            from,
-            to: copyPosition(target),
-            ...(captured ? { captured } : {}),
-            crossSlashKills: Object.freeze(crossSlashKills),
-            scoreDelta: this.state.score - scoreBefore,
-            combo: this.state.combo,
-            generalKilled,
-            immediateSpawned: Object.freeze(immediateSpawned.map(cloneEnemy)),
-            ...(immediateReinforcementKind ? { immediateReinforcementKind } : {}),
+            return Object.freeze({
+                from,
+                to: copyPosition(target),
+                ...(captured ? { captured } : {}),
+                crossSlashKills: Object.freeze(crossSlashKills),
+                scoreDelta: this.state.score - scoreBefore,
+                combo: this.state.combo,
+                generalKilled,
+                immediateSpawned: Object.freeze(immediateSpawned.map(cloneEnemy)),
+                ...(immediateReinforcementKind ? { immediateReinforcementKind } : {}),
+            });
         });
     }
 
     chooseReward(item: ItemType): void {
-        if (this.state.phase !== 'reward' || this.state.pendingRewardChoices.indexOf(item) < 0) {
-            throw new Error('This item is not one of the current rewards.');
-        }
-        if (this.state.inventory[item] >= 2) throw new Error(`${ITEM_DISPLAY[item]}已满。`);
-        this.state.inventory[item] += 1;
-        this.state.pendingRewardChoices = [];
-        this.state.phase = this.state.rewardResumePhase ?? 'player';
-        this.state.rewardResumePhase = undefined;
+        this.mutate(() => {
+            if (this.state.phase !== 'reward' || this.state.pendingRewardChoices.indexOf(item) < 0) {
+                throw new Error('This item is not one of the current rewards.');
+            }
+            if (this.state.inventory[item] >= ITEM_CAPACITY) throw new Error(`${ITEM_DISPLAY[item]}已满。`);
+            this.state.inventory[item] += 1;
+            this.state.pendingRewardChoices = [];
+            this.state.phase = this.state.rewardResumePhase ?? 'player';
+            this.state.rewardResumePhase = undefined;
+        });
     }
 
     resolveEnemyTurn(): EnemyTurnResult {
-        if (this.state.phase !== 'enemy') throw new Error('It is not the enemy turn.');
-        this.reviveSnapshot = this.snapshot;
-        this.state.enemies.forEach((piece) => { piece.isNewlySpawned = false; });
+        return this.mutate(() => {
+            if (this.state.phase !== 'enemy') throw new Error('It is not the enemy turn.');
+            this.reviveSnapshot = this.snapshot;
+            this.state.enemies.forEach((piece) => { piece.isNewlySpawned = false; });
 
-        const attackers = this.state.enemies
-            .filter((piece) => piece.frozenTurns <= 0 && this.enemyCanCapturePlayer(piece, this.state.playerPosition, this.state.enemies))
-            .sort((left, right) => PIECE_VALUE[right.type] - PIECE_VALUE[left.type]);
+            const board = this.boardOccupancy();
+            const player = this.state.playerPosition;
+            const attackers = this.state.enemies
+                .filter((piece) => piece.frozenTurns <= 0 && enemyCanCapture(piece, player.column, player.row, board))
+                .sort((left, right) => PIECE_VALUE[right.type] - PIECE_VALUE[left.type]);
 
-        let moved: EnemyTurnResult['moved'];
-        if (attackers.length > 0) {
-            const topValue = PIECE_VALUE[attackers[0]!.type];
-            const strongest = attackers.filter((piece) => PIECE_VALUE[piece.type] === topValue);
-            const killer = this.rng.choose(strongest);
-            const from = copyPosition(killer.position);
-            killer.position = copyPosition(this.state.playerPosition);
-            moved = Object.freeze({ pieceId: killer.id, type: killer.type, from, to: copyPosition(killer.position) });
-            this.state.phase = 'dead';
+            let moved: EnemyTurnResult['moved'];
+            if (attackers.length > 0) {
+                const topValue = PIECE_VALUE[attackers[0]!.type];
+                const strongest = attackers.filter((piece) => PIECE_VALUE[piece.type] === topValue);
+                const killer = this.rng.choose(strongest);
+                const from = copyPosition(killer.position);
+                killer.position = copyPosition(this.state.playerPosition);
+                moved = Object.freeze({ pieceId: killer.id, type: killer.type, from, to: copyPosition(killer.position) });
+                this.state.phase = 'dead';
+                return Object.freeze({
+                    moved,
+                    killedPlayer: true,
+                    scoreDelta: 0,
+                    spawned: Object.freeze([]),
+                    enteredWaiting: false,
+                });
+            }
+
+            const candidates = this.buildEnemyCandidates();
+            if (candidates.length > 0) {
+                const bestScore = Math.max(...candidates.map((candidate) => candidate.score));
+                const best = this.rng.choose(candidates.filter((candidate) => candidate.score === bestScore));
+                const piece = this.state.enemies.find((enemy) => enemy.id === best.pieceId)!;
+                piece.position = copyPosition(best.to);
+                moved = Object.freeze({
+                    pieceId: piece.id,
+                    type: piece.type,
+                    from: copyPosition(best.from),
+                    to: copyPosition(best.to),
+                });
+            }
+
+            this.state.turnNumber += 1;
+            this.state.score += 2;
+            this.state.enemies.forEach((piece) => {
+                if (piece.frozenTurns > 0) piece.frozenTurns -= 1;
+            });
+            const reinforcement = this.advanceReinforcement();
+            this.state.usedItemThisTurn = false;
+            this.state.phase = 'player';
             return Object.freeze({
-                moved,
-                killedPlayer: true,
-                scoreDelta: 0,
-                spawned: Object.freeze([]),
-                enteredWaiting: false,
+                ...(moved ? { moved } : {}),
+                killedPlayer: false,
+                scoreDelta: 2,
+                spawned: Object.freeze(reinforcement.spawned.map(cloneEnemy)),
+                ...(reinforcement.kind ? { reinforcementKind: reinforcement.kind } : {}),
+                enteredWaiting: reinforcement.enteredWaiting,
             });
-        }
-
-        const candidates = this.buildEnemyCandidates();
-        if (candidates.length > 0) {
-            const bestScore = Math.max(...candidates.map((candidate) => candidate.score));
-            const best = this.rng.choose(candidates.filter((candidate) => candidate.score === bestScore));
-            const piece = this.state.enemies.find((enemy) => enemy.id === best.pieceId)!;
-            piece.position = copyPosition(best.to);
-            moved = Object.freeze({
-                pieceId: piece.id,
-                type: piece.type,
-                from: copyPosition(best.from),
-                to: copyPosition(best.to),
-            });
-        }
-
-        this.state.turnNumber += 1;
-        this.state.score += 2;
-        this.state.enemies.forEach((piece) => {
-            if (piece.frozenTurns > 0) piece.frozenTurns -= 1;
-        });
-        const reinforcement = this.advanceReinforcement();
-        this.state.usedItemThisTurn = false;
-        this.state.phase = 'player';
-        return Object.freeze({
-            ...(moved ? { moved } : {}),
-            killedPlayer: false,
-            scoreDelta: 2,
-            spawned: Object.freeze(reinforcement.spawned.map(cloneEnemy)),
-            ...(reinforcement.kind ? { reinforcementKind: reinforcement.kind } : {}),
-            enteredWaiting: reinforcement.enteredWaiting,
         });
     }
 
     revive(): ReviveResult {
-        if (!this.canRevive || !this.reviveSnapshot) throw new Error('Revive is unavailable.');
-        const before = this.state.score;
-        this.restore(this.reviveSnapshot);
-        this.state.reviveUsed = true;
-        this.state.phase = 'player';
-        const kills = this.performCrossSlash();
-        const generalKilled = kills.some((record) => record.piece.type === 'general');
-        if (this.state.pendingRewardChoices.length > 0) {
-            this.state.rewardResumePhase = 'player';
-            this.state.phase = 'reward';
-        }
-        this.reviveSnapshot = undefined;
-        return Object.freeze({
-            kills: Object.freeze(kills),
-            scoreDelta: this.state.score - before,
-            generalKilled,
+        return this.mutate(() => {
+            if (!this.canRevive || !this.reviveSnapshot) throw new Error('Revive is unavailable.');
+            const before = this.state.score;
+            this.restore(this.reviveSnapshot);
+            this.state.reviveUsed = true;
+            this.state.phase = 'player';
+            // 复活后是一次新的玩家行动；致死前那一步用过的道具不占用这次机会。
+            this.state.usedItemThisTurn = false;
+            const kills = this.performCrossSlash();
+            const generalKilled = kills.some((record) => record.piece.type === 'general');
+            if (this.state.pendingRewardChoices.length > 0) {
+                this.state.rewardResumePhase = 'player';
+                this.state.phase = 'reward';
+            }
+            this.reviveSnapshot = undefined;
+            return Object.freeze({
+                kills: Object.freeze(kills),
+                scoreDelta: this.state.score - before,
+                generalKilled,
+            });
         });
     }
 
     endGame(): void {
-        if (this.state.phase !== 'dead' && this.state.phase !== 'ended') {
-            throw new Error('The round can only end after death.');
-        }
-        this.state.phase = 'ended';
-        this.reviveSnapshot = undefined;
+        this.mutate(() => {
+            if (this.state.phase !== 'dead' && this.state.phase !== 'ended') {
+                throw new Error('The round can only end after death.');
+            }
+            this.state.phase = 'ended';
+            this.reviveSnapshot = undefined;
+        });
     }
 
     /** Deterministic rule-test hook. */
     loadForTesting(value: Partial<ChessEndlessSnapshot>): void {
-        const current = this.snapshot;
-        this.restore({ ...current, ...value } as ChessEndlessSnapshot);
-        this.reviveSnapshot = undefined;
+        this.mutate(() => {
+            const current = this.snapshot;
+            this.restore({ ...current, ...value } as ChessEndlessSnapshot);
+            this.reviveSnapshot = undefined;
+        });
     }
 
     private restore(snapshot: ChessEndlessSnapshot): void {
@@ -885,8 +1121,10 @@ export class ChessEndlessModel {
         for (let attempt = 0; attempt < 160; attempt += 1) {
             const spots = this.rng.shuffle(candidates).slice(0, types.length);
             const enemies = types.map((type, index) => this.createEnemy(type, spots[index]!, false));
-            if (!enemies.some((piece) => this.enemyCanCapturePlayer(piece, this.state.playerPosition, enemies))
-                && this.safePlayerMoves(this.state.playerPosition, enemies).length >= 2) {
+            const board = new BoardOccupancy(enemies);
+            const player = this.state.playerPosition;
+            if (!enemies.some((piece) => enemyCanCapture(piece, player.column, player.row, board))
+                && safePlayerMoves(player, board).length >= 2) {
                 this.state.enemies = enemies;
                 return;
             }
@@ -911,139 +1149,48 @@ export class ChessEndlessModel {
         };
     }
 
-    private enemyAt(
-        at: BoardPosition,
-        enemies: readonly EnemyPiece[] = this.state.enemies,
-    ): EnemyPiece | undefined {
-        return enemies.find((piece) => samePosition(piece.position, at));
+    private enemyAt(at: BoardPosition): EnemyPiece | undefined {
+        return this.state.enemies.find((piece) => samePosition(piece.position, at));
     }
 
-    private playerMoves(player: BoardPosition, enemies: readonly EnemyPiece[]): BoardPosition[] {
-        const moves: BoardPosition[] = [];
-        for (const direction of DIRECTIONS) {
-            let column = player.column + direction.column;
-            let row = player.row + direction.row;
-            while (isInside(position(column, row))) {
-                const target = position(column, row);
-                moves.push(target);
-                if (this.enemyAt(target, enemies)) break;
-                column += direction.column;
-                row += direction.row;
-            }
-        }
-        return moves;
+    private boardOccupancy(): BoardOccupancy {
+        return new BoardOccupancy(this.state.enemies);
     }
 
-    private safePlayerMoves(player: BoardPosition, enemies: readonly EnemyPiece[]): BoardPosition[] {
-        return this.playerMoves(player, enemies).filter((target) => {
-            const remaining = enemies.filter((piece) => !samePosition(piece.position, target)).map(cloneEnemy);
-            return !remaining.some((piece) => (
-                piece.frozenTurns <= 0 && this.enemyCanCapturePlayer(piece, target, remaining)
-            ));
-        });
-    }
-
-    private playerThreatenedIds(player: BoardPosition, enemies: readonly EnemyPiece[]): Set<number> {
-        const threatened = new Set<number>();
-        for (const direction of DIRECTIONS) {
-            let column = player.column + direction.column;
-            let row = player.row + direction.row;
-            while (isInside(position(column, row))) {
-                const enemy = this.enemyAt(position(column, row), enemies);
-                if (enemy) {
-                    threatened.add(enemy.id);
-                    break;
-                }
-                column += direction.column;
-                row += direction.row;
-            }
-        }
-        return threatened;
-    }
-
-    private countBetween(left: BoardPosition, right: BoardPosition, enemies: readonly EnemyPiece[]): number {
-        if (left.column !== right.column && left.row !== right.row) return -1;
-        const columnStep = Math.sign(right.column - left.column);
-        const rowStep = Math.sign(right.row - left.row);
-        let column = left.column + columnStep;
-        let row = left.row + rowStep;
-        let count = 0;
-        while (column !== right.column || row !== right.row) {
-            if (this.enemyAt(position(column, row), enemies)) count += 1;
-            column += columnStep;
-            row += rowStep;
-        }
-        return count;
-    }
-
-    private enemyCanCapturePlayer(piece: EnemyPiece, player: BoardPosition, enemies: readonly EnemyPiece[]): boolean {
-        const deltaColumn = player.column - piece.position.column;
-        const deltaRow = player.row - piece.position.row;
-        const absColumn = Math.abs(deltaColumn);
-        const absRow = Math.abs(deltaRow);
-        if (piece.type === 'pawn' || piece.type === 'general') return absColumn + absRow === 1;
-        if (piece.type === 'advisor') return absColumn === 1 && absRow === 1;
-        if (piece.type === 'elephant') {
-            if (absColumn !== 2 || absRow !== 2) return false;
-            return !this.enemyAt(position(
-                piece.position.column + Math.sign(deltaColumn),
-                piece.position.row + Math.sign(deltaRow),
-            ), enemies);
-        }
-        if (piece.type === 'horse') {
-            if (!((absColumn === 2 && absRow === 1) || (absColumn === 1 && absRow === 2))) return false;
-            const leg = absColumn === 2
-                ? position(piece.position.column + Math.sign(deltaColumn), piece.position.row)
-                : position(piece.position.column, piece.position.row + Math.sign(deltaRow));
-            return !this.enemyAt(leg, enemies);
-        }
-        const between = this.countBetween(piece.position, player, enemies);
-        if (piece.type === 'rook') return between === 0;
-        if (piece.type === 'cannon') return between === 1;
-        return false;
-    }
-
-    private enemyDestinations(piece: EnemyPiece, enemies: readonly EnemyPiece[]): BoardPosition[] {
+    private enemyDestinations(piece: EnemyPiece, board: BoardOccupancy): BoardPosition[] {
+        const player = this.state.playerPosition;
+        const isBlocked = (column: number, row: number): boolean => (
+            (column === player.column && row === player.row) || Boolean(board.at(column, row))
+        );
         const destinations: BoardPosition[] = [];
-        const append = (target: BoardPosition): void => {
-            if (!isInside(target) || samePosition(target, this.state.playerPosition) || this.enemyAt(target, enemies)) return;
-            destinations.push(target);
+        const append = (column: number, row: number): void => {
+            if (!isInsideCell(column, row) || isBlocked(column, row)) return;
+            destinations.push(position(column, row));
         };
+        const { column: originColumn, row: originRow } = piece.position;
         if (piece.type === 'pawn' || piece.type === 'general') {
-            DIRECTIONS.forEach((direction) => append(position(
-                piece.position.column + direction.column,
-                piece.position.row + direction.row,
-            )));
+            DIRECTIONS.forEach((direction) => append(originColumn + direction.column, originRow + direction.row));
         } else if (piece.type === 'advisor') {
-            [-1, 1].forEach((column) => [-1, 1].forEach((row) => append(position(
-                piece.position.column + column,
-                piece.position.row + row,
-            ))));
+            [-1, 1].forEach((column) => [-1, 1].forEach((row) => append(originColumn + column, originRow + row)));
         } else if (piece.type === 'elephant') {
             [-2, 2].forEach((column) => [-2, 2].forEach((row) => {
-                const eye = position(piece.position.column + column / 2, piece.position.row + row / 2);
-                if (!this.enemyAt(eye, enemies) && !samePosition(eye, this.state.playerPosition)) {
-                    append(position(piece.position.column + column, piece.position.row + row));
+                if (!isBlocked(originColumn + column / 2, originRow + row / 2)) {
+                    append(originColumn + column, originRow + row);
                 }
             }));
         } else if (piece.type === 'horse') {
             HORSE_MOVES.forEach((move) => {
-                const leg = Math.abs(move.column) === 2
-                    ? position(piece.position.column + Math.sign(move.column), piece.position.row)
-                    : position(piece.position.column, piece.position.row + Math.sign(move.row));
-                if (!this.enemyAt(leg, enemies) && !samePosition(leg, this.state.playerPosition)) append(position(
-                    piece.position.column + move.column,
-                    piece.position.row + move.row,
-                ));
+                const legBlocked = Math.abs(move.column) === 2
+                    ? isBlocked(originColumn + Math.sign(move.column), originRow)
+                    : isBlocked(originColumn, originRow + Math.sign(move.row));
+                if (!legBlocked) append(originColumn + move.column, originRow + move.row);
             });
         } else {
             for (const direction of DIRECTIONS) {
-                let column = piece.position.column + direction.column;
-                let row = piece.position.row + direction.row;
-                while (isInside(position(column, row))) {
-                    const target = position(column, row);
-                    if (samePosition(target, this.state.playerPosition) || this.enemyAt(target, enemies)) break;
-                    destinations.push(target);
+                let column = originColumn + direction.column;
+                let row = originRow + direction.row;
+                while (isInsideCell(column, row) && !isBlocked(column, row)) {
+                    destinations.push(position(column, row));
                     column += direction.column;
                     row += direction.row;
                 }
@@ -1053,28 +1200,44 @@ export class ChessEndlessModel {
     }
 
     private buildEnemyCandidates(): EnemyCandidate[] {
-        const beforeThreatened = this.playerThreatenedIds(this.state.playerPosition, this.state.enemies);
-        const general = this.state.enemies.find((piece) => piece.type === 'general');
+        const player = this.state.playerPosition;
+        // 所有候选走法共用一份推演副本：逐个挪动棋子评分后立即挪回原位。
+        // 副本的定身回合数按本回合结束时的递减结果计算，评分看的是玩家下一步
+        // 实际面对的局面：只剩 1 回合定身的棋子到下一个敌方回合已能吃车。
+        const simulated = this.state.enemies.map((piece) => ({
+            ...cloneEnemy(piece),
+            frozenTurns: Math.max(0, piece.frozenTurns - 1),
+        }));
+        const board = new BoardOccupancy(simulated);
+        const canCapturePlayer = (enemy: EnemyPiece): boolean => (
+            enemyCanCapture(enemy, player.column, player.row, board)
+        );
+        const beforeThreatened = playerThreatenedIds(player, board);
+        const general = simulated.find((piece) => piece.type === 'general');
         const generalScoring = general ? GENERAL_AI_SCORING : undefined;
         const generalThreatenedBefore = Boolean(general && beforeThreatened.has(general.id));
-        const beforeSafe = this.safePlayerMoves(this.state.playerPosition, this.state.enemies).length;
-        const beforeCannonAttack = this.state.enemies.some((piece) => (
-            piece.type === 'cannon' && this.enemyCanCapturePlayer(piece, this.state.playerPosition, this.state.enemies)
-        ));
+        const beforeSafe = safePlayerMoves(player, board).length;
+        const beforeCannonAttack = simulated.some((piece) => piece.type === 'cannon' && canCapturePlayer(piece));
+        const escapeFactor = this.escapeFactor();
         const candidates: EnemyCandidate[] = [];
 
-        for (const piece of this.state.enemies) {
-            if (piece.frozenTurns > 0) continue;
-            for (const target of this.enemyDestinations(piece, this.state.enemies)) {
-                const simulated = this.state.enemies.map(cloneEnemy);
-                const moved = simulated.find((enemy) => enemy.id === piece.id)!;
-                moved.position = copyPosition(target);
-                const afterThreatened = this.playerThreatenedIds(this.state.playerPosition, simulated);
+        for (let index = 0; index < simulated.length; index += 1) {
+            // 能否在本回合行动仍以当前定身状态为准。
+            if (this.state.enemies[index]!.frozenTurns > 0) continue;
+            const piece = simulated[index]!;
+            const origin = piece.position;
+            for (const target of this.enemyDestinations(piece, board)) {
+                board.relocate(piece, target);
+                const afterThreatened = playerThreatenedIds(player, board);
                 const generalThreatenedAfter = Boolean(general && afterThreatened.has(general.id));
-                const afterSafe = this.safePlayerMoves(this.state.playerPosition, simulated).length;
+                const afterSafe = safePlayerMoves(player, board).length;
+                const canKillPlayer = simulated.some(canCapturePlayer);
+                const afterCannonAttack = simulated.some((enemy) => enemy.type === 'cannon' && canCapturePlayer(enemy));
+                board.relocate(piece, origin);
+
                 let score = 0;
                 if (beforeThreatened.has(piece.id) && !afterThreatened.has(piece.id)) {
-                    if (piece.type !== 'general') score += 600 + PIECE_VALUE[piece.type] * 3;
+                    if (piece.type !== 'general') score += (600 + PIECE_VALUE[piece.type] * 3) * escapeFactor;
                 }
                 if (generalScoring) {
                     if (generalThreatenedBefore && !generalThreatenedAfter) {
@@ -1087,26 +1250,64 @@ export class ChessEndlessModel {
                             : generalScoring.newlyExposed;
                     }
                 }
-                if (simulated.some((enemy) => this.enemyCanCapturePlayer(enemy, this.state.playerPosition, simulated))) score += 400;
-                const afterCannonAttack = simulated.some((enemy) => (
-                    enemy.type === 'cannon' && this.enemyCanCapturePlayer(enemy, this.state.playerPosition, simulated)
-                ));
+                if (canKillPlayer) score += 400;
                 if (!beforeCannonAttack && afterCannonAttack) score += 180;
                 score += Math.max(0, beforeSafe - afterSafe) * 30;
                 if (afterThreatened.has(piece.id)) {
-                    score -= 250 + PIECE_VALUE[piece.type] * 2;
+                    score -= (250 + PIECE_VALUE[piece.type] * 2) * escapeFactor;
                 }
                 score += this.aiNoise();
                 candidates.push({
                     pieceId: piece.id,
                     type: piece.type,
-                    from: copyPosition(piece.position),
+                    from: copyPosition(origin),
                     to: copyPosition(target),
                     score,
                 });
             }
         }
-        return candidates;
+        return this.applyLookahead(candidates, simulated, board);
+    }
+
+    /**
+     * 对单步评分最高的若干走法推演玩家的最佳应手，按"车最好的落点还剩几个安全落点"
+     * 重新排序；只在这批候选中选择，未入围的走法不再参与比较。
+     */
+    private applyLookahead(
+        candidates: readonly EnemyCandidate[],
+        simulated: readonly EnemyPiece[],
+        board: BoardOccupancy,
+    ): EnemyCandidate[] {
+        const tuning = DIFFICULTY_TUNING;
+        const difficulty = this.state.difficultyLevel;
+        if (difficulty < tuning.lookaheadStart || candidates.length === 0) return [...candidates];
+
+        const weight = Math.min(
+            tuning.lookaheadMaxWeight,
+            tuning.lookaheadWeightPerLevel * (difficulty - tuning.lookaheadStart + 1),
+        );
+        const player = this.state.playerPosition;
+        const before = bestReplyMobility(player, board);
+        const shortlisted = [...candidates]
+            .sort((left, right) => right.score - left.score)
+            .slice(0, tuning.lookaheadCandidates);
+        return shortlisted.map((candidate) => {
+            const piece = simulated.find((enemy) => enemy.id === candidate.pieceId)!;
+            const origin = piece.position;
+            board.relocate(piece, candidate.to);
+            const after = bestReplyMobility(player, board);
+            board.relocate(piece, origin);
+            return { ...candidate, score: candidate.score + (before - after) * weight };
+        });
+    }
+
+    /** 普通棋逃离车线奖励与暴露扣分的系数，随难度从 1 线性衰减到下限。 */
+    private escapeFactor(): number {
+        const tuning = DIFFICULTY_TUNING;
+        return Math.max(
+            tuning.minimumEscapeFactor,
+            1 - (this.state.difficultyLevel - 1) * tuning.escapeDecayPerLevel,
+        );
     }
 
     private aiNoise(): number {
@@ -1158,7 +1359,7 @@ export class ChessEndlessModel {
     }
 
     private createRewardChoices(): ItemType[] {
-        const available = ITEM_TYPES.filter((item) => this.state.inventory[item] < 2);
+        const available = ITEM_TYPES.filter((item) => this.state.inventory[item] < ITEM_CAPACITY);
         if (available.length === 0) return [];
         const pool = [...available];
         const choices: ItemType[] = [];
@@ -1205,7 +1406,8 @@ export class ChessEndlessModel {
         if (difficulty <= 5) return 4;
         if (difficulty <= 8) return this.rng.integer(3, 4);
         if (difficulty <= 12) return 3;
-        return this.rng.integer(3, 4);
+        if (difficulty <= 20) return this.rng.integer(2, 3);
+        return 2;
     }
 
     private reinforcementCount(): number {
@@ -1290,10 +1492,11 @@ export class ChessEndlessModel {
         enteredWaiting: boolean;
     } {
         const queue = this.state.queuedReinforcement;
+        const capacity = boardCapacity(this.state.difficultyLevel);
         const normalBlocked = queue.kind === 'normal'
-            && this.state.enemies.length >= MAX_BOARD_REINFORCEMENT_THRESHOLD;
+            && this.state.enemies.length >= capacity;
         const generalBlocked = queue.kind === 'general'
-            && this.state.enemies.length > MAX_BOARD_REINFORCEMENT_THRESHOLD;
+            && this.state.enemies.length > capacity;
         if (normalBlocked || generalBlocked) {
             this.state.reinforcementState = queue.kind === 'general' ? 'GENERAL_WAITING' : 'WAITING';
             return { spawned: [], enteredWaiting: true };
@@ -1321,28 +1524,23 @@ export class ChessEndlessModel {
     }
 
     private findNormalPlacements(count: number): BoardPosition[] | undefined {
-        const occupied = new Set(this.state.enemies.map((piece) => positionKey(piece.position)));
-        occupied.add(positionKey(this.state.playerPosition));
+        const player = this.state.playerPosition;
+        const board = this.boardOccupancy();
         const open: BoardPosition[] = [];
         for (let row = 0; row < BOARD_ROWS; row += 1) {
             for (let column = 0; column < BOARD_COLUMNS; column += 1) {
-                const candidate = position(column, row);
-                if (!occupied.has(positionKey(candidate))) open.push(candidate);
+                if (board.at(column, row) || (column === player.column && row === player.row)) continue;
+                open.push(position(column, row));
             }
         }
         if (open.length < count) return undefined;
-        const playerColumn = this.state.playerPosition.column;
-        const playerRow = this.state.playerPosition.row;
-        const directAttackRange = new Set(this.playerMoves(
-            this.state.playerPosition,
-            this.state.enemies,
-        ).map(positionKey));
+        const directAttackRange = new Set(playerMoves(player, board).map(positionKey));
 
         // 先用“完全不与玩家车同横线/竖线”的候选，确保普通棋落地时肉眼可见地
         // 离开车的攻击方向；若棋盘拥挤，再放宽到被已有棋挡住的线位，最后才
         // 允许当前直接攻击线作为保底。
         const preferredPools = [
-            open.filter((candidate) => candidate.column !== playerColumn && candidate.row !== playerRow),
+            open.filter((candidate) => candidate.column !== player.column && candidate.row !== player.row),
             open.filter((candidate) => !directAttackRange.has(positionKey(candidate))),
             open,
         ];
@@ -1361,53 +1559,61 @@ export class ChessEndlessModel {
     ): BoardPosition[] | undefined {
         if (pool.length < count || queuedTypes.length < count) return undefined;
 
+        const player = this.state.playerPosition;
         let safeFallback: BoardPosition[] | undefined;
         // 多次洗牌仍保留随机性，但每次只接受整批通过安全检查的结果；这样不会
         // 因一次随机抽样失败就把普通棋直接刷到车线上。
         for (let attempt = 0; attempt < 240; attempt += 1) {
             const placements = this.rng.shuffle(pool).slice(0, count);
-            const simulated = this.state.enemies.map(cloneEnemy);
-            const spawnedIds = new Set<number>();
-            queuedTypes.forEach((type, index) => {
-                const id = -1 - index;
-                spawnedIds.add(id);
-                simulated.push({ id, type, position: placements[index]!, frozenTurns: 0, isNewlySpawned: true });
-            });
-            if (this.safePlayerMoves(this.state.playerPosition, simulated).length === 0) continue;
+            const spawned = queuedTypes.map((type, index): EnemyPiece => ({
+                id: -1 - index,
+                type,
+                position: placements[index]!,
+                frozenTurns: 0,
+                isNewlySpawned: true,
+            }));
+            const board = new BoardOccupancy(this.state.enemies.concat(spawned));
+            if (safePlayerMoves(player, board).length === 0) continue;
 
             // 普通增援优先避开玩家车的直接吃子线；只有前面的候选层都找不到
             // 同时满足安全走法的整批落点时，才允许新棋成为下一步直接吃子目标。
             safeFallback ??= placements;
-            const threatened = this.playerThreatenedIds(this.state.playerPosition, simulated);
-            const newlyThreatened = [...spawnedIds].some((id) => threatened.has(id));
-            if (!newlyThreatened) return placements;
+            const threatened = playerThreatenedIds(player, board);
+            if (!spawned.some((piece) => threatened.has(piece.id))) return placements;
         }
         return safeFallback;
     }
 
     private findGeneralPlacements(): BoardPosition[] | undefined {
-        const occupied = new Set(this.state.enemies.map((piece) => positionKey(piece.position)));
-        occupied.add(positionKey(this.state.playerPosition));
+        const player = this.state.playerPosition;
+        const occupied = this.boardOccupancy();
+        const isOpen = (candidate: BoardPosition): boolean => (
+            !occupied.at(candidate.column, candidate.row) && !samePosition(candidate, player)
+        );
         const groups: BoardPosition[][] = [];
         for (let row = 0; row < BOARD_ROWS; row += 1) {
             for (let start = 0; start <= BOARD_COLUMNS - 3; start += 1) {
                 const group = [position(start, row), position(start + 1, row), position(start + 2, row)];
-                if (group.every((candidate) => !occupied.has(positionKey(candidate)))) groups.push(group);
+                if (group.every(isOpen)) groups.push(group);
             }
         }
         const safeGroups: Array<{ group: BoardPosition[]; distance: number }> = [];
         for (const group of this.rng.shuffle(groups)) {
-            const simulated = this.state.enemies.map(cloneEnemy);
-            (['advisor', 'general', 'advisor'] as const).forEach((type, index) => {
-                simulated.push({ id: -1 - index, type, position: group[index]!, frozenTurns: 0, isNewlySpawned: true });
-            });
-            if (this.safePlayerMoves(this.state.playerPosition, simulated).length === 0) continue;
-            if (this.playerThreatenedIds(this.state.playerPosition, simulated).has(-2)) continue;
+            const spawned = (['advisor', 'general', 'advisor'] as const).map((type, index): EnemyPiece => ({
+                id: -1 - index,
+                type,
+                position: group[index]!,
+                frozenTurns: 0,
+                isNewlySpawned: true,
+            }));
+            const board = new BoardOccupancy(this.state.enemies.concat(spawned));
+            if (safePlayerMoves(player, board).length === 0) continue;
+            if (playerThreatenedIds(player, board).has(-2)) continue;
             const generalPosition = group[1]!;
             safeGroups.push({
                 group,
-                distance: Math.abs(generalPosition.column - this.state.playerPosition.column)
-                    + Math.abs(generalPosition.row - this.state.playerPosition.row),
+                distance: Math.abs(generalPosition.column - player.column)
+                    + Math.abs(generalPosition.row - player.row),
             });
         }
         if (safeGroups.length === 0) return undefined;

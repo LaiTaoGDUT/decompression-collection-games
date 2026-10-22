@@ -1,4 +1,4 @@
-import { CYBLOCKBEES_LEVELS, CYBLOCKBEES_REMOVED_LEGACY_LEVELS } from './CyBlockBeesLevels';
+import { CYBLOCKBEES_LEVELS } from './CyBlockBeesLevels';
 
 export interface CyBlockBeesSave {
     readonly version: number;
@@ -10,8 +10,8 @@ export interface CyBlockBeesSave {
     readonly best: Readonly<Record<string, number>>;
 }
 
-/** v3 使用精简后的 200 关编号；v1/v2 使用原 208 关编号。 */
-export const CYBLOCKBEES_SAVE_VERSION = 3;
+/** 当前关卡序列的存档格式；开发期间的其他版本不迁移。 */
+export const CYBLOCKBEES_SAVE_VERSION = 4;
 export const CYBLOCKBEES_DEFAULT_SAVE: CyBlockBeesSave = Object.freeze({
     version: CYBLOCKBEES_SAVE_VERSION, unlocked: 1, cleared: 0, best: Object.freeze({}),
 });
@@ -23,35 +23,23 @@ export function cyblockbeesStars(remaining: number): number {
     return CYBLOCKBEES_STAR_THRESHOLDS.filter(threshold => remaining + 1e-8 >= threshold).length;
 }
 
-const LEGACY_LEVEL_ORDER: readonly number[] = Object.freeze(
-    Array.from({ length: CYBLOCKBEES_LEVELS.length + CYBLOCKBEES_REMOVED_LEGACY_LEVELS.length }, (_, i) => i + 1)
-        .filter(level => CYBLOCKBEES_REMOVED_LEGACY_LEVELS.indexOf(level) < 0),
-);
-
 function boundedInteger(value: unknown, low: number, high: number): number {
     const number = Number(value);
     return Number.isFinite(number) ? Math.max(low, Math.min(high, Math.floor(number))) : low;
 }
 
-/** 旧记录按保留关卡迁移；删除关卡的评分丢弃，不把它转给相邻关卡。 */
+/** 只读取当前版本，关卡进度和评分直接使用当前编号。 */
 export function readCyBlockBeesSave(custom: unknown): CyBlockBeesSave {
     if (!custom || typeof custom !== 'object' || Array.isArray(custom)) return CYBLOCKBEES_DEFAULT_SAVE;
     const raw = custom as Partial<CyBlockBeesSave>;
-    if (raw.version !== CYBLOCKBEES_SAVE_VERSION && raw.version !== 1 && raw.version !== 2)
-        return CYBLOCKBEES_DEFAULT_SAVE;
-    const legacy = raw.version !== CYBLOCKBEES_SAVE_VERSION;
+    if (raw.version !== CYBLOCKBEES_SAVE_VERSION) return CYBLOCKBEES_DEFAULT_SAVE;
     const levelCount = CYBLOCKBEES_LEVELS.length;
-    const sourceCount = legacy ? levelCount + CYBLOCKBEES_REMOVED_LEGACY_LEVELS.length : levelCount;
-    const sourceCleared = boundedInteger(raw.cleared, 0, sourceCount);
-    const sourceUnlocked = boundedInteger(raw.unlocked, 1, sourceCount);
-    const cleared = legacy ? LEGACY_LEVEL_ORDER.filter(level => level <= sourceCleared).length : sourceCleared;
-    const unlocked = Math.max(Math.min(levelCount, cleared + 1), legacy
-        ? Math.max(1, LEGACY_LEVEL_ORDER.filter(level => level <= sourceUnlocked).length) : sourceUnlocked);
+    const cleared = boundedInteger(raw.cleared, 0, levelCount);
+    const unlocked = Math.max(Math.min(levelCount, cleared + 1), boundedInteger(raw.unlocked, 1, levelCount));
     const best: Record<string, number> = {};
-    if (raw.version !== 1 && raw.best && typeof raw.best === 'object' && !Array.isArray(raw.best)) {
+    if (raw.best && typeof raw.best === 'object' && !Array.isArray(raw.best)) {
         for (let level = 1; level <= cleared; level++) {
-            const sourceLevel = legacy ? LEGACY_LEVEL_ORDER[level - 1] : level;
-            const score = Number(raw.best[String(sourceLevel)]);
+            const score = Number(raw.best[String(level)]);
             if (Number.isFinite(score)) best[String(level)] = boundedInteger(score, 0, 1000);
         }
     }

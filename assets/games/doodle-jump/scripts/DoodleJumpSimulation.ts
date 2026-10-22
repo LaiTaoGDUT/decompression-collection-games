@@ -8,6 +8,9 @@ import {
     stepDoodleJumpVertical,
     stepDoodleJumpHorizontal,
     referenceFootTouchesPlatform,
+    referenceFootPlatformContact,
+    referenceFootMidpointX,
+    referenceFootNeedsSweep,
     referenceSine,
     referenceShiftEasing,
     type DoodleJumpGenerationState,
@@ -287,6 +290,7 @@ export class DoodleJumpSimulation {
     private readonly items: DoodleJumpItemSystem;
     private readonly collectibles: DoodleJumpCollectibleSystem;
     private readonly levelGenerator: DoodleJumpLevelGenerator;
+    private presentationVisibleHeight = 1334;
     private generatorCursor = 0;
     private generatedLayerCount = 0;
     private latestMainLayer: MutablePlatform[] = [];
@@ -467,7 +471,11 @@ export class DoodleJumpSimulation {
             if (!Number.isFinite(value)) throw new Error(`Invalid restored ${field}.`);
             return value;
         };
-        if (snapshot.rulesVersion !== DOODLE_JUMP_RULES_VERSION
+        // Existing classic saves remain valid; removed-theme rounds cannot
+        // be replayed with a different deck and collision model.
+        const legacyTheme = (snapshot as DoodleJumpSimulationSnapshot & { themeId?: unknown }).themeId;
+        if ((legacyTheme !== undefined && legacyTheme !== 'classic')
+            || snapshot.rulesVersion !== DOODLE_JUMP_RULES_VERSION
             || snapshot.seed !== this.initialSeed
             || snapshot.platforms.length === 0
             || snapshot.platforms.length > this.config.generation.maxActivePlatforms) {
@@ -641,6 +649,7 @@ export class DoodleJumpSimulation {
      */
     prepareWorld(visibleHeight: number): void {
         const safeVisibleHeight = Math.max(1, visibleHeight);
+        this.presentationVisibleHeight = safeVisibleHeight;
         this.recyclePlatforms();
         this.ensureGenerated(safeVisibleHeight);
         this.syncWorldIndex();
@@ -838,6 +847,9 @@ export class DoodleJumpSimulation {
                 layerIndex: this.generatedLayerCount + 1,
             };
             this.platforms.push(target);
+            this.levelGenerator.acceptRecoveryAnchor(generatedConfig);
+            this.latestMainLayer = [target];
+            this.generatedLayerCount = target.layerIndex;
             safePlatformGenerated = true;
             this.syncWorldIndex();
             this.worldNeedsPreStepReconcile = true;
@@ -1170,7 +1182,11 @@ export class DoodleJumpSimulation {
         return this.collectibles.drainEvents();
     }
 
+    /** Presentation uses the same body height as landing and hazard contact. */
+    get playerCollisionHeight(): number { return this.config.player.collisionHeight; }
+
     private step(delta: number, input: number, visibleHeight: number): void {
+        this.presentationVisibleHeight = visibleHeight;
         this.elapsedSeconds += delta;
         this.monsterContactGraceRemaining = Math.max(
             0,
@@ -1187,6 +1203,7 @@ export class DoodleJumpSimulation {
         this.updateProjectiles(delta, visibleHeight);
         const player = this.config.player;
         const scale = this.config.design.width / 320;
+        const itemPhysics = this.items.getPhysics(this.velocityY);
         const steering = stepDoodleJumpHorizontal(this.filteredTilt, input * this.config.sensor.fullTilt,
             delta, this.config.sensor.smoothingSeconds,
             player.maxHorizontalSpeed / (this.config.sensor.fullTilt * 60 * scale), scale);
@@ -1196,7 +1213,6 @@ export class DoodleJumpSimulation {
         const previousPlayerY = this.playerY;
         const previousFootY = this.playerY - player.collisionHeight / 2;
         const captured = this.hazards.isPlayerCaptured();
-        const itemPhysics = this.items.getPhysics(this.velocityY);
         if (itemPhysics.initialVerticalVelocity !== undefined) this.velocityY = itemPhysics.initialVerticalVelocity;
         const blackHoleAttraction = this.hazards.resolveBlackHoleAttraction(this.playerX, this.playerY);
         this.velocityX += blackHoleAttraction.accelerationX * delta;
@@ -1217,7 +1233,8 @@ export class DoodleJumpSimulation {
         }
         if (captured) { this.velocityX = 0; this.velocityY = 0; }
         else { this.playerX += this.velocityX * delta; this.playerY += verticalDisplacement; }
-        this.items.updateTimers(delta, this.playerX, this.playerY, this.velocityY);
+        const shoeStepVelocity = this.items.updateTimers(delta, this.playerX, this.playerY, this.velocityY);
+        if (shoeStepVelocity !== undefined) this.velocityY = shoeStepVelocity;
         if (this.playerX < player.wrapLeft) this.playerX += player.wrapDistance;
         if (this.playerX > player.wrapRight) this.playerX -= player.wrapDistance;
         this.collectibles.reconcileWorld(this.worldIndex, this.cameraBottomY);
@@ -1444,18 +1461,28 @@ export class DoodleJumpSimulation {
     }
 
     private resolveLanding(previousFootY: number, previousPlayerX: number): void {
-        const currentFootY = this.playerY - this.config.player.collisionHeight / 2;
         const scale = this.config.design.width / 320;
-        const wrapped = Math.abs(this.playerX - previousPlayerX) > this.config.design.width / 2;
-        const sweep = (!wrapped && Math.abs(this.velocityX * this.config.fixedStep.seconds) > 18 * scale)
-            || previousFootY - currentFootY > 9 * scale + 1e-6;
-        for (let index = this.platforms.length - 1; index >= 0; index -= 1) {
+        const shoes = this.items.hasSpringShoes();
+        // Native ordinary shoes (world+0x85e0): foot left +4, width -4,
+        // foot bottom -15. The previous sweep point keeps the ordinary body offset.
+        const currentFootY = this.playerY - this.config.player.collisionHeight / 2 - (shoes ? 15 * scale : 0);
+        const footX = this.playerX + (shoes ? 2 * scale : 0);
+        const previousFootX = previousPlayerX - (shoes ? 2 * scale : 0);
+        const footWidth = this.config.player.collisionWidth - (shoes ? 4 * scale : 0);
+        const sweep = referenceFootNeedsSweep(this.velocityX * this.config.fixedStep.seconds,
+            this.velocityY, this.config.fixedStep.seconds, scale);
+        for (let index = 0; index < this.platforms.length; index += 1) {
             const platform = this.platforms[index];
             if (!platform.collisionEnabled) continue;
             const topY = platform.y;
             if (topY < this.cameraBottomY) continue;
-            if (!referenceFootTouchesPlatform(previousPlayerX, this.playerX, previousFootY, currentFootY,
-                this.config.player.collisionWidth, platform.x, topY, platform.width, scale, sweep)) continue;
+            const contact = referenceFootPlatformContact(previousFootX, footX, previousFootY, currentFootY,
+                footWidth, platform.x, topY, platform.width, scale, sweep);
+            if (!contact) continue;
+            if (contact === 2) {
+                this.playerX = referenceFootMidpointX(previousFootX, footX, scale) + (shoes ? 2 * scale : 0);
+                this.playerY = (previousFootY + currentFootY) / 2 + this.config.player.collisionHeight / 2;
+            }
             if (platform.config.type === 'breakable') {
                 platform.collisionEnabled = false;
                 platform.consumeAt = this.elapsedSeconds + 50 / 60;
@@ -1463,7 +1490,6 @@ export class DoodleJumpSimulation {
                 this.lastLandedPlatformId = platform.config.id;
                 return;
             }
-            this.playerY = topY + this.config.player.collisionHeight / 2;
             this.velocityY = this.items.consumeLandingPower(this.playerX, topY)
                 ?? this.config.player.bounceVelocity;
             this.lastLandedPlatformId = platform.config.id;
@@ -1507,7 +1533,8 @@ export class DoodleJumpSimulation {
             flightPower: itemStatus.flightPower,
             flightLandingWindow,
             shieldActive: itemStatus.shieldRemainingSeconds > 0,
-            jetpackRocketPickupCount: itemStatus.jetpackRocketPickupCount,
+            jetpackPickupCount: itemStatus.jetpackPickupCount,
+            nativeThemeMode: 0,
         });
         const nextLayer = this.generatedLayerCount + 1;
         // Authored relay chains and vertical platforms can advance through
@@ -1785,9 +1812,7 @@ export class DoodleJumpSimulation {
                 const targetX = this.platformXAt(candidate, this.elapsedSeconds + elapsed);
                 const targetY = this.platformYAt(candidate, this.elapsedSeconds + elapsed);
                 const currentFootY = y - player.collisionHeight / 2;
-                const sweep = Math.abs(x - previousX) <= this.config.design.width / 2
-                    && Math.abs(velocityX * delta) > 18 * scale
-                    || previousFootY - currentFootY > 9 * scale + 1e-6;
+                const sweep = referenceFootNeedsSweep(velocityX * delta, velocityY, delta, scale);
                 if (velocityY <= 0 && referenceFootTouchesPlatform(previousX, x, previousFootY, currentFootY,
                     player.collisionWidth, targetX, targetY, candidate.width, scale, sweep)) return true;
                 if (velocityY <= 0 && currentFootY + 2 * scale < targetY) break;

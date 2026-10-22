@@ -1,0 +1,6 @@
+Correct ONLY the foreground leg and foreground arm phase of the four figures in image1. Preserve faces, bodies, mouth shape, closed eyes, proportions, pouches, lighting, material, scale and all cell positions.
+For LEFTMOST cell: the FOREGROUND leg folds BACK and LEFT, showing its dark sole beneath the teal pouch, like image2 LEFTMOST corrected pose. The FAR leg emerges BEHIND belly and extends forward/right to support on flat foot. Do not keep the giant foreground thigh crossing forward over the cream belly. Also move FOREGROUND ARM to forward across belly, bent elbow and dark fist at local x=420,y=380; the other hand goes backward.
+SECOND cell: foreground heel is still back-left but begins returning, same knee and sole relationship as image2 second cell. Far leg supports with flat sole under front of belly. Foreground arm still forward, fist local x=390,y=400.
+THIRD cell: keep current returning near knee/foot pose; move foreground arm halfway forward/neutral, elbow down near side, dark hand local x=300,y=410.
+FOURTH cell: keep current legs and arm pose unchanged.
+Use image2 only as a guide for near heel folding backward with sole visible; do not change the approved model. These are frames8-11, the OPPOSITE support half of a biped run. Keep exactly four images, 2048x768, true transparent alpha, no scene, text, shadows or extra limbs.

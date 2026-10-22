@@ -123,9 +123,9 @@ function fitBoardMetrics(
     const boardNodeHeight = BOARD_NODE_DESIGN_HEIGHT * scale;
     const surfaceWidth = BOARD_SURFACE_DESIGN_WIDTH * scale;
     const surfaceHeight = BOARD_SURFACE_DESIGN_HEIGHT * scale;
-    // 棋盘始终贴着增援模块向下排。高屏的额外空间留在棋盘与道具栏之间，
-    // 只有矮屏才通过 heightScale 缩小棋盘。
-    const boardY = boardTop - boardNodeHeight / 2;
+    // 棋盘宽度受屏幕宽度限制；高屏多出的高度平分到棋盘上下两侧，
+    // 让增援模块、棋盘和道具栏的间距一致。矮屏由 heightScale 等比缩小棋盘。
+    const boardY = (boardTop + boardBottom) / 2;
 
     return {
         boardWidth,

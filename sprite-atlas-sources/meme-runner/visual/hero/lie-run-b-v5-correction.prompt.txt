@@ -1,0 +1,10 @@
+Use case: precise-object-edit.
+EDIT TARGET is image 1, lie-run-b-v5.png: four yellow laughing creature run frames.
+Image 2 is ONLY a leg-pose guide: the first and second hamster drawings show the foreground foot folded BACK with its sole visible to the viewer while the OTHER foot carries body weight. DO NOT copy hamster appearance, fur, clothes, face, body or colors.
+
+Make ONE precise correction to the yellow creature sheet:
+In the LEFTMOST frame, change the FOREGROUND LEG (the bright leg currently reaching forward/right) so it folds UP AND BACK toward screen LEFT, with its dark SOLE clearly facing the viewer on the LEFT BELOW THE TEAL POUCH, like the first guide pose. The other leg goes forward/right and has its sole planted flat to support the creature. Its visible shin should be shaded and should come from BEHIND the cream belly. This is the opposite leg contact pose. Do not leave a big bright foreground thigh pointing right in this first cell.
+In the SECOND frame, keep foreground knee folded and the heel passing close beneath the hips, with the visible sole angled to viewer, like guide second pose. Far foot stays flat on floor. Make it a transitional returning leg, not two grounded feet.
+Keep the THIRD and FOURTH yellow poses unchanged.
+Preserve every yellow creature's head/face/mouth/eyes, torso shape, hands, pouch, exact position, scale, lighting, color and short-velvet material. Preserve the four cells and all image proportions. Return same 2048x768 dimensions, actual transparent alpha background, NO background, shadow, text, grid, or new objects.
+Only two leg poses need correction; the approved yellow design must not drift.

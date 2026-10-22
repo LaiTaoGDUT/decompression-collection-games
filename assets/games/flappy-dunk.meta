@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "9ab79667-c11a-4772-a953-0f65af8268b9",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-flappy-dunk",
+    "isSubpackage": true,
+    "isRemoteBundle": {},
+    "priority": 1,
+    "bundleConfigID": "00mTKQ64hMUZEoY95Dbj9L",
+    "isBundle": true
+  }
+}

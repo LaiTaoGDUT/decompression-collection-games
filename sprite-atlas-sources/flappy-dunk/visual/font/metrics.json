@@ -1,0 +1,503 @@
+{
+  "size": 64,
+  "lineHeight": 81,
+  "base": 62,
+  "sourceSha256": "d79de9f21be475a5820566da84f3740a914aec7e585167f30f85b2a56523454a",
+  "glyphs": [
+    {
+      "code": 33,
+      "name": "Glyph-33",
+      "width": 16,
+      "height": 54,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 18
+    },
+    {
+      "code": 43,
+      "name": "Glyph-43",
+      "width": 37,
+      "height": 38,
+      "xoffset": 1,
+      "yoffset": 14,
+      "advance": 39
+    },
+    {
+      "code": 48,
+      "name": "Glyph-48",
+      "width": 43,
+      "height": 56,
+      "xoffset": 2,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 49,
+      "name": "Glyph-49",
+      "width": 26,
+      "height": 55,
+      "xoffset": 11,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 50,
+      "name": "Glyph-50",
+      "width": 40,
+      "height": 54,
+      "xoffset": 4,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 51,
+      "name": "Glyph-51",
+      "width": 38,
+      "height": 56,
+      "xoffset": 5,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 52,
+      "name": "Glyph-52",
+      "width": 46,
+      "height": 57,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 53,
+      "name": "Glyph-53",
+      "width": 38,
+      "height": 55,
+      "xoffset": 5,
+      "yoffset": 7,
+      "advance": 48
+    },
+    {
+      "code": 54,
+      "name": "Glyph-54",
+      "width": 42,
+      "height": 56,
+      "xoffset": 3,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 55,
+      "name": "Glyph-55",
+      "width": 43,
+      "height": 55,
+      "xoffset": 2,
+      "yoffset": 7,
+      "advance": 48
+    },
+    {
+      "code": 56,
+      "name": "Glyph-56",
+      "width": 43,
+      "height": 57,
+      "xoffset": 2,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 57,
+      "name": "Glyph-57",
+      "width": 41,
+      "height": 56,
+      "xoffset": 3,
+      "yoffset": 6,
+      "advance": 48
+    },
+    {
+      "code": 65,
+      "name": "Glyph-65",
+      "width": 52,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 54
+    },
+    {
+      "code": 67,
+      "name": "Glyph-67",
+      "width": 43,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 45
+    },
+    {
+      "code": 68,
+      "name": "Glyph-68",
+      "width": 49,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 51
+    },
+    {
+      "code": 69,
+      "name": "Glyph-69",
+      "width": 41,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 43
+    },
+    {
+      "code": 72,
+      "name": "Glyph-72",
+      "width": 48,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 50
+    },
+    {
+      "code": 73,
+      "name": "Glyph-73",
+      "width": 19,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 21
+    },
+    {
+      "code": 76,
+      "name": "Glyph-76",
+      "width": 43,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 45
+    },
+    {
+      "code": 80,
+      "name": "Glyph-80",
+      "width": 45,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 47
+    },
+    {
+      "code": 83,
+      "name": "Glyph-83",
+      "width": 43,
+      "height": 57,
+      "xoffset": 1,
+      "yoffset": 5,
+      "advance": 45
+    },
+    {
+      "code": 84,
+      "name": "Glyph-84",
+      "width": 49,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 51
+    },
+    {
+      "code": 86,
+      "name": "Glyph-86",
+      "width": 51,
+      "height": 54,
+      "xoffset": 1,
+      "yoffset": 7,
+      "advance": 53
+    },
+    {
+      "code": 87,
+      "name": "Glyph-87",
+      "width": 70,
+      "height": 53,
+      "xoffset": 1,
+      "yoffset": 8,
+      "advance": 72
+    },
+    {
+      "code": 88,
+      "name": "Glyph-88",
+      "width": 47,
+      "height": 54,
+      "xoffset": 1,
+      "yoffset": 7,
+      "advance": 49
+    },
+    {
+      "code": 97,
+      "name": "Glyph-97",
+      "width": 41,
+      "height": 38,
+      "xoffset": 1,
+      "yoffset": 23,
+      "advance": 43
+    },
+    {
+      "code": 99,
+      "name": "Glyph-99",
+      "width": 32,
+      "height": 39,
+      "xoffset": 1,
+      "yoffset": 23,
+      "advance": 34
+    },
+    {
+      "code": 100,
+      "name": "Glyph-100",
+      "width": 41,
+      "height": 57,
+      "xoffset": 1,
+      "yoffset": 5,
+      "advance": 43
+    },
+    {
+      "code": 101,
+      "name": "Glyph-101",
+      "width": 38,
+      "height": 39,
+      "xoffset": 1,
+      "yoffset": 23,
+      "advance": 40
+    },
+    {
+      "code": 104,
+      "name": "Glyph-104",
+      "width": 39,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 41
+    },
+    {
+      "code": 105,
+      "name": "Glyph-105",
+      "width": 16,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 18
+    },
+    {
+      "code": 108,
+      "name": "Glyph-108",
+      "width": 17,
+      "height": 53,
+      "xoffset": 1,
+      "yoffset": 9,
+      "advance": 19
+    },
+    {
+      "code": 112,
+      "name": "Glyph-112",
+      "width": 40,
+      "height": 56,
+      "xoffset": 1,
+      "yoffset": 20,
+      "advance": 42
+    },
+    {
+      "code": 115,
+      "name": "Glyph-115",
+      "width": 34,
+      "height": 42,
+      "xoffset": 1,
+      "yoffset": 20,
+      "advance": 36
+    },
+    {
+      "code": 116,
+      "name": "Glyph-116",
+      "width": 38,
+      "height": 52,
+      "xoffset": 1,
+      "yoffset": 10,
+      "advance": 40
+    },
+    {
+      "code": 118,
+      "name": "Glyph-118",
+      "width": 39,
+      "height": 41,
+      "xoffset": 1,
+      "yoffset": 21,
+      "advance": 41
+    },
+    {
+      "code": 120,
+      "name": "Glyph-120",
+      "width": 40,
+      "height": 40,
+      "xoffset": 1,
+      "yoffset": 22,
+      "advance": 42
+    },
+    {
+      "code": 215,
+      "name": "Glyph-215",
+      "width": 42,
+      "height": 42,
+      "xoffset": 1,
+      "yoffset": 18,
+      "advance": 48
+    },
+    {
+      "code": 20837,
+      "name": "Glyph-20837",
+      "width": 63,
+      "height": 57,
+      "xoffset": 1,
+      "yoffset": 7,
+      "advance": 69
+    },
+    {
+      "code": 20987,
+      "name": "Glyph-20987",
+      "width": 61,
+      "height": 64,
+      "xoffset": 1,
+      "yoffset": 4,
+      "advance": 67
+    },
+    {
+      "code": 21488,
+      "name": "Glyph-21488",
+      "width": 60,
+      "height": 62,
+      "xoffset": 1,
+      "yoffset": 4,
+      "advance": 66
+    },
+    {
+      "code": 22812,
+      "name": "Glyph-22812",
+      "width": 64,
+      "height": 64,
+      "xoffset": 1,
+      "yoffset": 2,
+      "advance": 70
+    },
+    {
+      "code": 22825,
+      "name": "Glyph-22825",
+      "width": 62,
+      "height": 60,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 68
+    },
+    {
+      "code": 24515,
+      "name": "Glyph-24515",
+      "width": 64,
+      "height": 54,
+      "xoffset": 1,
+      "yoffset": 9,
+      "advance": 70
+    },
+    {
+      "code": 25252,
+      "name": "Glyph-25252",
+      "width": 62,
+      "height": 62,
+      "xoffset": 1,
+      "yoffset": 4,
+      "advance": 68
+    },
+    {
+      "code": 25928,
+      "name": "Glyph-25928",
+      "width": 65,
+      "height": 61,
+      "xoffset": 1,
+      "yoffset": 4,
+      "advance": 71
+    },
+    {
+      "code": 26376,
+      "name": "Glyph-26376",
+      "width": 61,
+      "height": 60,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 67
+    },
+    {
+      "code": 28748,
+      "name": "Glyph-28748",
+      "width": 64,
+      "height": 65,
+      "xoffset": 1,
+      "yoffset": 1,
+      "advance": 70
+    },
+    {
+      "code": 29699,
+      "name": "Glyph-29699",
+      "width": 65,
+      "height": 62,
+      "xoffset": 1,
+      "yoffset": 3,
+      "advance": 71
+    },
+    {
+      "code": 29983,
+      "name": "Glyph-29983",
+      "width": 60,
+      "height": 62,
+      "xoffset": 1,
+      "yoffset": 4,
+      "advance": 66
+    },
+    {
+      "code": 30462,
+      "name": "Glyph-30462",
+      "width": 61,
+      "height": 63,
+      "xoffset": 1,
+      "yoffset": 3,
+      "advance": 67
+    },
+    {
+      "code": 31354,
+      "name": "Glyph-31354",
+      "width": 60,
+      "height": 63,
+      "xoffset": 1,
+      "yoffset": 3,
+      "advance": 66
+    },
+    {
+      "code": 31726,
+      "name": "Glyph-31726",
+      "width": 64,
+      "height": 63,
+      "xoffset": 1,
+      "yoffset": 1,
+      "advance": 70
+    },
+    {
+      "code": 32593,
+      "name": "Glyph-32593",
+      "width": 60,
+      "height": 60,
+      "xoffset": 1,
+      "yoffset": 6,
+      "advance": 66
+    },
+    {
+      "code": 36830,
+      "name": "Glyph-36830",
+      "width": 64,
+      "height": 63,
+      "xoffset": 1,
+      "yoffset": 4,
+      "advance": 70
+    }
+  ]
+}

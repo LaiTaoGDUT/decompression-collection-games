@@ -1,0 +1,14 @@
+{
+  "tool": "image_gen.imagegen",
+  "date": "2026-10-19",
+  "file": "flyman-hd-v5.png",
+  "generation": "exec-109060c2-f1d2-471d-b5ed-7b6943ee9e68.png",
+  "revision_of": "exec-6eb5853e-b10e-4fcf-8d23-7735878cf858.png",
+  "references": [
+    "native-reference/feiren_0-canvas.png",
+    "native-reference/feiren_1-canvas.png"
+  ],
+  "sha256": "b445e367515a9bddbb9b27cac74d1ac0a3a1ba9dc1b58b31929f30b129d9bc61",
+  "integration": "Split into two cells, crop alpha bounds, uniformly downsample into native per-frame bounds on 99x99 square canvases; no upsampling or manual redraw. Pack using sprite-atlas-sources/build.py then compress final atlas with tinypng-batch.",
+  "review": "Both poses face right with mustard hard hat, tan skin and blue trousers. Left arm down; right arm raised. High-resolution continuous contours replace pixel tiles. Original per-frame position, size, loop timing and scenery movement remain authoritative."
+}

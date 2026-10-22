@@ -7,54 +7,80 @@
 		<key>vfx_item_banish</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{384,384}}</string>
+			<string>{{176,2},{166,166}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{384,384}}</string>
+			<string>{{0.0,0.0},{166,166}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{166,166}</string>
 		</dict>
 		<key>vfx_item_cross</key>
 		<dict>
 			<key>frame</key>
-			<string>{{390,2},{384,384}}</string>
+			<string>{{2,2},{170,170}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{384,384}}</string>
+			<string>{{0.0,0.0},{170,170}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{170,170}</string>
 		</dict>
 		<key>vfx_item_delay</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,390},{384,384}}</string>
+			<string>{{496,2},{142,142}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{384,384}}</string>
+			<string>{{0.0,0.0},{142,142}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{142,142}</string>
 		</dict>
 		<key>vfx_item_freeze</key>
 		<dict>
 			<key>frame</key>
-			<string>{{390,390},{384,384}}</string>
+			<string>{{642,2},{142,142}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{384,384}}</string>
+			<string>{{0.0,0.0},{142,142}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{142,142}</string>
+		</dict>
+		<key>vfx_item_teleport</key>
+		<dict>
+			<key>frame</key>
+			<string>{{346,2},{146,146}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{146,146}}</string>
+			<key>sourceSize</key>
+			<string>{146,146}</string>
+		</dict>
+		<key>vfx_talisman</key>
+		<dict>
+			<key>frame</key>
+			<string>{{788,2},{60,60}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{60,60}}</string>
+			<key>sourceSize</key>
+			<string>{60,60}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -64,7 +90,7 @@
 		<key>realTextureFileName</key>
 		<string>chess-item-feedback.png</string>
 		<key>size</key>
-		<string>{776,776}</string>
+		<string>{850,174}</string>
 		<key>textureFileName</key>
 		<string>chess-item-feedback.png</string>
 	</dict>

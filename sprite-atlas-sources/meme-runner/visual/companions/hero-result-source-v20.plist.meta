@@ -1,0 +1,100 @@
+{
+  "subMetas": {
+    "portrait-6": {
+      "importer": "sprite-frame",
+      "name": "portrait-6",
+      "uuid": "c64277ea-dfb1-5c6d-89bb-437f746a3851",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "portrait-7": {
+      "importer": "sprite-frame",
+      "name": "portrait-7",
+      "uuid": "b8642d67-6cb1-514d-90fd-a96a73f1c1ff",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "portrait-8": {
+      "importer": "sprite-frame",
+      "name": "portrait-8",
+      "uuid": "5a9a4c7e-18d1-5c2f-bac2-de2eadc9a79f",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "portrait-9": {
+      "importer": "sprite-frame",
+      "name": "portrait-9",
+      "uuid": "929d40e8-084f-5857-9867-129eace8739c",
+      "userData": {
+        "trimX": 640,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "portrait-10": {
+      "importer": "sprite-frame",
+      "name": "portrait-10",
+      "uuid": "0023ce8c-92c4-5339-80ab-b668614cb14e",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "portrait-11": {
+      "importer": "sprite-frame",
+      "name": "portrait-11",
+      "uuid": "79bd66da-5f25-5e12-8dfc-f5d383ceafc4",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

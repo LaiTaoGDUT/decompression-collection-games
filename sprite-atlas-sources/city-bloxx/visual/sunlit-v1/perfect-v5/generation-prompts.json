@@ -1,0 +1,38 @@
+{
+  "tool": "built-in image_gen",
+  "mode": "reference-guided edits",
+  "sources": [
+    {
+      "name": "burst-star",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/star-reference-on-dark.png"
+      ],
+      "prompt": "Use case: precise-object-edit.\nAsset type: transparent FIVE-POINT perfect-landing particle sprite for a portrait stacking game.\nInput image 1 is the exact original game particle shape and color reference; its dark blue backdrop is a viewing aid and MUST be completely removed.\nRecreate precisely the original broad upright five-point yellow star with a vivid orange-red rim. Keep its proportions and orientation, five sharp outer points, broad horizontal side points, lower diagonal points, substantial lemon-yellow center. Replace only pixel stair-steps with smooth straight antialiased contour edges. Flat luminous game graphic, vivid yellow face and orange-red edge, crisp silhouette immediately legible at 40 display pixels. This is an emitted particle, not a polished UI icon or metallic object. Center with transparent padding all around. One star only. Output a high-resolution square RGBA PNG with genuine alpha transparency.\nConstraints: no four-point sparkle, no diamond, no bevel, no embossing, no inner white gloss, no 3D star, no drop shadow, no extra rays, no extra stars, no decorative framing, no background color, no text. Preserve the original particle's distinctive two-color five-point geometry.",
+      "tool": "built-in image_gen",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/burst-star-stepped-source.png",
+      "status": "discarded: retained pixel-stepped contour"
+    },
+    {
+      "name": "floor-glints",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/local/city-bloxx-sunlit/perfect-v5/reference-glints-on-dark.png"
+      ],
+      "prompt": "Use case: precise-object-edit.\nAsset type: five transparent particle light-glint source glyphs, NOT an animation sheet, for rebuilding the original game's precise floor sparkle animation.\nReference image is a 3-column by 2-row source glyph grid. The dark blue background is only a viewing aid and must be removed. Preserve exactly the five glyph types and their individual grid cells and orientation: top-left a tiny upright PLUS light glint; top-middle a larger slender diagonal X light glint with a tiny white-hot square center and four tapered diagonal rays; top-right a compact diagonal X glint with yellow square center; bottom-left a narrow tilted short diagonal glint; bottom-middle a small bright yellow-white square dot; bottom-right entirely EMPTY. One separate glyph per occupied cell, exactly FIVE in total. Keep each centered within its cell with plentiful transparent separation. Same overall 3:2 landscape ratio as reference (for example 1536x1024 output).\nRefine the original pixel stepping into clean antialiased luminous rays while preserving their light airy character. Warm gold/orange rays, bright lemon-yellow shoulders, white-hot small centers, subtle transparent glow fading out close to each glyph; all the softness comes from real alpha. Avoid thick puffy bodies: these are LIGHT and sparse thin rays, not glass gems or gold buttons. Let the plus and X rays remain readable when downsampled to 10 to 32 pixels.\nConstraints: no background, no checkerboard, no five-point stars, no polished metal, no bevel, no diamonds, no solid four-point badge silhouettes, no text, no grid lines, no labels, no extra glyphs or tiny surrounding sparkles. Keep the final row's rightmost cell entirely transparent.",
+      "tool": "built-in image_gen",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/floor-glints-source.png",
+      "status": "selected"
+    },
+    {
+      "name": "burst-star-contour",
+      "tool": "built-in image_gen",
+      "mode": "reference-guided contour edit",
+      "prompt": "Use case: precise-object-edit.\nEdit target is the supplied orange-and-yellow five-point particle sprite. CHANGE ONLY ITS CONTOURS from pixel-stepped to smooth geometrical straight edges. This is a flat sharp FIVE-POINT star with a yellow center and an orange-red perimeter. The supplied star contains obsolete horizontal/vertical staircase outlines: remove EVERY stair step and squared end. Reconstruct the outer silhouette as exactly TEN CLEAN STRAIGHT DIAGONAL SEGMENTS joining five sharp outer tips and five inward valleys, the usual geometric upright five-point star. Reconstruct the yellow inner boundary as the same smaller smooth 10-segment star inset inside the rim. No stepped outlines, no horizontal ledges, no flat-ended points, no pixel art. It should look like a clean antialiased vector-style flat game particle.\nKeep the original bright lemon-yellow fill and vivid saturated orange-red border, original upright orientation, broad width and two lower leg tips. A single star centered in a square transparent RGBA image, with empty padding on all sides. Flat two-color graphic, no metal, no bevel, no 3D, no gradients, no gloss, no glow, no shadow, no face, no diamond, no four-point sparkle, no extra tiny stars. Genuine transparent alpha background. Its silhouette must remain smooth even viewed very large, with five unmistakably pointed triangular tips.",
+      "refs": [
+        "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/burst-star-stepped-source.png"
+      ],
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/burst-star-source.png",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-22f4d0e3-58c0-4c41-b63c-53df825adb2d.png",
+      "status": "selected"
+    }
+  ]
+}

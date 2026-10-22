@@ -7,106 +7,106 @@
 		<key>piece_enemy_advisor</key>
 		<dict>
 			<key>frame</key>
-			<string>{{529,2},{257,239}}</string>
+			<string>{{156,2},{71,66}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13813229571984437,0.13807531380753138}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{63.0,72.0},{257,239}}</string>
+			<string>{{17.361867704280154,19.86192468619247},{71,66}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{106,106}</string>
 		</dict>
 		<key>piece_enemy_cannon</key>
 		<dict>
 			<key>frame</key>
-			<string>{{529,245},{257,239}}</string>
+			<string>{{231,2},{71,66}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13813229571984437,0.13807531380753138}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{63.0,72.0},{257,239}}</string>
+			<string>{{17.361867704280154,19.86192468619247},{71,66}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{106,106}</string>
 		</dict>
 		<key>piece_enemy_elephant</key>
 		<dict>
 			<key>frame</key>
-			<string>{{266,247},{257,239}}</string>
+			<string>{{306,2},{71,66}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13813229571984437,0.13807531380753138}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{63.0,72.0},{257,239}}</string>
+			<string>{{17.361867704280154,19.86192468619247},{71,66}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{106,106}</string>
 		</dict>
 		<key>piece_enemy_general</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{260,268}}</string>
+			<string>{{2,2},{75,77}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{62.0,58.0},{260,268}}</string>
+			<string>{{18.0,16.5},{75,77}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{111,110}</string>
 		</dict>
 		<key>piece_enemy_horse</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,274},{257,239}}</string>
+			<string>{{381,2},{71,66}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13813229571984437,0.13807531380753138}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{63.0,72.0},{257,239}}</string>
+			<string>{{17.361867704280154,19.86192468619247},{71,66}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{106,106}</string>
 		</dict>
 		<key>piece_enemy_pawn</key>
 		<dict>
 			<key>frame</key>
-			<string>{{527,488},{257,239}}</string>
+			<string>{{456,2},{71,66}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13813229571984437,0.13807531380753138}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{63.0,72.0},{257,239}}</string>
+			<string>{{17.361867704280154,19.86192468619247},{71,66}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{106,106}</string>
 		</dict>
 		<key>piece_enemy_rook</key>
 		<dict>
 			<key>frame</key>
-			<string>{{263,490},{257,239}}</string>
+			<string>{{531,2},{71,66}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13813229571984437,0.13807531380753138}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{63.0,72.0},{257,239}}</string>
+			<string>{{17.361867704280154,19.86192468619247},{71,66}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{106,106}</string>
 		</dict>
 		<key>piece_player_rook</key>
 		<dict>
 			<key>frame</key>
-			<string>{{266,2},{259,241}}</string>
+			<string>{{81,2},{71,67}}</string>
 			<key>offset</key>
-			<string>{-0.5,0.5}</string>
+			<string>{-0.13706563706563707,0.13900414937759337}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{62.0,71.0},{259,241}}</string>
+			<string>{{16.862934362934364,19.860995850622405},{71,67}}</string>
 			<key>sourceSize</key>
-			<string>{384,384}</string>
+			<string>{105,107}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -116,7 +116,7 @@
 		<key>realTextureFileName</key>
 		<string>chess-pieces.png</string>
 		<key>size</key>
-		<string>{788,731}</string>
+		<string>{604,81}</string>
 		<key>textureFileName</key>
 		<string>chess-pieces.png</string>
 	</dict>

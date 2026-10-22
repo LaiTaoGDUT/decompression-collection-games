@@ -1,0 +1,90 @@
+{
+  "service": "Tinify official API",
+  "resizeBeforeCompression": true,
+  "atlasPackedBeforeCompression": true,
+  "processed": 7,
+  "failed": 0,
+  "latestBatch": {
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "savedBytes": 778013,
+    "pending": 0
+  },
+  "files": [
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/city-sunlit.png",
+      "inputBytes": 964316,
+      "outputBytes": 186303,
+      "sha256": "f7ee0e95fc0ef2ebe29b809bfc62e2c8542896756de229fa8dd2f139584ecb02",
+      "pixels": [
+        2047,
+        1022
+      ]
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/city.png",
+      "inputBytes": 3593467,
+      "outputBytes": 1106598,
+      "sha256": "75509d685e29e85aa7a8258995ce13fffc0f81bce30c18cadb249e1e7879ed62",
+      "pixels": [
+        1183,
+        3549
+      ]
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/floor-blue.png",
+      "inputBytes": 204391,
+      "outputBytes": 55163,
+      "sha256": "ab6f20a42037360573a19836f299445ae01287c26df0a20fd5b6d70867b89ff7",
+      "pixels": [
+        384,
+        384
+      ]
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/floor-coral.png",
+      "inputBytes": 192459,
+      "outputBytes": 63717,
+      "sha256": "ce3b034ede33270b2f31539d1666be4562b2e1df84d092dee0884f74027b1384",
+      "pixels": [
+        384,
+        384
+      ]
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/floor-lobby.png",
+      "inputBytes": 217209,
+      "outputBytes": 72182,
+      "sha256": "4ea978569770ae67a35febe87c9db96c7a1a8fc0cd7a61f40bd5d69ff6d2230a",
+      "pixels": [
+        384,
+        384
+      ]
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/ground.png",
+      "inputBytes": 10666,
+      "outputBytes": 3042,
+      "sha256": "f3c70f21499068dd4dbbac25c596b6f35aab9ff38edd653f7348287b9eabf2f8",
+      "pixels": [
+        128,
+        128
+      ]
+    },
+    {
+      "path": "assets/lobby-covers/visual/covers/city-bloxx/city-cover.jpg",
+      "inputBytes": 43734,
+      "outputBytes": 40132,
+      "sha256": "f6e46cc2f731d4719de66a58ea4b6f4e44c659a2ba88979db7af8930bdd1bd38",
+      "pixels": [
+        308,
+        231
+      ]
+    }
+  ],
+  "inputBytes": 5226242,
+  "outputBytes": 1527137,
+  "savedBytes": 3699105,
+  "revision": "perfect-v5"
+}

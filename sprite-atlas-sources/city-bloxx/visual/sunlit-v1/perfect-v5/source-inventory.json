@@ -1,0 +1,22 @@
+{
+  "tool": "built-in image_gen",
+  "mode": "reference-guided edit",
+  "sources": [
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/burst-star-source.png",
+      "pixels": [
+        1254,
+        1254
+      ],
+      "sha256": "6d9ef70ec44f37e0779b1b9e192992ef17e3c3bf92f8cee5fd86978aa1270ed4"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/perfect-v5/floor-glints-source.png",
+      "pixels": [
+        1536,
+        1024
+      ],
+      "sha256": "d70cb5bbef0d70582f5d959cc89467f633b629b8c6c4906f5b3a37873b243437"
+    }
+  ]
+}

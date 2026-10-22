@@ -1,0 +1,6 @@
+{
+  "source": "sprite-atlas-sources/meme-runner/visual/dash-aura-v1/sheets/dash-aura-sheet.png",
+  "originalPrompt": "sprite-atlas-sources/meme-runner/visual/dash-aura-v1/sheets/dash-aura-sheet.prompt.txt",
+  "treatment": "Reuse the painted wind loop with its original clear alpha window; crop fixed cells and downsample proportionally to 384 x 256. No new image generation or retouching.",
+  "composition": "Foreground wind ribbons at opacity 128, above the complete opaque 208 x 144 character; no broad central fog."
+}

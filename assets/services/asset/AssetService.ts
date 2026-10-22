@@ -15,6 +15,13 @@ export interface BundlePreparationOptions {
     readonly excludeAudio?: boolean;
 }
 
+/** 由加载事务提供取消能力；底层请求仍由 AssetService 追踪并统一释放。 */
+export interface AssetLoadScope {
+    readonly cancelled: boolean;
+    run<T>(request: () => Promise<T>): Promise<T>;
+    throwIfCancelled(): void;
+}
+
 export interface AssetBundleProvider {
     getBundle(name: string): AssetManager.Bundle | null;
     loadBundle(
@@ -109,6 +116,48 @@ export class AssetService {
         if (!Number.isFinite(loadTimeoutMs) || loadTimeoutMs <= 0) {
             throw new Error('Asset bundle timeout must be greater than zero.');
         }
+    }
+
+    /**
+     * 为单局提供可取消的资源入口。取消只中止调用方的等待和后续请求，
+     * 不移除底层在途请求，releaseBundle 会等它们结束后回收全部资源。
+     */
+    createLoadScope(scope: AssetLoadScope): AssetService {
+        const scoped = Object.create(this) as AssetService;
+        scoped.loadBundle = name => scope.run(() => this.loadBundle(name));
+        scoped.prepareBundle = (name, directory, progress, options) =>
+            scope.run(() => this.prepareBundle(name, directory,
+                (finished, total) => { if (!scope.cancelled) progress?.(finished, total); }, options));
+        scoped.loadAudioClip = (name, path) => scope.run(() => this.loadAudioClip(name, path));
+        scoped.loadPackedAudio = (name, path, decode) =>
+            scope.run(() => this.loadPackedAudio(name, path, decode));
+        scoped.loadAsset = (name, path, type) => scope.run(() => this.loadAsset(name, path, type));
+        scoped.loadSpriteFrame = (name, path, type) =>
+            scope.run(() => this.loadSpriteFrame(name, path, type));
+        scoped.loadSpriteFrames = (name, entries) => scope.run(() => this.loadSpriteFrames(name, entries));
+        scoped.loadAutoAtlasFrames = (name, path, entries) =>
+            scope.run(() => this.loadAutoAtlasFrames(name, path, entries));
+        scoped.loadDirectoryFrames = (name, directory) =>
+            scope.run(() => this.loadDirectoryFrames(name, directory));
+        // 取消后统一由进入事务卸包，dispose 不应被底层在途请求挡住返回大厅。
+        scoped.releaseDirectory = (name, directory) => scope.cancelled
+            ? Promise.resolve() : this.releaseDirectory(name, directory);
+        scoped.releaseBundle = name => scope.cancelled
+            ? Promise.resolve(false) : this.releaseBundle(name);
+        scoped.createSpriteFrame = (name, texture) => {
+            scope.throwIfCancelled();
+            return this.createSpriteFrame(name, texture);
+        };
+        scoped.trackRuntimeAsset = (name, asset) => {
+            try {
+                scope.throwIfCancelled();
+            } catch (error) {
+                if (asset.isValid) asset.destroy();
+                throw error;
+            }
+            return this.trackRuntimeAsset(name, asset);
+        };
+        return scoped;
     }
 
     loadBundle(name: string): Promise<AssetManager.Bundle> {

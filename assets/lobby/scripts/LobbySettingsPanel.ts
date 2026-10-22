@@ -8,6 +8,7 @@ import {
     HorizontalTextAlignment,
     Label,
     Node,
+    Slider,
     Sprite,
     SpriteFrame,
     Texture2D,
@@ -22,6 +23,7 @@ import type { Platform } from '../../platform/Platform';
 import type { AudioService } from '../../services/audio/AudioService';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import type { StorageService } from '../../services/storage/StorageService';
+import { AUDIO_VOLUME_MIN_LEVEL, AUDIO_VOLUME_MAX_LEVEL } from '../../core/types/AudioVolume';
 import {
     LOBBY_HEADER_TOOL_CELL_HEIGHT,
     LOBBY_HEADER_TOOL_ICON_SIZE,
@@ -38,13 +40,25 @@ interface LobbySettingsServices {
 }
 
 type SettingKey = 'music' | 'sound' | 'vibration';
+type VolumeSettingKey = Exclude<SettingKey, 'vibration'>;
 
-interface SettingRow {
-    readonly key: SettingKey;
-    readonly button: Button;
+interface SettingVolumeControl {
+    readonly slider: Slider;
     readonly track: Graphics;
     readonly knob: Graphics;
     readonly valueLabel: Label;
+}
+
+interface SettingToggleControl {
+    readonly button: Button;
+    readonly track: Graphics;
+    readonly knob: Graphics;
+}
+
+interface SettingRow {
+    readonly key: SettingKey;
+    readonly toggle?: SettingToggleControl;
+    readonly volume?: SettingVolumeControl;
 }
 
 const COLOR = {
@@ -55,9 +69,8 @@ const COLOR = {
     border: new Color(248, 190, 143, 255),
     divider: new Color(250, 220, 190, 255),
     action: new Color(243, 112, 42, 255),
-    disabled: new Color(211, 190, 177, 255),
     paper: new Color(255, 255, 255, 255),
-    error: new Color(216, 78, 92, 255),
+    contact: new Color(255, 237, 213, 255),
 };
 
 const UI_ASSET_PATHS = {
@@ -70,7 +83,15 @@ const UI_ASSET_PATHS = {
 } as const;
 
 const SETTINGS_PANEL_WIDTH = 620;
-const SETTINGS_PANEL_HEIGHT = 620;
+const SETTINGS_ROW_HEIGHT = 104;
+const SETTINGS_VOLUME_SLIDER_WIDTH = 420;
+const SETTINGS_VIBRATION_ROW_OFFSET = 450;
+const SETTINGS_PANEL_BOTTOM_PADDING = 40;
+const CUSTOMER_SERVICE_TOP_SPACING = SETTINGS_PANEL_BOTTOM_PADDING;
+const CUSTOMER_SERVICE_CARD_HEIGHT = 220;
+// 面板高度由内容与上下留白共同决定，调整客服区间距不会挤占底边距。
+const SETTINGS_PANEL_HEIGHT = SETTINGS_VIBRATION_ROW_OFFSET + SETTINGS_ROW_HEIGHT / 2
+    + CUSTOMER_SERVICE_TOP_SPACING + CUSTOMER_SERVICE_CARD_HEIGHT + SETTINGS_PANEL_BOTTOM_PADDING;
 const SETTINGS_PANEL_CORNER_RADIUS = 34;
 const SETTINGS_CLOSE_SIZE = 64;
 const SETTINGS_CLOSE_MARGIN = 20;
@@ -81,7 +102,6 @@ export class LobbySettingsPanel {
     private root: Node | null = null;
     private panel: Node | null = null;
     private services?: LobbySettingsServices;
-    private errorLabel?: Label;
     private readonly rows = new Map<SettingKey, SettingRow>();
     private readonly ownedFrames: SpriteFrame[] = [];
     private loadToken = 0;
@@ -89,6 +109,10 @@ export class LobbySettingsPanel {
     private readonly overlay = { opacity: 0 };
     private panelScale = 1;
     private opened = false;
+
+    get isVisible(): boolean {
+        return !!this.root?.activeInHierarchy;
+    }
 
     /** entrySlot 是大厅顶部栏左列的槽位，入口按设计尺寸挂在槽位中心。 */
     mount(overlayParent: Node, entrySlot: Node, services: LobbySettingsServices): void {
@@ -126,7 +150,6 @@ export class LobbySettingsPanel {
         this.root = null;
         this.panel = null;
         this.services = undefined;
-        this.errorLabel = undefined;
         this.loadToken += 1;
         this.ownedFrames.forEach((frame) => frame.destroy());
         this.ownedFrames.length = 0;
@@ -193,29 +216,94 @@ export class LobbySettingsPanel {
         panelSprite.type = Sprite.Type.SLICED;
         this.loadSprite(UI_ASSET_PATHS.panel, panelSprite, 30, 30, 68, 68, () => panelGraphics.clear());
 
-        const title = this.createLabel(panel, 'SettingsTitle', '游戏设置', -175, 232, 350, 60, 49, COLOR.primary);
+        const top = SETTINGS_PANEL_HEIGHT / 2;
+        const title = this.createLabel(panel, 'SettingsTitle', '游戏设置', -175, top - 78, 350, 60, 49, COLOR.primary);
         title.horizontalAlign = HorizontalTextAlignment.CENTER;
         setLabelBold(title, true);
-        const subtitle = this.createLabel(panel, 'SettingsSubtitle', '✦  声音与触感  ✦', -175, 174, 350, 38, 25, COLOR.secondary);
+        const subtitle = this.createLabel(panel, 'SettingsSubtitle', '✦  声音与触感  ✦', -175, top - 136, 350, 38, 25, COLOR.secondary);
         subtitle.horizontalAlign = HorizontalTextAlignment.CENTER;
         this.createCloseButton(panel);
-        this.createSettingRow(panel, 'music', '背景音乐', 92);
-        this.createSettingRow(panel, 'sound', '游戏音效', -24);
-        this.createSettingRow(panel, 'vibration', '震动反馈', -140);
-        this.errorLabel = this.createLabel(
-            panel,
-            'SettingsError',
-            '',
-            -264,
-            -260,
-            528,
-            34,
-            22,
-            COLOR.error,
-        );
-        this.errorLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
+        this.createSettingRow(panel, 'music', '背景音乐', top - 218);
+        this.createSettingRow(panel, 'sound', '游戏音效', top - 334);
+        const vibrationRowY = top - SETTINGS_VIBRATION_ROW_OFFSET;
+        this.createSettingRow(panel, 'vibration', '震动反馈', vibrationRowY);
+        this.createCustomerServiceEntry(panel, vibrationRowY - SETTINGS_ROW_HEIGHT / 2);
         return root;
     }
+
+    private createCustomerServiceEntry(panel: Node, settingsBottom: number): void {
+        const card = new Node('CustomerServiceCard');
+        card.layer = panel.layer;
+        panel.addChild(card);
+        card.setPosition(0, settingsBottom - CUSTOMER_SERVICE_TOP_SPACING - CUSTOMER_SERVICE_CARD_HEIGHT / 2);
+        card.addComponent(UITransform).setContentSize(540, CUSTOMER_SERVICE_CARD_HEIGHT);
+        const background = card.addComponent(Graphics);
+        background.fillColor = COLOR.contact;
+        background.strokeColor = COLOR.divider;
+        background.lineWidth = 2;
+        background.roundRect(-270, -CUSTOMER_SERVICE_CARD_HEIGHT / 2, 540, CUSTOMER_SERVICE_CARD_HEIGHT, 24);
+        background.fill();
+        background.stroke();
+
+        const title = this.createLabel(card, 'CustomerServiceTitle', '有话想对我说？', -240, 66, 480, 40, 29, COLOR.primary);
+        title.horizontalAlign = HorizontalTextAlignment.CENTER;
+        setLabelBold(title, true);
+        const line1 = this.createLabel(card, 'CustomerServiceHint', '问题、建议、天马行空的小点子，', -240, 22, 480, 32, 23, COLOR.secondary);
+        const line2 = this.createLabel(card, 'CustomerServiceWelcome', '都可以告诉我，我认真听～', -240, -10, 480, 32, 23, COLOR.secondary);
+        line1.horizontalAlign = HorizontalTextAlignment.CENTER;
+        line2.horizontalAlign = HorizontalTextAlignment.CENTER;
+
+        const entry = new Node('CustomerServiceEntry');
+        entry.layer = card.layer;
+        card.addChild(entry);
+        entry.setPosition(0, -69);
+        entry.addComponent(UITransform).setContentSize(260, 58);
+        const skin = entry.addComponent(Graphics);
+        skin.fillColor = new Color(192, 79, 31, 255);
+        skin.roundRect(-130, -33, 260, 58, 29);
+        skin.fill();
+        skin.fillColor = COLOR.action;
+        skin.roundRect(-130, -29, 260, 58, 29);
+        skin.fill();
+
+        const icon = new Node('CustomerServiceBubble');
+        icon.layer = entry.layer;
+        entry.addChild(icon);
+        icon.setPosition(-76, 1);
+        const bubble = icon.addComponent(Graphics);
+        bubble.fillColor = COLOR.paper;
+        bubble.roundRect(-16, -9, 32, 24, 8);
+        bubble.fill();
+        bubble.moveTo(-10, -7);
+        bubble.lineTo(-10, -16);
+        bubble.lineTo(0, -7);
+        bubble.close();
+        bubble.fill();
+        bubble.fillColor = COLOR.action;
+        bubble.circle(-6, 3, 2);
+        bubble.circle(6, 3, 2);
+        bubble.fill();
+
+        const label = this.createLabel(entry, 'CustomerServiceAction', '联系客服', -43, 0, 140, 40, 27, COLOR.paper);
+        label.horizontalAlign = HorizontalTextAlignment.CENTER;
+        setLabelBold(label, true);
+        const button = entry.addComponent(Button);
+        button.transition = Button.Transition.SCALE;
+        button.zoomScale = 0.96;
+        button.duration = 0.09;
+        entry.on(Button.EventType.CLICK, this.contactCustomerService, this);
+    }
+
+    private readonly contactCustomerService = (): void => {
+        const services = this.services;
+        if (!this.opened || !services) return;
+        services.feedback.play('uiButton');
+        if (!services.platform.openCustomerServiceConversation) {
+            services.platform.showToast('来微信小游戏里找我聊聊吧～');
+            return;
+        }
+        services.platform.openCustomerServiceConversation('lobby_settings');
+    };
 
     private createCloseButton(panel: Node): void {
         const node = new Node('SettingsClose');
@@ -246,12 +334,12 @@ export class LobbySettingsPanel {
         row.layer = panel.layer;
         panel.addChild(row);
         row.setPosition(0, y);
-        row.addComponent(UITransform).setContentSize(540, 104);
+        row.addComponent(UITransform).setContentSize(540, SETTINGS_ROW_HEIGHT);
         const ticket = row.addComponent(Graphics);
         ticket.strokeColor = COLOR.divider;
         ticket.lineWidth = 2;
-        ticket.moveTo(-270, -52);
-        ticket.lineTo(270, -52);
+        ticket.moveTo(-270, -SETTINGS_ROW_HEIGHT / 2);
+        ticket.lineTo(270, -SETTINGS_ROW_HEIGHT / 2);
         ticket.stroke();
 
         const icon = new Node(`${key}Icon`);
@@ -263,8 +351,14 @@ export class LobbySettingsPanel {
         iconSprite.sizeMode = Sprite.SizeMode.CUSTOM;
         this.loadSprite(UI_ASSET_PATHS[key], iconSprite);
 
-        const rowTitle = this.createLabel(row, `${key}Label`, title, -180, 3, 240, 46, 31, COLOR.primary);
+        const hasVolume = key !== 'vibration';
+        const rowTitle = this.createLabel(row, `${key}Label`, title, -180, hasVolume ? 24 : 3, 300, 46, 31, COLOR.primary);
         setLabelBold(rowTitle, true);
+
+        if (hasVolume) {
+            this.rows.set(key, { key, volume: this.createVolumeControl(row, key) });
+            return;
+        }
 
         const switchNode = new Node(`${key}Switch`);
         switchNode.layer = row.layer;
@@ -282,28 +376,59 @@ export class LobbySettingsPanel {
         knobNode.addComponent(UITransform).setContentSize(52, 52);
         const knob = knobNode.addComponent(Graphics);
 
-        const valueLabel = this.createLabel(
-            switchNode,
-            `${key}Value`,
-            '',
-            -30,
-            0,
-            60,
-            34,
-            17,
-            Color.WHITE,
-        );
-        valueLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
+        this.rows.set(key, { key, toggle: { button, track, knob } });
+        switchNode.on(Button.EventType.CLICK, this.toggleVibration, this);
+    }
 
-        const settingRow: SettingRow = {
-            key,
-            button,
-            track,
-            knob,
-            valueLabel,
-        };
-        this.rows.set(key, settingRow);
-        switchNode.on(Button.EventType.CLICK, () => this.toggle(key));
+    private createVolumeControl(row: Node, key: VolumeSettingKey): SettingVolumeControl {
+        const node = new Node(`${key}VolumeSlider`);
+        node.layer = row.layer;
+        row.addChild(node);
+        node.setPosition(34, -24);
+        node.addComponent(UITransform).setContentSize(SETTINGS_VOLUME_SLIDER_WIDTH, 54);
+        const track = node.addComponent(Graphics);
+
+        const handleNode = new Node(`${key}VolumeHandle`);
+        handleNode.layer = row.layer;
+        node.addChild(handleNode);
+        handleNode.addComponent(UITransform).setContentSize(52, 52);
+        // Slider 使用 Sprite 节点接管拖动，滑块图形由独立子节点绘制。
+        const handle = handleNode.addComponent(Sprite);
+        handle.sizeMode = Sprite.SizeMode.CUSTOM;
+        const skin = new Node(`${key}VolumeHandleSkin`);
+        skin.layer = row.layer;
+        handleNode.addChild(skin);
+        const knob = skin.addComponent(Graphics);
+
+        const valueLabel = this.createLabel(row, `${key}VolumeValue`, '', 168, 24, 100, 34, 24, COLOR.primary);
+        valueLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
+        setLabelBold(valueLabel, true);
+        // 先绑定 handle 再启用，确保滑块自身和轨道都能接收触摸。
+        const slider = node.addComponent(Slider);
+        slider.enabled = false;
+        slider.handle = handle;
+        slider.direction = Slider.Direction.Horizontal;
+        slider.enabled = true;
+        const control = { slider, track, knob, valueLabel };
+        node.on('slide', () => this.adjustVolume(key, control));
+        return control;
+    }
+
+    private adjustVolume(key: VolumeSettingKey, control: SettingVolumeControl): void {
+        const services = this.services;
+        if (!this.opened || !services) return;
+        const level = Math.round(AUDIO_VOLUME_MIN_LEVEL
+            + control.slider.progress * (AUDIO_VOLUME_MAX_LEVEL - AUDIO_VOLUME_MIN_LEVEL));
+        const previous = key === 'music' ? services.audio.musicVolumeLevel : services.audio.soundVolumeLevel;
+        try {
+            if (key === 'music') services.audio.setMusicVolumeLevel(level);
+            else services.audio.setSoundVolumeLevel(level);
+        } catch (error) {
+            if (key === 'music') services.audio.setMusicVolumeLevel(previous, false);
+            else services.audio.setSoundVolumeLevel(previous, false);
+            services.platform.showToast('保存失败，请重试');
+        }
+        this.refresh();
     }
 
     private readonly open = (): void => {
@@ -390,38 +515,19 @@ export class LobbySettingsPanel {
         panel.setScale(this.panelScale, this.panelScale, 1);
     };
 
-    private toggle(key: SettingKey): void {
+    private toggleVibration(): void {
         const services = this.services;
-        if (!services || (key === 'vibration' && !services.platform.supportsVibration())) {
+        if (!this.opened || !services || !services.platform.supportsVibration()) {
             return;
         }
 
-        this.setError('');
         services.feedback.play('toggle');
         try {
-            if (key === 'music') {
-                const previous = services.audio.isMusicEnabled;
-                try {
-                    services.audio.setMusicEnabled(!previous);
-                } catch (error) {
-                    services.audio.setMusicEnabled(previous, false);
-                    throw error;
-                }
-            } else if (key === 'sound') {
-                const previous = services.audio.isSoundEnabled;
-                try {
-                    services.audio.setSoundEnabled(!previous);
-                } catch (error) {
-                    services.audio.setSoundEnabled(previous, false);
-                    throw error;
-                }
-            } else {
-                const enabled = services.storage.snapshot.settings.vibrationEnabled;
-                services.feedback.setVibrationEnabled(!enabled);
-            }
+            const enabled = services.storage.snapshot.settings.vibrationEnabled;
+            services.feedback.setVibrationEnabled(!enabled);
         } catch (error) {
             // TODO: console.error('[LobbySettingsPanel] Setting write failed.', error);
-            this.setError('保存失败，请重试');
+            services.platform.showToast('保存失败，请重试');
         }
         this.refresh();
     }
@@ -432,31 +538,23 @@ export class LobbySettingsPanel {
             return;
         }
         const vibrationSupported = services.platform.supportsVibration();
-        this.renderRow(this.rows.get('music'), services.audio.isMusicEnabled, true);
-        this.renderRow(this.rows.get('sound'), services.audio.isSoundEnabled, true);
-        this.renderRow(
-            this.rows.get('vibration'),
+        this.renderVolume(this.rows.get('music'), services.audio.musicVolumeLevel);
+        this.renderVolume(this.rows.get('sound'), services.audio.soundVolumeLevel);
+        this.renderVibration(
+            this.rows.get('vibration')?.toggle,
             services.storage.snapshot.settings.vibrationEnabled,
             vibrationSupported,
         );
     }
 
-    private renderRow(row: SettingRow | undefined, enabled: boolean, available: boolean): void {
+    private renderVibration(row: SettingToggleControl | undefined, enabled: boolean, available: boolean): void {
         if (!row) {
             return;
         }
         row.button.interactable = available;
         const active = enabled && available;
-        const activeColor = row.key === 'music'
-            ? new Color(246, 91, 60, 255)
-            : row.key === 'sound'
-                ? new Color(55, 171, 172, 255)
-                : new Color(161, 111, 68, 255);
-        const activeBorder = row.key === 'music'
-            ? new Color(196, 66, 43, 255)
-            : row.key === 'sound'
-                ? new Color(33, 132, 139, 255)
-                : new Color(116, 75, 45, 255);
+        const activeColor = new Color(161, 111, 68, 255);
+        const activeBorder = new Color(116, 75, 45, 255);
         row.track.clear();
         row.track.fillColor = new Color(87, 46, 31, 55);
         row.track.roundRect(-47, -29, 96, 50, 25);
@@ -491,15 +589,52 @@ export class LobbySettingsPanel {
         row.knob.fillColor = new Color(255, 255, 255, 150);
         row.knob.circle(-5, 6, 6);
         row.knob.fill();
-
-        row.valueLabel.string = '';
-        row.valueLabel.node.active = false;
     }
 
-    private setError(message: string): void {
-        if (this.errorLabel) {
-            this.errorLabel.string = message;
+    private renderVolume(row: SettingRow | undefined, level: number): void {
+        const control = row?.volume;
+        if (!control || !row) return;
+        const progress = (level - AUDIO_VOLUME_MIN_LEVEL) / (AUDIO_VOLUME_MAX_LEVEL - AUDIO_VOLUME_MIN_LEVEL);
+        control.slider.progress = progress;
+        const width = SETTINGS_VOLUME_SLIDER_WIDTH;
+        const left = -width / 2;
+        const activeColor = row.key === 'music' ? new Color(246, 91, 60, 255) : new Color(55, 171, 172, 255);
+        const borderColor = row.key === 'music' ? new Color(196, 66, 43, 255) : new Color(33, 132, 139, 255);
+        const track = control.track;
+        track.clear();
+        track.fillColor = new Color(87, 46, 31, 35);
+        track.roundRect(left, -9, width, 14, 7);
+        track.fill();
+        track.fillColor = new Color(242, 224, 194, 255);
+        track.roundRect(left, -7, width, 14, 7);
+        track.fill();
+        if (progress > 0) {
+            track.fillColor = activeColor;
+            track.roundRect(left, -7, width * progress, 14, 7);
+            track.fill();
         }
+        for (let step = AUDIO_VOLUME_MIN_LEVEL; step <= AUDIO_VOLUME_MAX_LEVEL; step++) {
+            track.fillColor = step <= level ? COLOR.paper : new Color(171, 130, 100, 130);
+            track.circle(left + width * (step - AUDIO_VOLUME_MIN_LEVEL)
+                / (AUDIO_VOLUME_MAX_LEVEL - AUDIO_VOLUME_MIN_LEVEL), 0, 2.5);
+            track.fill();
+        }
+
+        const knob = control.knob;
+        knob.clear();
+        knob.fillColor = new Color(102, 55, 37, 60);
+        knob.circle(1, -3, 22);
+        knob.fill();
+        knob.fillColor = COLOR.paper;
+        knob.strokeColor = borderColor;
+        knob.lineWidth = 2;
+        knob.circle(0, 0, 20.5);
+        knob.fill();
+        knob.stroke();
+        knob.fillColor = activeColor;
+        knob.circle(0, 0, 6);
+        knob.fill();
+        control.valueLabel.string = `${level}/10`;
     }
 
     private loadSprite(

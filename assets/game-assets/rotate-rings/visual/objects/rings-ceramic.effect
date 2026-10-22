@@ -1,0 +1,158 @@
+// 圆环网格：原路径 UV、法线切线、半 Lambert、Screen 光照、线性色彩输出；表面贴图与投影色按主题提供。
+// 在原光照上加暗部收紧、边缘遮蔽与釉面高光，让圆环和滑杆读出圆管体积。
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: ceramic-vs:vert
+      frag: ceramic-fs:frag
+      embeddedMacros: { RING_SHADOW_PASS: false }
+      depthStencilState: { depthTest: true, depthWrite: true, depthFunc: less_equal }
+      rasterizerState: { cullMode: none }
+      blendState: &blend
+        targets:
+        - { blend: true, blendSrc: src_alpha, blendDst: one_minus_src_alpha, blendDstAlpha: one_minus_src_alpha }
+      properties: &properties
+        mainRect: { value: [0, 0, 1, 1] }
+        normalRect: { value: [0, 0, 1, 1] }
+        sdfRect: { value: [0, 0, 1, 1] }
+        shadowOffset: { value: [0, -5, 0.26, -0.274] }
+        shadowColor: { value: [0.184314, 0.239216, 0.360784, 0.3], editor: { type: color } }
+  - passes:
+    - vert: ceramic-vs:vert
+      frag: ceramic-fs:frag
+      embeddedMacros: { RING_SHADOW_PASS: true }
+      depthStencilState: { depthTest: true, depthWrite: false, depthFunc: less_equal }
+      rasterizerState: { cullMode: none }
+      blendState: *blend
+      properties: *properties
+}%
+
+CCProgram ceramic-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  in vec4 a_tangent;
+  in vec2 a_texCoord1;
+  uniform RingAtlas {
+    vec4 mainRect;
+    vec4 normalRect;
+    vec4 sdfRect;
+    vec4 shadowOffset;
+    vec4 shadowColor;
+  };
+  out vec2 pathUV;
+  out vec2 pathInfo;
+  out vec4 tint;
+  out vec3 tangent;
+  vec4 vert () {
+    vec4 position = vec4(a_position, 1.0);
+    #if RING_SHADOW_PASS
+      position.xy += shadowOffset.xy;
+      // 原 ShadowZOffset=0.01，代理在主网格之后；Cocos UI 相机朝向与 Unity 相反。
+      position.z -= abs(shadowOffset.y) * 0.1;
+    #endif
+    pathUV = a_texCoord;
+    pathInfo = a_texCoord1;
+    tint = a_color;
+    tangent = vec3(a_tangent.xy, a_tangent.w);
+    return cc_matViewProj * position;
+  }
+}%
+
+CCProgram ceramic-fs %{
+  precision highp float;
+  #pragma extension([GL_OES_standard_derivatives, __VERSION__ < 110])
+  #include <builtin/internal/embedded-alpha>
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  uniform RingAtlas {
+    vec4 mainRect;
+    vec4 normalRect;
+    vec4 sdfRect;
+    vec4 shadowOffset;
+    vec4 shadowColor;
+  };
+  in vec2 pathUV;
+  in vec2 pathInfo;
+  in vec4 tint;
+  in vec3 tangent;
+
+  vec3 gammaToLinear (vec3 c) {
+    return c * (c * (c * 0.305306017 + 0.682171106) + 0.0125228781);
+  }
+  vec3 linearToGamma (vec3 c) {
+    c = max(c, vec3(0.0));
+    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
+  }
+  // 原 TailLength/HeadLength=1、BodyTileLength=2、AtlasPaddingPixels=1。
+  vec2 originalUV () {
+    float length = max(pathInfo.x, 0.0001);
+    vec2 padding = vec2(1.0 / 1024.0, 1.0 / 128.0);
+    if (pathInfo.y < 0.0) {
+      return vec2(0.5 + padding.x + clamp(pathUV.x / length, 0.0, 1.0) * (0.25 - 2.0 * padding.x),
+        padding.y + pathUV.y * (1.0 - 2.0 * padding.y));
+    }
+    float cap = min(1.0, length * 0.5);
+    float head = length - cap;
+    float distance = pathUV.x;
+    vec4 region;
+    float along;
+    float leftPadding = 0.0;
+    float rightPadding = 0.0;
+    if (distance <= cap) {
+      region = vec4(0.0, 0.0, 0.25, 1.0);
+      along = clamp(distance / max(cap, 0.0001), 0.0, 1.0);
+      leftPadding = padding.x;
+    } else if (distance >= head) {
+      region = vec4(0.75, 0.0, 0.25, 1.0);
+      along = clamp((distance - head) / max(cap, 0.0001), 0.0, 1.0);
+      rightPadding = padding.x;
+    } else {
+      region = vec4(0.25, 0.0, 0.5, 1.0);
+      along = 1.0 - fract((head - distance) * 0.5);
+    }
+    return vec2((region.x + leftPadding + along * (region.z - leftPadding - rightPadding)) * 0.5,
+      padding.y + pathUV.y * (1.0 - 2.0 * padding.y));
+  }
+  vec4 sampleRegion (vec4 rect, vec2 uv) {
+    return CCSampleWithAlphaSeparated(cc_spriteTexture, rect.xy + uv * rect.zw);
+  }
+  vec4 frag () {
+    vec2 uv = originalUV();
+    #if RING_SHADOW_PASS
+      float distance = sampleRegion(sdfRect, uv).a;
+      float edge = 0.5 - shadowOffset.w * 0.5;
+      float softness = max(fwidth(distance), shadowOffset.z * 0.5);
+      float alpha = smoothstep(edge - softness, edge + softness, distance) * shadowColor.a * tint.a;
+      return vec4(shadowColor.rgb, alpha);
+    #else
+      vec4 tex = sampleRegion(mainRect, uv);
+      float edgeWidth = max(fwidth(tex.a), 0.001);
+      float coverage = smoothstep(0.25 - edgeWidth * 0.5, 0.25 + edgeWidth * 0.5, tex.a);
+      if (coverage <= 0.0) discard;
+      // 原运行时重建网格使用白色顶点（Controller 构造函数），SetColor 仅设置 _Color。
+      // 烘焙网格的调色板在这里作为该颜色输入，不能再次相乘而造成颜色变暗。
+      vec3 albedo = mix(tex.rgb, vec3(1.0), 0.5) * gammaToLinear(tint.rgb);
+      vec3 mapNormal = sampleRegion(normalRect, uv).rgb * 2.0 - 1.0;
+      mapNormal.xy *= 1.5;
+      vec2 axis = normalize(tangent.xy);
+      vec2 across = vec2(-axis.y, axis.x) * tangent.z;
+      vec3 normal = normalize(vec3(axis * mapNormal.x + across * mapNormal.y, mapNormal.z));
+      vec3 direction = normalize(vec3(-0.3, 0.566666663, 0.767390966));
+      // 半 Lambert 再收一点暗部，让环带背光一侧真正转暗，读出圆管体积。
+      float light = pow(dot(normal, direction) * 0.5 + 0.5, 1.45);
+      vec3 lighting = gammaToLinear(vec3(0.95)) * light;
+      vec3 screenLight = vec3(1.0) - (vec3(1.0) - albedo) * (vec3(1.0) - lighting);
+      // 边缘遮蔽：法线越贴近水平越暗，压出管身两侧的厚度。
+      float rim = mix(0.72, 1.0, smoothstep(0.15, 0.85, normal.z));
+      vec3 rgb = albedo * screenLight * 1.42 * rim;
+      // 釉面高光：Blinn-Phong 窄高光 + 宽柔光，沿管身形成一条亮带。
+      vec3 halfway = normalize(direction + vec3(0.0, 0.0, 1.0));
+      float facing = max(dot(normal, halfway), 0.0);
+      rgb += vec3(1.0) * (pow(facing, 48.0) * 0.55 + pow(facing, 10.0) * 0.08);
+      return vec4(linearToGamma(rgb), tex.a * tint.a * coverage);
+    #endif
+  }
+}%

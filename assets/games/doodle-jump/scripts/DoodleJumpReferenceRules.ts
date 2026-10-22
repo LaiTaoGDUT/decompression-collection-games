@@ -3,7 +3,7 @@ export { DOODLE_JUMP_REFERENCE_PATTERNS, DOODLE_JUMP_EARLY_PATTERN_IDS, DOODLE_J
 
 /** Native normal-mode coordinates and timing; game coordinates scale by width / 320. */
 export const DOODLE_JUMP_REFERENCE_WIDTH = 320;
-export const DOODLE_JUMP_RULES_VERSION = 11;
+export const DOODLE_JUMP_RULES_VERSION = 13;
 export const DOODLE_JUMP_PATTERN_UNLOCK_HEIGHT = 3000; // DJBaseTheme::vf47
 export const DOODLE_JUMP_LATE_PATTERN_HEIGHT = 15000;
 export const REFERENCE_ENEMY_TYPES: readonly DoodleJumpEnemyType[] = ['small', 'hopper', 'hover', 'weaver', 'large', 'flyer'];
@@ -33,25 +33,17 @@ export function referenceEnemyVisualSize(type: DoodleJumpEnemyType): readonly [n
 }
 
 const REFERENCE_ITEM_VISUALS: Readonly<Record<DoodleJumpItemType, readonly [number, number, number, number]>> = {
-    spring: [18, 28, 0, 0], trampoline: [38, 20, 0, 0], jetpack: [26, 38, 0, 0],
+    spring: [18, 28, 0, 0], trampoline: [38, 20, 0, 0], jetpack: [26, 38, 0, 2],
     'propeller-hat': [32, 20, 0, 17], shield: [38, 38, 0, 17],
-    'spring-shoes': [30, 24, 0, 0], rocket: [72, 106, 3.5, 8.5],
+    'spring-shoes': [30, 24, 0, 0],
 };
 /** Native bonus frame bank at 0x7d2f10; offset from the collision-box center to the image anchor. */
 export function referenceItemVisual(type: DoodleJumpItemType): readonly [number, number, number, number] {
     return REFERENCE_ITEM_VISUALS[type];
 }
 export const REFERENCE_BONUS_TYPES: readonly (DoodleJumpItemType | undefined)[] = [
-    'spring', undefined, 'jetpack', 'propeller-hat', 'shield', 'trampoline', 'spring-shoes', 'rocket',
+    'spring', undefined, 'jetpack', 'propeller-hat', 'shield', 'trampoline', 'spring-shoes', undefined,
 ];
-
-/** FUN_003f5cb4. Paper mode uses native classic mode 0; themed gates stay explicit. */
-export function referenceJetpackBonus(mode: number, height: number, clearanceHeight: number,
-    jetpackRocketPickupCount: number, draw = 99): DoodleJumpItemType | undefined {
-    if (mode === 16) return draw > 40 ? 'rocket' : undefined;
-    return [2, 5, 8].indexOf(mode) >= 0 && height > clearanceHeight && jetpackRocketPickupCount !== 1
-        ? 'rocket' : 'jetpack';
-}
 
 export function referenceBearTrapChance(mode: number, height: number): number {
     return mode === 6 || mode === 9 ? 0.2 : mode === 14 ? (height <= 25000 ? 0.5 : 0.4) : 0;
@@ -61,13 +53,13 @@ export function referenceBearTrapChance(mode: number, height: number): number {
 export function referenceBonusOffset(type: DoodleJumpItemType, platformWidth: number, draw: number): readonly [number, number] {
     const sizes: Readonly<Record<DoodleJumpItemType, readonly [number, number]>> = {
         spring: [18, 10], trampoline: [28, 8], jetpack: [26, 17], 'propeller-hat': [30, -8],
-        shield: [36, 1], 'spring-shoes': [16, 10], rocket: [57, 41.5],
+        shield: [36, 1], 'spring-shoes': [16, 10],
     };
     const [imageWidth, centerY] = sizes[type];
     const freeWidth = platformWidth - imageWidth;
     const centerX = type === 'trampoline' ? 1 : type === 'spring-shoes' ? 5
         : Math.trunc(Math.floor(draw * Math.max(1, Math.trunc(freeWidth))) - freeWidth * 0.5);
-    return [centerX + (type === 'rocket' ? -3.5 : 0), centerY];
+    return [centerX, centerY];
 }
 
 /** FUN_003f7dd0: one low-pass sensor update per native physics frame. Input is physical tilt in g. */
@@ -83,25 +75,76 @@ export function stepDoodleJumpHorizontal(filteredTilt: number, requestedTilt: nu
 
 /** Native 28×35 body is centered at (-1,-9.5) relative to its image anchor. Platform hitbox is inset 3/2. */
 export function referenceFootOverlapsPlatform(playerX: number, collisionWidth: number,
-    platformX: number, platformWidth: number, scale: number, previousPlayerX = playerX, sweep = false): boolean {
+    platformX: number, platformWidth: number, scale: number): boolean {
     const left = platformX - platformWidth / 2 + 3 * scale;
     const right = platformX + platformWidth / 2 - 2 * scale;
-    const footLeft = (sweep ? Math.min(playerX, previousPlayerX) : playerX) - collisionWidth / 2;
-    const footRight = (sweep ? Math.max(playerX, previousPlayerX) : playerX) + collisionWidth / 2;
+    const footLeft = playerX - collisionWidth / 2;
+    const footRight = playerX + collisionWidth / 2;
     return footRight >= left && footLeft <= right;
+}
+
+/** FUN_003fe024 uses the post-step velocity and the horizontal fast-motion flag. */
+export function referenceFootNeedsSweep(horizontalDisplacement: number, velocityY: number,
+    seconds: number, scale: number): boolean {
+    return Math.abs(horizontalDisplacement) > 18 * scale
+        || Math.fround(Math.fround(velocityY / (60 * scale)) * Math.fround(seconds * 60)) < -9;
+}
+
+/** Unwrap the half-step at the crossed edge; never sweep through the screen's middle. */
+export function referenceFootMidpointX(previousX: number, playerX: number, scale: number): number {
+    const distance = playerX - previousX;
+    const wrapOffset = distance > 160 * scale ? -320 * scale
+        : distance < -160 * scale ? 320 * scale : 0;
+    return (previousX + playerX + wrapOffset) / 2;
+}
+
+/** 0 = miss, 1 = current foot, 2 = native half-step foot. No overlap-percentage gate. */
+export function referenceFootPlatformContact(previousX: number, playerX: number,
+    previousFootY: number, footY: number, collisionWidth: number,
+    platformX: number, platformY: number, platformWidth: number, scale: number, sweep: boolean): 0 | 1 | 2 {
+    // The swept rectangle is only a broad phase in the native code. A real
+    // half-step/current foot contact must still confirm it before bouncing.
+    if (sweep && footY < previousFootY) {
+        const midpointY = (previousFootY + footY) / 2;
+        if (midpointY <= platformY + 10 * scale && midpointY + 2 * scale >= platformY
+            && referenceFootOverlapsPlatform(referenceFootMidpointX(previousX, playerX, scale),
+                collisionWidth, platformX, platformWidth, scale)) return 2;
+    }
+    return footY <= platformY + 10 * scale && footY + 2 * scale >= platformY
+        && referenceFootOverlapsPlatform(playerX, collisionWidth, platformX, platformWidth, scale) ? 1 : 0;
 }
 
 /** Native foot is 2 high, platform collision band is the upper half of its 20-high image. */
 export function referenceFootTouchesPlatform(previousX: number, playerX: number,
     previousFootY: number, footY: number, collisionWidth: number,
     platformX: number, platformY: number, platformWidth: number, scale: number, sweep: boolean): boolean {
-    const minimumFootY = sweep ? Math.min(previousFootY, footY) : footY;
-    const maximumFootY = (sweep ? Math.max(previousFootY, footY) : footY) + 2 * scale;
-    if (minimumFootY > platformY + 10 * scale || maximumFootY < platformY) return false;
-    // A wrap must not become a screen-wide swept hitbox.
-    const horizontalSweep = sweep && Math.abs(playerX - previousX) <= 160 * scale;
-    return referenceFootOverlapsPlatform(playerX, collisionWidth, platformX, platformWidth,
-        scale, previousX, horizontalSweep);
+    return referenceFootPlatformContact(previousX, playerX, previousFootY, footY,
+        collisionWidth, platformX, platformY, platformWidth, scale, sweep) !== 0;
+}
+
+export interface DoodleJumpUfoMotionState {
+    x: number;
+    y: number;
+    phaseX: number;
+    phaseY: number;
+    oscillationX: number;
+    oscillationY: number;
+}
+
+/** UfoObject::vf1: float32 differential sinf motion, then advance/reset each native clock. */
+export function stepDoodleJumpUfoMotion(state: DoodleJumpUfoMotionState, frameDelta: number): void {
+    if (frameDelta <= 0) return;
+    const f = Math.fround;
+    const x = f(f(Math.sin(f(state.phaseX * f(0.02)))) * 20);
+    const y = f(f(Math.sin(f(state.phaseY * f(0.04)))) * 10);
+    state.x = f(state.x + f(x - state.oscillationX));
+    state.y = f(f(y - state.oscillationY) + state.y);
+    state.oscillationX = x;
+    state.oscillationY = y;
+    state.phaseX = f(state.phaseX + f(frameDelta));
+    state.phaseY = f(state.phaseY + f(frameDelta));
+    if (state.phaseX >= 315) state.phaseX = 0;
+    if (state.phaseY >= 158) state.phaseY = 0;
 }
 
 export interface DoodleJumpVerticalStep { readonly displacement: number; readonly velocity: number }
@@ -254,10 +297,9 @@ export function referencePlatformType(rawType: number): DoodleJumpPlatformType {
 }
 
 /** Bonus kind 2 -> PowerUp kind 0 (jetpack); bonus kind 3 -> kind 1 (hat). */
-export function referenceFlightAcceleration(type: 'jetpack' | 'propeller-hat' | 'rocket', frame: number): number {
+export function referenceFlightAcceleration(type: 'jetpack' | 'propeller-hat', frame: number): number {
     if (type === 'jetpack') return frame < 60 ? 0.17 : frame < 138 ? 0 : -0.14;
-    if (type === 'propeller-hat') return frame < 80 ? 0.11 : frame < 175 ? 0 : -0.14;
-    return frame < 20 ? 0.17 : frame < 95 ? 0.34 : frame < 184 ? 0 : -0.14;
+    return frame < 80 ? 0.11 : frame < 175 ? 0 : -0.14;
 }
 
 export type DoodleJumpSegmentContent = 'enemy' | 'hazard' | 'item';
@@ -305,12 +347,12 @@ export interface DoodleJumpGenerationState {
 }
 
 export interface DoodleJumpGenerationContext {
-    readonly flightPower?: 'jetpack' | 'propeller-hat' | 'rocket';
+    readonly flightPower?: 'jetpack' | 'propeller-hat';
     /** World-space landing surfaces that remain below the forecast apex and above its camera bottom. */
     readonly flightLandingWindow?: Readonly<{ minimumY: number; maximumY: number }>;
     readonly shieldActive?: boolean;
-    /** Native +0x7430 counts jetpacks and rockets; hat flights use +0x85d0. */
-    readonly jetpackRocketPickupCount?: number;
+    /** Native +0x7430 counts jetpack pickups; hat flights use +0x85d0. */
+    readonly jetpackPickupCount?: number;
     /** Native classic is 0. This hook preserves themed item gates without changing paper's default deck. */
     readonly nativeThemeMode?: number;
 }

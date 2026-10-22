@@ -1,0 +1,260 @@
+{
+  "subMetas": {
+    "fx-dust-0": {
+      "importer": "sprite-frame",
+      "name": "fx-dust-0",
+      "uuid": "09d83290-7735-5417-8206-ec6622c24d1e",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-dust-1": {
+      "importer": "sprite-frame",
+      "name": "fx-dust-1",
+      "uuid": "2f5ada7e-58ec-5590-b04d-3a1d31395092",
+      "userData": {
+        "trimX": 384,
+        "trimY": 0,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-dust-2": {
+      "importer": "sprite-frame",
+      "name": "fx-dust-2",
+      "uuid": "e9121958-5fb5-56ce-9d5f-a3e77bd9e374",
+      "userData": {
+        "trimX": 768,
+        "trimY": 0,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-dust-3": {
+      "importer": "sprite-frame",
+      "name": "fx-dust-3",
+      "uuid": "dd931e6f-3f22-5c77-91ca-a82187045fd7",
+      "userData": {
+        "trimX": 1152,
+        "trimY": 0,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-spark": {
+      "importer": "sprite-frame",
+      "name": "fx-spark",
+      "uuid": "b814a743-aa24-59af-898f-134f82e751c8",
+      "userData": {
+        "trimX": 0,
+        "trimY": 256,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-halo": {
+      "importer": "sprite-frame",
+      "name": "fx-halo",
+      "uuid": "aa53c19a-1252-5729-af9f-3bf0b7eaa66d",
+      "userData": {
+        "trimX": 384,
+        "trimY": 256,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-shard": {
+      "importer": "sprite-frame",
+      "name": "fx-shard",
+      "uuid": "9316390f-cca3-5cf8-afb0-db351a46d25b",
+      "userData": {
+        "trimX": 768,
+        "trimY": 256,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-bounce": {
+      "importer": "sprite-frame",
+      "name": "fx-bounce",
+      "uuid": "c5f8acda-ab2f-588d-bde6-a98df3ba9fe5",
+      "userData": {
+        "trimX": 1152,
+        "trimY": 256,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-wood-0": {
+      "importer": "sprite-frame",
+      "name": "fx-wood-0",
+      "uuid": "8a6b950f-7e67-54a6-9b4c-619081b57ef7",
+      "userData": {
+        "trimX": 0,
+        "trimY": 512,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-wood-1": {
+      "importer": "sprite-frame",
+      "name": "fx-wood-1",
+      "uuid": "773b5132-bebd-5d6b-88e3-67cf76b13496",
+      "userData": {
+        "trimX": 384,
+        "trimY": 512,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-wood-2": {
+      "importer": "sprite-frame",
+      "name": "fx-wood-2",
+      "uuid": "91735c60-34ab-51de-abad-2e446be8f102",
+      "userData": {
+        "trimX": 768,
+        "trimY": 512,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-flash": {
+      "importer": "sprite-frame",
+      "name": "fx-flash",
+      "uuid": "91d67123-4aae-5e1d-9d5c-75db6c6893de",
+      "userData": {
+        "trimX": 1152,
+        "trimY": 512,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-heart": {
+      "importer": "sprite-frame",
+      "name": "fx-heart",
+      "uuid": "156c5efb-94df-5e59-a653-91cefd1dad49",
+      "userData": {
+        "trimX": 0,
+        "trimY": 768,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-confetti-0": {
+      "importer": "sprite-frame",
+      "name": "fx-confetti-0",
+      "uuid": "d6250e44-791e-5329-89ff-ae1e9c933491",
+      "userData": {
+        "trimX": 384,
+        "trimY": 768,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-confetti-1": {
+      "importer": "sprite-frame",
+      "name": "fx-confetti-1",
+      "uuid": "2b9d3112-2813-5ddc-a391-ad783e882737",
+      "userData": {
+        "trimX": 768,
+        "trimY": 768,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "fx-arc": {
+      "importer": "sprite-frame",
+      "name": "fx-arc",
+      "uuid": "7597769c-99f3-53a7-9248-3dccc6ed45ac",
+      "userData": {
+        "trimX": 1152,
+        "trimY": 768,
+        "width": 384,
+        "height": 256,
+        "rawWidth": 384,
+        "rawHeight": 256,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>comic-0</key>
+		<dict>
+			<key>frame</key>
+			<string>{{0,0},{768,512}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceSize</key>
+			<string>{768,512}</string>
+		</dict>
+		<key>comic-1</key>
+		<dict>
+			<key>frame</key>
+			<string>{{768,0},{768,512}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceSize</key>
+			<string>{768,512}</string>
+		</dict>
+		<key>comic-2</key>
+		<dict>
+			<key>frame</key>
+			<string>{{0,512},{768,512}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceSize</key>
+			<string>{768,512}</string>
+		</dict>
+		<key>comic-3</key>
+		<dict>
+			<key>frame</key>
+			<string>{{768,512},{768,512}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceSize</key>
+			<string>{768,512}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>textureFileName</key>
+		<string>comic.png</string>
+	</dict>
+</dict>
+</plist>

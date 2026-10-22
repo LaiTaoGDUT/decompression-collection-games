@@ -1,0 +1,25 @@
+{
+  "runner-effects-v18": [
+    "visual/audio/jump-v18",
+    "visual/audio/double-v18",
+    "visual/audio/land-v18",
+    "visual/audio/slide-v18",
+    "visual/audio/coin-0-v18",
+    "visual/audio/coin-1-v18",
+    "visual/audio/coin-2-v18",
+    "visual/audio/coin-3-v18",
+    "visual/audio/bounce-v18",
+    "visual/audio/mount-v18",
+    "visual/audio/dismount-v18",
+    "visual/audio/break-v18",
+    "visual/audio/rescue-v18",
+    "visual/audio/hit-v18",
+    "visual/audio/fall-v18",
+    "visual/audio/tap-v18",
+    "visual/audio/combo-v18",
+    "visual/audio/start-v18",
+    "visual/audio/win-v18",
+    "visual/audio/lose-v18",
+    "visual/audio/spinner-warning-v21"
+  ]
+}

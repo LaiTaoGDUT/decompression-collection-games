@@ -1,0 +1,311 @@
+{
+  "userFeedback": "背景空、装饰未对齐、楼体缺少体积感、居民过大",
+  "reference": "../environment-reference.json",
+  "referenceSha256": "72e83c6e937fbc3637e757e8eeb250a4faef91c53ccaef850a6e77286d841657",
+  "matchedItems": 126,
+  "matchedFields": "all except color (id,name,frame,x,y,z,width,height,flipX,angle,loop,sortingLayer,sortingOrder)",
+  "residents": {
+    "red": {
+      "width": 0.30000001192092896,
+      "height": 0.6000000238418579,
+      "flipX": true,
+      "life": 3.0,
+      "frames": 10,
+      "frameCurve": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ]
+      ],
+      "frameScale": 0.9998999834060669
+    },
+    "blue": {
+      "width": 0.30000001192092896,
+      "height": 0.6000000238418579,
+      "flipX": false,
+      "life": 3.0,
+      "frames": 10,
+      "frameCurve": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ]
+      ],
+      "frameScale": 0.9998999834060669
+    }
+  },
+  "ambientIdentical": true,
+  "bandsGeometryIdentical": true,
+  "skyline": {
+    "id": 90,
+    "name": "bg_buldings2",
+    "frame": "skyline",
+    "x": 0.20675348490476608,
+    "y": 14.259999752044678,
+    "z": 1.9700000286102295,
+    "width": 10.0,
+    "height": 30.0,
+    "flipX": false,
+    "angle": -0.0,
+    "color": [
+      184,
+      207,
+      223,
+      240
+    ],
+    "loop": null,
+    "sortingLayer": 4,
+    "sortingOrder": 10
+  },
+  "originalSkylineCanvas": [
+    1183,
+    3549
+  ],
+  "alphaSource": "../legacy-runtime-before-sunlit/visual/background/native-skyline.png; source alpha restored after all tile and seam composition, before lossy Tinify compression",
+  "frameRegistration": {
+    "cloud-streaks": {
+      "pixels": [
+        1942,
+        195
+      ],
+      "nativeCanvas": [
+        320,
+        32
+      ],
+      "nativeBounds": [
+        69,
+        5,
+        240,
+        25
+      ],
+      "subjectPixels": [
+        1038,
+        115
+      ],
+      "subjectOffset": [
+        419,
+        34
+      ],
+      "scale": 0.6743055555555555
+    },
+    "cloud-bank": {
+      "pixels": [
+        409,
+        103
+      ],
+      "nativeCanvas": [
+        64,
+        16
+      ],
+      "nativeBounds": [
+        3,
+        2,
+        62,
+        14
+      ],
+      "subjectPixels": [
+        377,
+        75
+      ],
+      "subjectOffset": [
+        19,
+        14
+      ],
+      "scale": 0.18428488514174
+    },
+    "tree": {
+      "pixels": [
+        230,
+        230
+      ],
+      "nativeCanvas": [
+        64,
+        64
+      ],
+      "nativeBounds": [
+        6,
+        7,
+        57,
+        63
+      ],
+      "subjectPixels": [
+        177,
+        201
+      ],
+      "subjectOffset": [
+        25,
+        25
+      ],
+      "scale": 0.2213971397139714
+    },
+    "fence": {
+      "pixels": [
+        1039,
+        156
+      ],
+      "nativeCanvas": [
+        320,
+        48
+      ],
+      "nativeBounds": [
+        0,
+        14,
+        320,
+        48
+      ],
+      "subjectPixels": [
+        953,
+        110
+      ],
+      "subjectOffset": [
+        43,
+        46
+      ],
+      "scale": 0.44377510040160645
+    },
+    "resident-blue-0": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        3,
+        9,
+        22,
+        31
+      ],
+      "subjectPixels": [
+        28,
+        48
+      ],
+      "subjectOffset": [
+        9,
+        20
+      ],
+      "scale": 0.12726063829787232
+    },
+    "resident-red-0": {
+      "pixels": [
+        44,
+        87
+      ],
+      "nativeCanvas": [
+        24,
+        40
+      ],
+      "nativeBounds": [
+        2,
+        6,
+        21,
+        30
+      ],
+      "subjectPixels": [
+        33,
+        52
+      ],
+      "subjectOffset": [
+        5,
+        13
+      ],
+      "scale": 0.10807453416149067
+    },
+    "airplane": {
+      "pixels": [
+        616,
+        88
+      ],
+      "nativeCanvas": [
+        168,
+        24
+      ],
+      "nativeBounds": [
+        7,
+        9,
+        161,
+        19
+      ],
+      "subjectPixels": [
+        565,
+        29
+      ],
+      "subjectOffset": [
+        26,
+        37
+      ],
+      "scale": 0.2730496453900709
+    },
+    "flyman-0": {
+      "pixels": [
+        99,
+        99
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        8,
+        12,
+        25,
+        22
+      ],
+      "subjectPixels": [
+        52,
+        31
+      ],
+      "subjectOffset": [
+        25,
+        37
+      ],
+      "scale": 0.08206233421750662
+    },
+    "flyman-1": {
+      "pixels": [
+        99,
+        99
+      ],
+      "nativeCanvas": [
+        32,
+        32
+      ],
+      "nativeBounds": [
+        8,
+        11,
+        25,
+        21
+      ],
+      "subjectPixels": [
+        53,
+        30
+      ],
+      "subjectOffset": [
+        25,
+        34
+      ],
+      "scale": 0.07885119940029985
+    }
+  },
+  "largestSourceScale": 0.9433811802232854,
+  "faceLighting": "Only add material vertex colors from existing mesh-face normals. Positions/UV/triangles unchanged. No camera/physics edits.",
+  "gameplayBaseline": "../handfeel-preservation.json"
+}

@@ -5,6 +5,8 @@ import {
     normalizeAppConfig,
 } from '../../app/AppConfig';
 import type { GameManifest } from '../../runtime/GameManifest';
+import type { CloudSaveCatalog } from '../../core/types/CloudSave';
+import { validateCatalog } from '../cloud/CloudSaveProjection';
 import { type Announcement, parseAnnouncementConfig } from './Announcement';
 import {
     type ManifestValidationError,
@@ -71,6 +73,10 @@ export class ConfigService {
         }
 
         return result.manifests;
+    }
+
+    async loadCloudSaveCatalog(): Promise<CloudSaveCatalog> {
+        return validateCatalog((await this.loadJsonAsset('configs/cloud-save')).json);
     }
 
     private loadJsonAsset(path: string): Promise<JsonAsset> {

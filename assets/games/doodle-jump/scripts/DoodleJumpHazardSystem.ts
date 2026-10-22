@@ -3,6 +3,8 @@ import type {
     DoodleJumpHazardType,
 } from './DoodleJumpConfig';
 import type { DoodleJumpRandomStreams } from './DoodleJumpRandom';
+import { stepDoodleJumpUfoMotion } from './DoodleJumpReferenceRules';
+import type { DoodleJumpUfoMotionState } from './DoodleJumpReferenceRules';
 import type {
     DoodleJumpWorldIndex,
     DoodleJumpWorldOccupiedBody,
@@ -32,6 +34,7 @@ export interface DoodleJumpHazardSnapshot {
     readonly spawnedAt?: number;
     readonly captureStartX?: number;
     readonly captureStartY?: number;
+    readonly motionState?: Readonly<DoodleJumpUfoMotionState>;
 }
 
 export interface DoodleJumpHazardStats {
@@ -74,6 +77,7 @@ interface MutableUfo extends MutableHazardBase {
     readonly originX: number;
     readonly originY: number;
     readonly spawnedAt: number;
+    readonly motionState: DoodleJumpUfoMotionState;
     captureStartX: number;
     captureStartY: number;
     lockSeconds: number;
@@ -211,6 +215,11 @@ export class DoodleJumpHazardSystem {
                     type: 'ufo',
                     originX: snapshot.originX ?? snapshot.x, originY: snapshot.originY ?? snapshot.y,
                     spawnedAt: snapshot.spawnedAt ?? this.elapsedSeconds,
+                    motionState: snapshot.motionState ? { ...snapshot.motionState } : {
+                        x: Math.fround(snapshot.x * 320 / this.config.design.width),
+                        y: Math.fround(snapshot.y * 320 / this.config.design.width),
+                        phaseX: 0, phaseY: 0, oscillationX: 0, oscillationY: 0,
+                    },
                     captureStartX: snapshot.captureStartX ?? snapshot.x, captureStartY: snapshot.captureStartY ?? snapshot.y,
                     x: snapshot.x,
                     y: snapshot.y,
@@ -425,6 +434,7 @@ export class DoodleJumpHazardSystem {
                 phase: hazard.phase,
                 originX: ufo?.originX, originY: ufo?.originY, spawnedAt: ufo?.spawnedAt,
                 captureStartX: ufo?.captureStartX, captureStartY: ufo?.captureStartY,
+                motionState: ufo ? Object.freeze({ ...ufo.motionState }) : undefined,
             });
         }));
     }
@@ -566,13 +576,13 @@ export class DoodleJumpHazardSystem {
         this.events.push(Object.freeze({ type: 'ufo-interrupt', hazardId: ufo.id, x: ufo.x, y: ufo.y }));
     }
 
-    private updateUfos(_deltaSeconds: number, _playerX: number): void {
+    private updateUfos(deltaSeconds: number, _playerX: number): void {
         const scale = this.config.design.width / 320;
         for (const hazard of this.hazards) {
-            if (hazard.type !== 'ufo' || hazard.triggered || hazard.lockSeconds > 0) continue;
-            const frames = Math.max(0, this.elapsedSeconds - hazard.spawnedAt) * 60;
-            hazard.x = hazard.originX + Math.sin(frames * 0.02 + hazard.phase * Math.PI * 2) * 20 * scale;
-            hazard.y = hazard.originY + Math.sin(frames * 0.04 + hazard.phase * Math.PI * 2) * 10 * scale;
+            if (hazard.type !== 'ufo' || hazard.triggered) continue;
+            stepDoodleJumpUfoMotion(hazard.motionState, deltaSeconds * 60);
+            hazard.x = hazard.motionState.x * scale;
+            hazard.y = hazard.motionState.y * scale;
         }
     }
 
@@ -623,6 +633,9 @@ export class DoodleJumpHazardSystem {
             const settings = this.config.hazards.ufo;
             return { id: this.allocateId('U'), type, x: platform.x, y: platform.y,
                 originX: platform.x, originY: platform.y, spawnedAt: this.elapsedSeconds, captureStartX: 0, captureStartY: 0,
+                motionState: { x: Math.fround(platform.x / (this.config.design.width / 320)),
+                    y: Math.fround(platform.y / (this.config.design.width / 320)),
+                    phaseX: 0, phaseY: 0, oscillationX: 0, oscillationY: 0 },
                 width: settings.width, height: settings.height, phase, triggered: false,
                 lockSeconds: 0, abductionSeconds: 0, leaveSeconds: 0, pausedUntil: 0 };
         }

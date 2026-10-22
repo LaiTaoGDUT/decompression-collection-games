@@ -8,7 +8,7 @@ import type { AchievementAudioService } from '../../services/achievements/Achiev
 import type { AppStateMachine } from '../../core/state/AppStateMachine';
 import type { Platform } from '../../platform/Platform';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
-import { calculateVerticalSafeBounds } from '../ui/PlatformSafeLayout';
+import { calculateSafeContentBounds } from '../ui/PlatformSafeLayout';
 import { achievementButton, achievementChip, achievementLabel, achievementNode, achievementSerial, createAchievementImage,
     createAchievementTrophy, fillRoundRect, formatAchievementObtainedAt, hexColor, makeAchievementButton,
     strokeRoundRect } from './AchievementArtwork';
@@ -101,6 +101,11 @@ export class AchievementCelebration extends Component {
 
     get isReplay(): boolean {
         return this.mode === 'replay';
+    }
+
+    get isPendingOrVisible(): boolean {
+        const services = this.services;
+        return !!this.activeManifest || !!(services && services.achievements.pending(services.manifests()));
     }
 
     protected update(dt: number): void {
@@ -439,19 +444,18 @@ export class AchievementCelebration extends Component {
         graphics.rect(-width / 2, -height / 2, width, height); graphics.fill();
         const background = root.getChildByName('AwardBackground')?.getComponent(Sprite);
         if (background) this.services.art.fit(background, width, height, 'cover');
-        const safe = calculateVerticalSafeBounds(height, this.services.platform.getLayoutInfo(), 20);
-        const scale = Math.min(1, (width - 40) / CONTENT_WIDTH,
-            Math.max(1, safe.topY - safe.bottomY - 24) / CONTENT_HEIGHT);
-        const centerY = (safe.topY + safe.bottomY) / 2;
+        const safe = calculateSafeContentBounds(width, height, this.services.platform.getLayoutInfo(), 20);
+        const scale = Math.min(1, Math.max(1, safe.width - 40) / CONTENT_WIDTH,
+            Math.max(1, safe.height - 24) / CONTENT_HEIGHT);
         this.content?.setScale(scale, scale, 1);
-        this.content?.setPosition(0, centerY);
+        this.content?.setPosition(safe.centerX, safe.centerY);
         this.rays?.setScale(scale, scale, 1);
-        this.rays?.setPosition(0, centerY + STAGE_Y * scale);
+        this.rays?.setPosition(safe.centerX, safe.centerY + STAGE_Y * scale);
         const back = this.backButton;
         if (back?.isValid) {
-            const backScale = Math.min(1, width / 750);
+            const backScale = Math.min(1, safe.width / 750);
             back.setScale(backScale, backScale, 1);
-            back.setPosition(-width / 2 + 16 + 42 * backScale, safe.topY - 42 * backScale);
+            back.setPosition(safe.leftX + 16 + 42 * backScale, safe.topY - 42 * backScale);
         }
     };
 }

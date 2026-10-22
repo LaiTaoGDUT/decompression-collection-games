@@ -1,0 +1,450 @@
+{
+  "name": "晴空微缩都市",
+  "approvedConcept": "approved-concept.png",
+  "keywords": [
+    "精致建筑模型",
+    "象牙白",
+    "海蓝玻璃",
+    "珊瑚橙",
+    "晴空造城"
+  ],
+  "palette": {
+    "ivory": "#FFF8E9",
+    "sky": "#C7EAF4",
+    "glass": "#57B8D5",
+    "coral": "#F08064",
+    "ink": "#234755",
+    "sage": "#9FBEA8",
+    "brass": "#E7B558"
+  },
+  "typography": {
+    "title": 42,
+    "number": 46,
+    "label": 23,
+    "body": 24,
+    "chinese": "公共中文字体，通过 FontBinding 绑定；标题 42、说明 23–24、主操作 31",
+    "numeric": "本游戏 Bundle 内 LilitaOne-Regular，普通计数 46、成绩数字 44",
+    "contrast": "顶部标题和入住奖励按当前投影天空亮度选择深蓝或象牙白，以两种主题文字中较高的对比度显示"
+  },
+  "composition": "竖屏750×1334，原47°视野与完整安全区玩法投影；UI覆盖在原视野之上，不额外扣除玩法高度。镜头直接使用原模型cameraY，包含完整开场下降、跟随及震动；世界坐标不做横纵缩放。",
+  "controls": "象牙白圆角卡片、圆形暂停、珊瑚橙主按钮、深蓝文字。",
+  "motion": "原60Hz物理、摆动/落层/倒塌曲线、相机、楼体几何和UV保持不变；新图适配原几何。雨天算法与原数据不变。",
+  "sound": "沿用本游戏现有音乐及公共音量、暂停恢复逻辑。",
+  "generation": "built-in image_gen",
+  "files": [
+    {
+      "name": "city-plate",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-a8a91409-4422-425a-9855-623942beb927.png",
+      "workspaceSource": "city-plate-source.png",
+      "sha256": "84da6c09f181f23198b8edf9ec11b4b853dad2c5bf95cd9527d1b9e00bd1c2dd",
+      "status": "未进入当前运行时：短整屏城市已被原1183×3549画布替代"
+    },
+    {
+      "name": "modules",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-e49becb1-43fc-4a26-a9a8-3d80660dfeb1.png",
+      "workspaceSource": "modules-source.png",
+      "sha256": "881d9189da487b061a722e70d64238168c383c7ca81ec4cbb017b09f97987571",
+      "status": "未进入当前运行时：首版平面楼体已撤回，仅保留草图来源"
+    },
+    {
+      "name": "equipment",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-817b95f7-b1f1-40ea-9607-2cf79006e89e.png",
+      "workspaceSource": "equipment-source.png",
+      "sha256": "15e728c5dfa7e5d1699e559a7fa37b799afbf6e59fed345d02b98bff66d95b88"
+    },
+    {
+      "name": "icons",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-fe31123a-6b91-4ce9-abc9-72875005da6c.png",
+      "workspaceSource": "icons-source.png",
+      "sha256": "95ec9fee77f274d1ae2bec22214d84cc3edf2727f68c25d31aec9f72b26bce12"
+    },
+    {
+      "name": "residents-blue",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-83b42c75-1dec-494d-b062-a55351c2134d.png",
+      "workspaceSource": "residents-blue-source.png",
+      "sha256": "c86e923eabda186aea66477db292a9a85fc9e5ab0b68d452cabcf73eddbc5dc9"
+    },
+    {
+      "name": "residents-coral",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-5e850429-096f-453c-abf4-6a4aea4449ac.png",
+      "workspaceSource": "residents-coral-source.png",
+      "sha256": "4b6cda2ac37a74a4226564fbfa457831a28929f31fad162a5f5f86b60dad7a96"
+    },
+    {
+      "name": "plaza-clouds",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-689a5260-5a57-43a4-888a-7ea7393f5fda.png",
+      "workspaceSource": "plaza-clouds-source.png",
+      "sha256": "c2e50b5b48e3bf6958f7f8f6d15b0f38345bbb05b6291911239abf40bedc149e",
+      "status": "历史概念素材，当前树木、围挡与云均改用continuity-v3的新图"
+    },
+    {
+      "name": "planets",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-096637bf-f1a2-48a0-bc64-6453a4af80c9.png",
+      "workspaceSource": "planets-source.png",
+      "sha256": "2d3db4f8d89fc145c27eddab4d7e98f436f6de3742201ff542bc1503d8256ed4"
+    },
+    {
+      "name": "sky-travel",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-202aefc1-ab48-4ba5-beba-f34334111257.png",
+      "workspaceSource": "sky-travel-source.png",
+      "sha256": "009e0bd936f28581b4f51c3a40242eceee5ca959d6f99582ba2ac8862987b043",
+      "status": "当前仅使用气球、飞艇、UFO、空间站与飞鲸；飞机和滑翔工人改用continuity-v3新图"
+    },
+    {
+      "name": "cover",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-4d5072f3-7207-475d-b434-093942bb4a78.png",
+      "workspaceSource": "cover-source.png",
+      "sha256": "c627a9688c3fcad219adbda939c042f54a1a2540bc46f500b0f3dec8f853ae9f"
+    },
+    {
+      "name": "uv-coral-story",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-70b2e900-343c-4673-baa9-4dcd28153efd.png",
+      "workspaceSource": "uv-coral-story-source.png",
+      "sha256": "4e6ade4c27cc5dbfc5595089fdfd756aa115f123fd91fd90569355d621d1d8a5"
+    },
+    {
+      "name": "uv-coral-lobby",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-1b618f34-4c1a-44f6-8cf2-436059323705.png",
+      "workspaceSource": "uv-coral-lobby-source.png",
+      "sha256": "a7d69efcf96fe1b83499c2d11b61d53a99896117b4c04b291cb175890d7bbe5d"
+    },
+    {
+      "name": "uv-blue-house",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-749ccd67-7047-4570-a7e4-0f3f62565711.png",
+      "workspaceSource": "uv-blue-house-source.png",
+      "sha256": "444c3f2ff3013a27f3e62deeb270946f39e31e6a4d09358cf6f5fcf996c17506"
+    },
+    {
+      "name": "uv-ground",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-65f495bd-9ed5-41b4-8e61-2c9fcd0b7749.png",
+      "workspaceSource": "uv-ground-source.png",
+      "sha256": "39376a60f11fcc29dda1e3ac22275ac80b808c35964264ec8b9bbeac1c1dea90"
+    },
+    {
+      "name": "city-aligned-tile-0",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-675d5eb9-5b81-41be-a56a-d68bf57f8ebc.png",
+      "workspaceSource": "alignment-v2/city-tile-0-source.png",
+      "sha256": "13846931bf999a8fa9784c523ae6409925773ebae5726389f892dd174ce89fb3",
+      "pixels": [
+        1254,
+        1254
+      ],
+      "status": "历史方案，未进入当前运行时：独立分段及旧轮廓蒙版已被连续建筑母版替代"
+    },
+    {
+      "name": "city-aligned-tile-1",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-d96911bb-9fa1-4b24-bad9-65828c086678.png",
+      "workspaceSource": "alignment-v2/city-tile-1-source.png",
+      "sha256": "14bf6cbc50b036cbd93a997260d9568e52c94607a4e13ef072dbf30ad089fdb4",
+      "pixels": [
+        1254,
+        1254
+      ],
+      "status": "历史方案，未进入当前运行时：独立分段及旧轮廓蒙版已被连续建筑母版替代"
+    },
+    {
+      "name": "city-aligned-tile-2",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-e60702cf-ae91-41e3-9498-935e8539311d.png",
+      "workspaceSource": "alignment-v2/city-tile-2-source.png",
+      "sha256": "d6f6cb8aa55b6943167781795de069ccd4b1aae5a629b56e058bce4a004b2d63",
+      "pixels": [
+        1254,
+        1254
+      ],
+      "status": "历史方案，未进入当前运行时：独立分段及旧轮廓蒙版已被连续建筑母版替代"
+    },
+    {
+      "name": "city-seam-0",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-3d48515f-9a44-4567-b42a-a66416d838ba.png",
+      "workspaceSource": "alignment-v2/city-seam-0-source.png",
+      "sha256": "88f9fcf44e7625f3d9c2b304fc62ecbce84af78852b558386de86224723f430d",
+      "pixels": [
+        2156,
+        729
+      ],
+      "status": "历史方案，未进入当前运行时：独立分段及旧轮廓蒙版已被连续建筑母版替代"
+    },
+    {
+      "name": "city-seam-1",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-2910ef9f-68d5-453a-bba0-528c71055fc1.png",
+      "workspaceSource": "alignment-v2/city-seam-1-source.png",
+      "sha256": "8fef17ad04c78075f1fe552a95319e016815462d8057ad1e7fa4a87549c3f520",
+      "pixels": [
+        2156,
+        729
+      ],
+      "status": "历史方案，未进入当前运行时：独立分段及旧轮廓蒙版已被连续建筑母版替代"
+    },
+    {
+      "name": "continuity-v3/city-master",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-24219357-b54d-4546-a710-b121c6514db7.png",
+      "workspaceSource": "continuity-v3/city-master-source.png",
+      "sha256": "b9ed02a35b875017402a069001167d3bdbbe20031eb1fedb8d0e927ff3724877",
+      "pixels": [
+        724,
+        2172
+      ],
+      "role": "完整建筑设计及透明轮廓登记；彩色高清细节由4张原生密度图提供"
+    },
+    {
+      "name": "continuity-v3/tree",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-227cefdb-acc4-46af-b4d0-d4d4cf00b235.png",
+      "workspaceSource": "continuity-v3/tree-source.png",
+      "sha256": "17722a3dd76641ce0480b0c7fc2585cee3f9464b446bf74c99e9fd43cec162b0",
+      "pixels": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "continuity-v3/fence",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-f2e63ea8-c79c-4633-8a15-30aec70e8016.png",
+      "workspaceSource": "continuity-v3/fence-source.png",
+      "sha256": "07d6f8f80aec703554c8f74c1455c4dabad0f8fa04ded5d9d8e8165dfa58fbbe",
+      "pixels": [
+        2172,
+        724
+      ]
+    },
+    {
+      "name": "continuity-v3/clouds-plane",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-c665e0c4-3f93-438e-aec2-99a7ecf977cd.png",
+      "workspaceSource": "continuity-v3/clouds-plane-source.png",
+      "sha256": "6ec53b5a5f472355e152af326345036853b2034febf56d718f43cc6becf80cde",
+      "pixels": [
+        1536,
+        1024
+      ],
+      "status": "中间稿，当前使用clouds-plane-clean"
+    },
+    {
+      "name": "continuity-v3/flymen",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-38257506-cda4-48bf-a4cb-01654cfe8c8d.png",
+      "workspaceSource": "continuity-v3/flymen-source.png",
+      "sha256": "5e69529cb5d2f2ec42f7ef4043ebdee8c6e237f6d0417803fc9f51770c4eed72",
+      "pixels": [
+        1774,
+        887
+      ]
+    },
+    {
+      "name": "continuity-v3/city-detail-0",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-a78b1524-5836-4d29-954c-cae48a0df576.png",
+      "workspaceSource": "continuity-v3/city-detail-0-source.png",
+      "sha256": "4ae4667b56f02b2d6fb4f20d6494c8f7921099705949cf7db33f89453e81f355",
+      "pixels": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "continuity-v3/city-detail-1",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-488bd3a8-c122-4ea2-85cf-98db965a5da7.png",
+      "workspaceSource": "continuity-v3/city-detail-1-source.png",
+      "sha256": "705bdb947c3fd7245c9bffe7e24017e4e56849201d73351171d0ad5cf9f9df04",
+      "pixels": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "continuity-v3/city-detail-2",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-f724f866-1915-4fc0-9147-39e19372d5a8.png",
+      "workspaceSource": "continuity-v3/city-detail-2-source.png",
+      "sha256": "6921c1a3970cbf60ebddb842404b43c1f10be65fa612fef27e3910245f29bbaf",
+      "pixels": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "continuity-v3/city-detail-3",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-8e98899c-1a74-45e5-af62-9af98747d9f4.png",
+      "workspaceSource": "continuity-v3/city-detail-3-source.png",
+      "sha256": "ad4cc4835e50dcf5fb8cdcb1bfa86314ab4d1378a0a84188447e42743196e59f",
+      "pixels": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "continuity-v3/clouds-plane-clean",
+      "path": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-223764aa-525a-4de0-ac58-3545e0ac5b3a.png",
+      "workspaceSource": "continuity-v3/clouds-plane-clean-source.png",
+      "sha256": "c000fb7930e4855eca2b4f1adb8d8dbcc771be2d0fc6caf15276dbe2e558dada",
+      "pixels": [
+        1536,
+        1024
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "name": "city-plate",
+      "prompt": "Use case: compositing\nAsset type: independently moving background SCENERY PLATE for a 750x1334 portrait mobile stacking game.\nInput image: exact approved art/style/composition reference.\nPrimary request: Recreate ONLY the city environment from the reference, with the entire CENTRAL playable tower, its foundation pedestal, hanging floor, crane, hook, cable, both flying residents, sparkles and ALL UI/text/hearts/buttons/counters completely REMOVED. The central corridor must be empty open transparent sky all the way down to an empty paved plaza at bottom. Preserve the beautiful ivory/blue-glass towers flanking left and right, distant hazy buildings, terrace/bridge, trees, lamps, coral railings and sunlit paved plaza.\nCRITICAL TRANSPARENCY: remove the BLUE SKY too: sky and sky gaps above/between buildings are genuine alpha transparency, not black or a solid background. A few soft white clouds may remain as transparent-edged objects. Buildings, trees, pavement at the bottom remain opaque. Central plaza is flat and EMPTY, no tower pedestal or foundation. Architecture strongest toward side edges, quieter in middle. Full-bleed portrait 9:16 composition, bottom pavement reaches lower edge, no empty border at bottom. Art direction: EXACTLY match the approved reference image's sunlit miniature metropolis: warm ivory ceramic/stone, sea-blue glass, coral-orange accents, soft sage greenery, tiny brass details, soft dimensional 3D model rendering, warm upper-left sunshine, clean broad readable shapes. This is production game art for an existing portrait stacking game. No pixel art, no black outlines, no dirty/gritty textures, no words, no logo, no watermark."
+    },
+    {
+      "name": "modules",
+      "prompt": "Use case: stylized-concept\nAsset type: THREE standalone apartment building modules on one transparent sprite sheet, uniform ONE ROW / THREE COLUMNS, equally sized cells.\nInput image: approved STYLE and architectural-detail reference.\nPrimary request: Create 3 separate stackable modules that can repeat vertically in game. LEFT: the ivory/blue-glass apartment floor from the reference, coral-orange right side structural strip, brass balcony railing, warm tiny pendant light and small plant inside, large continuous glass panes. MIDDLE: same EXACT architecture, size and shape, but sage/sea-blue right accent instead of coral, tiny interior arrangement variation. RIGHT: matching single-story ground-floor entrance lobby, ivory facade, warmly lit glass double door, brass details, coral right strip.\nAll three are ONE story only, same width/height and camera. Each module is isolated in its cell with alpha transparency. Camera is nearly front elevation with a small right side face (about 15% width), orthographic, vertical walls absolutely straight and parallel. The TOP and BOTTOM horizontal cornices are parallel; DO NOT show the roof or underside, do not taper. Modules must stack edge-to-edge with no gaps. Soft rounded cornice corners and subtle built-in shadows; modern collectible architectural model.\nEach visible module width:height approximately 1.31:1, moderately wide, not tall/narrow. No roof, no ground base, no shadows on a floor, no cable or hook, no people, no tower, no other objects. A very small transparent margin between subjects. Art direction: EXACTLY match the approved reference image's sunlit miniature metropolis: warm ivory ceramic/stone, sea-blue glass, coral-orange accents, soft sage greenery, tiny brass details, soft dimensional 3D model rendering, warm upper-left sunshine, clean broad readable shapes. This is production game art for an existing portrait stacking game. No pixel art, no black outlines, no dirty/gritty textures, no words, no logo, no watermark."
+    },
+    {
+      "name": "equipment",
+      "prompt": "Use case: stylized-concept\nAsset type: transparent construction-equipment sprite sheet; a single wide CRANE BOOM in the upper 60% of canvas, two small separate HOOK/SLING objects in lower 40%, separated with generous transparent space.\nInput image: exact approved STYLE reference.\nPrimary request: TOP: the CORAL-ORANGE crane boom from the reference, long diagonal truss running from LOWER LEFT to UPPER RIGHT, a rounded dark graphite and coral circular pulley at its rightmost tip, visible cross braces, champagne steel cables along its upper edge, warm model-like highlights and bevels. Entire boom isolated, include a small articulated base at left but no tower mast, no extra vertical cable hanging down. Tip pulley center at far upper-right of the boom; the boom silhouette must be visible and unclipped.\nBOTTOM LEFT: separate small rounded dark graphite steel J hook with a coral housing and tiny gold accent, front view, no hanging cable.\nBOTTOM RIGHT: a separate thin steel triangular sling assembly, small coral ring at its top apex, two very thin cables split from top apex to left/right bottom points, width:height about 1.5:1. No building inside the sling, no lower crossbar.\nOnly these 3 isolated objects, no words or labels, genuine transparent background. Art direction: EXACTLY match the approved reference image's sunlit miniature metropolis: warm ivory ceramic/stone, sea-blue glass, coral-orange accents, soft sage greenery, tiny brass details, soft dimensional 3D model rendering, warm upper-left sunshine, clean broad readable shapes. This is production game art for an existing portrait stacking game. No pixel art, no black outlines, no dirty/gritty textures, no words, no logo, no watermark."
+    },
+    {
+      "name": "icons",
+      "prompt": "Use case: stylized-concept\nAsset type: a cohesive set of EIGHT small mobile game UI icons on a single transparent sheet. EXACT grid 4 columns by 2 rows, evenly spaced equal cells.\nInput image: exact STYLE reference for the coral icons and hearts.\nTop row left to right: (1) coral-orange simple city skyline emblem with three rounded modern towers, (2) coral-orange pair of rounded friendly human silhouettes, (3) glossy coral-orange heart life icon, (4) small warm golden four-point sparkle.\nBottom row left to right: (5) dark ink-blue rounded house home icon with ivory window, (6) dark ink-blue circular restart arrow, (7) dark ink-blue rounded video/play badge with white play triangle, (8) two simple dark ink-blue vertical pause bars.\nNo text, no letters or numbers, no AD caption. Each icon is isolated and centered inside its cell, no button backplates and no frames. Broad readable forms that remain clear at 32–60 display pixels. Match the reference's sunlit miniature metropolis: warm ivory, sea blue, coral orange, tiny brass details, soft collectible 3D model materials, warm upper-left sunshine, clean rounded readable shapes. Genuine alpha transparent background and transparent gaps; NO opaque backdrop, NO haze or glow surrounding the objects. No pixel art, no thick black outlines, no watermark."
+    },
+    {
+      "name": "residents-blue",
+      "prompt": "Use case: stylized-concept\nAsset type: ten-frame character sprite animation sheet, EXACTLY FIVE columns by TWO rows, uniform equal cells with margins.\nInput image: STYLE reference for the tiny umbrella residents.\nPrimary request: a small friendly ADULT male resident in sea-blue jacket, ivory shirt, navy trousers and brown shoes, dangling with ONE hand from a rounded BLUE umbrella. Soft 3D collectible toy figure style, normal adult proportions simplified gracefully, no oversized baby head. No hardhat. Same exact model, clothing, umbrella, size and camera across all ten frames. A gentle turn-and-sway loop: top row front-left at various arm/leg sway poses gradually turning to back-left, bottom row back-left through side back to front-left. Entire umbrella, stem, raised hand and body visible in every frame; matching umbrella height and body scale; only slight leg and body rotations. No ground or cast shadow, no additional props or characters. Match the reference's sunlit miniature metropolis: warm ivory, sea blue, coral orange, tiny brass details, soft collectible 3D model materials, warm upper-left sunshine, clean rounded readable shapes. Genuine alpha transparent background and transparent gaps; NO opaque backdrop, NO haze or glow surrounding the objects. No pixel art, no thick black outlines, no watermark."
+    },
+    {
+      "name": "residents-coral",
+      "prompt": "Use case: stylized-concept\nAsset type: ten-frame character sprite animation sheet, EXACTLY FIVE columns by TWO rows, uniform equal cells with margins.\nInput image: STYLE reference for the tiny umbrella residents.\nPrimary request: a small friendly ADULT female resident in an elegant simple coral-orange dress, ivory short cardigan, warm brown shoulder-length hair and brown shoes, dangling with ONE hand from a rounded CORAL-ORANGE umbrella. Soft 3D collectible toy figure style, normal adult proportions simplified gracefully, no oversized baby head. Same exact model, clothing, umbrella, size and camera across all ten frames. A gentle turn-and-sway loop: top row front-right at various arm/leg sway poses gradually turning to back-right, bottom row back-right through side back to front-right. Entire umbrella, stem, raised hand and body visible in every frame; matching umbrella height and body scale; only slight leg and body rotations. No ground or cast shadow, no additional props or characters. Match the reference's sunlit miniature metropolis: warm ivory, sea blue, coral orange, tiny brass details, soft collectible 3D model materials, warm upper-left sunshine, clean rounded readable shapes. Genuine alpha transparent background and transparent gaps; NO opaque backdrop, NO haze or glow surrounding the objects. No pixel art, no thick black outlines, no watermark."
+    },
+    {
+      "name": "plaza-clouds",
+      "prompt": "Use case: stylized-concept\nAsset type: production scenery sheet, THREE isolated assets on transparent canvas.\nInput image: approved STYLE reference.\nTOP HALF full width: a single WIDE LOW ivory construction foundation pedestal, like the base under the central tower in the reference, seen nearly front-on with narrow right face. Three shallow cream steps at front, smooth ivory stone base and tiny brass corner details, gentle beveled corners. Flat EMPTY top ready for the separate tower. No building, door, tree, people, fence, sky or shadows on the background. Pedestal visible width:height about 3.6:1.\nBOTTOM LEFT: a broad rounded soft white cloud bank with gentle peach/blue shadows, width:height about 4:1, isolated with translucent feathered edges.\nBOTTOM RIGHT: a thin airy white cloud wisp, width:height about 5:1, isolated with translucent feathered edges.\nKeep generous transparent gaps between all three objects. Cohesive sunlit miniature-city art direction from the reference: soft collectible 3D model rendering, subtly rounded bevels, warm ivory, pastel sea blue, coral orange, pale sage and small brass accents. Gentle upper-left sunshine, smooth ceramic/resin surfaces, clear readable silhouettes, genuine transparent background, no text, no labels, no grid lines, no watermark, no opaque backdrop or glow haze."
+    },
+    {
+      "name": "planets",
+      "prompt": "Use case: stylized-concept\nAsset type: high-altitude game scenery sprite sheet, EXACTLY SIX isolated planets in a uniform 3 columns x 2 rows grid, equal cells with margins.\nPrimary request: miniature toy solar system in the same soft 3D materials and cheerful palette as the city.\nTOP row left to right: (1) pale blue ivory cratered moon, (2) warm coral orange Mars sphere with a few broad surface patches, (3) pastel honey/ivory striped Jupiter sphere.\nBOTTOM row left to right: (4) pale cream Saturn with a broad diagonal champagne/sage ring, full ring visible, (5) sea-blue Uranus with a near-vertical thin ivory ring, full ring visible, (6) small dusty lilac and ivory Pluto sphere.\nAll planet silhouettes round and smooth, no photo-real grain, no dark hard outlines, no stars or extra objects. Each complete planet and its rings fit fully in its own cell, no overlaps. Cohesive sunlit miniature-city art direction from the reference: soft collectible 3D model rendering, subtly rounded bevels, warm ivory, pastel sea blue, coral orange, pale sage and small brass accents. Gentle upper-left sunshine, smooth ceramic/resin surfaces, clear readable silhouettes, genuine transparent background, no text, no labels, no grid lines, no watermark, no opaque backdrop or glow haze."
+    },
+    {
+      "name": "sky-travel",
+      "prompt": "Use case: stylized-concept\nAsset type: EIGHT isolated moving scenery sprites on a transparent sheet, uniform EXACTLY TWO columns by FOUR rows.\nInput image: approved STYLE reference.\nROW 1: LEFT streamlined ivory passenger airplane with coral accents facing RIGHT, soft rounded wings and a short wispy white contrail; RIGHT rounded hot air balloon with sea-blue/coral/ivory vertical panels, small wicker basket.\nROW 2: LEFT ivory and sea-blue toy blimp facing RIGHT, short gondola and fins; RIGHT playful ivory/teal round UFO with sea-blue glass dome, small brass rim.\nROW 3: LEFT miniature ivory/gold/sea-blue space station with two small gold solar wings; RIGHT a long smooth blue-gray sky whale / dolphin facing LEFT, pale silver belly, small flippers, tail curved slightly up, tiny bubbles behind.\nROW 4: LEFT exactly the SAME whale/dolphin as row3 right, same size and position but flipper/tail gently curved down for second animation frame; RIGHT a tiny friendly ADULT blue-jacket figure gliding horizontally with a small ivory/coral wing pack, facing RIGHT.\nSoft charming architectural-model / toy style; broad forms, complete and centered per cell; no ground. Cohesive sunlit miniature-city art direction from the reference: soft collectible 3D model rendering, subtly rounded bevels, warm ivory, pastel sea blue, coral orange, pale sage and small brass accents. Gentle upper-left sunshine, smooth ceramic/resin surfaces, clear readable silhouettes, genuine transparent background, no text, no labels, no grid lines, no watermark, no opaque backdrop or glow haze."
+    },
+    {
+      "name": "cover",
+      "prompt": "Use case: stylized-concept\nAsset type: 4:3 landscape game-selection cover thumbnail for the sunlit miniature-city tower-stacking game.\nInput image: exact approved STYLE reference.\nPrimary request: A beautiful close composition of the ivory and sea-blue apartment tower: four perfectly aligned modular apartment stories with warm pendant lights, plants and tiny brass balcony railings, coral-orange right-side structural strips. One matching full apartment story hangs slightly offset to the right above the stack on two thin steel slings. A coral-orange miniature construction crane boom enters from the UPPER LEFT and supports it. Soft bright cyan sky, a couple of airy white clouds, elegant ivory / blue glass city silhouettes softly blurred in the background at both sides. Warm soft upper-left sunshine, collectible 3D architectural model look, subtly rounded bevels, clean graceful materials, pleasant cream/coral/sea-blue palette. The playable building is the clear hero, large and readable at a 308x231 display size. Match the approved render, not the original yellow pixel-art game.\nComposition: one coherent horizontal 4:3 image, no UI, no counters, no hearts, no text, no lettering, no logos, no watermark, no frame, no phone. No cropped suspended module or hook. Full-bleed scene."
+    },
+    {
+      "name": "uv-coral-story",
+      "prompt": "Use case: style-transfer\nAsset type: opaque square UV texture for an EXISTING 3D mobile-game building mesh. Image 1 is the EXACT texture-layout edit target; Image 2 is STYLE ONLY.\nPrimary request: apply the approved sunlit miniature-city materials and palette to Image 1 while preserving every UV island, boundary, window/door position, rectangular region and small detail's coordinates. This must map to the original mesh without any geometry or UV changes. Replace yellow wall panels with warm ivory ceramic/stone; recolor the narrow structural vertical strips coral-orange, keep pale gray surrounding wall blocks softly ivory. Repaint BOTH matching upper window panels with sea-blue reflective glass, warm tiny pendant lamp and a small indoor plant, thin brass balcony railing following the existing black railing positions. Bottom-left large yellow UV island becomes warm ivory, its two small brown squares stay precisely positioned but become muted brass. Lower-right purple filler and circle remain precisely located; mute to pale warm gray/cream.\nCRITICAL: output ONLY the entire flat square UV texture image, same composition, edge-to-edge; no model render, perspective, exploded view, borders, labels or text. Do not rearrange, crop, merge or delete any UV region. Keep architectural lines perpendicular and existing shape geometry unchanged. Soft dimensional detail and broad readable surfaces matching the sunlit reference, no pixel blocks, no gritty weathering. Target output 1024x1024 or larger square; it will be uniformly downsampled to the original 384x384. Background is OPAQUE everywhere; no transparency."
+    },
+    {
+      "name": "uv-coral-lobby",
+      "prompt": "Use case: style-transfer\nAsset type: opaque square UV texture for an EXISTING 3D mobile-game building mesh. Image 1 is the EXACT texture-layout edit target; Image 2 is STYLE ONLY.\nPrimary request: apply the approved sunlit miniature-city materials and palette to Image 1 while preserving every UV island, boundary, window/door position, rectangular region and small detail's coordinates. This must map to the original mesh without any geometry or UV changes. Replace yellow panels with warm ivory ceramic/stone and narrow coral-orange structural trim. Repaint BOTH matching upper entrance-door panels as blue-glass doors in thin brass frames, warm light and a small indoor plant visible through the glass. Keep door, lintel, staircase diagonal and every gray block exactly in place. Bottom-left large yellow UV island becomes warm ivory, the two brown squares stay precisely located but become brass. Lower-right purple filler/circle retain exact positions and become muted warm gray/cream.\nCRITICAL: output ONLY the entire flat square UV texture image, same composition, edge-to-edge; no model render, perspective, exploded view, borders, labels or text. Do not rearrange, crop, merge or delete any UV region. Keep architectural lines perpendicular and existing shape geometry unchanged. Soft dimensional detail and broad readable surfaces matching the sunlit reference, no pixel blocks, no gritty weathering. Target output 1024x1024 or larger square; it will be uniformly downsampled to the original 384x384. Background is OPAQUE everywhere; no transparency."
+    },
+    {
+      "name": "uv-blue-house",
+      "prompt": "Use case: style-transfer\nAsset type: opaque square UV texture for an EXISTING 3D mobile-game building mesh. Image 1 is the EXACT texture-layout edit target; Image 2 is STYLE ONLY.\nPrimary request: apply the approved sunlit miniature-city materials and palette to Image 1 while preserving every UV island, boundary, window/door position, rectangular region and small detail's coordinates. This must map to the original mesh without any geometry or UV changes. Replace cyan wall panels with warm ivory ceramic/stone and slim sea-blue/sage accents, cream frames and brass trim. ALL door/window apertures and UV-island shapes must stay at their exact input locations: the two narrow doorway panels at upper-left and upper-middle, tall blue-glass window upper-right, wide blue-glass window lower-left, the tan rectangular patch and small dark slot lower-right, every tiny gray strip. Sea-blue glass may show softly warm interiors with tiny plants/lamp; keep whole doors/windows aligned to their original outlines. Keep filler backgrounds flat warm gray.\nCRITICAL: output ONLY the entire flat square UV texture image, same composition, edge-to-edge; no model render, perspective, exploded view, borders, labels or text. Do not rearrange, crop, merge or delete any UV region. Keep architectural lines perpendicular and existing shape geometry unchanged. Soft dimensional detail and broad readable surfaces matching the sunlit reference, no pixel blocks, no gritty weathering. Target output 1024x1024 or larger square; it will be uniformly downsampled to the original 384x384. Background is OPAQUE everywhere; no transparency."
+    },
+    {
+      "name": "uv-ground",
+      "prompt": "Use case: style-transfer\nAsset type: flat opaque square ground UV material texture for an existing 3D mobile game mesh. Image 1 is the EXACT UV texture edit target, Image 2 is STYLE ONLY.\nPrimary request: Repaint ONLY the ground-material colors to match the approved sunlit ivory/coral miniature city. Preserve every existing UV-region boundary, rectangle, stripe, gradient direction and small patch at its exact coordinates. The top roughly 36% grayscale blocks become warm ivory/cream ceramic and pale neutral stone, keeping their gentle value gradients and bevels. The large lower ochre-brown field becomes light sunlit sandstone/pavement (#F4E7D0), with a very subtle warm shade at its top. Every near-black patch becomes a muted warm taupe shadow (#CBBFA8), never black. Right-side brown swatches become ivory/taupe stone with the same region shapes. Use restrained smooth material shading, no new objects, windows, trees, perspective, dirt, gravel or markings. This is a UV palette, not a scene. Full square edge-to-edge exact layout, opaque pixels everywhere, no frame/text/logo/watermark. Do not move, resize, crop or merge regions. Output square at least1024x1024; it will be uniformly downsampled to the original128x128."
+    },
+    {
+      "name": "city-aligned-tile-0",
+      "prompt": "Use case: style-transfer\nAsset type: a registered texture tile for a long 1183x3549 transparent city background in a mobile game. Image 1 is the EXACT edit-target layout tile; Image 2 is STYLE ONLY, not a layout guide.\nPrimary request: Repaint Image 1 in the approved miniature architecture style while retaining every existing building region, vertical boundary, width, stepped silhouette, transparent gap, occlusion and original wide horizontal ledge at EXACTLY the input coordinates. UPPER THIRD: preserve every skyline silhouette, antenna and stepped rooftop exactly; the visible buildings must continue down through the bottom edge.\nVisual direction: this is DISTANT BACKGROUND, deliberately quieter than the playable ivory/coral tower. Muted cool blue-gray glass, warm-gray stone, pale ivory trims, soft sage-gray accents, airy atmospheric haze, low-to-medium contrast and low saturation, soft volumetric side shading. Add fine, orderly facade window grids and restrained ceramic ledge detail inside the EXISTING colored regions. Keep original building outlines and inter-building alignment exactly; buildings remain simple straight continuous towers. Blue input regions remain distinguishable as subdued cool blue-gray glass; gray regions become pale warm-gray/ivory stone. Do NOT add any new building, foreground tower, balcony module, lamp, plant, tree, fence, cloud, residents, crane or UI. No bright coral/orange accents in this background; reserve them for the playable foreground.\nCRITICAL LAYOUT: This is one seamlessly registered tile, not a newly composed city scene. Top and bottom cut edges stay straight and match the input continuation; no vignette or borders. Preserve transparent holes and the building shapes. The input's broad value changes and ledge locations stay readable but subtle. Opaque building surfaces; genuine alpha in original gaps. Output square at least 1280x1280, preferably2048x2048, with the exact input composition. No text, logos or watermark."
+    },
+    {
+      "name": "city-aligned-tile-1",
+      "prompt": "Use case: style-transfer\nAsset type: a registered texture tile for a long 1183x3549 transparent city background in a mobile game. Image 1 is the EXACT edit-target layout tile; Image 2 is STYLE ONLY, not a layout guide.\nPrimary request: Repaint Image 1 in the approved miniature architecture style while retaining every existing building region, vertical boundary, width, stepped silhouette, transparent gap, occlusion and original wide horizontal ledge at EXACTLY the input coordinates. MIDDLE THIRD: a crop through the middle of very tall buildings; every vertical facade continues through BOTH top and bottom edges. Do not invent rooftops, plazas or a horizon.\nVisual direction: this is DISTANT BACKGROUND, deliberately quieter than the playable ivory/coral tower. Muted cool blue-gray glass, warm-gray stone, pale ivory trims, soft sage-gray accents, airy atmospheric haze, low-to-medium contrast and low saturation, soft volumetric side shading. Add fine, orderly facade window grids and restrained ceramic ledge detail inside the EXISTING colored regions. Keep original building outlines and inter-building alignment exactly; buildings remain simple straight continuous towers. Blue input regions remain distinguishable as subdued cool blue-gray glass; gray regions become pale warm-gray/ivory stone. Do NOT add any new building, foreground tower, balcony module, lamp, plant, tree, fence, cloud, residents, crane or UI. No bright coral/orange accents in this background; reserve them for the playable foreground.\nCRITICAL LAYOUT: This is one seamlessly registered tile, not a newly composed city scene. Top and bottom cut edges stay straight and match the input continuation; no vignette or borders. Preserve transparent holes and the building shapes. The input's broad value changes and ledge locations stay readable but subtle. Opaque building surfaces; genuine alpha in original gaps. Output square at least 1280x1280, preferably2048x2048, with the exact input composition. No text, logos or watermark."
+    },
+    {
+      "name": "city-aligned-tile-2",
+      "prompt": "Use case: style-transfer\nAsset type: a registered texture tile for a long 1183x3549 transparent city background in a mobile game. Image 1 is the EXACT edit-target layout tile; Image 2 is STYLE ONLY, not a layout guide.\nPrimary request: Repaint Image 1 in the approved miniature architecture style while retaining every existing building region, vertical boundary, width, stepped silhouette, transparent gap, occlusion and original wide horizontal ledge at EXACTLY the input coordinates. LOWER THIRD: the low facade portions of the same tall buildings; vertical building edges and the broad original horizontal bands remain in the exact same locations; no new ground, sky horizon or plaza.\nVisual direction: this is DISTANT BACKGROUND, deliberately quieter than the playable ivory/coral tower. Muted cool blue-gray glass, warm-gray stone, pale ivory trims, soft sage-gray accents, airy atmospheric haze, low-to-medium contrast and low saturation, soft volumetric side shading. Add fine, orderly facade window grids and restrained ceramic ledge detail inside the EXISTING colored regions. Keep original building outlines and inter-building alignment exactly; buildings remain simple straight continuous towers. Blue input regions remain distinguishable as subdued cool blue-gray glass; gray regions become pale warm-gray/ivory stone. Do NOT add any new building, foreground tower, balcony module, lamp, plant, tree, fence, cloud, residents, crane or UI. No bright coral/orange accents in this background; reserve them for the playable foreground.\nCRITICAL LAYOUT: This is one seamlessly registered tile, not a newly composed city scene. Top and bottom cut edges stay straight and match the input continuation; no vignette or borders. Preserve transparent holes and the building shapes. The input's broad value changes and ledge locations stay readable but subtle. Opaque building surfaces; genuine alpha in original gaps. Output square at least 1280x1280, preferably2048x2048, with the exact input composition. No text, logos or watermark."
+    },
+    {
+      "name": "city-seam-0",
+      "prompt": "Use case: precise-object-edit\nAsset type: a wide horizontal continuity-repair texture patch for an existing tall city background. The input is the exact edit target, a 1183x400 crop of the background.\nPrimary request: Remove ONLY the obvious horizontal join running across the middle of the input. Repair the architecture so each individual building facade, glass panel grid, stone pier, color, lighting and texture continues naturally from the upper half into the lower half. Keep every building at its exact same horizontal location and width; retain all vertical silhouette edges, original transparent gaps and overlapping building layers. Smooth away changes of window scale/color at the center; connect upper and lower wall grids and all thin vertical trims cleanly. Existing horizontal ledges may remain where they belong to individual buildings, but there must be no single cross-image horizontal cut or straight join line. Do NOT add or remove a building, rooftop, horizon, floor, cloud, foreground object or decoration.\nPreserve the uppermost and lowermost 40px and left/right borders to match this exact input seamlessly. Same subdued ivory stone, blue-gray glass, miniature architectural style, soft distant shading, no extra saturation or contrast. Genuine alpha transparency remains in existing gaps; building pixels stay opaque. Entire patch is one wide image in the same roughly3:1 aspect, at least1536px wide so it can be downsampled to1183x400. No framing, text, logo or watermark."
+    },
+    {
+      "name": "city-seam-1",
+      "prompt": "Use case: precise-object-edit\nAsset type: a wide horizontal continuity-repair texture patch for an existing tall city background. The input is the exact edit target, a 1183x400 crop of the background.\nPrimary request: Remove ONLY the obvious horizontal join running across the middle of the input. Repair the architecture so each individual building facade, glass panel grid, stone pier, color, lighting and texture continues naturally from the upper half into the lower half. Keep every building at its exact same horizontal location and width; retain all vertical silhouette edges, original transparent gaps and overlapping building layers. Smooth away changes of window scale/color at the center; connect upper and lower wall grids and all thin vertical trims cleanly. Existing horizontal ledges may remain where they belong to individual buildings, but there must be no single cross-image horizontal cut or straight join line. Do NOT add or remove a building, rooftop, horizon, floor, cloud, foreground object or decoration.\nPreserve the uppermost and lowermost 40px and left/right borders to match this exact input seamlessly. Same subdued ivory stone, blue-gray glass, miniature architectural style, soft distant shading, no extra saturation or contrast. Genuine alpha transparency remains in existing gaps; building pixels stay opaque. Entire patch is one wide image in the same roughly3:1 aspect, at least1536px wide so it can be downsampled to1183x400. No framing, text, logo or watermark."
+    },
+    {
+      "name": "continuity-v3/city-master",
+      "prompt": "Use case: precise-object-edit\nAsset type: ONE continuous very tall transparent mobile-game city background texture, requested 1200x3600 pixels, 1:3 aspect. Image1 is the EXACT layout edit target. Image2 supplies only miniature materials/style, never its camera/layout/UI.\nRepaint the COMPLETE height of Image1 as a single coherent architectural painting. Repair all disconnected upper/lower facade joins: every existing individual building must be ONE uninterrupted building from its own rooftop down to the bottom edge, with consistent width, vertical piers, window column positions, glass color and floor spacing over its entire height. Eliminate cross-image horizontal seams, abrupt window-grid scale changes, doubled roof caps in mid-wall and sudden wall-color changes. Keep every building's existing x position, width, silhouette, stepped rooftop and transparent gap exactly fixed. Preserve the major existing individual ledges and building overlaps; do not add buildings, sky, ground, trees or street decorations. The tall narrow buildings also continue naturally all the way down, never becoming plain untextured strips.\nStyle: quiet distant architectural miniature, pale ivory/warm gray ceramic stone, muted cool blue-gray glass, finely ordered windows, restrained brass detail, soft atmospheric dimensional shading, deliberately subdued compared with the bright playable tower. All building surfaces stay opaque and all original transparent gaps stay genuine alpha. Output ONE full-height image at 1200x3600 or higher within 1:3; no collage, panels, horizontal sections, borders, text or watermark."
+    },
+    {
+      "name": "continuity-v3/tree",
+      "prompt": "Use case: style-transfer\nAsset type: one isolated transparent tree sprite for the approved sunlit miniature-city game. Image1 is STYLE ONLY; Image2 provides only the original rounded tree silhouette and trunk proportions.\nCompletely redesign this tree into the soft architectural-model style of Image1: compact rounded sculpted clusters of sage, pale olive and warm fresh green foliage, softly beveled resin/ceramic miniature surfaces with gentle upper-left highlights, a readable warm taupe branching trunk. Keep the same broad round crown, central visible trunk and total width:height roughly .9:1. It should look like a premium miniature landscaping model, clearly different from the old dense pointed leaf illustration. No individual spiky leaves, saturated dark emerald foliage or pixel-art outlines. Full tree including bottom of trunk fits inside the canvas with generous true transparent margins. No pot, ground patch, drop shadow on an invisible floor, fence, person, sky, text or watermark. Output a large square source, subject at least600px tall; will be uniformly reduced and registered to original game footprint."
+    },
+    {
+      "name": "continuity-v3/fence",
+      "prompt": "Use case: style-transfer\nAsset type: ONE very wide isolated construction fence/hoarding sprite, about 9:1 visible subject aspect, placed across the middle of a wide transparent image. Image1 is STYLE ONLY. Image2 gives the exact left-to-right arrangement and relative proportions, not colors or rendering style.\nFully redraw the entire fence in the approved sunlit architectural miniature style: left half is delicate champagne-brass mesh in rounded warm-ivory posts, a tiny pale sage utility booth behind its far-left section; right half is CORAL-ORANGE ceramic/model construction hoarding with ivory rim/posts and small brass panel seams. Keep the two little traffic cones in their existing positions; redesign them in soft coral and ivory. Keep the same long low silhouette, straight bottom baseline, left transparent mesh/right opaque panel division, and overall object proportions. Soft dimensional model-like bevels and clear tiny cast shading inside the object, no gritty real wire, saturated engineering yellow, stickers, hazard signs or black outlines. Object must be complete from left end to right end, no cropped posts. Subject spans at least1400px in width. Genuine alpha in all gaps and around the entire sprite. No sky, ground, floor shadow, extra trees, characters, labels, text or watermark. Wide landscape canvas, all objects belong to one coherent fence."
+    },
+    {
+      "name": "continuity-v3/clouds-plane",
+      "prompt": "Use case: style-transfer\nAsset type: transparent scenery source sheet, landscape1536x1024, EXACTLY three separate broad horizontal rows with generous empty alpha space. Image1 is STYLE ONLY. Image2 gives the long wispy-cloud shape, Image3 the low cloud-bank shape, Image4 the tiny airplane plus its long contrail proportions.\nCompletely redraw these three sprites to match the approved soft sunlit miniature style, no old 2D/cel look. TOP THIRD: one group of elongated ivory cloud wisps, subtle soft sculpted/cotton forms, faint pale-blue undersides, approximately9:1 visible width:height, subject at least1200px wide. MIDDLE THIRD: one separate low long rounded ivory cloud bank, pale blue-gray shaded underside, about5:1 visible aspect. BOTTOM THIRD: one very small ivory/sea-blue/coral model passenger airplane facing RIGHT at the right end of a very long thin softly fading ivory contrail extending left; the whole plane-and-trail sprite about18:1 aspect, not an enlarged airplane, width at least900px. Every sprite is complete and centered in its own one-third row. Only one sprite/group per row, no duplicates and no overlap between rows. Genuine transparent background including all space between cloud forms; no sky rectangle or opaque glow. No text, grid, borders, labels, logo or watermark."
+    },
+    {
+      "name": "continuity-v3/flymen",
+      "prompt": "Use case: style-transfer\nAsset type: a two-frame transparent sprite strip for one tiny flying construction worker, two equal square cells side by side. Image1 is STYLE ONLY. Images2/3 show the old animation poses, silhouette and facing direction; replace their entire old pixel illustration.\nDraw the SAME friendly tiny adult worker flying horizontally facing RIGHT in BOTH frames, soft miniature/toy 3D style matching Image1: ivory/coral hard hat, sea-blue jacket, warm ivory trousers, tiny brass wing pack, light skin, clean rounded readable forms. Body stays horizontally stretched about1.7:1 including the wing pack; no giant head or child proportions. Two distinct wing/arm/leg positions create the two animation poses, but exactly matching character scale, center and forward-facing orientation. Each complete character centered within its own cell, no trail, umbrella, balloon or helicopter. Genuine alpha all around and between frames. No pixel-art edge, black outline, background, floor shadow, words, label, grid or watermark."
+    },
+    {
+      "name": "continuity-v3/city-detail-0",
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border."
+    },
+    {
+      "name": "continuity-v3/city-detail-1",
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border."
+    },
+    {
+      "name": "continuity-v3/city-detail-2",
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border."
+    },
+    {
+      "name": "continuity-v3/city-detail-3",
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border."
+    },
+    {
+      "name": "continuity-v3/clouds-plane-clean",
+      "prompt": "Use case: background-extraction\nAsset type: clean transparent mobile-game scenery sheet, retain exact1536x1024 three-row composition.\nImage1 is the precise edit target. Keep the actual upper thin cloud shapes, middle cloud bank, bottom little airplane with long contrail exactly in place, same colors/size/design. REMOVE all the surrounding broad luminous fog, atmospheric halo, shaded glow and any RGB matte around the objects. Only the actual sculpted cloud material and actual aircraft/contrail pixels remain visible. Absolutely no emissive bloom or illumination floating behind/above/below a cloud. The objects are softly lit miniature objects, not light sources. Empty space between all three rows and all around each individual cloud must be truly alpha0, including at the image edges. Keep delicate antialiased feathered cloud edges within a few pixels, but no wide haze. No new object, text, border or background color. Preserve exact object layout and clear generous transparent gutters so each row can be cropped cleanly as its own sprite."
+    }
+  ],
+  "promptSet": "generation-prompts.json",
+  "implementation": {
+    "renderer": "原3D楼体和地面网格、UV、深度测试、背面剔除、透视相机与原物理；新UV材质与按原面方向烘焙的顶点颜色",
+    "storyCanvas": [
+      384,
+      384
+    ],
+    "cityPlate": [
+      1183,
+      3549
+    ],
+    "atlas": "visual/sunlit/city-sunlit",
+    "atlasFrames": 57,
+    "lobbyCover": [
+      308,
+      231
+    ],
+    "residents": "红蓝各10帧；原.3×.6世界尺寸、24×40逻辑画布与逐帧alpha边界登记；运行时完整画布44×87",
+    "playfield": "原完整安全区投影；Fit Width及原8.5世界单位的矮屏缩放基线。UI不得额外缩小玩法视野。",
+    "legacyArchive": "../legacy-runtime-before-sunlit/inventory.json",
+    "preparation": "tools/city-bloxx/prepare-sunlit.py",
+    "atlasBuilder": "sprite-atlas-sources/build.py",
+    "sizes": "display-sizes.json",
+    "groundTexture": [
+      128,
+      128
+    ],
+    "handfeelBaseline": "handfeel-preservation.json",
+    "sceneryRegistration": "perfect-v5/material-registration.json",
+    "cityPromptSet": "whole-buildings-v4/generation-prompts.json",
+    "flyman": "同风格新建模双帧；原动画速度、朝向和99×99逻辑画布登记不变",
+    "registeredExistingSources": [],
+    "skylineAlpha": "generated building alpha only; no global silhouette replacement",
+    "skylineAssembly": "25 original-order placements from 10 newly generated whole-building sheets. Each building retains its own continuous columns and side faces; occluded body continuation uses only its own wall motif. No independent horizontal facade joins, global alpha forcing, or neighbor RGB fills.",
+    "replacedLegacyDecorations": [
+      "tree",
+      "fence",
+      "cloud-streaks",
+      "cloud-bank",
+      "airplane",
+      "flyman-0",
+      "flyman-1"
+    ],
+    "decorationSourceRegistration": "continuity-v3/material-registration.json",
+    "perfectEffectsRegistration": "perfect-v5/registration.json",
+    "perfectEffectsPromptSet": "perfect-v5/generation-prompts.json",
+    "perfectEffects": "Dedicated five-point yellow/orange burst, original padded 45px canvas; original 6/6/2/0 floor glints registered on 148px canvas; all timing, transforms and complete effects configuration identical to original."
+  },
+  "handfeelPromptSet": "handfeel-uv-prompts.json",
+  "cityRevision": "whole-buildings-v4",
+  "effectsRevision": "perfect-v5"
+}

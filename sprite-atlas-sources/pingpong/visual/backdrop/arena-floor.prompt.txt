@@ -1,0 +1,4 @@
+Game background art for a mobile table tennis game, portrait 9:16 (approx 1024x1820), strictly top-down orthographic view looking straight down at the floor of an indoor tournament arena at night.
+Content: a seamless deep claret / burgundy sports vinyl floor (base color around #5A1F2B) with a very subtle fine grain texture. A soft circular spotlight pool brightens the center of the image (warmer, slightly lighter claret), fading into a strong dark vignette toward all four edges and corners (near #1E0A10). Very faint diagonal light haze. Optionally a few extremely subtle floor seams.
+The center of the image must stay EMPTY and calm — a game table will be drawn on top of it later. No table, no net, no paddles, no ball, no people, no barriers, no text, no logos, no letters, no numbers, no watermark.
+Style: premium, moody, painterly-but-clean digital game art, low contrast detail so foreground objects pop. Full-bleed, opaque, no border.

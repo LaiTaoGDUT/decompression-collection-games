@@ -1,0 +1,23 @@
+{
+  "rings-effects": [
+    "visual/audio/rings-ui-tap-v2",
+    "visual/audio/rings-turn-1-v2",
+    "visual/audio/rings-turn-2-v2",
+    "visual/audio/rings-turn-3-v2",
+    "visual/audio/rings-turn-4-v2",
+    "visual/audio/rings-turn-5-v2",
+    "visual/audio/rings-blocked-v2",
+    "visual/audio/rings-slide-v2",
+    "visual/audio/rings-unlatch-v2",
+    "visual/audio/rings-break-1-v2",
+    "visual/audio/rings-break-2-v2",
+    "visual/audio/rings-break-3-v2",
+    "visual/audio/rings-bomb-v2",
+    "visual/audio/rings-hint-v2",
+    "visual/audio/rings-start-v2",
+    "visual/audio/rings-win-v2",
+    "visual/audio/rr_vo_excellent",
+    "visual/audio/rr_vo_good",
+    "visual/audio/rr_vo_great"
+  ]
+}

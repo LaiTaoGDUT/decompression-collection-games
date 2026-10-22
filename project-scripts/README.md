@@ -13,8 +13,8 @@
 | `verify-lobby-tags.cjs` | `npm run verify:lobby-tags`，检查大厅标签配置、默认与历史排序、NEW 持久隐藏及进入请求互斥。 |
 | `verify-wechat-package-size.js` | `npm run verify:wechat-package-size`，检查已生成的微信构建、分包、远程资源与包体积。 |
 | `verify-fonts.cjs`、`fonts/` | `npm run verify:fonts`、`extensions/font-build-guard` 和文案补字流程的依赖。包含字体服务校验、字形覆盖校验、源码字符扫描及字库更新。 |
-| `announcements/` | `npm run announcements` 与 `npm run verify:announcements`：本地编辑历史版本更新公告、设为生效、复制审核纯文本，并校验规则与访问控制。 |
-| `cocos-refresh.cjs` | 文案审校与版本公告共用的 Cocos 资源刷新，经 `cocos_creator_stdio` 同一项目 MCP 刷新 `db://assets`。 |
+| `announcements/` | `npm run config:edit`：统一本地编辑游戏清单、版本公告、广告及发布与调试设置，支持标签增删、隐藏字段保护、独立草稿与保存、公告生效与复制纯文本；`verify:config-editor` 和 `verify:config-editor:browser` 校验保存、冲突保护、访问控制和页面。兼容原公告命令。 |
+| `cocos-refresh.cjs` | 文案审校与合集配置编辑共用的 Cocos 资源刷新，经 `cocos_creator_stdio` 同一项目 MCP 刷新 `db://assets`。 |
 | `copy-review/` | `npm run copy:review` 与 `npm run verify:copy-review` 的完整实现，包含页面、扫描与精确写回、建议数据、服务及校验。 |
 | `generate-desktop-cleanup-hit-polygons.py`、`desktop-cleanup/generate-dessert-hit-shapes.py` | 从当前物品图集生成桌面清理的命中多边形，保留甜点与便利店物品的孔洞。后者从 `DesktopCleanupTheme.ts` 读取图集顺序，不依赖本机 `docs`。 |
 | `meowdoku/build-level-bank.py` | 生成普通 `MeowdokuLevels.ts`（默认 3000 关）或 `--mode hard` 的 `MeowdokuHardLevels.ts`（SuperHard，默认 200 关，先 rank4 后 rank5）；输入 APK/XAPK 或已解密题库由调用方提供，支持 `--check`。 |
@@ -32,6 +32,7 @@ npm run verify:lobby-tags
 npm run verify:fonts
 npm run verify:copy-review
 npm run verify:announcements
+npm run verify:config-editor
 git diff --check
 ```
 

@@ -1,0 +1,20 @@
+{
+  "subMetas": {
+    "roofs-mid": {
+      "importer": "sprite-frame",
+      "name": "roofs-mid",
+      "uuid": "56c4d07d-0c4b-5ce5-909d-e8be4a0bbdfb",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 1973,
+        "height": 549,
+        "rawWidth": 1973,
+        "rawHeight": 549,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

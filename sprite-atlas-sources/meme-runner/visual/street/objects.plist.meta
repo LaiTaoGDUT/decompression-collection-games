@@ -1,0 +1,68 @@
+{
+  "subMetas": {
+    "ground": {
+      "importer": "sprite-frame",
+      "name": "ground",
+      "uuid": "51e73ea6-3527-59de-84b7-263f8379ede4",
+      "userData": {
+        "trimX": 69,
+        "trimY": 217,
+        "width": 923,
+        "height": 219,
+        "rawWidth": 923,
+        "rawHeight": 219,
+        "offsetX": 0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "crate": {
+      "importer": "sprite-frame",
+      "name": "crate",
+      "uuid": "8c071778-589c-508c-a24f-f65ff11a4983",
+      "userData": {
+        "trimX": 1074,
+        "trimY": 110,
+        "width": 369,
+        "height": 361,
+        "rawWidth": 369,
+        "rawHeight": 361,
+        "offsetX": 0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "bar": {
+      "importer": "sprite-frame",
+      "name": "bar",
+      "uuid": "000dde96-d07f-5b5b-9007-05a1c0d34807",
+      "userData": {
+        "trimX": 85,
+        "trimY": 531,
+        "width": 855,
+        "height": 375,
+        "rawWidth": 855,
+        "rawHeight": 375,
+        "offsetX": 0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    },
+    "coin": {
+      "importer": "sprite-frame",
+      "name": "coin",
+      "uuid": "cabdd12d-6a4c-5ddd-b45d-0cbecb5f0b9c",
+      "userData": {
+        "trimX": 1085,
+        "trimY": 573,
+        "width": 332,
+        "height": 339,
+        "rawWidth": 332,
+        "rawHeight": 339,
+        "offsetX": 0,
+        "offsetY": 0.0,
+        "rotated": false
+      }
+    }
+  }
+}

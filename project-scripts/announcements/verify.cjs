@@ -51,7 +51,7 @@ async function main() {
     assert.equal(plainText(draft({
         newGames: [{ gameId: 'meowdoku', text: '上线' }],
         fixes: [{ gameId: 'catch', text: '修复卡顿' }, { gameId: 'collection', text: '修复闪退' }],
-    }), GAMES), '【新游戏】\n1. 猫咪数独：上线\n\n【问题修复】\n1. 桌面大清理：修复卡顿\n2. 游戏合集：修复闪退');
+    }), GAMES), '【新游戏】\n1. 猫咪数独：上线\n\n【问题修复】\n1. 桌面大清理：修复卡顿\n2. 通用：修复闪退');
 
     // 保存、生效、编辑生效中的公告会重写游戏内文件
     const root = tempProject();
@@ -69,7 +69,7 @@ async function main() {
     assert.equal(store.save(second.id, draft({ fixes: [{ gameId: 'catch', text: '改' }] })).runtimeChanged, false);
     assert.equal(store.save(first.id, draft({ newGames: [{ gameId: 'meowdoku', text: '正式上线' }] })).runtimeChanged, true);
     assert.equal(runtime().announcement.newGames[0].text, '正式上线');
-    assert.equal(runtime().announcement.id, first.id, '编辑不改变公告 ID，玩家不会重复自动弹出');
+    assert.equal(runtime().announcement.id, first.id, '编辑不改变公告 ID，已读公告不会重新显示红点');
     assert.throws(() => store.activate('missing'), /不存在/);
     assert.equal(JSON.parse(fs.readFileSync(path.join(root, HISTORY_FILE), 'utf8')).activeId, first.id);
 
@@ -108,6 +108,26 @@ async function main() {
         assert.equal(activated.body.refreshed, true);
         assert.equal(runtime().announcement.id, second.id);
         assert.equal(refreshes, 2);
+
+        const extra = store.save(null, draft({ version: '1.4.0', fixes: [{ gameId: 'catch', text: '多余' }] }));
+        assert.equal(store.remove(extra.id).runtimeChanged, false);
+        assert.equal(runtime().announcement.id, second.id);
+        assert.throws(() => store.remove(extra.id), /不存在/);
+        const removed = await call('/api/delete', { method: 'POST', headers: auth, body: JSON.stringify({ id: first.id }) });
+        assert.equal(removed.status, 200);
+        assert.equal(removed.body.runtimeChanged, false);
+        assert.equal(removed.body.refreshed, false);
+        assert.equal(runtime().announcement.id, second.id);
+        assert.equal(removed.body.state.announcements.some((item) => item.id === first.id), false);
+        const cleared = await call('/api/delete', { method: 'POST', headers: auth, body: JSON.stringify({ id: second.id }) });
+        assert.equal(cleared.status, 200);
+        assert.equal(cleared.body.refreshed, true);
+        assert.equal(cleared.body.state.activeId, null);
+        assert.equal(runtime().announcement, null);
+        assert.equal(refreshes, 3);
+        const missing = await call('/api/delete', { method: 'POST', headers: auth, body: JSON.stringify({ id: 'missing' }) });
+        assert.equal(missing.status, 400);
+        assert.match(missing.body.error, /不存在/);
     } finally {
         server.close();
         fs.rmSync(root, { recursive: true, force: true });

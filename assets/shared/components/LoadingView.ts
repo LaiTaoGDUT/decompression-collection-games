@@ -3,6 +3,7 @@ import {
     _decorator,
     assetManager,
     BlockInputEvents,
+    Button,
     Color,
     Component,
     easing,
@@ -94,6 +95,11 @@ const DIALOG = {
     trackTipGap: 14,
     tipHeight: 34,
     tipFontSize: 23,
+    tipCancelGap: 24,
+    cancelWidth: 248,
+    cancelHeight: 66,
+    cancelFontSize: 28,
+    cancelRadius: 22,
     bottomPadding: 32,
     percentWidth: 120,
     screenMargin: 86,
@@ -114,8 +120,10 @@ const DIALOG_ROWS = (() => {
     const track = y + DIALOG.trackHeight / 2;
     y += DIALOG.trackHeight + DIALOG.trackTipGap;
     const tip = y + DIALOG.tipHeight / 2;
-    y += DIALOG.tipHeight + DIALOG.bottomPadding;
-    return Object.freeze({ cover, title, description, message, track, tip, height: y });
+    y += DIALOG.tipHeight + DIALOG.tipCancelGap;
+    const cancel = y + DIALOG.cancelHeight / 2;
+    y += DIALOG.cancelHeight + DIALOG.bottomPadding;
+    return Object.freeze({ cover, title, description, message, track, tip, cancel, height: y });
 })();
 const GAME_BACKDROP_COLOR = new Color(46, 26, 16, 150);
 const STARTUP_FALLBACK_COLOR = new Color(249, 210, 170, 255);
@@ -124,6 +132,7 @@ const STARTUP_TINT_COLOR = new Color(255, 244, 218, 24);
 const DISMISS_SECONDS = 0.34;
 const DISMISS_DIALOG_SHARE = 0.55;
 const DIALOG_POP_SECONDS = 0.3;
+const CANCEL_REVEAL_DELAY_MS = 3000;
 const STARTUP_ART_FADE_SECONDS = 0.36;
 const TITLE_FLOAT_PERIOD_SECONDS = 3.2;
 const TITLE_FLOAT_AMPLITUDE = 7;
@@ -151,6 +160,7 @@ const DIALOG_ONLY_NODES = [
     'LoadingCoverFrame',
     'LoadingGameName',
     'LoadingGameDescription',
+    'LoadingCancelButton',
 ] as const;
 /** 进度行元素；大厅启动页挂在 StartupContent，游戏变体挂在 GameDialog。 */
 const PROGRESS_NODES = [
@@ -208,9 +218,9 @@ function calculateLoadingLayout(
     const normalizedBottom = lobbyContent?.safeBottom
         ?? clamp(Math.max(0, safeBottom), 0, height * 0.45);
     const normalizedLeft = lobbyContent?.safeLeft
-        ?? clamp(Math.max(0, safeLeft), 0, width * 0.45);
+        ?? clamp(Math.max(0, safeLeft), 0, width);
     const normalizedRight = lobbyContent?.safeRight
-        ?? clamp(Math.max(0, safeRight), 0, width * 0.45);
+        ?? clamp(Math.max(0, safeRight), 0, Math.max(0, width - normalizedLeft));
     const contentWidth = lobbyContent?.contentWidth
         ?? Math.max(1, width - normalizedLeft - normalizedRight);
     const contentHeight = lobbyContent?.contentHeight
@@ -273,6 +283,10 @@ export class LoadingView extends Component implements LoadingPresenter {
     private percentLabel?: Label;
     private nameLabel?: Label;
     private descriptionLabel?: Label;
+    private cancelButton?: Button;
+    private cancelLabel?: Label;
+    private cancelLoad?: () => Promise<void>;
+    private cancelRevealAt = 0;
     private coverSprite?: Sprite;
     private ownedCoverFrame?: SpriteFrame;
     private startupBackgroundSprite?: Sprite;
@@ -313,6 +327,10 @@ export class LoadingView extends Component implements LoadingPresenter {
     private platformLayout?: PlatformLayoutInfo;
     private readonly completionWaiters = new Set<() => void>();
 
+    get isVisible(): boolean {
+        return this.node.activeInHierarchy;
+    }
+
     protected onLoad(): void {
         if (!this.node.getComponent(BlockInputEvents)) {
             this.node.addComponent(BlockInputEvents);
@@ -334,6 +352,10 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.presentLayer();
         this.ensureStructure();
         this.variant = model.variant ?? 'game';
+        this.cancelLoad = this.variant === 'game' ? model.cancel : undefined;
+        this.cancelRevealAt = this.cancelLoad ? Date.now() + CANCEL_REVEAL_DELAY_MS : 0;
+        if (this.cancelButton) this.cancelButton.interactable = false;
+        if (this.cancelLabel) this.cancelLabel.string = '取消';
         this.gameDescription = model.gameDescription?.trim() ?? '';
         const tip = this.findManagedNode('LoadingTip')?.getComponent(Label);
         if (tip) tip.string = this.variant === 'lobby'
@@ -373,6 +395,7 @@ export class LoadingView extends Component implements LoadingPresenter {
      * 不展示品牌、进度动画、加载文案或其他控件。
      */
     showLobbyTransition(): void {
+        this.clearCancelAction();
         this.restartMode = false;
         this.lobbyTransitionMode = true;
         this.presentLayer();
@@ -395,6 +418,7 @@ export class LoadingView extends Component implements LoadingPresenter {
      * 该遮罩复用常驻 LoadingLayer，但不会触发任何资源加载。
      */
     showRestart(message: string): void {
+        this.clearCancelAction();
         this.restartMode = true;
         this.lobbyTransitionMode = false;
         this.presentLayer(false);
@@ -454,6 +478,7 @@ export class LoadingView extends Component implements LoadingPresenter {
      * 大厅/游戏画面；淡出期间不再拦截输入，再次 show 会立即打断淡出。
      */
     hide(animated = true): void {
+        this.clearCancelAction();
         this.finishCompletionWaiters();
         const wasRestart = this.restartMode;
         this.restartMode = false;
@@ -473,6 +498,7 @@ export class LoadingView extends Component implements LoadingPresenter {
     }
 
     protected onDestroy(): void {
+        this.cancelButton?.node.off(Button.EventType.CLICK, this.handleCancel, this);
         view.off('canvas-resize', this.handleCanvasResize, this);
         this.hide(false);
         this.releaseStartupFrames();
@@ -706,6 +732,25 @@ export class LoadingView extends Component implements LoadingPresenter {
         const tip = ensureLabel('LoadingTip');
         tip.string = '正在为你准备轻松时刻';
 
+        const cancelNode = ensureGraphics('LoadingCancelButton');
+        this.cancelButton = cancelNode.getComponent(Button) ?? cancelNode.addComponent(Button);
+        this.cancelButton.transition = Button.Transition.SCALE;
+        this.cancelButton.zoomScale = 0.96;
+        this.cancelButton.duration = 0.1;
+        cancelNode.off(Button.EventType.CLICK, this.handleCancel, this);
+        cancelNode.on(Button.EventType.CLICK, this.handleCancel, this);
+        let cancelLabelNode = cancelNode.getChildByName('Label');
+        if (!cancelLabelNode) {
+            cancelLabelNode = new Node('Label');
+            cancelLabelNode.layer = layer;
+            cancelLabelNode.setParent(cancelNode);
+            cancelLabelNode.addComponent(UITransform);
+        }
+        this.cancelLabel = cancelLabelNode.getComponent(Label) ?? cancelLabelNode.addComponent(Label);
+        this.cancelLabel.horizontalAlign = HorizontalTextAlignment.CENTER;
+        this.cancelLabel.verticalAlign = VerticalTextAlignment.CENTER;
+        setLabelBold(this.cancelLabel, true);
+
         const dialog = this.dialogNode;
         if (dialog) {
             for (const name of DIALOG_ONLY_NODES) {
@@ -931,6 +976,7 @@ export class LoadingView extends Component implements LoadingPresenter {
             'ProgressTrack',
             'ProgressFill',
             'LoadingTip',
+            'LoadingCancelButton',
         ]) {
             const node = this.findManagedNode(name);
             if (node) node.active = false;
@@ -963,11 +1009,9 @@ export class LoadingView extends Component implements LoadingPresenter {
         const platformSafeBottom = platformSafeArea
             ? Math.max(0, height - platformSafeArea.bottom)
             : 0;
-        const platformSafeRight = platformSafeArea
-            ? Math.max(0, width - platformSafeArea.right)
-            : 0;
         const startup = this.variant === 'lobby';
-        const platformScale = startup ? width / LOBBY_DESIGN_WIDTH : 1;
+        const landscape = this.platformLayout?.orientation === 'landscape';
+        const platformScale = startup ? width / (this.platformLayout?.designWidth ?? LOBBY_DESIGN_WIDTH) : 1;
         const startupPlatformSafeTop = platformSafeArea
             ? platformSafeArea.top * platformScale
             : 0;
@@ -1000,12 +1044,12 @@ export class LoadingView extends Component implements LoadingPresenter {
             startup
                 ? Math.max(safeBottom, startupPlatformSafeBottom)
                 : Math.max(safeBottom, platformSafeBottom),
-            startup
+            landscape
                 ? Math.max(safeLeft, startupPlatformSafeLeft)
-                : Math.max(safeLeft, platformSafeArea?.left ?? 0),
-            startup
+                : 0,
+            landscape
                 ? Math.max(safeRight, startupPlatformSafeRight)
-                : Math.max(safeRight, platformSafeRight),
+                : 0,
             this.variant,
             startup ? startupCapsuleBottom : 0,
         );
@@ -1036,17 +1080,15 @@ export class LoadingView extends Component implements LoadingPresenter {
                 ? calculateLobbyBrandMetrics(metrics.contentWidth, metrics.contentHeight)
                 : undefined;
             startupTitle.active = startup;
+            // 竖屏保留全屏三分之一处的品牌位置；横屏以四边安全内容矩形为基准。
             this.startupTitleBaseY = startup
-                // The title's center sits one third of the way down the
-                // full screen. Convert that screen-space target into the
-                // safe-content node's local coordinates.
-                ? metrics.height / 6 - metrics.contentY
+                ? landscape ? contentHeight / 6 : metrics.height / 6 - metrics.contentY
                 : contentHeight / 2 - (
                     brand?.centerFromTop
                     ?? (LEGACY_LOADING_TITLE_TOP_GAP + LEGACY_LOADING_TITLE_HEIGHT / 2) * scale
                 );
             startupTitle.setPosition(
-                startup ? -metrics.contentX : 0,
+                startup && !landscape ? -metrics.contentX : 0,
                 this.startupTitleBaseY + this.titleFloatOffset(),
             );
             startupTitle.getComponent(UITransform)?.setContentSize(
@@ -1198,6 +1240,21 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.findManagedNode('LoadingGameDescription')!.active = !startup
             && this.gameDescription.length > 0;
 
+        const cancelNode = this.cancelButton?.node;
+        if (cancelNode) {
+            this.syncCancelButtonVisibility();
+            cancelNode.setPosition(centerX, centerY + dialogRowY(DIALOG_ROWS.cancel, scale));
+            cancelNode.getComponent(UITransform)?.setContentSize(
+                DIALOG.cancelWidth * scale, DIALOG.cancelHeight * scale);
+            this.cancelLabel?.node.getComponent(UITransform)?.setContentSize(
+                DIALOG.cancelWidth * scale, DIALOG.cancelHeight * scale);
+        }
+        if (this.cancelLabel) {
+            this.cancelLabel.fontSize = DIALOG.cancelFontSize * scale;
+            this.cancelLabel.lineHeight = DIALOG.cancelHeight * scale;
+            this.cancelLabel.color = new Color(105, 52, 32, 255);
+        }
+
         const track = this.graphics('ProgressTrack');
         track.node.setPosition(
             startup ? 0 : centerX,
@@ -1330,6 +1387,20 @@ export class LoadingView extends Component implements LoadingPresenter {
             );
             track.fill();
         }
+
+        const cancel = this.graphics('LoadingCancelButton');
+        cancel.clear();
+        if (cancel.node.active && !startup) {
+            const buttonWidth = DIALOG.cancelWidth * scale;
+            const buttonHeight = DIALOG.cancelHeight * scale;
+            cancel.fillColor = this.faded(new Color(255, 245, 226, 255), true);
+            cancel.strokeColor = this.faded(new Color(205, 158, 111, 235), true);
+            cancel.lineWidth = 2 * scale;
+            cancel.roundRect(-buttonWidth / 2, -buttonHeight / 2,
+                buttonWidth, buttonHeight, DIALOG.cancelRadius * scale);
+            cancel.fill();
+            cancel.stroke();
+        }
     }
 
     private applyLobbyTransitionVisibility(): void {
@@ -1345,11 +1416,50 @@ export class LoadingView extends Component implements LoadingPresenter {
             'ProgressTrack',
             'ProgressFill',
             'LoadingTip',
+            'LoadingCancelButton',
         ]) {
             const node = this.findManagedNode(name);
             if (node) node.active = false;
         }
     }
+
+    private clearCancelAction(): void {
+        this.cancelLoad = undefined;
+        this.cancelRevealAt = 0;
+        if (this.cancelButton) {
+            this.cancelButton.interactable = false;
+            this.cancelButton.node.active = false;
+        }
+    }
+
+    private get canShowCancel(): boolean {
+        return Boolean(this.cancelLoad) && this.cancelRevealAt > 0
+            && Date.now() > this.cancelRevealAt && this.node.active
+            && this.variant === 'game' && !this.restartMode
+            && !this.lobbyTransitionMode && !this.dismissing;
+    }
+
+    private syncCancelButtonVisibility(): void {
+        const button = this.cancelButton;
+        if (!button) return;
+        const visible = this.canShowCancel;
+        const changed = button.node.active !== visible;
+        button.node.active = visible;
+        button.interactable = visible;
+        if (changed) this.drawChrome();
+    }
+
+    private readonly handleCancel = (): void => {
+        const cancel = this.cancelLoad;
+        if (!cancel || !this.canShowCancel || !this.cancelButton?.interactable) return;
+        this.clearCancelAction();
+        if (this.cancelLabel) this.cancelLabel.string = '正在取消…';
+        this.unschedule(this.advanceFakeProgress);
+        this.stopProgressAnimation();
+        void cancel().catch(error => {
+            console.warn('[LoadingView] Cancelled loading recovery failed.', error);
+        });
+    };
 
     private readonly advanceFakeProgress = (): void => {
         if (!this.node.active || this.realProgress >= 1 || this.progressTarget >= 0.99) {
@@ -1397,6 +1507,7 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.ambientTime += Math.max(0, deltaTime);
         this.advanceTransition(deltaTime);
         if (!this.node.active) return;
+        this.syncCancelButtonVisibility();
         const title = this.startupTitleSprite?.node;
         if (this.variant === 'lobby' && title?.active) {
             title.setPosition(title.position.x, this.startupTitleBaseY + this.titleFloatOffset());

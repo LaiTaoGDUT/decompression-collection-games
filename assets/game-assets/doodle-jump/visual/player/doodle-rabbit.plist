@@ -4,23 +4,10 @@
 <dict>
 	<key>frames</key>
 	<dict>
-		<key>player-jetpack</key>
-		<dict>
-			<key>frame</key>
-			<string>{{150,434},{50,48}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{50,48}}</string>
-			<key>sourceSize</key>
-			<string>{50,48}</string>
-		</dict>
 		<key>player-rocket</key>
 		<dict>
 			<key>frame</key>
-			<string>{{138,820},{90,131}}</string>
+			<string>{{138,656},{90,131}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -43,7 +30,7 @@
 			<key>sourceSize</key>
 			<string>{132,160}</string>
 		</dict>
-		<key>rabbit-jetpack</key>
+		<key>rabbit-jumping</key>
 		<dict>
 			<key>frame</key>
 			<string>{{138,492},{132,160}}</string>
@@ -56,7 +43,7 @@
 			<key>sourceSize</key>
 			<string>{132,160}</string>
 		</dict>
-		<key>rabbit-jumping</key>
+		<key>rabbit-propeller</key>
 		<dict>
 			<key>frame</key>
 			<string>{{150,270},{132,160}}</string>
@@ -69,23 +56,10 @@
 			<key>sourceSize</key>
 			<string>{132,160}</string>
 		</dict>
-		<key>rabbit-propeller</key>
-		<dict>
-			<key>frame</key>
-			<string>{{270,2},{132,160}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{132,160}}</string>
-			<key>sourceSize</key>
-			<string>{132,160}</string>
-		</dict>
 		<key>rabbit-propeller-spin</key>
 		<dict>
 			<key>frame</key>
-			<string>{{138,656},{132,160}}</string>
+			<string>{{270,2},{132,160}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>

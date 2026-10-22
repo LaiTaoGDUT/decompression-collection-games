@@ -677,6 +677,10 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
         this.state = 'ready';
     }
 
+    isGameplayActive(): boolean {
+        return this.state === 'playing';
+    }
+
     begin(): void {
         if (this.state !== 'ready') throw new Error(`Cannot begin DesktopCleanupGame from ${this.state}.`);
         try {
@@ -3087,6 +3091,7 @@ export class DesktopCleanupGame extends Component implements MiniGame<DesktopCle
     }
 
     private makeFailureResult(reason: string) {
+        this.context?.reportRoundFinished?.();
         const snapshot = this.model?.snapshot;
         return Object.freeze({
             score: snapshot?.score ?? 0,

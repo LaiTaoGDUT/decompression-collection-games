@@ -17,12 +17,14 @@ export type MiniGameBackgroundPausePolicy = 'menu' | 'silent';
 export interface MiniGamePauseModel {
     readonly resume: () => Promise<void>;
     readonly restart: () => Promise<void>;
+    /** 从返回按钮的触摸回调同步调用，运行层会延后销毁 UI。 */
     readonly exit: () => Promise<void>;
 }
 
 export interface MiniGameResultModel {
     readonly result: GameResult;
     readonly restart: () => Promise<void>;
+    /** 从返回按钮的触摸回调同步调用，不能先等待动画或 Promise。 */
     readonly returnToLobby: () => Promise<void>;
 }
 
@@ -40,11 +42,14 @@ export interface MiniGameContext<TServices extends object = object> {
     reportScore(score: number): void;
     /** 上报本局玩法里程碑；运行层根据 Manifest 判定并记录最高进度。 */
     reportAchievementProgress(metric: string, value: number): void;
+    /** 场景内自行结算的游戏上报完整一局结束（通关或放弃复活后的失败）；中途退出不调用。 */
+    reportRoundFinished?(): void;
     /** Generic game events use the public analytics service; eventId deduplicates retries. */
     reportEvent?(name: string, properties: AnalyticsProperties, eventId?: string): void;
     requestPause(): void;
     requestExit(result?: GameResult): void;
     requestRestart(result?: GameResult): void;
+    /** 玩家点击返回大厅时同步调用，以保留平台订阅能力需要的 touchend 上下文。 */
     requestLobby(result?: GameResult): void;
 }
 
@@ -58,6 +63,8 @@ export interface MiniGameContext<TServices extends object = object> {
  * `dispose` 完成后，该实例不得继续持有运行层资源或监听。
  */
 export interface MiniGame<TServices extends object = object> {
+    /** 云存档门槛只累计真实玩法时间，游戏内选关、结算和说明页不计入。 */
+    isGameplayActive?(): boolean;
     initialize(context: MiniGameContext<TServices>): Promise<void>;
     begin(): void;
     /**

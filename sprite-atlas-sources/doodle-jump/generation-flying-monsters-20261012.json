@@ -1,0 +1,282 @@
+{
+  "tool": "image_gen.imagegen (built-in)",
+  "date": "2026-10-12",
+  "useCase": "precise-object-edit",
+  "sourceReferences": [
+    "visual/enemies/enemy-small-01.png",
+    "visual/enemies/enemy-hopper-01.png",
+    "visual/enemies/enemy-large-01.png"
+  ],
+  "specs": [
+    {
+      "type": "small",
+      "file": "enemy-small-01.png",
+      "subject": "the same mischievous rosy pink round radish imp with cream belly and teal leafy crown. Replace its planted feet/arms pose with a small pair of cream feather-like wings attached naturally to its sides, little feet tucked while hovering. Left frame wings lifted, right frame wings lowered. Overall silhouette width:height 58:52 including wings, crown and tucked feet. Keep radish body prominent and face readable.",
+      "title": "飞行萝卜",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent two-frame animation strip for ONE enemy species in an existing paper rabbit jumping game. Input is the EDIT TARGET and style reference. Preserve the target's identity, palette, black charcoal crayon outlines, textured printed paper interiors and crisp thin cream cutout rim. Change it into a visibly airborne flying enemy: the same mischievous rosy pink round radish imp with cream belly and teal leafy crown. Replace its planted feet/arms pose with a small pair of cream feather-like wings attached naturally to its sides, little feet tucked while hovering. Left frame wings lifted, right frame wings lowered. Overall silhouette width:height 58:52 including wings, crown and tucked feet. Keep radish body prominent and face readable. Composition: a horizontal strip with exactly TWO equal cells, same creature same body scale and same center in both cells, left wings up and right wings down. Empty transparent center gutter and generous transparent outside padding; complete silhouettes without clipped wings. Body itself remains stable, only wing poses change, clear alternating flap. Flat 2D illustration matching the target, alpha zero outside the thin paper rim. NO ground, platforms, background, glow, outer shadow, dust, speed lines, UI, text, labels, watermark or extra characters. True transparent RGBA background.",
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-4c90b0dc-65aa-46f6-b7fc-e6b7d033dbae.png",
+      "localRender": "visual/enemies/source-renders/flying/monster-small-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-small-01.png",
+          "size": [
+            138,
+            124
+          ],
+          "sha256": "1e3f35b50c3d0ffc5dd5576a877abfb94f41209a39260dcde2030ce43ddba686",
+          "position": [
+            3,
+            10
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-small-02.png",
+          "size": [
+            138,
+            124
+          ],
+          "sha256": "2ab8d3fb43f990eed0c9317d316fa9eebbc86f580f755cf4cad2ad10781bb280",
+          "position": [
+            2,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "type": "hopper",
+      "file": "enemy-hopper-01.png",
+      "subject": "the same friendly mischievous muted green garden beetle with antennae and leaf-like green shell. Open its green wing covers, add a clear matching pair of cream translucent crayon insect wings and tuck its small legs for flying. Left frame wings raised, right frame wings lowered. Overall silhouette width:height 46:36 including wings and antennae. Preserve green beetle identity and cheeky face.",
+      "title": "飞行甲虫",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent two-frame animation strip for ONE enemy species in an existing paper rabbit jumping game. Input is the EDIT TARGET and style reference. Preserve the target's identity, palette, black charcoal crayon outlines, textured printed paper interiors and crisp thin cream cutout rim. Change it into a visibly airborne flying enemy: the same friendly mischievous muted green garden beetle with antennae and leaf-like green shell. Open its green wing covers, add a clear matching pair of cream translucent crayon insect wings and tuck its small legs for flying. Left frame wings raised, right frame wings lowered. Overall silhouette width:height 46:36 including wings and antennae. Preserve green beetle identity and cheeky face. Composition: a horizontal strip with exactly TWO equal cells, same creature same body scale and same center in both cells, left wings up and right wings down. Empty transparent center gutter and generous transparent outside padding; complete silhouettes without clipped wings. Body itself remains stable, only wing poses change, clear alternating flap. Flat 2D illustration matching the target, alpha zero outside the thin paper rim. NO ground, platforms, background, glow, outer shadow, dust, speed lines, UI, text, labels, watermark or extra characters. True transparent RGBA background.",
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-b51992ef-7ad5-4521-94cf-7dd0753ef39a.png",
+      "localRender": "visual/enemies/source-renders/flying/monster-hopper-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-hopper-01.png",
+          "size": [
+            110,
+            87
+          ],
+          "sha256": "48503dab79d425852e03898c1c539677784fcfdcdb05fa1363d8e4c685786e2d",
+          "position": [
+            2,
+            3
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-hopper-02.png",
+          "size": [
+            110,
+            87
+          ],
+          "sha256": "9bf491b6fae158a7873111137d3b39d490c96eb3539de6b5990f38066d2d43b7",
+          "position": [
+            2,
+            25
+          ]
+        }
+      ]
+    },
+    {
+      "type": "large",
+      "file": "enemy-large-01.png",
+      "subject": "the same mischievous broad orange pumpkin monster with deep teal stalk/leaves, cream lower belly, strong eyebrows and small tooth. Give it two broad cream feather-like wings attached naturally to its sides, remove planted running arms/feet pose and tuck feet while flying. Left frame wings lifted, right frame wings lowered. Overall silhouette width:height 82:60 including wings and leaves. Keep the big orange pumpkin body and intimidating cheeky face prominent.",
+      "title": "飞行南瓜",
+      "prompt": "Use case: precise-object-edit. Asset type: one transparent two-frame animation strip for ONE enemy species in an existing paper rabbit jumping game. Input is the EDIT TARGET and style reference. Preserve the target's identity, palette, black charcoal crayon outlines, textured printed paper interiors and crisp thin cream cutout rim. Change it into a visibly airborne flying enemy: the same mischievous broad orange pumpkin monster with deep teal stalk/leaves, cream lower belly, strong eyebrows and small tooth. Give it two broad cream feather-like wings attached naturally to its sides, remove planted running arms/feet pose and tuck feet while flying. Left frame wings lifted, right frame wings lowered. Overall silhouette width:height 82:60 including wings and leaves. Keep the big orange pumpkin body and intimidating cheeky face prominent. Composition: a horizontal strip with exactly TWO equal cells, same creature same body scale and same center in both cells, left wings up and right wings down. Empty transparent center gutter and generous transparent outside padding; complete silhouettes without clipped wings. Body itself remains stable, only wing poses change, clear alternating flap. Flat 2D illustration matching the target, alpha zero outside the thin paper rim. NO ground, platforms, background, glow, outer shadow, dust, speed lines, UI, text, labels, watermark or extra characters. True transparent RGBA background.",
+      "rawPath": "/Users/laitao/.codex/generated_images/01a11e6d-2c17-73d2-ab8d-a2b8ec4c6ed4/exec-66e62e09-6612-4969-b416-88aee2562ce2.png",
+      "localRender": "visual/enemies/source-renders/flying/monster-large-strip.png",
+      "acceptedFrames": [
+        {
+          "source": "visual/enemies/enemy-large-01.png",
+          "size": [
+            195,
+            143
+          ],
+          "sha256": "74db2cd7452d533fa920ad2a93b02584f81d81ad4d6f10f6e8f82433a5724eb4",
+          "position": [
+            7,
+            26
+          ]
+        },
+        {
+          "source": "visual/enemies/enemy-large-02.png",
+          "size": [
+            195,
+            143
+          ],
+          "sha256": "4bf26188955ab5e92ceea47a4407bae0dbd5011bf76c716df1c4d61c420509bb",
+          "position": [
+            2,
+            29
+          ]
+        }
+      ]
+    }
+  ],
+  "normalization": {
+    "tool": "tools/doodle-jump/prepare-flying-monster-assets.py",
+    "designWidth": 750,
+    "method": "RGBA crop; uniform pair scale; shared foot baseline; 2px transparent padding",
+    "report": [
+      {
+        "type": "small",
+        "gutterX": 937,
+        "cropRectsInCells": [
+          [
+            86,
+            57,
+            872,
+            727
+          ],
+          [
+            84,
+            59,
+            884,
+            728
+          ]
+        ],
+        "sharedScale": 0.1675,
+        "renderSha256": "b4ca9b4ee80febdb78949e4200bea7f63872f4453db4ff342bce0ecf42593dd8",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-small-01.png",
+            "size": [
+              138,
+              124
+            ],
+            "sha256": "1e3f35b50c3d0ffc5dd5576a877abfb94f41209a39260dcde2030ce43ddba686",
+            "position": [
+              3,
+              10
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-small-02.png",
+            "size": [
+              138,
+              124
+            ],
+            "sha256": "2ab8d3fb43f990eed0c9317d316fa9eebbc86f580f755cf4cad2ad10781bb280",
+            "position": [
+              2,
+              10
+            ]
+          }
+        ]
+      },
+      {
+        "type": "hopper",
+        "gutterX": 709,
+        "cropRectsInCells": [
+          [
+            51,
+            293,
+            680,
+            780
+          ],
+          [
+            34,
+            426,
+            662,
+            782
+          ]
+        ],
+        "sharedScale": 0.1685214626391097,
+        "renderSha256": "637a8ae3301a48bf2cecde7fe54ce19598589623481705e85cf79dfac4d30a7f",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-hopper-01.png",
+            "size": [
+              110,
+              87
+            ],
+            "sha256": "48503dab79d425852e03898c1c539677784fcfdcdb05fa1363d8e4c685786e2d",
+            "position": [
+              2,
+              3
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-hopper-02.png",
+            "size": [
+              110,
+              87
+            ],
+            "sha256": "9bf491b6fae158a7873111137d3b39d490c96eb3539de6b5990f38066d2d43b7",
+            "position": [
+              2,
+              25
+            ]
+          }
+        ]
+      },
+      {
+        "type": "large",
+        "gutterX": 1036,
+        "cropRectsInCells": [
+          [
+            68,
+            83,
+            976,
+            665
+          ],
+          [
+            31,
+            97,
+            996,
+            665
+          ]
+        ],
+        "sharedScale": 0.19792746113989637,
+        "renderSha256": "2a5e9b3837029862ecba1351900521ab6de1e1fca331125942c739ecb74de60f",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-large-01.png",
+            "size": [
+              195,
+              143
+            ],
+            "sha256": "74db2cd7452d533fa920ad2a93b02584f81d81ad4d6f10f6e8f82433a5724eb4",
+            "position": [
+              7,
+              26
+            ]
+          },
+          {
+            "source": "visual/enemies/enemy-large-02.png",
+            "size": [
+              195,
+              143
+            ],
+            "sha256": "4bf26188955ab5e92ceea47a4407bae0dbd5011bf76c716df1c4d61c420509bb",
+            "position": [
+              2,
+              29
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "compression": {
+    "tool": ".agents/skills/tinypng-batch/scripts/compress.py",
+    "service": "Tinify official API",
+    "input": [
+      "assets/game-assets/doodle-jump/visual/enemies/doodle-enemies.png"
+    ],
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "beforeBytes": 643503,
+    "afterBytes": 146016,
+    "savedBytes": 497487,
+    "sha256": "e91cd9df42afe478d38fcb329c6d72122841c6cf0c6438aa8039eb01b02a36f3",
+    "pipeline": "actual display size → sprite-atlas-sources/build.py --game doodle-jump → Tinify final atlas"
+  },
+  "preview": {
+    "path": "tools/doodle-jump/reports/native-alignment-20261012/flying-monsters-preview.png",
+    "source": "final Tinify-compressed runtime atlas",
+    "displayScale": "750/320"
+  }
+}

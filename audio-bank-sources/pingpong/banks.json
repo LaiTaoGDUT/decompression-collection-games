@@ -1,0 +1,16 @@
+{
+  "pingpong-effects": [
+    "visual/audio/hit-soft-v1",
+    "visual/audio/hit-mid-v1",
+    "visual/audio/hit-hard-v1",
+    "visual/audio/bounce-1-v1",
+    "visual/audio/bounce-2-v1",
+    "visual/audio/match-start-v1",
+    "visual/audio/flip-v1",
+    "visual/audio/point-win-v1",
+    "visual/audio/point-lose-v1",
+    "visual/audio/match-win-v1",
+    "visual/audio/match-lose-v1",
+    "visual/audio/ui-tap-v1"
+  ]
+}

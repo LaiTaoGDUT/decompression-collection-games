@@ -8,6 +8,7 @@ import type {
     PlatformLayoutInfo,
     PlatformUiRect,
     SafeArea,
+    ScreenOrientation,
     Unsubscribe,
 } from '../core/types/CommonTypes';
 import type { AccelerometerSample, Platform } from './Platform';
@@ -25,6 +26,8 @@ interface MiniGameSafeArea {
 export interface MiniGameSystemInfo {
     readonly screenWidth: number;
     readonly screenHeight: number;
+    readonly windowWidth?: number;
+    readonly windowHeight?: number;
     readonly SDKVersion?: string;
     readonly safeArea?: MiniGameSafeArea;
     readonly pixelRatio?: number;
@@ -142,6 +145,16 @@ interface MiniGameAccelerometerOptions {
 export interface MiniGameApi {
     createWebAudioContext?(): PlatformAudioContext;
     getSystemInfoSync(): MiniGameSystemInfo;
+    getWindowInfo?(): Partial<MiniGameSystemInfo>;
+    setDeviceOrientation?(options: {
+        value: ScreenOrientation;
+        success(): void;
+        fail(error?: MiniGameApiError): void;
+    }): void;
+    onWindowResize?(callback: () => void): void;
+    offWindowResize?(callback: () => void): void;
+    onDeviceOrientationChange?(callback: () => void): void;
+    offDeviceOrientationChange?(callback: () => void): void;
     getMenuButtonBoundingClientRect?(): MiniGameMenuButtonRect;
     getLaunchOptionsSync?(): MiniGameLaunchOptions;
     vibrateShort?(options: {
@@ -181,6 +194,7 @@ export interface MiniGameApi {
 interface MiniGamePlatformEvents {
     readonly show: void;
     readonly hide: void;
+    readonly layout: PlatformLayoutInfo;
 }
 
 // 某些客户端会在原生相册回调前后错开派发生命周期事件；保留一个很短的
@@ -196,6 +210,7 @@ export interface MiniGamePlatformOptions {
 
     /** FIXED_WIDTH 适配策略下的设计宽度。 */
     readonly designWidth?: number;
+    readonly orientationTimeoutMs?: number;
 }
 
 /** 小游戏共享能力；具体平台负责提供 API 和平台差异。 */
@@ -208,7 +223,9 @@ export class MiniGamePlatform implements Platform {
 
     private readonly events = new EventBus<MiniGamePlatformEvents>();
     private readonly providedApi?: MiniGameApi;
-    private readonly designWidth: number;
+    private designWidth: number;
+    private orientation: ScreenOrientation = 'portrait';
+    private readonly orientationOperations = new Set<() => void>();
     protected api?: MiniGameApi;
     private safeArea?: SafeArea;
     private layoutInfo?: PlatformLayoutInfo;
@@ -244,7 +261,7 @@ export class MiniGamePlatform implements Platform {
         }
 
         const api = this.resolveApi();
-        const systemInfo = api.getSystemInfoSync();
+        const systemInfo = this.readSystemInfo(api);
 
         this.chooseMediaSupported = this.platformOptions.supportsChooseMedia?.(systemInfo.SDKVersion) ?? true;
         this.safeArea = this.normalizeSafeArea(systemInfo);
@@ -258,6 +275,10 @@ export class MiniGamePlatform implements Platform {
             api.onShow(this.handleShow);
             api.onHide(this.handleHide);
             api.onAccelerometerChange?.(this.handleAccelerometerChange);
+            if (api.onWindowResize && api.offWindowResize) api.onWindowResize(this.handleWindowResize);
+            if (api.onDeviceOrientationChange && api.offDeviceOrientationChange) {
+                api.onDeviceOrientationChange(this.handleWindowResize);
+            }
             this.initialized = true;
         } catch (error: unknown) {
             this.dispose();
@@ -266,6 +287,8 @@ export class MiniGamePlatform implements Platform {
     }
 
     dispose(): void {
+        Array.from(this.orientationOperations).forEach(cancel => cancel());
+        this.orientationOperations.clear();
         this.cancelLocalImagePicker();
         Array.from(this.pendingImageOperations).forEach((cancel) => cancel());
         this.pendingImageOperations.clear();
@@ -273,11 +296,14 @@ export class MiniGamePlatform implements Platform {
         this.api?.offAccelerometerChange?.(this.handleAccelerometerChange);
         this.api?.offShow?.(this.handleShow);
         this.api?.offHide?.(this.handleHide);
+        this.api?.offWindowResize?.(this.handleWindowResize);
+        this.api?.offDeviceOrientationChange?.(this.handleWindowResize);
         this.events.clear();
         this.accelerometerListeners.clear();
         this.api = undefined;
         this.safeArea = undefined;
         this.layoutInfo = undefined;
+        this.orientation = 'portrait';
         this.launchOptions = undefined;
         this.deviceProfile = undefined;
         this.chooseMediaSupported = true;
@@ -286,6 +312,7 @@ export class MiniGamePlatform implements Platform {
     }
 
     getSafeArea(): SafeArea {
+        this.refreshLayoutInfo();
         if (!this.safeArea) {
             throw new Error('MiniGame platform is not initialized.');
         }
@@ -294,11 +321,88 @@ export class MiniGamePlatform implements Platform {
     }
 
     getLayoutInfo(): PlatformLayoutInfo {
+        this.refreshLayoutInfo();
         if (!this.layoutInfo) {
             throw new Error('MiniGame platform is not initialized.');
         }
 
         return this.layoutInfo;
+    }
+
+    onLayoutChange(callback: (layout: PlatformLayoutInfo) => void): Unsubscribe {
+        return this.events.subscribe('layout', callback);
+    }
+
+    setScreenOrientation(orientation: ScreenOrientation, designWidth: number): Promise<void> {
+        const api = this.api;
+        if (!api) return Promise.reject(new Error('MiniGame platform is not initialized.'));
+        if (!Number.isFinite(designWidth) || designWidth <= 0) {
+            return Promise.reject(new Error('Screen design width must be greater than zero.'));
+        }
+        const matches = (): boolean => {
+            const info = this.readSystemInfo(api);
+            const width = info.windowWidth ?? info.screenWidth;
+            const height = info.windowHeight ?? info.screenHeight;
+            return orientation === 'landscape' ? width > height : height >= width;
+        };
+        const commit = (): void => {
+            this.designWidth = designWidth;
+            this.orientation = orientation;
+            this.refreshLayoutInfo(true);
+        };
+        try {
+            // 实际方向已正确时不请求原生旋转；旧客户端与 PC 全屏也能正常启动竖屏大厅。
+            if (matches()) {
+                commit();
+                return Promise.resolve();
+            }
+        } catch (error: unknown) { return Promise.reject(error); }
+        if (!api.setDeviceOrientation) {
+            return Promise.reject(new Error(`Screen orientation "${orientation}" is unsupported on ${this.id}.`));
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            let settled = false;
+            let succeeded = false;
+            let poll: ReturnType<typeof setTimeout> | undefined;
+            let unsubscribe: Unsubscribe | undefined;
+            const finish = (error?: unknown): void => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timeout);
+                if (poll !== undefined) clearTimeout(poll);
+                unsubscribe?.();
+                this.orientationOperations.delete(cancel);
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                try { commit(); resolve(); }
+                catch (cause: unknown) { reject(cause); }
+            };
+            const cancel = (): void => finish(new Error('Screen orientation change cancelled.'));
+            const timeout = setTimeout(() => finish(new Error(`Screen orientation "${orientation}" timed out.`)),
+                this.platformOptions.orientationTimeoutMs ?? 8000);
+            const check = (): void => {
+                if (settled || !succeeded) return;
+                try { if (matches()) finish(); }
+                catch (error: unknown) { finish(error); }
+            };
+            const tick = (): void => {
+                check();
+                // 部分客户端的 success 早于窗口更新；读取实际尺寸也兼容遗漏的 resize 事件。
+                if (!settled) poll = setTimeout(tick, 50);
+            };
+            this.orientationOperations.add(cancel);
+            unsubscribe = this.onLayoutChange(check);
+            poll = setTimeout(tick, 50);
+            try {
+                api.setDeviceOrientation!({ value: orientation,
+                    success: () => { succeeded = true; check(); },
+                    fail: error => finish(new Error(error?.errMsg ?? 'Screen orientation change failed.')),
+                });
+            } catch (error: unknown) { finish(error); }
+        });
     }
 
     getDeviceProfile(): DeviceProfile {
@@ -684,6 +788,7 @@ export class MiniGamePlatform implements Platform {
     }
 
     private readonly handleShow = (): void => {
+        this.refreshLayoutInfo(true);
         if (this.imagePickerLifecycleInterrupted) {
             this.imagePickerLifecycleInterrupted = false;
             if (this.imagePickerResultSettled) {
@@ -748,19 +853,37 @@ export class MiniGamePlatform implements Platform {
         return this.platformOptions.getApi();
     }
 
+    private readSystemInfo(api: MiniGameApi): MiniGameSystemInfo {
+        return { ...api.getSystemInfoSync(), ...(api.getWindowInfo?.() ?? {}) };
+    }
+
+    private refreshLayoutInfo(notify = false): void {
+        if (!this.api) return;
+        const info = this.readSystemInfo(this.api);
+        this.safeArea = this.normalizeSafeArea(info);
+        this.layoutInfo = this.normalizeLayoutInfo(info, this.api);
+        if (notify) this.events.publish('layout', this.layoutInfo);
+    }
+
+    private readonly handleWindowResize = (): void => {
+        this.refreshLayoutInfo(true);
+    };
+
     private normalizeSafeArea(systemInfo: MiniGameSystemInfo): SafeArea {
-        if (systemInfo.screenWidth <= 0 || systemInfo.screenHeight <= 0) {
+        const width = systemInfo.windowWidth ?? systemInfo.screenWidth;
+        const height = systemInfo.windowHeight ?? systemInfo.screenHeight;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
             throw new Error('MiniGame returned an invalid screen size.');
         }
 
-        const scale = this.designWidth / systemInfo.screenWidth;
+        const scale = this.designWidth / width;
         const source = systemInfo.safeArea ?? {
             left: 0,
             top: 0,
-            right: systemInfo.screenWidth,
-            bottom: systemInfo.screenHeight,
-            width: systemInfo.screenWidth,
-            height: systemInfo.screenHeight,
+            right: width,
+            bottom: height,
+            width,
+            height,
         };
 
         const left = source.left * scale;
@@ -787,7 +910,7 @@ export class MiniGamePlatform implements Platform {
         try {
             const menuButton = api.getMenuButtonBoundingClientRect?.();
             if (menuButton && menuButton.width > 0 && menuButton.height > 0) {
-                const scale = this.designWidth / systemInfo.screenWidth;
+                const scale = this.designWidth / (systemInfo.windowWidth ?? systemInfo.screenWidth);
                 topRightReservedArea = Object.freeze({
                     left: menuButton.left * scale,
                     top: menuButton.top * scale,
@@ -802,6 +925,8 @@ export class MiniGamePlatform implements Platform {
         }
 
         return Object.freeze({
+            designWidth: this.designWidth,
+            orientation: this.orientation,
             safeArea: this.safeArea!,
             topRightReservedArea,
         });

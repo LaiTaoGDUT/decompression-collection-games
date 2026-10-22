@@ -1,0 +1,196 @@
+{
+  "subMetas": {
+    "extra-0": {
+      "importer": "sprite-frame",
+      "name": "extra-0",
+      "uuid": "2f71e4dd-3af7-5538-aca2-8ba3b3180061",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-1": {
+      "importer": "sprite-frame",
+      "name": "extra-1",
+      "uuid": "bc0d8ee5-2669-5e3f-b20b-3e08eef1d031",
+      "userData": {
+        "trimX": 640,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-2": {
+      "importer": "sprite-frame",
+      "name": "extra-2",
+      "uuid": "686769bd-0e06-5908-9107-6d0beea67493",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-3": {
+      "importer": "sprite-frame",
+      "name": "extra-3",
+      "uuid": "e9afbc6a-ce61-5e54-a875-1125b12a35f9",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 0,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-4": {
+      "importer": "sprite-frame",
+      "name": "extra-4",
+      "uuid": "dc3b2a5b-129b-510d-8cce-43a5d2a001b5",
+      "userData": {
+        "trimX": 0,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-5": {
+      "importer": "sprite-frame",
+      "name": "extra-5",
+      "uuid": "4ba562ce-13de-5059-9395-6ef70f3eb74b",
+      "userData": {
+        "trimX": 640,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-6": {
+      "importer": "sprite-frame",
+      "name": "extra-6",
+      "uuid": "7dd4f994-dc05-52b7-b50f-514b096ea2c2",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-7": {
+      "importer": "sprite-frame",
+      "name": "extra-7",
+      "uuid": "471edf01-531c-5ed6-9d1a-d3fc8b711044",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 576,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-8": {
+      "importer": "sprite-frame",
+      "name": "extra-8",
+      "uuid": "de70e5e2-2acc-581a-8dc7-4e4ed56395b0",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-9": {
+      "importer": "sprite-frame",
+      "name": "extra-9",
+      "uuid": "658a8f9e-8c61-5b85-8c82-ff1adde6b08c",
+      "userData": {
+        "trimX": 640,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-10": {
+      "importer": "sprite-frame",
+      "name": "extra-10",
+      "uuid": "8af562d0-8057-58c0-8d47-42b714a5829e",
+      "userData": {
+        "trimX": 1280,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "extra-11": {
+      "importer": "sprite-frame",
+      "name": "extra-11",
+      "uuid": "0e652116-4200-5a82-a5db-fe9540c91830",
+      "userData": {
+        "trimX": 1920,
+        "trimY": 1152,
+        "width": 640,
+        "height": 576,
+        "rawWidth": 640,
+        "rawHeight": 576,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

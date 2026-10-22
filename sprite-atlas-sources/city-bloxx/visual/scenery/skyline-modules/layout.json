@@ -1,0 +1,476 @@
+{
+  "nativeCanvas": [
+    160,
+    480
+  ],
+  "targetCanvas": [
+    1183,
+    3549
+  ],
+  "parts": [
+    {
+      "name": "left-short-background-body",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        121,
+        300,
+        182,
+        1750
+      ],
+      "nativeBox": [
+        42,
+        143,
+        45,
+        202
+      ],
+      "fit": "width"
+    },
+    {
+      "name": "left-cropped-blue",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        38,
+        98,
+        52,
+        1205
+      ],
+      "nativeBox": [
+        0,
+        91,
+        1,
+        201
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "left-needle-blue",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        120,
+        98,
+        183,
+        1843
+      ],
+      "nativeBox": [
+        9,
+        51,
+        15,
+        222
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "short-blue",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        228,
+        98,
+        336,
+        731
+      ],
+      "nativeBox": [
+        23,
+        79,
+        30,
+        121
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "left-tall-blue",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        366,
+        98,
+        420,
+        2090
+      ],
+      "nativeBox": [
+        48,
+        89,
+        54,
+        332
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "middle-small-blue",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        479,
+        98,
+        522,
+        1427
+      ],
+      "nativeBox": [
+        62,
+        134,
+        66,
+        266
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "tall-flat-blue",
+      "source": "blue-a-hd-v2.png",
+      "sourceBox": [
+        599,
+        48,
+        648,
+        1128
+      ],
+      "nativeBox": [
+        87,
+        74,
+        93,
+        218
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "behind-observation-blue",
+      "source": "blue-b-hd-v1.png",
+      "sourceBox": [
+        30,
+        98,
+        90,
+        1375
+      ],
+      "nativeBox": [
+        78,
+        133,
+        82,
+        218
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "high-needle-blue",
+      "source": "blue-b-hd-v1.png",
+      "sourceBox": [
+        130,
+        98,
+        191,
+        1599
+      ],
+      "nativeBox": [
+        103,
+        33,
+        107,
+        133
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "behind-green-blue",
+      "source": "blue-b-hd-v1.png",
+      "sourceBox": [
+        251,
+        98,
+        326,
+        716
+      ],
+      "nativeBox": [
+        112,
+        114,
+        117,
+        155
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "right-short-blue",
+      "source": "blue-b-hd-v1.png",
+      "sourceBox": [
+        370,
+        98,
+        447,
+        1539
+      ],
+      "nativeBox": [
+        127,
+        117,
+        132,
+        213
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "right-long-top",
+      "source": "blue-b-hd-v1.png",
+      "sourceBox": [
+        490,
+        98,
+        533,
+        2108
+      ],
+      "nativeBox": [
+        143,
+        128,
+        148,
+        350
+      ],
+      "fit": "width"
+    },
+    {
+      "name": "right-long-body",
+      "source": "blue-b-hd-v1.png",
+      "sourceBox": [
+        600,
+        110,
+        649,
+        1397
+      ],
+      "nativeBox": [
+        143,
+        350,
+        148,
+        480
+      ],
+      "fit": "width"
+    },
+    {
+      "name": "left-lower-gray-group",
+      "source": "left-base-hd-v2.png",
+      "sourceBox": [
+        259,
+        39,
+        467,
+        2131
+      ],
+      "nativeBox": [
+        0,
+        201,
+        28,
+        480
+      ],
+      "fit": "height",
+      "alignX": 0
+    },
+    {
+      "name": "left-thin-gray",
+      "source": "remaining-gray-hd-v1.png",
+      "sourceBox": [
+        551,
+        99,
+        611,
+        1420
+      ],
+      "nativeBox": [
+        6,
+        125,
+        10,
+        213
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "left-dark-inset-tower",
+      "source": "upper-gray-pair-hd-v1.png",
+      "sourceBox": [
+        31,
+        700,
+        289,
+        1835
+      ],
+      "nativeBox": [
+        15,
+        121,
+        42,
+        232
+      ],
+      "fit": "width",
+      "alignX": 0
+    },
+    {
+      "name": "central-observation-needle",
+      "source": "upper-gray-pair-hd-v1.png",
+      "sourceBox": [
+        452,
+        99,
+        661,
+        1571
+      ],
+      "nativeBox": [
+        65,
+        71,
+        86,
+        218
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "right-stepped-tower",
+      "source": "right-tower-isolated-hd-v1.png",
+      "sourceBox": [
+        275,
+        101,
+        449,
+        2071
+      ],
+      "nativeBox": [
+        97,
+        97,
+        119,
+        350
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "middle-tall-gray",
+      "source": "remaining-gray-hd-v1.png",
+      "sourceBox": [
+        41,
+        49,
+        293,
+        1371
+      ],
+      "nativeBox": [
+        68,
+        218,
+        93,
+        350
+      ],
+      "fit": "height",
+      "alignX": 0
+    },
+    {
+      "name": "right-foreground-ledge",
+      "source": "right-ledge-full-hd-v2.png",
+      "sourceBox": [
+        208,
+        78,
+        519,
+        2081
+      ],
+      "nativeBox": [
+        104,
+        213,
+        145,
+        480
+      ],
+      "fit": "height",
+      "alignX": 0
+    },
+    {
+      "name": "middle-plain-facade",
+      "source": "middle-facades-hd-v1.png",
+      "sourceBox": [
+        35,
+        417,
+        286,
+        2120
+      ],
+      "nativeBox": [
+        56,
+        266,
+        88,
+        480
+      ],
+      "fit": "width",
+      "alignX": 0
+    },
+    {
+      "name": "left-light-facade",
+      "source": "light-facade-hd-v1.png",
+      "sourceBox": [
+        264,
+        22,
+        460,
+        2152
+      ],
+      "nativeBox": [
+        21,
+        202,
+        47,
+        480
+      ],
+      "fit": "height",
+      "alignX": 1
+    },
+    {
+      "name": "left-wraparound-foreground-ledge",
+      "source": "left-base-hd-v2.png",
+      "sourceBox": [
+        259,
+        39,
+        467,
+        2131
+      ],
+      "nativeBox": [
+        0,
+        201,
+        28,
+        480
+      ],
+      "fit": "height",
+      "alignX": 0,
+      "clipNativeBox": [
+        21,
+        300,
+        28,
+        315
+      ]
+    },
+    {
+      "name": "mauve-column",
+      "source": "remaining-gray-hd-v1.png",
+      "sourceBox": [
+        351,
+        99,
+        442,
+        1581
+      ],
+      "nativeBox": [
+        47,
+        332,
+        56,
+        480
+      ],
+      "fit": "height"
+    },
+    {
+      "name": "lower-connecting-gray",
+      "source": "remaining-gray-hd-v1.png",
+      "sourceBox": [
+        60,
+        1572,
+        331,
+        2077
+      ],
+      "nativeBox": [
+        88,
+        350,
+        106,
+        383
+      ],
+      "fit": "width",
+      "alignX": 0
+    },
+    {
+      "name": "lower-striped-facade",
+      "source": "striped-facade-hd-v1.png",
+      "sourceBox": [
+        114,
+        165,
+        748,
+        1702
+      ],
+      "nativeBox": [
+        80,
+        383,
+        116,
+        480
+      ],
+      "fit": "height"
+    }
+  ],
+  "remaining": [],
+  "reviewNotes": [
+    "All runtime pixels are builtin-generated raster parts, uniformly downsampled; original pixels are only used for reference reviews.",
+    "26 registered layers including reused straight body and attached ledge crops; no local repaint or vector redraw.",
+    "Native opaque coverage99.6299%; small silhouette, band-position and color deviations remain. Not pixel-identical to native160x480.",
+    "Longest blue tower uses generated straight body interior with border-free crop; native gap remains transparent."
+  ],
+  "visualApproved": true
+}

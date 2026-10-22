@@ -90,11 +90,18 @@ const TILE_SETTLE_DURATION = 0.02;
 const MERGE_CELEBRATION_HOLD = 0.25;
 /** 死局后先让棋盘震动、变暗，停顿这么久再弹出死局/结算界面，让玩家看清怎么输的。 */
 const GAME_OVER_REVEAL_DELAY = 0.75;
-/** 连续递进合成的连击标记颜色：×2 起逐级变热。 */
-const COMBO_COLORS: readonly Rgb[] = [[36, 220, 255], [255, 198, 44], [255, 132, 42], [255, 62, 172], [172, 84, 255]];
+/** 连击标记按最低连击数从高到低匹配；×9 起进入更亮的金色档位。 */
+const COMBO_COLOR_TIERS: readonly { readonly minCount: number; readonly color: Rgb }[] = [
+    { minCount: 9, color: [255, 240, 164] },
+    { minCount: 6, color: [172, 84, 255] },
+    { minCount: 5, color: [255, 62, 172] },
+    { minCount: 4, color: [255, 132, 42] },
+    { minCount: 3, color: [255, 198, 44] },
+    { minCount: 2, color: [36, 220, 255] },
+];
 const GAME_2048_DATA_VERSION = 4;
 const GAME_2048_RESOURCE_BUNDLE = 'game-2048-assets';
-const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-user-background-v1/texture';
+const GAME_2048_BACKGROUND_ASSET_PATH = 'visual/backgrounds/t48-background-v2/texture';
 const GAME_2048_TITLE_ASSET_PATH = 'visual/ui/t48-title-v2/texture';
 const GAME_2048_BOARD_ASSET_PATH = 'visual/boards/t48-user-board-v1/texture';
 const GAME_2048_PAUSE_ICON_ASSET_PATH = 'visual/ui/t48-pause-v2/texture';
@@ -140,10 +147,6 @@ const BIG_MERGE_SHAKE_MIN_VALUE = 1024;
 // 新版棋盘图已去掉外圈留白；四列槽位连同内外间距约占 548/572，棋子间距略放宽为 9px。
 const GAME_2048_BOARD_GRID_RATIO = 548 / 572;
 const GAME_2048_BOARD_GAP_RATIO = 9 / 548;
-// 游玩画面让数字块保持最高亮度，背景电路与标题稍退到后层。
-const GAME_2048_BACKGROUND_BRIGHTNESS = 232;
-// 霓虹灯管标题本身无底板，按原亮度显示。
-const GAME_2048_TITLE_BRIGHTNESS = 255;
 
 type Game2048State = 'idle' | 'ready' | 'playing' | 'paused' | 'target' | 'completed' | 'disposed';
 /** 庆祝弹窗的档位：CELEBRATION_TILES 之一（2048、4096、终极目标 8192）。 */
@@ -162,7 +165,7 @@ interface OverlayAction {
     readonly name: string;
     readonly label: string;
     /** amber 主操作、cyan 次操作、dark 最弱操作；link 是不带底框的文字链接，用于"查看棋盘"这类辅助入口。 */
-    readonly tone: 'cyan' | 'amber' | 'dark' | 'link';
+    readonly tone: 'cyan' | 'amber' | 'violet' | 'link';
     readonly action: () => void | Promise<void>;
 }
 
@@ -246,6 +249,10 @@ const TILE_PALETTE: Readonly<Record<number, TileMaterial>> = Object.freeze({
     8192: { surface: [26, 10, 56], facet: [255, 200, 246], core: [255, 255, 255], accent: [120, 92, 255], glow: [214, 160, 255] },
 });
 
+/** 棋子数字取色：内核色向高光色混合的比例，以及混合后的整体亮度系数。 */
+const TILE_VALUE_FACET_MIX = 0.3;
+const TILE_VALUE_BRIGHTNESS = 0.95;
+
 /** 已绘制底框的最高档；更大的数字沿用最高档材质与底框。 */
 const GAME_2048_MAX_FRAMED_TILE = 8192;
 
@@ -302,6 +309,7 @@ export class Game2048Game extends Component implements MiniGame {
     private screenFlash?: Sprite;
     private mergeFx?: Game2048MergeFx;
     private ownedFxFrames?: Game2048MergeFxFrames;
+    /** 旧版 UI 素材共享的柔和霓虹材质；由 AssetService 统一追踪释放。 */
     /** 死局停顿期间等待弹出的界面；尺寸重建会立即补弹，避免停顿被打断后卡在无界面状态。 */
     private pendingGameOverReveal = false;
     private pauseButton?: Button;
@@ -383,6 +391,10 @@ export class Game2048Game extends Component implements MiniGame {
         });
         if (this.context !== context) return;
         this.state = 'ready';
+    }
+
+    isGameplayActive(): boolean {
+        return this.state === 'playing';
     }
 
     begin(): void {
@@ -519,7 +531,7 @@ export class Game2048Game extends Component implements MiniGame {
             [
                 { name: 'ResumeButton', label: "继续游戏", tone: 'amber', action: model.resume },
                 { name: 'RestartButton', label: "重新开始", tone: 'cyan', action: model.restart },
-                { name: 'LobbyButton', label: '返回大厅', tone: 'dark', action: model.exit },
+                { name: 'LobbyButton', label: '返回大厅', tone: 'violet', action: model.exit },
             ],
         );
     }
@@ -904,7 +916,7 @@ export class Game2048Game extends Component implements MiniGame {
                 {
                     name: 'LobbyButton',
                     label: '返回大厅',
-                    tone: 'dark',
+                    tone: 'violet',
                     action: () => {
                         const result = this.createResult('target-complete');
                         this.persistProgress();
@@ -943,11 +955,11 @@ export class Game2048Game extends Component implements MiniGame {
         this.context?.requestExit(this.createResult(reason));
     }
 
-    /** 死局停顿结束：首次死局给复活机会，之后直接结算。重复调用只生效一次。 */
+    /** 死局停顿结束：广告开启时首次死局给复活机会，否则直接结算。重复调用只生效一次。 */
     private revealGameOver(): void {
         if (!this.pendingGameOverReveal || this.state !== 'completed' || !this.node.isValid) return;
         this.pendingGameOverReveal = false;
-        if (!this.hasShownGameOverAdOffer) {
+        if (!this.hasShownGameOverAdOffer && this.isAdsEnabled()) {
             this.hasShownGameOverAdOffer = true;
             this.showGameOverAdOffer();
             return;
@@ -987,7 +999,16 @@ export class Game2048Game extends Component implements MiniGame {
         board.setPosition(metrics.boardX, metrics.boardY, 0);
     }
 
+    private isAdsEnabled(): boolean {
+        const context = this.context;
+        return context?.services.ads?.isEnabledForGame(context.gameId) === true;
+    }
+
     private showGameOverAdOffer(): void {
+        if (!this.isAdsEnabled()) {
+            this.context?.requestExit(this.createResult('no-moves'));
+            return;
+        }
         this.gameOverOverlay = this.buildOverlay(
             'Game2048GameOverAdOverlay',
             "没有可移动的方块了",
@@ -995,7 +1016,7 @@ export class Game2048Game extends Component implements MiniGame {
             [
                 { name: 'WatchAdButton', label: "看广告清除 2 和 4", tone: 'amber', action: () => this.watchGameOverAd() },
                 { name: 'SettleButton', label: "结束并结算", tone: 'cyan', action: () => this.context?.requestExit(this.createResult('no-moves')) },
-                { name: 'LobbyButton', label: '返回大厅', tone: 'dark', action: () => this.context?.requestLobby(this.createResult('no-moves')) },
+                { name: 'LobbyButton', label: '返回大厅', tone: 'violet', action: () => this.context?.requestLobby(this.createResult('no-moves')) },
             ],
         );
         const button = this.gameOverOverlay.buttons.find((candidate) => candidate.node.name === 'WatchAdButton');
@@ -1009,9 +1030,12 @@ export class Game2048Game extends Component implements MiniGame {
 
     private async watchGameOverAd(): Promise<void> {
         const context = this.context;
-        const result = context?.services.ads
-            ? await context.services.ads.showRewarded({ placement: AD_PLACEMENTS.game2048ClearSmallTiles, gameId: context.gameId, sessionId: context.sessionId })
-            : { outcome: 'failed' as const };
+        if (!context || !this.isAdsEnabled()) return;
+        const result = await context.services.ads.showRewarded({
+            placement: AD_PLACEMENTS.game2048ClearSmallTiles,
+            gameId: context.gameId,
+            sessionId: context.sessionId,
+        });
         if (result.outcome !== 'completed') return;
         this.destroyOverlay(this.gameOverOverlay);
         this.gameOverOverlay = undefined;
@@ -1356,12 +1380,6 @@ export class Game2048Game extends Component implements MiniGame {
                     this.ownedBackgroundFrame = spriteFrame;
                     sprite.spriteFrame = spriteFrame;
                     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-                    sprite.color = new Color(
-                        GAME_2048_BACKGROUND_BRIGHTNESS,
-                        GAME_2048_BACKGROUND_BRIGHTNESS,
-                        GAME_2048_BACKGROUND_BRIGHTNESS,
-                        255,
-                    );
 
                     const rootSize = this.node.getComponent(UITransform)?.contentSize;
                     const targetWidth = rootSize?.width ?? 750;
@@ -1466,7 +1484,7 @@ export class Game2048Game extends Component implements MiniGame {
         this.ownedTargetPopupFrame = targetPopup;
         if (cyanButton) this.ownedPopupButtonFrames.set('cyan', cyanButton);
         if (amberButton) this.ownedPopupButtonFrames.set('amber', amberButton);
-        if (violetButton) this.ownedPopupButtonFrames.set('dark', violetButton);
+        if (violetButton) this.ownedPopupButtonFrames.set('violet', violetButton);
         this.ownedAchievementScoreFrame = achievementScore;
         this.ownedResultScoreFrame = resultScore;
         GAME_2048_TILE_VALUES.forEach((value) => {
@@ -1511,12 +1529,6 @@ export class Game2048Game extends Component implements MiniGame {
         });
         if (this.titleArtwork?.node.isValid) {
             this.titleArtwork.spriteFrame = this.ownedTitleFrame ?? null;
-            this.titleArtwork.color = new Color(
-                GAME_2048_TITLE_BRIGHTNESS,
-                GAME_2048_TITLE_BRIGHTNESS,
-                GAME_2048_TITLE_BRIGHTNESS,
-                255,
-            );
             this.titleArtwork.node.active = !!this.ownedTitleFrame;
         }
         if (this.boardArtwork?.node.isValid) {
@@ -1709,7 +1721,7 @@ export class Game2048Game extends Component implements MiniGame {
         Tween.stopAllByTarget(opacity);
         opacity.opacity = 0;
         tween(opacity)
-            .to(0.06, { opacity: 70 }, { easing: 'quadOut' })
+            .to(0.12, { opacity: 25 }, { easing: 'quadOut' })
             .to(0.4, { opacity: 0 }, { easing: 'quadIn' })
             .start();
     }
@@ -1781,7 +1793,8 @@ export class Game2048Game extends Component implements MiniGame {
         const node = label.node;
         const tile = this.boardTileSizeValue;
         const { x, y } = this.tilePosition(index, this.boardGridSizeValue, this.boardGapValue, tile);
-        const color = COMBO_COLORS[Math.min(COMBO_COLORS.length - 1, count - 2)];
+        const color = (COMBO_COLOR_TIERS.find((tier) => count >= tier.minCount)
+            ?? COMBO_COLOR_TIERS[COMBO_COLOR_TIERS.length - 1]).color;
         label.string = `连击 ×${count}`;
         label.color = new Color(color[0], color[1], color[2], 255);
         // 靠边的棋子把文字往棋盘内侧挪，避免超出棋盘。
@@ -1895,7 +1908,10 @@ export class Game2048Game extends Component implements MiniGame {
         return { label, outline };
     }
 
-    /** 数字字号随位数缩小；颜色取色阶内核色，描边取暗部色，保证在发光底框上清晰。 */
+    /**
+     * 数字字号随位数缩小；颜色由内核色向高光色混合并整体降亮，避免近白粗体在暗底上产生眩光，
+     * 描边取暗部色，保证在发光底框上清晰。
+     */
     private styleTileValueLabel(label: Label, outline: LabelOutline, value: number, size: number): void {
         const material = tileMaterial(value);
         const digits = String(value).length;
@@ -1904,7 +1920,10 @@ export class Game2048Game extends Component implements MiniGame {
         label.string = String(value);
         label.fontSize = fontSize;
         label.lineHeight = fontSize + 8;
-        label.color = new Color(material.core[0], material.core[1], material.core[2], 255);
+        const channel = (index: 0 | 1 | 2) => Math.round(
+            (material.core[index] + (material.facet[index] - material.core[index]) * TILE_VALUE_FACET_MIX) * TILE_VALUE_BRIGHTNESS,
+        );
+        label.color = new Color(channel(0), channel(1), channel(2), 255);
         outline.color = new Color(
             Math.round(material.surface[0] * 0.55),
             Math.round(material.surface[1] * 0.55),
@@ -1965,7 +1984,7 @@ export class Game2048Game extends Component implements MiniGame {
         root.setSiblingIndex(this.node.children.length - 1);
         this.dangerLayer = root;
         const opacity = root.addComponent(UIOpacity);
-        opacity.opacity = 125;
+        opacity.opacity = 100;
         const graphics = root.addComponent(Graphics);
         [18, 10, 4].forEach((lineWidth, index) => {
             graphics.strokeColor = new Color(255, index === 2 ? 65 : 26, index === 0 ? 128 : 218, 38 + index * 35);
@@ -1998,15 +2017,16 @@ export class Game2048Game extends Component implements MiniGame {
         tween(scan)
             .repeatForever(
                 tween()
-                    .to(1.25, { position: new Vec3(0, -height / 2 + 130, 0) }, { easing: 'quadIn' })
+                    .to(2.5, { position: new Vec3(0, -height / 2 + 130, 0) }, { easing: 'quadIn' })
                     .call(() => scan.setPosition(0, height / 2 - 130)),
             )
             .start();
+        // 危险态可能持续很久：用约 2.4 秒一次的缓慢呼吸代替急促闪烁，降低长时间注视的疲劳。
         tween(opacity)
             .repeatForever(
                 tween()
-                    .to(0.36, { opacity: 230 }, { easing: 'sineInOut' })
-                    .to(0.36, { opacity: 118 }, { easing: 'sineInOut' }),
+                    .to(1.2, { opacity: 150 }, { easing: 'sineInOut' })
+                    .to(1.2, { opacity: 100 }, { easing: 'sineInOut' }),
             )
             .start();
         this.updateDangerHint(emptyCount);
@@ -2853,21 +2873,20 @@ export class Game2048Game extends Component implements MiniGame {
         const accent = tone === 'cyan' ? COLORS.cyan
             : tone === 'amber' ? COLORS.amber
                 : COLORS.violet;
-        const fill = tone === 'dark'
-            ? new Color(COLORS.panel.r, COLORS.panel.g, COLORS.panel.b, 252)
-            : new Color(
-                Math.round(COLORS.panel.r * 0.6 + accent.r * 0.4),
-                Math.round(COLORS.panel.g * 0.6 + accent.g * 0.4),
-                Math.round(COLORS.panel.b * 0.6 + accent.b * 0.4),
-                255,
-            );
+        // 三种色调只换色相，亮度与描边强度一致，避免某个按钮明显比其他按钮亮或暗。
+        const fill = new Color(
+            Math.round(COLORS.panel.r * 0.6 + accent.r * 0.4),
+            Math.round(COLORS.panel.g * 0.6 + accent.g * 0.4),
+            Math.round(COLORS.panel.b * 0.6 + accent.b * 0.4),
+            255,
+        );
 
-        graphics.fillColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 14 : 32);
+        graphics.fillColor = new Color(accent.r, accent.g, accent.b, 32);
         this.drawChamferedRectPath(graphics, -width / 2 - 6, -height / 2 - 5, width + 12, height + 10, 15);
         graphics.fill();
         graphics.fillColor = fill;
-        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, tone === 'dark' ? 170 : 235);
-        graphics.lineWidth = tone === 'dark' ? 2 : 2.5;
+        graphics.strokeColor = new Color(accent.r, accent.g, accent.b, 235);
+        graphics.lineWidth = 2.5;
         this.drawChamferedRectPath(graphics, -width / 2, -height / 2, width, height, 12);
         graphics.fill();
         graphics.stroke();
@@ -2897,7 +2916,7 @@ export class Game2048Game extends Component implements MiniGame {
         // 看视频按钮采用紧凑的文字盒，图标才能贴着文字左缘布局，避免按整块按钮宽度居中造成视觉间距过大。
         const labelWidth = isRewardedAdButton ? 240 : width - 24;
         const label = this.createLabel(node, 'Label', text, isRewardedAdButton ? 22 : 0, 0, height <= 54 ? 22 : 24,
-            tone === 'dark' ? new Color(196, 156, 255, 255) : COLORS.white, labelWidth, height - 8);
+            COLORS.white, labelWidth, height - 8);
         setLabelBold(label, true);
         return button;
     }

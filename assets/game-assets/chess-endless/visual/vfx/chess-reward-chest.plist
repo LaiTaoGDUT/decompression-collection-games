@@ -7,28 +7,28 @@
 		<key>vfx_reward_chest_closed</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{420,340}}</string>
+			<string>{{374,2},{336,272}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{420,340}}</string>
+			<string>{{0.0,0.0},{336,272}}</string>
 			<key>sourceSize</key>
-			<string>{420,340}</string>
+			<string>{336,272}</string>
 		</dict>
 		<key>vfx_reward_chest_open</key>
 		<dict>
 			<key>frame</key>
-			<string>{{426,2},{420,340}}</string>
+			<string>{{2,2},{368,298}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{420,340}}</string>
+			<string>{{0.0,0.0},{368,298}}</string>
 			<key>sourceSize</key>
-			<string>{420,340}</string>
+			<string>{368,298}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -38,7 +38,7 @@
 		<key>realTextureFileName</key>
 		<string>chess-reward-chest.png</string>
 		<key>size</key>
-		<string>{848,344}</string>
+		<string>{712,302}</string>
 		<key>textureFileName</key>
 		<string>chess-reward-chest.png</string>
 	</dict>

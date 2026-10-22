@@ -79,6 +79,7 @@ const COLOR = {
     actionShade: new Color(198, 80, 26, 255),
     card: new Color(255, 255, 255, 255),
     cardShade: new Color(240, 221, 196, 255),
+    unread: new Color(235, 62, 62, 255),
 };
 /** 三个模块各自的主色：模块标题、游戏名与封面底色。 */
 const SECTION_COLOR: Readonly<Record<AnnouncementSectionKey, { ink: Color; shade: Color; chip: Color }>> = {
@@ -134,13 +135,12 @@ const CLOSE_SIZE = 64;
 const CLOSE_MARGIN = 18;
 const SCREEN_MARGIN = 24;
 const CLOSE_DURATION = 0.24;
-/** 自动弹出等大厅出现后再开始，避免与加载层淡出叠在一起。 */
-const AUTO_OPEN_DELAY = 0.6;
+const UNREAD_DOT_RADIUS = 7;
 
 type SpriteFit = { readonly mode: 'contain' | 'cover'; readonly width: number; readonly height: number };
 
 /**
- * 大厅版本更新公告：新版本首次进入大厅自动弹出一次，平时从顶部栏公告按钮打开；
+ * 大厅版本更新公告：从顶部栏公告按钮打开，未读时在入口右上角显示红点；
  * 有内容的模块按固定顺序从上到下排列，超出上下安全区时正文在弹窗内滚动；
  * 条目附带大厅同款游戏封面，可玩游戏的条目点击直接进入；
  * 弹出时与设置弹窗采用相同的原地缩放回弹，关闭时缩回公告按钮。
@@ -152,6 +152,7 @@ export class LobbyAnnouncementPanel {
     private announcement: Announcement | null = null;
     private overlayParent: Node | null = null;
     private entry: Node | null = null;
+    private unreadDot: Node | null = null;
     private root: Node | null = null;
     private panel: Node | null = null;
     private panelScale = 1;
@@ -177,10 +178,7 @@ export class LobbyAnnouncementPanel {
         if (!announcement) return;
         this.entry = this.createEntry(entrySlot);
         view.on('canvas-resize', this.layout, this);
-        if (!services.storage.hasSeenAnnouncement(announcement.id)) {
-            const entry = this.entry;
-            this.animate(entry, tween(entry).delay(AUTO_OPEN_DELAY).call(() => this.open()));
-        }
+        this.refreshUnreadDot();
     }
 
     unmount(): void {
@@ -195,6 +193,7 @@ export class LobbyAnnouncementPanel {
         this.root = null;
         this.panel = null;
         this.entry = null;
+        this.unreadDot = null;
         this.contentHeight = 0;
         this.opened = false;
         this.transitioning = false;
@@ -217,8 +216,9 @@ export class LobbyAnnouncementPanel {
         try {
             services.storage.markAnnouncementSeen(announcement.id);
         } catch {
-            // 记录失败只会导致下次再自动弹出一次，不影响展示。
+            // 落盘失败由存储服务保留待写快照并重试，不阻断公告展示。
         }
+        this.refreshUnreadDot();
         services.feedback.play('popup');
         const root = this.root?.isValid ? this.root : this.createModal(parent, announcement);
         root.active = true;
@@ -318,6 +318,17 @@ export class LobbyAnnouncementPanel {
         const entry = this.node(slot, 'AnnouncementEntry', LOBBY_HEADER_TOOLBAR_WIDTH, LOBBY_HEADER_TOOL_CELL_HEIGHT);
         const icon = this.node(entry, 'AnnouncementEntryIcon', LOBBY_HEADER_TOOL_ICON_SIZE, LOBBY_HEADER_TOOL_ICON_SIZE);
         this.bindSprite(icon.addComponent(Sprite), ART.entry);
+        const dotSize = (UNREAD_DOT_RADIUS + 1) * 2;
+        const dot = this.node(entry, 'AnnouncementUnreadDot', dotSize, dotSize);
+        dot.setPosition(LOBBY_HEADER_TOOL_ICON_SIZE / 2, LOBBY_HEADER_TOOL_ICON_SIZE / 2);
+        const graphics = dot.addComponent(Graphics);
+        graphics.fillColor = COLOR.unread;
+        graphics.strokeColor = COLOR.surface;
+        graphics.lineWidth = 2;
+        graphics.circle(0, 0, UNREAD_DOT_RADIUS);
+        graphics.fill();
+        graphics.stroke();
+        this.unreadDot = dot;
         const button = entry.addComponent(Button);
         button.transition = Button.Transition.SCALE;
         button.zoomScale = 0.96;
@@ -327,6 +338,12 @@ export class LobbyAnnouncementPanel {
             this.open();
         });
         return entry;
+    }
+
+    private refreshUnreadDot(): void {
+        if (!this.unreadDot?.isValid) return;
+        this.unreadDot.active = !!this.announcement && !!this.services
+            && !this.services.storage.hasSeenAnnouncement(this.announcement.id);
     }
 
     private createModal(parent: Node, announcement: Announcement): Node {
@@ -459,12 +476,12 @@ export class LobbyAnnouncementPanel {
         text.updateRenderData(true);
         const textHeight = Math.max(ENTRY_LINE_HEIGHT, text.node.getComponent(UITransform)!.height);
 
-        // 文字块比封面矮时与封面垂直居中，多行时把卡片撑高。
+        // 封面和文字块都以卡片中线垂直居中，多行文字会把卡片撑高。
         const textBlock = NAME_HEIGHT + NAME_TEXT_GAP + textHeight;
         const height = Math.max(COVER_HEIGHT, textBlock) + CARD_PADDING * 2;
         card.getComponent(UITransform)!.setContentSize(BODY_WIDTH, height);
         card.setPosition(0, top - height / 2);
-        const textTop = height / 2 - CARD_PADDING - Math.max(0, (COVER_HEIGHT - textBlock) / 2);
+        const textTop = textBlock / 2;
         name.node.setPosition(textX, textTop);
         text.node.setPosition(textX, textTop - NAME_HEIGHT - NAME_TEXT_GAP);
 
@@ -477,7 +494,7 @@ export class LobbyAnnouncementPanel {
         background.fill();
 
         const cover = this.node(card, 'Cover', COVER_WIDTH, COVER_HEIGHT);
-        cover.setPosition(-BODY_WIDTH / 2 + CARD_PADDING + COVER_WIDTH / 2, height / 2 - CARD_PADDING - COVER_HEIGHT / 2);
+        cover.setPosition(-BODY_WIDTH / 2 + CARD_PADDING + COVER_WIDTH / 2, 0);
         this.buildCover(cover, key, entry.gameId);
 
         const manifest = this.games?.playableGames.find((game) => game.id === entry.gameId);
@@ -549,10 +566,7 @@ export class LobbyAnnouncementPanel {
     }
 
     private subtitle(announcement: Announcement): string {
-        const parts: string[] = [];
-        if (announcement.version) parts.push(`v${announcement.version}`);
-        if (announcement.date) parts.push(announcement.date.replace(/-/g, '.'));
-        return parts.join('  ·  ');
+        return `v${announcement.version}`;
     }
 
     private readonly drawOverlay = (): void => {

@@ -1,0 +1,1247 @@
+{
+  "nativeCanvas": [
+    160,
+    480
+  ],
+  "targetCanvas": [
+    1183,
+    3549
+  ],
+  "parts": [
+    {
+      "name": "left-short-background-body",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        124,
+        304,
+        189,
+        1788
+      ],
+      "nativeBox": [
+        42,
+        143,
+        45,
+        202
+      ],
+      "fit": "width",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        121,
+        300,
+        182,
+        1750
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1494,
+        "top": 1494,
+        "bottom": 1761,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "left-cropped-blue",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        41,
+        97,
+        60,
+        1211
+      ],
+      "nativeBox": [
+        0,
+        91,
+        1,
+        201
+      ],
+      "fit": "height",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        38,
+        98,
+        52,
+        1205
+      ],
+      "bodyRepeat": {
+        "headerBottom": 990,
+        "top": 990,
+        "bottom": 1191,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "left-needle-blue",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        123,
+        97,
+        190,
+        1883
+      ],
+      "nativeBox": [
+        9,
+        51,
+        15,
+        222
+      ],
+      "fit": "height",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        120,
+        98,
+        183,
+        1843
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1530,
+        "top": 1530,
+        "bottom": 1851,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "short-blue",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        232,
+        64,
+        345,
+        739
+      ],
+      "nativeBox": [
+        23,
+        79,
+        30,
+        121
+      ],
+      "fit": "height",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        228,
+        98,
+        336,
+        731
+      ],
+      "bodyRepeat": {
+        "headerBottom": 605,
+        "top": 605,
+        "bottom": 727,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "left-tall-blue",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        371,
+        97,
+        434,
+        2130
+      ],
+      "nativeBox": [
+        48,
+        89,
+        54,
+        332
+      ],
+      "fit": "height",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        366,
+        98,
+        420,
+        2090
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1727,
+        "top": 1727,
+        "bottom": 2093,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "middle-small-blue",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        485,
+        97,
+        538,
+        1439
+      ],
+      "nativeBox": [
+        62,
+        134,
+        66,
+        266
+      ],
+      "fit": "height",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        479,
+        98,
+        522,
+        1427
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1173,
+        "top": 1173,
+        "bottom": 1415,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "tall-flat-blue",
+      "source": "blue-a-source.png",
+      "sourceBox": [
+        607,
+        46,
+        670,
+        1137
+      ],
+      "nativeBox": [
+        87,
+        74,
+        93,
+        218
+      ],
+      "fit": "height",
+      "referenceSource": "blue-a-hd-v2.png",
+      "referenceSourceBox": [
+        599,
+        48,
+        648,
+        1128
+      ],
+      "bodyRepeat": {
+        "headerBottom": 921,
+        "top": 921,
+        "bottom": 1117,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "behind-observation-blue",
+      "source": "blue-b-source.png",
+      "sourceBox": [
+        29,
+        95,
+        94,
+        1380
+      ],
+      "nativeBox": [
+        78,
+        133,
+        82,
+        218
+      ],
+      "fit": "height",
+      "referenceSource": "blue-b-hd-v1.png",
+      "referenceSourceBox": [
+        30,
+        98,
+        90,
+        1375
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1126,
+        "top": 1126,
+        "bottom": 1357,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "high-needle-blue",
+      "source": "blue-b-source.png",
+      "sourceBox": [
+        130,
+        94,
+        194,
+        1603
+      ],
+      "nativeBox": [
+        103,
+        33,
+        107,
+        133
+      ],
+      "fit": "height",
+      "referenceSource": "blue-b-hd-v1.png",
+      "referenceSourceBox": [
+        130,
+        98,
+        191,
+        1599
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1304,
+        "top": 1304,
+        "bottom": 1576,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "behind-green-blue",
+      "source": "blue-b-source.png",
+      "sourceBox": [
+        252,
+        92,
+        330,
+        717
+      ],
+      "nativeBox": [
+        112,
+        114,
+        117,
+        155
+      ],
+      "fit": "height",
+      "referenceSource": "blue-b-hd-v1.png",
+      "referenceSourceBox": [
+        251,
+        98,
+        326,
+        716
+      ],
+      "bodyRepeat": {
+        "headerBottom": 594,
+        "top": 594,
+        "bottom": 706,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "right-short-blue",
+      "source": "blue-b-source.png",
+      "sourceBox": [
+        369,
+        92,
+        450,
+        1546
+      ],
+      "nativeBox": [
+        127,
+        117,
+        132,
+        213
+      ],
+      "fit": "height",
+      "referenceSource": "blue-b-hd-v1.png",
+      "referenceSourceBox": [
+        370,
+        98,
+        447,
+        1539
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1258,
+        "top": 1258,
+        "bottom": 1520,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "right-long-tower",
+      "source": "blue-b-source.png",
+      "sourceBox": [
+        488,
+        95,
+        539,
+        2142
+      ],
+      "nativeBox": [
+        143,
+        128,
+        148,
+        480
+      ],
+      "fit": "width",
+      "referenceSource": "blue-b-hd-v1.png",
+      "referenceSourceBox": [
+        490,
+        98,
+        533,
+        2108
+      ],
+      "bodyRepeat": {
+        "headerBottom": 325,
+        "top": 325,
+        "bottom": 499
+      }
+    },
+    {
+      "name": "left-lower-gray-group",
+      "source": "left-base-source.png",
+      "sourceBox": [
+        253,
+        32,
+        470,
+        2140
+      ],
+      "nativeBox": [
+        0,
+        201,
+        28,
+        480
+      ],
+      "fit": "height",
+      "alignX": 0,
+      "referenceSource": "left-base-hd-v2.png",
+      "referenceSourceBox": [
+        259,
+        39,
+        467,
+        2131
+      ]
+    },
+    {
+      "name": "left-thin-gray",
+      "source": "remaining-gray-source.png",
+      "sourceBox": [
+        552,
+        94,
+        611,
+        1687
+      ],
+      "nativeBox": [
+        6,
+        125,
+        10,
+        213
+      ],
+      "fit": "height",
+      "referenceSource": "remaining-gray-hd-v1.png",
+      "referenceSourceBox": [
+        551,
+        99,
+        611,
+        1420
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1371,
+        "top": 1371,
+        "bottom": 1658,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "left-dark-inset-tower",
+      "source": "upper-gray-pair-source.png",
+      "sourceBox": [
+        29,
+        695,
+        292,
+        1936
+      ],
+      "nativeBox": [
+        15,
+        121,
+        42,
+        232
+      ],
+      "fit": "width",
+      "alignX": 0,
+      "referenceSource": "upper-gray-pair-hd-v1.png",
+      "referenceSourceBox": [
+        31,
+        700,
+        289,
+        1835
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1691,
+        "top": 1691,
+        "bottom": 1914,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "central-observation-needle",
+      "source": "upper-gray-pair-source.png",
+      "sourceBox": [
+        451,
+        96,
+        665,
+        1597
+      ],
+      "nativeBox": [
+        65,
+        71,
+        86,
+        218
+      ],
+      "fit": "height",
+      "referenceSource": "upper-gray-pair-hd-v1.png",
+      "referenceSourceBox": [
+        452,
+        99,
+        661,
+        1571
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1300,
+        "top": 1300,
+        "bottom": 1570,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "right-stepped-tower",
+      "source": "right-tower-source.png",
+      "sourceBox": [
+        275,
+        96,
+        449,
+        2110
+      ],
+      "nativeBox": [
+        97,
+        97,
+        119,
+        350
+      ],
+      "fit": "height",
+      "referenceSource": "right-tower-isolated-hd-v1.png",
+      "referenceSourceBox": [
+        275,
+        101,
+        449,
+        2071
+      ],
+      "bodyRepeat": {
+        "headerBottom": 900,
+        "top": 900,
+        "bottom": 1100,
+        "extendToCanvasBottom": true
+      },
+      "registrationNote": "The legacy L-shaped cutout was foreground occlusion, not a floating building bottom. Continue the full-width authored facade above that cutout behind the foreground ledge."
+    },
+    {
+      "name": "middle-tall-gray",
+      "source": "remaining-gray-source.png",
+      "sourceBox": [
+        39,
+        46,
+        298,
+        1412
+      ],
+      "nativeBox": [
+        68,
+        218,
+        93,
+        350
+      ],
+      "fit": "height",
+      "alignX": 0,
+      "referenceSource": "remaining-gray-hd-v1.png",
+      "referenceSourceBox": [
+        41,
+        49,
+        293,
+        1371
+      ],
+      "bodyRepeat": {
+        "headerBottom": 1141,
+        "top": 1141,
+        "bottom": 1387,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "right-foreground-ledge",
+      "source": "right-ledge-source.png",
+      "sourceBox": [
+        206,
+        73,
+        522,
+        2122
+      ],
+      "nativeBox": [
+        104,
+        213,
+        145,
+        480
+      ],
+      "fit": "height",
+      "alignX": 0,
+      "referenceSource": "right-ledge-full-hd-v2.png",
+      "referenceSourceBox": [
+        208,
+        78,
+        519,
+        2081
+      ]
+    },
+    {
+      "name": "middle-plain-facade",
+      "source": "middle-facades-source.png",
+      "sourceBox": [
+        32,
+        364,
+        284,
+        2141
+      ],
+      "nativeBox": [
+        56,
+        266,
+        88,
+        480
+      ],
+      "fit": "width",
+      "alignX": 0,
+      "referenceSource": "middle-facades-hd-v1.png",
+      "referenceSourceBox": [
+        35,
+        417,
+        286,
+        2120
+      ]
+    },
+    {
+      "name": "left-light-facade",
+      "source": "light-facade-source.png",
+      "sourceBox": [
+        260,
+        18,
+        463,
+        2152
+      ],
+      "nativeBox": [
+        21,
+        202,
+        47,
+        480
+      ],
+      "fit": "height",
+      "alignX": 1,
+      "referenceSource": "light-facade-hd-v1.png",
+      "referenceSourceBox": [
+        264,
+        22,
+        460,
+        2152
+      ]
+    },
+    {
+      "name": "left-wraparound-foreground-ledge",
+      "source": "left-base-source.png",
+      "sourceBox": [
+        253,
+        32,
+        470,
+        2140
+      ],
+      "nativeBox": [
+        0,
+        201,
+        28,
+        480
+      ],
+      "fit": "height",
+      "alignX": 0,
+      "clipNativeBox": [
+        21,
+        300,
+        28,
+        315
+      ],
+      "referenceSource": "left-base-hd-v2.png",
+      "referenceSourceBox": [
+        259,
+        39,
+        467,
+        2131
+      ]
+    },
+    {
+      "name": "mauve-column",
+      "source": "remaining-gray-source.png",
+      "sourceBox": [
+        350,
+        94,
+        442,
+        1581
+      ],
+      "nativeBox": [
+        47,
+        332,
+        56,
+        480
+      ],
+      "fit": "height",
+      "referenceSource": "remaining-gray-hd-v1.png",
+      "referenceSourceBox": [
+        351,
+        99,
+        442,
+        1581
+      ]
+    },
+    {
+      "name": "lower-connecting-gray",
+      "source": "remaining-gray-source.png",
+      "sourceBox": [
+        57,
+        1581,
+        330,
+        2135
+      ],
+      "nativeBox": [
+        88,
+        350,
+        106,
+        383
+      ],
+      "fit": "width",
+      "alignX": 0,
+      "referenceSource": "remaining-gray-hd-v1.png",
+      "referenceSourceBox": [
+        60,
+        1572,
+        331,
+        2077
+      ],
+      "bodyRepeat": {
+        "headerBottom": 2025,
+        "top": 2025,
+        "bottom": 2125,
+        "extendToCanvasBottom": true
+      }
+    },
+    {
+      "name": "lower-striped-facade",
+      "source": "striped-facade-source.png",
+      "sourceBox": [
+        112,
+        160,
+        751,
+        1712
+      ],
+      "nativeBox": [
+        80,
+        383,
+        116,
+        480
+      ],
+      "fit": "height",
+      "referenceSource": "striped-facade-hd-v1.png",
+      "referenceSourceBox": [
+        114,
+        165,
+        748,
+        1702
+      ]
+    }
+  ],
+  "remaining": [
+    "review generated module geometry and final composite"
+  ],
+  "reviewNotes": [
+    "All runtime pixels are builtin-generated raster parts, uniformly downsampled; original pixels are only used for reference reviews.",
+    "26 registered layers including reused straight body and attached ledge crops; no local repaint or vector redraw.",
+    "Native opaque coverage99.6299%; small silhouette, band-position and color deviations remain. Not pixel-identical to native160x480.",
+    "Longest blue tower uses generated straight body interior with border-free crop; native gap remains transparent."
+  ],
+  "sourcePolicy": "Whole building PNGs generated with built-in image_gen. One building supplies its own cap, columns and wall repeat; native visible-plane cutouts are continued behind foreground buildings. No cross-image facade seams, old RGB, master-alpha replacement or neighbor-pixel fills.",
+  "sourceRegistrations": {
+    "blue-a": [
+      {
+        "region": [
+          0,
+          0,
+          85,
+          2172
+        ],
+        "before": [
+          38,
+          98,
+          52,
+          1205
+        ],
+        "after": [
+          42,
+          98,
+          59,
+          1210
+        ]
+      },
+      {
+        "region": [
+          85,
+          0,
+          205,
+          2172
+        ],
+        "before": [
+          120,
+          98,
+          183,
+          1843
+        ],
+        "after": [
+          124,
+          98,
+          189,
+          1882
+        ]
+      },
+      {
+        "region": [
+          205,
+          0,
+          350,
+          2172
+        ],
+        "before": [
+          228,
+          98,
+          336,
+          731
+        ],
+        "after": [
+          233,
+          65,
+          344,
+          738
+        ]
+      },
+      {
+        "region": [
+          350,
+          0,
+          455,
+          2172
+        ],
+        "before": [
+          366,
+          98,
+          420,
+          2090
+        ],
+        "after": [
+          372,
+          98,
+          433,
+          2129
+        ]
+      },
+      {
+        "region": [
+          455,
+          0,
+          560,
+          2172
+        ],
+        "before": [
+          479,
+          98,
+          522,
+          1427
+        ],
+        "after": [
+          486,
+          98,
+          537,
+          1438
+        ]
+      },
+      {
+        "region": [
+          560,
+          0,
+          724,
+          2172
+        ],
+        "before": [
+          599,
+          48,
+          648,
+          2151
+        ],
+        "after": [
+          608,
+          47,
+          669,
+          2167
+        ]
+      }
+    ],
+    "blue-b": [
+      {
+        "region": [
+          0,
+          0,
+          110,
+          2172
+        ],
+        "before": [
+          30,
+          98,
+          90,
+          1375
+        ],
+        "after": [
+          30,
+          96,
+          93,
+          1379
+        ]
+      },
+      {
+        "region": [
+          110,
+          0,
+          225,
+          2172
+        ],
+        "before": [
+          130,
+          98,
+          191,
+          1599
+        ],
+        "after": [
+          131,
+          95,
+          193,
+          1602
+        ]
+      },
+      {
+        "region": [
+          225,
+          0,
+          345,
+          2172
+        ],
+        "before": [
+          251,
+          98,
+          326,
+          716
+        ],
+        "after": [
+          253,
+          93,
+          329,
+          716
+        ]
+      },
+      {
+        "region": [
+          345,
+          0,
+          460,
+          2172
+        ],
+        "before": [
+          370,
+          98,
+          447,
+          1539
+        ],
+        "after": [
+          370,
+          93,
+          449,
+          1545
+        ]
+      },
+      {
+        "region": [
+          460,
+          0,
+          550,
+          2172
+        ],
+        "before": [
+          490,
+          98,
+          533,
+          2108
+        ],
+        "after": [
+          489,
+          96,
+          538,
+          2141
+        ]
+      },
+      {
+        "region": [
+          550,
+          0,
+          724,
+          2172
+        ],
+        "before": [
+          599,
+          98,
+          650,
+          1399
+        ],
+        "after": [
+          598,
+          96,
+          656,
+          1403
+        ]
+      }
+    ],
+    "left-base": [
+      {
+        "region": [
+          0,
+          0,
+          724,
+          2171
+        ],
+        "before": [
+          259,
+          39,
+          467,
+          2131
+        ],
+        "after": [
+          254,
+          33,
+          469,
+          2139
+        ]
+      }
+    ],
+    "light-facade": [
+      {
+        "region": [
+          0,
+          0,
+          724,
+          2172
+        ],
+        "before": [
+          264,
+          22,
+          460,
+          2152
+        ],
+        "after": [
+          261,
+          19,
+          462,
+          2151
+        ]
+      }
+    ],
+    "middle-facades": [
+      {
+        "region": [
+          0,
+          0,
+          370,
+          2172
+        ],
+        "before": [
+          35,
+          417,
+          286,
+          2120
+        ],
+        "after": [
+          33,
+          365,
+          283,
+          2140
+        ]
+      }
+    ],
+    "remaining-gray": [
+      {
+        "region": [
+          0,
+          0,
+          330,
+          1459
+        ],
+        "before": [
+          41,
+          49,
+          293,
+          1371
+        ],
+        "after": [
+          40,
+          47,
+          297,
+          1411
+        ]
+      },
+      {
+        "region": [
+          330,
+          0,
+          500,
+          1699
+        ],
+        "before": [
+          330,
+          99,
+          442,
+          1700
+        ],
+        "after": [
+          330,
+          95,
+          441,
+          1699
+        ]
+      },
+      {
+        "region": [
+          500,
+          0,
+          724,
+          1699
+        ],
+        "before": [
+          551,
+          99,
+          611,
+          1420
+        ],
+        "after": [
+          553,
+          95,
+          610,
+          1686
+        ]
+      },
+      {
+        "region": [
+          0,
+          1459,
+          500,
+          2171
+        ],
+        "before": [
+          60,
+          1460,
+          442,
+          2077
+        ],
+        "after": [
+          58,
+          1459,
+          440,
+          2134
+        ]
+      }
+    ],
+    "right-ledge": [
+      {
+        "region": [
+          0,
+          0,
+          724,
+          2172
+        ],
+        "before": [
+          208,
+          78,
+          519,
+          2081
+        ],
+        "after": [
+          207,
+          74,
+          521,
+          2121
+        ]
+      }
+    ],
+    "right-tower": [
+      {
+        "region": [
+          0,
+          0,
+          724,
+          2172
+        ],
+        "before": [
+          275,
+          101,
+          449,
+          2071
+        ],
+        "after": [
+          276,
+          97,
+          448,
+          2109
+        ]
+      }
+    ],
+    "striped-facade": [
+      {
+        "region": [
+          0,
+          0,
+          861,
+          1827
+        ],
+        "before": [
+          114,
+          165,
+          748,
+          1702
+        ],
+        "after": [
+          113,
+          161,
+          750,
+          1711
+        ]
+      }
+    ],
+    "upper-gray-pair": [
+      {
+        "region": [
+          0,
+          0,
+          370,
+          2172
+        ],
+        "before": [
+          31,
+          700,
+          289,
+          1835
+        ],
+        "after": [
+          30,
+          696,
+          291,
+          1935
+        ]
+      },
+      {
+        "region": [
+          370,
+          0,
+          724,
+          2172
+        ],
+        "before": [
+          452,
+          99,
+          661,
+          1571
+        ],
+        "after": [
+          452,
+          97,
+          664,
+          1596
+        ]
+      }
+    ]
+  },
+  "reviewStatus": "Reviewed whole-building sources, three native-density before/after closeups, all eight original-camera runtime heights, both six-floor skins and forced rain after final Tinify compression."
+}

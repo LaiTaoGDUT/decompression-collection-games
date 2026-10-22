@@ -3,6 +3,7 @@ import type { PlatformAudioBuffer, PlatformAudioContext, PlatformAudioGain, Plat
 interface Voice {
     readonly source: PlatformAudioSource;
     readonly gain: PlatformAudioGain;
+    readonly volume: number;
     started: boolean;
     cancelled: boolean;
 }
@@ -10,9 +11,15 @@ interface Voice {
 /** 每个游戏音效 Scope 独立拥有六个声部；起播、结束和取消都释放节点引用。 */
 export class PackedAudioVoices {
     private readonly voices = new Set<Voice>();
+    private volumeScale = 1;
 
     constructor(private readonly context: () => PlatformAudioContext,
         private readonly audible: () => boolean) {}
+
+    setVolumeScale(scale: number): void {
+        this.volumeScale = Math.max(0, Math.min(1, scale));
+        this.voices.forEach(voice => { voice.gain.gain.value = voice.volume * this.volumeScale; });
+    }
 
     play(buffer: PlatformAudioBuffer, volume: number): void {
         if (!this.audible()) return;
@@ -22,8 +29,8 @@ export class PackedAudioVoices {
             if (oldest) this.release(oldest, true);
         }
         const source = context.createBufferSource(), gain = context.createGain();
-        const voice: Voice = { source, gain, started: false, cancelled: false };
-        source.buffer = buffer; source.loop = false; gain.gain.value = Math.max(0, Math.min(1, volume));
+        const voice: Voice = { source, gain, volume: Math.max(0, Math.min(1, volume)), started: false, cancelled: false };
+        source.buffer = buffer; source.loop = false; gain.gain.value = voice.volume * this.volumeScale;
         source.connect(gain); gain.connect(context.destination);
         source.onended = () => this.release(voice, false);
         this.voices.add(voice);

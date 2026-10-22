@@ -20,9 +20,10 @@ export class AchievementService {
         const definition = manifest.achievement;
         if (!definition || definition.metric !== metric || !Number.isFinite(value) || value < 0) return false;
         const previous = this.getRecord(manifest);
+        this.storage.recordGameMetric(manifest.id, metric, Math.min(definition.target, Math.max(value, previous?.progress ?? 0)));
         if (previous?.unlockedAt) return false;
         const progress = Math.min(definition.target, Math.max(previous?.progress ?? 0, value));
-        if (progress <= (previous?.progress ?? 0)) return false;
+        if (progress <= (previous?.progress ?? 0) && progress < definition.target) return false;
         const unlockedAt = progress >= definition.target ? Math.max(1, this.now()) : undefined;
         this.storage.writeAchievement(manifest.id, { achievementId: definition.id, progress,
             ...(unlockedAt ? { unlockedAt } : {}) });

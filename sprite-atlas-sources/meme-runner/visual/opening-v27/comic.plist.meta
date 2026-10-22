@@ -1,0 +1,68 @@
+{
+  "subMetas": {
+    "comic-0": {
+      "importer": "sprite-frame",
+      "name": "comic-0",
+      "uuid": "87ccfc50-23a3-5fc1-9a93-c66a5ba39157",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 768,
+        "height": 512,
+        "rawWidth": 768,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "comic-1": {
+      "importer": "sprite-frame",
+      "name": "comic-1",
+      "uuid": "96629408-cc1c-5739-b5f4-1540d2ddd30c",
+      "userData": {
+        "trimX": 768,
+        "trimY": 0,
+        "width": 768,
+        "height": 512,
+        "rawWidth": 768,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "comic-2": {
+      "importer": "sprite-frame",
+      "name": "comic-2",
+      "uuid": "a58ecec9-d1b5-58bb-a1c7-1b98f3ab067b",
+      "userData": {
+        "trimX": 0,
+        "trimY": 512,
+        "width": 768,
+        "height": 512,
+        "rawWidth": 768,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "comic-3": {
+      "importer": "sprite-frame",
+      "name": "comic-3",
+      "uuid": "df9a2e1c-bbf2-58d3-ac53-377e6769aa16",
+      "userData": {
+        "trimX": 768,
+        "trimY": 512,
+        "width": 768,
+        "height": 512,
+        "rawWidth": 768,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

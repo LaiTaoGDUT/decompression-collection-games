@@ -1,0 +1,12 @@
+Use case: precise-object-edit
+Edit target: image 1, the 4x4 sixteen-frame tabby cat sprite sheet. Keep its transparent background and character identity. Preserve the camera, fur style, face, paw baseline, body size, tail shape and warm-neutral lighting.
+Correct the turn angles in ONLY the ODD-NUMBERED intermediate frames listed below (numbered from 0 in row-major order). The purpose is a smooth clockwise yaw cycle, always turning in one direction. Several intermediate views currently repeat or face the wrong way; redraw those specific full-cat poses at genuinely intermediate viewing angles.
+Frame 1 (row1,col2): almost RIGHT SIDE PROFILE, rotated only 22.5 degrees towards camera. One eye fully visible, far eye barely visible. More side-on than frame2.
+Frame 3 (row1,col4): almost FRONT, but muzzle points slightly to the viewer's RIGHT, right flank extends subtly to left. Do not make exact frontal.
+Frame 5 (row2,col2): almost FRONT but muzzle points slightly viewer's LEFT, less side view than frame6.
+Frame 7 (row2,col4): almost LEFT SIDE PROFILE, turned 22.5 degrees towards camera.
+Frame 9 (row3,col2): almost LEFT SIDE PROFILE but yaw 22.5 degrees AWAY from camera, eye mostly hidden.
+Frame 11 (row3,col4): nearly REAR VIEW, yaw 22.5 degrees toward LEFT side. Both ears viewed from behind, NO visible face or eyes. Back and rear paws visible. Tail is near center, a little RIGHT of center. It must follow the rear-left frame10 and precede the straight-back frame12. Absolutely NOT a rear-right view.
+Frame 13 (row4,col2): nearly REAR VIEW, yaw 22.5 degrees toward RIGHT side. Both ears from behind, NO visible face or eyes. Tail near center a little LEFT of center. Must follow straight rear frame12 and precede rear-right frame14.
+Frame 15 (row4,col4): almost RIGHT SIDE PROFILE but yaw 22.5 degrees AWAY from camera, face barely visible. Completes the circle toward frame0.
+Keep all eight EVEN numbered frames unchanged. Do not simply duplicate a neighboring frame. Sixteen separate full-body kittens, generous gaps. No labels, shadows, text, borders or motion blur. Genuine transparent RGBA.

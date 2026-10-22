@@ -17,7 +17,7 @@ const SECTIONS = Object.freeze([
     { key: 'fixes', title: '问题修复', allowCollection: true },
 ]);
 /** 合集大厅本身的改动（如大厅新功能、通用修复）用这个虚拟目标；ID 与游戏内 Announcement.ts 的 ANNOUNCEMENT_COLLECTION_ID 一致。 */
-const COLLECTION_TARGET = Object.freeze({ id: 'collection', name: '游戏合集' });
+const COLLECTION_TARGET = Object.freeze({ id: 'collection', name: '通用' });
 const MAX_ENTRY_LENGTH = 60;
 /** 编辑页预览封面：与游戏内弹窗一致，读 lobby-covers 包里的大厅封面，合集大厅用大厅标志。 */
 const COVER_BUNDLE_DIR = 'assets/lobby-covers';
@@ -29,12 +29,20 @@ function readJson(root, file) {
     return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 }
 
-function writeJsonAtomic(root, file, value) {
+function writeFileAtomic(root, file, content) {
     const target = path.join(root, file);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     const temp = `${target}.${process.pid}.tmp`;
-    fs.writeFileSync(temp, JSON.stringify(value, null, 2) + '\n');
-    fs.renameSync(temp, target);
+    try {
+        fs.writeFileSync(temp, content);
+        fs.renameSync(temp, target);
+    } finally {
+        if (fs.existsSync(temp)) fs.unlinkSync(temp);
+    }
+}
+
+function writeJsonAtomic(root, file, value, indent = 2) {
+    writeFileAtomic(root, file, JSON.stringify(value, null, indent) + '\n');
 }
 
 function loadGames(root) {
@@ -202,6 +210,19 @@ class AnnouncementStore {
         return { id, runtimeChanged: true };
     }
 
+    /** 从历史中移除。删掉正在生效的公告时清空游戏内文件，大厅不再展示公告。 */
+    remove(id) {
+        const history = loadHistory(this.root);
+        const index = history.announcements.findIndex((item) => item.id === id);
+        if (index < 0) throw new Error('公告不存在，请刷新页面');
+        history.announcements.splice(index, 1);
+        const wasActive = history.activeId === id;
+        if (wasActive) history.activeId = null;
+        writeJsonAtomic(this.root, HISTORY_FILE, history);
+        if (wasActive) this.writeRuntime(history, loadGames(this.root));
+        return { id, runtimeChanged: wasActive };
+    }
+
     writeRuntime(history, games) {
         const active = history.announcements.find((item) => item.id === history.activeId) ?? null;
         writeJsonAtomic(this.root, RUNTIME_FILE, runtimeConfig(active, games));
@@ -209,6 +230,6 @@ class AnnouncementStore {
 }
 
 module.exports = {
-    ROOT, HISTORY_FILE, RUNTIME_FILE, SECTIONS, COLLECTION_TARGET, MAX_ENTRY_LENGTH,
-    AnnouncementStore, normalizeDraft, plainText, runtimeConfig,
+    ROOT, HISTORY_FILE, RUNTIME_FILE, GAMES_FILE, SECTIONS, COLLECTION_TARGET, MAX_ENTRY_LENGTH,
+    AnnouncementStore, normalizeDraft, plainText, runtimeConfig, writeJsonAtomic, writeFileAtomic,
 };

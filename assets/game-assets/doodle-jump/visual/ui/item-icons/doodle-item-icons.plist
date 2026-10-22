@@ -7,7 +7,7 @@
 		<key>head-start</key>
 		<dict>
 			<key>frame</key>
-			<string>{{215,326},{199,266}}</string>
+			<string>{{215,2},{199,266}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -17,23 +17,10 @@
 			<key>sourceSize</key>
 			<string>{201,268}</string>
 		</dict>
-		<key>jetpack</key>
-		<dict>
-			<key>frame</key>
-			<string>{{2,2},{242,320}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{1.0,1.0},{242,320}}</string>
-			<key>sourceSize</key>
-			<string>{244,322}</string>
-		</dict>
 		<key>propeller-hat</key>
 		<dict>
 			<key>frame</key>
-			<string>{{290,596},{252,243}}</string>
+			<string>{{215,547},{252,243}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -46,7 +33,7 @@
 		<key>rocket</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,326},{209,320}}</string>
+			<string>{{2,2},{209,320}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -59,7 +46,7 @@
 		<key>shield</key>
 		<dict>
 			<key>frame</key>
-			<string>{{418,271},{232,243}}</string>
+			<string>{{290,272},{232,243}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -72,7 +59,7 @@
 		<key>spring</key>
 		<dict>
 			<key>frame</key>
-			<string>{{248,2},{209,265}}</string>
+			<string>{{2,547},{209,265}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -85,7 +72,7 @@
 		<key>trampoline</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,650},{284,217}}</string>
+			<string>{{2,326},{284,217}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -103,7 +90,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-item-icons.png</string>
 		<key>size</key>
-		<string>{652,869}</string>
+		<string>{524,814}</string>
 		<key>textureFileName</key>
 		<string>doodle-item-icons.png</string>
 	</dict>

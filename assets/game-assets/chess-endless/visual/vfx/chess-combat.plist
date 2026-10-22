@@ -7,80 +7,80 @@
 		<key>vfx_capture_burst</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,480},{320,320}}</string>
+			<string>{{732,2},{136,136}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{320,320}}</string>
+			<string>{{0.0,0.0},{136,136}}</string>
 			<key>sourceSize</key>
-			<string>{320,320}</string>
+			<string>{136,136}</string>
 		</dict>
 		<key>vfx_combo_burst</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,176},{720,300}}</string>
+			<string>{{2,143},{560,233}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{720,300}}</string>
+			<string>{{0.0,0.0},{560,233}}</string>
 			<key>sourceSize</key>
-			<string>{720,300}</string>
+			<string>{560,233}</string>
 		</dict>
 		<key>vfx_cross_slash</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{900,170}}</string>
+			<string>{{2,2},{726,137}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{900,170}}</string>
+			<string>{{0.0,0.0},{726,137}}</string>
 			<key>sourceSize</key>
-			<string>{900,170}</string>
+			<string>{726,137}</string>
 		</dict>
 		<key>vfx_ink_particle</key>
 		<dict>
 			<key>frame</key>
-			<string>{{726,176},{256,256}}</string>
+			<string>{{872,136},{100,100}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{256,256}}</string>
+			<string>{{0.0,0.0},{100,100}}</string>
 			<key>sourceSize</key>
-			<string>{256,256}</string>
+			<string>{100,100}</string>
 		</dict>
 		<key>vfx_light_particle</key>
 		<dict>
 			<key>frame</key>
-			<string>{{726,436},{256,256}}</string>
+			<string>{{872,2},{130,130}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{256,256}}</string>
+			<string>{{0.0,0.0},{130,130}}</string>
 			<key>sourceSize</key>
-			<string>{256,256}</string>
+			<string>{130,130}</string>
 		</dict>
 		<key>vfx_wood_chip</key>
 		<dict>
 			<key>frame</key>
-			<string>{{326,696},{256,256}}</string>
+			<string>{{732,142},{100,100}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{256,256}}</string>
+			<string>{{0.0,0.0},{100,100}}</string>
 			<key>sourceSize</key>
-			<string>{256,256}</string>
+			<string>{100,100}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
@@ -90,7 +90,7 @@
 		<key>realTextureFileName</key>
 		<string>chess-combat.png</string>
 		<key>size</key>
-		<string>{984,954}</string>
+		<string>{1004,378}</string>
 		<key>textureFileName</key>
 		<string>chess-combat.png</string>
 	</dict>

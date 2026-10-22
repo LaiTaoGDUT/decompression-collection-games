@@ -1,0 +1,8 @@
+Precise limb correction to image1. Preserve all four heads, eyes, laughing mouths, torsos, cream bellies, pouches, silhouette mass, lighting, material, canvas and scale. Change ONLY limb poses.
+In ALL FOUR drawings the large visible FOREGROUND THIGH must extend BACK toward LEFT, below the teal pouch, NOT across the cream belly to the right. That leg is behind the hip throughout this quarter cycle.
+CELL0: foreground near thigh slopes down-left, near toes planted local x=125,y=660 behind hips. The FAR leg, slightly shaded and originating BEHIND cream belly, raises knee forward to right, foot folded at local x=390,y=580.
+CELL1: near leg points back-left, knee around local x=150,y=565, near foot folds back-up toward local x=100,y=585. Far leg extends forward with foot local x=410,y=605.
+CELL2: near heel curled upward/back toward LEFT under teal pouch, dark sole visible at local x=110,y=555. Far leg reaches forward/right, foot local x=440,y=620. Both feet airborne.
+CELL3: near leg stays folded back-left, visible dark sole local x=125,y=555. Far foot now reaches forward/down local x=430,y=650 ready to land.
+In ALL FOUR cells move the LARGE VISIBLE ARM from behind body to FORWARD across belly: elbow below shoulder around local x=290,y=420, dark fist in front of cream belly around local x=420,y=380. The other arm goes backward behind torso. Small gradual arm swing across the four poses.
+Image2 is a guide ONLY for the folded-back foreground heel/sole in its leftmost two cells; do not copy its wrong forward large thigh. Absolutely avoid a big bright thigh crossing in front of belly toward right. Full-body right-facing run, no extra limbs, no text or floor, actual transparent background.

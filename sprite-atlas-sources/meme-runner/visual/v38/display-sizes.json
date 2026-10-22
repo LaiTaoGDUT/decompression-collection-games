@@ -1,0 +1,522 @@
+{
+  "crate": [
+    84,
+    82
+  ],
+  "roller": [
+    92,
+    92
+  ],
+  "spikes": [
+    200,
+    104
+  ],
+  "steam-base": [
+    100,
+    68
+  ],
+  "steam-jet": [
+    114,
+    174
+  ],
+  "gate": [
+    240,
+    720
+  ],
+  "bridge-planks": [
+    98,
+    48
+  ],
+  "coin": [
+    36,
+    36
+  ],
+  "coin-gold": [
+    40,
+    40
+  ],
+  "power-magnet": [
+    80,
+    80
+  ],
+  "power-shield": [
+    80,
+    80
+  ],
+  "awning": [
+    192,
+    64
+  ],
+  "crate-alley": [
+    84,
+    82
+  ],
+  "roller-alley": [
+    92,
+    92
+  ],
+  "spikes-alley": [
+    200,
+    104
+  ],
+  "gate-alley": [
+    240,
+    720
+  ],
+  "awning-alley": [
+    196,
+    64
+  ],
+  "pit-wall-alley": [
+    64,
+    160
+  ],
+  "crate-roofs": [
+    84,
+    82
+  ],
+  "roller-roofs": [
+    92,
+    92
+  ],
+  "spikes-roofs": [
+    200,
+    104
+  ],
+  "gate-roofs": [
+    240,
+    720
+  ],
+  "awning-roofs": [
+    173,
+    64
+  ],
+  "pit-wall-roofs": [
+    64,
+    160
+  ],
+  "crate-night": [
+    84,
+    82
+  ],
+  "roller-night": [
+    92,
+    92
+  ],
+  "spikes-night": [
+    200,
+    104
+  ],
+  "gate-night": [
+    240,
+    720
+  ],
+  "awning-night": [
+    172,
+    64
+  ],
+  "pit-wall-night": [
+    64,
+    160
+  ],
+  "ground-street": [
+    576,
+    160
+  ],
+  "ground-alley": [
+    576,
+    160
+  ],
+  "ground-roofs": [
+    576,
+    160
+  ],
+  "ground-night": [
+    576,
+    160
+  ],
+  "pit-wall": [
+    64,
+    160
+  ],
+  "backdrop-street": [
+    1334,
+    750
+  ],
+  "backdrop-alley": [
+    1334,
+    750
+  ],
+  "backdrop-roofs": [
+    1334,
+    750
+  ],
+  "backdrop-night": [
+    1334,
+    750
+  ],
+  "mid-street-0": [
+    340,
+    277
+  ],
+  "mid-street-1": [
+    340,
+    277
+  ],
+  "mid-street-2": [
+    340,
+    277
+  ],
+  "mid-street-3": [
+    340,
+    277
+  ],
+  "mid-street-4": [
+    340,
+    277
+  ],
+  "mid-street-5": [
+    340,
+    277
+  ],
+  "mid-alley-0": [
+    340,
+    277
+  ],
+  "mid-alley-1": [
+    340,
+    277
+  ],
+  "mid-alley-2": [
+    340,
+    277
+  ],
+  "mid-alley-3": [
+    340,
+    277
+  ],
+  "mid-alley-4": [
+    340,
+    277
+  ],
+  "mid-alley-5": [
+    340,
+    277
+  ],
+  "mid-roofs-0": [
+    340,
+    277
+  ],
+  "mid-roofs-1": [
+    340,
+    277
+  ],
+  "mid-roofs-2": [
+    340,
+    277
+  ],
+  "mid-roofs-3": [
+    340,
+    277
+  ],
+  "mid-roofs-4": [
+    340,
+    277
+  ],
+  "mid-roofs-5": [
+    340,
+    277
+  ],
+  "mid-night-0": [
+    340,
+    277
+  ],
+  "mid-night-1": [
+    340,
+    277
+  ],
+  "mid-night-2": [
+    340,
+    277
+  ],
+  "mid-night-3": [
+    340,
+    277
+  ],
+  "mid-night-4": [
+    340,
+    277
+  ],
+  "mid-night-5": [
+    340,
+    277
+  ],
+  "plaza-street": [
+    576,
+    72
+  ],
+  "plaza-alley": [
+    576,
+    72
+  ],
+  "plaza-roofs": [
+    576,
+    72
+  ],
+  "plaza-night": [
+    576,
+    72
+  ],
+  "fg-0": [
+    180,
+    150
+  ],
+  "fg-1": [
+    180,
+    150
+  ],
+  "fg-2": [
+    180,
+    150
+  ],
+  "arch": [
+    300,
+    320
+  ],
+  "customer-wait": [
+    128,
+    128
+  ],
+  "customer-cheer": [
+    128,
+    128
+  ],
+  "customer-tea": [
+    128,
+    128
+  ],
+  "hud-panel": [
+    240,
+    100
+  ],
+  "hud-track": [
+    296,
+    40
+  ],
+  "hud-fever-fill": [
+    146,
+    20
+  ],
+  "hud-route": [
+    312,
+    40
+  ],
+  "hud-tag": [
+    60,
+    36
+  ],
+  "hud-pause": [
+    72,
+    72
+  ],
+  "hud-heart": [
+    36,
+    36
+  ],
+  "hud-kangaroo": [
+    44,
+    44
+  ],
+  "hud-bag": [
+    44,
+    44
+  ],
+  "hud-house": [
+    44,
+    44
+  ],
+  "hud-flame": [
+    44,
+    44
+  ],
+  "hud-button-slide": [
+    144,
+    144
+  ],
+  "hud-button-jump": [
+    144,
+    144
+  ],
+  "dlg-board": [
+    240,
+    240
+  ],
+  "dlg-ribbon-win": [
+    720,
+    144
+  ],
+  "dlg-ribbon-lose": [
+    720,
+    144
+  ],
+  "dlg-sign": [
+    420,
+    210
+  ],
+  "dlg-receipt": [
+    380,
+    346
+  ],
+  "dlg-tag": [
+    420,
+    140
+  ],
+  "dlg-stamp": [
+    124,
+    124
+  ],
+  "dlg-star": [
+    128,
+    128
+  ],
+  "dlg-confetti": [
+    900,
+    360
+  ],
+  "dlg-btn-replay": [
+    156,
+    156
+  ],
+  "dlg-btn-play": [
+    156,
+    156
+  ],
+  "dlg-btn-home": [
+    124,
+    124
+  ],
+  "dlg-btn-restart": [
+    124,
+    124
+  ],
+  "dlg-art-win": [
+    470,
+    376
+  ],
+  "dlg-art-lose": [
+    500,
+    400
+  ],
+  "dlg-art-pause": [
+    470,
+    360
+  ],
+  "dlg-title-win": [
+    345,
+    84
+  ],
+  "dlg-title-lose": [
+    378,
+    84
+  ],
+  "dlg-title-pause": [
+    247,
+    66
+  ],
+  "dlg-word-replay": [
+    123,
+    34
+  ],
+  "dlg-word-home": [
+    127,
+    34
+  ],
+  "dlg-word-restart": [
+    128,
+    34
+  ],
+  "dlg-word-resume": [
+    99,
+    34
+  ],
+  "dlg-word-run": [
+    128,
+    34
+  ],
+  "dlg-word-delivery": [
+    127,
+    34
+  ],
+  "dlg-word-rating": [
+    127,
+    34
+  ],
+  "dlg-word-total": [
+    128,
+    34
+  ],
+  "dlg-word-short": [
+    66,
+    34
+  ],
+  "dlg-word-meter": [
+    34,
+    34
+  ],
+  "dlg-word-best": [
+    98,
+    34
+  ],
+  "dlg-word-time": [
+    66,
+    34
+  ],
+  "dlg-digit-0": [
+    63,
+    80
+  ],
+  "dlg-digit-1": [
+    42,
+    80
+  ],
+  "dlg-digit-2": [
+    62,
+    80
+  ],
+  "dlg-digit-3": [
+    59,
+    80
+  ],
+  "dlg-digit-4": [
+    64,
+    80
+  ],
+  "dlg-digit-5": [
+    59,
+    80
+  ],
+  "dlg-digit-6": [
+    62,
+    80
+  ],
+  "dlg-digit-7": [
+    54,
+    80
+  ],
+  "dlg-digit-8": [
+    63,
+    80
+  ],
+  "dlg-digit-9": [
+    62,
+    80
+  ],
+  "dlg-digit-plus": [
+    77,
+    80
+  ],
+  "dlg-digit-colon": [
+    42,
+    80
+  ]
+}

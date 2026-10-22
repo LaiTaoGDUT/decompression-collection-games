@@ -1,0 +1,11 @@
+{
+  "name": "wechat-performance",
+  "title": "微信高性能模式",
+  "package_version": 2,
+  "version": "1.0.0",
+  "description": "微信构建统一开启 iOS 高性能及高性能+模式。",
+  "editor": ">=3.8.8",
+  "contributions": {
+    "builder": "./builder.js"
+  }
+}

@@ -49,6 +49,7 @@ import {
     BOARD_COLUMNS,
     BOARD_ROWS,
     ChessEndlessModel,
+    ITEM_CAPACITY,
     ITEM_DISPLAY,
     ITEM_DESCRIPTIONS,
     PIECE_DISPLAY,
@@ -81,8 +82,9 @@ const CHESS_MUSIC_VOLUME = 0.051;
 const CROSS_DURATION = 0.62;
 const SPAWN_STAGGER = 0.055;
 const REINFORCEMENT_PIECE_GAP = 0;
-const PIECE_DIAMETER_SCALE = 1.24;
-const GENERAL_PIECE_DIAMETER_SCALE = 1.29;
+// 棋子素材四周带透明余量；1.40 倍格距时可见棋面约占格距 0.9，相邻棋子仍留出缝隙。
+const PIECE_DIAMETER_SCALE = 1.40;
+const GENERAL_PIECE_DIAMETER_SCALE = 1.46;
 // 弹窗底图使用半尺寸资源，卡片保持基准屏幕 1:1；整个舞台等比适配，卡片和文字不单独挤压。
 const REWARD_PANEL_WIDTH = 736;
 const REWARD_PANEL_HEIGHT = 904;
@@ -93,6 +95,26 @@ const PIECE_SHADOW_X_SCALE = 0.06;
 const PIECE_SHADOW_WIDTH_SCALE = 0.88;
 const PIECE_SHADOW_HEIGHT_SCALE = 0.30;
 const PIECE_SHADOW_Y_SCALE = -0.21;
+/** 演出期间点击棋盘后，后续走子、增援与等待按该倍率加速。 */
+const FAST_FORWARD_MOTION_SCALE = 0.35;
+/**
+ * 九宫格贴图的四边边距（贴图像素）。底图已按最大显示尺寸 1:1 导出：
+ * 棋盘外框 818×982（角花与内阴影约 102px），弹窗底板 620×815（圆角与内金线约 72px）。
+ * 边角保持原比例，只拉伸边条与中心，避免整图非等比拉伸造成角花和描边变形。
+ */
+const SLICED_SPRITE_BORDERS: Readonly<Record<string, number>> = Object.freeze({
+    boardBackplate: 102,
+    modalPanel: 72,
+});
+/** 按住敌棋超过该时长打开走法说明；短按不再弹窗打断操作。 */
+const LONG_PRESS_SECONDS = 0.42;
+/** 走法示意图的格距与上下留白；弹窗保持固定宽高比，示意图须整体压在正文与按钮之间。 */
+const PIECE_DIAGRAM_CELL = 36;
+const PIECE_DIAGRAM_TOP_GAP = 16;
+const PIECE_DIAGRAM_LEGEND_GAP = 14;
+const PIECE_DIAGRAM_LEGEND_HEIGHT = 30;
+const PIECE_DIAGRAM_HEIGHT = PIECE_DIAGRAM_TOP_GAP + PIECE_DIAGRAM_CELL * 4
+    + PIECE_DIAGRAM_LEGEND_GAP + PIECE_DIAGRAM_LEGEND_HEIGHT;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -107,6 +129,12 @@ export interface ChessEndlessServices {
     readonly storage: StorageService;
     readonly ads?: AdService;
     readonly platform: Platform;
+}
+
+/** 弹窗正文下方的附加内容（如敌棋走法示意图），高度计入弹窗尺寸。 */
+interface ModalExtra {
+    readonly height: number;
+    readonly draw: (parent: Node, top: number, width: number) => void;
 }
 
 interface OverlayAction {
@@ -157,7 +185,6 @@ const TEXTURE_PATHS: Readonly<Record<string, string>> = Object.freeze({
     pieceCannon: 'visual/pieces/piece_enemy_cannon/texture',
     pieceRook: 'visual/pieces/piece_enemy_rook/texture',
     pieceGeneral: 'visual/pieces/piece_enemy_general/texture',
-    logo: 'visual/ui/img_logo/texture',
     reinforcementV1: 'visual/ui/ui_reinforcement_panel_v1/texture',
     modalPanel: 'visual/ui/ui_modal_panel/texture',
     rewardPanel: 'visual/ui/ui_reward_panel_v2/texture',
@@ -337,7 +364,8 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             "·你的回合可直线移动绿色「車」任意格，走到敌棋位置即可吃子。",
             "·回合开始时可先使用 1 件道具。",
             "· 敌方每回合只走 1 枚棋。",
-            "· 淡红色格子表示敌方棋子可攻击此区域。可在暂停菜单关闭此提示。",
+            "· 绿点是安全落点，金环可安全吃子，红叉表示走过去会被吃，红色菱形是其余受威胁的格子。可在暂停菜单关闭危险提示。",
+            "· 敌方回合中点击棋盘可加速演出。",
             "· 下一批敌棋的到来时间会在棋盘顶部提前显示。",
             "· 连续用正常走車吃子会触发连斩；道具击杀不计入连斩。",
             "· 斩杀将军可得高分并获得一次道具奖励选择。",
@@ -361,23 +389,23 @@ const RULE_PAGES: readonly Readonly<{ title: string; body: string }>[]= Object.f
             '',
             "将：可直线走 1 格。",
             '',
-            '点击棋盘上的任意敌棋，可随时打开对应走法说明。',
+            '长按棋盘上的任意敌棋，可随时打开对应走法说明。',
         ].join('\n'),
     }),
     Object.freeze({
         title: '道具用法',
         body: [
-            `十字斩：${ITEM_DESCRIPTIONS.crossSlash} 先点道具，再点己方車确认蓄力；再次点击当前道具可取消选择。`,
+            `十字斩：${ITEM_DESCRIPTIONS.crossSlash} 先点道具，再点一次确认蓄力，或直接点落点走車并释放。`,
             '',
             `定身符：${ITEM_DESCRIPTIONS.freeze} 先点道具，再点目标敌棋；再次点击当前道具可取消选择。`,
             '',
-            `缓兵符：${ITEM_DESCRIPTIONS.delay} 连点道具两次确认使用。`,
+            `缓兵符：${ITEM_DESCRIPTIONS.delay} 先点道具，再点一次确认，或直接点落点走車。`,
             '',
             `驱逐令：${ITEM_DESCRIPTIONS.banish} 先点道具，再点普通敌棋；再次点击当前道具可取消选择。`,
             '',
             `移形符：${ITEM_DESCRIPTIONS.teleport} 先点道具，再点任意空格，再次点击当前道具可取消选择。`,
             '',
-            "每种道具最多持有 2 件。点击底部道具和斩将奖励卡上的「?」按钮都可打开道具详细说明。",
+            `每种道具最多持有 ${ITEM_CAPACITY} 件。需要目标的道具再次点击可取消选择。点击底部道具和斩将奖励卡上的「?」按钮都可打开道具详细说明。`,
         ].join('\n'),
     }),
 ]);
@@ -404,7 +432,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private reinforcementArtwork?: Node;
     private scoreLabel?: Label;
     private bestLabel?: Label;
-    private hintLabel?: Label;
     private selectedPlayer = false;
     private selectedItem?: ItemType;
     private inputLocked = false;
@@ -430,6 +457,17 @@ export class ChessEndlessGame extends Component implements MiniGame {
     private resumableRound?: ResumableChessRound;
     private savedProgressDiscarded = false;
     private operationGeneration = 0;
+    /**
+     * 各渲染分区上次绘制时依赖的输入。模型快照在两次状态变更之间是同一个冻结对象，
+     * 依赖逐项全等时跳过整层节点重建；暂停、重开等打断都会递增操作代次，
+     * 因此被中断的动画节点总会在下一次渲染时按快照重建。
+     */
+    private readonly renderedInputs = new Map<string, readonly unknown[]>();
+    /** 危险格只依赖模型快照，同一快照内的多次查询复用一次计算。 */
+    private dangerCache?: { readonly snapshot: ChessEndlessSnapshot; readonly keys: ReadonlySet<string> };
+    private motionScale = 1;
+    private pendingLongPress?: () => void;
+    private longPressFired = false;
     private reviveAdPending = false;
 
     async initialize(context: MiniGameContext<ChessEndlessServices>): Promise<void> {
@@ -450,6 +488,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
             if (this.tutorialOverlay) this.showTutorial();
         }, 0);
         this.lifecycle = 'ready';
+    }
+
+    isGameplayActive(): boolean {
+        return this.lifecycle === 'playing' && !this.deathOverlay && !this.rewardOverlay
+            && !this.pauseOverlay && !this.resultOverlay && !this.rulesOverlay && !this.infoOverlay;
     }
 
     begin(): void {
@@ -650,61 +693,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const hud = this.createNode(this.node, 'TopHud', hudX, hudY, hudWidth, hudHeight);
         const hudScale = Math.max(0.1, Math.min(1, hudHeight / 104));
 
-        const headerBrandWidth = Math.max(1, Math.min(214 * hudScale, hudWidth * 0.31 - 8 * hudScale));
-        const headerBrandScale = headerBrandWidth / 214;
-        const headerBrandHeight = Math.min(96 * headerBrandScale, hudHeight - 8 * hudScale);
-        const headerBrandPaddingX = 18 * headerBrandScale;
-        const headerBrandPaddingY = 14 * headerBrandScale;
-        const headerLogoWidth = 166 * headerBrandScale;
-        const headerLogoHeight = 50 * headerBrandScale;
-        const innerTop = headerBrandHeight / 2 - headerBrandPaddingY;
-        const innerBottom = -headerBrandHeight / 2 + headerBrandPaddingY;
-        const headerBrandX = -hudWidth / 2 + headerBrandWidth / 2 + 20 * hudScale;
-        const headerBrand = this.createNode(hud, 'HeaderBrand', headerBrandX, 0, headerBrandWidth, headerBrandHeight);
-        const headerBrandBackground = headerBrand.addComponent(Graphics);
-        headerBrandBackground.fillColor = new Color(224, 229, 232, 77);
-        headerBrandBackground.strokeColor = new Color(COLORS.gold.r, COLORS.gold.g, COLORS.gold.b, 220);
-        headerBrandBackground.lineWidth = Math.max(1.5, 2 * headerBrandScale);
-        headerBrandBackground.roundRect(
-            -headerBrandWidth / 2,
-            -headerBrandHeight / 2,
-            headerBrandWidth,
-            headerBrandHeight,
-            12 * headerBrandScale,
-        );
-        headerBrandBackground.fill();
-        headerBrandBackground.stroke();
-        const headerLogo = this.createNode(
-            headerBrand,
-            'HeaderLogo',
-            0,
-            innerTop - headerLogoHeight / 2,
-            headerLogoWidth,
-            headerLogoHeight,
-        );
-        this.applySprite(headerLogo, 'logo');
-        const bestLabelHeight = 24 * headerBrandScale;
-        this.bestLabel = this.createLabel(
-            headerBrand,
-            'BestScore',
-            `最高分 ${this.bestScore.toLocaleString()}`,
-            0,
-            innerBottom + bestLabelHeight / 2,
-            Math.max(10, Math.round(16 * headerBrandScale)),
-            COLORS.goldLight,
-            headerBrandWidth - headerBrandPaddingX * 2,
-            bestLabelHeight,
-        );
-        this.bestLabel.horizontalAlign = 1;
-        const bestOutline = this.bestLabel.node.addComponent(LabelOutline);
-        bestOutline.color = new Color(18, 36, 32, 235);
-        bestOutline.width = 2;
-
+        // 顶栏左右对称：规则在左、暂停在右，分数居中。
         const controlSize = 58 * hudScale;
-        const controlGap = 10 * hudScale;
-        const controlRightPadding = 20 * hudScale;
-        const pauseX = hudWidth / 2 - controlRightPadding - controlSize / 2;
-        const rulesX = pauseX - controlSize - controlGap;
+        const controlSidePadding = 20 * hudScale;
+        const pauseX = hudWidth / 2 - controlSidePadding - controlSize / 2;
+        const rulesX = -pauseX;
         this.createImageButtonOn(hud, 'PauseButton', 'pauseIcon', pauseX, 0, controlSize, () => {
             if (this.lifecycle === 'completed') {
                 if (!this.resultOverlay && this.completedResultModel) {
@@ -729,15 +722,25 @@ export class ChessEndlessGame extends Component implements MiniGame {
         );
 
         const scoreBlockWidth = Math.max(1, hudWidth * 0.32);
-        this.scoreLabel = this.createLabel(hud, 'Score', '0', 0, 11 * hudScale, Math.max(24, Math.round(48 * hudScale)), COLORS.goldLight, scoreBlockWidth, 58 * hudScale);
+        this.scoreLabel = this.createLabel(hud, 'Score', '0', 0, 14 * hudScale, Math.max(28, Math.round(60 * hudScale)), COLORS.goldLight, scoreBlockWidth, 68 * hudScale);
         const scoreOutline = this.scoreLabel.node.addComponent(LabelOutline);
         scoreOutline.color = new Color(45, 25, 12, 210);
         scoreOutline.width = 2;
-        const scoreTitle = this.createLabel(hud, 'ScoreTitle', '本局得分', 0, -30 * hudScale, Math.max(12, Math.round(24 * hudScale)), COLORS.white, scoreBlockWidth, 28 * hudScale);
-        scoreTitle.lineHeight = 28 * hudScale;
-        const scoreTitleOutline = scoreTitle.node.addComponent(LabelOutline);
-        scoreTitleOutline.color = new Color(45, 25, 12, 210);
-        scoreTitleOutline.width = 2;
+        this.bestLabel = this.createLabel(
+            hud,
+            'BestScore',
+            `最高分 ${this.bestScore.toLocaleString()}`,
+            0,
+            -34 * hudScale,
+            Math.max(12, Math.round(22 * hudScale)),
+            COLORS.white,
+            scoreBlockWidth,
+            28 * hudScale,
+        );
+        this.bestLabel.lineHeight = 28 * hudScale;
+        const bestOutline = this.bestLabel.node.addComponent(LabelOutline);
+        bestOutline.color = new Color(45, 25, 12, 210);
+        bestOutline.width = 2;
 
         this.reinforcementNode = this.createNode(
             this.node,
@@ -815,7 +818,20 @@ export class ChessEndlessGame extends Component implements MiniGame {
         );
 
         this.boardNode = this.createNode(this.node, 'Board', boardX, boardY, boardNodeWidth, boardNodeHeight);
-        this.applySprite(this.boardNode, 'boardBackplate');
+        // 外框按九宫格绘制：先按贴图原宽排版，再整体缩放到棋盘宽度，
+        // 让角花和边框粗细随棋盘等比变化，高度差只由边条和中心吸收。
+        const backplateWidth = this.frames.get('boardBackplate')?.originalSize.width ?? boardNodeWidth;
+        const backplateScale = boardNodeWidth / backplateWidth;
+        const backplate = this.createNode(
+            this.boardNode,
+            'Backplate',
+            0,
+            0,
+            backplateWidth,
+            boardNodeHeight / backplateScale,
+        );
+        backplate.setScale(backplateScale, backplateScale, 1);
+        this.applySprite(backplate, 'boardBackplate');
         const boardSurface = this.createNode(this.boardNode, 'BoardSurface', 0, 0, surfaceWidth, surfaceHeight);
         this.applySprite(boardSurface, 'board');
         this.gridNode = this.createNode(boardSurface, 'Grid', 0, 0, surfaceWidth, surfaceHeight);
@@ -826,8 +842,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.pieceLayer = this.createNode(boardSurface, 'PieceLayer', 0, 0, surfaceWidth, surfaceHeight);
         this.effectLayer = this.createNode(boardSurface, 'EffectLayer', 0, 0, surfaceWidth, surfaceHeight);
         this.createBoardHitTargets(boardSurface, surfaceWidth, surfaceHeight);
-
-        this.hintLabel = undefined;
 
         this.itemDock = this.createNode(this.node, 'ItemDock', dockX, dockY, dockWidth, dockHeight);
         const dockScale = Math.max(0.1, Math.min(1, dockWidth / 750));
@@ -888,32 +902,89 @@ export class ChessEndlessGame extends Component implements MiniGame {
                     cellWidth * 0.88,
                     cellHeight * 0.88,
                 );
+                target.on(Node.EventType.TOUCH_START, () => {
+                    this.beginCellPress(position(column, row));
+                }, this);
                 target.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
                     event.propagationStopped = true;
-                    void this.handleCellTap(position(column, row));
+                    const longPressed = this.longPressFired;
+                    this.cancelCellPress();
+                    if (!longPressed) void this.handleCellTap(position(column, row));
                 }, this);
+                target.on(Node.EventType.TOUCH_CANCEL, () => this.cancelCellPress(), this);
             }
         }
+    }
+
+    /** 按住敌棋一段时间后打开走法说明；松手或移出时取消。 */
+    private beginCellPress(target: BoardPosition): void {
+        this.cancelCellPress();
+        const snapshot = this.model.snapshot;
+        if (this.inputLocked || !this.isGameplayActive() || snapshot.phase !== 'player') return;
+        const enemy = snapshot.enemies.find((piece) => same(piece.position, target));
+        if (!enemy) return;
+        const open = (): void => {
+            this.pendingLongPress = undefined;
+            if (this.inputLocked || !this.isGameplayActive()) return;
+            this.longPressFired = true;
+            this.showPieceInfo(enemy.type);
+        };
+        this.pendingLongPress = open;
+        this.scheduleOnce(open, LONG_PRESS_SECONDS);
+    }
+
+    private cancelCellPress(): void {
+        if (this.pendingLongPress) this.unschedule(this.pendingLongPress);
+        this.pendingLongPress = undefined;
+        this.longPressFired = false;
     }
 
     private renderAll(): void {
         if (!this.node.isValid) return;
         const snapshot = this.model.snapshot;
+        const generation = this.operationGeneration;
         this.scoreLabel && (this.scoreLabel.string = snapshot.score.toLocaleString());
         this.bestLabel && (this.bestLabel.string = `最高分 ${Math.max(this.bestScore, snapshot.score).toLocaleString()}`);
-        this.context?.reportScore(snapshot.score);
-        this.context?.reportAchievementProgress('generals', snapshot.killStats.general);
+        if (this.needsRender('report', [generation, snapshot.score, snapshot.killStats.general])) {
+            this.context?.reportScore(snapshot.score);
+            this.context?.reportAchievementProgress('generals', snapshot.killStats.general);
+        }
         this.renderReinforcement(snapshot);
-        this.renderDangerPositions();
-        this.renderPieces(snapshot);
-        this.renderMoveTargets();
-        this.renderItemDock(snapshot);
+        if (this.needsRender('danger', [
+            generation, snapshot, this.dangerLayer, this.dangerHintsEnabled, this.selectedPlayer, this.selectedItem,
+        ])) {
+            this.renderDangerPositions(snapshot);
+        }
+        if (this.needsRender('pieces', [generation, snapshot, this.pieceLayer])) {
+            this.renderPieces(snapshot);
+        }
+        if (this.needsRender('moves', [
+            generation, snapshot, this.moveLayer, this.selectedPlayer, this.selectedItem, this.dangerHintsEnabled,
+        ])) {
+            this.renderMoveTargets(snapshot);
+        }
+        if (this.needsRender('dock', [generation, snapshot, this.itemDock, this.selectedItem])) {
+            this.renderItemDock(snapshot);
+        }
         this.updatePressureMusic(snapshot);
+    }
+
+    /** 依赖与上次绘制逐项全等时返回 false；否则记录本次依赖并返回 true。 */
+    private needsRender(section: string, inputs: readonly unknown[]): boolean {
+        const previous = this.renderedInputs.get(section);
+        if (previous
+            && previous.length === inputs.length
+            && previous.every((value, index) => value === inputs[index])) {
+            return false;
+        }
+        this.renderedInputs.set(section, inputs);
+        return true;
     }
 
     private renderReinforcement(snapshot: ChessEndlessSnapshot): void {
         const preview = this.reinforcementPreview;
-        if (preview) {
+        const queued = snapshot.queuedReinforcement;
+        if (preview && this.needsRender('reinforcement', [preview, queued.kind, queued.types.join(',')])) {
             this.clearChildren(preview);
             const types = snapshot.queuedReinforcement.types;
             const count = types.length;
@@ -951,17 +1022,59 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }
     }
 
-    private renderDangerPositions(): void {
+    private renderDangerPositions(snapshot: ChessEndlessSnapshot): void {
         const layer = this.dangerLayer;
         if (!layer) return;
         this.clearChildren(layer);
-        if (!this.dangerHintsEnabled || this.model.snapshot.phase !== 'player') return;
-        this.model.getDangerPositions().forEach((target) => {
-            const point = this.boardPoint(target);
-            const marker = this.createNode(layer, `Danger-${target.column}-${target.row}`, point.x, point.y, 38, 38);
+        if (!this.dangerHintsEnabled || snapshot.phase !== 'player') return;
+        // 可走的危险落点由走法层画红叉，这里只标其余受威胁的格子，避免两层记号叠在一起。
+        const moveTargets = new Set(this.moveTargetsFor(snapshot).map(cellKey));
+        this.dangerKeys(snapshot).forEach((key) => {
+            if (moveTargets.has(key)) return;
+            const [column, row] = key.split(',').map(Number);
+            const point = this.boardPoint(position(column!, row!));
+            const marker = this.createNode(layer, `Danger-${key}`, point.x, point.y, 44, 44);
             this.applySprite(marker, 'dangerMarker');
-            marker.getComponent(Sprite)!.color = new Color(255, 255, 255, 120);
+            marker.getComponent(Sprite)!.color = new Color(255, 255, 255, 150);
         });
+        this.drawThreatLines(layer, snapshot);
+    }
+
+    /** 车原地不动就会被吃时，从攻击者到车画一条红线，提醒必须移动。 */
+    private drawThreatLines(layer: Node, snapshot: ChessEndlessSnapshot): void {
+        const attackerIds = this.model.getPlayerAttackerIds();
+        if (attackerIds.length === 0) return;
+        const playerPoint = this.boardPoint(snapshot.playerPosition);
+        const node = this.createNode(layer, 'ThreatLines', 0, 0, 1, 1);
+        const graphics = node.addComponent(Graphics);
+        graphics.strokeColor = new Color(196, 52, 38, 120);
+        graphics.lineWidth = 5;
+        attackerIds.forEach((id) => {
+            const attacker = snapshot.enemies.find((piece) => piece.id === id);
+            if (!attacker) return;
+            const point = this.boardPoint(attacker.position);
+            graphics.moveTo(point.x, point.y);
+            graphics.lineTo(playerPoint.x, playerPoint.y);
+        });
+        graphics.stroke();
+    }
+
+    private dangerKeys(snapshot: ChessEndlessSnapshot): ReadonlySet<string> {
+        if (this.dangerCache?.snapshot !== snapshot) {
+            this.dangerCache = { snapshot, keys: new Set(this.model.getDangerPositions().map(cellKey)) };
+        }
+        return this.dangerCache.keys;
+    }
+
+    /** 当前会在走法层显示的落点：移形符为全部空格，其余为车的合法走法。 */
+    private moveTargetsFor(snapshot: ChessEndlessSnapshot): readonly BoardPosition[] {
+        if (this.selectedItem === 'teleport') {
+            const occupied = new Set(snapshot.enemies.map((piece) => cellKey(piece.position)));
+            return Array.from({ length: BOARD_COLUMNS * BOARD_ROWS }, (_, index) => position(index % BOARD_COLUMNS, Math.floor(index / BOARD_COLUMNS)))
+                .filter((target) => !occupied.has(cellKey(target)) && !same(target, snapshot.playerPosition));
+        }
+        if (!this.selectedPlayer || this.selectedItem === 'freeze' || this.selectedItem === 'banish') return [];
+        return this.model.getPlayerLegalMoves();
     }
 
     private renderPieces(snapshot: ChessEndlessSnapshot): void {
@@ -1004,14 +1117,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
         this.drawPieceShadow(shadow);
         const visual = this.createNode(node, 'Visual', 0, 0, diameter, diameter);
         this.applySprite(visual, player ? 'piecePlayer' : PIECE_TEXTURE_KEY[type]);
-        if (player && this.selectedPlayer) {
-            const ring = this.createNode(node, 'SelectedRing', 0, 0, diameter + 8, diameter + 8);
-            const graphics = ring.addComponent(Graphics);
-            graphics.strokeColor = new Color(COLORS.goldLight.r, COLORS.goldLight.g, COLORS.goldLight.b, 132);
-            graphics.lineWidth = 1.8;
-            graphics.circle(0, 0, diameter / 2 + 3);
-            graphics.stroke();
-        }
         return node;
     }
 
@@ -1031,39 +1136,55 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private decorateFrozen(node: Node): void {
-        const seal = this.createNode(node, 'FreezeSeal', 0, 0, 50, 66);
+        // 符纸素材是正方形画布，按原比例显示，避免纵向拉伸。
+        const seal = this.createNode(node, 'FreezeSeal', 0, 0, 60, 60);
         this.applySprite(seal, 'talisman');
         seal.setRotationFromEuler(0, 0, -8);
         const opacity = seal.addComponent(UIOpacity);
         opacity.opacity = 225;
     }
 
-    private renderMoveTargets(): void {
+    private renderMoveTargets(snapshot: ChessEndlessSnapshot): void {
         const layer = this.moveLayer;
         if (!layer) return;
         this.clearChildren(layer);
-        let targets: readonly BoardPosition[] = [];
-        if (this.selectedItem === 'teleport') {
-            const occupied = new Set(this.model.snapshot.enemies.map((piece) => `${piece.position.column},${piece.position.row}`));
-            targets = Array.from({ length: BOARD_COLUMNS * BOARD_ROWS }, (_, index) => position(index % BOARD_COLUMNS, Math.floor(index / BOARD_COLUMNS)))
-                .filter((target) => !occupied.has(`${target.column},${target.row}`)
-                    && (target.column !== this.model.snapshot.playerPosition.column || target.row !== this.model.snapshot.playerPosition.row));
-        } else if (this.selectedPlayer) {
-            targets = this.model.getPlayerLegalMoves();
-        }
-        const enemies = this.model.snapshot.enemies;
-        targets.forEach((target) => {
+        const enemies = snapshot.enemies;
+        // 移形后还能继续行动，落点本身是否受威胁无关紧要，因此不标危险。
+        const danger = this.dangerHintsEnabled && this.selectedItem !== 'teleport'
+            ? this.dangerKeys(snapshot)
+            : undefined;
+        this.moveTargetsFor(snapshot).forEach((target) => {
             const point = this.boardPoint(target);
-            const node = this.createNode(layer, `Move-${target.column}-${target.row}`, point.x, point.y, 22, 22);
+            const node = this.createNode(layer, `Move-${target.column}-${target.row}`, point.x, point.y, 32, 32);
             const graphics = node.addComponent(Graphics);
             const capture = enemies.some((piece) => same(piece.position, target));
-            graphics.fillColor = capture ? new Color(164, 55, 43, 142) : new Color(80, 137, 111, 150);
-            graphics.circle(0, 0, capture ? 7 : 4.5);
-            graphics.fill();
-            graphics.strokeColor = capture ? new Color(255, 221, 163, 135) : new Color(226, 208, 160, 118);
-            graphics.lineWidth = 1.2;
-            graphics.circle(0, 0, capture ? 11 : 8);
-            graphics.stroke();
+            if (danger?.has(cellKey(target))) {
+                // 可走但会被吃：红叉，不画可走圆点。
+                graphics.strokeColor = new Color(190, 52, 40, 220);
+                graphics.lineWidth = 3.5;
+                graphics.moveTo(-8, -8);
+                graphics.lineTo(8, 8);
+                graphics.moveTo(-8, 8);
+                graphics.lineTo(8, -8);
+                graphics.stroke();
+            } else if (capture) {
+                // 可安全吃子：金环。
+                graphics.fillColor = new Color(214, 160, 64, 110);
+                graphics.circle(0, 0, 9);
+                graphics.fill();
+                graphics.strokeColor = new Color(COLORS.goldLight.r, COLORS.goldLight.g, COLORS.goldLight.b, 210);
+                graphics.lineWidth = 2.4;
+                graphics.circle(0, 0, 15);
+                graphics.stroke();
+            } else {
+                graphics.fillColor = new Color(64, 150, 110, 200);
+                graphics.circle(0, 0, 6);
+                graphics.fill();
+                graphics.strokeColor = new Color(226, 208, 160, 150);
+                graphics.lineWidth = 1.6;
+                graphics.circle(0, 0, 10);
+                graphics.stroke();
+            }
         });
     }
 
@@ -1178,7 +1299,11 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private async handleCellTap(target: BoardPosition): Promise<void> {
-        if (this.inputLocked || this.lifecycle !== 'playing' || this.model.snapshot.phase !== 'player') return;
+        if (this.inputLocked) {
+            this.requestFastForward();
+            return;
+        }
+        if (this.lifecycle !== 'playing' || this.model.snapshot.phase !== 'player') return;
         const generation = this.operationGeneration;
         const snapshot = this.model.snapshot;
         const enemy = snapshot.enemies.find((piece) => same(piece.position, target));
@@ -1229,19 +1354,20 @@ export class ChessEndlessGame extends Component implements MiniGame {
             return;
         }
 
-        if (same(target, snapshot.playerPosition)) {
-            if (this.selectedItem === 'crossSlash') {
-                this.model.useItem('crossSlash');
-                this.persistProgress(false);
-                this.selectedItem = undefined;
-                this.selectedPlayer = true;
-                this.playSound('crossCharge');
-                this.context?.services.feedback.vibrate('heavy');
-                void this.showItemEffect('crossSlash', target);
-                this.renderAll();
-                this.setHint("十字斩已准备好，行动后释放");
+        if (this.selectedItem === 'crossSlash' || this.selectedItem === 'delay') {
+            // 无目标道具：点車即确认；直接点合法落点则先使用道具再走車。
+            const item = this.selectedItem;
+            const isLanding = this.model.getPlayerLegalMoves().some((candidate) => same(candidate, target));
+            if (!same(target, snapshot.playerPosition) && !isLanding) {
+                this.setHint(`再点一次${ITEM_DISPLAY[item]}确认，或直接点落点走車`);
                 return;
             }
+            if (!this.useNoTargetItem(item)) return;
+            if (isLanding) await this.performPlayerMove(target);
+            return;
+        }
+
+        if (same(target, snapshot.playerPosition)) {
             this.selectedPlayer = true;
             if (this.selectedItem) {
                 this.setHint(`${ITEM_DISPLAY[this.selectedItem]}需要按提示选择目标`);
@@ -1258,7 +1384,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         }
 
         if (enemy) {
-            this.showPieceInfo(enemy.type);
+            this.setHint(`长按「${PIECE_DISPLAY[enemy.type]}」可查看走法`);
         }
     }
 
@@ -1271,50 +1397,60 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.selectedPlayer = type === 'crossSlash' || type === 'delay';
             this.renderAll();
             const instruction = type === 'freeze' || type === 'banish'
-                ? '请选择一枚普通敌棋；再次点击取消'
+                ? '点选一枚普通敌棋；再点道具取消'
                 : type === 'teleport'
-                    ? "请选择空位；再次点击道具可取消。"
-                    : type === 'crossSlash'
-                        ? "点击绿色「車」准备十字斩；再次点击道具可取消"
-                        : `再次点击确认使用${ITEM_DISPLAY[type]}`;
+                    ? '点选一个空位；再点道具取消'
+                    : '再点一次确认，或直接点落点走車';
             this.setHint(`${ITEM_DISPLAY[type]}：${instruction}`);
             return;
         }
-        if (type !== 'delay') {
-            this.selectedItem = undefined;
-            this.selectedPlayer = true;
-            this.renderAll();
-            this.setHint(`${ITEM_DISPLAY[type]}已取消；可继续行动`);
+        if (type === 'crossSlash' || type === 'delay') {
+            this.useNoTargetItem(type);
             return;
         }
+        this.selectedItem = undefined;
+        this.selectedPlayer = true;
+        this.renderAll();
+        this.setHint(`${ITEM_DISPLAY[type]}已取消；可继续行动`);
+    }
+
+    /** 十字斩与缓兵符不需要目标：确认后立即生效，返回是否使用成功。 */
+    private useNoTargetItem(type: 'crossSlash' | 'delay'): boolean {
         try {
             this.model.useItem(type);
-            this.persistProgress(false);
-            this.selectedItem = undefined;
-            this.selectedPlayer = true;
-            this.playSound('itemDelay');
-            this.context?.services.feedback.vibrate('medium');
-            this.renderAll();
-            void this.showItemEffect(type, this.model.snapshot.playerPosition);
-            this.setHint("增援已延后 2 回合，请继续行动");
         } catch (error: unknown) {
             this.setHint(error instanceof Error ? error.message : String(error));
+            return false;
         }
+        this.persistProgress(false);
+        this.selectedItem = undefined;
+        this.selectedPlayer = true;
+        this.playSound(type === 'crossSlash' ? 'crossCharge' : 'itemDelay');
+        this.context?.services.feedback.vibrate(type === 'crossSlash' ? 'heavy' : 'medium');
+        this.renderAll();
+        void this.showItemEffect(type, this.model.snapshot.playerPosition);
+        this.setHint(type === 'crossSlash' ? '十字斩已准备好，行动后释放' : '增援已延后 2 回合，请继续行动');
+        return true;
+    }
+
+    /** 演出期间点击棋盘：本次行动剩余的走子、增援与等待加速播放。 */
+    private requestFastForward(): void {
+        if (!this.isGameplayActive() || this.motionScale === FAST_FORWARD_MOTION_SCALE) return;
+        if (this.model.snapshot.phase !== 'enemy' && this.model.snapshot.phase !== 'player') return;
+        this.motionScale = FAST_FORWARD_MOTION_SCALE;
     }
 
     private async performPlayerMove(target: BoardPosition): Promise<void> {
         const generation = this.operationGeneration;
+        this.motionScale = 1;
         this.inputLocked = true;
+        // 走子开始就清掉本回合的危险标记，避免动画期间还显示过期的威胁。
+        if (this.dangerLayer) this.clearChildren(this.dangerLayer);
         this.selectedPlayer = false;
         this.selectedItem = undefined;
         const before = this.model.snapshot;
         const playerNode = this.pieceLayer?.getChildByName('Player');
         if (this.moveLayer) this.clearChildren(this.moveLayer);
-        const selectedRing = playerNode?.getChildByName('SelectedRing');
-        if (selectedRing) {
-            selectedRing.removeFromParent();
-            selectedRing.destroy();
-        }
         const targetEnemy = before.enemies.find((piece) => same(piece.position, target));
         const capturedNode = targetEnemy ? this.pieceLayer?.getChildByName(`Enemy-${targetEnemy.id}`) : undefined;
         const result = this.model.movePlayer(target);
@@ -1355,6 +1491,8 @@ export class ChessEndlessGame extends Component implements MiniGame {
             if (!this.isOperationCurrent(generation)) return;
         }
         if (this.model.snapshot.phase === 'reward') {
+            // 斩将奖励演出不随点击加速。
+            this.motionScale = 1;
             await this.showRewardChestSequence();
             if (!this.isOperationCurrent(generation)) return;
             return;
@@ -1404,10 +1542,25 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.setHint(before.queuedReinforcement.kind === 'general' ? "棋盘已满：将军等待入场" : '棋盘拥挤：本批增援等待入场');
         }
         if (!this.isOperationCurrent(generation)) return;
-        this.renderAll();
+        this.motionScale = 1;
         this.inputLocked = false;
         this.selectedPlayer = true;
         this.renderAll();
+        this.pulseAttackers();
+    }
+
+    /** 敌方回合结束时，能吃掉原地不动的车的敌棋跳动两下，提示必须移动。 */
+    private pulseAttackers(): void {
+        this.model.getPlayerAttackerIds().forEach((id) => {
+            const node = this.pieceLayer?.getChildByName(`Enemy-${id}`);
+            if (!node?.isValid) return;
+            tween(node)
+                .to(0.12, { scale: new Vec3(1.14, 1.14, 1) }, { easing: 'quadOut' })
+                .to(0.12, { scale: new Vec3(1, 1, 1) }, { easing: 'quadIn' })
+                .to(0.12, { scale: new Vec3(1.14, 1.14, 1) }, { easing: 'quadOut' })
+                .to(0.12, { scale: new Vec3(1, 1, 1) }, { easing: 'quadIn' })
+                .start();
+        });
     }
 
     /**
@@ -1431,8 +1584,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
         const targetPoint = this.boardPoint(to);
         const target = new Vec3(targetPoint.x, targetPoint.y, 0);
-        const liftDuration = duration * 0.5;
-        const dropDuration = duration - liftDuration;
+        // tweenNode / waitSeconds 自带加速倍率；这里直接驱动的子节点补间需要同步缩放。
+        const scaledDuration = duration * this.motionScale;
+        const liftDuration = scaledDuration * 0.5;
+        const dropDuration = scaledDuration - liftDuration;
         const visual = node.getChildByName('Visual');
         const shadow = node.getChildByName('Shadow');
         const visualPosition = visual?.position.clone() ?? new Vec3();
@@ -1579,6 +1734,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
 
     private async animateSpawns(spawned: readonly EnemyPiece[], general: boolean): Promise<void> {
         const generation = this.operationGeneration;
+        const motion = this.motionScale;
         spawned.forEach((piece, index) => {
             const node = this.pieceLayer?.getChildByName(`Enemy-${piece.id}`);
             if (!node) return;
@@ -1596,15 +1752,15 @@ export class ChessEndlessGame extends Component implements MiniGame {
                     return;
                 }
                 tween(node)
-                    .to(general && piece.type === 'general' ? 0.34 : 0.27, {
+                    .to((general && piece.type === 'general' ? 0.34 : 0.27) * motion, {
                         position: new Vec3(point.x, point.y, 0),
                         scale: new Vec3(1.08, 0.9, 1),
                     }, { easing: 'quadIn' })
-                    .to(0.1, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+                    .to(0.1 * motion, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
                     .start();
                 tween(shadow).to(0.24, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' }).start();
                 tween(shadowOpacity).to(0.24, { opacity: 210 }).delay(0.2).to(0.18, { opacity: 0 }).call(() => shadow.destroy()).start();
-            }, index * SPAWN_STAGGER);
+            }, index * SPAWN_STAGGER * motion);
         });
         await this.waitSeconds(0.28 + spawned.length * SPAWN_STAGGER);
     }
@@ -1613,7 +1769,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const generation = this.operationGeneration;
         this.duckMusic('generalArrive', 1.45);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, 320, -26);
+        await this.showCenterVfx('generalArrivalVfx', '将 军 来 袭', COLORS.goldLight, 0.95, 620, -26);
         if (!this.isGenerationCurrent(generation)) return;
         const general = this.model.snapshot.enemies.find((piece) => piece.type === 'general');
         if (general) {
@@ -1626,7 +1782,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const generation = this.operationGeneration;
         this.duckMusic('generalKill', 1.0);
         this.context?.services.feedback.vibrate('heavy');
-        await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.goldLight, 0.9, 650, 350);
+        await this.showCenterVfx('generalKillVfx', '斩 将', COLORS.goldLight, 0.9, 650);
         if (!this.isGenerationCurrent(generation)) return;
     }
 
@@ -1714,14 +1870,15 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.spawnParticle('lightParticle', revivePoint.x, revivePoint.y, 120, 0);
             await this.showCrossSlash(result.kills, result.scoreDelta);
             if (!this.isOperationCurrent(generation)) return;
-            this.renderAll();
-            if (this.model.snapshot.phase === 'reward') {
-                await this.showRewardChestSequence();
-                if (!this.isOperationCurrent(generation)) return;
-            } else {
+            const rewardPending = this.model.snapshot.phase === 'reward';
+            if (!rewardPending) {
                 this.inputLocked = false;
                 this.selectedPlayer = true;
-                this.renderAll();
+            }
+            this.renderAll();
+            if (rewardPending) {
+                await this.showRewardChestSequence();
+                if (!this.isOperationCurrent(generation)) return;
             }
         } finally {
             this.reviveAdPending = false;
@@ -1995,13 +2152,13 @@ export class ChessEndlessGame extends Component implements MiniGame {
             this.rewardOverlay = undefined;
             this.rewardCardNodes.clear();
         }
-        this.renderAll();
-        if (this.model.snapshot.phase === 'enemy') await this.performEnemyTurn();
-        else {
+        const enemyTurnPending = this.model.snapshot.phase === 'enemy';
+        if (!enemyTurnPending) {
             this.inputLocked = false;
             this.selectedPlayer = true;
-            this.renderAll();
         }
+        this.renderAll();
+        if (enemyTurnPending) await this.performEnemyTurn();
     }
 
     private resumeCurrentPhase(): void {
@@ -2317,7 +2474,107 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 this.selectedPlayer = true;
                 this.renderAll();
             },
-        }], PIECE_TEXTURE_KEY[type]);
+        }], PIECE_TEXTURE_KEY[type], {
+            height: PIECE_DIAGRAM_HEIGHT,
+            draw: (parent, top, width) => this.drawPieceDiagram(parent, type, top, width),
+        });
+    }
+
+    /**
+     * 5×5 交叉点的走法示意图：中心是该敌棋，红点是能吃到车的位置，
+     * 空心圈是挡住后不能走的象眼/马腿；炮额外画出炮架。
+     */
+    private drawPieceDiagram(parent: Node, type: EnemyPieceType, top: number, width: number): void {
+        const cell = PIECE_DIAGRAM_CELL;
+        const gridSize = cell * 4;
+        const centerY = top - PIECE_DIAGRAM_TOP_GAP - gridSize / 2;
+        const diagram = this.createNode(parent, 'PieceDiagram', 0, centerY, gridSize + cell, gridSize + cell);
+        const graphics = diagram.addComponent(Graphics);
+        graphics.strokeColor = new Color(81, 47, 26, 120);
+        graphics.lineWidth = 1.5;
+        for (let index = -2; index <= 2; index += 1) {
+            graphics.moveTo(index * cell, -gridSize / 2);
+            graphics.lineTo(index * cell, gridSize / 2);
+            graphics.moveTo(-gridSize / 2, index * cell);
+            graphics.lineTo(gridSize / 2, index * cell);
+        }
+        graphics.stroke();
+
+        const orthogonal: readonly [number, number][] = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        const rays = (directions: readonly [number, number][]): [number, number][] => {
+            const points: [number, number][] = [];
+            directions.forEach(([x, y]) => points.push([x, y], [x * 2, y * 2]));
+            return points;
+        };
+        const diagonal: readonly [number, number][] = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+        let attacks: [number, number][] = [];
+        let blocks: [number, number][] = [];
+        let moves: [number, number][] = [];
+        let screen: [number, number] | undefined;
+        if (type === 'pawn' || type === 'general') attacks = orthogonal.map(([x, y]) => [x, y]);
+        else if (type === 'advisor') attacks = diagonal.map(([x, y]) => [x, y]);
+        else if (type === 'elephant') {
+            attacks = diagonal.map(([x, y]) => [x * 2, y * 2]);
+            blocks = diagonal.map(([x, y]) => [x, y]);
+        } else if (type === 'horse') {
+            attacks = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]];
+            blocks = orthogonal.map(([x, y]) => [x, y]);
+        } else if (type === 'rook') {
+            attacks = rays(orthogonal);
+        } else {
+            // 炮：向上隔一枚炮架吃车，其余方向只能行走。
+            screen = [0, 1];
+            attacks = [[0, 2]];
+            moves = rays(orthogonal.filter(([x, y]) => !(x === 0 && y === 1)));
+        }
+
+        // 一个节点只能挂一个 Graphics：记号与网格画在同一个组件上，网格先描边。
+        const marks = graphics;
+        moves.forEach(([x, y]) => {
+            marks.fillColor = new Color(64, 150, 110, 200);
+            marks.circle(x * cell, y * cell, 5);
+            marks.fill();
+        });
+        attacks.forEach(([x, y]) => {
+            marks.fillColor = new Color(190, 52, 40, 210);
+            marks.circle(x * cell, y * cell, 8);
+            marks.fill();
+        });
+        marks.strokeColor = new Color(110, 92, 70, 220);
+        marks.lineWidth = 2.5;
+        blocks.forEach(([x, y]) => {
+            marks.circle(x * cell, y * cell, 7);
+        });
+        marks.stroke();
+        if (screen) {
+            const screenNode = this.createNode(diagram, 'Screen', screen[0] * cell, screen[1] * cell, cell * 0.72, cell * 0.72);
+            const screenGraphics = screenNode.addComponent(Graphics);
+            screenGraphics.fillColor = new Color(214, 190, 150, 255);
+            screenGraphics.strokeColor = new Color(110, 92, 70, 220);
+            screenGraphics.lineWidth = 2;
+            screenGraphics.circle(0, 0, cell * 0.34);
+            screenGraphics.fill();
+            screenGraphics.stroke();
+        }
+        const piece = this.createNode(diagram, 'Piece', 0, 0, cell * 0.95, cell * 0.95);
+        this.applySprite(piece, PIECE_TEXTURE_KEY[type]);
+
+        const legend = type === 'cannon'
+            ? '红点：隔着炮架可吃車　绿点：只能行走'
+            : blocks.length > 0
+                ? '红点：可吃車　空心圈：被挡住就不能走'
+                : '红点：可吃車的位置';
+        this.createLabel(
+            parent,
+            'DiagramLegend',
+            legend,
+            0,
+            centerY - gridSize / 2 - PIECE_DIAGRAM_LEGEND_GAP - PIECE_DIAGRAM_LEGEND_HEIGHT / 2,
+            20,
+            COLORS.inkSoft,
+            width,
+            PIECE_DIAGRAM_LEGEND_HEIGHT,
+        );
     }
 
     private showItemHelp(type: ItemType, keepLocked = false): void {
@@ -2345,6 +2602,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         body: string,
         actions: readonly OverlayAction[],
         artKey?: string,
+        extra?: ModalExtra,
     ): OverlayState {
         const overlay = this.createOverlayRoot(name);
         const safeRect = this.resolveSafeContentRect();
@@ -2355,9 +2613,10 @@ export class ChessEndlessGame extends Component implements MiniGame {
         const buttonGap = 14;
         const footerHeight = actions.length * buttonHeight + Math.max(0, actions.length - 1) * buttonGap + 32;
         const innerWidth = 504;
+        const extraHeight = extra ? extra.height + 16 : 0;
         const panelSize = resolveChessEndlessModalPanelSize(
             innerWidth,
-            headerHeight + 84 + footerHeight,
+            headerHeight + 84 + footerHeight + extraHeight,
             safeRect,
         );
         const content = chessEndlessModalContentRect(panelSize.width, panelSize.height);
@@ -2394,6 +2653,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         bodyLabel.enableWrapText = true;
         bodyLabel.lineHeight = bodyLineHeight;
         bodyLabel.updateRenderData(true);
+        if (extra) extra.draw(panel, cursorY + 8 - bodyTransform.height - 16, content.width - 24);
 
         const buttons: Button[] = [];
         actions.forEach((action, index) => {
@@ -2747,9 +3007,9 @@ export class ChessEndlessGame extends Component implements MiniGame {
         color: Color,
         duration: number,
         width: number,
-        height: number,
         textYOffset = 0,
     ): Promise<void> {
+        const height = this.artworkHeight(key, width);
         const node = this.createNode(this.node, `CenterVfx-${key}`, 0, 24, width, height);
         this.applySprite(node, key);
         node.setScale(0.35, 0.35, 1);
@@ -2766,13 +3026,19 @@ export class ChessEndlessGame extends Component implements MiniGame {
         if (node.isValid) node.destroy();
     }
 
+    /** 按素材原始宽高比换算给定宽度下的显示高度，避免特效图被非等比拉伸。 */
+    private artworkHeight(key: string, width: number): number {
+        const size = this.frames.get(key)?.originalSize;
+        return size && size.width > 0 ? width * size.height / size.width : width;
+    }
+
     private showComboVfx(combo: number): void {
         const safeRect = this.resolveSafeContentRect();
         const width = Math.max(1, Math.min(560, safeRect.width - 32));
         const tier = Math.min(combo, 5);
         const finalScale = tier === 2 ? 0.86 : tier === 3 ? 0.94 : 1;
         const fontSize = tier === 2 ? 38 : tier === 3 ? 42 : 46;
-        const node = this.createNode(this.node, `ComboVfx-${combo}`, safeRect.x, safeRect.y + 78, width, 220);
+        const node = this.createNode(this.node, `ComboVfx-${combo}`, safeRect.x, safeRect.y + 78, width, this.artworkHeight('comboBurst', width));
         this.applySprite(node, 'comboBurst');
         node.setScale(finalScale * 0.34, finalScale * 0.34, 1);
         const opacity = node.addComponent(UIOpacity);
@@ -2892,10 +3158,6 @@ export class ChessEndlessGame extends Component implements MiniGame {
     }
 
     private setHint(text: string): void {
-        if (this.hintLabel) {
-            this.hintLabel.string = text;
-            return;
-        }
         this.showTransientBanner(text, -190, 20, COLORS.goldLight, 0.95);
     }
 
@@ -2910,7 +3172,17 @@ export class ChessEndlessGame extends Component implements MiniGame {
             Object.keys(frames).forEach(key => assets.releaseRuntimeAsset(frames[key]));
             return;
         }
-        Object.keys(frames).forEach(key => this.frames.set(key, frames[key]));
+        Object.keys(frames).forEach(key => {
+            const frame = frames[key]!;
+            const border = SLICED_SPRITE_BORDERS[key];
+            if (border !== undefined) {
+                frame.insetTop = border;
+                frame.insetBottom = border;
+                frame.insetLeft = border;
+                frame.insetRight = border;
+            }
+            this.frames.set(key, frame);
+        });
     }
 
     private async loadAudio(): Promise<void> {
@@ -2939,6 +3211,7 @@ export class ChessEndlessGame extends Component implements MiniGame {
         // while the component is still in TRIMMED mode. Select CUSTOM first so the
         // layout dimensions chosen by createNode remain authoritative.
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        if (SLICED_SPRITE_BORDERS[key] !== undefined) sprite.type = Sprite.Type.SLICED;
         // The browser fallback uses the original 384x384 piece canvas, while the
         // WeChat Auto Atlas frame is transparently trimmed. Preserve the original
         // padding for chess pieces so both paths render the same visible diameter.
@@ -3116,12 +3389,12 @@ export class ChessEndlessGame extends Component implements MiniGame {
                 resolve();
                 return;
             }
-            tween(node).to(duration, properties as never, { easing }).call(() => resolve()).start();
+            tween(node).to(duration * this.motionScale, properties as never, { easing }).call(() => resolve()).start();
         });
     }
 
     private waitSeconds(seconds: number): Promise<void> {
-        return new Promise((resolve) => this.scheduleOnce(resolve, seconds));
+        return new Promise((resolve) => this.scheduleOnce(resolve, seconds * this.motionScale));
     }
 
     private destroyOverlay(overlay?: OverlayState): void {
@@ -3265,4 +3538,8 @@ function position(column: number, row: number): BoardPosition {
 
 function same(left: BoardPosition, right: BoardPosition): boolean {
     return left.column === right.column && left.row === right.row;
+}
+
+function cellKey(value: BoardPosition): string {
+    return `${value.column},${value.row}`;
 }

@@ -2,17 +2,38 @@ import {
     MiniGamePlatform,
     type MiniGameApi,
 } from './MiniGamePlatform';
-import type { ShareContent, ShareMenuOptions, TimelineShareContent } from './Platform';
+import type { ShareContent, ShareMenuOptions, TimelineShareContent, UpdateSubscriptionState } from './Platform';
 
 type ShareHandler = () => ShareContent;
 type TimelineShareHandler = () => TimelineShareContent;
+const UPDATE_MESSAGE_TYPE = 'SYS_MSG_TYPE_WHATS_NEW';
 
 export interface WeChatApi extends MiniGameApi {
+    cloud?: {
+        init(options: { env: string; traceUser?: boolean }): void | Promise<void>;
+        callFunction(options: { name: string; data: unknown; config: { env: string }; success(result: { result: unknown }): void;
+            fail(error: unknown): void }): unknown;
+    };
     canIUse?(schema: string): boolean;
+    getSetting?(options: {
+        withSubscriptions: true;
+        success(result: { subscriptionsSetting?: { mainSwitch?: boolean; itemSettings?: Record<string, string> } }): void;
+        fail(error: unknown): void;
+    }): void;
+    requestSubscribeSystemMessage?(options: {
+        msgTypeList: string[];
+        success(result: Record<string, string>): void;
+        fail(error: { errCode?: number; errMsg?: string }): void;
+    }): void;
     onShareAppMessage?(callback: ShareHandler): void;
     offShareAppMessage?(callback: ShareHandler): void;
     onShareTimeline?(callback: TimelineShareHandler): void;
     offShareTimeline?(callback: TimelineShareHandler): void;
+    openCustomerServiceConversation?(options: {
+        sessionFrom?: string;
+        showMessageCard: boolean;
+        fail(error?: { errMsg?: string }): void;
+    }): void;
 }
 
 declare const wx: WeChatApi | undefined;
@@ -24,6 +45,9 @@ export interface WeChatPlatformOptions {
 
 /** 微信专有 API 解析和版本约束；共享能力由小游戏平台基类实现。 */
 export class WeChatPlatform extends MiniGamePlatform {
+    private cloudEnvironment?: string;
+    private readonly cloudOperations = new Set<() => void>();
+    private readonly subscriptionOperations = new Set<() => void>();
     private appMessageContent: ShareContent = Object.freeze({});
     private timelineContent: TimelineShareContent = Object.freeze({});
     private lastAppMessageTitle?: string;
@@ -34,6 +58,8 @@ export class WeChatPlatform extends MiniGamePlatform {
     private appMessageRegistered = false;
     private timelineRegistered = false;
     private shareMenuGeneration = 0;
+    private customerServiceGeneration = 0;
+    private lastCustomerServiceRequestAt = -Infinity;
 
     constructor(options: WeChatPlatformOptions = {}) {
         super({
@@ -97,7 +123,150 @@ export class WeChatPlatform extends MiniGamePlatform {
         this.showNativeShareMenu(api, this.timelineRegistered, generation);
     }
 
+    getUpdateSubscription(): Promise<UpdateSubscriptionState> {
+        const api = this.api as WeChatApi | undefined;
+        if (!this.supportsUpdateSubscription(api)) return Promise.resolve('unsupported');
+        return this.runSubscriptionOperation(api!, 8000, (finish) => {
+            api!.getSetting!({
+                withSubscriptions: true,
+                success: ({ subscriptionsSetting: setting }) => {
+                    if (setting?.mainSwitch === false) finish('blocked');
+                    else finish(this.normalizeSubscriptionState(setting?.itemSettings?.[UPDATE_MESSAGE_TYPE]));
+                },
+                fail: () => finish('failed'),
+            });
+        });
+    }
+
+    requestUpdateSubscription(): Promise<UpdateSubscriptionState> {
+        const api = this.api as WeChatApi | undefined;
+        if (!this.supportsUpdateSubscription(api)) return Promise.resolve('unsupported');
+        // Promise executor 和 start 都同步执行，保留用户 touchend 的调用上下文。
+        return this.runSubscriptionOperation(api!, 120000, (finish) => {
+            api!.requestSubscribeSystemMessage!({
+                msgTypeList: [UPDATE_MESSAGE_TYPE],
+                success: (result) => {
+                    const state = this.normalizeSubscriptionState(result[UPDATE_MESSAGE_TYPE]);
+                    // success 只表示接口调用成功，缺少明确 accept 不能记录为已订阅。
+                    finish(state === 'unknown' ? 'failed' : state);
+                },
+                fail: (error) => {
+                    console.warn('[WeChatPlatform] Update subscription failed.', error);
+                    finish(error?.errCode === 20004 || error?.errCode === 20005 ? 'blocked' : 'failed');
+                },
+            });
+        });
+    }
+
+    private supportsUpdateSubscription(api?: WeChatApi): boolean {
+        if (!api?.getSetting || !api.requestSubscribeSystemMessage) return false;
+        try {
+            // 系统订阅 API 早于“游戏更新”类型上线；检查类型所需基础库，避免旧版弹升级提示。
+            const version = api.getSystemInfoSync().SDKVersion;
+            if (!version || !/^\d+\.\d+\.\d+$/.test(version)) return false;
+            const [major, minor, patch] = version.split('.').map(Number);
+            return (major > 2 || (major === 2 && (minor > 32 || (minor === 32 && patch >= 1))))
+                && (api.canIUse?.('requestSubscribeSystemMessage') ?? true);
+        } catch { return false; }
+    }
+
+    private normalizeSubscriptionState(value?: string): UpdateSubscriptionState {
+        if (value === 'accept') return 'accepted';
+        if (value === 'reject') return 'rejected';
+        if (value === 'ban') return 'blocked';
+        return 'unknown';
+    }
+
+    /** 原生请求不阻塞游戏；丢失回调或应用销毁时结束 Promise 并清除计时器。 */
+    private runSubscriptionOperation(
+        api: WeChatApi,
+        timeoutMs: number,
+        start: (finish: (state: UpdateSubscriptionState) => void) => void,
+    ): Promise<UpdateSubscriptionState> {
+        return new Promise((resolve) => {
+            let settled = false;
+            const finish = (state: UpdateSubscriptionState): void => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                this.subscriptionOperations.delete(cancel);
+                resolve(this.api === api ? state : 'failed');
+            };
+            const cancel = (): void => finish('failed');
+            const timer = setTimeout(cancel, timeoutMs);
+            this.subscriptionOperations.add(cancel);
+            try { start(finish); }
+            catch (error: unknown) {
+                console.warn('[WeChatPlatform] Update subscription unavailable.', error);
+                finish('failed');
+            }
+        });
+    }
+
+    openCustomerServiceConversation(sessionFrom?: string): void {
+        const api = this.api as WeChatApi | undefined;
+        if (!api) return;
+        if (!api.openCustomerServiceConversation) {
+            this.showToast('更新一下微信，再来找我聊聊吧～');
+            return;
+        }
+        // 原生页面打开前拦住快速连点；不依赖返回回调解锁，取消后仍可再次进入。
+        const now = Date.now();
+        if (now - this.lastCustomerServiceRequestAt < 1000) return;
+        this.lastCustomerServiceRequestAt = now;
+        const generation = ++this.customerServiceGeneration;
+        let failed = false;
+        const fail = (error?: unknown): void => {
+            if (failed || this.api !== api || generation !== this.customerServiceGeneration) return;
+            failed = true;
+            const message = typeof error === 'object' && error !== null && 'errMsg' in error
+                ? String(error.errMsg) : String(error ?? '');
+            if (/cancel/i.test(message)) return;
+            console.warn('[WeChatPlatform] Failed to open customer service.', error);
+            this.showToast('没能打开客服，稍后再来聊聊吧～');
+        };
+        try {
+            // 前后台事件继续交给 App 状态机处理音频和暂停恢复。
+            api.openCustomerServiceConversation({ sessionFrom, showMessageCard: false, fail });
+        } catch (error: unknown) {
+            fail(error);
+        }
+    }
+
+    async initializeCloud(environmentId: string): Promise<void> {
+        const api = this.api as WeChatApi | undefined;
+        if (!api?.cloud || !environmentId.trim()) throw new Error('WeChat CloudBase is unavailable or unconfigured.');
+        await api.cloud.init({ env: environmentId.trim(), traceUser: false });
+        if (this.api !== api) throw new Error('CloudBase initialization cancelled.');
+        this.cloudEnvironment = environmentId.trim();
+    }
+
+    callCloudFunction(name: string, data: unknown, timeoutMs: number): Promise<unknown> {
+        const api = this.api as WeChatApi | undefined, env = this.cloudEnvironment;
+        if (!api?.cloud || !env) return Promise.reject(new Error('CloudBase has not been initialized.'));
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            const finish = (error?: unknown, result?: unknown): void => {
+                if (settled) return;
+                settled = true; clearTimeout(timer); this.cloudOperations.delete(cancel);
+                if (error || this.api !== api) reject(error ?? new Error('Cloud request cancelled.'));
+                else resolve(result);
+            };
+            const cancel = (): void => finish(new Error('Cloud request cancelled.'));
+            const timer = setTimeout(() => finish(new Error('Cloud request timed out.')), timeoutMs);
+            this.cloudOperations.add(cancel);
+            try { api.cloud!.callFunction({ name, data, config:{env}, success: response => finish(undefined,response.result), fail: error => finish(error) }); }
+            catch (error: unknown) { finish(error); }
+        });
+    }
+
     dispose(): void {
+        ++this.customerServiceGeneration;
+        this.lastCustomerServiceRequestAt = -Infinity;
+        this.subscriptionOperations.forEach(cancel => cancel());
+        this.subscriptionOperations.clear();
+        this.cloudOperations.forEach(cancel => cancel());
+        this.cloudOperations.clear(); this.cloudEnvironment = undefined;
         ++this.shareMenuGeneration;
         const api = this.api as WeChatApi | undefined;
         if (api) {

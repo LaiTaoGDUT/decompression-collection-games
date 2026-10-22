@@ -1,0 +1,33 @@
+Use case: stylized-concept. Production sprite-sheet expansion and palette unification for a 2D side-scrolling game.
+Image1: 16-frame gameplay contact sheet, reference for the established running poses and right-facing character.
+Image2: high-resolution character artwork, identity and color reference, with corrected smooth back anatomy.
+Create ONE clean final spritesheet of EXACTLY 24 DISTINCT complete-character running poses, arranged in a strict 6 columns x 4 rows grid, reading left-to-right then top-to-bottom. Canvas 3072x2048, equal cells512x512. Each character entirely inside its cell with at least40px clear margin. Body drawn about350px tall, same scale in every cell. No labels, borders, shadows on the ground, scene, platforms, UI, or text.
+Character identity: original yellow velvet pear-shaped laughing creature, continuous bald sloping head/back, closed crescent eyes, tall vertical laughing mouth with thin white upper teeth, large ivory belly, brown hands and soles, tiny dark teal pouch at rear hip. No ears, horns, nose, tail, hair, clothes. Right-facing side view at identical angle.
+CRITICAL COLOR CONSISTENCY: ALL 24 poses have exactly the SAME material colors, saturation, contrast, exposure and fixed neutral studio lighting. Golden yellow body midtone #E9B34F, ivory belly #F0E2C4, dark chocolate hands/soles #5A4437, muted teal pouch #17788A. Use the same soft matte short velvet texture throughout, no changing orange patches, no paler last row, no color grading per cell, no glow. Each cell must look like the same model under the same light, not separately rendered different designs.
+ANIMATION: a single seamless full running cycle with gradual intermediate poses. Keep compact bent elbows and opposing arm/leg swing. One near shoulder attached to near torso, far shoulder hidden behind torso. Smooth single back outline, no arm growing out of mid-back, no double shoulder ridge, no third hand. Far arm naturally occluded rather than floating behind back.
+24 poses:
+1 near foot forward contact, near arm back, far arm forward;
+2 settling contact slightly;
+3 weight absorption, knee flexion, arms begin passing;
+4 support passes under hip;
+5 rear foot begins toe-off, arms continue arc;
+6 recovering knee swings forward;
+7 high knee / near arm forward extreme with far arm back;
+8 initial flight;
+9 flight with recovering shin opening;
+10 foot extending for opposite contact;
+11 lowering toward opposite contact;
+12 opposite heel just before contact;
+13 opposite foot forward contact, near arm forward;
+14 settling opposite contact;
+15 weight absorption, arms lower from forward peak;
+16 support passes under hip;
+17 rear foot toe-off, arms descend toward waist;
+18 recovering knee crosses under body, near arm passes back;
+19 near knee rises, near elbow back and forearm bent;
+20 flight with near leg recovering;
+21 near shin begins extending;
+22 extension forward, arms counter swing;
+23 near heel lowers for contact;
+24 almost reaches pose1, small difference only for seamless loop.
+Exactly24 unique drawings, subtle continuous changes, balanced hand sizes, leg lengths and head size. Whole characters, NOT body-part layers, no duplicated held frames. Transparent RGBA with alpha0 everywhere outside precise silhouettes, including between legs and arms; no semi-transparent background haze.

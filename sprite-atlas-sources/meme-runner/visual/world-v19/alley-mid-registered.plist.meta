@@ -1,0 +1,20 @@
+{
+  "subMetas": {
+    "alley-mid": {
+      "importer": "sprite-frame",
+      "name": "alley-mid",
+      "uuid": "f84ef729-3558-55f2-83ee-e7522bab4e24",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 1944,
+        "height": 656,
+        "rawWidth": 1944,
+        "rawHeight": 656,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

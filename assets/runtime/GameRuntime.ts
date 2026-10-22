@@ -7,11 +7,13 @@ import {
     type SceneAsset,
 } from 'cc';
 import type { AppStateMachine } from '../core/state/AppStateMachine';
-import type { GameResult } from '../core/types/CommonTypes';
-import type { AssetService } from '../services/asset/AssetService';
+import type { GameResult, ScreenOrientation } from '../core/types/CommonTypes';
+import type { ScreenService } from '../services/ScreenService';
+import type { AssetLoadScope, AssetService } from '../services/asset/AssetService';
 import type { AnalyticsService } from '../services/analytics/AnalyticsService';
 import type { StorageService } from '../services/storage/StorageService';
 import type { AchievementService } from '../services/achievements/AchievementService';
+import type { UpdateReminderService } from '../services/notifications/UpdateReminderService';
 import type { GameLoader } from './GameLoader';
 import type { GameManifest } from './GameManifest';
 import type {
@@ -38,9 +40,12 @@ export interface LoadingModel {
     readonly cover?: string | null;
     readonly message: string;
     readonly progress: number;
+    readonly cancel?: () => Promise<void>;
 }
 
 export interface LoadingPresenter {
+    /** 淡出完成前仍为可见，用于判断下方场景是否已完整露出。 */
+    readonly isVisible?: boolean;
     show(model: LoadingModel): void;
     showLobbyTransition?(): void;
     showRestart?(message: string): void;
@@ -100,6 +105,8 @@ interface GameRuntimeServices {
     readonly assets?: AssetService;
     readonly storage?: StorageService;
     readonly achievements?: AchievementService;
+    readonly updateReminder?: UpdateReminderService;
+    readonly screen?: ScreenService;
 }
 
 const DEFAULT_RUNTIME_TIMEOUTS: GameRuntimeTimeouts = Object.freeze({
@@ -108,10 +115,72 @@ const DEFAULT_RUNTIME_TIMEOUTS: GameRuntimeTimeouts = Object.freeze({
     initializeMs: 75000,
 });
 
+/** 每次进入独享的取消信号，不依赖小游戏平台的 AbortController 支持。 */
+class GameLoadOperation implements AssetLoadScope {
+    cancelled = false;
+    initialization?: Promise<void>;
+    sceneLoading?: Promise<SceneAsset>;
+    sceneLaunching?: Promise<Scene>;
+    orientationChanging?: Promise<void>;
+    private readonly listeners = new Set<() => void>();
+    private readonly reason = new Error('Game loading cancelled.');
+
+    cancel(): void {
+        if (this.cancelled) return;
+        this.cancelled = true;
+        for (const listener of Array.from(this.listeners)) listener();
+        this.listeners.clear();
+    }
+
+    throwIfCancelled(): void {
+        if (this.cancelled) throw this.reason;
+    }
+
+    run<T>(request: () => Promise<T>): Promise<T> {
+        try {
+            this.throwIfCancelled();
+            return this.wait(request());
+        } catch (error) {
+            return Promise.reject(error);
+        }
+    }
+
+    wait<T>(request: Promise<T>): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            const cancel = (): void => reject(this.reason);
+            if (this.cancelled) cancel();
+            else this.listeners.add(cancel);
+            void request.then(value => {
+                this.listeners.delete(cancel);
+                if (!this.cancelled) resolve(value);
+            }, error => {
+                this.listeners.delete(cancel);
+                reject(error);
+            });
+        });
+    }
+
+    delay(milliseconds: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (this.cancelled) { reject(this.reason); return; }
+            const cancel = (): void => {
+                clearTimeout(timeout);
+                reject(this.reason);
+            };
+            const timeout = setTimeout(() => {
+                this.listeners.delete(cancel);
+                resolve();
+            }, milliseconds);
+            this.listeners.add(cancel);
+        });
+    }
+}
+
 export class GameRuntimeError extends Error {
     constructor(
         readonly stage:
             | 'state'
+            | 'orientation'
             | 'resources'
             | 'bundle'
             | 'scene'
@@ -138,6 +207,7 @@ export class GameRuntimeError extends Error {
 export class GameRuntime {
     private enteringLobby?: Promise<void>;
     private entering?: Promise<void>;
+    private loadOperation?: GameLoadOperation;
     private leaving?: Promise<void>;
     private restarting?: Promise<void>;
     private session?: GameSession;
@@ -170,6 +240,11 @@ export class GameRuntime {
 
     get currentSession(): GameSession | undefined {
         return this.session;
+    }
+
+    /** 大厅已就绪，且启动/返回大厅的加载层已完全收起。 */
+    get isLobbyVisible(): boolean {
+        return this.stateMachine.currentState === 'lobby' && !this.loading?.isVisible;
     }
 
     get currentEntry(): MiniGame | undefined {
@@ -205,6 +280,7 @@ export class GameRuntime {
         });
 
         try {
+            await this.applyScreenOrientation('portrait');
             const bundle = await this.assets.loadBundle('lobby');
             await this.assets.prepareBundle('lobby-covers', 'visual', (finished, total) => {
                 this.loading?.updateProgress(
@@ -234,6 +310,7 @@ export class GameRuntime {
     }
 
     private async enterLobbyScene(): Promise<void> {
+        await this.applyScreenOrientation('portrait');
         await this.assets.prepareBundle('lobby-covers', 'visual');
         const scene = await this.loadAndLaunchScene('lobby', 'scenes/Lobby');
         await this.prepareLobbyPresentation(scene);
@@ -260,14 +337,14 @@ export class GameRuntime {
     }
 
     enterGame(manifest: GameManifest): Promise<void> {
-        if (this.entering) {
-            return this.entering;
-        }
-
         // 大厅画面会先于旧局 Bundle 释放完成。此时收到的新入口请求
         // 必须等完整离场结束，否则旧局的卸包和清理会覆盖新 Session。
         if (this.leaving) {
             return this.leaving.then(() => this.enterGame(manifest));
+        }
+
+        if (this.entering) {
+            return this.entering;
         }
 
         if (!this.stateMachine.transition('loading-game')) {
@@ -282,26 +359,82 @@ export class GameRuntime {
 
         this.errors?.hide();
 
-        const entering = this.performEnter(manifest);
+        const operation = new GameLoadOperation();
+        this.loadOperation = operation;
+        const entering = this.performEnter(manifest, operation);
         this.entering = entering;
         const clearEntering = (): void => {
             if (this.entering === entering) {
                 this.entering = undefined;
             }
+            if (this.loadOperation === operation) this.loadOperation = undefined;
         };
         void entering.then(clearEntering, clearEntering);
         return entering;
+    }
+
+    /** 中断当前进入事务；重复点击共用清理，旧弹窗回调不会取消下一次加载。 */
+    cancelGameLoad(operation = this.loadOperation): Promise<void> {
+        if (!operation || operation !== this.loadOperation) return Promise.resolve();
+        if (operation.cancelled) return this.leaving ?? Promise.resolve();
+        if (this.stateMachine.currentState !== 'loading-game' || !this.entering) {
+            return Promise.resolve();
+        }
+        if (!this.stateMachine.transition('leaving-game')) return Promise.resolve();
+
+        const leaving = this.entering;
+        this.leaving = leaving;
+        const clear = (): void => {
+            if (this.leaving === leaving) this.leaving = undefined;
+        };
+        void leaving.then(clear, clear);
+        operation.cancel();
+        this.loading?.showLobbyTransition?.();
+        return leaving;
     }
 
     exitGame(
         result?: GameResult,
         intent: 'exit' | 'restart' | 'completed' = 'exit',
     ): Promise<void> {
+        return this.startExit(result, intent);
+    }
+
+    /** 返回按钮的同步入口；程序化退出、异常恢复和重开不申请订阅。 */
+    private exitFromLobbyClick(result?: GameResult): Promise<void> {
+        if (this.leaving) return this.leaving;
+        const state = this.stateMachine.currentState;
+        if (!this.entry || !this.session || !this.manifest || this.entering || this.restarting
+            || (state !== 'playing' && state !== 'paused')) {
+            return Promise.reject(new GameRuntimeError('state', this.manifest?.id ?? 'unknown',
+                new Error('No active game can return to lobby.')));
+        }
+
+        try {
+            // 部分游戏在失败页点击返回时才固化结果，必须在申请前记录完整结算。
+            if (result?.completed) this.services.updateReminder?.recordRoundFinished();
+            this.services.updateReminder?.requestFromLobbyClick();
+        } catch (error: unknown) {
+            console.warn('[GameRuntime] Update subscription did not block return to lobby.', error);
+        }
+        return this.startExit(result, result?.completed ? 'completed' : 'exit', true);
+    }
+
+    private startExit(
+        result?: GameResult,
+        intent: 'exit' | 'restart' | 'completed' = 'exit',
+        afterInput = false,
+    ): Promise<void> {
         if (this.leaving) {
             return this.leaving;
         }
 
-        const leaving = this.performExit(result, intent);
+        // 先在 touchend 中调用微信，再到微任务里销毁 UI/切场景，避免打断 Cocos 事件传播。
+        const leaving = afterInput ? Promise.resolve().then(() => {
+            this.hidePausePresenter();
+            this.hideResultPresenter();
+            return this.performExit(result, intent);
+        }) : this.performExit(result, intent);
         this.leaving = leaving;
         const clearLeaving = (): void => {
             if (this.leaving === leaving) {
@@ -561,9 +694,8 @@ export class GameRuntime {
         );
     };
 
-    private readonly exitFromPause = async (): Promise<void> => {
-        this.hidePausePresenter();
-        await this.exitGame({ score: this.score, duration: 0, completed: false });
+    private readonly exitFromPause = (): Promise<void> => {
+        return this.exitFromLobbyClick({ score: this.score, duration: 0, completed: false });
     };
 
     private readonly restartFromResult = async (): Promise<void> => {
@@ -593,11 +725,10 @@ export class GameRuntime {
             );
         }
 
-        this.hideResultPresenter();
-        await this.exitGame(result, 'completed');
+        return this.exitFromLobbyClick(result);
     };
 
-    private async performEnter(manifest: GameManifest): Promise<void> {
+    private async performEnter(manifest: GameManifest, operation: GameLoadOperation): Promise<void> {
         // 新对局开始前清空上一局可能遗留的平台静默冻结标记。
         this.suspendedSilently = false;
         this.loading?.show({
@@ -608,6 +739,7 @@ export class GameRuntime {
                 : manifest.loadingCover,
             message: '即将进入游戏',
             progress: 0.04,
+            cancel: () => this.cancelGameLoad(operation),
         });
         const session = new GameSession(manifest.id);
         this.session = session;
@@ -619,15 +751,16 @@ export class GameRuntime {
             try {
                 const directories = manifest.resourceDirectories ?? ['visual'];
                 for (let index = 0; index < directories.length; index++) {
-                    await this.assets.prepareBundle(
+                    await operation.run(() => this.assets.prepareBundle(
                         manifest.resourceBundle, directories[index]!,
                         (finished, total) => {
+                            if (operation.cancelled) return;
                             const ratio = total > 0 ? finished / total : 0;
                             this.loading?.updateProgress('正在加载游戏资源',
                                 0.08 + (index + Math.min(Math.max(ratio, 0), 1)) / directories.length * 0.48);
                         },
                         { excludeAudio: true },
-                    );
+                    ));
                 }
                 this.loading?.updateProgress("游戏画面准备完成", 0.56);
             } catch (cause: unknown) {
@@ -637,16 +770,35 @@ export class GameRuntime {
             let bundle: AssetManager.Bundle;
 
             try {
-                bundle = await this.assets.loadBundle(manifest.bundle);
+                bundle = await operation.run(() => this.assets.loadBundle(manifest.bundle));
                 this.loading?.updateProgress("游戏准备完成", 0.66);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('bundle', manifest.id, cause);
             }
 
+            let sceneAsset: SceneAsset;
+
+            try {
+                sceneAsset = await this.loadBundleScene(bundle, manifest.scene, operation);
+                this.loading?.updateProgress('游戏场景准备完成', 0.74);
+            } catch (cause: unknown) {
+                throw new GameRuntimeError('scene', manifest.id, cause);
+            }
+
+            // 大厅和下载阶段保持竖屏；场景及其依赖就绪后，才旋转并提交场景切换。
+            try {
+                operation.throwIfCancelled();
+                operation.orientationChanging = this.applyScreenOrientation(manifest.orientation ?? 'portrait');
+                await operation.wait(operation.orientationChanging);
+                operation.throwIfCancelled();
+            } catch (cause: unknown) {
+                throw new GameRuntimeError('orientation', manifest.id, cause);
+            }
+
             let scene: Scene;
 
             try {
-                scene = await this.loadAndLaunchBundleScene(bundle, manifest.scene);
+                scene = await this.launchScene(sceneAsset, operation);
                 this.loading?.updateProgress('正在布置游戏场景', 0.78);
             } catch (cause: unknown) {
                 throw new GameRuntimeError('scene', manifest.id, cause);
@@ -662,11 +814,12 @@ export class GameRuntime {
                 throw new GameRuntimeError('entry', manifest.id, cause);
             }
 
-            const context = this.createContext(manifest, session);
+            const context = this.createContext(manifest, session, operation);
 
             try {
+                operation.initialization = entry.initialize(context);
                 await this.withTimeout(
-                    entry.initialize(context),
+                    operation.wait(operation.initialization),
                     manifest.initializeTimeoutMs ?? this.timeouts.initializeMs,
                     'game initialization',
                 );
@@ -676,12 +829,13 @@ export class GameRuntime {
             }
 
             try {
+                // 加载完成的短暂展示也允许取消；提交进入后才开始真实对局。
+                this.loading?.updateProgress('加载完成', 1);
+                await operation.delay(180);
+                operation.throwIfCancelled();
                 entry.begin();
                 this.flushStorage('game begin');
-                this.loading?.updateProgress('加载完成', 1);
-                await new Promise<void>((resolve) => {
-                    setTimeout(resolve, 180);
-                });
+                operation.throwIfCancelled();
             } catch (cause: unknown) {
                 throw new GameRuntimeError('begin', manifest.id, cause);
             }
@@ -720,6 +874,10 @@ export class GameRuntime {
                 sessionId: session.id,
             });
         } catch (error: unknown) {
+            if (operation.cancelled) {
+                await this.cleanupCancelledEnter(manifest, operation);
+                return;
+            }
             if (this.stateMachine.currentState === 'loading-game') {
                 this.stateMachine.transition('error');
             }
@@ -889,6 +1047,7 @@ export class GameRuntime {
     private waitForLobbyPresentation(): Promise<void> {
         const eventDirector = this.sceneDirector as SceneDirector & {
             once?: (event: string, callback: () => void) => void;
+            off?: (event: string, callback: () => void) => void;
         };
         if (!eventDirector.once) {
             return Promise.resolve();
@@ -899,11 +1058,13 @@ export class GameRuntime {
             const finish = (): void => {
                 if (settled) return;
                 settled = true;
+                clearTimeout(timeout);
+                eventDirector.off?.(Director.EVENT_AFTER_DRAW, finish);
                 resolve();
             };
-            eventDirector.once!(Director.EVENT_AFTER_DRAW, finish);
             // 后台切换期间可能暂时没有绘制事件；不能因此卡住退出事务。
-            setTimeout(finish, 250);
+            const timeout = setTimeout(finish, 250);
+            eventDirector.once!(Director.EVENT_AFTER_DRAW, finish);
         });
     }
 
@@ -913,6 +1074,47 @@ export class GameRuntime {
         this.session = undefined;
         this.manifest = undefined;
         this.score = 0;
+    }
+
+    private async cleanupCancelledEnter(manifest: GameManifest, operation: GameLoadOperation): Promise<void> {
+        // 初始化的资源等待已被取消，先等它展开完毕再 dispose，防止迟到的
+        // initialize 在 dispose 之后重建监听、声音或节点。已提交的场景切换也必须串行收尾。
+        await operation.orientationChanging?.catch(() => undefined);
+        await operation.sceneLaunching?.catch(() => undefined);
+        await operation.initialization?.catch(() => undefined);
+        try {
+            await this.entry?.dispose();
+        } catch (error) {
+            console.warn('[GameRuntime] Cancelled entry disposal failed.', error);
+        } finally {
+            this.flushStorage('cancelled game dispose');
+        }
+
+        let failure: unknown;
+        try {
+            await this.enterLobbyScene();
+            await this.waitForLobbyPresentation();
+            this.loading?.hideLobbyTransition?.();
+        } catch (error) {
+            failure = new GameRuntimeError('lobby', manifest.id, error);
+            if (this.stateMachine.currentState === 'leaving-game') this.stateMachine.transition('error');
+        }
+
+        try {
+            // 底层下载没有统一的强制 abort 接口。大厅先恢复显示，在途资源
+            // 回调结束后统一卸包；leaving 锁阻止旧卸包覆盖下一局。
+            await operation.sceneLoading?.catch(() => undefined);
+            await this.releaseGameBundles(manifest);
+        } catch (error) {
+            failure ??= new GameRuntimeError('release', manifest.id, error);
+        } finally {
+            this.clearActiveGame();
+            this.failedManifest = undefined;
+        }
+        if (failure) {
+            this.presentGameLoadError(manifest, failure);
+            throw failure;
+        }
     }
 
     private async cleanupFailedEnter(manifest: GameManifest): Promise<void> {
@@ -968,6 +1170,11 @@ export class GameRuntime {
         if (firstError) {
             throw firstError;
         }
+    }
+
+    private async applyScreenOrientation(orientation: ScreenOrientation): Promise<void> {
+        if (this.services.screen) await this.services.screen.setOrientation(orientation);
+        else if (orientation === 'landscape') throw new Error('Landscape games require the screen service.');
     }
 
     private flushStorage(reason: string): void {
@@ -1108,8 +1315,11 @@ export class GameRuntime {
     private createContext(
         manifest: GameManifest,
         session: GameSession,
+        operation?: GameLoadOperation,
     ): MiniGameContext {
-        const isCurrentSession = (): boolean => this.session === session;
+        // 方向是场景进入事务的权限，不暴露给局内业务自行切换。
+        const { screen: _screen, ...gameServices } = this.services;
+        const isCurrentSession = (): boolean => this.session === session && !operation?.cancelled;
         const reportScore = (score: number): void => {
             if (isCurrentSession()) this.handleScore(score);
         };
@@ -1133,9 +1343,14 @@ export class GameRuntime {
         return Object.freeze({
             gameId: manifest.id,
             sessionId: session.id,
-            services: this.services,
+            services: operation && gameServices.assets
+                ? Object.freeze({ ...gameServices, assets: gameServices.assets.createLoadScope(operation) })
+                : Object.freeze(gameServices),
             reportScore,
             reportAchievementProgress,
+            reportRoundFinished: () => {
+                if (isCurrentSession() && session.state === 'active') this.services.updateReminder?.recordRoundFinished();
+            },
             reportEvent: (name, properties, eventId) => {
                 if (!isCurrentSession()) return;
                 const fields = { ...properties, gameId: manifest.id, sessionId: session.id };
@@ -1223,15 +1438,34 @@ export class GameRuntime {
     private async loadAndLaunchBundleScene(
         bundle: AssetManager.Bundle,
         scenePath: string,
+        operation?: GameLoadOperation,
     ): Promise<Scene> {
-        const sceneAsset = await this.withTimeout(new Promise<SceneAsset>((resolve, reject) => {
+        const sceneAsset = await this.loadBundleScene(bundle, scenePath, operation);
+        return this.launchScene(sceneAsset, operation);
+    }
+
+    private async loadBundleScene(
+        bundle: AssetManager.Bundle,
+        scenePath: string,
+        operation?: GameLoadOperation,
+    ): Promise<SceneAsset> {
+        const loading = new Promise<SceneAsset>((resolve, reject) => {
             bundle.loadScene(
                 scenePath,
                 (error, asset) => error ? reject(error) : resolve(asset),
             );
-        }), this.timeouts.sceneLoadMs, 'scene asset loading');
+        });
+        if (operation) operation.sceneLoading = loading;
+        const sceneAsset = await this.withTimeout(
+            operation ? operation.wait(loading) : loading,
+            this.timeouts.sceneLoadMs, 'scene asset loading');
+        operation?.throwIfCancelled();
+        return sceneAsset;
+    }
 
-        return this.withTimeout(new Promise<Scene>((resolve, reject) => {
+    private async launchScene(sceneAsset: SceneAsset, operation?: GameLoadOperation): Promise<Scene> {
+        operation?.throwIfCancelled();
+        const launching = new Promise<Scene>((resolve, reject) => {
             this.sceneDirector.runScene(sceneAsset, undefined, (error, scene) => {
                 if (error) {
                     reject(error);
@@ -1245,7 +1479,10 @@ export class GameRuntime {
 
                 resolve(scene);
             });
-        }), this.timeouts.sceneLoadMs, 'scene launch');
+        });
+        if (operation) operation.sceneLaunching = launching;
+        return this.withTimeout(operation ? operation.wait(launching) : launching,
+            this.timeouts.sceneLoadMs, 'scene launch');
     }
 
     private withTimeout<TValue>(
@@ -1290,6 +1527,7 @@ export class GameRuntime {
         const stage = error instanceof GameRuntimeError ? error.stage : 'state';
         const code = stage.toUpperCase();
         const messages: Readonly<Record<string, string>> = {
+            orientation: '屏幕方向切换失败，请重试；若仍无法进入，请更新微信后再试。',
             resources: '游戏资源下载未完成，请检查网络后重试。',
             bundle: '游戏资源暂时不可用，请检查网络后重试。',
             scene: "游戏画面加载失败，请重试。",
@@ -1339,6 +1577,9 @@ export class GameRuntime {
         if (!result) {
             return;
         }
+
+        // completed 在公共协议中表示本局已结算，包含正常失败；暂停退出的默认结果为 false。
+        if (result.completed) this.services.updateReminder?.recordRoundFinished();
 
         const resultReason = result.extra?.reason;
         const reason = typeof resultReason === 'string' ? resultReason : intent;
@@ -1397,9 +1638,7 @@ export class GameRuntime {
     };
 
     private readonly handleLobbyRequest = (result?: GameResult): void => {
-        this.hidePausePresenter();
-        this.hideResultPresenter();
-        void this.exitGame(result, result?.completed ? 'completed' : 'exit')
+        void this.exitFromLobbyClick(result)
             .catch((error: unknown) => {
                 // TODO: console.error('[GameRuntime] Direct lobby request failed.', error);
             });

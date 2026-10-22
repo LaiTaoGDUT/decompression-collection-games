@@ -4,23 +4,10 @@
 <dict>
 	<key>frames</key>
 	<dict>
-		<key>pickup-jetpack</key>
-		<dict>
-			<key>frame</key>
-			<string>{{2,449},{68,90}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{68,90}}</string>
-			<key>sourceSize</key>
-			<string>{68,90}</string>
-		</dict>
 		<key>pickup-propeller-hat-v2</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,543},{80,50}}</string>
+			<string>{{2,449},{80,50}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -59,7 +46,7 @@
 		<key>pickup-spring-v2</key>
 		<dict>
 			<key>frame</key>
-			<string>{{74,449},{55,68}}</string>
+			<string>{{2,503},{55,68}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -90,7 +77,7 @@
 		<key>realTextureFileName</key>
 		<string>doodle-items.png</string>
 		<key>size</key>
-		<string>{178,595}</string>
+		<string>{178,573}</string>
 		<key>textureFileName</key>
 		<string>doodle-items.png</string>
 	</dict>

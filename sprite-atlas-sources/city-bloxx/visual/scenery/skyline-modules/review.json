@@ -1,0 +1,205 @@
+{
+  "route": "Generate complete buildings separately and compose at original occlusion boundaries",
+  "v1": {
+    "tool": "builtin image_gen",
+    "generation": "exec-4ec74438-b6d9-446a-9e77-48b4222bd876.png",
+    "image": [
+      876,
+      1796
+    ],
+    "subjectBox": [
+      362,
+      64,
+      515,
+      1796
+    ],
+    "requiredSubject": [
+      193,
+      2056
+    ],
+    "adopted": false,
+    "reason": "No horizontal facade seams, five bands retained, but subject below final native-density requirement. Lower dark inset is too pale."
+  },
+  "v2Plan": "Use explicit724x2172 canvas guide,2136px-tall subject, to test whether existing tool output budget can place enough pixels in a single complete facade. Guide is only an enlarged placement reference, never a runtime asset.",
+  "v2": {
+    "generation": "exec-fcbda7bf-3f24-481f-8e41-52af79e8dbed.png",
+    "size": [
+      724,
+      2172
+    ],
+    "subjectBox": [
+      264,
+      22,
+      460,
+      2152
+    ],
+    "subjectSize": [
+      196,
+      2130
+    ],
+    "adopted": false,
+    "reason": "Actual subject196x2130 meets required193x2056 density without enlargement. Five continuous bands/no panel seams. Native band locations differ by<=8.11design px, roof step remains approx15design px shorter. Must review whole-scene registration/occlusion before adopting.",
+    "status": "qualified for assembly, not yet runtime approved",
+    "nativeCrop": [
+      21,
+      202,
+      47,
+      480
+    ],
+    "nativeCanvas": [
+      160,
+      480
+    ],
+    "fullCanvasDesignPixels": [
+      1183,
+      3549
+    ],
+    "bandPixelRuns": [
+      [
+        401,
+        438
+      ],
+      [
+        789,
+        825
+      ],
+      [
+        1186,
+        1223
+      ],
+      [
+        1580,
+        1616
+      ],
+      [
+        1976,
+        2012
+      ]
+    ],
+    "sourceSaved": "sprite-atlas-sources/city-bloxx/visual/scenery/skyline-modules/light-facade-hd-v1.png"
+  },
+  "remaining": "See composition-review.json: full composition exists; compression and integration validation remain.",
+  "middle": {
+    "generationV1": "exec-c49293ef-abd0-4b10-91f2-5f8ab5415fdb.png",
+    "sheetSize": [
+      724,
+      2172
+    ],
+    "left": {
+      "slot": [
+        0,
+        0,
+        362,
+        2172
+      ],
+      "subjectBox": [
+        35,
+        417,
+        286,
+        2120
+      ],
+      "subjectSize": [
+        251,
+        1703
+      ],
+      "nativeCrop": [
+        56,
+        266,
+        88,
+        480
+      ],
+      "required": [
+        237,
+        1583
+      ],
+      "status": "density-qualified assembly candidate; final composition pending"
+    },
+    "right": {
+      "nativeCrop": [
+        97,
+        97,
+        119,
+        350
+      ],
+      "required": [
+        163,
+        1871
+      ],
+      "v1": "Rejected: two blue neighbors recolored gray instead of removed; silhouette wrong.",
+      "generationV2": "exec-26d73398-fd3e-4fb2-a59e-e07928543681.png",
+      "v2SubjectSize": [
+        175,
+        1859
+      ],
+      "v2": "Rejected: edited single antenna but moved top down from98 toabout275; original long antenna shortened and target full-height density lost. Do not repeat numerical deletion prompts on this contaminated crop.",
+      "next": "Resolved by background extraction: right-tower-isolated-hd-v1.png preserves original long antenna."
+    },
+    "adopted": false
+  },
+  "current": {
+    "updated": "2026-10-20T10:32:50.745755+08:00",
+    "tool": "builtin image_gen only",
+    "status": "assembled and visually reviewed; runtime PNG installed uncompressed; integration gates pending",
+    "fullGoalComplete": false,
+    "targetCanvas": [
+      1183,
+      3549
+    ],
+    "nativeCanvas": [
+      160,
+      480
+    ],
+    "maximumProjection": [
+      1182.7255016366837,
+      3548.176504910052
+    ],
+    "layerCount": 26,
+    "generatedSourceCount": 10,
+    "allUniformScalesAtMostOne": true,
+    "maxScale": 0.9861376673040153,
+    "before": {
+      "nativeOpaqueCoverage": 0.9478211069684152,
+      "alphaIntersectionOverUnion": 0.6810333363274629,
+      "extraOpaquePixels": 965158
+    },
+    "after": {
+      "nativeOpaqueCoverage": 0.9962987676629431,
+      "alphaIntersectionOverUnion": 0.9921638355371494,
+      "extraOpaquePixels": 10268
+    },
+    "visualReview": "Original / former runtime / generated module composition in migration-review.png; all buildings, five pale-facade bands, eight lower bands, roof antennas, dark insets and transparent gaps retained. Small silhouette/band-position/color differences remain; not pixel-identical. Longest blue join has no horizontal black endcap after cropping the generated body interior.",
+    "rejected": [
+      "left-base v1:1761px body below2063px target; v2 has2092px and is downsampled",
+      "blue-a v1:all columns recolored saturated cyan; v2 restores three native blue groups",
+      "right-ledge v1:crop stopped at383 but native leg/inset continues to480; full267native-unit group regenerated in v2 instead of extending with local paint"
+    ],
+    "runtimePath": "assets/game-assets/city-bloxx/visual/background/native-skyline.png",
+    "runtimeBytes": 1929735,
+    "runtimeSha256": "30360b98a8e30d6dea0d8407c69f493289316206bb4bc606550ebd8de2777343",
+    "compression": {
+      "authorized": true,
+      "authorization": "User explicitly answered 允许上传此图至 Tinify on2026-10-20",
+      "status": "failed at network request; public Tinify and example.com DNS lookup both returned gaierror8; do not reupload until connectivity restored",
+      "processed": 0,
+      "cached": 0,
+      "failed": 1,
+      "savedBytes": 0,
+      "log": "compression.log"
+    },
+    "validation": {
+      "typescript": "passed",
+      "gitDiffCheck": "passed",
+      "model": "passed22",
+      "cocosImport": "library texture imported1183x3549; bytes match runtime",
+      "mcpRefresh": "requested; tool timed out after180s, old Cocos PID48883 owns3001 and7456",
+      "browser": "not run: Chromium MachPortRendezvous bootstrap_check_in fatal141, before page creation; preview7457 HTTP200",
+      "wechat": "not rebuilt this turn"
+    },
+    "pending": [
+      "Tinify compression after authorized network access works",
+      "copy successful compressed PNG into runtime then refresh via MCP",
+      "browser runtime texture/projection and integration validation",
+      "fresh WeChat build and size/compiled checks"
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "source": "sheets/actions.png",
+  "sourceRow": [
+    0,
+    310
+  ],
+  "size": [
+    208,
+    144
+  ],
+  "scale": 0.5630498533724341,
+  "poses": [
+    {
+      "sourceBounds": [
+        18,
+        61,
+        340,
+        274
+      ],
+      "pixels": 39460,
+      "displayBounds": [
+        13,
+        18,
+        194,
+        138
+      ]
+    },
+    {
+      "sourceBounds": [
+        319,
+        61,
+        660,
+        264
+      ],
+      "pixels": 40992,
+      "displayBounds": [
+        8,
+        24,
+        200,
+        138
+      ]
+    },
+    {
+      "sourceBounds": [
+        643,
+        63,
+        969,
+        275
+      ],
+      "pixels": 39734,
+      "displayBounds": [
+        12,
+        19,
+        196,
+        138
+      ]
+    },
+    {
+      "sourceBounds": [
+        962,
+        59,
+        1284,
+        275
+      ],
+      "pixels": 38747,
+      "displayBounds": [
+        13,
+        16,
+        194,
+        137
+      ]
+    }
+  ]
+}

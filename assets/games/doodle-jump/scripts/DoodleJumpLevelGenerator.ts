@@ -4,11 +4,14 @@ import {
     DOODLE_JUMP_REFERENCE_PATTERNS, DOODLE_JUMP_EARLY_PATTERN_IDS, DOODLE_JUMP_LATE_PATTERN_IDS,
     DOODLE_JUMP_REFERENCE_WIDTH, DOODLE_JUMP_PATTERN_UNLOCK_HEIGHT, DOODLE_JUMP_LATE_PATTERN_HEIGHT,
     REFERENCE_BONUS_TYPES, referenceEnemyType, referenceEnemyOffset, referenceBonusOffset,
-    referenceBearTrapChance, referenceJetpackBonus, referencePatternShieldChance,
+    referenceBearTrapChance, referencePatternShieldChance,
     referenceMovingSpeed, referencePlatformGap, referencePlatformType,
     type DoodleJumpGenerationContext, type DoodleJumpGenerationState,
     type DoodleJumpPlannedPlatform, type DoodleJumpSpawnPlan,
 } from './DoodleJumpReferenceRules';
+
+
+type ReferencePattern = { readonly id: number; readonly monsterSlots: number; readonly ufoSlots: number; readonly group: number; readonly entries: readonly (readonly number[])[] };
 
 /** Owns native pattern decks, height schedules and entity tickets. Entity systems never re-roll them. */
 export class DoodleJumpLevelGenerator {
@@ -116,12 +119,25 @@ export class DoodleJumpLevelGenerator {
         }
     }
 
+    /** A generated revive floor becomes the next landing origin. Preserve the
+     * pending native chunk's relative rows instead of continuing below it. */
+    acceptRecoveryAnchor(platform: DoodleJumpFixedPlatformConfig): void {
+        const shift = Math.max(0, platform.y - this.previousPlatformY);
+        for (let index = 0; index < this.pending.length; index += 1) {
+            const row = this.pending[index];
+            this.pending[index] = Object.freeze({ ...row, y: row.y + shift });
+        }
+        this.previousPlatformY = platform.y;
+        this.previousRawType = 0;
+        this.previousBonusKind = -1;
+    }
+
     private prepare(previousY: number, height: number, scale: number, context: DoodleJumpGenerationContext): void {
         this.segmentId += 1;
         if (this.config.generation.platformTypeOverride === 'auto' && this.patternCheckedInPass !== true) {
             if (this.patternCheckedInPass !== undefined) this.patternCheckedInPass = true;
             if (height > DOODLE_JUMP_PATTERN_UNLOCK_HEIGHT && (this.patternRetryPending || this.integer(0, 18, 'platform') === 9)
-                && context.flightPower !== 'jetpack' && context.flightPower !== 'rocket') {
+                && context.flightPower !== 'jetpack') {
                 if (height <= this.boostClearanceHeight || this.previousRawType === 2) {
                     this.patternRetryPending = true;
                 } else {
@@ -137,7 +153,7 @@ export class DoodleJumpLevelGenerator {
     private preparePattern(previousY: number, height: number, scale: number, context: DoodleJumpGenerationContext): void {
         const late = height >= DOODLE_JUMP_LATE_PATTERN_HEIGHT;
         const order = late ? this.latePatternOrder : this.earlyPatternOrder;
-        let pattern: typeof DOODLE_JUMP_REFERENCE_PATTERNS[number];
+        let pattern: ReferencePattern;
         let selectedCursor: number;
         do {
             const cursor = late ? this.latePatternCursor : this.earlyPatternCursor;
@@ -192,7 +208,7 @@ export class DoodleJumpLevelGenerator {
     }
 
     private patternSupportsFlightLanding(
-        pattern: typeof DOODLE_JUMP_REFERENCE_PATTERNS[number], baseline: number,
+        pattern: ReferencePattern, baseline: number,
         previousY: number, scale: number, window: Readonly<{ minimumY: number; maximumY: number }>,
     ): boolean {
         let highestExtent = previousY;
@@ -245,12 +261,10 @@ export class DoodleJumpLevelGenerator {
         let canPlaceTrap = !this.config.items.enabled;
         if (this.config.items.enabled && rawType !== 2) {
             let item: DoodleJumpItemType | undefined;
-            const pickupCount = context.jetpackRocketPickupCount ?? 0;
+            const pickupCount = context.jetpackPickupCount ?? 0;
             const mode = context.nativeThemeMode ?? 0;
             if (pickupCount < 3 && height > this.nextJetpackHeight) {
-                item = referenceJetpackBonus(mode, height, this.boostClearanceHeight, pickupCount,
-                    mode === 16 ? this.integer(0, 100, 'item') : 99);
-                if (item === 'rocket') { rawType = 0; x = Math.max(50, Math.min(270, x)); }
+                item = 'jetpack';
                 this.nextJetpackHeight += this.integer(10000, 20000, 'item');
                 if (this.nextJetpackHeight > this.nextPropellerHeight && this.nextJetpackHeight < this.nextPropellerHeight + 2000) this.nextJetpackHeight += 2000;
             } else if (height > this.nextPropellerHeight) {

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>slide-0</key>
+		<dict>
+			<key>frame</key>
+			<string>{{43,143},{601,487}}</string>
+			<key>offset</key>
+			<string>{8.501754385964926,-136.53225806451613}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{129.7561403508772,270.0645161290323},{601,487}}</string>
+			<key>sourceSize</key>
+			<string>{843.5087719298245,754.0645161290323}</string>
+		</dict>
+		<key>slide-2</key>
+		<dict>
+			<key>frame</key>
+			<string>{{661,351},{815,285}}</string>
+			<key>offset</key>
+			<string>{2.822580645161275,-240.5}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{15.967741935483836,478.0},{815,285}}</string>
+			<key>sourceSize</key>
+			<string>{841.2903225806451,760.0}</string>
+		</dict>
+		<key>slide-5</key>
+		<dict>
+			<key>frame</key>
+			<string>{{1520,84},{504,553}}</string>
+			<key>offset</key>
+			<string>{11.799999999999958,-105.69999999999996}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{179.79999999999995,208.39999999999995},{504,553}}</string>
+			<key>sourceSize</key>
+			<string>{840.0,758.4}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>textureFileName</key>
+		<string>lie-slide-extra-color-v16.png</string>
+	</dict>
+</dict>
+</plist>

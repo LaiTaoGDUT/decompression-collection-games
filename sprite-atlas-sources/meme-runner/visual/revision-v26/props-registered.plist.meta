@@ -1,0 +1,132 @@
+{
+  "subMetas": {
+    "power-magnet": {
+      "importer": "sprite-frame",
+      "name": "power-magnet",
+      "uuid": "a945f59d-8b95-5b68-8092-12925a1aef3c",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "power-shield": {
+      "importer": "sprite-frame",
+      "name": "power-shield",
+      "uuid": "9512ebe6-b949-58f2-af25-8a9ee3f059b1",
+      "userData": {
+        "trimX": 128,
+        "trimY": 0,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "power-star": {
+      "importer": "sprite-frame",
+      "name": "power-star",
+      "uuid": "7451b9b0-f3ff-500c-a0cb-c85036e4e7b3",
+      "userData": {
+        "trimX": 256,
+        "trimY": 0,
+        "width": 64,
+        "height": 64,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "spring-pad": {
+      "importer": "sprite-frame",
+      "name": "spring-pad",
+      "uuid": "3818aaf2-a4dc-5d90-b76e-39c8542bf7df",
+      "userData": {
+        "trimX": 384,
+        "trimY": 0,
+        "width": 88,
+        "height": 88,
+        "rawWidth": 88,
+        "rawHeight": 88,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "roller": {
+      "importer": "sprite-frame",
+      "name": "roller",
+      "uuid": "da4f612d-ebd7-5c00-929f-041b61047871",
+      "userData": {
+        "trimX": 0,
+        "trimY": 192,
+        "width": 92,
+        "height": 92,
+        "rawWidth": 92,
+        "rawHeight": 92,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "steam-base": {
+      "importer": "sprite-frame",
+      "name": "steam-base",
+      "uuid": "c2e6b314-8dbd-52a7-b25f-b6ebabc80e88",
+      "userData": {
+        "trimX": 128,
+        "trimY": 192,
+        "width": 100,
+        "height": 68,
+        "rawWidth": 100,
+        "rawHeight": 68,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "steam-jet": {
+      "importer": "sprite-frame",
+      "name": "steam-jet",
+      "uuid": "3fb04418-9477-5c20-a208-72fc7d39ee80",
+      "userData": {
+        "trimX": 256,
+        "trimY": 192,
+        "width": 114,
+        "height": 174,
+        "rawWidth": 114,
+        "rawHeight": 174,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "pickup-spark": {
+      "importer": "sprite-frame",
+      "name": "pickup-spark",
+      "uuid": "0a57439f-a870-5458-8fda-92be469cd64e",
+      "userData": {
+        "trimX": 384,
+        "trimY": 192,
+        "width": 36,
+        "height": 36,
+        "rawWidth": 36,
+        "rawHeight": 36,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

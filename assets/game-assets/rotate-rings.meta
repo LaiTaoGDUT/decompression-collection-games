@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "9a17fb75-bdb0-4064-9b59-30e0133e7b9d",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-rotate-rings-assets",
+    "isSubpackage": false,
+    "isRemoteBundle": {},
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy",
+    "isBundle": true
+  }
+}

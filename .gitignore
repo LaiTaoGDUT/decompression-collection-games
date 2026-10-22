@@ -39,3 +39,5 @@ __pycache__/
 output/
 tinypng-output/
 tools/
+docs/
+.workspace/

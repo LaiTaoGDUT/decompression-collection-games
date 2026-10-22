@@ -32,6 +32,12 @@ const HIGH_MERGE_DURATION_SCALE = 1.15;
 const HIGH_MERGE_DURATION_LEVEL_STEP = 0.12;
 const HALO_PREWARM = 8;
 const BURST_PREWARM = 40;
+/** 所有合成光效共用峰值强度，避免多层同时叠亮；时间线与动作幅度保持一致。 */
+const MERGE_FX_PEAK_ALPHA_SCALE = 0.65;
+
+function softOpacity(value: number): number {
+    return Math.round(value * MERGE_FX_PEAK_ALPHA_SCALE);
+}
 
 interface FxSprite {
     readonly root: Node;
@@ -177,7 +183,7 @@ export class Game2048MergeFx {
         item.root.setPosition(x, y);
         item.cutout!.setContentSize(tileSize, tileSize);
         item.node.setScale(0.9, 0.9, 1);
-        item.opacity.opacity = value < HIGH_MERGE_MIN_VALUE ? 130 : 190;
+        item.opacity.opacity = softOpacity(value < HIGH_MERGE_MIN_VALUE ? 130 : 190);
         tween(item.node).to(duration, { scale: new Vec3(1.1, 1.1, 1) }, { easing: 'quadOut' }).start();
         tween(item.opacity)
             .delay(duration * 0.3)
@@ -205,7 +211,7 @@ export class Game2048MergeFx {
             .start();
         tween(item.opacity)
             .delay(timing.delay)
-            .set({ opacity: index === 0 ? 255 : 190 })
+            .set({ opacity: softOpacity(index === 0 ? 255 : 190) })
             .to(timing.duration, { opacity: 0 }, { easing: 'quadIn' })
             .call(() => this.release(item, this.burstPool))
             .start();
@@ -230,7 +236,7 @@ export class Game2048MergeFx {
             item.transform.setContentSize(size, size);
             item.node.setPosition(x + Math.cos(angle) * from, y + Math.sin(angle) * from);
             item.node.setScale(0, 0, 1);
-            item.opacity.opacity = 255;
+            item.opacity.opacity = softOpacity(255);
             tween(item.node)
                 .delay(delay)
                 .to(duration * 0.3, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
@@ -265,7 +271,7 @@ export class Game2048MergeFx {
             .to(duration, { scale: new Vec3(1.05, 1.05, 1), angle: milestone ? 40 : 25 }, { easing: 'quadOut' })
             .start();
         tween(item.opacity)
-            .to(duration * 0.2, { opacity: milestone ? 235 : 180 }, { easing: 'quadOut' })
+            .to(duration * 0.2, { opacity: softOpacity(milestone ? 235 : 180) }, { easing: 'quadOut' })
             .delay(duration * 0.25)
             .to(duration * 0.55, { opacity: 0 }, { easing: 'quadIn' })
             .call(() => this.release(item, this.haloPool))
@@ -292,7 +298,7 @@ export class Game2048MergeFx {
             .start();
         tween(item.opacity)
             .delay(delay)
-            .set({ opacity: 255 })
+            .set({ opacity: softOpacity(255) })
             .delay(duration * 0.35)
             .to(duration * 0.65, { opacity: 0 }, { easing: 'quadIn' })
             .call(() => this.release(item, this.burstPool))
@@ -310,7 +316,7 @@ export class Game2048MergeFx {
         item.node.setPosition(x, y);
         item.node.setScale(1, 1, 1);
         // 冲击波会扫过邻格数字，保持低不透明度，只留下"一道光掠过"的感觉。
-        item.opacity.opacity = milestone ? 105 : 80;
+        item.opacity.opacity = softOpacity(milestone ? 105 : 80);
         const endScale = milestone ? 5.2 : 3.6;
         tween(item.node).to(duration, { scale: new Vec3(endScale, endScale, 1) }, { easing: 'quadOut' }).start();
         tween(item.opacity)

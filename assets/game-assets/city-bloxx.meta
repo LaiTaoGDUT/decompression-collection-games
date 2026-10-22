@@ -1,0 +1,15 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "0c9eb601-e90f-4686-8027-ce91d6f360d8",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "bundleName": "game-city-bloxx-assets",
+    "isBundle": true,
+    "isSubpackage": false,
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy"
+  }
+}

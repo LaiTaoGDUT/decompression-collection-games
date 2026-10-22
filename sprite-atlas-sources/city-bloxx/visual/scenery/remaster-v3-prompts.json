@@ -1,0 +1,106 @@
+[
+  {
+    "name": "airplane",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/airplane.png",
+    "prompt": "Use case: precise-object-edit. Asset type: high-definition transparent 2D background sprite for a faithful game remaster. Image 1 is the exact edit target, enlarged with nearest neighbor only for inspection; the blue-gray backdrop is an inspection matte to remove. Redraw the SAME tiny side-view blue-upper/orange-red-lower airplane pointing RIGHT near the far right edge, with its very long thin pale blue-white straight contrail extending left across almost the entire width. Preserve the distinctive thin wings, dark tail, white landing-wing underside and the object's proportions, placement, colors and silhouette. Smooth clean high-resolution edges and subtle shading, no pixel stair steps. Crucially keep the entire long horizontal contrail, no shortened trail, no close-up airplane, no extra clouds. Target canvas composition 7:1 width:height, transparent background; retain the original transparent padding and whole composition. No lettering, no logo, no border.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-35140051-aa79-47cb-99b0-4cdaf7fc3c44.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-airplane-hd-v3.png"
+  },
+  {
+    "name": "tianwangxing",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/tianwangxing.png",
+    "prompt": "Use case: precise-object-edit. Asset type: high-definition transparent 2D scenery sprite for a faithful game remaster. Image 1 is the exact edit target, enlarged for inspection; remove the blue-gray inspection matte. Redraw the SAME teal/turquoise Uranus globe, illuminated softly at left, dark right, subtle vertical atmospheric bands, encircled by the same three thin faint cyan elliptical rings oriented almost VERTICALLY, reaching far above and below the globe. Keep original portrait canvas ratio 78:160, globe center slightly below the canvas center, exact ring tilt, relative size, colors, silhouette and transparent margins. Smooth high-resolution painterly game sprite, clean antialiased edges instead of pixel steps. The rings MUST be tall vertical ellipses, NOT Saturn's horizontal rings. Transparent background, no star field, no halo disc, no text, no new objects.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-fc571576-bae6-4641-a113-bcd179347368.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-tianwangxing-hd-v3.png"
+  },
+  {
+    "name": "clound1_10",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/clound1_10.png",
+    "prompt": "Use case: precise-object-edit. Asset type: transparent HD 2D scenery cloud sprite, faithful game remaster. Image 1 is the exact reference sprite enlarged for inspection; its uniform blue-gray backdrop is ONLY an inspection matte to remove. Recreate the SAME cluster of about fifteen very thin faint white horizontal wispy cloud ribbons, scattered within the central half of an extremely wide shallow canvas. Each ribbon is almost a straight line, some slightly stepped soft curves. Preserve exact ribbon positions, length relationships, low opacity, canvas padding, the empty left and right quarters, and broad 10:1 overall composition. Smooth antialiased high resolution edges replacing pixel steps. These are slender distant streaks, NOT puffy cumulus clouds, no single large cloud mass. Transparent background, no sky, no glow, no text.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-fc28301e-0291-4d69-96c2-eac39dd81058.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-clound1_10-hd-v3.png"
+  },
+  {
+    "name": "clound10_20",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/clound10_20.png",
+    "prompt": "Use case: precise-object-edit. Asset type: transparent HD 2D scenery cloud sprite for faithful game remaster. Image 1 is the exact edit target enlarged for inspection; remove ONLY the uniform blue-gray inspection matte. Redraw this SAME very wide shallow layered cloud bank, white icy-cyan upper layers and muted blue-gray flat lower layers; asymmetric top rises into a small peak slightly right of center; long thin left horizontal extension and lower right taper. Preserve the original 4:1 canvas aspect, broad low silhouette, positions, layer shapes, palette and original padding. High-definition clean softly rounded contours and smooth subtle shading, replacing pixel stairs. Retain graphic overlapping horizontal strata; do not replace it with a fluffy generic puff, do not add extra clouds. Transparent background, no text, no border.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-adb330f2-33c9-4c0b-8353-4c227f04ef6d.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-clound10_20-hd-v3.png"
+  },
+  {
+    "name": "reqiqiu",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/reqiqiu.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD 2D scenery sprite, faithful game remaster. Image 1 is the exact edit target enlarged for inspection; remove its blue-gray inspection matte. Redraw the SAME hot-air balloon: dark navy-blue crown, horizontal green, yellow, orange, red bands across its middle, dark navy lower region, narrower repeating green/yellow/orange bands near the bottom, a tiny brown basket. Preserve the exact vertical silhouette, horizontal band order, proportions, position, square canvas and padding. Soft left lighting, smooth fabric shading, clean antialiased contours replacing pixel stairs; no generic vertically striped balloon, no ropes wider than reference, no added scenery or text. Transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-1c4e3372-edea-4d2c-a904-e5e6db113ae7.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-reqiqiu-hd-v3.png"
+  },
+  {
+    "name": "feiting",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/feiting.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD 2D scenery sprite, faithful game remaster. Image 1 is the exact edit target enlarged for inspection; remove its blue-gray inspection matte. Redraw the SAME small slim white dirigible in SIDE VIEW, rounded nose pointing right, short tail fins on left, light gray underside, narrow vivid purple horizontal stripe low on the hull, tiny dark gray gondola. Preserve the extremely flattened horizontal silhouette, shape, left/right orientation, original placement within a 2:1 canvas including large transparent top and bottom padding. Smooth clean contours and shading replacing pixel steps; understated game illustration, not photographic. No text, no logos, no extra clouds, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-0073aec1-4525-4369-bac0-60cbff5e8e2b.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-feiting-hd-v3.png"
+  },
+  {
+    "name": "moon",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/moon.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD 2D game scenery faithful remaster. Image 1 is the exact sprite to remaster, enlarged for inspection on a blue-gray matte that must become transparent. Preserve the SAME small dark slate-blue gray moon globe: left edge slightly brighter lavender gray, deep desaturated blue-gray cratered and mottled surface, subdued right side; no white full moon, no luminous aura. Keep the sphere at the same center with its original generous square-canvas padding (diameter about 69% of canvas). Refine only pixel steps into smooth antialiased edges and softly detailed rocky crater shading. Preserve the original broad mottled markings and dark palette. No stars, no space backdrop, no text.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-45c93ca6-0e95-472e-800c-78d2e186a78a.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-moon-hd-v3.png"
+  },
+  {
+    "name": "mars",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/mars.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD 2D game scenery faithful remaster. Image 1 is the exact sprite to remaster, enlarged on a blue-gray inspection matte to remove. Redraw the SAME rusty orange red rocky Mars-like sphere with irregular muted brown and cool gray surface patches, dark blue-purple crescent shadow along LEFT edge and pale cool rim along right and lower right. Preserve its color, lighting direction, broad markings, center, size and transparent padding within square canvas; sphere diameter about 66% of canvas. Smooth clean antialiased round outline and understated painted rocky detail instead of pixel steps. No fire, no rings, no text, no stars, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-28d19219-987a-4f1a-9dcc-196a4db60dd2.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-mars-hd-v3.png"
+  },
+  {
+    "name": "muxing",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/muxing.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD game scenery faithful remaster. Image 1 is the exact Jupiter sprite to remaster; remove its blue-gray inspection matte. Preserve the SAME warm amber/orange and pale cream horizontal turbulent bands, distinct orange oval red spot in the LOWER LEFT quadrant, and deep muted purple crescent shadow along the RIGHT edge. Same near-square 75:76 canvas, almost full-canvas circular sphere, slight transparent edge margin. Smooth round antialiased outline, softly detailed cloud band painting instead of pixels. Preserve all broad markings and orientation. No rings, no stars, no extra glow, no text, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-f7f1177a-59df-4b27-a409-12bc158b0238.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-muxing-hd-v3.png"
+  },
+  {
+    "name": "tuxing",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/tuxing.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD game scenery faithful remaster. Image 1 is the exact Saturn sprite to remaster; remove its blue-gray inspection matte. Keep the SAME small centered warm brown/cream banded sphere, purple shadow along left, with exceptionally WIDE thin multicolored rings. Rings form a flattened ellipse tilted from UPPER LEFT to LOWER RIGHT, about 20 degrees downward, extending much farther than the sphere to both sides. Preserve distinct narrow concentric bands: gold, dark blue, turquoise/green, orange-red and yellow, same ring geometry and overlap, same 128:55 canvas ratio with original margins. Smooth detailed painted game sprite with antialiased contours instead of pixel steps. No extra star field, no text, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-4424a8b7-f55f-4284-86b4-2e07ff6d9a42.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-tuxing-hd-v3.png"
+  },
+  {
+    "name": "mingwxing",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/mingwxing.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD game scenery faithful remaster. Image 1 is the exact Pluto-like sprite, enlarged for inspection; remove its blue-gray inspection matte. Preserve the SAME round desaturated blue-green/gray rocky globe with broad pale cyan-gray mottled patches, softly lit LEFT and deep navy-blue crescent shadow on RIGHT. Same square canvas, centered sphere filling about 90% of canvas, original margins. Smooth antialiased round outline and subtle rocky painted texture instead of block pixels; keep muted colors and broad patch shapes. No rings, no stars, no glow, no lettering, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-1567ae29-a6e4-44c5-a51f-1e82ca9ea370.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-mingwxing-hd-v3.png"
+  },
+  {
+    "name": "ufo",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/ufo.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD game scenery faithful remaster. Image 1 is the exact edit target enlarged; remove only the blue-gray inspection matte. Redraw the SAME teal/cyan flying saucer viewed straight-on slightly from above, thick dark navy horizontal rim across middle, cyan panel seams, domed blue glass cockpit with dark muted reddish seat inside, small gray underside central pod. Keep its broad disc silhouette, glass dome shape, dark contours, square canvas and original padding; no alien faces or added lights. Smooth high-definition game illustration replacing pixel stairs; faithful colors and proportions. No laser, no rays, no stars, no text, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-ec26c54a-ff98-48de-afa6-2a5d8d01c3d4.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-ufo-hd-v3.png"
+  },
+  {
+    "name": "kongjianzhan",
+    "mode": "built-in image_gen",
+    "source": "local/city-bloxx-port/original/fidelity/remaster-references/kongjianzhan.png",
+    "prompt": "Use case: precise-object-edit. Transparent HD game scenery faithful remaster. Image 1 is the exact small satellite sprite to remaster, enlarged on a blue-gray inspection matte to remove. Preserve the SAME simple white and gray cylindrical station body angled slightly diagonally from lower-left toward upper-right, two narrow GOLD/YELLOW rectangular solar panel wings on its LEFT and RIGHT, each aligned almost vertically with the body, short thin gray crossbar. Deep dark gray shading on lower/right faces. Same compact silhouette, square canvas, large original transparent margins; station occupies central roughly 60% by 50% canvas. Clean antialiased edges and understated detail replacing pixel stairs. No blue solar panels, no large ISS redesign, no antenna additions, no stars, no text, transparent background.",
+    "generated": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-43594078-5ea2-4a39-b048-f81f3b8e8a0a.png",
+    "destination": "sprite-atlas-sources/city-bloxx/visual/scenery/native-kongjianzhan-hd-v3.png"
+  }
+]

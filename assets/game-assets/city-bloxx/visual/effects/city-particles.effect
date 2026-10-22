@@ -1,0 +1,69 @@
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: city-particle-vs:vert
+      frag: city-particle-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendColorMask: 7
+      rasterizerState:
+        cullMode: none
+      properties:
+        particleParams: { value: [1, 1, 1, 0] }
+        noiseTexture: { value: white }
+}%
+
+CCProgram city-particle-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  out vec2 uv;
+  out vec4 particleColor;
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1.0);
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+    uv = a_texCoord;
+    particleColor = a_color;
+    return cc_matViewProj * pos;
+  }
+}%
+
+CCProgram city-particle-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  in vec2 uv;
+  in vec4 particleColor;
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  uniform ParticleParams {
+    vec4 particleParams;
+  };
+  #if USE_TRAIL
+    uniform sampler2D noiseTexture;
+  #endif
+  vec4 frag () {
+    vec4 result = CCSampleWithAlphaSeparated(cc_spriteTexture, uv) * particleColor;
+    #if USE_TRAIL
+      // Original Add_CenterGlow, with center glow, distortion, depth and UV scroll disabled.
+      result *= texture(noiseTexture, uv * particleParams.yz);
+      result *= result.a * particleParams.x;
+    #else
+      // Original Blend_CenterGlow: emission affects RGB; opacity remains independent.
+      result.rgb *= particleParams.x;
+    #endif
+    return result;
+  }
+}%

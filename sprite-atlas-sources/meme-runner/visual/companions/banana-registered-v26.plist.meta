@@ -1,0 +1,324 @@
+{
+  "subMetas": {
+    "banana-0": {
+      "importer": "sprite-frame",
+      "name": "banana-0",
+      "uuid": "3488d501-b93d-5a5d-ae92-4e509694c3a8",
+      "userData": {
+        "trimX": 0,
+        "trimY": 0,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-1": {
+      "importer": "sprite-frame",
+      "name": "banana-1",
+      "uuid": "540254de-6e75-5c56-af31-7cb56e4692c1",
+      "userData": {
+        "trimX": 512,
+        "trimY": 0,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-2": {
+      "importer": "sprite-frame",
+      "name": "banana-2",
+      "uuid": "54af7bfb-1aa8-503b-a30d-792c54878d29",
+      "userData": {
+        "trimX": 1024,
+        "trimY": 0,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-3": {
+      "importer": "sprite-frame",
+      "name": "banana-3",
+      "uuid": "49c7caf9-ca23-5bb2-ac78-7c390c873b68",
+      "userData": {
+        "trimX": 1536,
+        "trimY": 0,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-4": {
+      "importer": "sprite-frame",
+      "name": "banana-4",
+      "uuid": "dbda14f7-da74-5483-b3ab-89bff138ae40",
+      "userData": {
+        "trimX": 0,
+        "trimY": 512,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-5": {
+      "importer": "sprite-frame",
+      "name": "banana-5",
+      "uuid": "da266a2d-e3a2-5ceb-a0b4-54b6890bddc9",
+      "userData": {
+        "trimX": 512,
+        "trimY": 512,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-6": {
+      "importer": "sprite-frame",
+      "name": "banana-6",
+      "uuid": "dc8d1d0c-5ba6-5fae-87fd-f1b266bcab23",
+      "userData": {
+        "trimX": 1024,
+        "trimY": 512,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-7": {
+      "importer": "sprite-frame",
+      "name": "banana-7",
+      "uuid": "e0287c5e-2eb3-5bf8-98d9-2814430e72b4",
+      "userData": {
+        "trimX": 1536,
+        "trimY": 512,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-8": {
+      "importer": "sprite-frame",
+      "name": "banana-8",
+      "uuid": "66ab2f4d-804a-55f5-bb07-7c31c6a7c1ad",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1024,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-9": {
+      "importer": "sprite-frame",
+      "name": "banana-9",
+      "uuid": "ee0964e2-04d2-5096-a46a-f63cbbc43f61",
+      "userData": {
+        "trimX": 512,
+        "trimY": 1024,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-10": {
+      "importer": "sprite-frame",
+      "name": "banana-10",
+      "uuid": "68b63bc9-4122-574a-96fc-a7b4c5930597",
+      "userData": {
+        "trimX": 1024,
+        "trimY": 1024,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-11": {
+      "importer": "sprite-frame",
+      "name": "banana-11",
+      "uuid": "961ccb4a-8d68-5d9f-9098-249be298968b",
+      "userData": {
+        "trimX": 1536,
+        "trimY": 1024,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-12": {
+      "importer": "sprite-frame",
+      "name": "banana-12",
+      "uuid": "bad867ae-f1f1-5749-ac61-a1ddb8b163e5",
+      "userData": {
+        "trimX": 0,
+        "trimY": 1536,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-13": {
+      "importer": "sprite-frame",
+      "name": "banana-13",
+      "uuid": "75683dcd-a4ce-54a3-860b-3d579d4bb93d",
+      "userData": {
+        "trimX": 512,
+        "trimY": 1536,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-14": {
+      "importer": "sprite-frame",
+      "name": "banana-14",
+      "uuid": "bcc331ce-9c76-5691-9326-6629fc382b7d",
+      "userData": {
+        "trimX": 1024,
+        "trimY": 1536,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-15": {
+      "importer": "sprite-frame",
+      "name": "banana-15",
+      "uuid": "44297dc6-f2f8-5b8c-b435-dd1efc7967c2",
+      "userData": {
+        "trimX": 1536,
+        "trimY": 1536,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-16": {
+      "importer": "sprite-frame",
+      "name": "banana-16",
+      "uuid": "5afef3de-4e95-54f8-a239-379c8c75f98a",
+      "userData": {
+        "trimX": 0,
+        "trimY": 2048,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-17": {
+      "importer": "sprite-frame",
+      "name": "banana-17",
+      "uuid": "77cdeeb3-dc8f-5a3d-a796-d0b0f2db25f8",
+      "userData": {
+        "trimX": 512,
+        "trimY": 2048,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-18": {
+      "importer": "sprite-frame",
+      "name": "banana-18",
+      "uuid": "5897b0f1-de15-58c0-8928-a11349b8d057",
+      "userData": {
+        "trimX": 1024,
+        "trimY": 2048,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banana-19": {
+      "importer": "sprite-frame",
+      "name": "banana-19",
+      "uuid": "03f9acfb-9bc5-5b09-9027-aa903a37ec09",
+      "userData": {
+        "trimX": 1536,
+        "trimY": 2048,
+        "width": 512,
+        "height": 512,
+        "rawWidth": 512,
+        "rawHeight": 512,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

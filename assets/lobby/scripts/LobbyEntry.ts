@@ -81,6 +81,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
     private catalogGames: readonly GameManifest[] = EMPTY_GAMES;
     private gameItems: readonly LobbyGameListItem[] = [];
     private storage?: StorageService;
+    private unsubscribeStorage?: () => void;
     private assets?: AssetService;
     private showcaseSkinFrame?: SpriteFrame;
     private readonly enterRequestLock = new EnterRequestLock();
@@ -190,14 +191,22 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         );
         this.catalogGames = playableGames;
         this.refreshGameOrder();
-        this.setEnterGameRequest((manifest) => (
-            services.get(GAME_RUNTIME_SERVICE).enterGame(manifest)
-        ));
+        const runtime = services.get(GAME_RUNTIME_SERVICE);
+        this.setEnterGameRequest((manifest) => runtime.enterGame(manifest));
         const achievements = services.get(ACHIEVEMENT_SERVICE);
         this.cardStatuses = new Map(this.games.map((manifest) => [
             manifest.id,
             buildLobbyCardStatus(manifest, achievements.getRecord(manifest)),
         ]));
+        this.unsubscribeStorage = storage.subscribeProgress(kind => {
+            if (kind !== 'restore') return;
+            this.games.forEach(manifest => {
+                const status = buildLobbyCardStatus(manifest, achievements.getRecord(manifest));
+                this.cardStatuses.set(manifest.id, status);
+                this.cardViews.get(manifest.id)?.setStatus(status);
+            });
+            this.achievementWall.refreshProgress();
+        });
         this.announcementPanel.mount(overlayParent, this.header.slot('Notice')!, configService.announcement, {
             assets: services.get(ASSET_SERVICE),
             feedback,
@@ -222,6 +231,8 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
     }
 
     protected onDestroy(): void {
+        this.unsubscribeStorage?.();
+        this.unsubscribeStorage = undefined;
         this.presentationGate.dispose();
         this.presentation.unmount();
         this.announcementPanel.unmount();

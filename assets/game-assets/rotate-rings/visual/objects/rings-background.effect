@@ -1,0 +1,43 @@
+// 主题底色与 game-bg-mask 灰度细节做 SoftLight 叠加；纹理按屏幕宽度等比重复。
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: background-vs:vert
+      frag: background-fs:frag
+      depthStencilState: { depthTest: false, depthWrite: false }
+      rasterizerState: { cullMode: none }
+      properties:
+        detailRect: { value: [0, 0, 1, 1] }
+        screenRatio: { value: [1, 1.7787, 0, 0] }
+        baseColor: { value: [1, 0.952941, 0.901961, 1], editor: { type: color } }
+}%
+CCProgram background-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  out vec2 uv;
+  vec4 vert () { uv = a_texCoord; return cc_matViewProj * vec4(a_position, 1.0); }
+}%
+CCProgram background-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  uniform Background {
+    vec4 detailRect;
+    vec4 screenRatio;
+    vec4 baseColor;
+  };
+  in vec2 uv;
+  vec4 frag () {
+    vec2 local = (uv - detailRect.xy) / detailRect.zw;
+    vec2 tiled = fract(local * screenRatio.xy * 2.0);
+    float detail = CCSampleWithAlphaSeparated(cc_spriteTexture, detailRect.xy + tiled * detailRect.zw).r;
+    vec3 base = baseColor.rgb;
+    vec3 low = base - (1.0 - 2.0 * detail) * base * (1.0 - base);
+    vec3 high = base + (2.0 * detail - 1.0) * (sqrt(base) - base);
+    vec3 soft = mix(low, high, step(0.5, detail));
+    return vec4(mix(base, soft, 0.3), 1.0);
+  }
+}%

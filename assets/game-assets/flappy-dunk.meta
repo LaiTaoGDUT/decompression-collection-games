@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "ea5dafc7-c42d-40b9-ab65-9ac2d22401aa",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-flappy-dunk-assets",
+    "isSubpackage": false,
+    "isRemoteBundle": {},
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy",
+    "isBundle": true
+  }
+}

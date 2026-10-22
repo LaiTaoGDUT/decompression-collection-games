@@ -24,6 +24,7 @@ import { TapRewardedAdProvider } from '../platform/TapAdProvider';
 import { GameRegistry } from '../runtime/GameRegistry';
 import { GameLoader } from '../runtime/GameLoader';
 import { GameRuntime, type PlatformSuspension } from '../runtime/GameRuntime';
+import { ScreenService } from '../services/ScreenService';
 import { FontService } from '../services/font/FontService';
 import { AssetService } from '../services/asset/AssetService';
 import { AudioService } from '../services/audio/AudioService';
@@ -41,6 +42,8 @@ import {
 import { ConfigService } from '../services/config/ConfigService';
 import { FeedbackService } from '../services/feedback/FeedbackService';
 import { StorageService } from '../services/storage/StorageService';
+import { CloudSaveService } from '../services/cloud/CloudSaveService';
+import { UpdateReminderService } from '../services/notifications/UpdateReminderService';
 import { AchievementService } from '../services/achievements/AchievementService';
 import { AchievementArtService } from '../services/achievements/AchievementArtService';
 import { AchievementAudioService } from '../services/achievements/AchievementAudioService';
@@ -64,7 +67,10 @@ export const FONT_SERVICE = createServiceToken<FontService>('FontService');
 export const ASSET_SERVICE = createServiceToken<AssetService>('AssetService');
 export const GAME_LOADER_SERVICE = createServiceToken<GameLoader>('GameLoader');
 export const GAME_RUNTIME_SERVICE = createServiceToken<GameRuntime>('GameRuntime');
+export const SCREEN_SERVICE = createServiceToken<ScreenService>('ScreenService');
 export const STORAGE_SERVICE = createServiceToken<StorageService>('StorageService');
+export const CLOUD_SAVE_SERVICE = createServiceToken<CloudSaveService>('CloudSaveService');
+export const UPDATE_REMINDER_SERVICE = createServiceToken<UpdateReminderService>('UpdateReminderService');
 export const ACHIEVEMENT_SERVICE = createServiceToken<AchievementService>('AchievementService');
 export const ACHIEVEMENT_ART_SERVICE = createServiceToken<AchievementArtService>('AchievementArtService');
 export const ACHIEVEMENT_CELEBRATION_SERVICE = createServiceToken<AchievementCelebration>('AchievementCelebration');
@@ -208,6 +214,11 @@ export class App extends Component {
         container.register(FONT_SERVICE, new FontService(assetService));
         container.register(GAME_LOADER_SERVICE, gameLoader);
         container.register(STORAGE_SERVICE, storageService);
+        container.register(UPDATE_REMINDER_SERVICE, new UpdateReminderService({
+            platform,
+            storage: storageService,
+            canRequest: () => !this.platformHidden,
+        }));
         container.register(ACHIEVEMENT_SERVICE, new AchievementService(storageService));
         container.register(ACHIEVEMENT_ART_SERVICE, new AchievementArtService(assetService));
         container.register(ACHIEVEMENT_AUDIO_SERVICE, new AchievementAudioService(assetService, audioService));
@@ -232,6 +243,10 @@ export class App extends Component {
         });
     }
 
+    protected update(): void {
+        if (this.container?.has(CLOUD_SAVE_SERVICE)) this.container.get(CLOUD_SAVE_SERVICE).checkActivity();
+    }
+
     protected onDestroy(): void {
         if (App.activeInstance !== this) {
             return;
@@ -239,6 +254,8 @@ export class App extends Component {
 
         App.activeInstance = null;
         this.clearLifecycleListeners();
+        if (this.container?.has(UPDATE_REMINDER_SERVICE)) this.container.get(UPDATE_REMINDER_SERVICE).dispose();
+        if (this.container?.has(CLOUD_SAVE_SERVICE)) this.container.get(CLOUD_SAVE_SERVICE).dispose();
         if (this.container?.has(ACHIEVEMENT_AUDIO_SERVICE)) {
             this.container.get(ACHIEVEMENT_AUDIO_SERVICE).dispose();
         }
@@ -253,6 +270,8 @@ export class App extends Component {
         if (this.container?.has(AD_SERVICE)) {
             this.container.get(AD_SERVICE).dispose();
         }
+
+        if (this.container?.has(SCREEN_SERVICE)) this.container.get(SCREEN_SERVICE).dispose();
 
         if (this.container?.has(PLATFORM_SERVICE)) {
             this.container.get(PLATFORM_SERVICE).dispose();
@@ -306,6 +325,9 @@ export class App extends Component {
             return;
         }
 
+        // 只提前读权限，不阻塞启动；返回按钮的触摸回调中不能再等待查询。
+        void this.services.get(UPDATE_REMINDER_SERVICE).prepare();
+
         const configService = this.services.get(CONFIG_SERVICE);
         const gameRegistry = this.services.get(GAME_REGISTRY_SERVICE);
 
@@ -341,6 +363,9 @@ export class App extends Component {
             platform.onHide(this.handlePlatformHide),
             platform.onShow(this.handlePlatformShow),
         );
+
+        await this.registerCloudSave();
+        if (App.activeInstance !== this) return;
 
         // 先接通应用暂停/恢复，再开放系统分享；大厅和各小游戏共用同一组回调。
         try {
@@ -396,6 +421,11 @@ export class App extends Component {
                 adUnitId: wechatAds.bubbleShooterReviveRewarded.adUnitId,
             }),
             Object.freeze({
+                gameId: 'flappy-dunk',
+                placement: AD_PLACEMENTS.flappyDunkRevive,
+                adUnitId: wechatAds.flappyDunkReviveRewarded.adUnitId,
+            }),
+            Object.freeze({
                 gameId: 'game2048',
                 placement: AD_PLACEMENTS.game2048ClearSmallTiles,
                 adUnitId: wechatAds.game2048ClearSmallTilesRewarded.adUnitId,
@@ -404,6 +434,21 @@ export class App extends Component {
                 gameId: 'meowdoku',
                 placement: AD_PLACEMENTS.meowdokuTool,
                 adUnitId: wechatAds.meowdokuToolRewarded.adUnitId,
+            }),
+            Object.freeze({
+                gameId: 'multi-color-fill',
+                placement: AD_PLACEMENTS.multiColorFillHint,
+                adUnitId: wechatAds.multiColorFillHintRewarded.adUnitId,
+            }),
+            Object.freeze({
+                gameId: 'city-bloxx',
+                placement: AD_PLACEMENTS.cityBloxxRevive,
+                adUnitId: wechatAds.cityBloxxReviveRewarded.adUnitId,
+            }),
+            Object.freeze({
+                gameId: 'rotate-rings',
+                placement: AD_PLACEMENTS.rotateRingsHint,
+                adUnitId: wechatAds.rotateRingsHintRewarded.adUnitId,
             }),
         ]);
         const gameAdEnablement: Record<string, boolean> = {};
@@ -460,6 +505,37 @@ export class App extends Component {
         });
     }
 
+    private async registerCloudSave(): Promise<void> {
+        const services = this.services, platform = services.get(PLATFORM_SERVICE);
+        const config = services.get(CONFIG_SERVICE).config.cloudSave;
+        if (!config.enabled || !config.environmentId.trim() || platform.id !== 'wechat'
+            || !platform.initializeCloud || !platform.callCloudFunction) return;
+        try {
+            const catalog = await services.get(CONFIG_SERVICE).loadCloudSaveCatalog();
+            for (const schema of catalog.games) {
+                const definition = services.get(GAME_REGISTRY_SERVICE).getById(schema.gameId)?.achievement;
+                if (schema.achievement && (schema.achievement.id !== definition?.id || schema.achievement.target !== definition?.target
+                    || schema.achievement.metric !== definition?.metric))
+                    throw new Error(`Cloud achievement schema is outdated: ${schema.gameId}`);
+            }
+            await platform.initializeCloud(config.environmentId);
+            if (App.activeInstance !== this) return;
+            const stateMachine = services.get(APP_STATE_MACHINE_SERVICE), runtime = services.get(GAME_RUNTIME_SERVICE);
+            const cloud = new CloudSaveService({ storage:services.get(STORAGE_SERVICE), catalog,
+                call: data => platform.callCloudFunction!(config.functionName,data,config.requestTimeoutMs),
+                activeGame: () => !this.platformHidden && stateMachine.currentState === 'playing'
+                    && (runtime.currentEntry?.isGameplayActive?.() ?? true) ? runtime.currentSession?.gameId : undefined,
+                canRestore: () => stateMachine.currentState === 'booting' || stateMachine.currentState === 'lobby',
+            });
+            services.register(CLOUD_SAVE_SERVICE,cloud);
+            cloud.setVisible(!this.platformHidden);
+            this.lifecycleUnsubscribes.push(stateMachine.subscribe('afterTransition',() => cloud.tick()));
+            await cloud.initialize();
+        } catch (error: unknown) {
+            console.warn('[App] Cloud save unavailable; local saves remain active.', error);
+        }
+    }
+
     private registerGameRuntime(): void {
         const services = this.services;
 
@@ -478,6 +554,16 @@ export class App extends Component {
             ?.getComponent(PauseView);
         const resultView = find('Canvas/ResultLayer', this.node)
             ?.getComponent(ResultView);
+        const screen = new ScreenService(platform, services.get(CONFIG_SERVICE).config.designResolution);
+        services.register(SCREEN_SERVICE, screen);
+        const updateLayout = (layout: ReturnType<Platform['getLayoutInfo']>): void => {
+            loadingView?.setPlatformLayout(layout);
+            errorView?.setPlatformLayout(layout);
+            pauseView?.setPlatformLayout(layout);
+            resultView?.setPlatformLayout(layout);
+        };
+        this.lifecycleUnsubscribes.push(screen.subscribe(updateLayout));
+        updateLayout(platform.getLayoutInfo());
         const analytics = services.get(ANALYTICS_SERVICE);
         const runtime = new GameRuntime(
             services.get(APP_STATE_MACHINE_SERVICE),
@@ -490,9 +576,11 @@ export class App extends Component {
                 feedback: services.get(FEEDBACK_SERVICE),
                 storage: services.get(STORAGE_SERVICE),
                 achievements: services.get(ACHIEVEMENT_SERVICE),
+                updateReminder: services.get(UPDATE_REMINDER_SERVICE),
                 analytics,
                 ads: services.get(AD_SERVICE),
                 platform,
+                screen,
                 deviceTier: platform.getDeviceProfile().tier,
             }),
             director,
@@ -537,6 +625,7 @@ export class App extends Component {
     }
 
     private readonly handlePlatformHide = (): void => {
+        if (this.services.has(CLOUD_SAVE_SERVICE)) this.services.get(CLOUD_SAVE_SERVICE).setVisible(false);
         this.platformHidden = true;
         this.platformSuspension = 'none';
         this.services.get(AD_SERVICE).onHide();
@@ -601,6 +690,7 @@ export class App extends Component {
         // 防止敌人、计时器或合成决策在屏幕就绪前推进。
         audio.onShow();
         this.services.get(AD_SERVICE).onShow();
+        if (this.services.has(CLOUD_SAVE_SERVICE)) this.services.get(CLOUD_SAVE_SERVICE).setVisible(true);
     };
 
     private clearLifecycleListeners(): void {

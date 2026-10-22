@@ -1,0 +1,52 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "date": "2026-10-15",
+  "request": "容器改为平面设计，保留实机水果、错落分布和轻微形变。",
+  "operation": "Reference-guided compositing using the actual production fruit sprites.",
+  "prompt": "watermelon-jelly-cover-flat-v4.prompt.txt",
+  "fruitReferences": [
+    "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-10-fat-orange-idle-1-c6-v1.png",
+    "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-04-white-fluffy-idle-1-c6-v1.png",
+    "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-02-gray-tabby-idle-1-c6-v1.png",
+    "sprite-atlas-sources/watermelon/visual/cats/frames-c6/cat-01-calico-idle-1-c6-v1.png"
+  ],
+  "source": {
+    "path": "watermelon-jelly-cover-flat-v4.png",
+    "width": 1448,
+    "height": 1086
+  },
+  "delivery": {
+    "path": "assets/lobby-covers/visual/covers/watermelon/watermelon-jelly-cover-v4.jpg",
+    "width": 568,
+    "height": 426,
+    "format": "JPEG",
+    "existingAssetUuidPreserved": true
+  },
+  "sizing": "4:3; proportionally reduced to 568 × 426, the maximum cover display size of the shared loading dialog at the 750 × 1334 design resolution.",
+  "composition": {
+    "background": "soft mint",
+    "container": "flat front-facing open-top U-shaped playfield, sage-green outline and pale ivory fill",
+    "watermelon": "largest, lower right",
+    "lemon": "medium, upper left",
+    "strawberry": "smaller, lower left",
+    "grape": "smallest, upper right",
+    "fruitCount": 4
+  },
+  "deformation": "Subtle base flattening and contact compression, retaining mostly round in-game silhouettes.",
+  "compression": {
+    "tool": ".agents/skills/tinypng-batch/scripts/compress.py",
+    "provider": "Tinify API",
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "inputBytes": 338446,
+    "outputBytes": 45545,
+    "savedBytes": 292901
+  },
+  "validation": {
+    "typescript": "tsc --noEmit -p tsconfig.json passed",
+    "diffCheck": "git diff --check and git diff --cached --check passed",
+    "cocos": "Refreshed db://assets/lobby-covers/visual/covers/watermelon using cocos_creator_stdio",
+    "browser": "Lobby card loaded the 568 × 426 cover without page errors."
+  }
+}

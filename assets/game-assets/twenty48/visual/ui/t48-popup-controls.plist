@@ -7,7 +7,7 @@
 		<key>t48-popup-button-amber-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,2},{430,82}}</string>
+			<string>{{2,84},{430,82}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -20,7 +20,7 @@
 		<key>t48-popup-button-cyan-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{436,2},{430,82}}</string>
+			<string>{{436,116},{430,82}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -33,7 +33,7 @@
 		<key>t48-popup-button-violet-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{2,88},{430,82}}</string>
+			<string>{{2,170},{430,82}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -46,33 +46,33 @@
 		<key>t48-popup-score-amber-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{436,164},{400,120}}</string>
+			<string>{{456,2},{430,110}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{400,120}}</string>
+			<string>{{0.0,0.0},{430,110}}</string>
 			<key>sourceSize</key>
-			<string>{400,120}</string>
+			<string>{430,110}</string>
 		</dict>
 		<key>t48-popup-score-cyan-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{436,88},{410,72}}</string>
+			<string>{{2,2},{450,78}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{410,72}}</string>
+			<string>{{0.0,0.0},{450,78}}</string>
 			<key>sourceSize</key>
-			<string>{410,72}</string>
+			<string>{450,78}</string>
 		</dict>
 		<key>t48-rewarded-ad-icon-v1</key>
 		<dict>
 			<key>frame</key>
-			<string>{{870,2},{120,79}}</string>
+			<string>{{890,2},{120,79}}</string>
 			<key>offset</key>
 			<string>{0,0}</string>
 			<key>rotated</key>
@@ -90,7 +90,7 @@
 		<key>realTextureFileName</key>
 		<string>t48-popup-controls.png</string>
 		<key>size</key>
-		<string>{992,286}</string>
+		<string>{1012,254}</string>
 		<key>textureFileName</key>
 		<string>t48-popup-controls.png</string>
 	</dict>

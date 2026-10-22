@@ -266,7 +266,13 @@ export class CyBlockBeesUi {
         g.strokeColor = P.creamDeep; g.circle(0, 0, ring); g.stroke();
     }
 
-    /** 独立进度层每帧只生成变化的圆弧。 */
+    /** 把进度量化到圆弧长度约 1 设计像素的台阶；进度层只在弧长可见变化时重建网格。 */
+    stopwatchProgressRatio(radius: number, ratio: number): number {
+        const steps = Math.ceil(Math.PI * 2 * radius * .74);
+        return Math.ceil(Math.max(0, Math.min(1, ratio)) * steps) / steps;
+    }
+
+    /** 独立进度层只在量化后的进度变化时生成圆弧。 */
     paintStopwatchProgress(g: Graphics, radius: number, ratio: number, danger: boolean): void {
         const ring = radius * .74;
         g.lineWidth = radius * .2; g.lineCap = Graphics.LineCap.ROUND; g.lineJoin = Graphics.LineJoin.ROUND;

@@ -1,0 +1,668 @@
+{
+  "fence": {
+    "pixels": [
+      1039,
+      156
+    ],
+    "nativeCanvas": [
+      320,
+      48
+    ],
+    "subjectPixels": [
+      996,
+      110
+    ],
+    "subjectOffset": [
+      22,
+      46
+    ]
+  },
+  "resident-blue-0": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      35,
+      40
+    ],
+    "subjectOffset": [
+      5,
+      24
+    ]
+  },
+  "resident-blue-1": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      28,
+      44
+    ],
+    "subjectOffset": [
+      7,
+      24
+    ]
+  },
+  "resident-blue-2": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      24,
+      47
+    ],
+    "subjectOffset": [
+      9,
+      23
+    ]
+  },
+  "resident-blue-3": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      29,
+      49
+    ],
+    "subjectOffset": [
+      9,
+      22
+    ]
+  },
+  "resident-blue-4": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      31,
+      43
+    ],
+    "subjectOffset": [
+      7,
+      25
+    ]
+  },
+  "resident-blue-5": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      28,
+      47
+    ],
+    "subjectOffset": [
+      9,
+      19
+    ]
+  },
+  "resident-blue-6": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      26,
+      52
+    ],
+    "subjectOffset": [
+      7,
+      16
+    ]
+  },
+  "resident-blue-7": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      28,
+      47
+    ],
+    "subjectOffset": [
+      9,
+      18
+    ]
+  },
+  "resident-blue-8": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      35,
+      41
+    ],
+    "subjectOffset": [
+      7,
+      21
+    ]
+  },
+  "resident-blue-9": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      37,
+      43
+    ],
+    "subjectOffset": [
+      7,
+      20
+    ]
+  },
+  "resident-red-0": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      35,
+      45
+    ],
+    "subjectOffset": [
+      4,
+      17
+    ]
+  },
+  "resident-red-1": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      27,
+      59
+    ],
+    "subjectOffset": [
+      11,
+      11
+    ]
+  },
+  "resident-red-2": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      24,
+      49
+    ],
+    "subjectOffset": [
+      9,
+      17
+    ]
+  },
+  "resident-red-3": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      29,
+      54
+    ],
+    "subjectOffset": [
+      6,
+      15
+    ]
+  },
+  "resident-red-4": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      31,
+      42
+    ],
+    "subjectOffset": [
+      7,
+      21
+    ]
+  },
+  "resident-red-5": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      29,
+      56
+    ],
+    "subjectOffset": [
+      9,
+      17
+    ]
+  },
+  "resident-red-6": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      24,
+      48
+    ],
+    "subjectOffset": [
+      7,
+      23
+    ]
+  },
+  "resident-red-7": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      28,
+      53
+    ],
+    "subjectOffset": [
+      7,
+      18
+    ]
+  },
+  "resident-red-8": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      35,
+      43
+    ],
+    "subjectOffset": [
+      5,
+      22
+    ]
+  },
+  "resident-red-9": {
+    "pixels": [
+      44,
+      87
+    ],
+    "nativeCanvas": [
+      24,
+      40
+    ],
+    "subjectPixels": [
+      35,
+      45
+    ],
+    "subjectOffset": [
+      4,
+      21
+    ]
+  },
+  "crane-arm": {
+    "pixels": [
+      438,
+      88
+    ],
+    "nativeCanvas": [
+      160,
+      32
+    ],
+    "subjectPixels": [
+      413,
+      84
+    ],
+    "subjectOffset": [
+      17,
+      3
+    ]
+  },
+  "first-chain": {
+    "pixels": [
+      57,
+      141
+    ],
+    "nativeCanvas": [
+      15,
+      37
+    ],
+    "subjectPixels": [
+      49,
+      141
+    ],
+    "subjectOffset": [
+      4,
+      0
+    ]
+  },
+  "native-hook": {
+    "pixels": [
+      29,
+      54
+    ],
+    "nativeCanvas": [
+      10,
+      19
+    ],
+    "subjectPixels": [
+      25,
+      54
+    ],
+    "subjectOffset": [
+      2,
+      0
+    ]
+  },
+  "building": {
+    "pixels": [
+      34,
+      95
+    ],
+    "nativeCanvas": [
+      48,
+      136
+    ],
+    "subjectPixels": [
+      29,
+      95
+    ],
+    "subjectOffset": [
+      2,
+      0
+    ]
+  },
+  "home": {
+    "pixels": [
+      40,
+      48
+    ],
+    "nativeCanvas": [
+      72,
+      86
+    ],
+    "subjectPixels": [
+      40,
+      46
+    ],
+    "subjectOffset": [
+      0,
+      1
+    ]
+  },
+  "rankingicon02": {
+    "pixels": [
+      50,
+      50
+    ],
+    "nativeCanvas": [
+      64,
+      64
+    ],
+    "subjectPixels": [
+      50,
+      50
+    ],
+    "subjectOffset": [
+      0,
+      0
+    ]
+  },
+  "btn_quick": {
+    "pixels": [
+      41,
+      41
+    ],
+    "nativeCanvas": [
+      57,
+      57
+    ],
+    "subjectPixels": [
+      41,
+      41
+    ],
+    "subjectOffset": [
+      0,
+      0
+    ]
+  },
+  "AD": {
+    "pixels": [
+      45,
+      39
+    ],
+    "nativeCanvas": [
+      99,
+      87
+    ],
+    "subjectPixels": [
+      45,
+      39
+    ],
+    "subjectOffset": [
+      0,
+      0
+    ]
+  },
+  "whale-0": {
+    "pixels": [
+      412,
+      103
+    ],
+    "nativeCanvas": [
+      128,
+      32
+    ],
+    "subjectPixels": [
+      357,
+      78
+    ],
+    "subjectOffset": [
+      3,
+      4
+    ]
+  },
+  "whale-1": {
+    "pixels": [
+      412,
+      103
+    ],
+    "nativeCanvas": [
+      128,
+      32
+    ],
+    "subjectPixels": [
+      344,
+      76
+    ],
+    "subjectOffset": [
+      0,
+      9
+    ]
+  },
+  "tree": {
+    "pixels": [
+      230,
+      230
+    ],
+    "nativeCanvas": [
+      64,
+      64
+    ],
+    "subjectPixels": [
+      183,
+      199
+    ],
+    "subjectOffset": [
+      22,
+      26
+    ]
+  },
+  "sky-purplestar": {
+    "pixels": [
+      142,
+      142
+    ],
+    "nativeCanvas": [
+      32,
+      32
+    ],
+    "subjectPixels": [
+      66,
+      67
+    ],
+    "subjectOffset": [
+      40,
+      40
+    ]
+  },
+  "sky-purplestar_little": {
+    "pixels": [
+      19,
+      19
+    ],
+    "nativeCanvas": [
+      3,
+      3
+    ],
+    "subjectPixels": [
+      19,
+      19
+    ],
+    "subjectOffset": [
+      0,
+      0
+    ]
+  },
+  "sky-bluelestar": {
+    "pixels": [
+      61,
+      61
+    ],
+    "nativeCanvas": [
+      10,
+      10
+    ],
+    "subjectPixels": [
+      61,
+      59
+    ],
+    "subjectOffset": [
+      0,
+      1
+    ]
+  },
+  "flyman-0": {
+    "pixels": [
+      99,
+      99
+    ],
+    "nativeCanvas": [
+      32,
+      32
+    ],
+    "subjectPixels": [
+      52,
+      31
+    ],
+    "subjectOffset": [
+      25,
+      37
+    ]
+  },
+  "flyman-1": {
+    "pixels": [
+      99,
+      99
+    ],
+    "nativeCanvas": [
+      32,
+      32
+    ],
+    "subjectPixels": [
+      53,
+      30
+    ],
+    "subjectOffset": [
+      25,
+      34
+    ]
+  }
+}

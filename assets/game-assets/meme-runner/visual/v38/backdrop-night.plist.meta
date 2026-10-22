@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "dd6a85d5-55fc-52dc-bf66-ad537d1d7388",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "824d7": {
+      "importer": "sprite-frame",
+      "uuid": "dd6a85d5-55fc-52dc-bf66-ad537d1d7388@824d7",
+      "displayName": "",
+      "id": "824d7",
+      "name": "backdrop-night",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 1334,
+        "height": 750,
+        "rawWidth": 1334,
+        "rawHeight": 750,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "139003ac-dc9a-5777-9b38-4e38d3a5016f@6c48a",
+        "atlasUuid": "dd6a85d5-55fc-52dc-bf66-ad537d1d7388",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "backdrop-night.png",
+    "format": 2,
+    "uuid": "dd6a85d5-55fc-52dc-bf66-ad537d1d7388",
+    "textureUuid": "139003ac-dc9a-5777-9b38-4e38d3a5016f@6c48a"
+  }
+}

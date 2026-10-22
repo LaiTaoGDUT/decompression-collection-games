@@ -9,16 +9,22 @@ import { CYBLOCKBEES_ENVIRONMENT } from './CyBlockBeesLevels';
 import type { CyBlockBeesPrefab } from './CyBlockBeesPrefab';
 import { buildDrawnLine, buildDrawnSpine, DrawnSpineCache } from './CyBlockBeesSpline';
 import { CyBlockBeesStrokeCollider2D } from './CyBlockBeesStrokeCollider2D';
+import { CyBlockBeesPolygonCollider2D } from './CyBlockBeesPolygonCollider2D';
 import { CYBLOCKBEES_KIND_SPRITES, CYBLOCKBEES_RULES } from './CyBlockBeesTheme';
 
 const UNIT = 100, PTM = 32, DEG = 180 / Math.PI, LINE_WIDTH = .148796886, MAX_ROPE_PARTICLES = 6;
 const INK = new Color(20, 19, 18, 255);
 const ROPE_COLOR = new Color(49, 40, 28);
+const GUIDE_OUTLINE = new Color(96, 58, 32, 190);
+const GUIDE_INK = new Color(255, 230, 146, 240);
+const MATRIX_FIELDS = ['m00', 'm01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07',
+    'm08', 'm09', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15'] as const;
 // Box2D 的过滤位是 uint16，Unity 的 layer 编号不能直接用于高于 15 的位。
 const GROUP = { solid: 16, bee: 32, hive: 64, ground: 128, line: 256, spike: 512, mass: 1024 };
 const ALL_GROUPS = 16 | 32 | 64 | 128 | 256 | 512;
 const BEE_PATH = [.0675, .1442, -.2603, .1573, -.7224, .0700, -.5150, -.2271,
     -.3543, -.3717, -.0845, -.4796, .3525, -.4284, .7059, -.1199, .4785, .0235];
+const CONTACT_KINDS: readonly string[] = ['bee', 'dog', 'balloon', 'ice', 'spider', 'knife', 'jelly'];
 type Fixture = CyBlockBeesPrefab['colliders'][number];
 type JointData = CyBlockBeesPrefab['joints'][number];
 type DogPose = 'dog-idle' | 'dog-scared' | 'dog-beaten' | 'dog-win' | 'dog-lose';
@@ -29,17 +35,23 @@ interface Actor {
     mode: number; rope?: Node[]; ropeJoints?: Joint2D[]; ropeParticle?: boolean; joints: Joint2D[]; line?: Vec2[];
     dogPose?: DogPose;
     physicsScale?: Vec3;
+    syncedTransform?: TransformSnapshot;
     bee?: { phase: 'fly' | 'seek' | 'back' | 'dead'; time: number; direction: number; removeAfter: number;
-        ignoredHives: readonly Node[]; contacts: Map<Node, Set<IPhysics2DContact>>; processed: Set<Node> };
+        velocity: Vec2; ignoredHives: readonly Node[]; contacts: Map<Node, Set<IPhysics2DContact>>; processed: Set<Node> };
 }
 interface PathBounds { minX: number; minY: number; maxX: number; maxY: number; }
+interface TransformSnapshot {
+    x: number; y: number; z: number; sx: number; sy: number; sz: number;
+    qx: number; qy: number; qz: number; qw: number;
+}
 interface ActorPaths {
     fixtures: readonly Fixture[]; local: Vec2[][]; world: Vec2[][]; planningWorld: Vec2[][]; sensorWorld: Vec2[][];
     localBounds: PathBounds; bounds: PathBounds; coarseBounds: PathBounds;
-    x: number; y: number; sx: number; sy: number; angle: number;
+    x: number; y: number; sx: number; sy: number; qx: number; qy: number; qz: number; qw: number;
+    cosine: number; sine: number; worldDirty: boolean;
 }
 interface DrawingGuide {
-    root: Node; stroke: Graphics; finger: Node; opacity: UIOpacity; points: Vec2[]; time: number;
+    root: Node; stroke: Graphics; finger: Node; opacity: UIOpacity; points: Vec2[]; time: number; cursor: number;
 }
 interface BoardBroadPhase {
     batchTransforms(action: () => void): void;
@@ -64,6 +76,12 @@ export class CyBlockBeesBoard {
     private readonly boxes: Actor[] = [];
     private readonly forceActors: Actor[] = [];
     private readonly ropeActors: Actor[] = [];
+    private readonly cloudActors: Actor[] = [];
+    private readonly animatedActors: Actor[] = [];
+    private readonly tickingActors: Actor[] = [];
+    private readonly ignoredBeeHives: Node[] = [];
+    private readonly ropeCommands: number[] = [];
+    private readonly physicsParent: number[] = [];
     private readonly byNode = new Map<Node, Actor>();
     private readonly fixtureByCollider = new Map<Collider2D, Fixture>();
     private readonly bees: Actor[] = [];
@@ -144,6 +162,13 @@ export class CyBlockBeesBoard {
         // 常驻底部水区处理掉落。独立保存，避免改变 prefab 关节引用的元素下标。
         for (const element of CYBLOCKBEES_ENVIRONMENT) this.environment.push(this.createActor(element));
         this.sceneActors.push(...this.actors, ...this.environment);
+        for (const a of this.actors) {
+            if (a.kind === 'hive' && a.element!.detail.body) this.ignoredBeeHives.push(a.node);
+            if (a.kind === 'cloud') this.cloudActors.push(a);
+            if (a.kind === 'dog' || a.kind === 'saw' || a.kind === 'jelly') this.animatedActors.push(a);
+            // 只有这些对象消费 age/grace/cooldown；静态地形无需在每个子步更新三个时钟。
+            if (['dog', 'moveable', 'bomb', 'ice', 'knife', 'jelly'].indexOf(a.kind) >= 0) this.tickingActors.push(a);
+        }
         for (const a of this.actors) if (a.kind === 'balloon' || a.kind === 'spider' || a.kind === 'ciqiu' || a.kind === 'ciqiuJoint') this.ropeActors.push(a);
         this.buildBalloonRopes(); this.buildPrefabJoints();
         const ordered = this.actors.concat(this.environment).sort((a, b) => this.renderOrder(a) - this.renderOrder(b));
@@ -173,7 +198,7 @@ export class CyBlockBeesBoard {
             const angle = -Math.PI * .75 - Math.PI * 2 * i / 96;
             points.push(this.toLocal(-.6 + 2.4 * Math.cos(angle), .8 + 2.4 * Math.sin(angle)));
         }
-        this.drawingGuide = { root, stroke, finger, opacity: root.addComponent(UIOpacity), points, time: 0 };
+        this.drawingGuide = { root, stroke, finger, opacity: root.addComponent(UIOpacity), points, time: 0, cursor: -1 };
         this.updateDrawingGuide(0);
     }
     private updateDrawingGuide(dt: number): void {
@@ -185,10 +210,13 @@ export class CyBlockBeesBoard {
         const cursor = progress * (guide.points.length - 1), index = Math.floor(cursor);
         const a = guide.points[index], b = guide.points[Math.min(index + 1, guide.points.length - 1)];
         const x = a.x + (b.x - a.x) * (cursor - index), y = a.y + (b.y - a.y) * (cursor - index);
-        guide.finger.setPosition(x, y);
+        if (guide.finger.position.x !== x || guide.finger.position.y !== y) guide.finger.setPosition(x, y);
         const fingerScale = guide.time < press ? 1 - .08 * Math.sin(guide.time / press * Math.PI) : 1;
-        guide.finger.setScale(fingerScale, fingerScale, 1);
+        if (guide.finger.scale.x !== fingerScale) guide.finger.setScale(fingerScale, fingerScale, 1);
         guide.opacity.opacity = Math.round(255 * Math.max(0, 1 - Math.max(0, guide.time - press - draw - hold) / fade));
+        // 按下、停留和淡出阶段只变手指/透明度，笔迹几何保持不变。
+        if (guide.cursor === cursor) return;
+        guide.cursor = cursor;
         const g = guide.stroke; g.clear();
         const trace = (): void => {
             g.moveTo(guide.points[0].x, guide.points[0].y);
@@ -196,9 +224,9 @@ export class CyBlockBeesBoard {
             g.lineTo(x, y); g.stroke();
         };
         g.lineWidth = LINE_WIDTH * this.scale;
-        g.strokeColor = new Color(96, 58, 32, 190); trace();
+        g.strokeColor = GUIDE_OUTLINE; trace();
         g.lineWidth = LINE_WIDTH * this.scale * .5;
-        g.strokeColor = new Color(255, 230, 146, 240); trace();
+        g.strokeColor = GUIDE_INK; trace();
     }
     /** 玩家在合法区域落笔时立即移除，演示从不提交墨水或参与物理。 */
     dismissDrawingGuide(): void {
@@ -261,12 +289,16 @@ export class CyBlockBeesBoard {
         const visual = mirrorX < 0 || mirrorY < 0 ? this.makeNode('visual', node) : node;
         if (visual !== node) visual.setScale(mirrorX, mirrorY, 1);
         const body = node.addComponent(RigidBody2D); body.type = ERigidBody2DType.Static;
-        body.enabledContactListener = true; body.gravityScale = detail.body?.gravity ?? 1;
+        // Box2D 的物理接触不依赖事件监听。只有会处理碰撞的对象需要上报，
+        // 地形/树/画线的通知没有消费者，却会在每个子步派发 Enter/Stay/Exit。
+        body.enabledContactListener = CONTACT_KINDS.indexOf(element.kind) >= 0;
+        body.gravityScale = detail.body?.gravity ?? 1;
         body.linearDamping = detail.body?.drag ?? 0; body.angularDamping = detail.body?.angularDrag ?? .05;
         body.fixedRotation = !!((detail.body?.constraints ?? 0) & 4); body.group = this.groupFor(detail.layer);
-        // 配合原包的 100 Hz 固定步保持离散检测。给低速动态对象额外启用 bullet，
-        // 会使 Box2D TOI 在复合木块和凹线的多点挤压中产生大幅位置修正。
-        body.bullet = false;
+        // 狗头与画线都是动态刚体；离散检测会在线被推动/转动时漏掉途中的接触，
+        // 甚至在狗头中心越过线后将它向外侧推出。狗头按首次相交求解；
+        // 蜜蜂在 spawnBee 中同样启用连续检测，其它机关保留原碰撞设置。
+        body.bullet = element.kind === 'dog';
         const actor: Actor = { node, element, kind: element.kind, body, colliders: [],
             fixtures: mirrorFixtures(detail.colliders, mirrorX, mirrorY), visualRoot: visual,
             mass: detail.body?.mass ?? 1, alive: true, hurt: 0, grace: 0, age: 0, cooldown: 0, origin: p.clone(), mode: 0, joints: [] };
@@ -332,13 +364,16 @@ export class CyBlockBeesBoard {
                 if (path.length < 6 || polygonArea(path) < 1e-8) continue;
                 const points = this.physicsPolygon(path, scale);
                 if (points.length < 3) continue;
-                const c = actor.node.addComponent(PolygonCollider2D); c.points = points; colliders.push(c);
+                const c = actor.node.addComponent(CyBlockBeesPolygonCollider2D); c.points = points; colliders.push(c);
             }
             for (const c of colliders) {
                 c.sensor = f.sensor; c.friction = f.friction; c.restitution = f.restitution; c.density = density;
                 c.group = this.groupFor(f.layer);
-                c.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this); c.on(Contact2DType.PRE_SOLVE, this.onPreSolve, this);
-                c.on(Contact2DType.END_CONTACT, this.onEndContact, this);
+                if (actor.body.enabledContactListener) {
+                    c.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+                    if (actor.kind === 'bee' || actor.kind === 'ice') c.on(Contact2DType.PRE_SOLVE, this.onPreSolve, this);
+                    if (actor.kind === 'bee') c.on(Contact2DType.END_CONTACT, this.onEndContact, this);
+                }
                 this.fixtureByCollider.set(c, f);
                 actor.colliders.push(c);
             }
@@ -540,7 +575,7 @@ export class CyBlockBeesBoard {
         if (this.destroyed) return;
         this.flushDraft();
         this.updateDrawingGuide(dt);
-        for (const a of this.actors) if (a.alive && a.node.active && a.kind === 'cloud') {
+        for (const a of this.cloudActors) if (a.alive && a.node.active) {
             const x = a.node.position.x + (a.element!.params.moveSpeed ?? .1) * 2 * this.scale * dt;
             a.node.setPosition(x > 10 * this.scale ? -10 * this.scale : x, a.node.position.y);
             if (a.fixtures.length) this.planningRevision++;
@@ -548,12 +583,13 @@ export class CyBlockBeesBoard {
         if (!this.started) return;
         // 原 Lua 的蜜蜂追踪、朝向、锯齿旋转和狗头表情均在 Update 中运行。
         // 在物理子步中重复控制速度/转向会覆盖碰撞结果，并反复更新碰撞树。
-        for (const a of this.actors) {
+        for (const a of this.animatedActors) {
             if (!a.alive || !a.node.active) continue;
             if (a.kind === 'jelly') {
                 const surface = (a.visualRoot ?? a.node).getChildByName('jelly-surface');
                 const pulse = Math.sin((.25 - a.cooldown) / .25 * Math.PI) * .12;
-                surface?.setScale(1 + pulse * .4, 1 - pulse, 1);
+                if (surface && (surface.scale.x !== 1 + pulse * .4 || surface.scale.y !== 1 - pulse))
+                    surface.setScale(1 + pulse * .4, 1 - pulse, 1);
             }
             if (a.kind === 'saw' && a.sprite) a.sprite.node.angle = this.nodeAngle(a.sprite.node) * DEG - 200 * dt;
             if (a.kind === 'dog' && !a.hurt) {
@@ -577,7 +613,7 @@ export class CyBlockBeesBoard {
         // 一个 Unity collider 在 Cocos 可拆成多片，Enter/PRE_SOLVE/CCD 也会重复通知。
         // 按碰撞对象去重；撞到另一个对象仍应施力，不能用整只蜜蜂共用的冷却吞掉。
         for (const a of this.bees) a.bee!.processed.clear();
-        for (const a of this.actors) {
+        for (const a of this.tickingActors) {
             if (!a.alive || !a.node.active) continue;
             a.age += dt; a.grace = Math.max(0, a.grace - dt); a.cooldown = Math.max(0, a.cooldown - dt);
             if (a.kind === 'moveable') this.movePlatform(a);
@@ -589,11 +625,23 @@ export class CyBlockBeesBoard {
      * 所有 fixture，并对相同刚体反复 SetTransform / FindNewContacts。
      */
     syncSceneToPhysics(): void {
+        // hasChangedFlags 到渲染帧末才清除。保存物理回写后的局部变换，
+        // 未被玩法再次改动的节点无需读取世界变换、原生刚体或计算三角函数。
+        // 父级的完整世界矩阵变化时统一失效，仍支持平移、旋转和缩放整个玩法区。
+        const matrix = this.root?.worldMatrix;
+        let parentUnchanged = !!matrix;
+        if (matrix) for (let i = 0; i < MATRIX_FIELDS.length; i++) {
+            const value = matrix[MATRIX_FIELDS[i]];
+            if (this.physicsParent[i] !== value) parentUnchanged = false;
+            this.physicsParent[i] = value;
+        }
         // SetTransform 会立即 FindNewContacts。先提交全部刚体，再查询一次，
         // 接触仍在本次 Step 前创建，不能让每只转向蜜蜂重复查询整个世界。
         this.broadPhase.batchTransforms(() => this.byNode.forEach(a => {
             if (!a.node.activeInHierarchy || !a.body.enabledInHierarchy) return;
-            if (!a.node.hasChangedFlags) return;
+            // 蜜蜂主动逐帧转向，直接检查比维护十个快照字段更省；
+            // 线条、狗头及绳节主要由物理推进，才复用回写后的变换。
+            if (parentUnchanged && (!a.node.hasChangedFlags || !a.bee && transformMatches(a))) return;
             const adapter = a.body.impl as unknown as {
                 impl: { GetPosition(): { x: number; y: number }; GetAngle(): number };
                 nodeTransformChanged(flags: number): void;
@@ -610,12 +658,13 @@ export class CyBlockBeesBoard {
                 1 - 2 * (rotation.y * rotation.y + rotation.z * rotation.z));
             const delta = angle - adapter.impl.GetAngle();
             if (Math.abs(Math.atan2(Math.sin(delta), Math.cos(delta))) > 1e-7) flags |= Node.TransformBit.ROTATION;
-            if (!flags) return;
+            if (!flags) { if (!a.bee) rememberTransform(a); return; }
             adapter.nodeTransformChanged(flags);
             if (flags & Node.TransformBit.SCALE) {
                 if (a.physicsScale) a.physicsScale.set(scale); else a.physicsScale = scale.clone();
                 this.normalizeMass(a);
             }
+            if (!a.bee) rememberTransform(a);
         }));
     }
     /** 保留每个子步的玩法坐标，只回写真正变化的位置和朝向。
@@ -636,6 +685,7 @@ export class CyBlockBeesBoard {
             // 先读取两项，再写入。写位置后立即读 worldRotation 会额外刷新一次世界矩阵。
             if (moved) a.node.setWorldPosition(x, y, 0);
             if (rotated) a.node.setWorldRotationFromEuler(0, 0, angle * DEG);
+            if (!a.bee && (moved || rotated || !a.syncedTransform)) rememberTransform(a);
         });
     }
     /** 每个游戏帧控制一次蜜蜂，朝向在随后的物理输入同步中提交。 */
@@ -646,7 +696,7 @@ export class CyBlockBeesBoard {
             if (state.phase === 'fly' || state.phase === 'back') {
                 const phase = state.phase; state.time = Math.max(0, state.time - dt);
                 if (state.time <= 1e-9) state.phase = 'seek';
-                else if (phase === 'fly') a.body.linearVelocity = new Vec2(state.direction * this.metersPerWorld, 0);
+                else if (phase === 'fly') a.body.linearVelocity = state.velocity.set(state.direction * this.metersPerWorld, 0);
                 // Lua FlyTo/GoBack 只切换状态；下一次 Update 才执行 FindDog。
                 continue;
             }
@@ -657,10 +707,11 @@ export class CyBlockBeesBoard {
                 const q = candidate.node.position, squared = (p.x - q.x) ** 2 + (p.y - q.y) ** 2;
                 if (squared <= distance) { distance = squared; dog = candidate; }
             }
-            if (!dog) { a.body.linearVelocity = new Vec2(); continue; }
-            const dir = new Vec2(dog.node.position.x - p.x, dog.node.position.y - p.y).normalize();
+            if (!dog) { a.body.linearVelocity = state.velocity.set(0, 0); continue; }
+            const dir = state.velocity.set(dog.node.position.x - p.x, dog.node.position.y - p.y).normalize();
+            const angle = Math.atan2(-dir.y, -dir.x) * DEG;
             const speed = CYBLOCKBEES_RULES.beeSpeed * this.metersPerWorld;
-            a.body.linearVelocity = new Vec2(dir.x * speed, dir.y * speed);
+            a.body.linearVelocity = dir.multiplyScalar(speed);
             if (a.sprite && a.sprite.node.scale.x < 0) {
                 a.sprite.node.setScale(1, 1, 1);
                 a.fixtures = mirrorFixtures(a.fixtures, -1, 1);
@@ -668,7 +719,7 @@ export class CyBlockBeesBoard {
                 collider.points = pairs(BEE_PATH, UNIT); this.fixtureByCollider.set(collider, a.fixtures[0]); collider.apply();
                 this.normalizeMass(a);
             }
-            a.node.angle = Math.atan2(-dir.y, -dir.x) * DEG;
+            a.node.angle = angle;
         }
     }
     /** 固定物理步运行原 Lua 的力。 */
@@ -676,9 +727,10 @@ export class CyBlockBeesBoard {
         if (!this.started) return;
         // Enter 使用原包 0.01 秒的单次冲量，Stay 按实际接触时长积分持续力。
         // 渲染帧率和本地固定步长不能放大单次反冲；否则蜜蜂会退得更远、攻击间隔变长。
-        if (this.contactForces.length) for (const pending of this.contactForces.splice(0)) if (pending.actor.alive) {
+        for (const pending of this.contactForces) if (pending.actor.alive) {
             this.force(pending.actor, pending.force.multiplyScalar(pending.duration / dt));
         }
+        this.contactForces.length = 0;
         for (const a of this.forceActors) {
             if (!a.alive || !a.node.active) continue;
             if (a.kind === 'water') { this.applyBuoyancy(a); continue; }
@@ -777,13 +829,15 @@ export class CyBlockBeesBoard {
         node.setScale(.3 * this.scale / UNIT, .3 * this.scale / UNIT, 1);
         const body = node.addComponent(RigidBody2D); body.type = ERigidBody2DType.Dynamic; body.gravityScale = 0; body.fixedRotation = true;
         body.angularDamping = .05;
-        body.enabledContactListener = true; body.bullet = false; body.group = GROUP.bee;
+        // 蜜蜂和线条都是动态刚体；线的平移/转动及撞线反冲可能跨过整个线宽。
+        // bullet 必须在节点激活前设置，Creator 只在创建原生刚体时读取此属性。
+        body.enabledContactListener = true; body.bullet = true; body.group = GROUP.bee;
         const fixture: Fixture = { shape: 'polygon', paths: [BEE_PATH], sensor: false, layer: 12, friction: .4, restitution: 0 };
         const a: Actor = { node, kind: 'bee', body, colliders: [], fixtures: mirrorFixtures([fixture], direction > 0 ? -1 : 1, 1), mass: 1, alive: true,
             hurt: 0, grace: 0, age: 0, cooldown: 0, origin: position.clone(), mode: 0, joints: [],
             // 原 Lua 初始群不执行 IgnoreCollision；普通出蜂忽略所有有刚体的蜂巢。
-            bee: { phase: 'fly', time: .5, direction, removeAfter: Infinity,
-                ignoredHives: initial ? [] : this.actors.filter(a => a.kind === 'hive' && a.element!.detail.body).map(a => a.node),
+            bee: { phase: 'fly', time: .5, direction, removeAfter: Infinity, velocity: new Vec2(),
+                ignoredHives: initial ? [] : this.ignoredBeeHives,
                 contacts: new Map(), processed: new Set() } };
         this.byNode.set(node, a); this.addFixtures(a); a.sprite = this.addSprite(this.makeNode('bee-image', node), 'bee', 148, 107);
         a.sprite.node.setScale(direction > 0 ? -1 : 1, 1, 1);
@@ -1001,7 +1055,7 @@ export class CyBlockBeesBoard {
         for (const p of geometry) fixtures.push({ shape: 'circle', radius: half / UNIT, offsetX: p.x / UNIT,
             offsetY: p.y / UNIT, sensor: false, layer: 15, friction: .4, restitution: 0 });
         const body = node.addComponent(RigidBody2D); body.type = ERigidBody2DType.Dynamic; body.gravityScale = 1;
-        body.angularDamping = .05; body.enabledContactListener = true; body.bullet = false; body.group = GROUP.line;
+        body.angularDamping = .05; body.enabledContactListener = false; body.bullet = false; body.group = GROUP.line;
         const a: Actor = { node, kind: 'line', body, fixtures: distinctLineFixtures(fixtures), colliders: [], mass, alive: true, hurt: 0,
             grace: 0, age: 0, cooldown: 0, origin, mode: 0, joints: [], line: local };
         this.byNode.set(node, a);
@@ -1011,9 +1065,6 @@ export class CyBlockBeesBoard {
                 : this.fixturePaths(f).reduce((total, path) => total + polygonArea(path), 0)), 0);
             collider.density = mass / Math.max(.000001, area * UNIT * UNIT / (PTM * PTM));
             collider.friction = .4; collider.group = GROUP.line;
-            collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-            collider.on(Contact2DType.PRE_SOLVE, this.onPreSolve, this);
-            collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
             a.colliders.push(collider); a.physicsScale = node.worldScale.clone();
             this.fixtureByCollider.set(collider, a.fixtures[0]);
         } else {
@@ -1061,12 +1112,15 @@ export class CyBlockBeesBoard {
         const maxX = Math.max(from.x, to.x) + radius, maxY = Math.max(from.y, to.y) + radius;
         const coarse = this.worldBounds(a);
         if (maxX < coarse.minX || minX > coarse.maxX || maxY < coarse.minY || minY > coarse.maxY) return false;
+        const pointProbe = from.x === to.x && from.y === to.y;
         for (const polygon of this.worldPaths(a, planning)) {
             const bounds = this.polygonBounds.get(polygon)!;
             if (maxX < bounds.minX || minX > bounds.maxX || maxY < bounds.minY || minY > bounds.maxY) continue;
-            if (pointInside(from, polygon) || pointInside(to, polygon)) return true;
+            if (pointInside(from, polygon) || !pointProbe && pointInside(to, polygon)) return true;
             for (let i = 0; i < polygon.length; i++) {
                 const p = polygon[i], q = polygon[(i + 1) % polygon.length];
+                // 落笔圆探针的两个端点相同，只需求一次点到边距离。
+                if (pointProbe) { if (pointSegmentDistance(from, p, q) <= radius) return true; continue; }
                 if (segmentsCross(from, to, p, q) || segmentDistance(from, to, p, q) <= radius) return true;
             }
         }
@@ -1096,8 +1150,27 @@ export class CyBlockBeesBoard {
                 if (f.sensor) sensorWorld.push(transformed);
             }
             cache = { fixtures: a.fixtures, local, localBounds, world, planningWorld, sensorWorld,
-                bounds: emptyBounds(), coarseBounds: emptyBounds(), x: NaN, y: NaN, sx: NaN, sy: NaN, angle: NaN };
+                bounds: emptyBounds(), coarseBounds: emptyBounds(), x: NaN, y: NaN, sx: NaN, sy: NaN,
+                qx: NaN, qy: NaN, qz: NaN, qw: NaN, cosine: 1, sine: 0, worldDirty: true };
             this.pathCache.set(a, cache);
+        }
+        // 同一障碍在一次落笔/平滑验证中会被查询数百次；只有变换变化时才更新包围盒。
+        // 世界轮廓保持惰性更新，远离风区/水区的长线仍只需计算四角范围。
+        const p = a.node.position, scale = a.node.scale, q = a.node.rotation;
+        if (cache.x !== p.x || cache.y !== p.y || cache.sx !== scale.x || cache.sy !== scale.y
+            || cache.qx !== q.x || cache.qy !== q.y || cache.qz !== q.z || cache.qw !== q.w) {
+            const angle = this.nodeAngle(a.node), c = Math.cos(angle), s = Math.sin(angle);
+            const local = cache.localBounds, bounds = cache.coarseBounds;
+            if (local.minX !== Infinity) {
+                const cx = (local.minX + local.maxX) * .5 * scale.x, cy = (local.minY + local.maxY) * .5 * scale.y;
+                const hx = (local.maxX - local.minX) * .5 * Math.abs(scale.x), hy = (local.maxY - local.minY) * .5 * Math.abs(scale.y);
+                const x = p.x + c * cx - s * cy, y = p.y + s * cx + c * cy;
+                const rx = Math.abs(c) * hx + Math.abs(s) * hy + 1e-7, ry = Math.abs(s) * hx + Math.abs(c) * hy + 1e-7;
+                bounds.minX = x - rx; bounds.maxX = x + rx; bounds.minY = y - ry; bounds.maxY = y + ry;
+            }
+            cache.x = p.x; cache.y = p.y; cache.sx = scale.x; cache.sy = scale.y;
+            cache.qx = q.x; cache.qy = q.y; cache.qz = q.z; cache.qw = q.w;
+            cache.cosine = c; cache.sine = s; cache.worldDirty = true;
         }
         return cache;
     }
@@ -1105,33 +1178,24 @@ export class CyBlockBeesBoard {
      * 旋转后的盒子是保守范围，精确重叠仍由完整多边形判断。
      */
     private worldBounds(a: Actor): PathBounds {
-        const cache = this.actorPaths(a), local = cache.localBounds, bounds = cache.coarseBounds;
-        if (local.minX === Infinity) return bounds;
-        const p = a.node.position, scale = a.node.scale, angle = this.nodeAngle(a.node), c = Math.cos(angle), s = Math.sin(angle);
-        const cx = (local.minX + local.maxX) * .5 * scale.x, cy = (local.minY + local.maxY) * .5 * scale.y;
-        const hx = (local.maxX - local.minX) * .5 * Math.abs(scale.x), hy = (local.maxY - local.minY) * .5 * Math.abs(scale.y);
-        const x = p.x + c * cx - s * cy, y = p.y + s * cx + c * cy;
-        const rx = Math.abs(c) * hx + Math.abs(s) * hy + 1e-7, ry = Math.abs(s) * hx + Math.abs(c) * hy + 1e-7;
-        bounds.minX = x - rx; bounds.maxX = x + rx; bounds.minY = y - ry; bounds.maxY = y + ry;
-        return bounds;
+        return this.actorPaths(a).coarseBounds;
     }
     private worldPaths(a: Actor, planning = false): Vec2[][] {
         const cache = this.actorPaths(a);
-        const p = a.node.position, scale = a.node.scale, angle = this.nodeAngle(a.node);
-        if (cache.x !== p.x || cache.y !== p.y || cache.sx !== scale.x || cache.sy !== scale.y || cache.angle !== angle) {
-            const c = Math.cos(angle), s = Math.sin(angle);
+        if (cache.worldDirty) {
+            const c = cache.cosine, s = cache.sine;
             resetBounds(cache.bounds);
-            // 点数组与包围盒一起原地更新，避免每个 100 Hz 物理步重新分配整条线的几何。
+            // 点数组与包围盒一起原地更新，避免每个物理步重新分配整条线的几何。
             for (let i = 0; i < cache.local.length; i++) {
                 const path = cache.local[i], world = cache.world[i], bounds = this.polygonBounds.get(world)!;
                 resetBounds(bounds);
                 for (let j = 0; j < path.length; j++) {
-                    const point = path[j], x = p.x + c * point.x * scale.x - s * point.y * scale.y;
-                    const y = p.y + s * point.x * scale.x + c * point.y * scale.y;
+                    const point = path[j], x = cache.x + c * point.x * cache.sx - s * point.y * cache.sy;
+                    const y = cache.y + s * point.x * cache.sx + c * point.y * cache.sy;
                     world[j].set(x, y); includePoint(bounds, x, y); includePoint(cache.bounds, x, y);
                 }
             }
-            cache.x = p.x; cache.y = p.y; cache.sx = scale.x; cache.sy = scale.y; cache.angle = angle;
+            cache.worldDirty = false;
         }
         return planning ? cache.planningWorld : cache.world;
     }
@@ -1142,28 +1206,46 @@ export class CyBlockBeesBoard {
     }
     private drawRopes(): void {
         if (!this.ropeActors.length) return;
-        this.ropes.clear(); this.ropes.strokeColor = ROPE_COLOR; this.ropes.lineWidth = .035 * this.scale;
+        // 在复用的数值缓冲中记录与原来相同的 moveTo/lineTo/stroke。
+        // 静止绳和已消失绳无需反复 clear/tessellate/upload 整个 Graphics 网格。
+        const commands = this.ropeCommands;
+        let count = 0, changed = false;
+        const point = (x: number, y: number): void => {
+            if (commands[count] !== x || commands[count + 1] !== y) changed = true;
+            commands[count++] = x; commands[count++] = y;
+        };
         for (const a of this.ropeActors) {
             if (a.alive && a.rope?.length) {
-                const first = a.rope[0]; this.ropes.moveTo(first.position.x, first.position.y);
+                const first = a.rope[0]; point(first.position.x, first.position.y);
                 for (let i = 1; i < a.rope.length; i++) {
-                    const p = a.rope[i].position; this.ropes.lineTo(p.x, p.y);
+                    const p = a.rope[i].position; point(p.x, p.y);
                 }
                 const end = this.actors[a.element!.detail.refs.rfOtherJoint];
                 if (end) {
                     const joint = a.ropeJoints?.find(j => j.node === end.node), anchor = joint?.anchor ?? Vec2.ZERO;
                     const angle = this.nodeAngle(end.node), c = Math.cos(angle), s = Math.sin(angle);
-                    this.ropes.lineTo(end.node.position.x + c * anchor.x - s * anchor.y,
+                    point(end.node.position.x + c * anchor.x - s * anchor.y,
                         end.node.position.y + s * anchor.x + c * anchor.y);
                 }
-                this.ropes.stroke();
+                point(Infinity, 0);
             }
             if (a.kind === 'spider' && a.alive) {
-                this.ropes.moveTo(a.origin.x, this.contentHeight / 2); this.ropes.lineTo(a.node.position.x, a.node.position.y); this.ropes.stroke();
+                point(a.origin.x, this.contentHeight / 2); point(a.node.position.x, a.node.position.y); point(Infinity, 0);
             }
-            if (['ciqiu', 'ciqiuJoint'].indexOf(a.kind) >= 0) for (const j of a.joints) if (j.connectedBody) {
-                this.ropes.moveTo(a.node.position.x, a.node.position.y); this.ropes.lineTo(j.connectedBody.node.position.x, j.connectedBody.node.position.y); this.ropes.stroke();
+            if (a.kind === 'ciqiu' || a.kind === 'ciqiuJoint') for (const j of a.joints) if (j.connectedBody) {
+                point(a.node.position.x, a.node.position.y); point(j.connectedBody.node.position.x, j.connectedBody.node.position.y); point(Infinity, 0);
             }
+        }
+        if (commands.length !== count) changed = true;
+        commands.length = count;
+        if (!changed) return;
+        this.ropes.clear(); this.ropes.strokeColor = ROPE_COLOR; this.ropes.lineWidth = .035 * this.scale;
+        let first = true;
+        for (let i = 0; i < count; i += 2) {
+            const x = commands[i], y = commands[i + 1];
+            if (x === Infinity) { this.ropes.stroke(); first = true; }
+            else if (first) { this.ropes.moveTo(x, y); first = false; }
+            else this.ropes.lineTo(x, y);
         }
     }
     private removeActor(a: Actor): void {
@@ -1183,16 +1265,34 @@ export class CyBlockBeesBoard {
         for (const a of Array.from(this.byNode.values())) this.removeActor(a);
         this.actors.length = 0; this.environment.length = 0; this.lines.length = 0; this.bees.length = 0; this.byNode.clear(); this.fixtureByCollider.clear(); this.spriteOf = () => undefined;
         this.sceneActors.length = 0; this.dogs.length = 0; this.boxes.length = 0; this.forceActors.length = 0; this.ropeActors.length = 0;
+        this.cloudActors.length = 0; this.animatedActors.length = 0; this.tickingActors.length = 0;
+        this.ignoredBeeHives.length = 0; this.ropeCommands.length = 0; this.physicsParent.length = 0;
         this.draftPoints = []; this.draftTail = undefined; this.draftDirty = false;
         this.draftSpine.clear();
         this.root.destroy();
         this.broadPhase.restore();
         const system = PhysicsSystem2D.instance;
         this.originalMatrix.forEach((mask, group) => { system.collisionMatrix[group] = mask; }); this.originalMatrix.clear();
-        system.gravity = this.physicsBefore.gravity; system.autoSimulation = this.physicsBefore.auto; system.enable = this.physicsBefore.enabled; physicsAccumulator = 0;
+        system.gravity = this.physicsBefore.gravity; system.autoSimulation = this.physicsBefore.auto; system.enable = this.physicsBefore.enabled;
+        physicsAccumulator = 0; physicsStepCost = 0;
         system.fixedTimeStep = this.physicsBefore.fixedTimeStep;
         system.velocityIterations = this.physicsBefore.velocityIterations; system.positionIterations = this.physicsBefore.positionIterations;
     }
+}
+function transformMatches(a: Actor): boolean {
+    const saved = a.syncedTransform;
+    if (!saved) return false;
+    const p = a.node.position, s = a.node.scale, q = a.node.rotation;
+    return p.x === saved.x && p.y === saved.y && p.z === saved.z
+        && s.x === saved.sx && s.y === saved.sy && s.z === saved.sz
+        && q.x === saved.qx && q.y === saved.qy && q.z === saved.qz && q.w === saved.qw;
+}
+function rememberTransform(a: Actor): void {
+    const p = a.node.position, s = a.node.scale, q = a.node.rotation;
+    const saved = a.syncedTransform ?? (a.syncedTransform = {} as TransformSnapshot);
+    saved.x = p.x; saved.y = p.y; saved.z = p.z;
+    saved.sx = s.x; saved.sy = s.y; saved.sz = s.z;
+    saved.qx = q.x; saved.qy = q.y; saved.qz = q.z; saved.qw = q.w;
 }
 function emptyBounds(): PathBounds { return { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }; }
 function resetBounds(bounds: PathBounds): void { bounds.minX = bounds.minY = Infinity; bounds.maxX = bounds.maxY = -Infinity; }
@@ -1217,7 +1317,11 @@ function boundsOverlap(a: PathBounds, b: PathBounds): boolean {
  * 这些适配仅在本游戏的 Session 内生效，退出关卡后恢复原实现。
  */
 function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
-    interface NativeFixture { GetBody(): object; GetType(): number; m_proxies: { treeNode: Proxy | null }[]; }
+    interface NativeFixture {
+        GetBody(): object; GetType(): number;
+        GetFilterData(): { categoryBits: number; maskBits: number; groupIndex: number };
+        m_proxies: { treeNode: Proxy | null }[];
+    }
     interface ProxyData { fixture: NativeFixture; childIndex: number; }
     interface Bounds {
         lowerBound: { x: number; y: number }; upperBound: { x: number; y: number };
@@ -1307,19 +1411,40 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
     broad.UnBufferMove = function (proxy: Proxy): void {
         for (let i = 0; i < this.m_moveCount; i++) if (this.m_moveBuffer[i] === proxy) this.m_moveBuffer[i] = null;
     };
-    let owners = new WeakMap<Proxy, object | null>(), shapeTypes = new WeakMap<Proxy, number>();
-    let dirtySummaries = new WeakSet<Proxy>();
-    interface BodyQueries { proxies: Proxy[]; compatibleTypes: number; lowerX: number; lowerY: number; upperX: number; upperY: number; }
+    interface ProxySummary {
+        owner: object | null; types: number; categories: number; masks: number; positiveGroup: boolean; dirty: boolean;
+    }
+    let summaries = new WeakMap<Proxy, ProxySummary>();
+    interface BodyQueries {
+        proxies: Proxy[]; compatibleTypes: number; categories: number; masks: number; positiveGroup: boolean;
+        lowerX: number; lowerY: number; upperX: number; upperY: number;
+    }
+    let reusableGroups = new WeakMap<object, BodyQueries>();
+    const pairPool: Pair[] = [];
     const stack: Proxy[] = [], matching: Proxy[] = [], queries = new Set<Proxy>(), groups = new Map<object, BodyQueries>();
+    const summaryOf = (node: Proxy): ProxySummary => {
+        let summary = summaries.get(node);
+        if (!summary) {
+            summary = { owner: null, types: 0, categories: 0, masks: 0, positiveGroup: false, dirty: false };
+            summaries.set(node, summary);
+        }
+        return summary;
+    };
     const summarize = (node: Proxy): void => {
+        const summary = summaryOf(node);
+        summary.dirty = false;
         if (!node.child1) {
-            owners.set(node, node.userData.fixture.GetBody());
-            shapeTypes.set(node, 1 << node.userData.fixture.GetType());
+            const fixture = node.userData.fixture, filter = fixture.GetFilterData();
+            summary.owner = fixture.GetBody(); summary.types = 1 << fixture.GetType();
+            summary.categories = filter.categoryBits; summary.masks = filter.maskBits;
+            summary.positiveGroup = filter.groupIndex > 0;
             return;
         }
-        const first = owners.get(node.child1), second = owners.get(node.child2!);
-        owners.set(node, first === second ? first! : null);
-        shapeTypes.set(node, shapeTypes.get(node.child1)! | shapeTypes.get(node.child2!)!);
+        const first = summaries.get(node.child1)!, second = summaries.get(node.child2!)!;
+        summary.owner = first.owner === second.owner ? first.owner : null;
+        summary.types = first.types | second.types;
+        summary.categories = first.categories | second.categories; summary.masks = first.masks | second.masks;
+        summary.positiveGroup = first.positiveGroup || second.positiveGroup;
     };
     const initializeSummary = (node: Proxy): void => {
         if (node.child1) { initializeSummary(node.child1); initializeSummary(node.child2!); }
@@ -1327,9 +1452,9 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
     };
     if (tree.m_root) initializeSummary(tree.m_root);
     const refreshSummary = (node: Proxy): void => {
-        if (!dirtySummaries.has(node)) return;
+        if (!summaries.get(node)?.dirty) return;
         if (node.child1) { refreshSummary(node.child1); refreshSummary(node.child2!); }
-        summarize(node); dirtySummaries.delete(node);
+        summarize(node);
     };
     tree.InsertLeaf = function (leaf: Proxy): void {
         // 池中的树节点会复用，叶子每次插入都从当前 fixture 重建身份。
@@ -1339,42 +1464,70 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
         const root = originalBalance.call(this, node);
         // 插入/移除自底向上经过全部祖先；旋转同时使旧根和新根失效。
         // 一个子步内长线可移动数百片，查询前再统一刷新，避免重复更新共有祖先。
-        dirtySummaries.add(node); dirtySummaries.add(root);
+        summaryOf(node).dirty = true;
+        if (root !== node) summaryOf(root).dirty = true;
         return root;
     };
     tree.RemoveLeaf = function (leaf: Proxy): void {
         const freedParent = leaf === this.m_root ? null : leaf.parent;
         originalRemove.call(this, leaf);
-        owners.delete(leaf); shapeTypes.delete(leaf); dirtySummaries.delete(leaf);
-        if (freedParent) { owners.delete(freedParent); shapeTypes.delete(freedParent); dirtySummaries.delete(freedParent); }
+        // Box2D 会复用树节点，摘要也随节点复用；先清掉刚体引用，不能滞留已销毁对象。
+        const leafSummary = summaries.get(leaf);
+        if (leafSummary) { leafSummary.owner = null; leafSummary.dirty = true; }
+        const parentSummary = freedParent && summaries.get(freedParent);
+        if (parentSummary) { parentSummary.owner = null; parentSummary.dirty = true; }
     };
     broad.UpdatePairs = function (callback: (a: ProxyData, b: ProxyData) => void): void {
         const pairs = this.m_pairBuffer; let count = 0;
         const root = this.m_tree.m_root;
-        if (root) refreshSummary(root);
         queries.clear(); groups.clear();
         for (let i = 0; i < this.m_moveCount; i++) {
             const query = this.m_moveBuffer[i]; if (!query) continue;
             if (queries.has(query)) continue; queries.add(query);
-            const body = query.userData.fixture.GetBody();
+            const fixture = query.userData.fixture, body = fixture.GetBody(), filter = fixture.GetFilterData();
+            const summary = summaries.get(query)!;
+            // Refilter 会 TouchProxy，但不一定移动树节点；过滤位变化也必须向祖先失效。
+            if (summary.categories !== filter.categoryBits || summary.masks !== filter.maskBits
+                || summary.positiveGroup !== (filter.groupIndex > 0)) {
+                summarize(query);
+                for (let parent = query.parent; parent; parent = parent.parent) summaries.get(parent)!.dirty = true;
+            }
             let group = groups.get(body);
             if (!group) {
-                group = { proxies: [], compatibleTypes: 0, lowerX: Infinity, lowerY: Infinity, upperX: -Infinity, upperY: -Infinity };
+                group = reusableGroups.get(body);
+                if (!group) {
+                    group = { proxies: [], compatibleTypes: 0, categories: 0, masks: 0, positiveGroup: false,
+                        lowerX: Infinity, lowerY: Infinity, upperX: -Infinity, upperY: -Infinity };
+                    reusableGroups.set(body, group);
+                }
+                group.compatibleTypes = group.categories = group.masks = 0; group.positiveGroup = false;
+                group.lowerX = group.lowerY = Infinity; group.upperX = group.upperY = -Infinity;
                 groups.set(body, group);
             }
             group.proxies.push(query);
-            group.compatibleTypes |= compatibleTypes[query.userData.fixture.GetType()];
+            group.compatibleTypes |= compatibleTypes[fixture.GetType()];
+            group.categories |= filter.categoryBits; group.masks |= filter.maskBits;
+            group.positiveGroup = group.positiveGroup || filter.groupIndex > 0;
             const bounds = query.aabb;
             group.lowerX = Math.min(group.lowerX, bounds.lowerBound.x); group.lowerY = Math.min(group.lowerY, bounds.lowerBound.y);
             group.upperX = Math.max(group.upperX, bounds.upperBound.x); group.upperY = Math.max(group.upperY, bounds.upperBound.y);
         }
+        if (root) refreshSummary(root);
         const addPair = (query: Proxy, proxy: Proxy): void => {
+            // 两边都在移动队列时，只由编号较小的一侧收集，排序前就去掉镜像候选。
+            if (query.m_id > proxy.m_id && queries.has(proxy)) return;
+            // 已存在的接触不需要再次入队、排序和调用 AddPair。
+            // 接触销毁时 forget 会同步删除索引，分离后再次接触仍会正常创建。
+            const a = query.userData, b = proxy.userData;
+            if (contacts.get(a.fixture)?.get(b.fixture)?.get(a.childIndex)?.has(b.childIndex)) return;
             if (!contactTypes[query.userData.fixture.GetType()][proxy.userData.fixture.GetType()].createFcn) return;
             if (!manager.m_contactFilter.ShouldCollide(query.userData.fixture, proxy.userData.fixture)) return;
             const proxyA = proxy.m_id < query.m_id ? proxy : query;
             const proxyB = proxy.m_id < query.m_id ? query : proxy;
-            if (count === pairs.length) pairs.push({ proxyA, proxyB });
-            else { pairs[count].proxyA = proxyA; pairs[count].proxyB = proxyB; }
+            let pair = pairPool[count];
+            if (!pair) { pair = { proxyA, proxyB }; pairPool.push(pair); }
+            else { pair.proxyA = proxyA; pair.proxyB = proxyB; }
+            pairs[count] = pair;
             count++;
         };
         // 同一条动态线的所有移动片段合并成一次查询。先找到其它刚体的候选，
@@ -1383,8 +1536,12 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
             if (root) stack.push(root);
             while (stack.length) {
                 const proxy = stack.pop()!;
-                const bounds = proxy.aabb;
-                if (owners.get(proxy) === body || !(shapeTypes.get(proxy)! & group.compatibleTypes)
+                const bounds = proxy.aabb, summary = summaries.get(proxy)!;
+                // 蜂群互不碰撞；在子树上使用过滤位并集保守剔除，避免密集蜂群逐对查询。
+                // 正 groupIndex 可以越过掩码，存在这类分组时仍交给原生 ShouldCollide。
+                if (summary.owner === body || !(summary.types & group.compatibleTypes)
+                    || (!(summary.positiveGroup && group.positiveGroup)
+                        && (!(summary.categories & group.masks) || !(summary.masks & group.categories)))
                     || bounds.lowerBound.x > group.upperX || bounds.lowerBound.y > group.upperY
                     || bounds.upperBound.x < group.lowerX || bounds.upperBound.y < group.lowerY) continue;
                 if (proxy.child1) { stack.push(proxy.child1, proxy.child2!); continue; }
@@ -1395,12 +1552,13 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
                 }
                 if (root) matching.push(root);
                 while (matching.length) {
-                    const query = matching.pop()!, owner = owners.get(query);
+                    const query = matching.pop()!, owner = summaries.get(query)!.owner;
                     if ((owner && owner !== body) || !query.aabb.TestOverlap(bounds)) continue;
                     if (query.child1) { matching.push(query.child1, query.child2!); continue; }
                     if (owner === body && queries.has(query)) addPair(query, proxy);
                 }
             }
+            group.proxies.length = 0;
         });
         groups.clear(); queries.clear();
         this.m_moveCount = 0; this.m_pairCount = count; pairs.length = count;
@@ -1427,8 +1585,8 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
             broad.UnBufferMove = originalRemoval; broad.UpdatePairs = originalPairs;
             manager.FindNewContacts = originalFind; manager.AddPair = originalAdd; manager.Destroy = originalDestroy;
             contacts = new WeakMap();
-            owners = new WeakMap(); shapeTypes = new WeakMap(); queries.clear(); groups.clear(); stack.length = 0; matching.length = 0;
-            dirtySummaries = new WeakSet();
+            summaries = new WeakMap(); reusableGroups = new WeakMap(); pairPool.length = 0;
+            queries.clear(); groups.clear(); stack.length = 0; matching.length = 0;
             broad.m_pairBuffer.length = 0; broad.m_pairCount = 0;
             batching = pendingFind = false;
         },
@@ -1488,18 +1646,18 @@ function polygonsOverlap(a: readonly Vec2[], b: readonly Vec2[]): boolean {
     return false;
 }
 function closestPointOnPolygons(point: Vec2, polygons: readonly (readonly Vec2[])[]): Vec2 {
-    let result = point.clone(), distance = Infinity;
+    let resultX = point.x, resultY = point.y, distance = Infinity;
     for (const polygon of polygons) {
         if (pointInside(point, polygon)) return point.clone();
         for (let i = 0; i < polygon.length; i++) {
             const a = polygon[i], b = polygon[(i + 1) % polygon.length];
             const dx = b.x - a.x, dy = b.y - a.y;
             const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / Math.max(1e-12, dx * dx + dy * dy)));
-            const candidate = new Vec2(a.x + t * dx, a.y + t * dy), d = Vec2.squaredDistance(point, candidate);
-            if (d < distance) { distance = d; result = candidate; }
+            const x = a.x + t * dx, y = a.y + t * dy, d = (point.x - x) ** 2 + (point.y - y) ** 2;
+            if (d < distance) { distance = d; resultX = x; resultY = y; }
         }
     }
-    return result;
+    return new Vec2(resultX, resultY);
 }
 function removeCollinear(points: readonly Vec2[]): Vec2[] {
     const result: Vec2[] = [];
@@ -1528,20 +1686,42 @@ function segmentDistance(a: Vec2, b: Vec2, c: Vec2, d: Vec2): number {
     return Math.min(pointSegmentDistance(a, c, d), pointSegmentDistance(b, c, d), pointSegmentDistance(c, a, b), pointSegmentDistance(d, a, b));
 }
 let physicsAccumulator = 0;
+/** 最近物理步的真实耗时（毫秒，指数平均）；0 表示尚未测量。 */
+let physicsStepCost = 0;
+export interface BoardPhysicsFrame {
+    /** 本帧推进的游戏时间（秒），计时、出蜂、蜂群 AI 与物理共用。 */
+    readonly dt: number;
+    readonly steps: number;
+}
 export function enableBoardPhysics(enabled: boolean): void {
     const s = PhysicsSystem2D.instance; s.enable = enabled; if (enabled) s.autoSimulation = false; physicsAccumulator = 0;
 }
-/** 按原包固定步长推进；动态/静态接触仍使用 Box2D 默认的连续检测。 */
-export function stepBoardPhysics(dt: number, board: CyBlockBeesBoard): void {
-    const s = PhysicsSystem2D.instance; if (!s.enable) return;
+/** 按固定步长规划本帧物理，并给出与之对应的游戏时间。
+ * 步数同时受 Game 的单帧 dt 上限和真实耗时预算约束。慢设备上追赶积压会让下一帧更慢，
+ * 每帧步数逐帧增加直到上限；超出预算的积压直接丢弃，并从本帧游戏时间中扣除，
+ * 整局像原包 Maximum Allowed Timestep 一样统一放慢，机关、保护和出蜂不会与物理脱节。
+ */
+export function planBoardPhysics(dt: number): BoardPhysicsFrame {
+    const s = PhysicsSystem2D.instance; if (!s.enable) return { dt, steps: 0 };
+    const fixed = s.fixedTimeStep || 1 / 60, pending = physicsAccumulator + dt;
+    const maxSteps = Math.ceil(CYBLOCKBEES_RULES.maxFrameDelta / fixed) + 1;
+    const affordable = physicsStepCost > 0 ? Math.max(1, Math.floor(CYBLOCKBEES_RULES.physicsFrameBudget * 1000 / physicsStepCost)) : maxSteps;
+    const steps = Math.min(Math.floor((pending + 1e-9) / fixed), maxSteps, affordable);
+    const rest = Math.max(0, pending - steps * fixed);
+    physicsAccumulator = rest < fixed ? rest : rest % fixed;
+    return { dt: Math.max(0, dt - (rest - physicsAccumulator)), steps };
+}
+/** 执行 planBoardPhysics 规划的步数，并更新单步耗时供下一帧预算。
+ * 动态/静态接触仍使用 Box2D 默认的连续检测。
+ */
+export function stepBoardPhysics(steps: number, board: CyBlockBeesBoard): void {
+    const s = PhysicsSystem2D.instance; if (!s.enable || steps <= 0) return;
     const world = s.physicsWorld, fixed = s.fixedTimeStep || 1 / 60;
     const stepping = s as unknown as { _steping: boolean; _delayEvents: { target: object; func: () => void }[] };
     const flush = (): void => { if (stepping._delayEvents.length) stepping._delayEvents.splice(0).forEach(e => e.func.call(e.target)); };
-    // 步数必须容纳 Game 的单帧 dt 上限与上帧的余数。
-    // 固定上限 4 在原版 100 Hz / 20 FPS 下会丢掉物理时间，导致机关、保护和出蜂脱节。
-    const maxSteps = Math.ceil(CYBLOCKBEES_RULES.maxFrameDelta / fixed) + 1;
-    physicsAccumulator = Math.min(physicsAccumulator + dt, fixed * maxSteps);
-    for (let count = 0; physicsAccumulator >= fixed && count < maxSteps && s.enable; count++) {
+    const start = performance.now();
+    let count = 0;
+    for (; count < steps && s.enable; count++) {
         flush(); board.beforePhysics(fixed); board.syncSceneToPhysics(); board.applyBeeForces(fixed);
         stepping._steping = true;
         try {
@@ -1550,6 +1730,9 @@ export function stepBoardPhysics(dt: number, board: CyBlockBeesBoard): void {
             board.syncPhysicsToScene();
         }
         finally { stepping._steping = false; flush(); }
-        board.afterPhysics(); physicsAccumulator = Math.max(0, physicsAccumulator - fixed);
+        board.afterPhysics();
     }
+    if (!count) return;
+    const cost = (performance.now() - start) / count;
+    physicsStepCost = physicsStepCost > 0 ? physicsStepCost + (cost - physicsStepCost) * .25 : cost;
 }

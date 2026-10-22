@@ -11,3 +11,12 @@ This project uses the unmodified `lamejs` package as a development-only, offline
 - Modifications to lamejs/LAME: none.
 
 The package's license notice remains available in the installed dependency at `node_modules/lamejs/LICENSE`. Generated MP3 files are output data and contain no third-party audio samples.
+
+## "Quick Ping Pong Rally" by BudgetPixel AI
+
+The ping pong racket-hit and table-bounce effects (`audio-bank-sources/pingpong/visual/audio/hit-*` and `bounce-*`, packed into `assets/game-assets/pingpong/visual/audio/pingpong-effects.bin`) are single strikes cut from this recording by `tools/pingpong/make-audio.py`.
+
+- Source: <https://budgetpixel.com/sfx/quick-ping-pong-rally-6aed9daf>
+- Author: BudgetPixel AI
+- License: CC BY 4.0 (<https://creativecommons.org/licenses/by/4.0/>)
+- Modifications: trimmed to single strikes, faded, low-pass filtered (soft hit), transient-rounded and loudness-normalised.

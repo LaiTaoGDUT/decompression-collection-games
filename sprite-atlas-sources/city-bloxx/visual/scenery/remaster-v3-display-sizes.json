@@ -1,0 +1,254 @@
+{
+  "cloud-streaks": {
+    "pixels": [
+      1942,
+      195
+    ],
+    "nativeCanvas": [
+      320,
+      32
+    ],
+    "subjectPixels": [
+      1038,
+      115
+    ],
+    "subjectOffset": [
+      419,
+      34
+    ]
+  },
+  "cloud-bank": {
+    "pixels": [
+      409,
+      103
+    ],
+    "nativeCanvas": [
+      64,
+      16
+    ],
+    "subjectPixels": [
+      377,
+      75
+    ],
+    "subjectOffset": [
+      19,
+      14
+    ]
+  },
+  "airplane": {
+    "pixels": [
+      616,
+      88
+    ],
+    "nativeCanvas": [
+      168,
+      24
+    ],
+    "subjectPixels": [
+      564,
+      29
+    ],
+    "subjectOffset": [
+      26,
+      37
+    ]
+  },
+  "balloon": {
+    "pixels": [
+      115,
+      115
+    ],
+    "nativeCanvas": [
+      32,
+      32
+    ],
+    "subjectPixels": [
+      79,
+      104
+    ],
+    "subjectOffset": [
+      19,
+      3
+    ]
+  },
+  "blimp": {
+    "pixels": [
+      181,
+      91
+    ],
+    "nativeCanvas": [
+      64,
+      32
+    ],
+    "subjectPixels": [
+      127,
+      28
+    ],
+    "subjectOffset": [
+      17,
+      37
+    ]
+  },
+  "moon": {
+    "pixels": [
+      178,
+      178
+    ],
+    "nativeCanvas": [
+      64,
+      64
+    ],
+    "subjectPixels": [
+      122,
+      122
+    ],
+    "subjectOffset": [
+      28,
+      28
+    ]
+  },
+  "mars": {
+    "pixels": [
+      227,
+      227
+    ],
+    "nativeCanvas": [
+      64,
+      64
+    ],
+    "subjectPixels": [
+      145,
+      145
+    ],
+    "subjectOffset": [
+      43,
+      39
+    ]
+  },
+  "jupiter": {
+    "pixels": [
+      186,
+      189
+    ],
+    "nativeCanvas": [
+      75,
+      76
+    ],
+    "subjectPixels": [
+      181,
+      180
+    ],
+    "subjectOffset": [
+      2,
+      5
+    ]
+  },
+  "saturn": {
+    "pixels": [
+      380,
+      163
+    ],
+    "nativeCanvas": [
+      128,
+      55
+    ],
+    "subjectPixels": [
+      341,
+      140
+    ],
+    "subjectOffset": [
+      21,
+      11
+    ]
+  },
+  "uranus": {
+    "pixels": [
+      90,
+      185
+    ],
+    "nativeCanvas": [
+      78,
+      160
+    ],
+    "subjectPixels": [
+      82,
+      161
+    ],
+    "subjectOffset": [
+      4,
+      15
+    ]
+  },
+  "pluto": {
+    "pixels": [
+      141,
+      141
+    ],
+    "nativeCanvas": [
+      64,
+      64
+    ],
+    "subjectPixels": [
+      127,
+      127
+    ],
+    "subjectOffset": [
+      7,
+      7
+    ]
+  },
+  "ufo": {
+    "pixels": [
+      118,
+      118
+    ],
+    "nativeCanvas": [
+      32,
+      32
+    ],
+    "subjectPixels": [
+      106,
+      79
+    ],
+    "subjectOffset": [
+      4,
+      23
+    ]
+  },
+  "station": {
+    "pixels": [
+      123,
+      123
+    ],
+    "nativeCanvas": [
+      32,
+      32
+    ],
+    "subjectPixels": [
+      73,
+      61
+    ],
+    "subjectOffset": [
+      27,
+      31
+    ]
+  },
+  "star": {
+    "pixels": [
+      45,
+      45
+    ],
+    "nativeCanvas": [
+      128,
+      128
+    ],
+    "subjectPixels": [
+      39,
+      35
+    ],
+    "subjectOffset": [
+      3,
+      3
+    ]
+  }
+}

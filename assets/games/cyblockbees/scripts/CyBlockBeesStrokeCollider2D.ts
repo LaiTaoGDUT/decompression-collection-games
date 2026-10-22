@@ -9,7 +9,7 @@ interface Edge {
     m_radius: number; m_vertex0: NativeVector; m_vertex1: NativeVector; m_vertex2: NativeVector; m_vertex3: NativeVector;
     m_hasVertex0: boolean; m_hasVertex3: boolean;
 }
-interface Segment { a: Point; b: Point; before?: Point; after?: Point; }
+interface Segment { a: Point; b: Point; before?: Point; after?: Point; deviation?: number; }
 const pointKey = (p: Point): string => `${Math.round(p.x * PTM * 1e4)}:${Math.round(p.y * PTM * 1e4)}`;
 
 /** 带宽度的连续边链，交给 Box2D 的 chain contact 处理相邻边的法线。
@@ -55,7 +55,10 @@ class StrokeShape {
             this.area += area; this.weightedX += area * p.x; this.weightedY += area * p.y;
             this.inertia += area * (p.x * p.x + p.y * p.y + m_radius * m_radius / 2);
         }
-        this.edges = compactCoveredEdges(edges, m_radius);
+        const resolved = compactResolvedEdges(edges);
+        // chain fixture 和 child edge 必须使用相同半径，接触流形/CCD/求解器才能一致。
+        this.m_radius += resolved.reduce((maximum, edge) => Math.max(maximum, edge.deviation ?? 0), 0);
+        this.edges = compactCoveredEdges(resolved, this.m_radius);
     }
     Clone(): StrokeShape { return new StrokeShape(this.m_vertices, this.m_radius, this); }
     GetType(): number { return this.m_type; }
@@ -136,6 +139,46 @@ class StrokeShape {
         output.fraction = fraction; output.normal.x = q.c * localX - q.s * localY; output.normal.y = q.s * localX + q.c * localY;
         return true;
     }
+}
+
+/** 插值/平滑采样用于显示和切线，不能把低于物理精度的每个弯折都变成接触代理。
+ * 3.8.8 的 linearSlop 为 .008 m；合并边的中心线偏差不超过该接触精度。
+ * 整条链按最大实际偏差增加半径，完整覆盖原胶囊；外扩最多 .016 m，
+ * 等于引擎的 polygonRadius，即 .512 UI 像素。显示和切线仍使用原采样。
+ * 投影必须单调，因此不能抹掉折返；断开的边也不能跨接。原质量积分保持不变。
+ */
+function compactResolvedEdges(edges: Segment[]): Segment[] {
+    const toleranceSquared = .008 * .008, result: Segment[] = [];
+    for (let first = 0; first < edges.length;) {
+        let end = first + 1;
+        while (end < edges.length && edges[end - 1].b.x === edges[end].a.x && edges[end - 1].b.y === edges[end].a.y) end++;
+        const points = [edges[first].a];
+        for (let i = first; i < end; i++) points.push(edges[i].b);
+        const parts: { first: number; last: number; deviation: number }[] = [];
+        const stack = [{ first: 0, last: points.length - 1 }];
+        while (stack.length) {
+            const range = stack.pop()!, a = points[range.first], b = points[range.last];
+            const dx = b.x - a.x, dy = b.y - a.y, lengthSquared = dx * dx + dy * dy;
+            let squared = 0, split = range.first + 1, projection = 0, monotone = lengthSquared > 0;
+            for (let i = range.first + 1; i < range.last; i++) {
+                const x = points[i].x - a.x, y = points[i].y - a.y;
+                const t = lengthSquared ? (x * dx + y * dy) / lengthSquared : 0;
+                const distance = (x - dx * Math.max(0, Math.min(1, t))) ** 2 + (y - dy * Math.max(0, Math.min(1, t))) ** 2;
+                if (distance > squared) { squared = distance; split = i; }
+                if (t < projection - 1e-12 || t > 1 + 1e-12) monotone = false;
+                projection = t;
+            }
+            if (range.last > range.first + 1 && (!monotone || squared > toleranceSquared)) {
+                stack.push({ first: split, last: range.last }, { first: range.first, last: split });
+            } else parts.push({ ...range, deviation: Math.sqrt(squared) });
+        }
+        const closed = points[0].x === points[points.length - 1].x && points[0].y === points[points.length - 1].y;
+        parts.forEach((part, i) => result.push({ a: points[part.first], b: points[part.last], deviation: part.deviation,
+            before: i ? points[parts[i - 1].first] : closed ? points[parts[parts.length - 1].first] : edges[first].before,
+            after: i + 1 < parts.length ? points[parts[i + 1].last] : closed ? points[parts[0].last] : edges[end - 1].after }));
+        first = end;
+    }
+    return result;
 }
 
 /** 保留笔迹胶囊并集，只去掉完全埋在其它保留边内部的碰撞边。

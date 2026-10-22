@@ -165,7 +165,7 @@ export function calculateLobbySafeContent(
     });
 }
 
-/** 将平台以 750 设计宽度提供的安全区转换到当前 Canvas 坐标。 */
+/** 将平台以当前设计宽度提供的安全区转换到 Canvas 坐标。 */
 export function calculateLobbySafeContentFromPlatform(
     canvasWidth: number,
     canvasHeight: number,
@@ -173,8 +173,9 @@ export function calculateLobbySafeContentFromPlatform(
     systemInsets: LobbySystemSafeInsets = {},
 ): LobbySafeContentMetrics {
     const width = Math.max(1, canvasWidth);
-    const scale = width / LOBBY_DESIGN_WIDTH;
+    const scale = width / (platformLayout?.designWidth ?? LOBBY_DESIGN_WIDTH);
     const platformSafeArea = platformLayout?.safeArea;
+    const landscape = platformLayout?.orientation === 'landscape';
 
     return calculateLobbySafeContent(width, canvasHeight, {
         top: Math.max(
@@ -187,16 +188,16 @@ export function calculateLobbySafeContentFromPlatform(
                 ? Math.max(0, canvasHeight - platformSafeArea.bottom * scale)
                 : 0,
         ),
-        left: Math.max(
+        left: landscape ? Math.max(
             normalizeNonNegative(systemInsets.left),
             normalizeNonNegative(platformSafeArea?.left) * scale,
-        ),
-        right: Math.max(
+        ) : 0,
+        right: landscape ? Math.max(
             normalizeNonNegative(systemInsets.right),
             platformSafeArea
                 ? Math.max(0, width - platformSafeArea.right * scale)
                 : 0,
-        ),
+        ) : 0,
         topRightReservedBottom: platformLayout?.topRightReservedArea
             ? platformLayout.topRightReservedArea.bottom * scale
             : 0,

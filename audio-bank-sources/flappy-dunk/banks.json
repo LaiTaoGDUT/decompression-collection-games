@@ -1,0 +1,13 @@
+{
+  "dunk-effects": [
+    "visual/audio/jump-1",
+    "visual/audio/jump-2",
+    "visual/audio/jump-3",
+    "visual/audio/ui-tap-v1",
+    "visual/audio/rim",
+    "visual/audio/score",
+    "visual/audio/swish",
+    "visual/audio/shield",
+    "visual/audio/finish"
+  ]
+}

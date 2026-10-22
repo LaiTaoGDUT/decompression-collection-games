@@ -1,0 +1,11 @@
+工具：内置 image_gen.imagegen
+
+Use case: compositing, identity-preserve.
+Asset type: final Chinese Xiaohongshu portrait cover, exact 3:4 aspect ratio, preferably 1200x1600.
+Input image 1 is the user's real pet photograph and is the edit target. Input image 2 is a real gameplay screenshot, a supporting compositing input.
+Create a simple warm personal scrapbook-style comparison cover about putting this exact pet cat into a cat sudoku game. Main visual is the REAL PHOTOGRAPH from input 1, a smaller rectangular inset of the ACTUAL gameplay screenshot from input 2. Arrange with generous cream margins and only a very small amount of restrained tape or paper framing. This should feel like a pet owner's personal post, clear at phone size.
+The real cat photo must remain recognizably THE SAME photograph: preserve the blue eyes, grey face patches, white central blaze, pink nose, facial proportions, ears, fur, original sitting pose and candid photographic texture; do not replace it with a regenerated prettier cat, illustration or different animal. Keep the real cat dominant, about two thirds of the visual area. Preserve the original photograph's content, using only uniform scale and sensible crop. The source photo's existing bottom-right app mark may remain.
+The gameplay inset must be an authentic rectangular crop/insert of image 2, retaining the 8x8 colored board, crosses and cat faces. Never invent a replacement game UI or alter the board.
+Text, verbatim, large readable dark-brown Chinese in two lines at the top: "给我家猫" / "找了份工作".
+Two much smaller labels, verbatim: "现实里的它" by the photo and "游戏里的它" by the inset. One small bottom line, verbatim: "把它做进了猫咪数独".
+No pet name, no official promo branding, no extra marketing promises, no CTA, no QR code, no new watermark. Minimal, friendly, ordinary pet owner's handmade comparison.

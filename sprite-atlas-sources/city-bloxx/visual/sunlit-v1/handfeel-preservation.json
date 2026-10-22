@@ -1,0 +1,43 @@
+{
+  "userRequirement": "我只需要换肤，玩法手感是绝对不能改的",
+  "priority": "新视觉素材必须适配原玩法，禁止为素材调整相机或世界坐标",
+  "camera": {
+    "reference": {
+      "verticalFov": 47.0,
+      "distance": 11,
+      "referenceWidth": 750,
+      "referenceHeight": 1334
+    },
+    "position": "(0, model.cameraY, 11)",
+    "cameraY": "moveY + 1.58 + introY + shakeY",
+    "introDistance": 5,
+    "introSpeed": 1.5,
+    "follow": "原model.moveY完整跟随，无新增跟随延迟",
+    "shortScreenWorldHeight": 8.5,
+    "viewport": "完整公共安全区，不为HUD扣除额外高度",
+    "coordinateScale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "geometrySha256": {
+    "buildings.json": "7f9900000427f617a3e26655c33aaddc2875d48d2990489441026c76e473a1fd",
+    "ground.json": "65f30e9e048fc2386a63526b0bb1290e748856bb9f2af7ad047360c9a6fc953b"
+  },
+  "sourceSha256Unchanged": {
+    "assets/games/city-bloxx/scripts/CityBloxxModel.ts": "3d08c2fc310d5b49a6ae88b8dc5af6490765abac5664bc8cebb2e63900c0dc4f",
+    "assets/games/city-bloxx/scripts/CityBloxxRain.ts": "beea48b2c9e47cc986a0e13b222aebcd013042d8d22655a02fb8ef38c1936d6e"
+  },
+  "rain": {
+    "activation": {
+      "drawMax": 10000,
+      "threshold": 1500
+    },
+    "configIdenticalToOriginal": true,
+    "restart": "重新抽取天气，时钟归零",
+    "revive": "保留天气与雨滴时钟",
+    "pause": "冻结推进"
+  },
+  "sourceOfReference": "保留的原始网格/配置；换肤前classic-verify-browser.cjs对47°及单位投影的断言；历史v25渲染代码的原相机/8.5矮屏基线。未恢复历史v25的旧玩法或旧缺陷。"
+}

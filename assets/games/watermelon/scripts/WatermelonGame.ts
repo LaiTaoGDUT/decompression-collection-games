@@ -190,8 +190,7 @@ interface WatermelonActiveRound {
     readonly inProgress: true;
     readonly score: number;
     readonly maxFruitLevel: number;
-    /** 旧存档没有此字段，按 0 恢复。 */
-    readonly watermelons?: number;
+    readonly watermelons: number;
     readonly currentLevel: number;
     readonly nextLevel: number;
     readonly aimX: number;
@@ -519,6 +518,10 @@ export class WatermelonGame extends Component implements MiniGame {
         if (finished) {
             this.finishForOverflow();
         }
+    }
+
+    isGameplayActive(): boolean {
+        return this.state === 'playing' && !this.gameEnding;
     }
 
     begin(): void {
@@ -1791,7 +1794,7 @@ export class WatermelonGame extends Component implements MiniGame {
             this.progress.restore({
                 score: round.score,
                 maxFruitLevel: round.maxFruitLevel,
-                watermelons: round.watermelons ?? 0,
+                watermelons: round.watermelons,
             });
             for (const saved of round.fruits) {
                 const fruit = this.spawnFruit(
@@ -1843,8 +1846,7 @@ export class WatermelonGame extends Component implements MiniGame {
         if (round.inProgress !== true
             || !Number.isInteger(round.score) || (round.score as number) < 0
             || !isLevel(round.maxFruitLevel)
-            || (round.watermelons !== undefined
-                && (!Number.isInteger(round.watermelons) || (round.watermelons as number) < 0))
+            || !Number.isInteger(round.watermelons) || (round.watermelons as number) < 0
             || !isLevel(round.currentLevel)
             || !isLevel(round.nextLevel)
             || !isFinite(round.aimX)

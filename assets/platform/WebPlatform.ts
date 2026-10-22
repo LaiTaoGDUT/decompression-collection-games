@@ -7,6 +7,7 @@ import type {
     PlatformLayoutInfo,
     PlatformUiRect,
     SafeArea,
+    ScreenOrientation,
     Unsubscribe,
 } from '../core/types/CommonTypes';
 import type { AccelerometerSample, Platform } from './Platform';
@@ -15,6 +16,7 @@ import type { PlatformAudioContext } from './PlatformAudio';
 interface WebPlatformEvents {
     readonly show: void;
     readonly hide: void;
+    readonly layout: PlatformLayoutInfo;
 }
 
 export interface WebPlatformOptions {
@@ -63,9 +65,16 @@ export class WebPlatform implements Platform {
     private readonly launchOptions: LaunchOptions;
     private readonly deviceProfile: DeviceProfile;
     private initialized = false;
+    private orientation: ScreenOrientation = 'portrait';
     private visible = true;
     private toastElement?: HTMLDivElement;
     private toastTimer?: ReturnType<typeof setTimeout>;
+    private orientationFrame?: {
+        readonly node: HTMLElement;
+        readonly position: string;
+        readonly left: string;
+        readonly top: string;
+    };
     private activeImagePicker?: {
         readonly cancel: () => void;
     };
@@ -76,6 +85,8 @@ export class WebPlatform implements Platform {
             ...(options.safeArea ?? DEFAULT_SAFE_AREA),
         });
         this.layoutInfo = Object.freeze({
+            orientation: 'portrait',
+            designWidth: DEFAULT_SAFE_AREA.width,
             safeArea: this.safeArea,
             topRightReservedArea: options.topRightReservedArea
                 ? Object.freeze({ ...options.topRightReservedArea })
@@ -103,6 +114,7 @@ export class WebPlatform implements Platform {
     }
 
     dispose(): void {
+        this.restoreOrientationFrame();
         this.cancelLocalImagePicker();
         this.clearToast();
 
@@ -127,7 +139,38 @@ export class WebPlatform implements Platform {
 
     getLayoutInfo(): PlatformLayoutInfo {
         const safeArea = this.getSafeArea();
-        return safeArea === this.safeArea ? this.layoutInfo : Object.freeze({ ...this.layoutInfo, safeArea });
+        return safeArea === this.safeArea && this.orientation === 'portrait' ? this.layoutInfo
+            : Object.freeze({ ...this.layoutInfo, orientation: this.orientation,
+                designWidth: safeArea === this.safeArea ? this.layoutInfo.designWidth : safeArea.right, safeArea });
+    }
+
+    async setScreenOrientation(orientation: ScreenOrientation, _designWidth: number): Promise<void> {
+        this.orientation = orientation;
+        // Cocos 使用视口左上角作为旋转原点；预览模板的 flex 居中会叠加偏移。
+        // 横屏时让引擎游戏容器直接定位到视口，尺寸与旋转仍由 Cocos API 管理。
+        const frame = typeof document === 'undefined' ? null : document.getElementById('GameDiv');
+        if (orientation === 'landscape' && frame) {
+            if (this.orientationFrame?.node !== frame) {
+                this.restoreOrientationFrame();
+                this.orientationFrame = { node: frame, position: frame.style.position,
+                    left: frame.style.left, top: frame.style.top };
+            }
+            frame.style.position = 'fixed';
+            frame.style.left = frame.style.top = '0px';
+        } else this.restoreOrientationFrame();
+    }
+
+    private restoreOrientationFrame(): void {
+        const frame = this.orientationFrame;
+        if (!frame) return;
+        frame.node.style.position = frame.position;
+        frame.node.style.left = frame.left;
+        frame.node.style.top = frame.top;
+        this.orientationFrame = undefined;
+    }
+
+    onLayoutChange(callback: (layout: PlatformLayoutInfo) => void): Unsubscribe {
+        return this.events.subscribe('layout', callback);
     }
 
     getDeviceProfile(): DeviceProfile {

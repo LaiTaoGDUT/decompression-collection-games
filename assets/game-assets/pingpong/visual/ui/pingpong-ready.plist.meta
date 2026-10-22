@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "544ace2b-113a-59aa-bd2b-48de3c6dff7a",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "c1185": {
+      "importer": "sprite-frame",
+      "uuid": "544ace2b-113a-59aa-bd2b-48de3c6dff7a@c1185",
+      "displayName": "",
+      "id": "c1185",
+      "name": "ready-hero-v2",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 456,
+        "height": 304,
+        "rawWidth": 456,
+        "rawHeight": 304,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7dd81a1e-4f3d-51d3-9624-0c74cb553681@6c48a",
+        "atlasUuid": "544ace2b-113a-59aa-bd2b-48de3c6dff7a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "pingpong-ready.png",
+    "format": 2,
+    "uuid": "544ace2b-113a-59aa-bd2b-48de3c6dff7a",
+    "textureUuid": "7dd81a1e-4f3d-51d3-9624-0c74cb553681@6c48a"
+  }
+}

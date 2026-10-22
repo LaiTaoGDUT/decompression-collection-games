@@ -270,11 +270,9 @@ export class BubbleShooterCampaign extends BubbleShooterRound {
         try {
             if (!value || typeof value !== 'object') return undefined;
             const s = value as CampaignCheckpoint;
-            // Rules 1 used the same boards and supply. Keep its live attempt, retiring its item stock.
-            const legacyItems = s.rulesVersion === 1;
             const uint = (n: unknown, max = 1000000000) => typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= max;
             if (s.schemaVersion !== 1 || s.levelId !== level.id || s.levelRevision !== level.revision
-                || (!legacyItems && s.rulesVersion !== CAMPAIGN_RULES_VERSION) || s.boardProfile !== CAMPAIGN_BOARD_PROFILE || typeof s.attemptId !== 'string' || !s.attemptId.trim()
+                || s.rulesVersion !== CAMPAIGN_RULES_VERSION || s.boardProfile !== CAMPAIGN_BOARD_PROFILE || typeof s.attemptId !== 'string' || !s.attemptId.trim()
                 || !uint(s.shotsUsed, level.shotBudget - 1) || !uint(s.roundId) || s.roundId < s.shotsUsed
                 || !uint(s.boardRevision) || s.boardRevision < s.roundId || !uint(s.bubbleSerial) || s.bubbleSerial > s.shotsUsed
                 || !uint(s.ballSerial) || s.ballSerial < 2 || !uint(s.openingCursor, level.supply.openingQueue.length)
@@ -285,7 +283,7 @@ export class BubbleShooterCampaign extends BubbleShooterRound {
                 || !s.current || !s.next || !uint(s.current.id, s.ballSerial) || !s.current.id
                 || !uint(s.next.id, s.ballSerial) || !s.next.id || s.current.id === s.next.id
                 || !(level.palette.indexOf(s.current.color) >= 0) || !(level.palette.indexOf(s.next.color) >= 0)
-                || !s.inventory || !['bomb', 'wildcard', 'clear-bottom'].every(k => uint(s.inventory[k], legacyItems && level.numberInRegion > 3 ? 1 : 0))
+                || !s.inventory || !['bomb', 'wildcard', 'clear-bottom'].every(k => uint(s.inventory[k], 0))
                 || !Array.isArray(s.bubbles) || !s.bubbles.length || s.bubbles.length > COLUMNS * (MAX_ROW + 1)
                 || !Array.isArray(s.rails) || s.rails.length > 3 || !Array.isArray(s.remainingTargets) || !Array.isArray(s.frostIds)) return undefined;
             const board = new BubbleShooterModel(); board.reset(s.bubbles, s.phase);
@@ -314,7 +312,6 @@ export class BubbleShooterCampaign extends BubbleShooterRound {
             restored.openingCursor = s.openingCursor; restored.supplyRng = s.supplyRng; restored.skillRng = s.skillRng; restored.unhelpfulDraws = s.unhelpfulDraws;
             restored.bossHealth = s.bossHealth; restored.rowCursor = s.rowCursor; restored.refillCursor = s.refillCursor;
             restored.targetIds = new Set(s.remainingTargets); restored.frostIds = s.frostIds.slice(); restored.cleared = s.cleared;
-            // The constructor already owns a zero inventory in both new and migrated attempts.
             if (level.goal.kind === 'boss') restored.bossShots = s.mechanicShots; else if (level.region === 'toy') restored.railShots = s.mechanicShots; else if (level.region === 'magic') restored.runeShots = s.mechanicShots;
             restored.frostTargets = restored.sortedBubbles().filter(b => (s.frostIds.indexOf(b.id!) >= 0)).map(b => ({ row: b.row, col: b.col }));
             return restored;

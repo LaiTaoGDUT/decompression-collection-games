@@ -103,7 +103,9 @@ function parseActiveRound(value: unknown): DoodleJumpActiveRound | undefined {
             || !isRecord(value.historyBaseline)
             || !isRecord(value.snapshot)) return undefined;
         const snapshot = value.snapshot;
-        if (snapshot.rulesVersion !== DOODLE_JUMP_RULES_VERSION
+        // Keep classic active rounds and historical totals when retiring a theme.
+        if ((snapshot.themeId !== undefined && snapshot.themeId !== 'classic')
+            || snapshot.rulesVersion !== DOODLE_JUMP_RULES_VERSION
             || !isRecord(snapshot.generationState)
             || !Array.isArray(snapshot.platforms)
             || !Array.isArray(snapshot.enemies)

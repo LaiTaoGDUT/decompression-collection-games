@@ -20,7 +20,8 @@ export function readCampaignProgress(value: unknown): CampaignProgress {
     for (const id of Object.keys(data.results ?? {})) {
         const r = data.results[id], level = bubbleLevel(id);
         if (level && r && uint(r.stars) && r.stars >= 1 && r.stars <= 3 && uint(r.starsRevision) && r.starsRevision >= 1
-            && uint(r.bestShotsUsed) && uint(r.bestShotsRevision) && r.bestShotsRevision >= 1
+            && uint(r.bestShotsUsed) && uint(r.bestShotsRevision)
+            && (r.bestShotsRevision >= 1 || (r.bestShotsRevision === 0 && r.firstCompletedAttemptId === 'cloud'))
             && typeof r.firstCompletedAttemptId === 'string' && r.firstCompletedAttemptId) empty.results[id] = { ...r };
     }
     if (data.activeAttempt && typeof data.activeAttempt === 'object' && bubbleLevel(data.activeAttempt.levelId)) empty.activeAttempt = data.activeAttempt;

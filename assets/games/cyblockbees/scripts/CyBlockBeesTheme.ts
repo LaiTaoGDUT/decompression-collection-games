@@ -8,14 +8,14 @@ import { Color } from 'cc';
  *
  * 关卡与物理来自原作（X-Clash 内 CyBlockBees 1.0.118）。角色、机关、地形与云全部按本主题重绘：
  * 有机造型由 imagegen 生成后对齐原精灵轮廓，几何类精灵由 `restyle-art.py` 绘制，
- * 音效由 `build-audio.py` 合成，大厅封面由 `build-cover.py` 输出。
+ * 按钮与画线分别由 `project-scripts/audio/build-cyblockbees-ui-tap.py` 和 `build-cyblockbees-pencil.py` 基于素材制作，其余音效为程序合成；大厅封面由 `build-cover.py` 输出。
  * 页面构图、HUD 造型、选关与结算页由本项目自己定义并冻结，不继承大厅或其他小游戏。
  *
  * 造型语言取自狗头和蜜蜂的深棕描边：所有卡片、按钮和格子都是「厚贴纸」——
  * 深棕描边 + 底部同色系厚度，按下时整体下沉。选关用蜂巢六边形格子，
  * 主操作统一为蜂蜜黄，奶油色承载次要操作，薄荷色只用于未解锁状态，暖红只用于危险。
  * 天空是自上而下的青绿渐变，玩法页保持干净，只有云层；选关页额外有远山。
- * 动效只有轻微漂浮、弹出、翻页滑动和按压下沉；声音是木琴/钟琴式的圆润打击、卡通弹簧与气泡、毛茸茸的蜂鸣。
+ * 动效只有轻微漂浮、弹出、翻页滑动和按压下沉；按钮是柔和气泡短「啵」，画线是持续铅笔摩擦，其余声音为圆润打击、卡通弹簧与气泡、毛茸茸的蜂鸣。
  */
 
 export const CYBLOCKBEES_THEME_ID = 'cyblockbees-honeycomb-sticker-v3';
@@ -101,10 +101,13 @@ export const CYBLOCKBEES_RULES = Object.freeze({
     beeSpeed: 4,
     /** 原包 globalgamemanagers / TimeManager 的固定步长；单次 AddForce 按此积分。 */
     beeContactTimeStep: .01,
-    /** 与原包 TimeManager 一致；缩小蜂群推动复合刚体时的接触穿透。 */
-    physicsTimeStep: .01,
+    /** 物理固定步长。微信 JS 解释执行时 Box2D 单步耗时为毫秒级，
+     * 原包 100 Hz 在线被蜂群推动时无法实时追上；接触冲量仍按 beeContactTimeStep 积分。 */
+    physicsTimeStep: 1 / 60,
     /** 原包 TimeManager.Maximum Allowed Timestep；游戏计时和物理使用同一上限。 */
     maxFrameDelta: .1,
+    /** 每帧物理计算的真实耗时预算（秒）。超出预算的积压不再追赶，游戏时间同步放慢。 */
+    physicsFrameBudget: .008,
     /** 速度迭代沿用原包；Cocos 的复合碰撞体需要保留本后端的位置迭代精度。 */
     velocityIterations: 8,
     positionIterations: 10,

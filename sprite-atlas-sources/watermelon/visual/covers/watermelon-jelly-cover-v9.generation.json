@@ -1,0 +1,39 @@
+{
+  "tool": "tools/watermelon/build-lobby-cover.py",
+  "date": "2026-10-16",
+  "request": "使用实机水果且大小比例与实机一致；水果完整留在画面内，贴边与相邻处呈现轻微果冻挤压而非裁切。",
+  "operation": "Programmatic compositing of the production fruit sprites. Radii are read from WatermelonGameplayConfig and scaled uniformly until the set jams inside a 24 px inset wall; the watermelon is pinned to the bottom-right corner. Every neighbour or wall contact gets a 7% mesh-warp flattening that keeps the sprite's own glossy rim.",
+  "fruitReferences": [
+    "assets/game-assets/watermelon/visual/cats/frames-c6/watermelon-fruits.png",
+    "assets/game-assets/watermelon/visual/cats/frames-c6/watermelon-fruits-2.png"
+  ],
+  "radiusSource": "assets/games/watermelon/scripts/WatermelonGameplayConfig.ts",
+  "source": {
+    "path": "watermelon-jelly-cover-v9.png",
+    "width": 1448,
+    "height": 1086
+  },
+  "delivery": {
+    "path": "assets/lobby-covers/visual/covers/watermelon/watermelon-jelly-cover-v9.jpg",
+    "width": 568,
+    "height": 426,
+    "format": "JPEG",
+    "existingAssetUuidPreserved": true
+  },
+  "sizing": "4:3; proportionally reduced to 568 × 426, the maximum cover display size of the shared loading dialog at the 750 × 1334 design resolution.",
+  "composition": {
+    "background": "sage gingham matching the in-game background c1-cat-room-bg-v1: pale cream centre, grey-teal vignette corners",
+    "fruits": "cherry, grape, strawberry, dekopon, orange, apple, pear, watermelon at in-game radius ratios",
+    "watermelon": "largest, pinned to the bottom-right corner against the right and bottom walls",
+    "edges": "All fruits fully inside a thin gingham strip; wall and neighbour contacts are flattened, never cropped."
+  },
+  "deformation": "7% flattening per contact with slight sideways bulge.",
+  "compression": {
+    "tool": ".claude/skills/tinypng-batch/scripts/compress.py",
+    "provider": "Tinify API",
+    "processed": 1,
+    "inputBytes": 85068,
+    "outputBytes": 50606,
+    "savedBytes": 34462
+  }
+}

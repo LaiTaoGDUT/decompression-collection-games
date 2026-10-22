@@ -5,12 +5,18 @@
     "version": "3.8.8"
   },
   "scripts": {
+    "prepare:cloud-save": "node project-scripts/cloud-save/prepare.cjs",
+    "verify:cloud-save": "node tests/cloud-save/verify.cjs",
+    "verify:update-reminder": "node tools/verify-update-reminder.cjs",
     "verify:tap": "node tests/tap/platform.cjs && node tests/tap/build-hooks.cjs",
     "verify:tap-package": "node tests/tap/package.cjs",
     "copy:review": "node project-scripts/copy-review/server.cjs",
     "verify:copy-review": "node project-scripts/copy-review/verify.cjs",
     "announcements": "node project-scripts/announcements/server.cjs",
+    "config:edit": "node project-scripts/announcements/server.cjs",
     "verify:announcements": "node project-scripts/announcements/verify.cjs",
+    "verify:config-editor": "node project-scripts/announcements/verify.cjs && node project-scripts/announcements/verify-games.cjs && node project-scripts/announcements/verify-app.cjs",
+    "verify:config-editor:browser": "node project-scripts/announcements/verify-browser.cjs",
     "verify:game-bundles": "node project-scripts/verify-game-bundles.js",
     "verify:lobby-tags": "node tools/verify-lobby-tags.cjs",
     "verify:audio": "node project-scripts/audio/verify-packed-audio.cjs",

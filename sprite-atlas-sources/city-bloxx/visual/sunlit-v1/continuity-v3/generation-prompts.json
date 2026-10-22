@@ -1,0 +1,112 @@
+{
+  "tool": "built-in image_gen",
+  "sources": [
+    {
+      "name": "city-master",
+      "transparent": true,
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/assets/game-assets/city-bloxx/visual/sunlit/city.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/approved-concept.png"
+      ],
+      "prompt": "Use case: precise-object-edit\nAsset type: ONE continuous very tall transparent mobile-game city background texture, requested 1200x3600 pixels, 1:3 aspect. Image1 is the EXACT layout edit target. Image2 supplies only miniature materials/style, never its camera/layout/UI.\nRepaint the COMPLETE height of Image1 as a single coherent architectural painting. Repair all disconnected upper/lower facade joins: every existing individual building must be ONE uninterrupted building from its own rooftop down to the bottom edge, with consistent width, vertical piers, window column positions, glass color and floor spacing over its entire height. Eliminate cross-image horizontal seams, abrupt window-grid scale changes, doubled roof caps in mid-wall and sudden wall-color changes. Keep every building's existing x position, width, silhouette, stepped rooftop and transparent gap exactly fixed. Preserve the major existing individual ledges and building overlaps; do not add buildings, sky, ground, trees or street decorations. The tall narrow buildings also continue naturally all the way down, never becoming plain untextured strips.\nStyle: quiet distant architectural miniature, pale ivory/warm gray ceramic stone, muted cool blue-gray glass, finely ordered windows, restrained brass detail, soft atmospheric dimensional shading, deliberately subdued compared with the bright playable tower. All building surfaces stay opaque and all original transparent gaps stay genuine alpha. Output ONE full-height image at 1200x3600 or higher within 1:3; no collage, panels, horizontal sections, borders, text or watermark.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-24219357-b54d-4546-a710-b121c6514db7.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-master-source.png"
+    },
+    {
+      "name": "tree",
+      "transparent": true,
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/approved-concept.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/tree.png"
+      ],
+      "prompt": "Use case: style-transfer\nAsset type: one isolated transparent tree sprite for the approved sunlit miniature-city game. Image1 is STYLE ONLY; Image2 provides only the original rounded tree silhouette and trunk proportions.\nCompletely redesign this tree into the soft architectural-model style of Image1: compact rounded sculpted clusters of sage, pale olive and warm fresh green foliage, softly beveled resin/ceramic miniature surfaces with gentle upper-left highlights, a readable warm taupe branching trunk. Keep the same broad round crown, central visible trunk and total width:height roughly .9:1. It should look like a premium miniature landscaping model, clearly different from the old dense pointed leaf illustration. No individual spiky leaves, saturated dark emerald foliage or pixel-art outlines. Full tree including bottom of trunk fits inside the canvas with generous true transparent margins. No pot, ground patch, drop shadow on an invisible floor, fence, person, sky, text or watermark. Output a large square source, subject at least600px tall; will be uniformly reduced and registered to original game footprint.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-227cefdb-acc4-46af-b4d0-d4d4cf00b235.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/tree-source.png"
+    },
+    {
+      "name": "fence",
+      "transparent": true,
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/approved-concept.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/fence.png"
+      ],
+      "prompt": "Use case: style-transfer\nAsset type: ONE very wide isolated construction fence/hoarding sprite, about 9:1 visible subject aspect, placed across the middle of a wide transparent image. Image1 is STYLE ONLY. Image2 gives the exact left-to-right arrangement and relative proportions, not colors or rendering style.\nFully redraw the entire fence in the approved sunlit architectural miniature style: left half is delicate champagne-brass mesh in rounded warm-ivory posts, a tiny pale sage utility booth behind its far-left section; right half is CORAL-ORANGE ceramic/model construction hoarding with ivory rim/posts and small brass panel seams. Keep the two little traffic cones in their existing positions; redesign them in soft coral and ivory. Keep the same long low silhouette, straight bottom baseline, left transparent mesh/right opaque panel division, and overall object proportions. Soft dimensional model-like bevels and clear tiny cast shading inside the object, no gritty real wire, saturated engineering yellow, stickers, hazard signs or black outlines. Object must be complete from left end to right end, no cropped posts. Subject spans at least1400px in width. Genuine alpha in all gaps and around the entire sprite. No sky, ground, floor shadow, extra trees, characters, labels, text or watermark. Wide landscape canvas, all objects belong to one coherent fence.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-f2e63ea8-c79c-4633-8a15-30aec70e8016.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/fence-source.png"
+    },
+    {
+      "name": "clouds-plane",
+      "transparent": true,
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/approved-concept.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/cloud-streaks.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/cloud-bank.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/airplane.png"
+      ],
+      "prompt": "Use case: style-transfer\nAsset type: transparent scenery source sheet, landscape1536x1024, EXACTLY three separate broad horizontal rows with generous empty alpha space. Image1 is STYLE ONLY. Image2 gives the long wispy-cloud shape, Image3 the low cloud-bank shape, Image4 the tiny airplane plus its long contrail proportions.\nCompletely redraw these three sprites to match the approved soft sunlit miniature style, no old 2D/cel look. TOP THIRD: one group of elongated ivory cloud wisps, subtle soft sculpted/cotton forms, faint pale-blue undersides, approximately9:1 visible width:height, subject at least1200px wide. MIDDLE THIRD: one separate low long rounded ivory cloud bank, pale blue-gray shaded underside, about5:1 visible aspect. BOTTOM THIRD: one very small ivory/sea-blue/coral model passenger airplane facing RIGHT at the right end of a very long thin softly fading ivory contrail extending left; the whole plane-and-trail sprite about18:1 aspect, not an enlarged airplane, width at least900px. Every sprite is complete and centered in its own one-third row. Only one sprite/group per row, no duplicates and no overlap between rows. Genuine transparent background including all space between cloud forms; no sky rectangle or opaque glow. No text, grid, borders, labels, logo or watermark.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-c665e0c4-3f93-438e-aec2-99a7ecf977cd.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/clouds-plane-source.png"
+    },
+    {
+      "name": "flymen",
+      "transparent": true,
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/approved-concept.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/flyman-0.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/prepared/flyman-1.png"
+      ],
+      "prompt": "Use case: style-transfer\nAsset type: a two-frame transparent sprite strip for one tiny flying construction worker, two equal square cells side by side. Image1 is STYLE ONLY. Images2/3 show the old animation poses, silhouette and facing direction; replace their entire old pixel illustration.\nDraw the SAME friendly tiny adult worker flying horizontally facing RIGHT in BOTH frames, soft miniature/toy 3D style matching Image1: ivory/coral hard hat, sea-blue jacket, warm ivory trousers, tiny brass wing pack, light skin, clean rounded readable forms. Body stays horizontally stretched about1.7:1 including the wing pack; no giant head or child proportions. Two distinct wing/arm/leg positions create the two animation poses, but exactly matching character scale, center and forward-facing orientation. Each complete character centered within its own cell, no trail, umbrella, balloon or helicopter. Genuine alpha all around and between frames. No pixel-art edge, black outline, background, floor shadow, words, label, grid or watermark.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-38257506-cda4-48bf-a4cb-01654cfe8c8d.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/flymen-source.png"
+    },
+    {
+      "name": "city-detail-0",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-0-reference.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-master-source.png"
+      ],
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-a78b1524-5836-4d29-954c-cae48a0df576.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-0-source.png"
+    },
+    {
+      "name": "city-detail-1",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-1-reference.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-master-source.png"
+      ],
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-488bd3a8-c122-4ea2-85cf-98db965a5da7.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-1-source.png"
+    },
+    {
+      "name": "city-detail-2",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-2-reference.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-master-source.png"
+      ],
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-f724f866-1915-4fc0-9147-39e19372d5a8.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-2-source.png"
+    },
+    {
+      "name": "city-detail-3",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-3-reference.png",
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-master-source.png"
+      ],
+      "prompt": "Use case: precise-object-edit\nAsset type: high-resolution texture-detail restoration for an exact square crop of ONE continuous tall city painting.\nImage1 is the EXACT edit target square crop; Image2 is its complete continuous master for architectural context.\nRe-render Image1 at sharper native resolution, at least1280x1280 square. Preserve the composition PIXEL-FOR-PIXEL in normalized coordinates: same window columns, same rows/floor spacing, same vertical stone piers, roof/ledge/trim boundaries, same glass reflections and light spots, same building widths, every edge intersects each of the four image borders at exactly the same coordinates. DO NOT redesign or reinterpret any architecture, add/remove a window/floor, move a cornice, replace part of a wall or change scale. This crop overlaps neighboring crops of Image2; unchanged grid, color and lighting are essential for seamless assembly.\nOnly make existing stone/ceramic bevels and existing window lines crisp, clean and finely rendered. Maintain the quiet ivory stone, muted blue-gray glass, gentle warm light of the master. No extra contrast, saturation or shadows. Remove stray cyan/white matte fringe in the existing transparent gaps, retaining clean genuine alpha. No new building, skyline, sky, ground, foliage, person, text, borders or watermark. For interior facade crops there are no invented roofs at top or bottom: all partial buildings continue straight through the crop border.",
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-8e98899c-1a74-45e5-af62-9af98747d9f4.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/city-detail-3-source.png"
+    },
+    {
+      "name": "clouds-plane-clean",
+      "prompt": "Use case: background-extraction\nAsset type: clean transparent mobile-game scenery sheet, retain exact1536x1024 three-row composition.\nImage1 is the precise edit target. Keep the actual upper thin cloud shapes, middle cloud bank, bottom little airplane with long contrail exactly in place, same colors/size/design. REMOVE all the surrounding broad luminous fog, atmospheric halo, shaded glow and any RGB matte around the objects. Only the actual sculpted cloud material and actual aircraft/contrail pixels remain visible. Absolutely no emissive bloom or illumination floating behind/above/below a cloud. The objects are softly lit miniature objects, not light sources. Empty space between all three rows and all around each individual cloud must be truly alpha0, including at the image edges. Keep delicate antialiased feathered cloud edges within a few pixels, but no wide haze. No new object, text, border or background color. Preserve exact object layout and clear generous transparent gutters so each row can be cropped cleanly as its own sprite.",
+      "refs": [
+        "/Users/laitao/hello-pressure/decompression-collection-games/sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/clouds-plane-source.png"
+      ],
+      "generatedFile": "/Users/laitao/.codex-qq/generated_images/01a15808-9d8f-73d2-aad1-3e7e6511002d/exec-223764aa-525a-4de0-ac58-3545e0ac5b3a.png",
+      "workspaceFile": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/continuity-v3/clouds-plane-clean-source.png"
+    }
+  ]
+}

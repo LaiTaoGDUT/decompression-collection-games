@@ -1,0 +1,87 @@
+{
+  "tool": "built-in image_gen",
+  "mode": "reference-guided edits",
+  "sourceCount": 10,
+  "sources": [
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/blue-a-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "d9524ac11eec4bdb1cd998fc6f772c97ccd7b4ff0191697a92426829c8ebb90c"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/blue-b-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "aa1940a2f16e2da84f1e29b3cc2acda67efa47b8cbbe3819037f97ef815c597b"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/left-base-source.png",
+      "pixels": [
+        724,
+        2171
+      ],
+      "sha256": "bbe8c1b4e24a96283ac518bb5aa77c35196e47136c6f0e445e8f59cbdf5882ff"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/light-facade-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "018679c08540d89ddbbc09fc88cd41dfc2e475e5f745e74b22469daeb66a3a9d"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/middle-facades-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "eada9481106206c14f8d263bdf09234efd68d0c06ac88a0f404e38b58042a88d"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/remaining-gray-source.png",
+      "pixels": [
+        724,
+        2171
+      ],
+      "sha256": "ba49b1ffba43a76073e8ed529a09f6b1057f8d064a91ba5ba1f2e50e274f304e"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/right-ledge-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "606fb5c2dc6a7bddac315fc88acff9805b490150c28cc9a3746e1a8b4f17751a"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/right-tower-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "f2a793a9f8a56c4641a353b6de7060a390cfa8a99fc522ac28f572b45ec1f651"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/striped-facade-source.png",
+      "pixels": [
+        861,
+        1827
+      ],
+      "sha256": "1aab09062d07455470f1fbd5f86fd9bcf257bfceeff23399bba57fc0411e778b"
+    },
+    {
+      "path": "sprite-atlas-sources/city-bloxx/visual/sunlit-v1/whole-buildings-v4/upper-gray-pair-source.png",
+      "pixels": [
+        724,
+        2172
+      ],
+      "sha256": "a0ac830ad9da1cf8c0589e1abcba147b71ee1c77e59d6e5bed7034260873b997"
+    }
+  ]
+}

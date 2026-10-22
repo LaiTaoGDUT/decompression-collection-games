@@ -1,0 +1,12 @@
+{
+  "ver": "1.0.1",
+  "importer": "ttf-font",
+  "imported": true,
+  "uuid": "fd3087d5-b9b0-4bf5-a6cb-e63863123186",
+  "files": [
+    ".json",
+    "native-hud.ttf"
+  ],
+  "subMetas": {},
+  "userData": {}
+}

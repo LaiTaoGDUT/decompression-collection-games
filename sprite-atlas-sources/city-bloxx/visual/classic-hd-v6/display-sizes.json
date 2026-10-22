@@ -1,0 +1,754 @@
+{
+  "theme": "经典晴空 · 高清重制",
+  "textures": {
+    "house_yellow_B": {
+      "pixels": [
+        384,
+        384
+      ],
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "scale": 0.3062200956937799
+    },
+    "house_yellow_m": {
+      "pixels": [
+        384,
+        384
+      ],
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "scale": 0.3062200956937799
+    },
+    "blue_house": {
+      "pixels": [
+        384,
+        384
+      ],
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "scale": 0.3062200956937799
+    }
+  },
+  "frames": {
+    "tree": {
+      "canvas": [
+        230,
+        230
+      ],
+      "sourceCrop": [
+        378,
+        68,
+        1174,
+        975
+      ],
+      "subjectPixels": [
+        175,
+        199
+      ],
+      "offset": [
+        26,
+        26
+      ],
+      "scale": 0.21940463065049615
+    },
+    "fence": {
+      "canvas": [
+        1039,
+        156
+      ],
+      "sourceCrop": [
+        14,
+        284,
+        2159,
+        530
+      ],
+      "subjectPixels": [
+        959,
+        110
+      ],
+      "offset": [
+        40,
+        46
+      ],
+      "scale": 0.44715447154471544
+    },
+    "crane-arm": {
+      "canvas": [
+        438,
+        88
+      ],
+      "sourceCrop": [
+        58,
+        131,
+        2114,
+        564
+      ],
+      "subjectPixels": [
+        399,
+        84
+      ],
+      "offset": [
+        24,
+        3
+      ],
+      "scale": 0.19399538106235567
+    },
+    "gameover": {
+      "canvas": [
+        456,
+        86
+      ],
+      "sourceCrop": [
+        0,
+        159,
+        2172,
+        581
+      ],
+      "subjectPixels": [
+        443,
+        86
+      ],
+      "offset": [
+        6,
+        0
+      ],
+      "scale": 0.2037914691943128
+    },
+    "first-chain": {
+      "canvas": [
+        57,
+        141
+      ],
+      "sourceCrop": [
+        322,
+        78,
+        579,
+        804
+      ],
+      "subjectPixels": [
+        49,
+        138
+      ],
+      "offset": [
+        4,
+        2
+      ],
+      "scale": 0.19066147859922178
+    },
+    "native-hook": {
+      "canvas": [
+        29,
+        54
+      ],
+      "sourceCrop": [
+        309,
+        82,
+        640,
+        809
+      ],
+      "subjectPixels": [
+        25,
+        54
+      ],
+      "offset": [
+        2,
+        0
+      ],
+      "scale": 0.07427785419532325
+    },
+    "buliding_number": {
+      "canvas": [
+        50,
+        93
+      ],
+      "sourceCrop": [
+        135,
+        27,
+        378,
+        484
+      ],
+      "subjectPixels": [
+        49,
+        93
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "scale": 0.20350109409190373
+    },
+    "humen": {
+      "canvas": [
+        61,
+        57
+      ],
+      "sourceCrop": [
+        47,
+        66,
+        465,
+        464
+      ],
+      "subjectPixels": [
+        60,
+        57
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "scale": 0.14321608040201006
+    },
+    "building": {
+      "canvas": [
+        34,
+        95
+      ],
+      "sourceCrop": [
+        183,
+        27,
+        332,
+        484
+      ],
+      "subjectPixels": [
+        29,
+        89
+      ],
+      "offset": [
+        2,
+        3
+      ],
+      "scale": 0.19463087248322147
+    },
+    "home": {
+      "canvas": [
+        40,
+        48
+      ],
+      "sourceCrop": [
+        71,
+        47,
+        451,
+        480
+      ],
+      "subjectPixels": [
+        40,
+        46
+      ],
+      "offset": [
+        0,
+        1
+      ],
+      "scale": 0.10526315789473684
+    },
+    "btn_quick": {
+      "canvas": [
+        41,
+        41
+      ],
+      "sourceCrop": [
+        42,
+        37,
+        471,
+        470
+      ],
+      "subjectPixels": [
+        41,
+        41
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "scale": 0.09468822170900693
+    },
+    "AD": {
+      "canvas": [
+        45,
+        39
+      ],
+      "sourceCrop": [
+        48,
+        65,
+        475,
+        446
+      ],
+      "subjectPixels": [
+        44,
+        39
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "scale": 0.10236220472440945
+    },
+    "whale-0": {
+      "canvas": [
+        412,
+        103
+      ],
+      "sourceCrop": [
+        67,
+        192,
+        1193,
+        446
+      ],
+      "subjectPixels": [
+        346,
+        78
+      ],
+      "offset": [
+        8,
+        4
+      ],
+      "scale": 0.30708661417322836
+    },
+    "whale-1": {
+      "canvas": [
+        412,
+        103
+      ],
+      "sourceCrop": [
+        64,
+        187,
+        1199,
+        444
+      ],
+      "subjectPixels": [
+        336,
+        76
+      ],
+      "offset": [
+        4,
+        9
+      ],
+      "scale": 0.29571984435797666
+    },
+    "resident-blue-0": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        26,
+        70,
+        300,
+        443
+      ],
+      "subjectPixels": [
+        29,
+        40
+      ],
+      "offset": [
+        8,
+        24
+      ],
+      "scale": 0.10723860589812333
+    },
+    "resident-blue-1": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        31,
+        69,
+        281,
+        466
+      ],
+      "subjectPixels": [
+        28,
+        44
+      ],
+      "offset": [
+        7,
+        24
+      ],
+      "scale": 0.11083123425692695
+    },
+    "resident-blue-2": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        48,
+        68,
+        270,
+        478
+      ],
+      "subjectPixels": [
+        24,
+        44
+      ],
+      "offset": [
+        9,
+        24
+      ],
+      "scale": 0.10810810810810811
+    },
+    "resident-blue-3": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        45,
+        70,
+        287,
+        472
+      ],
+      "subjectPixels": [
+        29,
+        48
+      ],
+      "offset": [
+        9,
+        22
+      ],
+      "scale": 0.11983471074380166
+    },
+    "resident-blue-4": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        22,
+        69,
+        290,
+        466
+      ],
+      "subjectPixels": [
+        29,
+        43
+      ],
+      "offset": [
+        8,
+        25
+      ],
+      "scale": 0.10831234256926953
+    },
+    "resident-blue-5": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        40,
+        44,
+        286,
+        427
+      ],
+      "subjectPixels": [
+        28,
+        44
+      ],
+      "offset": [
+        9,
+        20
+      ],
+      "scale": 0.11382113821138211
+    },
+    "resident-blue-6": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        49,
+        41,
+        269,
+        429
+      ],
+      "subjectPixels": [
+        26,
+        46
+      ],
+      "offset": [
+        7,
+        19
+      ],
+      "scale": 0.11818181818181818
+    },
+    "resident-blue-7": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        48,
+        42,
+        278,
+        429
+      ],
+      "subjectPixels": [
+        28,
+        47
+      ],
+      "offset": [
+        9,
+        18
+      ],
+      "scale": 0.12144702842377261
+    },
+    "resident-blue-8": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        26,
+        40,
+        281,
+        411
+      ],
+      "subjectPixels": [
+        28,
+        41
+      ],
+      "offset": [
+        10,
+        21
+      ],
+      "scale": 0.1105121293800539
+    },
+    "resident-blue-9": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        35,
+        39,
+        290,
+        420
+      ],
+      "subjectPixels": [
+        29,
+        43
+      ],
+      "offset": [
+        11,
+        20
+      ],
+      "scale": 0.11286089238845144
+    },
+    "resident-red-0": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        37,
+        54,
+        272,
+        443
+      ],
+      "subjectPixels": [
+        27,
+        45
+      ],
+      "offset": [
+        8,
+        17
+      ],
+      "scale": 0.11568123393316196
+    },
+    "resident-red-1": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        38,
+        51,
+        251,
+        458
+      ],
+      "subjectPixels": [
+        27,
+        52
+      ],
+      "offset": [
+        11,
+        14
+      ],
+      "scale": 0.1267605633802817
+    },
+    "resident-red-2": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        43,
+        51,
+        234,
+        456
+      ],
+      "subjectPixels": [
+        23,
+        49
+      ],
+      "offset": [
+        10,
+        17
+      ],
+      "scale": 0.12098765432098765
+    },
+    "resident-red-3": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        55,
+        51,
+        249,
+        462
+      ],
+      "subjectPixels": [
+        25,
+        54
+      ],
+      "offset": [
+        8,
+        15
+      ],
+      "scale": 0.13138686131386862
+    },
+    "resident-red-4": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        49,
+        56,
+        271,
+        455
+      ],
+      "subjectPixels": [
+        23,
+        42
+      ],
+      "offset": [
+        11,
+        21
+      ],
+      "scale": 0.10526315789473684
+    },
+    "resident-red-5": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        49,
+        31,
+        239,
+        447
+      ],
+      "subjectPixels": [
+        26,
+        56
+      ],
+      "offset": [
+        10,
+        17
+      ],
+      "scale": 0.1346153846153846
+    },
+    "resident-red-6": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        49,
+        32,
+        243,
+        439
+      ],
+      "subjectPixels": [
+        23,
+        48
+      ],
+      "offset": [
+        8,
+        23
+      ],
+      "scale": 0.11793611793611794
+    },
+    "resident-red-7": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        48,
+        33,
+        253,
+        440
+      ],
+      "subjectPixels": [
+        27,
+        53
+      ],
+      "offset": [
+        8,
+        18
+      ],
+      "scale": 0.13022113022113022
+    },
+    "resident-red-8": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        51,
+        32,
+        287,
+        424
+      ],
+      "subjectPixels": [
+        26,
+        43
+      ],
+      "offset": [
+        10,
+        22
+      ],
+      "scale": 0.1096938775510204
+    },
+    "resident-red-9": {
+      "canvas": [
+        44,
+        87
+      ],
+      "sourceCrop": [
+        73,
+        34,
+        280,
+        430
+      ],
+      "subjectPixels": [
+        24,
+        45
+      ],
+      "offset": [
+        10,
+        21
+      ],
+      "scale": 0.11363636363636363
+    }
+  }
+}

@@ -6,7 +6,7 @@ import type { AchievementArtService } from '../../services/achievements/Achievem
 import type { AchievementWallMusic } from '../../services/achievements/AchievementWallMusic';
 import type { Platform } from '../../platform/Platform';
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
-import { calculateVerticalSafeBounds } from '../ui/PlatformSafeLayout';
+import { calculateSafeContentBounds } from '../ui/PlatformSafeLayout';
 import { LOBBY_SHOWCASE_HEIGHT } from '../ui/LobbyBrandLayout';
 import { achievementLabel, achievementNode, createAchievementImage, createAchievementTrophy,
     createAchievementTrophyGlow, fillRoundRect, hexColor, makeAchievementButton, shadeColor, strokeRoundRect,
@@ -93,6 +93,10 @@ export class AchievementWall {
         return this.games.length > 0;
     }
 
+    get isVisible(): boolean {
+        return !!this.root?.activeInHierarchy;
+    }
+
     mount(overlayParent: Node, showcaseParent: Node, games: readonly GameManifest[], services: WallServices,
         enterGame: (manifest: GameManifest) => void): void {
         this.parent = overlayParent;
@@ -119,6 +123,29 @@ export class AchievementWall {
             || Math.abs(this.entryCardWidth - designCardWidth) > 0.5) {
             this.entryCardWidth = designCardWidth;
             this.drawShowcase(entry, designWidth);
+        }
+    }
+
+    /** 云恢复可能晚于大厅展示；原位重建奖杯内容，保留滚动位置和音乐。 */
+    refreshProgress(): void {
+        const entry = this.entry;
+        if (entry?.isValid && entry.parent && this.services) {
+            const width = entry.getComponent(UITransform)!.width;
+            this.spotlightProgress = undefined;
+            const replacement = this.createShowcase(entry.parent);
+            replacement.setPosition(entry.position);
+            replacement.setScale(entry.scale);
+            replacement.setSiblingIndex(entry.getSiblingIndex());
+            this.entry = replacement;
+            this.drawShowcase(replacement, width);
+            entry.removeFromParent(); entry.destroy();
+        }
+        const cabinet = this.root?.getChildByPath('PageViewport/PageContent/Cabinet');
+        if (cabinet?.isValid) {
+            this.cards.length = 0;
+            for (const child of Array.from(cabinet.children)) { child.removeFromParent(); child.destroy(); }
+            this.createShelves(cabinet);
+            this.layout();
         }
     }
 
@@ -178,7 +205,7 @@ export class AchievementWall {
         this.close(false);
         const entry = this.entry;
         this.entry = undefined;
-        const skin = entry && isValid(entry, true) ? entry.getChildByName('EntrySkin')?.getComponent(Sprite) : null;
+        const skin = entry && isValid(entry, true) ? entry.getChildByPath('EntryContent/EntrySkin')?.getComponent(Sprite) : null;
         if (skin) skin.spriteFrame = null;
         if (entry && isValid(entry, true)) entry.destroy();
         this.services = undefined;
@@ -215,14 +242,17 @@ export class AchievementWall {
 
     private createShowcase(parent: Node): Node {
         const services = this.services!;
-        const entry = achievementNode(parent, 'AchievementEntry', 678, SHOWCASE_HEIGHT);
+        const layout = achievementNode(parent, 'AchievementEntry', 678, SHOWCASE_HEIGHT);
+        // 外层持有适配缩放与点击区域，内层只做按压动画。Cocos Button 初始化时会启动缩放过渡，
+        // 若直接动画外层，会把同帧 layoutShowcase 设置的平板/矮屏缩放恢复成初始化时的 1。
+        const entry = achievementNode(layout, 'EntryContent', 678, SHOWCASE_HEIGHT);
+        makeAchievementButton(layout, () => this.open(), 0.97).target = entry;
         // 与游戏卡片共用纸面底板；光斑画在底板之上、图标之下。
         entry.addComponent(Graphics);
         const skin = achievementNode(entry, 'EntrySkin', 678, SHOWCASE_HEIGHT).addComponent(Sprite);
         skin.sizeMode = Sprite.SizeMode.CUSTOM;
-        services.bindEntrySkin(skin, () => this.drawShowcase(entry, entry.getComponent(UITransform)!.width));
+        services.bindEntrySkin(skin, () => this.drawShowcase(layout, layout.getComponent(UITransform)!.width));
         achievementNode(entry, 'EntryGlow', 678, SHOWCASE_HEIGHT).addComponent(Graphics);
-        makeAchievementButton(entry, () => this.open(), 0.97);
         const game = this.spotlight();
         this.spotlightGame = game;
         if (game) {
@@ -265,13 +295,15 @@ export class AchievementWall {
         const go = achievementNode(entry, 'EntryGo', SHOWCASE_GO.width, SHOWCASE_GO.height);
         go.addComponent(Graphics);
         achievementLabel(go, 'Caption', '查看', -8, 2, 64, 40, 25, '#FFFFFF', true);
-        this.drawShowcase(entry, 678);
-        return entry;
+        this.drawShowcase(layout, 678);
+        return layout;
     }
 
     /** 左侧图标、中间文字列、右侧“查看”按钮；文字列宽度随大厅网格宽度伸缩。 */
-    private drawShowcase(entry: Node, width: number): void {
+    private drawShowcase(layout: Node, width: number): void {
         const height = SHOWCASE_HEIGHT;
+        layout.getComponent(UITransform)!.setContentSize(width, height);
+        const entry = layout.getChildByName('EntryContent')!;
         entry.getComponent(UITransform)!.setContentSize(width, height);
         const g = entry.getComponent(Graphics)!;
         this.layoutEntrySkin(entry, width, height);
@@ -473,7 +505,9 @@ export class AchievementWall {
         if (!root?.isValid) return;
         const size = view.getVisibleSize();
         const width = size.width || 750, height = size.height || 1334;
-        const safe = calculateVerticalSafeBounds(height, this.services.platform.getLayoutInfo(), 16);
+        const layout = this.services.platform.getLayoutInfo();
+        const landscape = layout.orientation === 'landscape';
+        const safe = calculateSafeContentBounds(width, height, layout, 16);
         root.setSiblingIndex(this.parent!.children.length - 1);
         root.getComponent(UITransform)!.setContentSize(width, height);
         const g = root.getComponent(Graphics)!;
@@ -482,16 +516,16 @@ export class AchievementWall {
         const background = root.getChildByName('AchievementWallBackground')!.getComponent(Sprite)!;
         this.services.art.fit(background, width, height, 'cover');
 
-        const scale = Math.min(1, (width - 24) / CABINET_WIDTH);
+        const scale = Math.min(1, Math.max(1, safe.width - 24) / CABINET_WIDTH);
         const back = root.getChildByName('CloseWall')!;
         back.setScale(scale, scale, 1);
-        back.setPosition(-width / 2 + 16 + 44 * scale, safe.topY - 64 * scale);
+        back.setPosition(safe.leftX + 16 + 44 * scale, safe.topY - 64 * scale);
 
-        // 滚动视口顶边在胶囊/安全区下方，底边延伸到屏幕底；底部安全区作为页尾留白。
+        // 横屏滚动视口限制在四边安全区；竖屏沿用底部安全区作为页尾留白的布局。
         const viewport = root.getChildByName('PageViewport')!;
-        const viewportHeight = Math.max(1, safe.topY + height / 2);
-        viewport.getComponent(UITransform)!.setContentSize(width, viewportHeight);
-        viewport.setPosition(0, safe.topY - viewportHeight / 2);
+        const viewportHeight = Math.max(1, landscape ? safe.height : safe.topY + height / 2);
+        viewport.getComponent(UITransform)!.setContentSize(safe.width, viewportHeight);
+        viewport.setPosition(safe.centerX, safe.topY - viewportHeight / 2);
         const page = viewport.getChildByName('PageContent')!;
         const header = page.getChildByName('Header')!;
         header.setScale(scale, scale, 1);
@@ -500,9 +534,9 @@ export class AchievementWall {
         cabinet.setScale(scale, scale, 1);
         const cabinetTop = (PAGE_TOP_GAP + 120 + TITLE_TO_CABINET_GAP) * scale;
         cabinet.setPosition(0, -cabinetTop - this.cabinetHeight * scale / 2);
-        const bottomSafeInset = Math.max(0, safe.bottomY + height / 2);
+        const bottomSafeInset = landscape ? 0 : Math.max(0, safe.bottomY + height / 2);
         const pageHeight = cabinetTop + (this.cabinetHeight + PAGE_BOTTOM_GAP) * scale + bottomSafeInset;
-        page.getComponent(UITransform)!.setContentSize(width, Math.max(viewportHeight, pageHeight));
+        page.getComponent(UITransform)!.setContentSize(safe.width, Math.max(viewportHeight, pageHeight));
         page.setPosition(0, viewportHeight / 2);
     };
 }

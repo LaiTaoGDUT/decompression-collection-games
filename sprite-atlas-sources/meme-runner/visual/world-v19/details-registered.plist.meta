@@ -1,0 +1,196 @@
+{
+  "subMetas": {
+    "cloud": {
+      "importer": "sprite-frame",
+      "name": "cloud",
+      "uuid": "3de268d0-dc17-5fff-b2bf-8eb27b5855b3",
+      "userData": {
+        "trimX": 21,
+        "trimY": 96,
+        "width": 392,
+        "height": 253,
+        "rawWidth": 392,
+        "rawHeight": 253,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "planter": {
+      "importer": "sprite-frame",
+      "name": "planter",
+      "uuid": "ed48fc74-a374-545c-8e6e-c2b8b1e8fb2b",
+      "userData": {
+        "trimX": 441,
+        "trimY": 140,
+        "width": 290,
+        "height": 222,
+        "rawWidth": 290,
+        "rawHeight": 222,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "lamp": {
+      "importer": "sprite-frame",
+      "name": "lamp",
+      "uuid": "18d0aaa2-9769-5ea9-ae24-32dfd7d1efa9",
+      "userData": {
+        "trimX": 839,
+        "trimY": 7,
+        "width": 107,
+        "height": 365,
+        "rawWidth": 107,
+        "rawHeight": 365,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "bunting": {
+      "importer": "sprite-frame",
+      "name": "bunting",
+      "uuid": "aeb54068-77fa-548d-a54d-22a1305d828b",
+      "userData": {
+        "trimX": 1107,
+        "trimY": 129,
+        "width": 327,
+        "height": 157,
+        "rawWidth": 327,
+        "rawHeight": 157,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "cat-sign": {
+      "importer": "sprite-frame",
+      "name": "cat-sign",
+      "uuid": "e008c6ca-8d30-5d68-abb7-d025b3404c9d",
+      "userData": {
+        "trimX": 53,
+        "trimY": 377,
+        "width": 251,
+        "height": 322,
+        "rawWidth": 251,
+        "rawHeight": 322,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "tank": {
+      "importer": "sprite-frame",
+      "name": "tank",
+      "uuid": "14a16dc8-2567-53f7-89cf-2cf225b8079c",
+      "userData": {
+        "trimX": 423,
+        "trimY": 368,
+        "width": 206,
+        "height": 338,
+        "rawWidth": 206,
+        "rawHeight": 338,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "vent": {
+      "importer": "sprite-frame",
+      "name": "vent",
+      "uuid": "8c05dbb3-ba42-5ba7-91e8-88c8d89da7ef",
+      "userData": {
+        "trimX": 756,
+        "trimY": 469,
+        "width": 316,
+        "height": 218,
+        "rawWidth": 316,
+        "rawHeight": 218,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "lantern": {
+      "importer": "sprite-frame",
+      "name": "lantern",
+      "uuid": "4767b964-4b41-5317-b278-04efff8b95d5",
+      "userData": {
+        "trimX": 1186,
+        "trimY": 367,
+        "width": 194,
+        "height": 355,
+        "rawWidth": 194,
+        "rawHeight": 355,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "bamboo": {
+      "importer": "sprite-frame",
+      "name": "bamboo",
+      "uuid": "465ef26c-32a7-5315-bd86-e5a690f0dc69",
+      "userData": {
+        "trimX": 48,
+        "trimY": 709,
+        "width": 260,
+        "height": 345,
+        "rawWidth": 260,
+        "rawHeight": 345,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "banner": {
+      "importer": "sprite-frame",
+      "name": "banner",
+      "uuid": "9a4a7d5c-8c2d-598b-81cc-c64497453891",
+      "userData": {
+        "trimX": 390,
+        "trimY": 733,
+        "width": 234,
+        "height": 302,
+        "rawWidth": 234,
+        "rawHeight": 302,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "finish": {
+      "importer": "sprite-frame",
+      "name": "finish",
+      "uuid": "71cca96e-589c-5b78-bc32-1d8eb9e5e4ee",
+      "userData": {
+        "trimX": 683,
+        "trimY": 687,
+        "width": 419,
+        "height": 371,
+        "rawWidth": 419,
+        "rawHeight": 371,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "star": {
+      "importer": "sprite-frame",
+      "name": "star",
+      "uuid": "79918a3a-392b-5d49-a248-f9980b99e633",
+      "userData": {
+        "trimX": 1140,
+        "trimY": 753,
+        "width": 274,
+        "height": 267,
+        "rawWidth": 274,
+        "rawHeight": 267,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

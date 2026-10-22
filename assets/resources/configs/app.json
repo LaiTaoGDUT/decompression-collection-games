@@ -1,6 +1,12 @@
 {
   "schemaVersion": 3,
   "appVersion": "0.1.0",
+  "cloudSave": {
+    "enabled": false,
+    "environmentId": "",
+    "functionName": "cloudSave",
+    "requestTimeoutMs": 10000
+  },
   "defaultLanguage": "zh-CN",
   "sharing": {
     "enableTimeline": true,
@@ -87,27 +93,39 @@
   "ads": {
     "games": {
       "watermelon": {
-        "enabled": true
+        "enabled": false
       },
       "chess-endless": {
-        "enabled": true
+        "enabled": false
       },
       "game2048": {
-        "enabled": true
+        "enabled": false
       },
       "sliding-puzzle": {
         "enabled": false
       },
       "catch": {
-        "enabled": true
+        "enabled": false
       },
       "doodle-jump": {
-        "enabled": true
+        "enabled": false
       },
       "bubble-shooter": {
-        "enabled": true
+        "enabled": false
+      },
+      "flappy-dunk": {
+        "enabled": false
       },
       "meowdoku": {
+        "enabled": false
+      },
+      "multi-color-fill": {
+        "enabled": false
+      },
+      "city-bloxx": {
+        "enabled": true
+      },
+      "rotate-rings": {
         "enabled": true
       }
     },
@@ -135,7 +153,19 @@
       "bubbleShooterReviveRewarded": {
         "adUnitId": ""
       },
+      "flappyDunkReviveRewarded": {
+        "adUnitId": ""
+      },
       "meowdokuToolRewarded": {
+        "adUnitId": ""
+      },
+      "multiColorFillHintRewarded": {
+        "adUnitId": ""
+      },
+      "cityBloxxReviveRewarded": {
+        "adUnitId": ""
+      },
+      "rotateRingsHintRewarded": {
         "adUnitId": ""
       }
     }

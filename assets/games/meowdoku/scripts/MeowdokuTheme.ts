@@ -664,11 +664,14 @@ export const MEOWDOKU_SCORE_FLY = Object.freeze({
     scale: 1.35,
     /** 拖尾长度（原作 `fixed_trail_length`，1080 设计像素）。 */
     trailLength: 120,
-    /** 拖尾拆成几段（等价 `Line2D` 的折线）。 */
-    segments: 10,
+    /**
+     * 拖尾贴图的锚点（沿长度方向）。彗尾贴图左端透明、最亮段在右侧约 65%~90%，
+     * 锚点放在 0.9 并压在头部，贴图左端恰好落在尾点。
+     */
+    trailHeadAnchor: 0.9,
     /** 往回采样路径的步数（用来量「头部往后 120 像素」落在曲线的哪个位置）。 */
     backSamples: 24,
-    /** 段宽（原作 `TrailGlow.width`）。 */
+    /** 宽光带宽度（原作 `TrailGlow.width`）。 */
     glowWidth: 120,
     /** 芯线宽（原作 `TrailAlp.width`）。 */
     coreWidth: 80,
@@ -689,13 +692,12 @@ export const MEOWDOKU_SCORE_FLY = Object.freeze({
     /** 头部两枚光点的颜色（`GlowAlp` = (0.549, 0.482, 0.275)、`GlowAdd` = (1, 0.92, 0.2)）。 */
     glowColorAlp: new Color(140, 123, 70, 255),
     glowColorAdd: new Color(255, 235, 51, 255),
-    /** `Gradient_hy2kp`（尾巴透明淡黄）→ 头部橙色 `(1, 0.47, 0)`。 */
-    ramp: Object.freeze([
-        Object.freeze({ at: 0, color: new Color(250, 255, 176, 255), alpha: 0 }),
-        Object.freeze({ at: 0.42, color: new Color(255, 235, 128, 255), alpha: 0.2 }),
-        Object.freeze({ at: 0.855, color: new Color(255, 120, 0, 255), alpha: 1 }),
-        Object.freeze({ at: 1, color: new Color(255, 120, 0, 255), alpha: 1 }),
-    ]),
+    /**
+     * 拖尾着色（贴图为白色，透明度渐变由贴图自身的左端淡出提供）：
+     * 宽光带取 `Gradient_hy2kp` 的淡黄段并半透明垫底，芯线取头部橙色 `(1, 0.47, 0)`。
+     */
+    trailGlowColor: new Color(255, 235, 128, 140),
+    trailCoreColor: new Color(255, 120, 0, 255),
 });
 
 

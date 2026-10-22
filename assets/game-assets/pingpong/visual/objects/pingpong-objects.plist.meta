@@ -1,0 +1,247 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "46017": {
+      "importer": "sprite-frame",
+      "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4@46017",
+      "displayName": "",
+      "id": "46017",
+      "name": "Cerchio_128_Bucato",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 479,
+        "width": 69,
+        "height": 69,
+        "rawWidth": 69,
+        "rawHeight": 69,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c10454d2-af84-50dd-81db-6fd2bad21f67@6c48a",
+        "atlasUuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "81915": {
+      "importer": "sprite-frame",
+      "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4@81915",
+      "displayName": "",
+      "id": "81915",
+      "name": "Impatto",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 552,
+        "width": 24,
+        "height": 47,
+        "rawWidth": 24,
+        "rawHeight": 47,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c10454d2-af84-50dd-81db-6fd2bad21f67@6c48a",
+        "atlasUuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "7ab2d": {
+      "importer": "sprite-frame",
+      "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4@7ab2d",
+      "displayName": "",
+      "id": "7ab2d",
+      "name": "Cerchio_128",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 406,
+        "width": 69,
+        "height": 69,
+        "rawWidth": 69,
+        "rawHeight": 69,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c10454d2-af84-50dd-81db-6fd2bad21f67@6c48a",
+        "atlasUuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "017a4": {
+      "importer": "sprite-frame",
+      "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4@017a4",
+      "displayName": "",
+      "id": "017a4",
+      "name": "paddle-black",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 155,
+        "height": 198,
+        "rawWidth": 155,
+        "rawHeight": 198,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c10454d2-af84-50dd-81db-6fd2bad21f67@6c48a",
+        "atlasUuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b624f": {
+      "importer": "sprite-frame",
+      "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4@b624f",
+      "displayName": "",
+      "id": "b624f",
+      "name": "paddle-red",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 204,
+        "width": 155,
+        "height": 198,
+        "rawWidth": 155,
+        "rawHeight": 198,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c10454d2-af84-50dd-81db-6fd2bad21f67@6c48a",
+        "atlasUuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "pingpong-objects.png",
+    "format": 2,
+    "uuid": "ef38ef81-f7bd-5d55-b5aa-218f8b4e43b4",
+    "textureUuid": "c10454d2-af84-50dd-81db-6fd2bad21f67@6c48a"
+  }
+}

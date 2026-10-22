@@ -1,0 +1,17 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "e8ea9bd5-f738-58a0-8f14-5bb1042177a3",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "bundleName": "game-meme-runner-assets",
+    "isSubpackage": false,
+    "isRemoteBundle": {},
+    "priority": 2,
+    "bundleConfigID": "00gRa8kX2LmP4qN6sT9vWy",
+    "isBundle": true
+  }
+}

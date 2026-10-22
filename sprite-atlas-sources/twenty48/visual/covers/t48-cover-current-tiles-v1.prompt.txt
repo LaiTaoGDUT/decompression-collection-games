@@ -1,0 +1,19 @@
+Use-case: precise-object-edit.
+Edit target: reference image 1, the existing landscape 4:3 cover for a neon 2048 game.
+Supporting style references: image 2 is the CURRENT low-tier tile sheet (top row 2,4,8; bottom row 16,32,64). Image 3 is the CURRENT mid-tier sheet (top row 128,256; bottom row 512,1024). Image 4 is the CURRENT legendary-tier sheet (left 2048, center 4096, right 8192). These sheets supply the exact tile frame designs only, not the cover background or layout.
+
+USER REQUEST: update every tile in the existing cover so its shape, border decoration, material and number-specific color match the current game tiles. This is a restrained asset update, not a new cover design.
+
+Preserve image 1's composition precisely: same dark navy 4x4 board and all empty slots, same slight perspective, same luminous blue board frame, same blue/purple circuit-tunnel background and floor, same cyan curved leftward swipe arrow on the right, same golden merge burst at the left middle, same violet horizontal incoming motion trail. Preserve the tile positions, number values, relative sizes, generous framing and 4:3 landscape aspect ratio. No new text or objects.
+
+Replace all old frames:
+- top-left "8": emerald/teal green simple rounded-square frame from image 2 top-right, four small luminous circular inset fasteners at the corners, dark green-black glass center. No ornate circuits.
+- top row second slot "2" and bottom-right "2": vivid electric blue rounded-square frames from image 2 top-left, four circular corner fasteners, simple smooth blue rails, dark navy glass center.
+- left middle hero "2048": the exact warm gold/amber rounded-square legendary frame from image 4 left: rounded exterior silhouette, layered orange-gold geometric circuit traces inset near all four edges, five small faceted gold diamond gems at four corners and top center, dark amber-black glass center. Retain the exciting gold merge sparkle outside the tile without obscuring its digits.
+- third row left "64": yellow-amber rounded-square frame from image 2 bottom-right, four circular corner fasteners and a few fine asymmetric circuit traces along the edges, dark amber glass center.
+- third row second slot "128": orange rounded-square frame from image 3 top-left, orange fine angular inset circuit rails, clipped faceted bar-shaped corner accents, dark warm brown glass center.
+- bottom row left "16": lime green rounded-square frame from image 2 bottom-left, four circular corner fasteners and a few sparse fine circuit traces, dark green glass center.
+- bottom row second slot "512": hot pink/magenta rounded-square frame from image 3 bottom-left, pink fine angular inset circuit rails and clipped faceted bar-shaped corner accents, dark berry-black glass center.
+- the ghosted incoming "1024" in the motion streak stays violet, with image 3 bottom-right's purple rounded circuit/gem frame subtly visible.
+
+Numbers must remain centered, upright, bold clean sans-serif, fully legible, warm or cool near-white corresponding to their tile color, with subtle dark outlines, matching the existing game font proportions. Keep the exact numbers listed; do not add title text, labels, logos or watermarks. No old overly busy angular armored borders on low-tier tiles. Neon highlights should have controlled bloom and retain colored detail, not become flat white or blown out. Final image should feel like the original cover now illustrated with the actual current game pieces. Produce one opaque high-quality landscape 4:3 image.

@@ -1,0 +1,12 @@
+Use case: lobby game cover illustration for a mobile table tennis (ping pong) game.
+Asset type: 4:3 landscape cover illustration, render at 1536x1152, it will be displayed small (308x231) on a game card, so it must read instantly at thumbnail size.
+
+Theme "夜场中央台 / Night Session Center Court": an indoor tournament arena at night. Deep claret / burgundy sports floor fading to dark vignette edges, one warm spotlight from above pooling on the table. A tournament-blue table tennis table (#1E56B0) with crisp white edge lines and a dark mesh net with white top tape, seen in a dynamic low 3/4 perspective, the table running diagonally from lower-left to upper-right.
+
+Hero moment: in the lower-left foreground, a big table tennis racket with BRIGHT VERMILION RED pimpled rubber and a light maple wooden handle (match Input 1 exactly: round blade, thin light edge band, wooden flared handle) is mid-swing, just having smashed an ORANGE ball. The orange ball (#FF8A24, with a small white specular highlight) flies across the net toward the upper right, slightly curving (side spin), leaving a short warm orange-white motion trail and a small crisp white impact burst at the racket. In the upper-right background, slightly out of focus, the opponent's racket with BLACK rubber and a wooden handle (match Input 2) waits on the far side of the table. Input 3 is a gameplay screenshot for the palette and mood only (blue table, claret floor, orange ball) — do not copy its flat top-down layout or any UI.
+
+Composition: the red racket and orange ball are the focal point, large and high-contrast; the ball sits roughly in the center-left third. Keep important content away from the outer 6% edges (cards have rounded corners). Soft bokeh of distant arena lights in the dark background, a faint warm haze in the spotlight.
+Style: polished, vibrant stylised 3D game key art, soft cinematic lighting, rich but clean, consistent with premium casual mobile game covers. Full-bleed, opaque.
+Strictly NO text, letters, numbers, scoreboard digits, logos, brand marks, UI, borders, watermarks, people or hands.
+
+Post-processing: the generated image was mirrored horizontally so the lobby card badge (NEW/HOT, top-right ~24% x 27% of the cover) sits over arena lights instead of the opponent racket. Then downscaled 1:1 to the 308x231 card size and compressed with TinyPNG.

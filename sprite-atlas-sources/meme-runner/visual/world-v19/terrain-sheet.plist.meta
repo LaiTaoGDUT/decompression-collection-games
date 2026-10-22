@@ -1,0 +1,132 @@
+{
+  "subMetas": {
+    "street-ground": {
+      "importer": "sprite-frame",
+      "name": "street-ground",
+      "uuid": "5f90c93e-9816-54b0-a6aa-08c60e4a0515",
+      "userData": {
+        "trimX": 61,
+        "trimY": 244,
+        "width": 338,
+        "height": 143,
+        "rawWidth": 338,
+        "rawHeight": 143,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "alley-ground": {
+      "importer": "sprite-frame",
+      "name": "alley-ground",
+      "uuid": "ebcf8622-66fd-5ec8-9197-8c22e2046a44",
+      "userData": {
+        "trimX": 500,
+        "trimY": 244,
+        "width": 337,
+        "height": 143,
+        "rawWidth": 337,
+        "rawHeight": 143,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "roofs-ground": {
+      "importer": "sprite-frame",
+      "name": "roofs-ground",
+      "uuid": "b5a2c0b0-037d-56c7-ae45-5add6d433be4",
+      "userData": {
+        "trimX": 938,
+        "trimY": 244,
+        "width": 340,
+        "height": 143,
+        "rawWidth": 340,
+        "rawHeight": 143,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "night-ground": {
+      "importer": "sprite-frame",
+      "name": "night-ground",
+      "uuid": "d6675924-c9ff-5c68-847f-60db90c9d35b",
+      "userData": {
+        "trimX": 1379,
+        "trimY": 244,
+        "width": 336,
+        "height": 143,
+        "rawWidth": 336,
+        "rawHeight": 143,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "street-roof": {
+      "importer": "sprite-frame",
+      "name": "street-roof",
+      "uuid": "b98df6ce-5e1e-5ba9-9b45-4ecd3a5283d8",
+      "userData": {
+        "trimX": 60,
+        "trimY": 529,
+        "width": 340,
+        "height": 113,
+        "rawWidth": 340,
+        "rawHeight": 113,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "alley-roof": {
+      "importer": "sprite-frame",
+      "name": "alley-roof",
+      "uuid": "85c95d6d-05b3-5026-9f72-597c0c1efbf2",
+      "userData": {
+        "trimX": 499,
+        "trimY": 529,
+        "width": 341,
+        "height": 113,
+        "rawWidth": 341,
+        "rawHeight": 113,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "roofs-roof": {
+      "importer": "sprite-frame",
+      "name": "roofs-roof",
+      "uuid": "c0038a18-ef63-59dc-80d4-2ab0c672f541",
+      "userData": {
+        "trimX": 937,
+        "trimY": 528,
+        "width": 343,
+        "height": 117,
+        "rawWidth": 343,
+        "rawHeight": 117,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    },
+    "night-roof": {
+      "importer": "sprite-frame",
+      "name": "night-roof",
+      "uuid": "34d8285f-a620-5daa-aaa9-43801f54a6be",
+      "userData": {
+        "trimX": 1375,
+        "trimY": 529,
+        "width": 349,
+        "height": 129,
+        "rawWidth": 349,
+        "rawHeight": 129,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotated": false
+      }
+    }
+  }
+}

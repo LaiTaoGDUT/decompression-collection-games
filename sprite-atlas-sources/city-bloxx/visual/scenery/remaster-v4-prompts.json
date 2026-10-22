@@ -1,0 +1,97 @@
+[
+  {
+    "name": "resident-blue",
+    "prompt": "Use case: precise-object-edit. Asset type: HD game animation sprite sheet. Input image is the exact reference sprite sheet to faithfully redraw. Redraw all TEN poses with crisp smooth edges and clear simple flat shading. Keep exactly 5 equal columns by 2 equal rows, same 3:2 overall canvas, each portrait cell 3:5 aspect. Transparent background, no labels, no frame outlines. Each cell is the same thin adult-sized umbrella rider suspended from one hand beneath a dark cobalt/navy umbrella, teal shirt, dark blue trousers, dark shoes. Keep the EXACT pose sequence, umbrella angles and silhouette orientation of each reference cell, including back views and side views, outstretched or bent legs. Character is a small stylized adult with tiny unfeatured head, NOT a child or cute large-headed mascot. Preserve the original occupied bounds and empty margins within each cell. Do not add faces, outlines, scenery, motion trails, shadows or extra poses. High definition faithful restoration of the original silhouettes and palette, not a redesign.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-732c76a0-40a2-4763-bbb2-d63120b3ce26.png"
+  },
+  {
+    "name": "resident-red",
+    "prompt": "Use case: precise-object-edit. Asset type: HD game animation sprite sheet. Input image is the exact reference sprite sheet to faithfully redraw. Redraw all TEN poses with crisp smooth edges and clear simple flat shading. Keep exactly 5 equal columns by 2 equal rows, same 3:2 overall canvas, each portrait cell 3:5 aspect. Transparent background, no labels, no frame outlines. Each cell is the same thin adult-sized umbrella rider suspended from one hand beneath a dark red umbrella, green shirt, brown trousers, red/brown shoes. Keep the EXACT pose sequence, umbrella angles and silhouette orientation of each reference cell, including back views and side views, outstretched or bent legs. Character is a small stylized adult with tiny unfeatured head, NOT a child or cute large-headed mascot. Preserve the original occupied bounds and empty margins within each cell. Do not add faces, outlines, scenery, motion trails, shadows or extra poses. High definition faithful restoration of the original silhouettes and palette, not a redesign.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-e8bf35ed-effe-4cff-8f13-3276a6f21722.png"
+  },
+  {
+    "name": "first_chain",
+    "prompt": "Use case: precise-object-edit. Asset type: high-definition 2D game sprite on a fully transparent background. Reference image is the exact original shape and palette. Faithfully redraw a small circular dark gray pulley with a gold hub at the very top and TWO thin dark suspension cables running down, splaying outward near the bottom. The original pivot is top center. Keep the round pulley diameter relative to the full long narrow canvas, and exact cable endpoints. Preserve all silhouette proportions, alignment and empty margins. Crisp smooth edges and restrained flat geometric shading; preserve the angular original design where intentional but remove low-resolution jagged edges. Do not redesign, add details, add extra objects or add a backdrop, text or shadow. Output one centered standalone asset with no labels.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-09f5ba00-7923-4e81-9862-f8ad38e184b5.png"
+  },
+  {
+    "name": "hook",
+    "prompt": "Use case: precise-object-edit. Asset type: high-definition 2D game sprite on a fully transparent background. Reference image is the exact original shape and palette. Faithfully redraw a gray J-shaped hook beneath a round dark gray pulley with a golden hub. Keep the compact narrow 10:19 silhouette, rounded gray metal lower hook and original dark outlines. Preserve all silhouette proportions, alignment and empty margins. Crisp smooth edges and restrained flat geometric shading; preserve the angular original design where intentional but remove low-resolution jagged edges. Do not redesign, add details, add extra objects or add a backdrop, text or shadow. Output one centered standalone asset with no labels.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-ccb6a147-3a31-42bb-a494-5cbd6b714664.png"
+  },
+  {
+    "name": "building",
+    "prompt": "Use case: precise-object-edit. Asset type: high-definition 2D game sprite on a fully transparent background. Reference image is the exact original shape and palette. Faithfully redraw a narrow gray skyscraper icon with a gold outline, tall antenna and three pale rectangular windows. Keep the tall thin 48:136 shape. This icon has NO number plate. Preserve all silhouette proportions, alignment and empty margins. Crisp smooth edges and restrained flat geometric shading; preserve the angular original design where intentional but remove low-resolution jagged edges. Do not redesign, add details, add extra objects or add a backdrop, text or shadow. Output one centered standalone asset with no labels.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-4fe70e8f-5ffc-462f-824e-b07279017db2.png"
+  },
+  {
+    "name": "home",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition game HUD icon. Redraw the reference faithfully: light slate blue small house with a black angular outline, peaked roof, one square window and one door; preserve exactly the original simple geometry. Preserve original colors, silhouette and aspect ratio. Keep the crisp angular retro graphic style, but render edges sharply and cleanly at high resolution, no blur. Real transparent background outside the icon, no glow, no shadow, no scene or extra objects. Do not alter the design.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-55f49fe7-3954-4f6c-a174-81e15552cb07.png"
+  },
+  {
+    "name": "rankingicon02",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition game HUD icon. Redraw the reference faithfully: ochre square badge with three white podium columns labeled exactly 2, 1, 3 from left to right, tallest middle, lowest right. Preserve original colors, silhouette and aspect ratio. Keep the crisp angular retro graphic style, but render edges sharply and cleanly at high resolution, no blur. Real transparent background outside the icon, no glow, no shadow, no scene or extra objects. Do not alter the design.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-0440064a-f5c4-4abd-a0e6-1042194dfaa3.png"
+  },
+  {
+    "name": "btn_quick",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition game HUD icon. Redraw the reference faithfully: ochre square badge with two small overlapping ivory rectangular building/window outlines, exactly matching the reference shape. Preserve original colors, silhouette and aspect ratio. Keep the crisp angular retro graphic style, but render edges sharply and cleanly at high resolution, no blur. Real transparent background outside the icon, no glow, no shadow, no scene or extra objects. Do not alter the design.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-6fb797a2-e21f-45db-8b26-148694866c06.png"
+  },
+  {
+    "name": "AD",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition game HUD icon. Redraw the reference faithfully: dark navy blue rectangular video badge with a pale right-pointing triangle and the letters AD at its upper right; preserve exactly these letters and all proportions. Preserve original colors, silhouette and aspect ratio. Keep the crisp angular retro graphic style, but render edges sharply and cleanly at high resolution, no blur. Real transparent background outside the icon, no glow, no shadow, no scene or extra objects. Do not alter the design.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-302ebd4a-675c-45f4-8712-706ae3bcaca8.png"
+  },
+  {
+    "name": "rankingicon02",
+    "prompt": "Edit the image: repair the accidental transparent hole in the ochre badge backing. The entire inside of the square badge MUST be fully opaque, uninterrupted solid ochre gold, including the upper corners. Preserve the white symbol, the badge shape, and all other geometry and colors exactly. Transparency is allowed ONLY OUTSIDE the outer badge silhouette. No gradient, glare, shine, distressing or texture. This is a solid flat game UI badge.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-438a9616-4b2b-4af5-b1f7-37c191323b73.png"
+  },
+  {
+    "name": "btn_quick",
+    "prompt": "Edit the image: repair the accidental transparent hole in the ochre badge backing. The entire inside of the square badge MUST be fully opaque, uninterrupted solid ochre gold, including the upper corners. Preserve the white symbol, the badge shape, and all other geometry and colors exactly. Transparency is allowed ONLY OUTSIDE the outer badge silhouette. No gradient, glare, shine, distressing or texture. This is a solid flat game UI badge.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-bc5db5b4-a454-4034-8e3f-976781e089ee.png"
+  },
+  {
+    "name": "bg_tree",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition 2D game sprite. Original reference image is the required silhouette and color guide. A single upright dense green deciduous tree: rounded irregular crown, two-thirds as wide as total height, dark central trunk extending down below the crown. Preserve the original asymmetrical leafy silhouette and dark olive/forest-green palette. Faithfully redraw sharp and clean, retaining the original modest flat game shading and angular details. Real transparent background, no matte or glow. No added objects, text, cast shadows or scene. Keep the full object visible. For the long strip, use a wide canvas at least 1536 pixels across with transparent vertical margins if needed to fit its original narrow proportions; never squash or crop the object.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-80e5a9d7-65b9-49b8-80d9-5d0dc7deb480.png"
+  },
+  {
+    "name": "bg_muban",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition 2D game sprite. Original reference image is the required silhouette and color guide. The complete long horizontal construction fence strip, exactly matching the reference from left to right: gray metal lattice fencing with dark green screening on the left, open wire mesh near the middle, mustard yellow corrugated container/panel on the right, two small orange-white traffic cones at the same positions and a tiny yellow/black sign. Preserve full horizontal composition, no changes in object positions or relative widths. All negative spaces including the mesh holes must be transparent. Faithfully redraw sharp and clean, retaining the original modest flat game shading and angular details. Real transparent background, no matte or glow. No added objects, text, cast shadows or scene. Keep the full object visible. For the long strip, use a wide canvas at least 1536 pixels across with transparent vertical margins if needed to fit its original narrow proportions; never squash or crop the object.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-19b1b0c6-668f-4e58-9ca0-4bfa3c15f7c7.png"
+  },
+  {
+    "name": "diaoji",
+    "prompt": "Use case: precise-object-edit. Asset: one high-definition 2D game sprite. Original reference image is the required silhouette and color guide. The long horizontal ochre yellow crane boom exactly as in the reference. Preserve the rectangular main beam, large winch at left, thin upper sloping support cable, black mechanical top details and small gray plate. It is the arm of a construction crane, no tower or new hook. Faithfully redraw sharp and clean, retaining the original modest flat game shading and angular details. Real transparent background, no matte or glow. No added objects, text, cast shadows or scene. Keep the full object visible. For the long strip, use a wide canvas at least 1536 pixels across with transparent vertical margins if needed to fit its original narrow proportions; never squash or crop the object.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-a8e1ed30-9b72-45aa-a6dc-e9a7b2b80f5d.png"
+  },
+  {
+    "name": "weel_0",
+    "prompt": "Use case: precise-object-edit. Asset type: one high-definition side-view flying whale/dolphin sprite frame. Faithfully restore the gray blue aquatic animal in the reference, facing LEFT, a long narrow snout, subtle small eye, slate blue-gray long body, pale belly, dorsal fin, near pectoral fin hanging downward, forked tail at right in EXACTLY the reference pose. Frame 0. Preserve the body length, all fin shapes, tail angle, original native silhouette, the tiny trailing particles and their positions. Smooth sharp contours with simple muted original shading. Do not turn it into a cute cartoon blue whale; no smile, oversized eye, water or splash. Real transparent background, full animal visible, no extra artwork. Use a wide canvas at least 1536 pixels across, with vertical transparent margins to preserve narrow proportions.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-250a8a35-811f-428a-bdeb-477ba79696e6.png"
+  },
+  {
+    "name": "weel_1",
+    "prompt": "Use case: precise-object-edit. Asset type: one high-definition side-view flying whale/dolphin sprite frame. Faithfully restore the gray blue aquatic animal in the reference, facing LEFT, a long narrow snout, subtle small eye, slate blue-gray long body, pale belly, dorsal fin, near pectoral fin hanging downward, forked tail at right in EXACTLY the reference pose. Frame 1. Preserve the body length, all fin shapes, tail angle, original native silhouette, the tiny trailing particles and their positions. Smooth sharp contours with simple muted original shading. Do not turn it into a cute cartoon blue whale; no smile, oversized eye, water or splash. Real transparent background, full animal visible, no extra artwork. Use a wide canvas at least 1536 pixels across, with vertical transparent margins to preserve narrow proportions.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-4eee766d-f7ad-49b0-807f-406b53b47963.png"
+  },
+  {
+    "name": "purplestar",
+    "prompt": "Use case: precise-object-edit. Asset: one faithful high-definition 2D background star sprite. Reference image specifies the exact original shape and palette: a purple and pale lavender X-shaped glint with four slender DIAGONAL rays and a luminous little central square. The original full 32x32 canvas has large transparent margins around the center; keep the cross centered and preserve the asymmetric ray lengths. Restore sharp clean edges and simple original flat shading. Do not add gold, orange, conventional upright four-point stars or five-point stars. No backdrop, text, labels, glow beyond the original silhouette or additional stars. Real transparency only outside the shape.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-551ba145-0d74-493b-bb2c-59d5023bc2f9.png"
+  },
+  {
+    "name": "purplestar_little",
+    "prompt": "Use case: precise-object-edit. Asset: one faithful high-definition 2D background star sprite. Reference image specifies the exact original shape and palette: a tiny square luminous purple star/dot, a square 3-by-3 color pattern: pale lavender center square, bright lilac top/bottom/left/right squares, darker purple four corner squares. Keep all nine squares fully opaque, no holes, no rays. Render a simple sharp square tile exactly as the reference. Restore sharp clean edges and simple original flat shading. Do not add gold, orange, conventional upright four-point stars or five-point stars. No backdrop, text, labels, glow beyond the original silhouette or additional stars. Real transparency only outside the shape.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-246b8e66-7524-4cf4-8ec2-209d31bfa796.png"
+  },
+  {
+    "name": "bluelestar",
+    "prompt": "Use case: precise-object-edit. Asset: one faithful high-definition 2D background star sprite. Reference image specifies the exact original shape and palette: a mint green and teal X-shaped glint, four slender DIAGONAL rays, pale mint central square, muted teal outermost rays. Keep the exact X silhouette and muted original palette. Restore sharp clean edges and simple original flat shading. Do not add gold, orange, conventional upright four-point stars or five-point stars. No backdrop, text, labels, glow beyond the original silhouette or additional stars. Real transparency only outside the shape.",
+    "source": "/Users/laitao/.codex-qq/generated_images/01a15005-1110-76a1-9646-6f976ad6be87/exec-1566a45f-400b-498b-88a9-e7f3605b1a30.png"
+  }
+]

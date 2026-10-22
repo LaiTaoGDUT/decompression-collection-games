@@ -149,25 +149,21 @@ const TEXTURE_PATHS = Object.freeze({
     playerFalling: 'visual/player/rabbit-falling/texture',
     playerPropellerRabbit: 'visual/player/rabbit-propeller/texture',
     playerPropellerRabbitSpin: 'visual/player/rabbit-propeller-spin/texture',
-    playerRocketRabbit: 'visual/player/rabbit-rocket/texture',
-    playerJetpackRabbit: 'visual/player/rabbit-jetpack/texture',
+    playerJetpackRabbit: 'visual/player/rabbit-rocket/texture',
     playerShoesJumping: 'visual/player/rabbit-shoes-jumping/texture',
     playerShoesFalling: 'visual/player/rabbit-shoes-falling/texture',
     goldenCarrot: 'visual/collectibles/golden-carrot/texture',
     goldenCarrotGlow: 'visual/collectibles/golden-carrot-glow/texture',
-    playerJetpack: 'visual/player/player-jetpack/texture',
     playerRocket: 'visual/player/player-rocket/texture',
     shieldOverlay: 'visual/player/shield-overlay/texture',
     itemSpring: 'visual/items/pickup-spring-v2/texture',
     itemTrampoline: 'visual/items/pickup-trampoline/texture',
-    itemJetpack: 'visual/items/pickup-jetpack/texture',
+    itemJetpack: 'visual/items/pickup-rocket/texture',
     itemPropellerHat: 'visual/items/pickup-propeller-hat-v2/texture',
-    itemRocket: 'visual/items/pickup-rocket/texture',
     itemShield: 'visual/items/pickup-shield/texture',
     itemPickupSparkles: 'visual/effects/item-pickup-sparkles/texture',
     playerFallDrag: 'visual/effects/player-fall-drag-streaks/texture',
     playerScreenWrap: 'visual/effects/player-screen-wrap-afterimages/texture',
-    jetpackFlames: 'visual/effects/jetpack-flames/texture',
     rocketFlame: 'visual/effects/rocket-flame/texture',
     flightPaperScraps: 'visual/effects/rocket-paper-scraps/texture',
     rocketTrail: 'visual/effects/rocket-paper-trail/texture',
@@ -247,9 +243,8 @@ const TEXTURE_PATHS = Object.freeze({
     tutorialHazards: 'visual/ui/tutorial/hazard-symbols/texture',
     itemIconSpring: 'visual/ui/item-icons/spring/texture',
     itemIconTrampoline: 'visual/ui/item-icons/trampoline/texture',
-    itemIconJetpack: 'visual/ui/item-icons/jetpack/texture',
+    itemIconJetpack: 'visual/ui/item-icons/rocket/texture',
     itemIconPropellerHat: 'visual/items/pickup-propeller-hat-v2/texture',
-    itemIconRocket: 'visual/ui/item-icons/rocket/texture',
     itemIconShield: 'visual/ui/item-icons/shield/texture',
     itemIconHeadStart: 'visual/ui/item-icons/head-start/texture',
 });
@@ -635,9 +630,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.sensitivity = saved.sensorSensitivity;
         this.sensorInvert = saved.sensorInvert;
         const activeRound = saved.activeRound;
+        const seed = activeRound?.snapshot.seed ?? this.nextRoundSeed();
         this.simulation = new DoodleJumpSimulation(
             this.config,
-            activeRound?.snapshot.seed ?? this.nextRoundSeed(),
+            seed,
         );
         if (activeRound) {
             try {
@@ -655,7 +651,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 this.saveBaseline = sanitized;
                 this.runHistoryBaseline = this.historyBaselineState(sanitized);
                 writeDoodleJumpSave(context.services.storage, sanitized, true);
-                this.simulation = new DoodleJumpSimulation(this.config, this.nextRoundSeed());
+                this.simulation = this.createNewRoundSimulation();
             }
         }
         this.inputController = new DoodleJumpInputController(
@@ -683,6 +679,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             bundle: DOODLE_JUMP_RESOURCE_BUNDLE,
             optionalMusic: 'audio/doodle-jump-paper-loop',
             cues: {},
+            pooledCues: ['merge'],
             optionalCues: {
                 uiButton: 'audio/ui-paper-button',
                 fold: 'audio/paper-plane-shot',
@@ -691,6 +688,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 collision: 'audio/impact',
                 chain: 'audio/monster-defeat',
                 milestone: 'audio/item-pickup',
+                merge: 'audio/golden-carrot-pickup',
                 danger: 'audio/hazard-warning',
                 failure: 'audio/run-failure',
                 continue: 'audio/resurrection',
@@ -705,6 +703,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             bundleVersion: '0.1.0',
         });
         this.updatePresentationState('资源就绪');
+    }
+
+    isGameplayActive(): boolean {
+        return this.stateMachine.state === 'Playing';
     }
 
     begin(): void {
@@ -914,7 +916,8 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.destroyPauseOverlay();
         this.resetShootingRuntime(false);
         if (this.config && this.context) {
-            this.simulation = new DoodleJumpSimulation(this.config, this.nextRoundSeed());
+            this.simulation = this.createNewRoundSimulation();
+            this.applyVisualAssets();
         }
         this.simulation?.prepareWorld(this.visibleSize.height);
         this.renderSimulation();
@@ -924,6 +927,11 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (this.stateMachine.state !== 'Loading') this.stateMachine.reset();
         this.begin();
         await Promise.resolve();
+    }
+
+    private createNewRoundSimulation(): DoodleJumpSimulation {
+        const seed = this.nextRoundSeed();
+        return new DoodleJumpSimulation(this.config!, seed);
     }
 
     private nextRoundSeed(): number {
@@ -1515,7 +1523,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             this.failureDropWorldY - cameraCenterY,
             0,
         );
-        const playerTopY = this.failureDropWorldY + this.config.player.collisionHeight / 2;
+        const playerTopY = this.failureDropWorldY + this.playerCollisionHeight / 2;
         const fullyBelowScreen = playerTopY < cameraBottomY - 8;
         if (animationFinished
             || (fullyBelowScreen && this.failureDropElapsed >= 0.08)
@@ -1713,7 +1721,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
 
     private calculateHeightMeters(maxAbsoluteWorldY: number): number {
         const startWorldY = (this.config?.fixedPlatforms[0].y ?? 42)
-            + (this.config?.player.collisionHeight ?? 68) / 2;
+            + this.playerCollisionHeight / 2;
         return Math.max(0, Math.floor((maxAbsoluteWorldY - startWorldY) / 100));
     }
 
@@ -2470,8 +2478,9 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
     private consumeCollectibleEvents(events: readonly DoodleJumpCollectibleEvent[],
         presentation: DoodleJumpSimulationPresentationView): void {
         const frame = this.textureFrames.goldenCarrot;
-        if (!frame || !this.carrotFlightLayer) return;
         for (const pickup of events) {
+            this.context?.services.feedback.play('merge', { vibrate: false });
+            if (!frame || !this.carrotFlightLayer) continue;
             // Continue the world pickup's own visual; fall back to the shared pool for culled pickups.
             const node = this.carrotNodes.get(pickup.id) ?? this.carrotNodePool.pop()
                 ?? this.createGoldenCarrotVisual(this.carrotFlightLayer, 'GoldenCarrotFlight');
@@ -2669,8 +2678,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             : item.type === 'trampoline' ? 'itemTrampoline'
                 : item.type === 'jetpack' ? 'itemJetpack'
                     : item.type === 'propeller-hat' ? 'itemPropellerHat'
-                        : item.type === 'rocket' ? 'itemRocket'
-                            : 'itemShield';
+                        : 'itemShield';
         const frame = this.textureFrames[key as TextureKey];
         if (!frame) return;
         const record = this.itemVisualRecords[index];
@@ -2696,14 +2704,17 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             this.itemNodeTypes[index] = item.type;
         }
         this.syncSpriteVisualSize(visual);
-        const compressionScale = item.type === 'trampoline' && (item.compressionFrames ?? 0) > 0
-            ? 0.6 + (item.compressionFrames ?? 0) * 0.075 : 1;
+        const spentSpring = item.type === 'spring' && (item.activationCount ?? 0) > 0;
+        const compressionScale = spentSpring ? 0.5
+            : item.type === 'trampoline' && (item.compressionFrames ?? 0) > 0
+                ? 0.6 + (item.compressionFrames ?? 0) * 0.075 : 1;
         visual.setScale(1, compressionScale, 1);
         visual.setPosition(offsetX * scale, offsetY * scale - height * (1 - compressionScale) / 2, 0);
 
         const sparkle = record.sparkle.node;
         const sparkleSprite = record.sparkle.sprite;
-        if (sparkle.isValid) {
+        this.setNodeActive(sparkle, !spentSpring);
+        if (sparkle.isValid && !spentSpring) {
             const phase = elapsedSeconds * 2.15 + item.phase * Math.PI * 2;
             const pulse = (Math.sin(phase) + 1) / 2;
             const sparkleWidth = item.type === 'trampoline' ? 118 : 100;
@@ -2731,7 +2742,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (!record) return;
         // Each native species owns its paper-garden frames. Reusing a flying
         // silhouette and multiplying its color obscures walking/bouncing roles.
-        const species = enemy.type.charAt(0).toUpperCase() + enemy.type.slice(1);
+        const species = enemy.type.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
         const key = `enemy${species}${frameIndex === 0 ? '01' : '02'}` as TextureKey;
         const scale = this.config!.design.width / 320;
         const [nativeWidth, nativeHeight] = referenceEnemyVisualSize(enemy.type);
@@ -2748,8 +2759,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         const sprite = this.getSpriteVisual(node);
         if (sprite) {
             this.setSpriteColor(sprite, enemy.hurt ? COLORS.enemyHurt : COLORS.white);
+            const facing = enemy.facing ?? 1;
+            sprite.node.setScale(facing, 1, 1);
             sprite.node.setPosition(
-                -offsetX * scale,
+                -offsetX * scale * facing,
                 -offsetY * scale,
                 0,
             );
@@ -3252,8 +3265,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 );
             } else if (event.type === 'power-end'
                 && (event.itemType === 'jetpack'
-                    || event.itemType === 'propeller-hat'
-                    || event.itemType === 'rocket')) {
+                    || event.itemType === 'propeller-hat')) {
                 this.startFlightPowerDrop(event.itemType, event.x, event.y);
             }
         });
@@ -3293,25 +3305,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         this.flightPowerDropElapsed = 0;
         this.flightPowerDropWorldX = worldX;
         this.flightPowerDropWorldY = worldY;
-        this.flightPowerDropVelocityX = direction * (type === 'rocket' ? 185 : 150);
-        this.flightPowerDropVelocityY = type === 'rocket' ? 600 : 520;
+        this.flightPowerDropVelocityX = direction * (type === 'jetpack' ? 185 : 150);
+        this.flightPowerDropVelocityY = type === 'jetpack' ? 600 : 520;
         this.flightPowerDropRotation = 0;
-        this.flightPowerDropAngularVelocity = direction * (type === 'rocket' ? 250 : 390);
+        this.flightPowerDropAngularVelocity = direction * (type === 'jetpack' ? 250 : 390);
         this.setNodeActive(root, true);
         root.setRotationFromEuler(0, 0, 0);
         root.setScale(1, 1, 1);
         this.setNodeActive(body, true);
         if (type === 'jetpack') {
-            const frame = this.textureFrames.playerJetpack;
-            if (!frame) {
-                root.active = false;
-                return;
-            }
-            this.setSpriteFrame(this.getDirectSprite(body)!, frame);
-            this.setVisualSize(this.registerDynamicVisual(body), 48, 46);
-            body.setPosition(-33 * this.playerFacing, 5, 0);
-            body.setScale(this.playerFacing, 1, 1);
-        } else if (type === 'rocket') {
             const frame = this.textureFrames.playerRocket;
             if (!frame) {
                 root.active = false;
@@ -3926,13 +3928,15 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 hurt: typeIndex === 1,
                 animationPhase: typeIndex * 0.2,
                 anchorPlatformId: 'prewarm',
+                motionPhase: 0,
+                anchorOffsetX: 0,
             }, typeIndex / 6));
             this.resetReusableVisualNode(node);
             this.enemyNodeTypes[index] = '';
         });
 
         const itemTypes = [
-            'spring', 'trampoline', 'jetpack', 'propeller-hat', 'rocket', 'shield', 'spring-shoes',
+            'spring', 'trampoline', 'jetpack', 'propeller-hat', 'shield', 'spring-shoes',
         ] as const;
         this.itemNodes.forEach((node, index) => {
             itemTypes.forEach((type, typeIndex) => this.applyItemVisual(node, index, {
@@ -3997,7 +4001,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         primeFrame(this.playerMotionEffectNode, 'playerFallDrag');
         primeFrame(this.playerWrapEffectNode, 'playerScreenWrap');
         primeFrame(this.shieldPulseNode, 'shieldPulse');
-        primeFrame(this.playerPowerEffectNode, 'jetpackFlames');
+        primeFrame(this.playerPowerEffectNode, 'rocketFlame');
         primeFrame(this.playerPowerSecondaryEffectNode, 'flightPaperScraps');
         primeFrame(this.flightPowerDropBodyNode, 'itemJetpack');
     }
@@ -4200,8 +4204,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (horizontalVelocity < -8) this.playerFacing = -1;
         else if (horizontalVelocity > 8) this.playerFacing = 1;
         const rotorEdge = Math.floor(elapsedSeconds * 20) % 2 === 1;
-        const key: TextureKey = itemStatus?.flightPower === 'rocket' ? 'playerRocketRabbit'
-            : itemStatus?.flightPower === 'jetpack' ? 'playerJetpackRabbit'
+        const key: TextureKey = itemStatus?.flightPower === 'jetpack' ? 'playerJetpackRabbit'
                 : itemStatus?.flightPower === 'propeller-hat'
                     ? rotorEdge ? 'playerPropellerRabbitSpin' : 'playerPropellerRabbit'
                     : (itemStatus?.springShoesRemainingSeconds ?? 0) > 0
@@ -4235,15 +4238,20 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         );
     }
 
+    private get playerCollisionHeight(): number {
+        return this.simulation?.playerCollisionHeight ?? this.config?.player.collisionHeight ?? 82.03125;
+    }
+
     private rabbitVisualLayout(status?: DoodleJumpItemStatusSnapshot): Readonly<{
         height: number; offsetY: number; headY: number;
     }> {
         // Equipment is painted together with the rabbit. Keep its ears/body at the
         // same gameplay anchor while allowing the rocket to extend below the body.
-        if (status?.flightPower === 'rocket') return { height: 206, offsetY: -10, headY: 104 };
+        if (status?.flightPower === 'jetpack') return { height: 206, offsetY: -10, headY: 104 };
         const hasShoes = !status?.flightPower && (status?.springShoesRemainingSeconds ?? 0) > 0;
         const height = hasShoes ? 156 : 140;
-        const offsetY = height / 2 - (this.config?.player.collisionHeight ?? 82.03125) / 2 - 4;
+        const offsetY = height / 2 - this.playerCollisionHeight / 2 - 4
+            - (hasShoes ? 15 * (this.config?.design.width ?? 750) / 320 : 0);
         return { height, offsetY, headY: offsetY + height / 2 + 11 };
     }
 
@@ -4372,7 +4380,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 const sprite = this.getDirectSprite(shield);
                 if (sprite) this.setSpriteFrame(sprite, shieldFrame);
                 const layout = this.rabbitVisualLayout(status);
-                const rocket = status.flightPower === 'rocket';
+                const rocket = status.flightPower === 'jetpack';
                 this.setVisualSize(this.registerDynamicVisual(shield), rocket ? 196 : 188, rocket ? 250 : 212);
                 shield.setPosition(0, rocket ? -6 : layout.offsetY, 0);
                 shield.setScale(
@@ -4395,7 +4403,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
                 const sprite = this.getDirectSprite(shieldPulse);
                 if (sprite) this.setSpriteFrame(sprite, shieldPulseFrame);
                 const layout = this.rabbitVisualLayout(status);
-                const rocket = status.flightPower === 'rocket';
+                const rocket = status.flightPower === 'jetpack';
                 this.setVisualSize(this.registerDynamicVisual(shieldPulse), rocket ? 214 : 206, rocket ? 270 : 232);
                 shieldPulse.setPosition(0, rocket ? -6 : layout.offsetY, 0);
                 const pulse = 0.9 + (Math.sin(elapsedSeconds * 5) + 1) * 0.08;
@@ -4412,32 +4420,26 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (secondary?.isValid) this.setNodeActive(secondary, false);
         if (!effect?.isValid) return;
         const key = status.headStartRemainingSeconds > 0 ? 'headStartBurst'
-            : status.flightPower === 'jetpack' ? 'jetpackFlames'
-                : status.flightPower === 'rocket' ? 'rocketFlame'
-                    : undefined;
+            : status.flightPower === 'jetpack' ? 'rocketFlame' : undefined;
         const frame = key ? this.textureFrames[key as TextureKey] : undefined;
         this.setNodeActive(effect, frame !== undefined);
         if (!frame) return;
         const effectSprite = this.getDirectSprite(effect);
         if (effectSprite) this.setSpriteFrame(effectSprite, frame);
-        const width = status.flightPower === 'jetpack' ? 38 : status.flightPower === 'rocket' ? 54 : 112;
+        const width = status.flightPower === 'jetpack' ? 54 : 112;
         const height = width
             * Math.max(1, frame.originalSize.height)
             / Math.max(1, frame.originalSize.width);
         this.setVisualSize(this.registerDynamicVisual(effect), width, height);
-        const nozzleX = status.flightPower === 'jetpack' ? -31 * this.playerFacing
-            : status.flightPower === 'rocket' ? 4 * this.playerFacing : 0;
-        const nozzleY = status.flightPower === 'rocket' ? -103 : -7;
+        const nozzleX = status.flightPower === 'jetpack' ? 4 * this.playerFacing : 0;
+        const nozzleY = status.flightPower === 'jetpack' ? -103 : -7;
         effect.setPosition(nozzleX, status.headStartRemainingSeconds > 0
             ? -56 : nozzleY - height / 2 + 6, 0);
         effect.setScale(1 + Math.sin(elapsedSeconds * 12) * 0.04, 1, 1);
 
         if (!secondary?.isValid) return;
         const secondaryKey: TextureKey | undefined = status.flightPower === 'jetpack'
-            ? 'flightPaperScraps'
-            : status.flightPower === 'rocket'
-                ? elapsedSeconds % 0.24 < 0.12 ? 'flightPaperScraps' : 'rocketTrail'
-                : undefined;
+            ? elapsedSeconds % 0.24 < 0.12 ? 'flightPaperScraps' : 'rocketTrail' : undefined;
         const secondaryFrame = secondaryKey && quality.secondaryEffects
             ? this.textureFrames[secondaryKey]
             : undefined;
@@ -4479,13 +4481,10 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             );
         } else if (status.flightPower) {
             const iconKey: TextureKey = status.flightPower === 'jetpack' ? 'itemIconJetpack'
-                : status.flightPower === 'propeller-hat' ? 'itemIconPropellerHat'
-                    : 'itemIconRocket';
+                : 'itemIconPropellerHat';
             const duration = status.flightPower === 'jetpack'
                 ? this.config?.items.jetpack.durationSeconds ?? 1.8
-                : status.flightPower === 'propeller-hat'
-                    ? this.config?.items.propellerHat.durationSeconds ?? 1.8
-                    : this.config?.items.rocket.durationSeconds ?? 1.8;
+                : this.config?.items.propellerHat.durationSeconds ?? 1.8;
             entryCount = this.appendItemHudEntry(
                 entryCount,
                 iconKey,
@@ -4552,7 +4551,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
             candidate.id === snapshot.lastLandedPlatformId
         ));
         if (platform && this.context) {
-            this.context.services.feedback.play('drop', { vibrate: false });
+            this.context.services.feedback.play('drop');
             this.context.services.analytics.track('doodle_jump_platform_land', {
                 sessionId: this.context.sessionId,
                 platformType: platform.type,
@@ -4560,7 +4559,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         }
         this.landingDebrisWorldX = snapshot.playerX;
         this.landingDebrisWorldY = platform?.y
-            ?? snapshot.playerY - this.config.player.collisionHeight / 2;
+            ?? snapshot.playerY - this.playerCollisionHeight / 2;
         this.landingDebrisRemaining = LANDING_DEBRIS_DURATION;
     }
 
