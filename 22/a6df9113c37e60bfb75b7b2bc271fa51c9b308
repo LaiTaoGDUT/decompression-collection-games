@@ -1,0 +1,24 @@
+assets/games/meowdoku/scripts/MeowdokuGame.ts
+  s_4d1bf22c78b499::t_f8622707fe5d18 947-949,951-955
+assets/resources/configs/cloud-save.json
+  s_4d1bf22c78b499::t_cada55fb27211e 56,62,68,73
+cloudfunctions/cloudSave/generated/catalog.json
+  s_4d1bf22c78b499::t_ac41b0e7eb7314 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "22a6df9113c37e60bfb75b7b2bc271fa51c9b308",
+  "prompts": {},
+  "logical_commit_id": "22a6df9113c37e60bfb75b7b2bc271fa51c9b308",
+  "sessions": {
+    "s_4d1bf22c78b499": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15c35-c101-7cf1-9d7f-79ccf44907e1",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
