@@ -401,7 +401,14 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     }
     private destroyNode(node?: Node): void {
         if (!node?.isValid) return;
-        const walk = (n: Node) => { Tween.stopAllByTarget(n); n.children.forEach(walk); }; walk(node);
+        if (node === this.selectionRoot && this.selectionView) {
+            for (const list of this.selectionView.tiles) for (const tile of list) Tween.stopAllByTarget(tile.press);
+        }
+        const walk = (n: Node) => {
+            Tween.stopAllByTarget(n);
+            const opacity = n.getComponent(UIOpacity); if (opacity) Tween.stopAllByTarget(opacity);
+            n.children.forEach(walk);
+        }; walk(node);
         node.removeFromParent(); node.destroy();
     }
 
@@ -562,6 +569,11 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
                 this.placeTile(tile);
             });
         });
+        this.setSelectionSlotsVisible(!!view.drag?.moved || view.sliding);
+    }
+    /** 静止时相邻两页完全在屏外；拖动/翻页前恢复，落位后只提交当前页的网格和文字。 */
+    private setSelectionSlotsVisible(expanded: boolean): void {
+        this.selectionView?.slots.forEach((slot, index) => { slot.active = expanded || index === 1; });
     }
     /** 选关常驻动画：当前关的环缓慢转动缺口、光晕呼吸。随游戏 update 推进，离开选关即停。 */
     private animateSelection(delta: number): void {
@@ -605,7 +617,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         if (!drag.moved && (Math.abs(dx) > 12 || Math.abs(point.y - drag.startY) > 12)) { drag.moved = true; this.releasePressedTile(); }
         // 首尾页继续拖只给阻尼，松手回弹；拖到一半停住时轨道就停在手指位置。
         if ((dx > 0 && this.selectionPage === 0) || (dx < 0 && this.selectionPage + 1 >= view.pages)) dx *= .3;
-        if (drag.moved) view.track.setPosition(dx, 0);
+        if (drag.moved) { this.setSelectionSlotsVisible(true); view.track.setPosition(dx, 0); }
     }
     private pagerEnd(event: EventTouch, cancelled = false): void {
         const view = this.selectionView, drag = view?.drag;
@@ -649,10 +661,12 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         if (!view || view.sliding || this.state !== 'selecting') return;
         if (this.selectionPage + delta < 0 || this.selectionPage + delta >= view.pages) delta = 0;
         view.sliding = true; Tween.stopAllByTarget(view.track);
+        this.setSelectionSlotsVisible(true);
         tween(view.track).to(.22, { position: new Vec3(-delta * 750, 0, 0) }, { easing: 'quadOut' }).call(() => {
             if (this.selectionView !== view) return;
             view.sliding = false;
             if (delta) { this.selectionPage += delta; this.fillSelectionSlots(); this.refreshSelectionChrome(); }
+            this.setSelectionSlotsVisible(false);
             onDone?.();
         }).start();
     }
@@ -1053,6 +1067,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     }
     private updateDialog(delta: number): void {
         if (!this.dialogContent?.isValid || !this.overlay?.isValid) return;
+        if (this.dialogTime >= SOURCE.popupOpen.duration) return;
         this.dialogTime = Math.min(SOURCE.popupOpen.duration, this.dialogTime + delta);
         const config = SOURCE.popupOpen, time = this.dialogTime;
         this.dialogContent.setScale(ringCurve(config.scaleX, time), ringCurve(config.scaleY, time), 1);

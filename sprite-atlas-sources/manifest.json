@@ -1838,8 +1838,14 @@
         "path": "visual/ui/meow-result-cats",
         "frames": [
           {
-            "source": "visual/ui/meowdoku-like-hand-v1.png",
-            "geometry": "full"
+            "source": "visual/ui/meowdoku-like-fist-v2.png",
+            "geometry": "full",
+            "resize": [99, 128]
+          },
+          {
+            "source": "visual/ui/meowdoku-like-thumb-v2.png",
+            "geometry": "full",
+            "resize": [99, 128]
           },
           {
             "source": "visual/ui/meowdoku-result-fail-cat-v1.png",
@@ -3744,558 +3750,6 @@
     ],
     "meme-runner": [
       {
-        "path": "visual/hero/lie-frames-v16",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-0",
-            "name": "run-0",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-1",
-            "name": "run-1",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-2",
-            "name": "run-2",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-3",
-            "name": "run-3",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-4",
-            "name": "run-4",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-5",
-            "name": "run-5",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-6",
-            "name": "run-6",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-7",
-            "name": "run-7",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-8",
-            "name": "run-8",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-9",
-            "name": "run-9",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-10",
-            "name": "run-10",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-11",
-            "name": "run-11",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-12",
-            "name": "run-12",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-13",
-            "name": "run-13",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-14",
-            "name": "run-14",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-15",
-            "name": "run-15",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-16",
-            "name": "run-16",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-17",
-            "name": "run-17",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-18",
-            "name": "run-18",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-19",
-            "name": "run-19",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-20",
-            "name": "run-20",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-21",
-            "name": "run-21",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-22",
-            "name": "run-22",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-run-color-v15.png",
-            "frame": "run-23",
-            "name": "run-23",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-color-v16.png",
-            "frame": "air-0",
-            "name": "air-0",
-            "resize": [
-              102,
-              120
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-extra-color-v16.png",
-            "frame": "air-1",
-            "name": "air-1",
-            "resize": [
-              97,
-              107
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-color-v16.png",
-            "frame": "air-1",
-            "name": "air-2",
-            "resize": [
-              94,
-              100
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-color-v16.png",
-            "frame": "air-2",
-            "name": "air-3",
-            "resize": [
-              87,
-              96
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-extra-color-v16.png",
-            "frame": "air-6",
-            "name": "air-6",
-            "resize": [
-              97,
-              106
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-color-v16.png",
-            "frame": "air-5",
-            "name": "air-7",
-            "resize": [
-              96,
-              112
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-extra-color-v16.png",
-            "frame": "air-8",
-            "name": "air-8",
-            "resize": [
-              97,
-              114
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-color-v16.png",
-            "frame": "air-6",
-            "name": "air-9",
-            "resize": [
-              100,
-              100
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-color-v16.png",
-            "frame": "air-7",
-            "name": "air-10",
-            "resize": [
-              93,
-              111
-            ]
-          },
-          {
-            "source": "visual/hero/lie-air-extra-color-v16.png",
-            "frame": "air-11",
-            "name": "air-11",
-            "resize": [
-              92,
-              115
-            ]
-          },
-          {
-            "source": "visual/hero/lie-slide-extra-color-v16.png",
-            "frame": "slide-0",
-            "name": "slide-0",
-            "resize": [
-              114,
-              93
-            ]
-          },
-          {
-            "source": "visual/hero/lie-slide-color-v16.png",
-            "frame": "slide-0",
-            "name": "slide-1",
-            "resize": [
-              130,
-              77
-            ]
-          },
-          {
-            "source": "visual/hero/lie-slide-extra-color-v16.png",
-            "frame": "slide-2",
-            "name": "slide-2",
-            "resize": [
-              155,
-              54
-            ]
-          },
-          {
-            "source": "visual/hero/lie-slide-color-v16.png",
-            "frame": "slide-1",
-            "name": "slide-3",
-            "resize": [
-              156,
-              56
-            ]
-          },
-          {
-            "source": "visual/hero/lie-slide-color-v16.png",
-            "frame": "slide-2",
-            "name": "slide-4",
-            "resize": [
-              94,
-              83
-            ]
-          },
-          {
-            "source": "visual/hero/lie-slide-extra-color-v16.png",
-            "frame": "slide-5",
-            "name": "slide-5",
-            "resize": [
-              96,
-              105
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-0",
-            "name": "double-0",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-1",
-            "name": "double-1",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-2",
-            "name": "double-2",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-3",
-            "name": "double-3",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-4",
-            "name": "double-4",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-5",
-            "name": "double-5",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-6",
-            "name": "double-6",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/hero/lie-double-color-v16.png",
-            "frame": "double-7",
-            "name": "double-7",
-            "resize": [
-              160,
-              144
-            ]
-          }
-        ]
-      },
-      {
-        "path": "visual/companions/cast-v17",
-        "maxSize": 656,
-        "frames": [
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-0",
-            "name": "extra-0",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-1",
-            "name": "extra-1",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-2",
-            "name": "extra-2",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-3",
-            "name": "extra-3",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-4",
-            "name": "extra-4",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-5",
-            "name": "extra-5",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-6",
-            "name": "extra-6",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-7",
-            "name": "extra-7",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-8",
-            "name": "extra-8",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-9",
-            "name": "extra-9",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-10",
-            "name": "extra-10",
-            "resize": [
-              160,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/extra-registered-v17.png",
-            "frame": "extra-11",
-            "name": "extra-11",
-            "resize": [
-              160,
-              144
-            ]
-          }
-        ]
-      },
-      {
         "path": "visual/world-v19/world-pieces",
         "maxSize": 2048,
         "frames": [
@@ -4446,480 +3900,6 @@
         ]
       },
       {
-        "path": "visual/companions/kangaroo-v26",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-0",
-            "name": "kangaroo-0",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-1",
-            "name": "kangaroo-1",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-2",
-            "name": "kangaroo-2",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-3",
-            "name": "kangaroo-3",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-4",
-            "name": "kangaroo-4",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-5",
-            "name": "kangaroo-5",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-6",
-            "name": "kangaroo-6",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-7",
-            "name": "kangaroo-7",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-8",
-            "name": "kangaroo-8",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-9",
-            "name": "kangaroo-9",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-10",
-            "name": "kangaroo-10",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-11",
-            "name": "kangaroo-11",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-12",
-            "name": "kangaroo-12",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-13",
-            "name": "kangaroo-13",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-14",
-            "name": "kangaroo-14",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-15",
-            "name": "kangaroo-15",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-16",
-            "name": "kangaroo-16",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-17",
-            "name": "kangaroo-17",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-18",
-            "name": "kangaroo-18",
-            "resize": [
-              176,
-              176
-            ]
-          },
-          {
-            "source": "visual/companions/kangaroo-registered-v26.png",
-            "frame": "kangaroo-19",
-            "name": "kangaroo-19",
-            "resize": [
-              176,
-              176
-            ]
-          }
-        ]
-      },
-      {
-        "path": "visual/companions/dragon-v26",
-        "maxSize": 912,
-        "frames": [
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-0",
-            "name": "dragon-0",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-1",
-            "name": "dragon-1",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-2",
-            "name": "dragon-2",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-3",
-            "name": "dragon-3",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-4",
-            "name": "dragon-4",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-5",
-            "name": "dragon-5",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-6",
-            "name": "dragon-6",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-7",
-            "name": "dragon-7",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-8",
-            "name": "dragon-8",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-9",
-            "name": "dragon-9",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-10",
-            "name": "dragon-10",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-11",
-            "name": "dragon-11",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-12",
-            "name": "dragon-12",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-13",
-            "name": "dragon-13",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-14",
-            "name": "dragon-14",
-            "resize": [
-              224,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/dragon-registered-v26.png",
-            "frame": "dragon-15",
-            "name": "dragon-15",
-            "resize": [
-              224,
-              128
-            ]
-          }
-        ]
-      },
-      {
-        "path": "visual/companions/banana-v26",
-        "maxSize": 528,
-        "frames": [
-          {
-            "source": "visual/companions/banana-registered-v26.png",
-            "frame": "banana-0",
-            "name": "banana-0",
-            "resize": [
-              128,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/banana-registered-v26.png",
-            "frame": "banana-1",
-            "name": "banana-1",
-            "resize": [
-              128,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/banana-registered-v26.png",
-            "frame": "banana-16",
-            "name": "banana-16",
-            "resize": [
-              128,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/banana-registered-v26.png",
-            "frame": "banana-17",
-            "name": "banana-17",
-            "resize": [
-              128,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/banana-registered-v26.png",
-            "frame": "banana-18",
-            "name": "banana-18",
-            "resize": [
-              128,
-              128
-            ]
-          },
-          {
-            "source": "visual/companions/banana-registered-v26.png",
-            "frame": "banana-19",
-            "name": "banana-19",
-            "resize": [
-              128,
-              128
-            ]
-          }
-        ]
-      },
-      {
-        "path": "visual/companions/bull-v26",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-16",
-            "name": "bull-16",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-17",
-            "name": "bull-17",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-18",
-            "name": "bull-18",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-19",
-            "name": "bull-19",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-20",
-            "name": "bull-20",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-21",
-            "name": "bull-21",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-22",
-            "name": "bull-22",
-            "resize": [
-              208,
-              144
-            ]
-          },
-          {
-            "source": "visual/companions/bull-registered-v26.png",
-            "frame": "bull-23",
-            "name": "bull-23",
-            "resize": [
-              208,
-              144
-            ]
-          }
-        ]
-      },
-      {
         "path": "visual/opening-v27/story",
         "maxSize": 2048,
         "frames": [
@@ -4980,130 +3960,6 @@
           {
             "source": "visual/v33/frames/shield-loop-3.png",
             "name": "shield-loop-3"
-          },
-          {
-            "source": "visual/v33/frames/nyan-0.png",
-            "name": "nyan-0"
-          },
-          {
-            "source": "visual/v33/frames/nyan-1.png",
-            "name": "nyan-1"
-          },
-          {
-            "source": "visual/v33/frames/nyan-2.png",
-            "name": "nyan-2"
-          },
-          {
-            "source": "visual/v33/frames/nyan-3.png",
-            "name": "nyan-3"
-          }
-        ]
-      },
-      {
-        "path": "visual/v33/characters",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v33/frames/popcat-0.png",
-            "name": "popcat-0"
-          },
-          {
-            "source": "visual/v33/frames/popcat-1.png",
-            "name": "popcat-1"
-          },
-          {
-            "source": "visual/v33/frames/popcat-2.png",
-            "name": "popcat-2"
-          },
-          {
-            "source": "visual/v33/frames/popcat-3.png",
-            "name": "popcat-3"
-          },
-          {
-            "source": "visual/v33/frames/dash-0.png",
-            "name": "dash-0"
-          },
-          {
-            "source": "visual/v33/frames/dash-1.png",
-            "name": "dash-1"
-          },
-          {
-            "source": "visual/v33/frames/dash-2.png",
-            "name": "dash-2"
-          },
-          {
-            "source": "visual/v33/frames/dash-3.png",
-            "name": "dash-3"
-          },
-          {
-            "source": "visual/v33/frames/spinner-0.png",
-            "name": "spinner-0"
-          },
-          {
-            "source": "visual/v33/frames/spinner-1.png",
-            "name": "spinner-1"
-          },
-          {
-            "source": "visual/v33/frames/spinner-2.png",
-            "name": "spinner-2"
-          },
-          {
-            "source": "visual/v33/frames/spinner-3.png",
-            "name": "spinner-3"
-          },
-          {
-            "source": "visual/v33/frames/spinner-4.png",
-            "name": "spinner-4"
-          },
-          {
-            "source": "visual/v33/frames/spinner-5.png",
-            "name": "spinner-5"
-          },
-          {
-            "source": "visual/v33/frames/spinner-6.png",
-            "name": "spinner-6"
-          },
-          {
-            "source": "visual/v33/frames/spinner-7.png",
-            "name": "spinner-7"
-          }
-        ]
-      },
-      {
-        "path": "visual/v34/bull",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/v34/frames/bull-0.png",
-            "name": "bull-0"
-          },
-          {
-            "source": "visual/v34/frames/bull-1.png",
-            "name": "bull-1"
-          },
-          {
-            "source": "visual/v34/frames/bull-2.png",
-            "name": "bull-2"
-          },
-          {
-            "source": "visual/v34/frames/bull-3.png",
-            "name": "bull-3"
-          },
-          {
-            "source": "visual/v34/frames/bull-4.png",
-            "name": "bull-4"
-          },
-          {
-            "source": "visual/v34/frames/bull-5.png",
-            "name": "bull-5"
-          },
-          {
-            "source": "visual/v34/frames/bull-6.png",
-            "name": "bull-6"
-          },
-          {
-            "source": "visual/v34/frames/bull-7.png",
-            "name": "bull-7"
           }
         ]
       },
@@ -5788,6 +4644,298 @@
           {
             "source": "visual/v38/frames/dlg-art-pause.png",
             "name": "dlg-art-pause"
+          }
+        ]
+      },
+      {
+        "path": "visual/v42/hero",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v42/frames/run-0.png",
+            "name": "run-0"
+          },
+          {
+            "source": "visual/v42/frames/run-1.png",
+            "name": "run-1"
+          },
+          {
+            "source": "visual/v42/frames/run-2.png",
+            "name": "run-2"
+          },
+          {
+            "source": "visual/v42/frames/run-3.png",
+            "name": "run-3"
+          },
+          {
+            "source": "visual/v42/frames/run-4.png",
+            "name": "run-4"
+          },
+          {
+            "source": "visual/v42/frames/run-5.png",
+            "name": "run-5"
+          },
+          {
+            "source": "visual/v42/frames/run-6.png",
+            "name": "run-6"
+          },
+          {
+            "source": "visual/v42/frames/run-7.png",
+            "name": "run-7"
+          },
+          {
+            "source": "visual/v42/frames/air-0.png",
+            "name": "air-0"
+          },
+          {
+            "source": "visual/v42/frames/air-1.png",
+            "name": "air-1"
+          },
+          {
+            "source": "visual/v42/frames/air-2.png",
+            "name": "air-2"
+          },
+          {
+            "source": "visual/v42/frames/air-3.png",
+            "name": "air-3"
+          },
+          {
+            "source": "visual/v42/frames/land-0.png",
+            "name": "land-0"
+          },
+          {
+            "source": "visual/v42/frames/double-0.png",
+            "name": "double-0"
+          },
+          {
+            "source": "visual/v42/frames/double-1.png",
+            "name": "double-1"
+          },
+          {
+            "source": "visual/v42/frames/double-2.png",
+            "name": "double-2"
+          },
+          {
+            "source": "visual/v42/frames/double-3.png",
+            "name": "double-3"
+          },
+          {
+            "source": "visual/v42/frames/slide-0.png",
+            "name": "slide-0"
+          },
+          {
+            "source": "visual/v42/frames/slide-1.png",
+            "name": "slide-1"
+          },
+          {
+            "source": "visual/v42/frames/hurt.png",
+            "name": "hurt"
+          },
+          {
+            "source": "visual/v42/frames/ride-0.png",
+            "name": "ride-0"
+          },
+          {
+            "source": "visual/v42/frames/ride-1.png",
+            "name": "ride-1"
+          },
+          {
+            "source": "visual/v42/frames/win-0.png",
+            "name": "win-0"
+          },
+          {
+            "source": "visual/v42/frames/win-1.png",
+            "name": "win-1"
+          },
+          {
+            "source": "visual/v42/frames/lose-0.png",
+            "name": "lose-0"
+          },
+          {
+            "source": "visual/v42/frames/lose-1.png",
+            "name": "lose-1"
+          },
+          {
+            "source": "visual/v42/frames/dash-0.png",
+            "name": "dash-0"
+          },
+          {
+            "source": "visual/v42/frames/dash-1.png",
+            "name": "dash-1"
+          }
+        ]
+      },
+      {
+        "path": "visual/v42/cast",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v42/frames/kangaroo-0.png",
+            "name": "kangaroo-0"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-1.png",
+            "name": "kangaroo-1"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-2.png",
+            "name": "kangaroo-2"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-3.png",
+            "name": "kangaroo-3"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-4.png",
+            "name": "kangaroo-4"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-5.png",
+            "name": "kangaroo-5"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-6.png",
+            "name": "kangaroo-6"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-7.png",
+            "name": "kangaroo-7"
+          },
+          {
+            "source": "visual/v42/frames/bull-0.png",
+            "name": "bull-0"
+          },
+          {
+            "source": "visual/v42/frames/bull-1.png",
+            "name": "bull-1"
+          },
+          {
+            "source": "visual/v42/frames/bull-2.png",
+            "name": "bull-2"
+          },
+          {
+            "source": "visual/v42/frames/bull-3.png",
+            "name": "bull-3"
+          },
+          {
+            "source": "visual/v42/frames/bull-4.png",
+            "name": "bull-4"
+          },
+          {
+            "source": "visual/v42/frames/bull-5.png",
+            "name": "bull-5"
+          },
+          {
+            "source": "visual/v42/frames/bull-6.png",
+            "name": "bull-6"
+          },
+          {
+            "source": "visual/v42/frames/bull-7.png",
+            "name": "bull-7"
+          },
+          {
+            "source": "visual/v42/frames/dragon-0.png",
+            "name": "dragon-0"
+          },
+          {
+            "source": "visual/v42/frames/dragon-1.png",
+            "name": "dragon-1"
+          },
+          {
+            "source": "visual/v42/frames/dragon-2.png",
+            "name": "dragon-2"
+          },
+          {
+            "source": "visual/v42/frames/dragon-3.png",
+            "name": "dragon-3"
+          },
+          {
+            "source": "visual/v42/frames/dragon-4.png",
+            "name": "dragon-4"
+          },
+          {
+            "source": "visual/v42/frames/dragon-5.png",
+            "name": "dragon-5"
+          },
+          {
+            "source": "visual/v42/frames/spinner-0.png",
+            "name": "spinner-0"
+          },
+          {
+            "source": "visual/v42/frames/spinner-1.png",
+            "name": "spinner-1"
+          },
+          {
+            "source": "visual/v42/frames/spinner-2.png",
+            "name": "spinner-2"
+          },
+          {
+            "source": "visual/v42/frames/spinner-3.png",
+            "name": "spinner-3"
+          },
+          {
+            "source": "visual/v42/frames/spinner-4.png",
+            "name": "spinner-4"
+          },
+          {
+            "source": "visual/v42/frames/spinner-5.png",
+            "name": "spinner-5"
+          },
+          {
+            "source": "visual/v42/frames/spinner-6.png",
+            "name": "spinner-6"
+          },
+          {
+            "source": "visual/v42/frames/spinner-7.png",
+            "name": "spinner-7"
+          },
+          {
+            "source": "visual/v42/frames/popcat-0.png",
+            "name": "popcat-0"
+          },
+          {
+            "source": "visual/v42/frames/popcat-1.png",
+            "name": "popcat-1"
+          },
+          {
+            "source": "visual/v42/frames/popcat-2.png",
+            "name": "popcat-2"
+          },
+          {
+            "source": "visual/v42/frames/popcat-3.png",
+            "name": "popcat-3"
+          },
+          {
+            "source": "visual/v42/frames/banana-0.png",
+            "name": "banana-0"
+          },
+          {
+            "source": "visual/v42/frames/banana-1.png",
+            "name": "banana-1"
+          },
+          {
+            "source": "visual/v42/frames/banana-2.png",
+            "name": "banana-2"
+          },
+          {
+            "source": "visual/v42/frames/banana-3.png",
+            "name": "banana-3"
+          },
+          {
+            "source": "visual/v42/frames/nyan-0.png",
+            "name": "nyan-0"
+          },
+          {
+            "source": "visual/v42/frames/nyan-1.png",
+            "name": "nyan-1"
+          },
+          {
+            "source": "visual/v42/frames/friend-pin.png",
+            "name": "friend-pin"
+          },
+          {
+            "source": "visual/v42/frames/friend-ring.png",
+            "name": "friend-ring"
           }
         ]
       }

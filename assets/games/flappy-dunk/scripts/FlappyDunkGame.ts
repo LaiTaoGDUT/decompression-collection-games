@@ -14,7 +14,7 @@ import { AD_PLACEMENTS, type AdService } from '../../../services/ads/AdService';
 import { setLabelBold } from '../../../services/font/FontBinding';
 import { dunkBackIn, dunkBackOut, validateDunkConfig, type DunkConfig } from './FlappyDunkConfig';
 import { FlappyDunkModel, readDunkRoundSnapshot, type DunkHoop, type DunkRoundSnapshot } from './FlappyDunkModel';
-import { calculateDunkLayout } from './FlappyDunkLayout';
+import { calculateDunkLayout, DUNK_ICON_BUTTON } from './FlappyDunkLayout';
 import { DUNK_AMBIENCE, DUNK_AUDIO, DUNK_CHAIN_TIERS, DUNK_PARTICLE_PALETTE, DUNK_THEME as T, dunkChainTier } from './FlappyDunkTheme';
 import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
 import { FlappyDunkSkyline } from './FlappyDunkSkyline';
@@ -28,8 +28,6 @@ const DUNK_EXTREME_DIFFICULTY = 2;
 
 const { ccclass } = _decorator;
 const BUNDLE = 'game-flappy-dunk-assets';
-/** Diameter of the round pause / back controls at the 750-wide baseline. */
-const DUNK_ICON_BUTTON = 76;
 /** Wing frame in world units and its pivot at the wing root. The original wing fills a 0.381 × 0.262 frame;
  * the 月夜天台 wing curls upward, so its frame is near square and ~10 % larger in visible area. */
 const WING_SIZE = [.329, .334] as const;
@@ -39,7 +37,10 @@ type DunkState = 'idle' | 'ready' | 'countdown' | 'playing' | 'dying' | 'revive'
 type GuideStep = 'off' | 'tap' | 'hoop' | 'chain';
 const COUNTDOWN_SECONDS = 3;
 interface DunkServices { assets: AssetService; audio: AudioService; feedback: FeedbackService; storage: StorageService; platform: Platform; ads: AdService; }
-interface HoopView { back: Node; front: Node; opacityBack: UIOpacity; opacityFront: UIOpacity; fire: boolean; netKick: number; rimHit: number; }
+interface HoopView { back: Node; front: Node; opacityBack: UIOpacity; opacityFront: UIOpacity; fire: boolean; netKick: number; rimHit: number;
+    unit: number; net: UITransform; pickup?: Node; highlight?: Node; leftHazard?: Node; rightHazard?: Node; }
+interface RibbonPoint { x: number; y: number; t: number; nx: number; ny: number; taper: number; fade: number; }
+const CLOUD_RINGS = [1, .78, .56, .34] as const;
 /** `body` carries squash and stretch along the screen axes; the painted ball inside it spins freely. */
 interface BallView { root: Node; body: Node; ball: Node; faces: Sprite[]; glow: Sprite; left: Node; right: Node; shield: Sprite; size: number; }
 interface DialogAction { name: string; text: string; icon: string; primary?: boolean; action: () => void | Promise<void>; }
@@ -58,6 +59,8 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     private moon?: Sprite;
     private skyFront?: Graphics;
     private clouds?: Graphics;
+    private stars?: Graphics;
+    private readonly renderColor = new Color();
     private readonly motion = new FlappyDunkMotion();
     /** Ball colour tier cross-fade (DUNK_CHAIN_TIERS) and the pop when the tier rises. */
     private tier = { from: 0, to: 0, age: Infinity };
@@ -95,6 +98,8 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     private readonly hoopViews = new Map<number, HoopView>();
     private readonly keys = new Set<KeyCode>();
     private readonly trail: { x: number; y: number; life: number }[] = [];
+    private readonly ribbon: RibbonPoint[] = [];
+    private ribbonCount = 0;
     private readonly hazardAngles = [0, 0, 0];
     private unsubscribeLayout?: Unsubscribe;
     private inputAttached = false;
@@ -248,11 +253,11 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
         this.frame?.destroy(); this.background?.node.destroy();
         const assets = this.context?.services.assets;
         if (assets && this.frames) Object.keys(this.frames).forEach(key => assets.releaseRuntimeAsset(this.frames![key]));
-        this.hoopViews.clear(); this.trail.length = 0;
+        this.hoopViews.clear(); this.trail.length = this.ribbon.length = this.ribbonCount = 0;
         this.hudViews.clear(); this.presentation = undefined;
         this.frames = this.config = this.model = this.context = this.layout = undefined;
         this.frame = this.hud = this.stage = this.worldRoot = this.backLayer = this.frontLayer = this.overlay = undefined;
-        this.background = this.scenery = this.effects = this.skyFront = undefined; this.moon = undefined; this.clouds = undefined;
+        this.background = this.scenery = this.effects = this.skyFront = this.stars = undefined; this.moon = undefined; this.clouds = undefined;
         this.ball = undefined;
         this.scoreLabel = this.scoreShadow = this.comboLabel = this.readyBest = undefined; this.pauseButton = undefined;
         this.guideLayer = undefined; this.guideText = undefined; this.resumeSnapshot = undefined;
@@ -262,6 +267,7 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     protected onDestroy(): void { void this.dispose(); }
 
     protected update(delta: number): void {
+        if (!Number.isFinite(delta)) return;
         const dt = Math.max(0, Math.min(.1, delta));
         this.updateAmbience(dt);
         // Pausing only means something mid-round: hidden on the start screen, while dying and under dialogs.
@@ -344,7 +350,8 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
             const node = float.label.node;
             node.setPosition((float.x - this.cameraX) * u, (float.y + .9 * easeOutCubic(p)) * u);
             node.setScale(pop, pop, 1);
-            const c = float.label.color.clone(); c.a = Math.round(255 * (p < .65 ? 1 : 1 - (p - .65) / .35)); float.label.color = c;
+            this.renderColor.set(float.label.color);
+            this.renderColor.a = Math.round(255 * (p < .65 ? 1 : 1 - (p - .65) / .35)); float.label.color = this.renderColor;
         }
     }
 
@@ -541,7 +548,8 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
         const live = this.state === 'playing' || this.state === 'countdown'
             || (this.state === 'paused' && (this.pausedFrom === 'playing' || this.pausedFrom === 'countdown'));
         const round = live ? this.model?.snapshot() ?? this.resumeSnapshot : undefined;
-        this.writeCustom({ dunkRound: round ? JSON.parse(JSON.stringify(round)) : undefined }, flush);
+        // snapshot() already owns fresh state, hoop and group records; no JSON round trip is needed.
+        this.writeCustom({ dunkRound: round }, flush);
     }
 
     private writeCustom(patch: Readonly<Record<string, unknown>>, flush = false): void {
@@ -615,12 +623,12 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
                     // Only rounds played on 极限 count towards the trophy.
                     if (this.model.difficultyIndex === DUNK_EXTREME_DIFFICULTY)
                         this.context.reportAchievementProgress('swish-streak', event.points - 1);
-                }
+                } else feedback.play('merge', { minIntervalMs: 0, vibrate: false });
                 if (event.points > 2) this.shake?.swishHit();
                 // SpawnScoreParticle 0x27D1030 uses rotation.z (Quaternion), then
                 // sets Euler (0, 0, z). Preserve that native conversion as well.
                 const hoopAngle = this.model.hoops.find(h => h.id === event.hoop)?.angle ?? 0;
-                // Only swishes burst; an ordinary basket scores quietly.
+                // Only swishes burst; an ordinary basket gets its score sound alone.
                 if (event.swish) this.particles?.play(event.points === 2 ? 'swish' : 'power', {
                     x: event.x, y: event.y, angle: Math.sin(hoopAngle * Math.PI / 360) });
                 this.persistHighScore();
@@ -652,6 +660,7 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
 
     private buildInterface(): void {
         this.background = this.makeNode('DunkBackdrop', this.node, 750, 1334).addComponent(Graphics);
+        this.stars = this.makeNode('SkyStars', this.background.node, 750, 1334).addComponent(Graphics);
         // Soft clouds sit between the sky and the moon; the moon is never masked by them.
         this.clouds = this.makeNode('SkyClouds', this.background.node, 750, 1334).addComponent(Graphics);
         this.moon = this.sprite('Moon', this.background.node, 'Moon', 140, 140);
@@ -732,18 +741,18 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     }
 
     private resetHud(): void {
-        for (const view of Array.from(this.hudViews.values())) view.transition?.hide();
+        this.hudViews.forEach(view => view.transition?.hide());
         this.advanceHud(0);
     }
 
     private advanceHud(dt: number): void {
-        for (const view of Array.from(this.hudViews.values())) {
+        this.hudViews.forEach(view => {
             const t = view.transition;
-            if (!t) continue;
+            if (!t) return;
             t.advance(dt); view.root.active = t.active;
             view.root.setScale(t.scale, t.scale, 1);
             view.opacity.opacity = Math.round(Math.max(0, Math.min(1, t.opacity)) * 255);
-        }
+        });
     }
 
     private readonly applyLayout = (): void => {
@@ -789,7 +798,7 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
         this.setText(this.scoreShadow, String(m.score));
         // Each basket pops the counter and flashes it lamp-yellow, settling back to chalk.
         const bump = Math.min(1, (this.animationTime - this.scoreBump) / .35), pop = 1 + .6 * Math.sin(Math.PI * bump) * (1 - bump);
-        const flash = new Color(); Color.lerp(flash, color(T.lamp), color(T.ink), bump);
+        const flash = this.renderColor; Color.lerp(flash, color(T.lamp), color(T.ink), bump);
         this.scoreLabel!.color = flash;
         this.scoreLabel!.node.setScale(l.controlScale * pop, l.controlScale * pop, 1);
         this.scoreShadow!.node.setScale(l.controlScale * pop, l.controlScale * pop, 1);
@@ -832,16 +841,14 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
             ball.right.setPosition(-.203 * wingUnit, .111 * wingUnit);
         }
         ball.shield.node.active = m.shield;
-        const live = new Set<number>();
         for (const hoop of m.hoops) {
-            live.add(hoop.id);
             let hv = this.hoopViews.get(hoop.id);
             if (!hv) { hv = this.createHoop(hoop); this.hoopViews.set(hoop.id, hv); }
             this.renderHoop(hoop, hv);
         }
-        for (const [id, hv] of Array.from(this.hoopViews.entries())) {
-            if (!live.has(id)) { hv.back.destroy(); hv.front.destroy(); this.hoopViews.delete(id); }
-        }
+        this.hoopViews.forEach((hv, id) => {
+            if (!m.hoops.some(h => h.id === id)) { hv.back.destroy(); hv.front.destroy(); this.hoopViews.delete(id); }
+        });
         this.drawEffects();
         this.drawScoreFloats();
         this.drawGuide();
@@ -851,7 +858,8 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     private drawSky(): void {
         const g = this.background!, l = this.layout!, skyline = this.skyline!, moon = this.moon!;
         skyline.update(this.model!.score, this.animationTime);
-        g.clear(); skyline.drawSky(g, l.width, l.height, this.animationTime);
+        skyline.drawSky(g, l.width, l.height, this.animationTime);
+        skyline.drawStars(this.stars!, l.width, l.height, this.animationTime);
         const sky = skyline.sky, scale = l.controlScale;
         moon.node.setScale(scale, scale, 1);
         // At its zenith the moon still clears the top band of the playfield.
@@ -862,7 +870,7 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
         const clouds = this.clouds!;
         clouds.clear();
         for (const p of skyline.cloudPuffs(l.width, l.height, this.animationTime)) {
-            for (const k of [1, .78, .56, .34]) {
+            for (const k of CLOUD_RINGS) {
                 clouds.fillColor = p.color; clouds.ellipse(p.x, p.y, p.w / 2 * k, p.h / 2 * k); clouds.fill();
             }
         }
@@ -931,7 +939,10 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
         }
         if (h.hazard) for (const side of [-1, 1]) this.sprite(side < 0 ? 'LeftHazard' : 'RightHazard', front, 'BeyBlade', 1, 1);
         return { back, front, fire: false, netKick: -Infinity, rimHit: -Infinity,
-            opacityBack: back.addComponent(UIOpacity), opacityFront: front.addComponent(UIOpacity) };
+            opacityBack: back.addComponent(UIOpacity), opacityFront: front.addComponent(UIOpacity),
+            unit: NaN, net: front.getChildByName('Net')!.getComponent(UITransform)!,
+            pickup: front.getChildByName('ShieldPickup') ?? undefined, highlight: back.getChildByName('ShieldHighlight') ?? undefined,
+            leftHazard: front.getChildByName('LeftHazard') ?? undefined, rightHazard: front.getChildByName('RightHazard') ?? undefined };
     }
 
     /** Visual pose only; colliders stay where the model puts them. A hoop pops in when it spawns, dips
@@ -955,32 +966,35 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
         for (const root of [hv.back, hv.front]) {
             root.setPosition(x, y); root.angle = pose.angle; root.setScale(pose.scale, pose.scale, 1);
         }
-        const resize = (root: Node, name: string, w: number, height: number, px = 0, py = 0) => {
-            const n = root.getChildByName(name); if (!n) return;
-            n.getComponent(UITransform)!.setContentSize(w * u, height * u); n.setPosition(px * u, py * u);
-        };
-        resize(hv.back, 'BackRim', 1.92, .33 * .7888, 0, .1612);
-        resize(hv.front, 'FrontRim', 1.92, .45 * .7888, 0, -.146);
-        // 184 × 64 display pixels at hoop scale .85: the net spans the hooks at the rim's collision ends
-        // (±0.782) and its top hides behind the front face. A scored ball tugs it down; it springs back.
+        if (hv.unit !== u) {
+            hv.unit = u;
+            const resize = (root: Node, name: string, w: number, height: number, px = 0, py = 0) => {
+                const n = root.getChildByName(name); if (!n) return;
+                n.getComponent(UITransform)!.setContentSize(w * u, height * u); n.setPosition(px * u, py * u);
+            };
+            resize(hv.back, 'BackRim', 1.92, .33 * .7888, 0, .1612);
+            resize(hv.front, 'FrontRim', 1.92, .45 * .7888, 0, -.146);
+            resize(hv.front, 'Net', 1.623, .564, 0, -.14);
+            resize(hv.back, 'RimHighlight', 2.65 * .06939633190631866, 2.51 * .21521514654159546, -.4580000042915344, .210999995470047);
+            const stripe = hv.back.getChildByName('RimHighlight')!;
+            stripe.angle = Math.atan2(.7040484547615051, .7101520299911499) * 360 / Math.PI; stripe.setScale(1, -1, 1);
+            resize(hv.back, 'RimHighlightDot', 128 / 12.399999618530273 * .004084464628249407,
+                128 / 12.399999618530273 * .008860799483954906, -.7639999985694885, .09399999678134918);
+            hv.back.getChildByName('RimHighlightDot')!.angle = Math.atan2(.7271804213523865, .686446487903595) * 360 / Math.PI;
+            resize(hv.front, 'ShieldPickup', 1.74 * .32, 1.86 * .340571, -.216, -.267);
+            resize(hv.back, 'ShieldHighlight', 1.28, 1.28);
+            for (const [name, sign] of [['LeftHazard', -1], ['RightHazard', 1]] as const)
+                resize(hv.front, name, 5.66 * .077, 5.45 * .077, sign * .775, .016);
+        }
+        // Only the net's score stretch changes its dimensions between layout updates.
         const kick = Math.min(1, Math.max(0, (this.animationTime - hv.netKick) / .25));
         const stretch = kick < 1 ? 1 + .22 * Math.sin(kick * Math.PI) : 1;
-        resize(hv.front, 'Net', 1.623, .564 * stretch, 0, -.14);
-        resize(hv.back, 'RimHighlight', 2.65 * .06939633190631866, 2.51 * .21521514654159546, -.4580000042915344, .210999995470047);
-        const stripe = hv.back.getChildByName('RimHighlight')!;
-        stripe.angle = Math.atan2(.7040484547615051, .7101520299911499) * 360 / Math.PI; stripe.setScale(1, -1, 1);
-        resize(hv.back, 'RimHighlightDot', 128 / 12.399999618530273 * .004084464628249407,
-            128 / 12.399999618530273 * .008860799483954906, -.7639999985694885, .09399999678134918);
-        hv.back.getChildByName('RimHighlightDot')!.angle = Math.atan2(.7271804213523865, .686446487903595) * 360 / Math.PI;
-        resize(hv.front, 'ShieldPickup', 1.74 * .32, 1.86 * .340571, -.216, -.267);
-        resize(hv.back, 'ShieldHighlight', 1.28, 1.28);
-        const pickup = hv.front.getChildByName('ShieldPickup'), highlight = hv.back.getChildByName('ShieldHighlight');
-        if (pickup) pickup.active = h.shield;
-        if (highlight) highlight.active = h.shield;
-        for (const [name, sign] of [['LeftHazard', -1], ['RightHazard', 1]] as const) {
-            resize(hv.front, name, 5.66 * .077, 5.45 * .077, sign * .775, .016);
-            const n = hv.front.getChildByName(name); if (n) n.angle = this.hazardAngles[(h.id - 1) % 3];
-        }
+        hv.net.setContentSize(1.623 * u, .564 * stretch * u);
+        if (hv.pickup) hv.pickup.active = h.shield;
+        if (hv.highlight) hv.highlight.active = h.shield;
+        const hazardAngle = this.hazardAngles[(h.id - 1) % 3];
+        if (hv.leftHazard) hv.leftHazard.angle = hazardAngle;
+        if (hv.rightHazard) hv.rightHazard.angle = hazardAngle;
     }
 
     private createBall(name: string, parent: Node, size: number): BallView {
@@ -1038,7 +1052,7 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
             && Math.abs(y) + radius < m.wallLimit * u;
         const tier = DUNK_CHAIN_TIERS[this.tier.to];
         const ribbon = this.ribbonPoints(u);
-        if (ribbon.length > 1 && inside(ribbon[0].x, ribbon[0].y, .35 * u)) {
+        if (this.ribbonCount > 1 && inside(ribbon[0].x, ribbon[0].y, .35 * u)) {
             // Width tapers from about the ball's diameter at the head to nothing; alpha fades the same way.
             // In a chain a wide soft halo, the coloured band and a white core read as one glowing streak.
             if (tier.core) this.drawRibbon(g, ribbon, .56 * u, tier.trail, tier.trailAlpha * .3);
@@ -1049,36 +1063,44 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     }
 
     /** Ball trail samples, newest first, smoothed with Catmull-Rom so the ribbon bends instead of stepping. */
-    private ribbonPoints(u: number): { x: number; y: number; t: number }[] {
-        const m = this.model!, raw = [{ x: m.x, y: m.y, t: 0 }];
-        for (let i = this.trail.length - 1; i >= 0; i--) raw.push({ x: this.trail[i].x, y: this.trail[i].y, t: 1 - this.trail[i].life / .4 });
-        const points: { x: number; y: number; t: number }[] = [];
-        for (let i = 0; i < raw.length - 1; i++) {
-            const p0 = raw[Math.max(0, i - 1)], p1 = raw[i], p2 = raw[i + 1], p3 = raw[Math.min(raw.length - 1, i + 2)];
+    private ribbonPoints(u: number): RibbonPoint[] {
+        const m = this.model!, points = this.ribbon, count = this.trail.length + 1;
+        const sample = (i: number) => i === 0 ? m : this.trail[this.trail.length - i];
+        let index = 0;
+        for (let i = 0; i < count - 1; i++) {
+            const p0 = sample(Math.max(0, i - 1)), p1 = sample(i), p2 = sample(i + 1), p3 = sample(Math.min(count - 1, i + 2));
+            const t1 = i === 0 ? 0 : 1 - this.trail[this.trail.length - i].life / .4;
+            const t2 = 1 - this.trail[this.trail.length - i - 1].life / .4;
             for (let k = 0; k < 3; k++) {
                 const s = k / 3, s2 = s * s, s3 = s2 * s;
                 const f = (a: number, b: number, c: number, d: number) =>
                     .5 * (2 * b + (c - a) * s + (2 * a - 5 * b + 4 * c - d) * s2 + (3 * b - a - 3 * c + d) * s3);
-                points.push({ x: (f(p0.x, p1.x, p2.x, p3.x) - this.cameraX) * u, y: f(p0.y, p1.y, p2.y, p3.y) * u, t: p1.t + (p2.t - p1.t) * s });
+                const p = points[index] ?? (points[index] = { x: 0, y: 0, t: 0, nx: 0, ny: 0, taper: 0, fade: 0 }); index++;
+                p.x = (f(p0.x, p1.x, p2.x, p3.x) - this.cameraX) * u; p.y = f(p0.y, p1.y, p2.y, p3.y) * u;
+                p.t = t1 + (t2 - t1) * s;
             }
         }
-        const last = raw[raw.length - 1];
-        points.push({ x: (last.x - this.cameraX) * u, y: last.y * u, t: last.t });
+        const last = sample(count - 1), p = points[index] ?? (points[index] = { x: 0, y: 0, t: 0, nx: 0, ny: 0, taper: 0, fade: 0 });
+        p.x = (last.x - this.cameraX) * u; p.y = last.y * u; p.t = count === 1 ? 0 : 1 - this.trail[0].life / .4;
+        this.ribbonCount = index + 1;
+        for (let i = 0; i < this.ribbonCount; i++) {
+            const p = points[i], a = points[Math.max(0, i - 1)], b = points[Math.min(this.ribbonCount - 1, i + 1)];
+            const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy) || 1;
+            p.nx = dy / length; p.ny = dx / length; p.taper = (1 - p.t) ** .8;
+            p.fade = i + 1 < this.ribbonCount ? (1 - (p.t + points[i + 1].t) / 2) ** 1.5 : 0;
+        }
         return points;
     }
 
     /** One quad per segment sharing edges with its neighbours, so there are no gaps, overlaps or steps. */
-    private drawRibbon(g: Graphics, points: { x: number; y: number; t: number }[], width: number, hex: string, alpha: number): void {
-        const edges = points.map((p, i) => {
-            const a = points[Math.max(0, i - 1)], b = points[Math.min(points.length - 1, i + 1)];
-            const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy) || 1, half = width / 2 * (1 - p.t) ** .8;
-            return { lx: p.x - dy / length * half, ly: p.y + dx / length * half, rx: p.x + dy / length * half, ry: p.y - dx / length * half };
-        });
-        for (let i = 0; i < points.length - 1; i++) {
-            const a = edges[i], b = edges[i + 1], fade = (1 - (points[i].t + points[i + 1].t) / 2) ** 1.5;
+    private drawRibbon(g: Graphics, points: RibbonPoint[], width: number, hex: string, alpha: number): void {
+        for (let i = 0; i < this.ribbonCount - 1; i++) {
+            const a = points[i], b = points[i + 1], fade = a.fade;
             if (fade <= .01) continue;
             g.fillColor = color(hex, Math.round(255 * alpha * fade));
-            g.moveTo(a.lx, a.ly); g.lineTo(b.lx, b.ly); g.lineTo(b.rx, b.ry); g.lineTo(a.rx, a.ry); g.close(); g.fill();
+            const ah = width / 2 * a.taper, bh = width / 2 * b.taper;
+            g.moveTo(a.x - a.nx * ah, a.y + a.ny * ah); g.lineTo(b.x - b.nx * bh, b.y + b.ny * bh);
+            g.lineTo(b.x + b.nx * bh, b.y - b.ny * bh); g.lineTo(a.x + a.nx * ah, a.y - a.ny * ah); g.close(); g.fill();
         }
     }
 
@@ -1474,6 +1496,9 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     private iconButton(name: string, parent: Node, icon: string, action: () => void | Promise<void>): Node {
         const size = DUNK_ICON_BUTTON, r = size / 2;
         const node = this.makeNode(name, parent, size, size + 4), face = this.makeNode('Face', node, size, size + 4);
+        // The extra four pixels belong below the disc, where its shadow is drawn.
+        // Match the touch bounds to that asymmetric artwork without moving the control.
+        node.getComponent(UITransform)!.setAnchorPoint(.5, (r + 4) / (size + 4));
         const g = face.addComponent(Graphics);
         // A moon-cream disc on a dark drop with a brass inner ring: it stands out from the night bands.
         g.fillColor = color(T.silhouetteShade, 150); g.circle(0, -4, r); g.fill();
@@ -1522,4 +1547,10 @@ export class FlappyDunkGame extends Component implements MiniGame<DunkServices> 
     }
 }
 
-function color(hex: string, alpha = 255): Color { const result = Color.fromHEX(new Color(), hex); result.a = alpha; return result; }
+/** Cocos setters copy colours. Reuse one scratch colour per palette entry, never mutate renderer colours in place. */
+const colors = new Map<string, Color>();
+function color(hex: string, alpha = 255): Color {
+    let result = colors.get(hex);
+    if (!result) { result = Color.fromHEX(new Color(), hex); colors.set(hex, result); }
+    result.a = alpha; return result;
+}

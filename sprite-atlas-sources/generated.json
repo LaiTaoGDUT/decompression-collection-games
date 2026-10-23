@@ -11046,11 +11046,11 @@
     ]
   },
   "meowdoku/visual/ui/meow-result-cats": {
-    "rawHash": "2204fa2eb6d152087fe9052575b09db55c52d864d8279fd82c7cd0a5a504140b",
+    "rawHash": "baa39c2990f66ea64147fa7d7b090530ff0d1b7f3a6c5815ea0722db51fd9f66",
     "imageUuid": "3dcc4f94-0c43-51d6-bd9c-4adcb2a04533",
     "size": [
-      712,
-      516
+      516,
+      780
     ],
     "frames": [
       {
@@ -11085,28 +11085,59 @@
         }
       },
       {
-        "source": "visual/ui/meowdoku-like-hand-v1.png",
+        "source": "visual/ui/meowdoku-like-fist-v2.png",
         "sourceRect": [
           0,
           0,
-          192,
-          192
+          396,
+          512
         ],
-        "name": "meowdoku-like-hand-v1",
-        "uuid": "8685e9d2-23cc-5419-b50e-a67be114cd5f@c658a",
+        "name": "meowdoku-like-fist-v2",
+        "uuid": "8685e9d2-23cc-5419-b50e-a67be114cd5f@d8d7c",
         "rect": [
-          518,
           2,
-          192,
-          192
+          518,
+          99,
+          128
         ],
         "originalSize": [
-          192,
-          192
+          99,
+          128
         ],
         "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/meowdoku-like-thumb-v2.png",
+        "sourceRect": [
           0,
-          0
+          0,
+          396,
+          512
+        ],
+        "name": "meowdoku-like-thumb-v2",
+        "uuid": "8685e9d2-23cc-5419-b50e-a67be114cd5f@2f373",
+        "rect": [
+          2,
+          650,
+          99,
+          128
+        ],
+        "originalSize": [
+          99,
+          128
+        ],
+        "offset": [
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -17754,1886 +17785,6 @@
       }
     ]
   },
-  "meme-runner/visual/hero/lie-frames-v16": {
-    "rawHash": "bba838f223a5b533cd71ba151434f6fe26f5f6b20daad77b13b17466173b93fc",
-    "imageUuid": "b606bd6d-bc1f-5e42-9e12-8edd90f45900",
-    "size": [
-      984,
-      1021
-    ],
-    "frames": [
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          0,
-          0,
-          640,
-          576
-        ],
-        "name": "double-0",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@fc3ee",
-        "rect": [
-          2,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          640,
-          0,
-          640,
-          576
-        ],
-        "name": "double-1",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@f5919",
-        "rect": [
-          166,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          1280,
-          0,
-          640,
-          576
-        ],
-        "name": "double-2",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@31b0d",
-        "rect": [
-          330,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          1920,
-          0,
-          640,
-          576
-        ],
-        "name": "double-3",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@88d77",
-        "rect": [
-          494,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          0,
-          576,
-          640,
-          576
-        ],
-        "name": "double-4",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@40657",
-        "rect": [
-          658,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          640,
-          576,
-          640,
-          576
-        ],
-        "name": "double-5",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@072b7",
-        "rect": [
-          822,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          1280,
-          576,
-          640,
-          576
-        ],
-        "name": "double-6",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@ffda4",
-        "rect": [
-          2,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-double-color-v16.png",
-        "sourceRect": [
-          1920,
-          576,
-          640,
-          576
-        ],
-        "name": "double-7",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@b0fde",
-        "rect": [
-          2,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          0,
-          0,
-          640,
-          576
-        ],
-        "name": "run-0",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@6ef06",
-        "rect": [
-          2,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          640,
-          0,
-          640,
-          576
-        ],
-        "name": "run-1",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@569f7",
-        "rect": [
-          2,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          2560,
-          576,
-          640,
-          576
-        ],
-        "name": "run-10",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@c8a83",
-        "rect": [
-          2,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          3200,
-          576,
-          640,
-          576
-        ],
-        "name": "run-11",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@b9493",
-        "rect": [
-          166,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          0,
-          1152,
-          640,
-          576
-        ],
-        "name": "run-12",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@06ff9",
-        "rect": [
-          330,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          640,
-          1152,
-          640,
-          576
-        ],
-        "name": "run-13",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@78879",
-        "rect": [
-          494,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1280,
-          1152,
-          640,
-          576
-        ],
-        "name": "run-14",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@344ac",
-        "rect": [
-          658,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1920,
-          1152,
-          640,
-          576
-        ],
-        "name": "run-15",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@6c7d2",
-        "rect": [
-          822,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          2560,
-          1152,
-          640,
-          576
-        ],
-        "name": "run-16",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@15241",
-        "rect": [
-          166,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          3200,
-          1152,
-          640,
-          576
-        ],
-        "name": "run-17",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@befcc",
-        "rect": [
-          166,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          0,
-          1728,
-          640,
-          576
-        ],
-        "name": "run-18",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@721da",
-        "rect": [
-          166,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          640,
-          1728,
-          640,
-          576
-        ],
-        "name": "run-19",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@63e09",
-        "rect": [
-          166,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1280,
-          0,
-          640,
-          576
-        ],
-        "name": "run-2",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@1d969",
-        "rect": [
-          330,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1280,
-          1728,
-          640,
-          576
-        ],
-        "name": "run-20",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@0d313",
-        "rect": [
-          494,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1920,
-          1728,
-          640,
-          576
-        ],
-        "name": "run-21",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@90a62",
-        "rect": [
-          658,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          2560,
-          1728,
-          640,
-          576
-        ],
-        "name": "run-22",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@5a225",
-        "rect": [
-          822,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          3200,
-          1728,
-          640,
-          576
-        ],
-        "name": "run-23",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@81591",
-        "rect": [
-          330,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1920,
-          0,
-          640,
-          576
-        ],
-        "name": "run-3",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@c3f12",
-        "rect": [
-          330,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          2560,
-          0,
-          640,
-          576
-        ],
-        "name": "run-4",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@3bd0e",
-        "rect": [
-          330,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          3200,
-          0,
-          640,
-          576
-        ],
-        "name": "run-5",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@62bbc",
-        "rect": [
-          494,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          0,
-          576,
-          640,
-          576
-        ],
-        "name": "run-6",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@08be3",
-        "rect": [
-          658,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          640,
-          576,
-          640,
-          576
-        ],
-        "name": "run-7",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@20c23",
-        "rect": [
-          822,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1280,
-          576,
-          640,
-          576
-        ],
-        "name": "run-8",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@cacfa",
-        "rect": [
-          494,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-run-color-v15.png",
-        "sourceRect": [
-          1920,
-          576,
-          640,
-          576
-        ],
-        "name": "run-9",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@66e9b",
-        "rect": [
-          494,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-slide-color-v16.png",
-        "sourceRect": [
-          619,
-          460,
-          707,
-          256
-        ],
-        "name": "slide-3",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@4b44d",
-        "rect": [
-          2,
-          890,
-          156,
-          56
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          -1.2175388967468095,
-          -44.65625
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-slide-extra-color-v16.png",
-        "sourceRect": [
-          661,
-          351,
-          815,
-          285
-        ],
-        "name": "slide-2",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@54506",
-        "rect": [
-          2,
-          950,
-          155,
-          54
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.5368098159509174,
-          -45.56842105263158
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-slide-color-v16.png",
-        "sourceRect": [
-          26,
-          345,
-          593,
-          349
-        ],
-        "name": "slide-1",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@2f5bd",
-        "rect": [
-          162,
-          890,
-          130,
-          77
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          -0.11804384485666475,
-          -34.16189111747851
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-color-v16.png",
-        "sourceRect": [
-          71,
-          13,
-          365,
-          427
-        ],
-        "name": "air-0",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@9cd80",
-        "rect": [
-          296,
-          890,
-          102,
-          120
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          8.985205479452055,
-          -13.213114754098356
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-extra-color-v16.png",
-        "sourceRect": [
-          1580,
-          118,
-          437,
-          549
-        ],
-        "name": "air-11",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@73caf",
-        "rect": [
-          402,
-          890,
-          92,
-          115
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          9.915789473684193,
-          -15.12841530054645
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-extra-color-v16.png",
-        "sourceRect": [
-          1067,
-          121,
-          461,
-          544
-        ],
-        "name": "air-8",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@2f052",
-        "rect": [
-          498,
-          890,
-          97,
-          114
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          14.008676789587852,
-          -15.628676470588234
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-slide-extra-color-v16.png",
-        "sourceRect": [
-          43,
-          143,
-          601,
-          487
-        ],
-        "name": "slide-0",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@fa56a",
-        "rect": [
-          599,
-          890,
-          114,
-          93
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          1.6126455906821988,
-          -26.07289527720739
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-color-v16.png",
-        "sourceRect": [
-          539,
-          446,
-          342,
-          400
-        ],
-        "name": "air-7",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@2a1d2",
-        "rect": [
-          658,
-          594,
-          96,
-          112
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          13.88771929824562,
-          -16.839999999999996
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-color-v16.png",
-        "sourceRect": [
-          1411,
-          454,
-          333,
-          395
-        ],
-        "name": "air-10",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@37078",
-        "rect": [
-          658,
-          710,
-          93,
-          111
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          12.293693693693667,
-          -17.343037974683547
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-extra-color-v16.png",
-        "sourceRect": [
-          53,
-          86,
-          461,
-          510
-        ],
-        "name": "air-1",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@aac39",
-        "rect": [
-          717,
-          825,
-          97,
-          107
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          13.0407809110629,
-          -7.28235294117647
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-extra-color-v16.png",
-        "sourceRect": [
-          564,
-          100,
-          461,
-          504
-        ],
-        "name": "air-6",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@46aea",
-        "rect": [
-          755,
-          710,
-          97,
-          106
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          16.554663774403473,
-          -10.509126984126986
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-slide-extra-color-v16.png",
-        "sourceRect": [
-          1520,
-          84,
-          504,
-          553
-        ],
-        "name": "slide-5",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@ead13",
-        "rect": [
-          758,
-          594,
-          96,
-          105
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          2.2476190476190396,
-          -20.06962025316455
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-color-v16.png",
-        "sourceRect": [
-          969,
-          489,
-          356,
-          358
-        ],
-        "name": "air-9",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@5e710",
-        "rect": [
-          858,
-          594,
-          100,
-          100
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          11.825842696629199,
-          -22.837988826815646
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-color-v16.png",
-        "sourceRect": [
-          531,
-          13,
-          336,
-          358
-        ],
-        "name": "air-2",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@49e7f",
-        "rect": [
-          858,
-          698,
-          94,
-          100
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          11.227976190476184,
-          -4.284916201117312
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-air-color-v16.png",
-        "sourceRect": [
-          975,
-          24,
-          312,
-          344
-        ],
-        "name": "air-3",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@be4bc",
-        "rect": [
-          856,
-          802,
-          87,
-          96
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          6.325961538461513,
-          -1.5441860465116264
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/hero/lie-slide-color-v16.png",
-        "sourceRect": [
-          1328,
-          327,
-          425,
-          376
-        ],
-        "name": "slide-4",
-        "uuid": "4936ddd4-6445-5c2d-8bc2-550bfff9779f@4eba9",
-        "rect": [
-          717,
-          936,
-          94,
-          83
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          -0.832000000000022,
-          -31.162234042553195
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/companions/cast-v17": {
-    "rawHash": "a8869b24328f08bde2b3c0ea0477783148c798cc10473b2d3e086089e678716d",
-    "imageUuid": "fa3bad32-28e3-5e05-aff0-ad8fe1ad93a7",
-    "size": [
-      656,
-      592
-    ],
-    "frames": [
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          0,
-          0,
-          640,
-          576
-        ],
-        "name": "extra-0",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@63bb7",
-        "rect": [
-          2,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          640,
-          0,
-          640,
-          576
-        ],
-        "name": "extra-1",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@a4601",
-        "rect": [
-          166,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          1280,
-          1152,
-          640,
-          576
-        ],
-        "name": "extra-10",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@f5c16",
-        "rect": [
-          330,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          1920,
-          1152,
-          640,
-          576
-        ],
-        "name": "extra-11",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@b2bf6",
-        "rect": [
-          494,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          1280,
-          0,
-          640,
-          576
-        ],
-        "name": "extra-2",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@cf44c",
-        "rect": [
-          2,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          1920,
-          0,
-          640,
-          576
-        ],
-        "name": "extra-3",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@02701",
-        "rect": [
-          2,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          0,
-          576,
-          640,
-          576
-        ],
-        "name": "extra-4",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@8a286",
-        "rect": [
-          2,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          640,
-          576,
-          640,
-          576
-        ],
-        "name": "extra-5",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@7a13b",
-        "rect": [
-          166,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          1280,
-          576,
-          640,
-          576
-        ],
-        "name": "extra-6",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@a22e3",
-        "rect": [
-          330,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          1920,
-          576,
-          640,
-          576
-        ],
-        "name": "extra-7",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@607d1",
-        "rect": [
-          494,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          0,
-          1152,
-          640,
-          576
-        ],
-        "name": "extra-8",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@31023",
-        "rect": [
-          166,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/extra-registered-v17.png",
-        "sourceRect": [
-          640,
-          1152,
-          640,
-          576
-        ],
-        "name": "extra-9",
-        "uuid": "3fe603ed-76df-55af-8272-16311715d41e@1d822",
-        "rect": [
-          166,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
   "meme-runner/visual/world-v19/world-pieces": {
     "rawHash": "8cebbe5b9ded70a1e95862e0aeab574cbadfae534eb85dbfc0f87c6a45a771f2",
     "imageUuid": "ddab93d7-f380-5b24-9c00-a26ea2f6d0b2",
@@ -20140,1598 +18291,8 @@
       }
     ]
   },
-  "meme-runner/visual/companions/kangaroo-v26": {
-    "rawHash": "d353a604ee5c4a2744e279d4afc7518e84a3f36417c9ae0a5f55c5328025f935",
-    "imageUuid": "54845832-d15c-54fa-bdde-e9df2061634b",
-    "size": [
-      900,
-      900
-    ],
-    "frames": [
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          0,
-          0,
-          704,
-          704
-        ],
-        "name": "kangaroo-0",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@6c4ad",
-        "rect": [
-          2,
-          2,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          704,
-          0,
-          704,
-          704
-        ],
-        "name": "kangaroo-1",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@b4937",
-        "rect": [
-          182,
-          2,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          1408,
-          1408,
-          704,
-          704
-        ],
-        "name": "kangaroo-10",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@4b596",
-        "rect": [
-          362,
-          2,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          2112,
-          1408,
-          704,
-          704
-        ],
-        "name": "kangaroo-11",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@c285a",
-        "rect": [
-          542,
-          2,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          0,
-          2112,
-          704,
-          704
-        ],
-        "name": "kangaroo-12",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@d3b37",
-        "rect": [
-          722,
-          2,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          704,
-          2112,
-          704,
-          704
-        ],
-        "name": "kangaroo-13",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@99b5f",
-        "rect": [
-          2,
-          182,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          1408,
-          2112,
-          704,
-          704
-        ],
-        "name": "kangaroo-14",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@b1e26",
-        "rect": [
-          2,
-          362,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          2112,
-          2112,
-          704,
-          704
-        ],
-        "name": "kangaroo-15",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@a8730",
-        "rect": [
-          2,
-          542,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          0,
-          2816,
-          704,
-          704
-        ],
-        "name": "kangaroo-16",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@bc252",
-        "rect": [
-          2,
-          722,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          704,
-          2816,
-          704,
-          704
-        ],
-        "name": "kangaroo-17",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@d7e6f",
-        "rect": [
-          182,
-          182,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          1408,
-          2816,
-          704,
-          704
-        ],
-        "name": "kangaroo-18",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@a6968",
-        "rect": [
-          362,
-          182,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          2112,
-          2816,
-          704,
-          704
-        ],
-        "name": "kangaroo-19",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@57a6e",
-        "rect": [
-          542,
-          182,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          1408,
-          0,
-          704,
-          704
-        ],
-        "name": "kangaroo-2",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@e7fa6",
-        "rect": [
-          722,
-          182,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          2112,
-          0,
-          704,
-          704
-        ],
-        "name": "kangaroo-3",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@e1ebd",
-        "rect": [
-          182,
-          362,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          0,
-          704,
-          704,
-          704
-        ],
-        "name": "kangaroo-4",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@6ec92",
-        "rect": [
-          182,
-          542,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          704,
-          704,
-          704,
-          704
-        ],
-        "name": "kangaroo-5",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@9de6a",
-        "rect": [
-          182,
-          722,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          1408,
-          704,
-          704,
-          704
-        ],
-        "name": "kangaroo-6",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@848b1",
-        "rect": [
-          362,
-          362,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          2112,
-          704,
-          704,
-          704
-        ],
-        "name": "kangaroo-7",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@b8037",
-        "rect": [
-          542,
-          362,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          0,
-          1408,
-          704,
-          704
-        ],
-        "name": "kangaroo-8",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@5c906",
-        "rect": [
-          722,
-          362,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/kangaroo-registered-v26.png",
-        "sourceRect": [
-          704,
-          1408,
-          704,
-          704
-        ],
-        "name": "kangaroo-9",
-        "uuid": "d31719d3-27f4-57dd-9609-7325e5bc8160@fbab7",
-        "rect": [
-          362,
-          542,
-          176,
-          176
-        ],
-        "originalSize": [
-          176,
-          176
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/companions/bull-v26": {
-    "rawHash": "2b07cac65ac0262590dfb136400fb130358d5c93e3f6d8ee2f77d6ff38f32721",
-    "imageUuid": "2c3adf68-9a56-5d2e-b76c-47d6c4e0906a",
-    "size": [
-      848,
-      740
-    ],
-    "frames": [
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          0,
-          2304,
-          832,
-          576
-        ],
-        "name": "bull-16",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@6315e",
-        "rect": [
-          2,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          832,
-          2304,
-          832,
-          576
-        ],
-        "name": "bull-17",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@124b1",
-        "rect": [
-          214,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          1664,
-          2304,
-          832,
-          576
-        ],
-        "name": "bull-18",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@08f40",
-        "rect": [
-          426,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          2496,
-          2304,
-          832,
-          576
-        ],
-        "name": "bull-19",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@63f9d",
-        "rect": [
-          638,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          0,
-          2880,
-          832,
-          576
-        ],
-        "name": "bull-20",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@c9cdc",
-        "rect": [
-          2,
-          150,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          832,
-          2880,
-          832,
-          576
-        ],
-        "name": "bull-21",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@f733a",
-        "rect": [
-          2,
-          298,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          1664,
-          2880,
-          832,
-          576
-        ],
-        "name": "bull-22",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@a1edf",
-        "rect": [
-          2,
-          446,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/bull-registered-v26.png",
-        "sourceRect": [
-          2496,
-          2880,
-          832,
-          576
-        ],
-        "name": "bull-23",
-        "uuid": "613773c7-139e-55e4-993d-7b49a9fd876b@983fb",
-        "rect": [
-          2,
-          594,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/companions/dragon-v26": {
-    "rawHash": "15a72b429891c9af056c07981504e789e3d09ddd76b453b7e9f234f4964f9d24",
-    "imageUuid": "cfea6ebc-39bf-5b3f-b8bf-fd018dfdc5a1",
-    "size": [
-      912,
-      792
-    ],
-    "frames": [
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          0,
-          0,
-          896,
-          512
-        ],
-        "name": "dragon-0",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@a40ca",
-        "rect": [
-          2,
-          2,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          896,
-          0,
-          896,
-          512
-        ],
-        "name": "dragon-1",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@68ea0",
-        "rect": [
-          230,
-          2,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          1792,
-          1024,
-          896,
-          512
-        ],
-        "name": "dragon-10",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@e6562",
-        "rect": [
-          458,
-          2,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          2688,
-          1024,
-          896,
-          512
-        ],
-        "name": "dragon-11",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@4ecbb",
-        "rect": [
-          686,
-          2,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          0,
-          1536,
-          896,
-          512
-        ],
-        "name": "dragon-12",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@e1619",
-        "rect": [
-          2,
-          134,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          896,
-          1536,
-          896,
-          512
-        ],
-        "name": "dragon-13",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@13ca5",
-        "rect": [
-          230,
-          134,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          1792,
-          1536,
-          896,
-          512
-        ],
-        "name": "dragon-14",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@06dc2",
-        "rect": [
-          458,
-          134,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          2688,
-          1536,
-          896,
-          512
-        ],
-        "name": "dragon-15",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@8f721",
-        "rect": [
-          686,
-          134,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          1792,
-          0,
-          896,
-          512
-        ],
-        "name": "dragon-2",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@7493b",
-        "rect": [
-          2,
-          266,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          2688,
-          0,
-          896,
-          512
-        ],
-        "name": "dragon-3",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@03459",
-        "rect": [
-          2,
-          398,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          0,
-          512,
-          896,
-          512
-        ],
-        "name": "dragon-4",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@df9a1",
-        "rect": [
-          2,
-          530,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          896,
-          512,
-          896,
-          512
-        ],
-        "name": "dragon-5",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@62dc6",
-        "rect": [
-          2,
-          662,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          1792,
-          512,
-          896,
-          512
-        ],
-        "name": "dragon-6",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@15674",
-        "rect": [
-          230,
-          266,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          2688,
-          512,
-          896,
-          512
-        ],
-        "name": "dragon-7",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@e67f8",
-        "rect": [
-          458,
-          266,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          0,
-          1024,
-          896,
-          512
-        ],
-        "name": "dragon-8",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@3dede",
-        "rect": [
-          686,
-          266,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/dragon-registered-v26.png",
-        "sourceRect": [
-          896,
-          1024,
-          896,
-          512
-        ],
-        "name": "dragon-9",
-        "uuid": "4e6d22aa-8554-5493-9afb-63756cc1b84d@5ebfc",
-        "rect": [
-          230,
-          398,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/companions/banana-v26": {
-    "rawHash": "b4854ae18a951c04b6db1a9cd54803524cb2e168d40af231d4de9dbfd0fa4c09",
-    "imageUuid": "9825fe24-6f77-5ea1-8d2f-bd89f5e3b592",
-    "size": [
-      528,
-      396
-    ],
-    "frames": [
-      {
-        "source": "visual/companions/banana-registered-v26.png",
-        "sourceRect": [
-          0,
-          0,
-          512,
-          512
-        ],
-        "name": "banana-0",
-        "uuid": "967127d7-8b1d-5487-bac6-1c35da8eca35@71ec9",
-        "rect": [
-          2,
-          2,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/banana-registered-v26.png",
-        "sourceRect": [
-          512,
-          0,
-          512,
-          512
-        ],
-        "name": "banana-1",
-        "uuid": "967127d7-8b1d-5487-bac6-1c35da8eca35@c876b",
-        "rect": [
-          134,
-          2,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/banana-registered-v26.png",
-        "sourceRect": [
-          0,
-          2048,
-          512,
-          512
-        ],
-        "name": "banana-16",
-        "uuid": "967127d7-8b1d-5487-bac6-1c35da8eca35@e22a5",
-        "rect": [
-          266,
-          2,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/banana-registered-v26.png",
-        "sourceRect": [
-          512,
-          2048,
-          512,
-          512
-        ],
-        "name": "banana-17",
-        "uuid": "967127d7-8b1d-5487-bac6-1c35da8eca35@19342",
-        "rect": [
-          398,
-          2,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/banana-registered-v26.png",
-        "sourceRect": [
-          1024,
-          2048,
-          512,
-          512
-        ],
-        "name": "banana-18",
-        "uuid": "967127d7-8b1d-5487-bac6-1c35da8eca35@3a7e1",
-        "rect": [
-          2,
-          134,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/companions/banana-registered-v26.png",
-        "sourceRect": [
-          1536,
-          2048,
-          512,
-          512
-        ],
-        "name": "banana-19",
-        "uuid": "967127d7-8b1d-5487-bac6-1c35da8eca35@f8242",
-        "rect": [
-          2,
-          266,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
   "meme-runner/visual/opening-v27/story": {
-    "rawHash": "40d52d4a3e79af8a9bd6366d790a9701273a009493c8231872467ff87227bb45",
+    "rawHash": "ee3b363df5a781349e8837d6e112f58bfcca960572228c03ee0f97ff83d17f7b",
     "imageUuid": "b6814047-e598-53d3-9b19-4fa7575504fc",
     "size": [
       1956,
@@ -21865,137 +18426,13 @@
     ]
   },
   "meme-runner/visual/v33/items": {
-    "rawHash": "7e290b0ec046564d90d6b6705dcaea7d8d67ff0aaaf63bcc02a9dab46b59f629",
+    "rawHash": "90b90695b7f70cd16c64ef6e5efbaa451d83d9f5db46bc81b36f7fae7c792607",
     "imageUuid": "83e5ebcd-6039-56c0-985e-a9f2b8ed9092",
     "size": [
-      884,
-      248
+      656,
+      164
     ],
     "frames": [
-      {
-        "source": "visual/v33/frames/nyan-0.png",
-        "sourceRect": [
-          0,
-          0,
-          176,
-          80
-        ],
-        "name": "nyan-0",
-        "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@56c8f",
-        "rect": [
-          2,
-          2,
-          176,
-          80
-        ],
-        "originalSize": [
-          176,
-          80
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/nyan-1.png",
-        "sourceRect": [
-          0,
-          0,
-          176,
-          80
-        ],
-        "name": "nyan-1",
-        "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@22388",
-        "rect": [
-          182,
-          2,
-          176,
-          80
-        ],
-        "originalSize": [
-          176,
-          80
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/nyan-2.png",
-        "sourceRect": [
-          0,
-          0,
-          176,
-          80
-        ],
-        "name": "nyan-2",
-        "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@bc471",
-        "rect": [
-          362,
-          2,
-          176,
-          80
-        ],
-        "originalSize": [
-          176,
-          80
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/nyan-3.png",
-        "sourceRect": [
-          0,
-          0,
-          176,
-          80
-        ],
-        "name": "nyan-3",
-        "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@ea678",
-        "rect": [
-          542,
-          2,
-          176,
-          80
-        ],
-        "originalSize": [
-          176,
-          80
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
       {
         "source": "visual/v33/frames/shield-loop-0.png",
         "sourceRect": [
@@ -22007,7 +18444,7 @@
         "name": "shield-loop-0",
         "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@cab02",
         "rect": [
-          722,
+          2,
           2,
           160,
           160
@@ -22038,8 +18475,8 @@
         "name": "shield-loop-1",
         "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@18bc2",
         "rect": [
+          166,
           2,
-          86,
           160,
           160
         ],
@@ -22069,8 +18506,8 @@
         "name": "shield-loop-2",
         "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@77540",
         "rect": [
-          166,
-          86,
+          330,
+          2,
           160,
           160
         ],
@@ -22100,778 +18537,14 @@
         "name": "shield-loop-3",
         "uuid": "403ab179-07fc-5344-8a9a-eac5583aebe3@405ab",
         "rect": [
-          330,
-          86,
+          494,
+          2,
           160,
           160
         ],
         "originalSize": [
           160,
           160
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v33/characters": {
-    "rawHash": "d64c7967984d0cb1c8789b422e4a221cb94dc2b9181a788949b9579848fb850e",
-    "imageUuid": "3265ee14-e06d-50c0-a655-73f7dccdb344",
-    "size": [
-      2036,
-      1120
-    ],
-    "frames": [
-      {
-        "source": "visual/v33/frames/spinner-0.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-0",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@c35d6",
-        "rect": [
-          2,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-1.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-1",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@1f750",
-        "rect": [
-          230,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-2.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-2",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@f1048",
-        "rect": [
-          458,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-3.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-3",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@ce21d",
-        "rect": [
-          686,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-4.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-4",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@97875",
-        "rect": [
-          914,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-5.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-5",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@244a3",
-        "rect": [
-          1142,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-6.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-6",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@91f4e",
-        "rect": [
-          1370,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/spinner-7.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-7",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@b13b3",
-        "rect": [
-          1598,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/dash-0.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "dash-0",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@70040",
-        "rect": [
-          1826,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/dash-1.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "dash-1",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@ab77e",
-        "rect": [
-          2,
-          150,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/dash-2.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "dash-2",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@2f580",
-        "rect": [
-          2,
-          298,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/dash-3.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "dash-3",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@ce398",
-        "rect": [
-          2,
-          446,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/popcat-0.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "popcat-0",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@4cb4f",
-        "rect": [
-          2,
-          594,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/popcat-1.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "popcat-1",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@ff1bc",
-        "rect": [
-          2,
-          726,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/popcat-2.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "popcat-2",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@8f90c",
-        "rect": [
-          2,
-          858,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v33/frames/popcat-3.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "popcat-3",
-        "uuid": "87559ef4-f7a9-54e6-bf19-c3ea773b0b68@5385a",
-        "rect": [
-          2,
-          990,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v34/bull": {
-    "rawHash": "b77afd6be49d7ce27572c265fc2634af2b181c925a94635bb8360d2e4d7902b4",
-    "imageUuid": "de1d063e-0f42-56aa-8ae7-a7b8efe57402",
-    "size": [
-      848,
-      740
-    ],
-    "frames": [
-      {
-        "source": "visual/v34/frames/bull-0.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-0",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@0f7a7",
-        "rect": [
-          2,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-1.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-1",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@76bb8",
-        "rect": [
-          214,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-2.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-2",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@a2c7f",
-        "rect": [
-          426,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-3.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-3",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@9fe8f",
-        "rect": [
-          638,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-4.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-4",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@1a9f5",
-        "rect": [
-          2,
-          150,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-5.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-5",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@0c8fd",
-        "rect": [
-          2,
-          298,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-6.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-6",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@bd8a0",
-        "rect": [
-          2,
-          446,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v34/frames/bull-7.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-7",
-        "uuid": "1852e584-b0cd-5c9d-a174-e7b6064b1413@fecea",
-        "rect": [
-          2,
-          594,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
         ],
         "offset": [
           0,
@@ -27149,7 +22822,7 @@
     ]
   },
   "meme-runner/visual/v38/finish": {
-    "rawHash": "36fed039e8c14be9c7aa380e9dc5d244951af0944954f6601315106ba557cb3b",
+    "rawHash": "23c59d5917256cddda9234e935b2f681692434cac8fe07fc7c42297227fcdedc",
     "imageUuid": "ec785c44-7cf0-5e16-b10e-6d78aacf1a00",
     "size": [
       304,
@@ -28915,7 +24588,7 @@
     ]
   },
   "meme-runner/visual/v38/dialog-art": {
-    "rawHash": "b3b07b5c6483f35e30a147890104eb2bd12f78c1e60e2efe404973d2bf56dc41",
+    "rawHash": "d1e0fa57f9943342c7709156e0cc98a0e0f43b62c286db438b2d860680a79fff",
     "imageUuid": "58edd8d5-be14-51a5-b77e-21cf9b5b48e8",
     "size": [
       1882,
@@ -29034,6 +24707,2206 @@
         "originalSize": [
           470,
           360
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v42/hero": {
+    "rawHash": "6cdeea2ece71155fb40205f9afbba9ad9775bf888679a632060fd1816558309a",
+    "imageUuid": "3a09e3b9-0c82-5a6e-9cc3-61c029daa680",
+    "size": [
+      984,
+      888
+    ],
+    "frames": [
+      {
+        "source": "visual/v42/frames/dash-0.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "dash-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@70040",
+        "rect": [
+          2,
+          2,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dash-1.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "dash-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@ab77e",
+        "rect": [
+          214,
+          2,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/air-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@9cd80",
+        "rect": [
+          426,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/air-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@aac39",
+        "rect": [
+          590,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/air-2.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-2",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@49e7f",
+        "rect": [
+          754,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/air-3.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-3",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@be4bc",
+        "rect": [
+          2,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/double-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@fc3ee",
+        "rect": [
+          2,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/double-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@f5919",
+        "rect": [
+          2,
+          446,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/double-2.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-2",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@31b0d",
+        "rect": [
+          2,
+          594,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/double-3.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-3",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@88d77",
+        "rect": [
+          2,
+          742,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/hurt.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "hurt",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@c20d7",
+        "rect": [
+          166,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/land-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "land-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@25d35",
+        "rect": [
+          330,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/lose-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "lose-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@e0df6",
+        "rect": [
+          494,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/lose-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "lose-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@6ca4a",
+        "rect": [
+          658,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/ride-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "ride-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@049fb",
+        "rect": [
+          822,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/ride-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "ride-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@7e013",
+        "rect": [
+          166,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@6ef06",
+        "rect": [
+          166,
+          446,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@569f7",
+        "rect": [
+          166,
+          594,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-2.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-2",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@1d969",
+        "rect": [
+          166,
+          742,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-3.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-3",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@c3f12",
+        "rect": [
+          330,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-4.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-4",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@3bd0e",
+        "rect": [
+          494,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-5.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-5",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@62bbc",
+        "rect": [
+          658,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-6.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-6",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@08be3",
+        "rect": [
+          822,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/run-7.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-7",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@20c23",
+        "rect": [
+          330,
+          446,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/slide-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "slide-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@fa56a",
+        "rect": [
+          330,
+          594,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/slide-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "slide-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@2f5bd",
+        "rect": [
+          330,
+          742,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/win-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "win-0",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@14c84",
+        "rect": [
+          494,
+          446,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/win-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "win-1",
+        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@8e340",
+        "rect": [
+          658,
+          446,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v42/cast": {
+    "rawHash": "ab0b712e73a29ecdf146ee87bd33c397971d51747c5c4047d55d6af88a40ce52",
+    "imageUuid": "23706769-db10-5002-9ef1-a851616e40df",
+    "size": [
+      1012,
+      1020
+    ],
+    "frames": [
+      {
+        "source": "visual/v42/frames/spinner-0.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-0",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@c35d6",
+        "rect": [
+          2,
+          2,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-1.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-1",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@1f750",
+        "rect": [
+          230,
+          2,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-2.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-2",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@f1048",
+        "rect": [
+          458,
+          2,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-3.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-3",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@ce21d",
+        "rect": [
+          686,
+          2,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-4.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-4",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@97875",
+        "rect": [
+          2,
+          150,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-5.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-5",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@244a3",
+        "rect": [
+          230,
+          150,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-6.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-6",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@91f4e",
+        "rect": [
+          458,
+          150,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/spinner-7.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          144
+        ],
+        "name": "spinner-7",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@b13b3",
+        "rect": [
+          686,
+          150,
+          224,
+          144
+        ],
+        "originalSize": [
+          224,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dragon-0.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          128
+        ],
+        "name": "dragon-0",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@a40ca",
+        "rect": [
+          2,
+          298,
+          224,
+          128
+        ],
+        "originalSize": [
+          224,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dragon-1.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          128
+        ],
+        "name": "dragon-1",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@68ea0",
+        "rect": [
+          2,
+          430,
+          224,
+          128
+        ],
+        "originalSize": [
+          224,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dragon-2.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          128
+        ],
+        "name": "dragon-2",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@7493b",
+        "rect": [
+          2,
+          562,
+          224,
+          128
+        ],
+        "originalSize": [
+          224,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dragon-3.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          128
+        ],
+        "name": "dragon-3",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@03459",
+        "rect": [
+          2,
+          694,
+          224,
+          128
+        ],
+        "originalSize": [
+          224,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dragon-4.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          128
+        ],
+        "name": "dragon-4",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@df9a1",
+        "rect": [
+          2,
+          826,
+          224,
+          128
+        ],
+        "originalSize": [
+          224,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/dragon-5.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          128
+        ],
+        "name": "dragon-5",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@62dc6",
+        "rect": [
+          230,
+          298,
+          224,
+          128
+        ],
+        "originalSize": [
+          224,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-0.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-0",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@0f7a7",
+        "rect": [
+          458,
+          298,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-1.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-1",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@76bb8",
+        "rect": [
+          230,
+          430,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-2.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-2",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@a2c7f",
+        "rect": [
+          670,
+          298,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-3.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-3",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@9fe8f",
+        "rect": [
+          230,
+          578,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-4.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-4",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@1a9f5",
+        "rect": [
+          230,
+          726,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-5.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-5",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@0c8fd",
+        "rect": [
+          230,
+          874,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-6.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-6",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@bd8a0",
+        "rect": [
+          442,
+          446,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/bull-7.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "bull-7",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@fecea",
+        "rect": [
+          654,
+          446,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/friend-ring.png",
+        "sourceRect": [
+          0,
+          0,
+          200,
+          48
+        ],
+        "name": "friend-ring",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@0e889",
+        "rect": [
+          2,
+          958,
+          200,
+          48
+        ],
+        "originalSize": [
+          200,
+          48
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-0.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-0",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@6c4ad",
+        "rect": [
+          442,
+          594,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-1.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-1",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@b4937",
+        "rect": [
+          442,
+          774,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-2.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-2",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@e7fa6",
+        "rect": [
+          622,
+          594,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-3.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-3",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@e1ebd",
+        "rect": [
+          802,
+          594,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-4.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-4",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@6ec92",
+        "rect": [
+          622,
+          774,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-5.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-5",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@9de6a",
+        "rect": [
+          802,
+          774,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/banana-0.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "banana-0",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@71ec9",
+        "rect": [
+          882,
+          298,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/banana-1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "banana-1",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@c876b",
+        "rect": [
+          882,
+          430,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/friend-pin.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          64
+        ],
+        "name": "friend-pin",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@217f3",
+        "rect": [
+          442,
+          954,
+          56,
+          64
+        ],
+        "originalSize": [
+          56,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v42/cast-2": {
+    "rawHash": "22f08a9c9809ba2d2d625f1e4c3cfc2493cd886dd739135a5dbc74441f2d5ad2",
+    "imageUuid": "d855334d-2c47-59b2-b942-48aafad17cad",
+    "size": [
+      984,
+      312
+    ],
+    "frames": [
+      {
+        "source": "visual/v42/frames/kangaroo-6.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-6",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@848b1",
+        "rect": [
+          2,
+          2,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-7.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          176
+        ],
+        "name": "kangaroo-7",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@b8037",
+        "rect": [
+          182,
+          2,
+          176,
+          176
+        ],
+        "originalSize": [
+          176,
+          176
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/nyan-0.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          80
+        ],
+        "name": "nyan-0",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@56c8f",
+        "rect": [
+          362,
+          2,
+          176,
+          80
+        ],
+        "originalSize": [
+          176,
+          80
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/nyan-1.png",
+        "sourceRect": [
+          0,
+          0,
+          176,
+          80
+        ],
+        "name": "nyan-1",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@22388",
+        "rect": [
+          542,
+          2,
+          176,
+          80
+        ],
+        "originalSize": [
+          176,
+          80
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/banana-2.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "banana-2",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@63439",
+        "rect": [
+          722,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/banana-3.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "banana-3",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@8e358",
+        "rect": [
+          854,
+          2,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/popcat-0.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "popcat-0",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@4cb4f",
+        "rect": [
+          362,
+          86,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/popcat-1.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "popcat-1",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@ff1bc",
+        "rect": [
+          494,
+          86,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/popcat-2.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "popcat-2",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@8f90c",
+        "rect": [
+          2,
+          182,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v42/frames/popcat-3.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "popcat-3",
+        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@5385a",
+        "rect": [
+          134,
+          182,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
         ],
         "offset": [
           0,

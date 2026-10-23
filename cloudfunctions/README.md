@@ -1,18 +1,20 @@
 # 微信 CloudBase 云存档
 
-当前状态：客户端、云函数、数据库权限样例和回归测试已接入；尚未创建环境或部署。`assets/resources/configs/app.json` 中的 `cloudSave.enabled` 默认关闭，环境 ID 留空。浏览器预览和其他平台继续使用本地存档。
+当前状态：客户端已开启云存档，环境 ID 为 `cloud1-d5g8w0y1z59e9cc72`；云函数实际部署状态和真机上传/恢复需在微信开发者工具中确认。浏览器预览和其他平台继续使用本地存档。
 
 ## 创建环境与部署
 
 1. 在**当前微信小游戏 AppID** 的微信开发者工具中开通云开发，创建环境并记下环境 ID。使用文档型数据库，不需要 COS、独立 SCF 或客户端密钥。环境套餐和费用以开通页面为准，代码不会自动购买资源。
 2. 在数据库中新建集合 `cloud_saves`，将该集合的自定义安全规则设置为 `database.rules.json` 的内容：客户端不可读写，只有云函数服务端读写。无需额外索引。
-3. 用 Cocos Creator 3.8.8 构建微信小游戏。假设输出目录是 `build/wechatgame`，在项目根运行：
+3. 用 Cocos Creator 3.8.8 构建微信小游戏。项目构建插件 `cloud-save-build` 会在构建完成后，按实际输出目录自动生成并复制云函数部署文件、设置 `cloudfunctionRoot`，并将云函数目录加入上传忽略项，防止打入游戏包。无需每次手动执行准备命令；Tap 转换和其他平台会跳过此步骤。首次添加插件后，已打开的编辑器需在扩展管理器刷新并启用插件，或重启编辑器加载。
+
+   需要单独修复现有构建目录时，仍可在项目根运行：
 
    ```sh
    npm run prepare:cloud-save -- --wechat-project build/wechatgame
    ```
 
-   若构建到了 `wechatgame-001` 等目录，请传入实际路径。该命令生成共用协议的服务端文件，复制到微信工程中的 `cloudfunctions/cloudSave`，设置 `cloudfunctionRoot`，并将云函数目录加入上传忽略项，防止打入游戏包。重新构建覆盖工程配置后需要重新执行。
+   若构建到了 `wechatgame-001` 等目录，请传入实际路径。构建插件和此命令都只准备本地部署文件，不会自动上传或部署云函数。
 4. 使用微信开发者工具打开该构建目录，选择刚创建的云开发环境。在 `cloudfunctions/cloudSave` 上右键选择“上传并部署：云端安装依赖”。函数名为 `cloudSave`，入口 `index.main`，运行时选择平台支持的 Node.js 18 或更高版本，超时建议 10 秒。保持微信原生 `wx.cloud.callFunction` 调用方式。
 5. 修改 `assets/resources/configs/app.json`：
 
@@ -25,7 +27,7 @@
    }
    ```
 
-   重新构建微信小游戏并执行第 3 步。环境 ID 是公开配置，不是密钥。不同环境之间不自动搬迁存档。
+   重新构建微信小游戏，构建插件会自动完成第 3 步。环境 ID 是公开配置，不是密钥。不同环境之间不自动搬迁存档。
 6. 在微信真机上验证：已有 50 关存档首次打开即保存；第二台设备使用同一微信账号、同一 AppID 和环境，清空该设备本地测试数据后冷启动恢复。用测试账号验证，勿删除正式用户的数据。控制台手动执行函数没有微信用户身份，会返回 `UNAUTHENTICATED`；请从小游戏发起真实调用。
 
 官方参考：[微信小游戏原生接入](https://docs.cloudbase.net/quick-start/frameworks/wechat-minigame-native)、[微信云函数](https://docs.cloudbase.net/recipes/add-cloud-function-wechat-miniprogram)、[数据库事务](https://docs.cloudbase.net/database/transaction)、[实例复用与身份上下文](https://docs.cloudbase.net/cloud-function/instance)。入口只读取**本次调用 context** 的微信身份，不从请求正文或复用的进程环境中读取用户身份。

@@ -37,6 +37,7 @@ type State = 'idle' | 'ready' | 'playing' | 'paused' | 'finished' | 'disposed';
 interface TouchControl { player: Player; x: number; z: number; previousX: number; previousZ: number; }
 interface Action { name: string; text: string; run: () => void | Promise<void>; }
 interface Impact { node: Node; sprites: Sprite[]; age: number; }
+interface TrailPoint { x: number; z: number; life: number; }
 interface ScoreView { player: Player; card: Node; digits: Label; name?: Label; pips?: Graphics; serve: Node; shown: number; flip?: { age: number; value: number; swapped: boolean } }
 interface Banner { node: Node; opacity: UIOpacity; text: Label; stripe: Graphics; age: number }
 
@@ -75,7 +76,14 @@ export class PingPongGame extends Component implements MiniGame<Services> {
     /** Top scoreboard and net-side widget both stay in sync; the layout shows one of them. */
     private readonly scoreViews: ScoreView[] = [];
     private readonly touches = new Map<number, TouchControl>();
-    private readonly trail: { x: number; z: number; life: number }[] = [];
+    private readonly trail: TrailPoint[] = [];
+    private readonly trailPool: TrailPoint[] = [];
+    private trailDrawn = false;
+    private readonly trailColor = color(T.trail);
+    private readonly impactColor = color(T.impact);
+    private readonly touchScreen = new Vec3();
+    private readonly touchWorld = new Vec3();
+    private readonly touchLocal = new Vec3();
     private readonly impacts: Impact[] = [];
     private resultRequested = false;
 
@@ -143,7 +151,8 @@ export class PingPongGame extends Component implements MiniGame<Services> {
         for (const sprite of this.node.getComponentsInChildren(Sprite)) sprite.spriteFrame = null;
         this.clearOverlay(); this.stage?.destroy(); this.hud?.destroy(); this.backdrop?.destroy(); this.floor?.node.destroy();
         if (this.frames) Object.keys(this.frames).forEach(key => this.context?.services.assets.releaseRuntimeAsset(this.frames![key as FrameKey]));
-        this.paddleViews.clear(); this.shadowViews.clear(); this.scoreViews.length = 0; this.trail.length = this.impacts.length = 0;
+        this.paddleViews.clear(); this.shadowViews.clear(); this.scoreViews.length = 0;
+        this.trail.length = this.trailPool.length = this.impacts.length = 0; this.trailDrawn = false;
         this.context = this.config = this.frames = this.model = this.audioBank = this.layout = undefined;
         this.stage = this.world = this.hud = this.ball = this.shadow = this.belowShadow = this.backdrop = undefined;
         this.floor = this.trailGraphics = undefined;
@@ -158,7 +167,8 @@ export class PingPongGame extends Component implements MiniGame<Services> {
         this.animateHud(Math.min(dt, .1));
         if (this.state !== 'playing') return;
         const model = this.model;
-        for (const control of Array.from(this.touches.values())) {
+        // Direct iteration is supported by Creator; do not spread Map iterators in WeChat builds.
+        for (const control of this.touches.values()) {
             model.keep(control.player, control.x, control.z, control.x - control.previousX, control.z - control.previousZ);
             control.previousX = control.x; control.previousZ = control.z;
         }
@@ -175,7 +185,7 @@ export class PingPongGame extends Component implements MiniGame<Services> {
     private resetModel(): void {
         this.model?.dispose(); this.model = new PingPongModel(this.config!, this.mode, this.difficulty);
         this.resultRequested = false; this.ballScale = 1;
-        this.trail.length = 0; for (const impact of this.impacts) impact.node.active = false;
+        this.clearTrail(); for (const impact of this.impacts) impact.node.active = false;
         if (this.banner) this.banner.node.active = false;
         this.context?.reportScore(0); this.applyLayout(); this.syncScores(true); this.render(); this.drawEffects();
     }
@@ -350,8 +360,8 @@ export class PingPongGame extends Component implements MiniGame<Services> {
         if (!m || !this.world || !this.config) return;
         for (const player of PLAYERS) {
             const p = m.paddles[player];
-            this.paddleViews.get(player)!.setPosition(p.x * U, p.z * U);
-            this.shadowViews.get(player)!.setPosition((p.x + .5) * U, (p.z - .35) * U);
+            position(this.paddleViews.get(player)!, p.x * U, p.z * U);
+            position(this.shadowViews.get(player)!, (p.x + .5) * U, (p.z - .35) * U);
         }
         const b = m.ball;
         for (const range of this.config.ballScale) {
@@ -359,13 +369,14 @@ export class PingPongGame extends Component implements MiniGame<Services> {
                 this.ballScale = range.scaleA + (range.scaleB - range.scaleA) * pingPongCurve(range.curve, (b.y - range.a) / (range.b - range.a));
             }
         }
-        this.ball!.setPosition(b.x * U, b.z * U); this.ball!.setScale(this.ballScale, this.ballScale, 1);
+        position(this.ball!, b.x * U, b.z * U); scale(this.ball!, this.ballScale);
         // Source ball falls behind the table below Y=0; paddle silhouettes always cover it.
-        const maskIndex = this.tableShadowMask!.getSiblingIndex();
-        this.ball!.setSiblingIndex(b.y < 0 ? 1 : maskIndex + (this.ball!.getSiblingIndex() < maskIndex ? 0 : 1));
-        this.belowShadow!.setPosition((b.x + .3) * U, b.z * U);
-        this.shadow!.setPosition((b.x + .25) * U, (b.z - .25) * U);
-        const shadowScale = Math.max(0, 1 - b.y * .1); this.shadow!.setScale(shadowScale, shadowScale, 1);
+        const maskIndex = this.tableShadowMask!.getSiblingIndex(), ballIndex = this.ball!.getSiblingIndex();
+        const targetIndex = b.y < 0 ? 1 : maskIndex + (ballIndex < maskIndex ? 0 : 1);
+        if (ballIndex !== targetIndex) this.ball!.setSiblingIndex(targetIndex);
+        position(this.belowShadow!, (b.x + .3) * U, b.z * U);
+        position(this.shadow!, (b.x + .25) * U, (b.z - .25) * U);
+        scale(this.shadow!, Math.max(0, 1 - b.y * .1));
         this.serveHint!.active = m.phase === 'serve' && m.server === 'red' && m.hits === 0;
         for (const view of this.scoreViews) {
             if (view.name) view.name.string = this.playerName(view.player);
@@ -442,7 +453,7 @@ export class PingPongGame extends Component implements MiniGame<Services> {
     private consumeEvents(): void {
         for (const event of this.model!.drainEvents()) {
             const feedback = this.context?.services.feedback;
-            if (event.type === 'serve') { this.trail.length = 0; continue; }
+            if (event.type === 'serve') { this.clearTrail(); continue; }
             if (event.type === 'point') {
                 this.showBanner(event.player!);
                 this.playPointSound(event.player!);
@@ -450,7 +461,8 @@ export class PingPongGame extends Component implements MiniGame<Services> {
             }
             if (event.type === 'hit') {
                 const power = this.model!.paddles[event.player!].shot.power;
-                const variant = PINGPONG_HIT_TIERS.filter(tier => power >= tier).length;
+                let variant = 0;
+                for (const tier of PINGPONG_HIT_TIERS) if (power >= tier) variant++;
                 feedback?.play('collision', { vibrate: false, variant });
             } else if (event.type === 'bounce') feedback?.play('drop', { vibrate: false, volume: .85 });
             else continue;
@@ -490,11 +502,17 @@ export class PingPongGame extends Component implements MiniGame<Services> {
     }
 
     private animate(dt: number): void {
-        for (const t of this.trail) t.life -= dt;
-        while (this.trail.length && this.trail[0].life <= 0) this.trail.shift();
+        let live = 0;
+        for (const t of this.trail) {
+            t.life -= dt;
+            if (t.life > 0) this.trail[live++] = t;
+            else this.trailPool.push(t);
+        }
+        this.trail.length = live;
         const b = this.model!.ball, last = this.trail[this.trail.length - 1];
         if (this.model!.phase === 'rally' && (!last || Math.hypot(b.x - last.x, b.z - last.z) >= .1)) {
-            this.trail.push({ x: b.x, z: b.z, life: .3 });
+            const t = this.trailPool.pop() ?? { x: 0, z: 0, life: 0 };
+            t.x = b.x; t.z = b.z; t.life = .3; this.trail.push(t);
         }
         const c = this.config!.impact;
         for (const impact of this.impacts) {
@@ -503,28 +521,37 @@ export class PingPongGame extends Component implements MiniGame<Services> {
             if (impact.age >= c.seconds) { impact.node.active = false; continue; }
             const t = impact.age / c.seconds, eased = t * t * (3 - 2 * t);
             // Native clip uses zero endpoint tangents for position, scale and alpha.
-            impact.sprites.forEach((sprite, i) => {
-                const p = c.parts[i], mix = (v: number[][], axis: number) => v[0][axis] + (v[1][axis] - v[0][axis]) * eased;
-                sprite.node.setPosition(mix(p.position, 0) * U, mix(p.position, 1) * U);
-                sprite.node.setScale(mix(p.scale, 0), mix(p.scale, 1), 1);
-                sprite.color = color(T.impact, Math.round((1 - eased) * 230));
-            });
+            this.impactColor.a = Math.round((1 - eased) * 230);
+            for (let i = 0; i < impact.sprites.length; i++) {
+                const sprite = impact.sprites[i];
+                if (!sprite.node.active) continue;
+                const p = c.parts[i], from = p.position[0], to = p.position[1], a = p.scale[0], b = p.scale[1];
+                sprite.node.setPosition((from[0] + (to[0] - from[0]) * eased) * U, (from[1] + (to[1] - from[1]) * eased) * U);
+                sprite.node.setScale(a[0] + (b[0] - a[0]) * eased, a[1] + (b[1] - a[1]) * eased, 1);
+                sprite.color = this.impactColor;
+            }
         }
         this.drawEffects();
     }
 
     private drawEffects(): void {
         const g = this.trailGraphics;
-        if (!g) return;
+        if (!g || (!this.trailDrawn && this.trail.length < 2)) return;
         g.clear();
+        this.trailDrawn = this.trail.length >= 2;
         for (let i = 1; i < this.trail.length; i++) {
             const a = this.trail[i - 1], b = this.trail[i], age = 1 - b.life / .3;
             // Native trail alpha rises from 0 at the ball to 1 at .57, then fades at the tail.
             const alpha = age < .57 ? age / .57 : (1 - age) / .43;
-            g.strokeColor = color(T.trail, Math.round(clamp(alpha, 0, 1) * 200));
+            this.trailColor.a = Math.round(clamp(alpha, 0, 1) * 200); g.strokeColor = this.trailColor;
             g.lineWidth = Math.max(.5, 1.3 * U * (1 - age));
             g.moveTo(a.x * U, a.z * U); g.lineTo(b.x * U, b.z * U); g.stroke();
         }
+    }
+
+    private clearTrail(): void {
+        for (const t of this.trail) this.trailPool.push(t);
+        this.trail.length = 0;
     }
 
     // ── Input ────────────────────────────────────────────────────────────────
@@ -533,7 +560,8 @@ export class PingPongGame extends Component implements MiniGame<Services> {
         if (this.state !== 'playing') return;
         const p = this.touchPoint(event), player: Player = p.z < 0 ? 'red' : 'blue';
         if (player === 'blue' && this.mode === 'cpu') return;
-        if (Math.abs(p.z) < .5 || Array.from(this.touches.values()).some(t => t.player === player)) return;
+        if (Math.abs(p.z) < .5) return;
+        for (const t of this.touches.values()) if (t.player === player) return;
         this.touches.set(event.getID(), { player, x: p.x, z: p.z, previousX: p.x, previousZ: p.z });
         event.propagationStopped = true;
     }
@@ -548,8 +576,9 @@ export class PingPongGame extends Component implements MiniGame<Services> {
     private touchPoint(event: EventTouch): { x: number; z: number } {
         const p = event.getLocation();
         // Fit Width can offset the Canvas camera from UI-space coordinates.
-        const world = this.uiCamera!.screenToWorld(new Vec3(p.x, p.y, 0));
-        const local = this.world!.getComponent(UITransform)!.convertToNodeSpaceAR(world);
+        this.touchScreen.set(p.x, p.y, 0);
+        const world = this.uiCamera!.screenToWorld(this.touchScreen, this.touchWorld);
+        const local = this.world!.getComponent(UITransform)!.convertToNodeSpaceAR(world, this.touchLocal);
         return { x: local.x / U, z: local.y / U };
     }
     private clearTouches(): void { this.touches.clear(); this.model?.release(); }
@@ -835,6 +864,13 @@ export class PingPongGame extends Component implements MiniGame<Services> {
 }
 
 function color(hex: string, alpha = 255): Color { const c = Color.fromHEX(new Color(), hex); c.a = alpha; return c; }
+// Creator 3.8.8 invalidates descendants even when a transform is unchanged.
+function position(node: Node, x: number, y: number): void {
+    if (node.position.x !== x || node.position.y !== y) node.setPosition(x, y);
+}
+function scale(node: Node, value: number): void {
+    if (node.scale.x !== value || node.scale.y !== value || node.scale.z !== 1) node.setScale(value, value, 1);
+}
 function rect(g: Graphics, x: number, y: number, width: number, height: number, tint: string, alpha = 255): void {
     g.fillColor = color(tint, alpha); g.rect(x, y, width, height); g.fill();
 }

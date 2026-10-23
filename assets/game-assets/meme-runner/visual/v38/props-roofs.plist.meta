@@ -53,52 +53,6 @@
       ],
       "subMetas": {}
     },
-    "95d07": {
-      "importer": "sprite-frame",
-      "uuid": "a2b2e8da-983f-514b-89ff-1d5b548f27d5@95d07",
-      "displayName": "",
-      "id": "95d07",
-      "name": "pit-wall-roofs",
-      "userData": {
-        "trimThreshold": 1,
-        "rotated": false,
-        "offsetX": 0,
-        "offsetY": 0,
-        "trimX": 179,
-        "trimY": 834,
-        "width": 64,
-        "height": 160,
-        "rawWidth": 64,
-        "rawHeight": 160,
-        "packable": false,
-        "pixelsToUnit": 100,
-        "pivotX": 0.5,
-        "pivotY": 0.5,
-        "meshType": 0,
-        "vertices": {
-          "rawPosition": [],
-          "indexes": [],
-          "uv": [],
-          "nuv": [],
-          "minPos": [],
-          "maxPos": []
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "421a2656-eb87-529f-ae71-4f1564da8f77@6c48a",
-        "atlasUuid": "a2b2e8da-983f-514b-89ff-1d5b548f27d5",
-        "trimType": "custom",
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0
-      },
-      "ver": "1.0.12",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {}
-    },
     "8f195": {
       "importer": "sprite-frame",
       "uuid": "a2b2e8da-983f-514b-89ff-1d5b548f27d5@8f195",

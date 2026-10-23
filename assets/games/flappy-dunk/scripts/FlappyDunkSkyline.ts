@@ -23,6 +23,8 @@ interface Layer {
     tones: Piece[]; windows: Window[];
     /** Street lamps (glow), the clock face and moonlit edges are drawn over the silhouettes. */
     glows: { x: number; y: number }[]; faces: { x: number; y: number; r: number }[]; edges: Line[];
+    /** Quantized viewport candidates, in the original drawing order, for each wrapping copy. */
+    visibleWindows?: { left: number; right: number; groups: Window[][] }[];
 }
 
 /** Time-of-day values blended between two stages. */
@@ -215,6 +217,8 @@ function nearLandmarks(b: LayerBuilder): void {
 }
 
 interface Cloud { x: number; y: number; scale: number; speed: number; puffs: { dx: number; dy: number; rx: number; ry: number }[]; }
+interface CloudPuff { x: number; y: number; w: number; h: number; color: Color; }
+const SKY_COLORS = ['top', 'bottom', 'far', 'mid', 'near'] as const;
 
 export class FlappyDunkSkyline {
     private readonly layers: Layer[];
@@ -222,10 +226,21 @@ export class FlappyDunkSkyline {
     private readonly clouds: Cloud[];
     private from: DunkSky;
     private target: DunkTimeStage;
+    private targetSky: DunkSky;
     private stage = 0;
     private litFrom = DUNK_TIME_STAGES[0].lit;
     private started = -Infinity;
     readonly sky: DunkSky;
+    private readonly shade = hex(T.silhouetteShade);
+    private readonly moonlight = hex(T.moonlight);
+    private readonly windowColors = [hex(T.lamp), hex(T.lampDim), hex(T.moon)];
+    private readonly lamp = hex(T.lamp);
+    private readonly tone = new Color();
+    private readonly railColor = new Color();
+    private readonly cloudLit = new Color();
+    private readonly cloudColor = new Color();
+    private readonly puffs: CloudPuff[] = [];
+    private gradient?: { graphics: Graphics; width: number; height: number; top: number; bottom: number };
 
     constructor() {
         // Periods differ per layer so the layers never line up into the same picture twice.
@@ -251,21 +266,24 @@ export class FlappyDunkSkyline {
             puffs: Array.from({ length: 3 + Math.floor(r() * 2) }, (_, i) => ({ dx: (i - 1.5) * .8 + r() * .3, dy: (r() - .5) * .12,
                 rx: .7 + r() * .6, ry: .1 + r() * .08 })) }));
         this.target = DUNK_TIME_STAGES[0];
+        this.targetSky = this.resolve(this.target);
         this.sky = this.resolve(this.target);
         this.from = this.copy(this.sky);
+        for (const c of this.clouds) for (const p of c.puffs) this.puffs.push({ x: 0, y: 0, w: 0, h: 0, color: this.cloudColor });
     }
 
     /** Advance towards the stage of `score`; transitions blend over DUNK_TIME_TRANSITION seconds. */
     update(score: number, time: number): void {
         let index = 0;
-        DUNK_TIME_STAGES.forEach((s, i) => { if (score >= s.score) index = i; });
+        for (let i = 0; i < DUNK_TIME_STAGES.length; i++) if (score >= DUNK_TIME_STAGES[i].score) index = i;
         if (index !== this.stage) {
             this.litFrom = this.litAt(time);
             this.from = this.copy(this.sky); this.stage = index; this.target = DUNK_TIME_STAGES[index]; this.started = time;
+            this.targetSky = this.resolve(this.target);
         }
         const t = Math.min(1, Math.max(0, (time - this.started) / DUNK_TIME_TRANSITION));
-        const to = this.resolve(this.target);
-        for (const key of ['top', 'bottom', 'far', 'mid', 'near'] as const) Color.lerp(this.sky[key], this.from[key], to[key], t);
+        const to = this.targetSky;
+        for (const key of SKY_COLORS) Color.lerp(this.sky[key], this.from[key], to[key], t);
         this.sky.stars = this.from.stars + (to.stars - this.from.stars) * t;
         this.sky.moonHeight = this.from.moonHeight + (to.moonHeight - this.from.moonHeight) * t;
         this.sky.moonAlpha = this.from.moonAlpha + (to.moonAlpha - this.from.moonAlpha) * t;
@@ -278,20 +296,30 @@ export class FlappyDunkSkyline {
         DUNK_TIME_STAGES.forEach((s, i) => { if (score >= s.score) index = i; });
         this.stage = index; this.target = DUNK_TIME_STAGES[index]; this.started = -Infinity; this.litFrom = this.target.lit;
         const sky = this.resolve(this.target);
+        this.targetSky = sky;
         Object.assign(this.sky, this.copy(sky)); this.from = this.copy(sky);
     }
 
-    /** Screen-space sky gradient and stars behind everything. */
+    /** Retain the exact 120-band gradient until its colours or viewport change. */
     drawSky(g: Graphics, width: number, height: number, time: number): void {
-        const bands = 120, top = height / 2, step = height / bands, c = new Color();
+        const previous = this.gradient, topColor = this.sky.top.toRGBValue(), bottomColor = this.sky.bottom.toRGBValue();
+        if (previous?.graphics === g && previous.width === width && previous.height === height
+            && previous.top === topColor && previous.bottom === bottomColor) return;
+        this.gradient = { graphics: g, width, height, top: topColor, bottom: bottomColor };
+        g.clear();
+        const bands = 120, top = height / 2, step = height / bands, c = this.tone;
         for (let i = 0; i < bands; i++) {
             Color.lerp(c, this.sky.top, this.sky.bottom, i / (bands - 1));
             g.fillColor = c; g.rect(-width / 2, top - (i + 1) * step - 1, width, step + 2); g.fill();
         }
+    }
+
+    drawStars(g: Graphics, width: number, height: number, time: number): void {
+        g.clear();
         if (this.sky.stars <= .01) return;
         for (const s of this.stars) {
             const alpha = this.sky.stars * (.55 + .45 * Math.sin(time * 1.3 + s.twinkle));
-            g.fillColor = new Color(244, 235, 208, Math.round(alpha * 220));
+            this.tone.set(244, 235, 208, Math.round(alpha * 220)); g.fillColor = this.tone;
             g.circle((s.x - .5) * width, -height / 2 + s.y * height, s.size); g.fill();
         }
     }
@@ -299,17 +327,20 @@ export class FlappyDunkSkyline {
     /** Thin cloud streaks behind the moon, lit warm from below at dusk and silvered by the moon at night.
      * The caller draws each puff as nested faint ellipses behind the moon, so clouds have no hard outline
      * and never cut an elliptical shape out of the moon. */
-    cloudPuffs(width: number, height: number, time: number): { x: number; y: number; w: number; h: number; color: Color }[] {
-        const unit = height / 14, lit = new Color(), color = new Color();
-        Color.lerp(lit, this.sky.bottom, hex(T.moonlight), Math.min(1, this.sky.stars * 1.4));
+    cloudPuffs(width: number, height: number, time: number): readonly CloudPuff[] {
+        const unit = height / 14, lit = this.cloudLit, color = this.cloudColor;
+        Color.lerp(lit, this.sky.bottom, this.moonlight, Math.min(1, this.sky.stars * 1.4));
         Color.lerp(color, this.sky.top, lit, .45); color.a = 22;
-        const puffs: { x: number; y: number; w: number; h: number; color: Color }[] = [];
+        let index = 0;
         for (const c of this.clouds) {
             const cx = ((((c.x + time * c.speed) % 1.4) + 1.4) % 1.4 - .2 - .5) * width, cy = -height / 2 + c.y * height;
-            for (const p of c.puffs) puffs.push({ x: cx + p.dx * unit * c.scale, y: cy + p.dy * unit * c.scale,
-                w: p.rx * 2.6 * unit * c.scale, h: p.ry * 3.2 * unit * c.scale, color });
+            for (const p of c.puffs) {
+                const puff = this.puffs[index++];
+                puff.x = cx + p.dx * unit * c.scale; puff.y = cy + p.dy * unit * c.scale;
+                puff.w = p.rx * 2.6 * unit * c.scale; puff.h = p.ry * 3.2 * unit * c.scale;
+            }
         }
-        return puffs;
+        return this.puffs;
     }
 
     /** In front of the moon: at dusk or dawn a flock crossing the sky. */
@@ -338,12 +369,23 @@ export class FlappyDunkSkyline {
     private drawLayer(g: Graphics, layer: Layer, base: Color, cameraX: number, unit: number, halfWidth: number,
         time: number, lit: number): void {
         const scroll = ((cameraX * layer.speed) % layer.period + layer.period) % layer.period;
-        const shade = hex(T.silhouetteShade), moonlight = hex(T.moonlight), tone = new Color();
-        const windowColors = [hex(T.lamp), hex(T.lampDim), hex(T.moon)];
-        for (const copy of [-layer.period, 0, layer.period]) {
+        const shade = this.shade, moonlight = this.moonlight, tone = this.tone, windowColors = this.windowColors;
+        for (let copyIndex = 0; copyIndex < 3; copyIndex++) {
+            const copy = (copyIndex - 1) * layer.period;
             const dx = copy - scroll;
             const visible = (s: Span) => (s.x + dx + s.w) * unit >= -halfWidth && (s.x + dx) * unit <= halfWidth;
             if ((dx + layer.period) * unit < -halfWidth || dx * unit > halfWidth) continue;
+            // Camera motion within the same two-unit cells reuses the small candidate lists.
+            // The precise visible() test below still runs every frame, so windows never pop at cell edges.
+            const left = Math.floor((-halfWidth / unit - dx) / 2) * 2;
+            const right = Math.ceil((halfWidth / unit - dx) / 2) * 2;
+            const caches = layer.visibleWindows ?? (layer.visibleWindows = []);
+            let candidates = caches[copyIndex];
+            if (!candidates || candidates.left !== left || candidates.right !== right) {
+                candidates = { left, right, groups: [[], [], []] };
+                for (const w of layer.windows) if (w.x + w.w >= left && w.x <= right) candidates.groups[w.warmth].push(w);
+                caches[copyIndex] = candidates;
+            }
             layer.tones.forEach((piece, i) => {
                 // Tone 0 catches a little moonlight, tone 2 sits a step deeper in shadow.
                 if (i === 0) Color.lerp(tone, base, moonlight, .05); else Color.lerp(tone, base, shade, i === 2 ? .08 : 0);
@@ -359,8 +401,8 @@ export class FlappyDunkSkyline {
             windowColors.forEach((c, warmth) => {
                 c.a = Math.round(layer.windowAlpha * (warmth === 2 ? .8 : 1) * 255); g.fillColor = c;
                 let any = false;
-                for (const w of layer.windows) {
-                    if (w.warmth !== warmth || !visible(w)) continue;
+                for (const w of candidates.groups[warmth]) {
+                    if (!visible(w)) continue;
                     const share = this.litFrom + (lit - this.litFrom) * Math.min(1, Math.max(0, (time - this.started - w.delay) / .4));
                     const flicker = hash(w.seed + Math.floor((time + w.seed) / w.period)) < WINDOW_FLICKER;
                     if ((w.rank < share) === flicker) continue;
@@ -368,7 +410,7 @@ export class FlappyDunkSkyline {
                 }
                 if (any) g.fill();
             });
-            const lamp = hex(T.lamp);
+            const lamp = this.lamp;
             for (const f of layer.faces) if (visible({ x: f.x - f.r, w: f.r * 2 })) {
                 lamp.a = 150; g.fillColor = lamp; g.circle((f.x + dx) * unit, f.y * unit, f.r * unit); g.fill();
                 g.strokeColor = base; g.lineWidth = Math.max(1, .03 * unit);
@@ -380,14 +422,14 @@ export class FlappyDunkSkyline {
                     lamp.a = alpha; g.fillColor = lamp; g.circle((l.x + dx) * unit, l.y * unit, radius * unit); g.fill();
                 }
             }
-            const edge = hex(T.moonlight); edge.a = 70; g.strokeColor = edge;
+            this.tone.set(this.moonlight); this.tone.a = 70; g.strokeColor = this.tone;
             for (const e of layer.edges) if (visible(e)) { g.lineWidth = Math.max(1, e.width * unit); this.path(g, e.pts, dx, unit, false); g.stroke(); }
         }
     }
 
     /** Light-rail viaduct between the mid and near layers; every 30 s a train with lit carriages crosses it. */
     private drawRail(g: Graphics, cameraX: number, unit: number, halfWidth: number, time: number): void {
-        const deck = GROUND + 1.25, colour = new Color(), half = halfWidth / unit;
+        const deck = GROUND + 1.25, colour = this.railColor, half = halfWidth / unit;
         Color.lerp(colour, this.sky.mid, this.sky.near, .5);
         g.fillColor = colour;
         g.rect(-halfWidth, deck * unit, halfWidth * 2, .08 * unit);
@@ -400,7 +442,7 @@ export class FlappyDunkSkyline {
         g.fillColor = colour;
         for (let i = 0; i < cars; i++) g.roundRect((head - i * (car + .06) - car) * unit, (deck + .1) * unit, car * unit, .28 * unit, .06 * unit);
         g.fill();
-        const lamp = hex(T.lamp); lamp.a = 170; g.fillColor = lamp;
+        const lamp = this.lamp; lamp.a = 170; g.fillColor = lamp;
         for (let i = 0; i < cars; i++) for (let k = 0; k < 6; k++)
             g.rect((head - i * (car + .06) - car + .1 + k * .2) * unit, (deck + .22) * unit, .12 * unit, .09 * unit);
         g.fill();

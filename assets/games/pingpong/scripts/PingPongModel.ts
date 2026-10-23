@@ -1,6 +1,6 @@
-/** Native 1_PINGPONG rules in Unity world coordinates (Y = height, Z = court).
+/** Native 1_PINGPONG ball/contact rules in Unity world coordinates (Y = height, Z = court).
  * Verified against Pallina 0x2716F44/0x2717340, Racchetta 0x271831C/0x2718854
- * and LevelController 0x25715B8. See tools/pingpong/verify-model.cjs.
+ * and LevelController 0x25715B8. CPU strategy is tuned independently of those rules.
  */
 export type Player = 'red' | 'blue';
 export type PingPongMode = 'cpu' | 'local';
@@ -31,6 +31,20 @@ export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo,
 const point = (x = 0, y = 0, z = 0): Point3 => ({ x, y, z });
 const opponent = (p: Player): Player => p === 'red' ? 'blue' : 'red';
 const shot = (): Shot => ({ spin: 0, direction: 0, power: 0 });
+const PLAYERS: readonly Player[] = ['red', 'blue'];
+const NO_EVENTS: readonly PingPongEvent[] = Object.freeze([]);
+interface CPUSettings {
+    reaction: number; speed: number; follow: number; prediction: number;
+    trackingError: number; placement: number; aimError: number; power: number;
+}
+/** Separate reaction, reach and placement; match scores never weaken the selected level.
+ * Speed is world units/second; follow applies once per fixed physics tick.
+ */
+const CPU_LEVELS: readonly CPUSettings[] = [
+    { reaction: .18, speed: 18, follow: .14, prediction: 0, trackingError: 1.1, placement: 1.4, aimError: 1.1, power: .35 },
+    { reaction: .12, speed: 25, follow: .22, prediction: .06, trackingError: .55, placement: 2.9, aimError: .6, power: .65 },
+    { reaction: .08, speed: 27, follow: .24, prediction: .06, trackingError: .35, placement: 4.6, aimError: .12, power: 1 },
+];
 
 /** Unity unweighted AnimationCurve Hermite evaluation; all imported keys are unweighted. */
 export function pingPongCurve(keys: number[][], t: number): number {
@@ -81,8 +95,11 @@ export class PingPongModel {
     private previousContact?: Contact;
     private accumulator = 0;
     private pointDelay = 0;
-    private cpuSpeed: number;
-    private cpuOffset = point();
+    private readonly cpu: CPUSettings;
+    private cpuThinkIn = 0;
+    private cpuTargetX = 0;
+    private cpuTargetZ: number = PINGPONG_WORLD.paddleStartZ;
+    private cpuErrorX = 0;
     private randomState: number;
     private events: PingPongEvent[] = [];
     private paddleBounds: PingPongPaddleBounds = {
@@ -92,13 +109,11 @@ export class PingPongModel {
 
     constructor(readonly config: PingPongConfig, readonly mode: PingPongMode = 'cpu', readonly difficulty = 0, seed = Date.now()) {
         this.randomState = seed >>> 0 || 1;
-        this.cpuSpeed = config.cpuSpeed[0];
+        this.cpu = CPU_LEVELS[clamp(Math.trunc(difficulty), 0, CPU_LEVELS.length - 1)];
     }
 
     get difficultyCalculated(): number {
-        const range = this.config.difficulties[clamp(this.difficulty, 0, 2)];
-        const t = (clamp((this.scores.red - this.scores.blue) / this.config.scoreDifference, -1, 1) + 1) / 2;
-        return range[0] + (range[1] - range[0]) * t;
+        return this.cpu.power;
     }
 
     /** Apply viewport limits to simulation positions as well as input/AI targets,
@@ -111,7 +126,7 @@ export class PingPongModel {
             backLimit: clamp(bounds.backLimit, w.paddleMinZ, w.paddleMaxZ + w.cpuOffsetRadius),
         };
         const { sideLimit, backLimit } = this.paddleBounds;
-        for (const player of ['red', 'blue'] as const) {
+        for (const player of PLAYERS) {
             const p = this.paddles[player];
             p.x = clamp(p.x, -sideLimit, sideLimit);
             p.z = player === 'red' ? clamp(p.z, -Math.min(w.paddleMaxZ, backLimit), -w.paddleMinZ)
@@ -122,7 +137,7 @@ export class PingPongModel {
     /** OnKeep runs once per touch frame, including stationary holds. Delta is finger motion, not paddle velocity. */
     keep(player: Player, x: number, z: number, dx: number, dz: number): void {
         if (this.phase === 'finished' || this.phase === 'disposed' || (player === 'blue' && this.mode === 'cpu')
-            || ![x, z, dx, dz].every(Number.isFinite)) return;
+            || !Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(dx) || !Number.isFinite(dz)) return;
         // Touchable's original half-court trigger is 30 x 25, centered at Z +/-13.
         // Crossing the net suspends OnKeep until this finger returns to its own half.
         if (Math.abs(x) > 15 || Math.abs(z) > 25.5 || (player === 'red' ? z > -.5 : z < .5)) return;
@@ -141,8 +156,7 @@ export class PingPongModel {
     release(player?: Player): void {
         // A conditional typed array directly in for-of triggers the Creator 3.8.8
         // WeChat Babel transform's Flow/TypeScript union inference bug.
-        const players: Player[] = ['red', 'blue'];
-        for (const name of players) {
+        for (const name of PLAYERS) {
             if (!player || player === name) {
                 const s = this.paddles[name].shot; s.spin = s.direction = s.power = 0;
             }
@@ -159,45 +173,76 @@ export class PingPongModel {
         }
     }
 
-    drainEvents(): PingPongEvent[] { const events = this.events; this.events = []; return events; }
+    drainEvents(): readonly PingPongEvent[] {
+        if (!this.events.length) return NO_EVENTS;
+        const events = this.events; this.events = []; return events;
+    }
     dispose(): void { this.phase = 'disposed'; this.release(); this.flight = undefined; this.events.length = 0; this.accumulator = 0; }
 
     private step(dt: number): void {
         this.time += dt;
-        if (this.mode === 'cpu') this.moveCPU();
+        if (this.mode === 'cpu') this.moveCPU(dt);
         if (this.phase === 'point') {
             this.pointDelay -= dt;
             if (this.pointDelay <= 1e-8) this.serve();
             return;
         }
-        const old = { ...this.ball }, flight = this.flight;
+        const b = this.ball, oldX = b.x, oldY = b.y, oldZ = b.z, flight = this.flight;
         if (flight) {
             // Native FixedUpdate mutates CurvaBezier.puntoFinale, NOT its handles.
             flight.p3.x += this.paddles[this.lastStriker!].shot.spin * this.config.spin;
             flight.elapsed = Math.min(flight.duration, flight.elapsed + dt);
             const u = pingPongCurve(this.config.curve, flight.elapsed / flight.duration), v = 1 - u;
-            const weights = [v * v * v, 3 * v * v * u, 3 * v * u * u, u * u * u];
-            for (const axis of ['x', 'y', 'z'] as const) {
-                this.ball[axis] = flight.p0[axis] * weights[0] + flight.p1[axis] * weights[1]
-                    + flight.p2[axis] * weights[2] + flight.p3[axis] * weights[3];
-            }
+            // Keep the original operation order without allocating tick-local vectors/arrays.
+            const a0 = v * v * v, a1 = 3 * v * v * u, a2 = 3 * v * u * u, a3 = u * u * u;
+            b.x = flight.p0.x * a0 + flight.p1.x * a1 + flight.p2.x * a2 + flight.p3.x * a3;
+            b.y = flight.p0.y * a0 + flight.p1.y * a1 + flight.p2.y * a2 + flight.p3.y * a3;
+            b.z = flight.p0.z * a0 + flight.p1.z * a1 + flight.p2.z * a2 + flight.p3.z * a3;
         }
-        const dx = this.ball.x - old.x, dy = this.ball.y - old.y, dz = this.ball.z - old.z, length = Math.hypot(dx, dy, dz);
-        this.direction = length > 1e-5 ? point(dx / length, dy / length, dz / length) : point();
+        const dx = b.x - oldX, dy = b.y - oldY, dz = b.z - oldZ, length = Math.hypot(dx, dy, dz);
+        const direction = this.direction;
+        direction.x = length > 1e-5 ? dx / length : 0;
+        direction.y = length > 1e-5 ? dy / length : 0;
+        direction.z = length > 1e-5 ? dz / length : 0;
         const contact = this.overlap();
         if (contact && contact !== this.previousContact) this.collide(contact, dy);
         this.previousContact = contact;
         if (flight && flight === this.flight && flight.elapsed >= flight.duration) this.fall();
     }
 
-    private moveCPU(): void {
-        const p = this.paddles.blue, b = this.ball;
-        const z = this.phase === 'serve' ? 8 : b.z < 0 ? 15 : clamp(b.z + 4, 10, PINGPONG_WORLD.paddleMaxZ);
-        const x = clamp(clamp(b.x, -PINGPONG_WORLD.sideLimit, PINGPONG_WORLD.sideLimit) + this.cpuOffset.x,
-            -this.paddleBounds.sideLimit, this.paddleBounds.sideLimit);
-        const targetZ = clamp(z + this.cpuOffset.z, PINGPONG_WORLD.paddleMinZ, this.paddleBounds.backLimit);
-        const t = clamp(this.difficultyCalculated * this.cpuSpeed, 0, 1);
-        p.x += (x - p.x) * t; p.y += (this.cpuOffset.y - p.y) * t; p.z += (targetZ - p.z) * t;
+    private moveCPU(dt: number): void {
+        const p = this.paddles.blue, b = this.ball, c = this.cpu;
+        this.cpuThinkIn -= dt;
+        if (this.cpuThinkIn <= 1e-8) {
+            this.cpuThinkIn = c.reaction;
+            let x = 0, z: number = PINGPONG_WORLD.paddleStartZ;
+            if (this.phase === 'serve' && this.server === 'blue') z = 8;
+            else if (this.phase === 'rally' && this.lastStriker === 'red') {
+                x = b.x; z = b.z;
+                const f = this.flight;
+                if (f && c.prediction > 0) {
+                    const ahead = Math.min(c.prediction, f.duration - f.elapsed);
+                    const u = pingPongCurve(this.config.curve, (f.elapsed + ahead) / f.duration), v = 1 - u;
+                    const a0 = v * v * v, a1 = 3 * v * v * u, a2 = 3 * v * u * u, a3 = u * u * u;
+                    // Extrapolate only the currently visible spin, never future finger input.
+                    const endX = f.p3.x + this.paddles.red.shot.spin * this.config.spin * ahead / this.config.fixedStep;
+                    x = f.p0.x * a0 + f.p1.x * a1 + f.p2.x * a2 + endX * a3;
+                    z = f.p0.z * a0 + f.p1.z * a1 + f.p2.z * a2 + f.p3.z * a3;
+                }
+                x += this.cpuErrorX;
+                // Stay within reach of the incoming ball instead of fleeing four units behind it.
+                z += 1.1;
+            }
+            this.cpuTargetX = clamp(x, -this.paddleBounds.sideLimit, this.paddleBounds.sideLimit);
+            this.cpuTargetZ = clamp(z, PINGPONG_WORLD.paddleMinZ, this.paddleBounds.backLimit);
+        }
+        // Limits can shrink between decisions. Enforce them on positions as well as targets.
+        const dx = (clamp(this.cpuTargetX, -this.paddleBounds.sideLimit, this.paddleBounds.sideLimit) - p.x) * c.follow;
+        const dz = (clamp(this.cpuTargetZ, PINGPONG_WORLD.paddleMinZ, this.paddleBounds.backLimit) - p.z) * c.follow;
+        const distance = Math.hypot(dx, dz), fraction = distance > c.speed * dt ? c.speed * dt / distance : 1;
+        p.x += dx * fraction; p.z += dz * fraction;
+        // Use the same paddle height as a held human paddle and the same capsule collider.
+        p.y += (2 - p.y) * c.follow;
     }
 
     private overlap(): Contact {
@@ -206,7 +251,7 @@ export class PingPongModel {
             b.y - clamp(b.y, w.tableBottom, 0), b.z - clamp(b.z, -w.tableHalfZ, w.tableHalfZ));
         if (tableDistance <= r) return 'table';
         // The source BoxColliders are disabled. The active capsules have vertical Y axes.
-        for (const player of ['red', 'blue'] as const) {
+        for (const player of PLAYERS) {
             const p = this.paddles[player], centerZ = p.z + (player === 'red' ? w.paddleOffset : -w.paddleOffset);
             const halfSegment = w.paddleHeight / 2 - w.paddleRadius;
             if (Math.hypot(b.x - p.x, b.z - centerZ, b.y - clamp(b.y, p.y - halfSegment, p.y + halfSegment)) <= r + w.paddleRadius) return player;
@@ -225,7 +270,10 @@ export class PingPongModel {
         } else {
             if (this.lastContact !== 'table') return;
             this.lastStriker = contact;
-            if (contact === 'blue' && this.mode === 'cpu') this.randomCPUShot();
+            if (this.mode === 'cpu') {
+                if (contact === 'blue') this.chooseCPUShot();
+                else this.cpuErrorX = (this.random() * 2 - 1) * this.cpu.trackingError;
+            }
             const s = this.paddles[contact].shot;
             end = point(s.direction * c.direction * (.7 + s.power * .3), c.floor,
                 (contact === 'red' ? 1 : -1) * (5 + s.power * c.power));
@@ -239,18 +287,25 @@ export class PingPongModel {
             p2: point(end.x, c.arc, end.z), p3: end, elapsed: 0, duration };
     }
 
-    private randomCPUShot(): void {
-        this.cpuOffset = point();
-        // 87.5% Vector3.zero; 12.5% Random.insideUnitSphere * 2 with Y discarded.
-        if (this.random() < .125) {
-            let x: number, y: number, z: number;
-            do { x = this.random() * 2 - 1; y = this.random() * 2 - 1; z = this.random() * 2 - 1; } while (x * x + y * y + z * z > 1);
-            this.cpuOffset = point(x * PINGPONG_WORLD.cpuOffsetRadius, 0, z * PINGPONG_WORLD.cpuOffsetRadius);
+    private chooseCPUShot(): void {
+        const c = this.config, level = this.cpu, s = this.paddles.blue.shot, b = this.ball;
+        s.power = level.power; s.spin = 0;
+        const redX = this.paddles.red.x;
+        const side = Math.abs(redX) > .6 ? redX > 0 ? -1 : 1 : this.random() < .5 ? -1 : 1;
+        const landingX = side * level.placement + (this.random() * 2 - 1) * level.aimError;
+        // Solve placement at the first legal table contact, using the real shot curve
+        // and discrete physics step. This changes the shot choice, never ball physics.
+        const duration = c.shotSeconds - s.power * .2;
+        let blend = 1;
+        for (let elapsed = c.fixedStep; elapsed <= duration; elapsed += c.fixedStep) {
+            const u = pingPongCurve(c.curve, elapsed / duration), v = 1 - u;
+            const a0 = v * v * v, a1 = 3 * v * v * u, a2 = 3 * v * u * u, a3 = u * u * u;
+            if (b.y * a0 + c.arc * (a1 + a2) + c.floor * a3 <= c.ballRadius) {
+                blend = .2 * a1 + a2 + a3; break;
+            }
         }
-        this.paddles.blue.shot.direction = this.random() * 1.6 - .8;
-        this.cpuSpeed = this.config.cpuSpeed[0] + this.random() * (this.config.cpuSpeed[1] - this.config.cpuSpeed[0]);
-        this.random(); // Original consumes a random power, then overwrites it with difficultyCalculated.
-        this.paddles.blue.shot.power = this.difficultyCalculated;
+        const endX = (landingX - b.x * (1 - blend)) / blend;
+        s.direction = clamp(endX / (c.direction * (.7 + s.power * .3)), -1, 1);
     }
 
     private fall(): void {
@@ -268,6 +323,7 @@ export class PingPongModel {
         this.phase = 'serve'; this.ball = point(0, 2, this.server === 'red' ? -8 : 8);
         this.flight = undefined; this.lastStriker = undefined; this.lastContact = 'table'; this.previousContact = undefined;
         this.direction = point(); this.rally = 0; this.emit('serve', this.server);
+        this.cpuThinkIn = 0; this.cpuErrorX = 0;
     }
 
     private emit(type: PingPongEvent['type'], player?: Player): void {

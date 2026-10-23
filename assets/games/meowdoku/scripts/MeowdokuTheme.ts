@@ -494,7 +494,9 @@ export const MEOWDOKU_ASSET_PATHS = Object.freeze({
     winCatWink: 'visual/ui/meowdoku-result-win-cat-wink-v1/texture',
     /** 此关历史无手画叉、无草稿、零失误通关的「天才猫侦探」专属猫咪。 */
     winGeniusCat: 'visual/ui/meowdoku-result-genius-cat-v2/texture',
-    likeHand: 'visual/ui/meowdoku-like-hand-v1/texture',
+    /** 点赞两帧：握拳 → 竖起拇指，同一画布对齐，原位换帧。 */
+    likeHandFist: 'visual/ui/meowdoku-like-fist-v2/texture',
+    likeHandThumb: 'visual/ui/meowdoku-like-thumb-v2/texture',
 });
 
 /** 成功弹窗的三种猫咪姿态，独立于标题随机选择，连续两次不重复。 */
@@ -624,13 +626,33 @@ export const MEOWDOKU_FEEDBACK_TEXT = Object.freeze({
 export const MEOWDOKU_LIKE_HAND = Object.freeze({
     /** 单张点赞图的显示尺寸，使用原有反馈的设计比例。 */
     designSize: 256 * 0.6,
-    peakScale: 1.12,
-    liftDesign: 22,
-    popIn: 0.18,
-    nod: 0.16,
+    /** 手腕在图片中的高度比例：旋转和挤压都以手腕为支点，像真的甩腕竖拇指。 */
+    pivotY: 0.18,
+    /** 拇指尖在图片中的位置比例（左下为原点），星光从这里迸出。 */
+    thumbTip: Object.freeze({ x: 0.38, y: 0.95 }),
+    /** 握拳从下方甩上来：起始下沉、倾角和缩放。 */
+    riseDropDesign: 46,
+    riseAngle: -34,
+    riseScale: 0.45,
+    rise: 0.17,
+    /** 甩到顶点时的过冲。 */
+    overshootAngle: 7,
+    overshootScale: 1.1,
+    /** 竖拇指瞬间的挤压 → 拉伸 → 回弹（x, y 分别缩放）。 */
+    squash: Object.freeze({ x: 1.2, y: 0.86, duration: 0.05 }),
+    stretch: Object.freeze({ x: 0.92, y: 1.14, duration: 0.07 }),
     settle: 0.2,
-    hold: 0.65,
+    hold: 0.82,
     fadeOut: 0.24,
+    fadeLiftDesign: 26,
+    /** 竖拇指时的星光：向上半圆迸出。 */
+    sparkCount: 8,
+    sparkDistanceDesign: Object.freeze({ min: 70, max: 118 }),
+    sparkSizeRatio: Object.freeze({ min: 0.3, max: 0.5 }),
+    sparkLife: 0.5,
+    /** 手背后的一圈暖光。 */
+    glowSizeRatio: 1.5,
+    glowColor: new Color(255, 226, 150, 255),
     /** 手势底边与分数弹跳峰值顶边的间距，按页面设计比例换算。 */
     bubbleGapDesign: 10,
     /** 点赞与得分反馈的横向留白。 */

@@ -39,6 +39,12 @@ export class RotateRingsLevelAssets {
         const bankIds = Array.from(new Set(refs.map(ref => Math.floor(ref[1] / 64))));
         const banks = await Promise.all(bankIds.map(index => this.loadBank(index)));
         if (this.disposed) throw new Error('RotateRings level assets disposed');
+        // 只保留当前关所需的库和最近访问的少量库；压缩归档仍驻留，可离线重建被淘汰的库。
+        const required = new Set(bankIds), limit = Math.max(8, required.size);
+        for (const index of this.banks.keys()) {
+            if (this.banks.size <= limit) break;
+            if (!required.has(index)) this.banks.delete(index);
+        }
         const visuals: RingLevelVisuals = {};
         refs.forEach(([name, index, color]) => {
             const geometry = banks[bankIds.indexOf(Math.floor(index / 64))].get(index);
@@ -79,7 +85,10 @@ export class RotateRingsLevelAssets {
 
     private loadBank(index: number): Promise<RingGeometryBank> {
         const existing = this.banks.get(index);
-        if (existing) return existing;
+        if (existing) {
+            this.banks.delete(index); this.banks.set(index, existing);
+            return existing;
+        }
         const promise = this.loadArchive('geometry').then(archive => {
             if (this.disposed) throw new Error('RotateRings level assets disposed');
             const bank = new RingGeometryBank(unpackRingBytes(archive.get(index)));

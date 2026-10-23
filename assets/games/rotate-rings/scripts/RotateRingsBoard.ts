@@ -94,6 +94,8 @@ export class RotateRingsBoard {
     private fixedNodes = new Map<string, Node>();
     /** 卡扣、炸弹等精灵物件的投影，与网格阴影同在底层，按主题偏移跟随本体。 */
     private spriteShadows = new Map<Node, Node>();
+    private readonly partColors = new Map<string, Color>();
+    private readonly hintColor = ringColor(T.gold);
 
     constructor(readonly model: RotateRingsModel, private readonly graphics: Graphics, width: number, height: number,
         private readonly visuals?: RingLevelVisuals, private readonly frames?: Readonly<Record<string, SpriteFrame>>, entry = false,
@@ -113,7 +115,8 @@ export class RotateRingsBoard {
                 const node = new Node(`Original-${part.id}`); node.layer = graphics.node.layer; node.setParent(graphics.node);
                 node.addComponent(UITransform).setContentSize(6, 6);
                 const sprite = node.addComponent(RotateRingsMeshSprite);
-                sprite.configure(mesh, frames['ring-texture'], material); sprite.color = ringColor(mesh.color);
+                const color = ringColor(mesh.color); this.partColors.set(part.id, color);
+                sprite.configure(mesh, frames['ring-texture'], material); sprite.color = color;
                 this.meshNodes.set(part.id, node);
                 const shadow = new Node(`Shadow-${part.id}`); shadow.layer = graphics.node.layer; shadow.setParent(shadows);
                 shadow.addComponent(UITransform).setContentSize(6, 6);
@@ -173,8 +176,12 @@ export class RotateRingsBoard {
         }
         return Math.max(Math.min(0, low), Math.min(Math.max(0, high), delta));
     }
-    get animating(): boolean { return this.clock < RING_MOTION.waveDuration + this.model.level.rings.length * RING_MOTION.waveInterval
-        || Array.from(this.blockedAt.values()).some(at => this.clock - at < RING_MOTION.blockedShakeDuration) || this.hint !== undefined; }
+    get animating(): boolean {
+        if (this.clock < RING_MOTION.waveDuration + this.model.level.rings.length * RING_MOTION.waveInterval) return true;
+        for (const at of this.blockedAt.values()) if (this.clock - at < RING_MOTION.blockedShakeDuration) return true;
+        // 提示标记本身是静态的；手指/演示姿态由 Guide 推进并请求重画。
+        return false;
+    }
     blocked(id: string): void { if (this.clock - (this.blockedAt.get(id) ?? -999) >= RING_MOTION.blockedShakeDuration) this.blockedAt.set(id, this.clock); }
     point(p: RingPoint): RingPoint { const t = this.transform; return { x: (p.x - t.centerX) * t.scale, y: (p.y - t.centerY) * t.scale }; }
     world(p: RingPoint): RingPoint { const t = this.transform; return { x: p.x / t.scale + t.centerX, y: p.y / t.scale + t.centerY }; }
@@ -199,7 +206,7 @@ export class RotateRingsBoard {
         this.clock += delta;
         const g = this.graphics, scale = this.transform.scale;
         g.clear();
-        for (const fixed of this.model.level.fixedObjects) for (const local of fixed.polygons) {
+        for (const fixed of this.model.level.fixedObjects) {
             const original = this.fixedNodes.get(fixed.id);
             if (original) {
                 original.active = !this.model.removedFixed.has(fixed.id);
@@ -207,7 +214,7 @@ export class RotateRingsBoard {
                 original.getComponent(UITransform)!.setContentSize(.96 * scale, .96 * scale); this.syncSpriteShadow(original); continue;
             }
             if (this.model.removedFixed.has(fixed.id)) continue;
-            this.polygon(G.polygonWorld(local, fixed.x, fixed.y, fixed.angle), '#D6D5CB');
+            for (const local of fixed.polygons) this.polygon(G.polygonWorld(local, fixed.x, fixed.y, fixed.angle), '#D6D5CB');
         }
         for (const pull of this.model.level.pullObjects) {
             const original = this.meshNodes.get(pull.id);
@@ -219,7 +226,7 @@ export class RotateRingsBoard {
                 }
                 const axis = G.polar(this.model.offsets.get(pull.id) || 0, pullAxisAngle(pull)), p = this.point({ x: pull.x + axis.x, y: pull.y + axis.y });
                 original.setPosition(p.x, p.y); original.angle = pull.angle; original.setScale(scale, scale, 1);
-                original.getComponent(RotateRingsMeshSprite)!.color = ringColor(this.hint?.id === pull.id ? T.gold : this.visuals![pull.id].color);
+                original.getComponent(RotateRingsMeshSprite)!.color = this.hint?.id === pull.id ? this.hintColor : this.partColors.get(pull.id)!;
                 this.syncShadow(pull.id, original);
                 continue;
             }
@@ -243,7 +250,6 @@ export class RotateRingsBoard {
             if (original) {
                 const removed = this.model.removedRings.has(ring.id);
                 if (removed && !this.removed.has(ring.id)) { this.removed.add(ring.id); this.onRelease?.(ring.id, this.model.angles.get(ring.id)!); }
-                const sprite = original.getComponent(RotateRingsMeshSprite)!;
                 original.active = !removed;
                 if (removed) { this.syncShadow(ring.id, original); continue; }
                 const entrance = Math.max(0, Math.min(1, (this.clock - (ring.index - 1) * RING_MOTION.waveInterval) / RING_MOTION.waveDuration));
@@ -254,8 +260,6 @@ export class RotateRingsBoard {
                 const angle = this.guideAngle?.id === ring.id ? this.guideAngle.angle : this.model.angles.get(ring.id)!;
                 original.angle = angle + (shake && !this.model.blockReason(ring.id, angle + shake) ? shake : 0);
                 original.setPosition(c.x, c.y);
-                const color = ringColor(this.visuals![ring.id].color);
-                sprite.color = color;
                 this.syncShadow(ring.id, original);
                 continue;
             }

@@ -67,6 +67,13 @@ export class MemeRunnerEffects {
                 this.emit('halo', e.x - 40, e.y - 70, 0, 0, .3, .9, 0);
                 this.reward(e.x - 10, e.y + 20, 'POP!', 'pop'); continue;
             }
+            if (e.kind === 'heal') {
+                for (let i = 0; i < 6; i++) {
+                    const angle = i / 6 * Math.PI * 2;
+                    this.emit('heart', e.x, e.y, Math.cos(angle) * 160, 120 + Math.sin(angle) * 120, .7, .7, 260, i % 2 ? 120 : -120);
+                }
+                this.reward(e.x + 20, e.y + 80, '回血！', 'perfect'); continue;
+            }
             if (e.kind === 'deliver') {
                 for (let i = 0; i < 18; i++) {
                     const angle = i / 18 * Math.PI * 2;

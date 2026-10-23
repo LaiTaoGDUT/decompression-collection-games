@@ -330,6 +330,7 @@ export class RotateRingsEffects {
         } });
     }
     update(delta: number): void {
+        if (!this.effects.length) return;
         // 推进中新增的效果先进入新列表，下一帧开始推进。
         const current = this.effects; this.effects = [];
         const kept = current.filter(effect => {

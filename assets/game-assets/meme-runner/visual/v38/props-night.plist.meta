@@ -7,52 +7,6 @@
     ".json"
   ],
   "subMetas": {
-    "a9485": {
-      "importer": "sprite-frame",
-      "uuid": "0152b698-b2bd-5779-a945-ae90c63ef409@a9485",
-      "displayName": "",
-      "id": "a9485",
-      "name": "pit-wall-night",
-      "userData": {
-        "trimThreshold": 1,
-        "rotated": false,
-        "offsetX": 0,
-        "offsetY": 0,
-        "trimX": 184,
-        "trimY": 834,
-        "width": 64,
-        "height": 160,
-        "rawWidth": 64,
-        "rawHeight": 160,
-        "packable": false,
-        "pixelsToUnit": 100,
-        "pivotX": 0.5,
-        "pivotY": 0.5,
-        "meshType": 0,
-        "vertices": {
-          "rawPosition": [],
-          "indexes": [],
-          "uv": [],
-          "nuv": [],
-          "minPos": [],
-          "maxPos": []
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "a66f6387-9809-515a-a81a-30261fabc6f9@6c48a",
-        "atlasUuid": "0152b698-b2bd-5779-a945-ae90c63ef409",
-        "trimType": "custom",
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0
-      },
-      "ver": "1.0.12",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {}
-    },
     "bd985": {
       "importer": "sprite-frame",
       "uuid": "0152b698-b2bd-5779-a945-ae90c63ef409@bd985",

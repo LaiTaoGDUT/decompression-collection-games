@@ -23,6 +23,12 @@ export function steamPhase(age: number): 'warning' | 'active' | 'rest' {
     const t = Math.max(0, age) % 4; return t < .8 ? 'warning' : t < 2.8 ? 'active' : 'rest';
 }
 export type CompanionKind = 'dragon' | 'bull' | 'spinner' | 'banana' | 'popcat';
+/** The dragon is a rescue trampoline at fixed course marks: a belly bounce launches the runner on a long,
+ * uncontrolled, invulnerable arc (a short Fever without smashing or rewards for what it passes over) and
+ * gives back one lost heart. With every heart left it is only a stunt. */
+export const DRAGON = Object.freeze({ meters: [1300, 2600] as readonly number[], launch: 2, height: 240, speed: 1.3, grace: .9 });
+/** Height above the dragon's belly `t` (0..1) of the way through the launch; coins trace this arc. */
+export function launchHeight(t: number): number { return DRAGON.height * Math.sin(Math.PI * Math.max(0, Math.min(1, t))); }
 /** Popcat blocks the road: it keeps pace at the screen's right edge, winds up, then POPs four
  * ground sound waves at the runner on a steady beat before settling on the road to be jumped. */
 export const POPCAT = Object.freeze({ hold: 780, windup: .6, period: .95, pops: 4, settle: 1, waveSpeed: 240, height: 84 });
@@ -47,27 +53,26 @@ export function bananaMotion(age: number): { y: number; vy: number; jumpAge: num
     return t < 0 ? { y: 0, vy: 0, jumpAge: 0, grounded: true }
         : { y: Math.max(0, BANANA_JUMP.impulse * t - 900 * t * t), vy: BANANA_JUMP.impulse - 1800 * t, jumpAge: t, grounded: false };
 }
-export const SPINNER = Object.freeze({ travel: 70, period: 1.8, turn: 1 });
-/** Continuous supine spin and horizontal sway share the visible trap clock. */
-export function spinnerMotion(age: number): { phase: 'hidden' | 'active'; progress: number; offset: number } {
-    if (age < 0) return { phase: 'hidden', progress: 0, offset: 0 };
-    return { phase: 'active', progress: age % SPINNER.turn / SPINNER.turn,
-        offset: SPINNER.travel * Math.sin(age / SPINNER.period * Math.PI * 2) };
+export const SPINNER = Object.freeze({ travel: 70, period: 1.8 });
+/** Horizontal sway on the visible trap clock; the supine spin itself is a stop-motion loop. */
+export function spinnerMotion(age: number): { phase: 'hidden' | 'active'; offset: number } {
+    if (age < 0) return { phase: 'hidden', offset: 0 };
+    return { phase: 'active', offset: SPINNER.travel * Math.sin(age / SPINNER.period * Math.PI * 2) };
 }
 export interface RunnerCompanion {
     id: number; kind: CompanionKind; x: number; y: number; width: number; height: number;
-    age: number; visibleAge: number; actionAge: number; used: boolean; active: boolean; offset: number; stride: number;
+    age: number; visibleAge: number; actionAge: number; used: boolean; active: boolean; offset: number;
     originY?: number;
     /** Popcat: waves already fired. */
     pops?: number;
 }
 export interface RunnerPlatform { id: number; x: number; y: number; width: number; }
-export type RunnerEvent = 'jump' | 'double' | 'land' | 'slide' | 'hit' | 'fall' | 'coin' | 'bounce' | 'mount' | 'dismount' | 'break' | 'perfect' | 'good' | 'fever' | 'feverEnd' | 'warning' | 'power' | 'shield' | 'deliver' | 'pop';
+export type RunnerEvent = 'jump' | 'double' | 'land' | 'slide' | 'hit' | 'fall' | 'coin' | 'bounce' | 'heal' | 'mount' | 'dismount' | 'break' | 'perfect' | 'good' | 'fever' | 'feverEnd' | 'warning' | 'power' | 'shield' | 'deliver' | 'pop';
 export interface RunnerFeedback { kind: RunnerEvent; x: number; y: number; value: number; }
-export interface RunnerSnapshot { version: 37; model: Record<string, unknown>; }
+export interface RunnerSnapshot { version: 38; model: Record<string, unknown>; }
 export const RUNNER = Object.freeze({ speed: 430, gravity: 1800, jump: 720, halfWidth: 29,
     height: 90, slideHeight: 39, barBottom: 58, pixelsPerMeter: 20, step: 1 / 120,
-    rideHeight: 64, rideDuration: 6, bounce: 850 });
+    rideHeight: 64, rideDuration: 6 });
 /** One delivery: the course ends at the customer's door; the last stretch before it stays clear for the hand-off.
  * The final score adds a delivery bonus and a customer rating (stars by mistakes) to the running score. */
 export const COURSE = Object.freeze({ meters: 4000, runway: 60, tiers: 5, topSpeed: 760,
@@ -96,6 +101,8 @@ export class MemeRunnerModel {
     perfects = 0; fevers = 0; fever = 0; feverTime = 0; lastJumpAt = -10; lastSlideAt = -10;
     mounted = 0; rideTime = 0; hurtAge = 10; breakAge = 10; surfaceY = 0;
     magnetTime = 0; shieldTime = 0;
+    /** Seconds left of a dragon launch, the belly height it left from, and dragons placed so far. */
+    launchTime = 0; launchY = 0; dragons = 0;
     readonly powers: RunnerPower[] = [];
     readonly obstacles: RunnerObstacle[] = [];
     readonly pickups: RunnerCoin[] = [];
@@ -121,12 +128,12 @@ export class MemeRunnerModel {
     snapshot(): RunnerSnapshot {
         const model = JSON.parse(JSON.stringify(this)) as Record<string, unknown>;
         model.events = []; model.feedbacks = []; model.slideHeld = false; model.jumpBuffer = 0;
-        return { version: 37, model };
+        return { version: 38, model };
     }
     /** Earlier checkpoints belong to retired rules (endless course, old powers) and start a fresh run. */
     static restore(value: unknown): MemeRunnerModel | undefined {
         const saved = value as RunnerSnapshot;
-        if (Number(saved?.version) !== 37 || !saved.model || typeof saved.model !== 'object') return undefined;
+        if (Number(saved?.version) !== 38 || !saved.model || typeof saved.model !== 'object') return undefined;
         const data = JSON.parse(JSON.stringify(saved.model)) as Record<string, unknown>, model = new MemeRunnerModel(1);
         if (typeof data.accumulated === 'number' && data.accumulated > -1e-8) data.accumulated = Math.max(0, data.accumulated);
         const validNumber = (v: unknown): boolean => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) < 1e13;
@@ -140,7 +147,7 @@ export class MemeRunnerModel {
         if (!rows('obstacles', 64, ['id', 'x', 'width', 'height'], OBSTACLE_KINDS as string[])
             || !rows('pickups', 512, ['id', 'x', 'y']) || !rows('powers', 32, ['id', 'x', 'y'], ['magnet', 'shield'])
             || !rows('platforms', 32, ['id', 'x', 'y', 'width'])
-            || !rows('companions', 32, ['id', 'x', 'y', 'width', 'height', 'age', 'visibleAge', 'actionAge', 'offset', 'stride'], ['dragon', 'bull', 'spinner', 'banana', 'popcat'])
+            || !rows('companions', 32, ['id', 'x', 'y', 'width', 'height', 'age', 'visibleAge', 'actionAge', 'offset'], ['dragon', 'bull', 'spinner', 'banana', 'popcat'])
             || !Array.isArray(data.recentPatterns) || data.recentPatterns.length > 4 || !data.recentPatterns.every(v => typeof v === 'string')
             || data.ended !== false || data.delivered !== false) return undefined;
         for (const key of Object.keys(model)) {
@@ -150,7 +157,9 @@ export class MemeRunnerModel {
         }
         if (Number(data.x) < 0 || Number(data.time) < 0 || Number(data.mistakes) < 0 || Number(data.mistakes) > 2
             || !Number.isInteger(data.mistakes) || Number(data.x) >= FINISH_X || Number(data.nextX) < Number(data.x) || Number(data.accumulated) < 0 || Number(data.accumulated) >= RUNNER.step
-            || Number(data.fever) < 0 || Number(data.fever) > 1 || Number(data.feverTime) < 0 || Number(data.feverTime) > SKILL.feverDuration) return undefined;
+            || Number(data.fever) < 0 || Number(data.fever) > 1 || Number(data.feverTime) < 0 || Number(data.feverTime) > SKILL.feverDuration
+            || Number(data.launchTime) < 0 || Number(data.launchTime) > DRAGON.launch
+            || !Number.isInteger(data.dragons) || Number(data.dragons) < 0 || Number(data.dragons) > DRAGON.meters.length) return undefined;
         // Only known constructor fields can be restored; foreign/prototype keys are never assigned.
         for (const key of Object.keys(model)) model[key] = JSON.parse(JSON.stringify(data[key]));
         model.clearInput(); model.events.length = model.feedbacks.length = 0;
@@ -164,15 +173,16 @@ export class MemeRunnerModel {
     get stars(): number { return this.delivered ? deliveryStars(this.hits) : 0; }
     get deliveryScore(): number { return this.delivered ? COURSE.deliveryBonus + COURSE.starBonus[this.stars] : 0; }
     get score(): number { return this.runScore + this.deliveryScore; }
-    get speed(): number { return this.baseSpeed * (this.feverTime > 0 ? SKILL.feverSpeed : this.mounted ? 1.12 : 1); }
+    get speed(): number { return this.baseSpeed * (this.feverTime > 0 ? SKILL.feverSpeed : this.launchTime > 0 ? DRAGON.speed : this.mounted ? 1.12 : 1); }
+    /** Fever and the dragon launch are uncontrolled flights. */
+    get flying(): boolean { return this.feverTime > 0 || this.launchTime > 0; }
     get baseSpeed(): number { return baseSpeedAt(this.x); }
     get multiplier(): number { return 1 + Math.min(4, Math.floor(this.combo / 5)); }
-    get rideStride(): number { return this.companions.find(c => c.id === this.mounted)?.stride ?? 0; }
     get height(): number { return this.sliding ? RUNNER.slideHeight : RUNNER.height; }
 
     jump(): boolean {
-        // Fever is an uncontrolled flight; inputs return once it ends.
-        if (this.ended || this.feverTime > 0 || (!this.grounded && this.y < -20)) return false;
+        // Fever and the dragon launch are uncontrolled flights; inputs return once they end.
+        if (this.ended || this.flying || (!this.grounded && this.y < -20)) return false;
         if (this.jumps >= 2) { if (this.vy < 0 && this.y - this.surfaceY < 65) this.jumpBuffer = .1; return false; }
         // A slide may be cancelled by jumping, only after the overhead obstacle is clear.
         if (!this.hasHeadroom()) return false;
@@ -218,6 +228,14 @@ export class MemeRunnerModel {
             // The flight then falls freely; the grace covers the descent, and pits ahead were bridged in flight.
             if (this.feverTime === 0) { this.invulnerable = Math.max(this.invulnerable, SKILL.feverGrace); this.jumps = 1; this.events.push('feverEnd'); }
         }
+        if (this.launchTime > 0) {
+            // A scripted arc over whatever lies ahead; it hands back to gravity, descending, at belly height.
+            this.launchTime = Math.max(0, this.launchTime - dt);
+            this.grounded = this.sliding = false; this.jumps = 2; this.coyote = this.jumpBuffer = 0;
+            const y = this.launchY + launchHeight(1 - this.launchTime / DRAGON.launch);
+            this.vy = (y - this.y) / dt; this.y = y;
+            if (this.launchTime === 0) this.jumps = 1;
+        }
         this.updateTraps(dt);
         this.x += this.speed * dt;
         if (this.x >= FINISH_X) {
@@ -233,7 +251,7 @@ export class MemeRunnerModel {
         if (this.grounded && ((this.surfaceY > 0 && !ledge) || (this.surfaceY === 0 && pit))) {
             this.grounded = false; this.jumps = 1; this.vy = 0; this.coyote = .08;
         }
-        if (!this.grounded && this.feverTime <= 0) {
+        if (!this.grounded && !this.flying) {
             this.vy -= RUNNER.gravity * dt;
             this.y += this.vy * dt;
             const ride = this.mounted ? RUNNER.rideHeight : 0;
@@ -268,8 +286,10 @@ export class MemeRunnerModel {
             }
             // Announce a Perfect as soon as the avoiding move is certain to succeed, while the
             // runner is still over (or under) the obstacle, rather than after it has passed.
-            // Fever and the bull smash what they touch, so they are never judged as avoided.
-            if (!o.judged && !o.scored && !o.hit && !o.broken && this.feverTime <= 0 && !this.mounted && this.perfectLead(o) && this.clears(o)) {
+            // Fever and the bull smash what they touch, so they are never judged as avoided;
+            // the dragon launch carries the runner past, which earns nothing either.
+            if (this.launchTime > 0 && !o.scored && (o.kind === 'gap' ? this.x >= o.x : this.overlaps(o))) o.ghosted = true;
+            if (!o.judged && !o.scored && !o.hit && !o.broken && !this.flying && !this.mounted && this.perfectLead(o) && this.clears(o)) {
                 o.judged = true; this.judge(o);
             }
             if (!o.scored && this.x - RUNNER.halfWidth >= o.x + o.width) {
@@ -345,7 +365,8 @@ export class MemeRunnerModel {
         if (this.fever < 1) return;
         // Fever pays in points and a safe smashing window; mistakes are never refunded,
         // which is what keeps a full delivery rare.
-        this.feverTime = SKILL.feverDuration; this.fevers++; this.dismount();
+        // A stunt can fill the gauge mid-launch: Fever's own flight takes over from the dragon's arc.
+        this.feverTime = SKILL.feverDuration; this.fevers++; this.launchTime = 0; this.dismount();
         this.events.push('fever'); this.feedbacks.push({ kind: 'fever', x: this.x, y: Math.max(0, this.y) + 60, value: 0 });
     }
     private dismount(): void {
@@ -382,11 +403,14 @@ export class MemeRunnerModel {
             // Each stretch tightens the rhythm and shortens the breathers.
             const tier = courseTier(start);
             // The two-route rooftop stretch is listed twice: route choice should come up a few times per delivery.
-            const choices = ['rhythm', 'alternating', 'steps', 'gaps', 'moving', 'steam', 'roof', 'roof', 'thorns', 'nyan', 'popcat', 'ride', 'banana', 'bounce', 'weave'];
+            const choices = ['rhythm', 'alternating', 'steps', 'gaps', 'moving', 'steam', 'roof', 'roof', 'thorns', 'nyan', 'popcat', 'ride', 'banana', 'weave'];
             // Popcat travels with the runner while it attacks, so it needs room before the runway.
             const available = choices.filter(name => this.recentPatterns.indexOf(name) < 0
                 && (name !== 'popcat' || start + (POPCAT_ATTACK + 2.5) * COURSE.topSpeed < limit));
-            const pattern = available[Math.floor(this.random() * available.length)];
+            // The dragon is never left to chance: it comes up once at each fixed mark.
+            const dragonDue = this.dragons < DRAGON.meters.length && start >= DRAGON.meters[this.dragons] * RUNNER.pixelsPerMeter;
+            const pattern = dragonDue ? 'bounce' : available[Math.floor(this.random() * available.length)];
+            if (dragonDue) this.dragons++;
             this.recentPatterns.push(pattern); if (this.recentPatterns.length > 4) this.recentPatterns.shift();
             this.section++;
             // Seconds of travel, rather than fixed pixels, keep combinations fair as speed increases.
@@ -431,8 +455,9 @@ export class MemeRunnerModel {
                 this.addCompanion('banana', at(0)); obstacle('crate', 1.3); obstacle('gap', 2.8);
                 obstacle('bar', 4.3); duration = 5.8;
             } else {
-                duration = this.addDragonPerch(at, speed);
-                obstacle('roller', 3); obstacle('bar', 4.35);
+                // Missing the dragon leaves an ordinary stretch the launch would have flown over.
+                this.addDragonLaunch(at(0), speed); obstacle('crate', 1.2); obstacle('gap', 2.5); obstacle('bar', 3.8);
+                duration = 5.2;
             }
             if (this.section % 3 === 2) {
                 const kinds: PowerKind[] = ['magnet', 'shield'];
@@ -478,12 +503,14 @@ export class MemeRunnerModel {
         this.addObstacle('crate', at(s + .9));
         return s + 2;
     }
-    /** A belly bounce on the dragon reaches a rooftop perch at the high-route height. The bounce
-     * descends through roof height about .8–1.15 s of travel after the dragon wherever it lands on
-     * its back, so the perch spans .65–1.85 s. Returns the section's duration in seconds. */
-    private addDragonPerch(at: (seconds: number) => number, speed: number): number {
-        this.addCompanion('dragon', at(0)); this.addPlatform(at(.65), ROUTE.roofY, speed * 1.2);
-        return 5.8;
+    /** The dragon at `x`, with coins tracing the launch arc from its belly's centre. */
+    private addDragonLaunch(x: number, speed: number): void {
+        this.addCompanion('dragon', x);
+        const c = this.companions[this.companions.length - 1], reach = speed * DRAGON.speed * DRAGON.launch;
+        for (let t = .1; t < .95; t += .1) {
+            this.pickups.push({ id: ++this.sequence, x: c.x + c.width / 2 + reach * t, y: c.height + launchHeight(t) + 45, taken: false, golden: t > .35 && t < .65 });
+        }
+        this.pickupsDirty = true;
     }
     private coinArc(takeoff: number, base: number, speed: number, times: number[], golden: boolean): void {
         for (const t of times) this.pickups.push({ id: ++this.sequence, x: takeoff + speed * t, y: base + jumpHeight(t) + 45, taken: false, golden });
@@ -511,9 +538,9 @@ export class MemeRunnerModel {
     }
 
     private updateTraps(dt: number): void {
-        // Fever lays bridges ahead. Placed planks remain until offscreen;
+        // Fever and the dragon launch lay bridges ahead. Placed planks remain until offscreen;
         // expiration never removes the floor from under a running/jumping actor.
-        if (this.feverTime > 0) for (const o of this.obstacles) {
+        if (this.flying) for (const o of this.obstacles) {
             if (o.kind === 'gap' && o.x < this.x + 1200 && o.x + o.width > this.x - 30) o.bridged = true;
         }
         for (const o of this.obstacles) {
@@ -541,7 +568,7 @@ export class MemeRunnerModel {
     private addCompanion(kind: CompanionKind, x: number, y = 0): void {
         const width = kind === 'dragon' ? 188 : kind === 'bull' ? 176 : kind === 'spinner' ? 100 : kind === 'popcat' ? 90 : 64;
         this.companions.push({ id: ++this.sequence, kind, x, y, width, height: kind === 'dragon' ? 68 : kind === 'bull' ? RUNNER.rideHeight : kind === 'spinner' ? 80 : kind === 'banana' ? 100 : kind === 'popcat' ? POPCAT.height : 72,
-            age: 0, visibleAge: -1, actionAge: 10, originY: y, used: false, active: true, offset: 0, stride: 0 });
+            age: 0, visibleAge: -1, actionAge: 10, originY: y, used: false, active: true, offset: 0 });
     }
     /** Only skilful actions extend the chain; every reward uses the current chain multiplier. */
     private reward(kind: 'perfect' | 'good' | 'break' | 'bounce' | 'mount', x: number, y: number, points: number, chained: boolean): void {
@@ -558,8 +585,13 @@ export class MemeRunnerModel {
             if (this.x < c.x + 24 || this.x > c.x + c.width - 24 || oldY < top || this.y > top) continue;
             c.used = true; c.actionAge = 0; this.sliding = false; this.y = top;
             if (c.kind === 'dragon') {
-                this.vy = RUNNER.bounce; this.jumps = 1; this.jumpAge = .1; this.grounded = false; this.bounces++;
+                this.launchTime = DRAGON.launch; this.launchY = top; this.jumps = 2; this.jumpAge = 0; this.grounded = false; this.bounces++;
+                this.invulnerable = Math.max(this.invulnerable, DRAGON.launch + DRAGON.grace);
                 this.reward('bounce', this.x, top, 80, true); this.addFever(SKILL.stuntGain);
+                if (this.mistakes > 0) {
+                    // The kangaroo drops back one stage; the customer's rating still remembers the crash.
+                    this.mistakes--; this.events.push('heal'); this.feedbacks.push({ kind: 'heal', x: this.x, y: top + 60, value: 1 });
+                }
             } else {
                 this.mounted = c.id; this.rideTime = RUNNER.rideDuration; this.mounts++; this.surfaceY = c.y;
                 this.y = c.y + RUNNER.rideHeight; this.vy = 0; this.grounded = true; this.jumps = 0; this.landAge = 1;
@@ -581,12 +613,11 @@ export class MemeRunnerModel {
             if (c.kind === 'spinner' && hidden && c.visibleAge >= 0 && !c.used && c.x + c.width > this.x) this.events.push('warning');
             if (c.kind === 'bull' && c.id === this.mounted) {
                 c.x = this.x - c.width / 2; c.y = this.y - RUNNER.rideHeight;
-                if (this.grounded && this.landAge >= .09 && this.breakAge >= .15) c.stride += this.speed * dt;
                 this.rideTime = Math.max(0, this.rideTime - dt);
                 const unsafe = this.obstacles.some(o => o.x + o.width > this.x - 90 && o.x < this.x + 380 && !o.broken && !o.bridged);
                 if (this.rideTime === 0 && this.grounded && this.surfaceY === 0 && !unsafe) this.dismount();
             } else if (c.kind === 'bull' && c.used) {
-                c.x += this.speed * 1.1 * dt; c.stride += this.speed * 1.1 * dt; if (c.actionAge > 1) c.active = false;
+                c.x += this.speed * 1.1 * dt; if (c.actionAge > 1) c.active = false;
             } else if (c.kind === 'spinner') {
                 c.offset = spinnerMotion(c.visibleAge).offset;
                 if (!c.used && Math.abs(this.x - (c.x + c.width / 2 + c.offset)) < 55 && this.reaches(c)) {

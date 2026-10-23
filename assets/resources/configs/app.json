@@ -2,8 +2,8 @@
   "schemaVersion": 3,
   "appVersion": "0.1.0",
   "cloudSave": {
-    "enabled": false,
-    "environmentId": "",
+    "enabled": true,
+    "environmentId": "cloud1-d5g8w0y1z59e9cc72",
     "functionName": "cloudSave",
     "requestTimeoutMs": 10000
   },

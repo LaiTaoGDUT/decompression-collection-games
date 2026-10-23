@@ -23,12 +23,32 @@ export class RotateRingsModel {
     private pullGeometry = new Map<string, { offset: number; poly: RingPoint[] }>();
     private fixedGeometry: { id: string; poly: RingPoint[] }[];
     private readonly poses = new Map<string, RingPart>();
+    private readonly probePoses = new Map<string, RingPart>();
+    private readonly pinGeometry = new WeakMap<RingPart, (RingPin & { shape: ReturnType<typeof G.pinShape> })[]>();
+    private readonly hardGeometry = new WeakMap<RingPart, RingPoint[][]>();
+    private readonly pinReach = new Map<string, number>();
+    private readonly rotationReach = new Map<string, number>();
+    private readonly incidentLinks = new Map<string, number[]>();
+    private readonly pullGuides = new Map<string, Set<string>>();
     private gestureActive = false;
     private readonly pendingBombContacts = new Map<number, Set<string>>();
     private readonly movedPulls = new Set<string>();
 
     constructor(readonly level: RingLevel, snapshot?: RingSnapshot) {
         level.rings.forEach(r => { this.rings.set(r.id, r); this.angles.set(r.id, G.norm180(r.angle)); });
+        level.rings.forEach(r => {
+            this.pinReach.set(r.id, Math.max(0, ...r.pins.map(p => p.radius)));
+            this.rotationReach.set(r.id, Math.max(r.outer, ...r.pins.map(p => p.radius + 1)));
+            this.incidentLinks.set(r.id, []);
+        });
+        level.links.forEach((link, index) => {
+            this.incidentLinks.get(link.sourceRingId)?.push(index);
+            if (link.targetPartId !== link.sourceRingId) this.incidentLinks.get(link.targetPartId)?.push(index);
+        });
+        level.guides.forEach(guide => {
+            const ids = this.pullGuides.get(guide.stickPartId) ?? new Set<string>();
+            ids.add(guide.guidePartId); this.pullGuides.set(guide.stickPartId, ids);
+        });
         level.pullObjects.forEach(p => { this.pulls.set(p.id, p); this.offsets.set(p.id, 0); });
         this.fixedGeometry = [];
         level.fixedObjects.forEach(f => f.polygons.forEach(p => this.fixedGeometry.push({ id: f.id, poly: G.polygonWorld(p, f.x, f.y, f.angle) })));
@@ -110,15 +130,23 @@ export class RotateRingsModel {
     }
 
     pose(id: string, angle = this.angles.get(id)): RingPart {
-        const cached = this.poses.get(id); if (cached?.angle === angle) return cached;
-        const pose = { ...this.rings.get(id)!, angle }; this.poses.set(id, pose); return pose;
+        // 候选角度不能顶掉真实姿态，否则轮流探测/碰撞抖动会让静止邻居反复重建轮廓。
+        const actual = angle === this.angles.get(id), cache = actual ? this.poses : this.probePoses;
+        const cached = cache.get(id); if (cached?.angle === angle) return cached;
+        const other = (actual ? this.probePoses : this.poses).get(id);
+        const pose = other?.angle === angle ? other : { ...this.rings.get(id)!, angle };
+        cache.set(id, pose); return pose;
     }
     pins(id: string, angle?: number): (RingPin & { shape: ReturnType<typeof G.pinShape> })[] {
         const ring = this.pose(id, angle);
-        return ring.pins.map(pin => ({ ...pin, shape: G.pinShape(ring, pin, pin.radius) }));
+        const cached = this.pinGeometry.get(ring); if (cached) return cached;
+        const pins = ring.pins.map(pin => ({ ...pin, shape: G.pinShape(ring, pin, pin.radius) }));
+        this.pinGeometry.set(ring, pins); return pins;
     }
     private hardBlocks(ring: RingPart): RingPoint[][] {
-        return ring.hardBlocks.map(poly => G.polygonWorld(poly, ring.x, ring.y, ring.angle));
+        const cached = this.hardGeometry.get(ring); if (cached) return cached;
+        const polygons = ring.hardBlocks.map(poly => G.polygonWorld(poly, ring.x, ring.y, ring.angle));
+        this.hardGeometry.set(ring, polygons); return polygons;
     }
     pullPolygon(id: string, offset = this.offsets.get(id) || 0): RingPoint[] {
         const p = this.pulls.get(id)!;
@@ -150,7 +178,7 @@ export class RotateRingsModel {
         for (const other of this.level.rings) {
             if (other.id === id || this.removedRings.has(other.id)) continue;
             // 远离的环不参与昂贵的叉形碰撞探测。
-            const reach = self.outer + other.outer + Math.max(0, ...self.pins.map(p => p.radius), ...other.pins.map(p => p.radius));
+            const reach = self.outer + other.outer + Math.max(this.pinReach.get(id)!, this.pinReach.get(other.id)!);
             if (Math.hypot(self.x - other.x, self.y - other.y) > reach + 2) continue;
             const target = this.pose(other.id), others = this.pins(other.id), otherHard = this.hardBlocks(target);
             if (G.ringBandsIntersect(self, target, BLOCK_TOL)) return other.id;
@@ -187,7 +215,7 @@ export class RotateRingsModel {
     rotateRing(id: string, target: number): { rotated: number; blocked: boolean } {
         if (!this.rings.has(id) || this.removedRings.has(id) || !finite(target)) return { rotated: 0, blocked: false };
         let angle = this.angles.get(id)!, remaining = G.angleDiff(target, angle), rotated = 0;
-        const reach = Math.max(this.rings.get(id)!.outer, ...this.rings.get(id)!.pins.map(pin => pin.radius + 1));
+        const reach = this.rotationReach.get(id)!;
         const step = Math.min(.5, .025 / reach / G.DEG, Math.abs(remaining));
         for (let i = 0; i < 1440 && Math.abs(remaining) > 1e-6; i++) {
             const delta = Math.sign(remaining) * Math.min(step, Math.abs(remaining));
@@ -211,10 +239,10 @@ export class RotateRingsModel {
             if (other.id !== id && !this.removedPulls.has(other.id) && G.polygonsIntersect(poly, this.pullPolygon(other.id))) return true;
         }
         // 该滑杆的导轨允许沿轨道穿行，其他导轨仍然是实体阻挡。
-        const guides = this.level.guides.filter(g => g.stickPartId === id).map(g => g.guidePartId);
+        const guides = this.pullGuides.get(id);
         for (const fixed of this.fixedGeometry) {
             if (this.removedFixed.has(fixed.id)) continue;
-            if (guides.indexOf(fixed.id) >= 0) continue;
+            if (guides?.has(fixed.id)) continue;
             if (G.polygonsIntersect(poly, fixed.poly)) return true;
         }
         return false;
@@ -275,8 +303,8 @@ export class RotateRingsModel {
             released = false;
             for (const ring of this.level.rings) {
                 if (this.removedRings.has(ring.id)) continue;
-                const incident = this.level.links.map((l, i) => ({ l, i })).filter(({ l }) => l.sourceRingId === ring.id || l.targetPartId === ring.id);
-                if (incident.length && incident.every(({ i }) => this.solved.has(i)) && !this.hasInterlock(ring.id)) {
+                const incident = this.incidentLinks.get(ring.id)!;
+                if (incident.length && incident.every(i => this.solved.has(i)) && !this.hasInterlock(ring.id)) {
                     this.removePart(ring.id); released = true;
                 }
             }

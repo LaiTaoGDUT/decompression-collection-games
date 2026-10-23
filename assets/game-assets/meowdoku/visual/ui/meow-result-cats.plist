@@ -4,18 +4,31 @@
 <dict>
 	<key>frames</key>
 	<dict>
-		<key>meowdoku-like-hand-v1</key>
+		<key>meowdoku-like-fist-v2</key>
 		<dict>
 			<key>frame</key>
-			<string>{{518,2},{192,192}}</string>
+			<string>{{2,518},{99,128}}</string>
 			<key>offset</key>
-			<string>{0,0}</string>
+			<string>{0.0,0.0}</string>
 			<key>rotated</key>
 			<false/>
 			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{192,192}}</string>
+			<string>{{0.0,0.0},{99,128}}</string>
 			<key>sourceSize</key>
-			<string>{192,192}</string>
+			<string>{99,128}</string>
+		</dict>
+		<key>meowdoku-like-thumb-v2</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,650},{99,128}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{99,128}}</string>
+			<key>sourceSize</key>
+			<string>{99,128}</string>
 		</dict>
 		<key>meowdoku-result-fail-cat-v1</key>
 		<dict>
@@ -38,7 +51,7 @@
 		<key>realTextureFileName</key>
 		<string>meow-result-cats.png</string>
 		<key>size</key>
-		<string>{712,516}</string>
+		<string>{516,780}</string>
 		<key>textureFileName</key>
 		<string>meow-result-cats.png</string>
 	</dict>

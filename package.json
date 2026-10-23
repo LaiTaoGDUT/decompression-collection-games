@@ -6,7 +6,7 @@
   },
   "scripts": {
     "prepare:cloud-save": "node project-scripts/cloud-save/prepare.cjs",
-    "verify:cloud-save": "node tests/cloud-save/verify.cjs",
+    "verify:cloud-save": "node tests/cloud-save/verify.cjs && node tests/cloud-save/build-hooks.cjs",
     "verify:storage-recovery": "node tests/storage/recovery.cjs",
     "verify:update-reminder": "node tools/verify-update-reminder.cjs",
     "verify:tap": "node tests/tap/platform.cjs && node tests/tap/build-hooks.cjs",

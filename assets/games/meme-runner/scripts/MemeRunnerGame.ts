@@ -9,7 +9,7 @@ import { calculateSafeContentBounds } from '../../../shared/ui/PlatformSafeLayou
 import { setLabelBold } from '../../../services/font/FontBinding';
 import { COURSE, MemeRunnerModel, RUNNER, SKILL, steamPhase, nyanPhase, type RunnerObstacle } from './MemeRunnerModel';
 import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
-import { MemeRunnerMotion, RUNNER_FRAME_SOURCES, RUN_IN_DURATION, runnerEntry } from './MemeRunnerMotion';
+import { MemeRunnerMotion, RUNNER_FRAME_SOURCES, RUN_IN_DURATION, runnerEntry, stopMotionFrame } from './MemeRunnerMotion';
 import { MemeRunnerHero } from './MemeRunnerHero';
 import { CAST_FRAME_SOURCES, MemeRunnerCast } from './MemeRunnerCast';
 import { readRunnerProgress, recordRunnerResult, type RunnerProgress } from './MemeRunnerProgress';
@@ -54,7 +54,6 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
     private pausedState: 'intro' | 'countdown' | 'entering' | 'playing' | 'ending' = 'playing';
     private model?: MemeRunnerModel;
     private entryAge = 0;
-    private entryStride = 0;
     private progressData: RunnerProgress = readRunnerProgress(undefined);
     private newRecord = false;
     private audioBank?: BundleAudioBank;
@@ -140,15 +139,14 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
     }
     begin(): void {
         if (this.state !== 'ready') return;
-        const checkpoint = this.context!.services.storage.getLocalGameState(this.context!.gameId) as { view?: { cameraY?: number; phase?: number; frame?: string; stride?: number } };
+        const checkpoint = this.context!.services.storage.getLocalGameState(this.context!.gameId) as { view?: { cameraY?: number; phase?: number; frame?: string } };
         const restored = MemeRunnerModel.restore(checkpoint);
         if (restored) {
             this.resetModel(restored);
             const savedView = checkpoint.view;
             if (savedView && Number.isFinite(savedView.cameraY)) this.cameraY = Math.max(0, Math.min(600, savedView.cameraY));
             if (savedView && Number.isFinite(savedView.phase)) this.motion.phase = Math.max(0, Math.min(1, savedView.phase));
-            if (savedView && (RUNNER_FRAME_SOURCES.some(source => source.key === savedView.frame) || /^dash-[0-3]$/.test(savedView.frame))) this.motion.frame = savedView.frame;
-            if (savedView && Number.isFinite(savedView.stride)) this.entryStride = Math.max(0, savedView.stride);
+            if (savedView && RUNNER_FRAME_SOURCES.some(source => source.key === savedView.frame)) this.motion.frame = savedView.frame;
             this.startCountdown();
         }
         else if (!this.introSeen) this.showIntro();
@@ -212,10 +210,9 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
             const entryStep = Math.min(dt, Math.max(0, RUN_IN_DURATION - this.entryAge));
             const nextAge = this.entryAge + entryStep;
             this.entryAge = nextAge + 1e-8 >= RUN_IN_DURATION ? RUN_IN_DURATION : nextAge;
-            const entry = runnerEntry(this.entryAge, this.worldBounds.left, HERO_X);
-            this.motion.advance({ ...this.model, x: entry.stride }, entryStep);
+            this.motion.advance(this.model, entryStep);
             if (this.entryAge < RUN_IN_DURATION) { this.render(); return; }
-            this.entryStride = entry.stride; this.motion.rebase(this.model.x); this.state = 'playing';
+            this.state = 'playing';
             // Spend the rest of a crossing frame scrolling the street, rather than waiting for another update.
             delta = Math.max(0, dt - entryStep);
             if (delta < 1e-8) { this.render(); return; }
@@ -298,7 +295,7 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
         const storage = this.context.services.storage, old = storage.getGameData(this.context.gameId);
         try {
             storage.writeLocalGameState(this.context.gameId, { ...this.model.snapshot(),
-                view: { cameraY: this.cameraY, phase: this.motion.phase, frame: this.motion.frame, stride: this.entryStride } });
+                view: { cameraY: this.cameraY, phase: this.motion.phase, frame: this.motion.frame } });
             this.checkpointWarning = false;
         } catch (error) {
             if (!this.checkpointWarning) console.warn('[MemeRunner] Local continuation could not be saved.', error);
@@ -318,7 +315,7 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
     }
     private resetModel(restored?: MemeRunnerModel): void {
         this.clearInput(); this.model = restored ?? new MemeRunnerModel(Date.now());
-        this.newRecord = false; this.entryStride = 0; this.setRunningUI(true);
+        this.newRecord = false; this.setRunningUI(true);
         this.motion.reset(this.model); this.hudView?.reset(); this.scoreSent = -1; this.endingAge = 0; this.cameraY = 0; this.hitStop = 0;
         this.effects?.reset(); this.customer?.reset(); this.world?.reset(this.model); this.cast?.reset(); this.itemsView?.reset(); this.trapPhases.clear();
         for (const n of Array.from(this.obstacleViews.values())) n.destroy();
@@ -376,7 +373,7 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
             const lift = o.kind === 'bar' || o.kind.startsWith('nyan-') ? 0 : o.bottom ?? 0;
             n.active = true; n.setPosition(x + o.width / 2, FLOOR + lift);
             if (o.kind === 'gap') n.getChildByName('FloatingBridge')!.active = !!o.bridged;
-            if (o.kind.startsWith('nyan-')) { n.getChildByName('Nyan')!.getComponent(Sprite)!.spriteFrame = this.frames[`nyan-${Math.floor(m.time * 10) % 4}`]; }
+            if (o.kind.startsWith('nyan-')) { n.getChildByName('Nyan')!.getComponent(Sprite)!.spriteFrame = this.frames[`nyan-${stopMotionFrame(m.time, 2)}`]; }
             if (o.kind === 'roller') {
                 n.getChildByName('RollingBarrel')!.angle = ((o.originX ?? o.x) - o.x) / 46 * 180 / Math.PI;
                 n.getChildByName('TrapWarning')!.active = (o.visibleAge ?? -1) >= 0 && (o.visibleAge ?? 0) < .55;
@@ -432,7 +429,8 @@ export class MemeRunnerGame extends Component implements MiniGame<Services> {
         }
         const entering = this.state === 'entering' || this.state === 'intro' || (this.state === 'paused' && this.pausedState === 'entering');
         const entry = entering ? runnerEntry(this.entryAge, left, HERO_X) : undefined;
-        this.cast!.update(m, HERO_X, FLOOR, left, right, this.endingAge, entry, this.entryStride);
+        // One stop-motion clock runs on from the run-in through the run to the ending.
+        this.cast!.update(m, HERO_X, FLOOR, left, right, this.entryAge + m.time + this.endingAge, this.endingAge, entry);
         const actorX = entry?.heroX ?? HERO_X;
         // A delivery made in mid-air settles onto the doorstep for the celebration.
         const heroY = m.delivered ? m.y * Math.max(0, 1 - this.endingAge / .25) : m.y;

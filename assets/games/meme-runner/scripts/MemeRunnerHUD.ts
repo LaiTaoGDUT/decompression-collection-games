@@ -36,6 +36,7 @@ export class MemeRunnerHUD {
     private lastCombo = 0;
     private comboAt = -10;
     private lostAt = -10;
+    private gainedAt = -10;
     private shownChances = CHANCES;
 
     constructor(readonly root: Node, private readonly frames: Readonly<Record<string, SpriteFrame>>, pause: () => void) {
@@ -80,7 +81,7 @@ export class MemeRunnerHUD {
         this.coinFlights = node('CoinFlights', root, 1280, 640); this.coinFlights.active = false;
     }
     reset(): void {
-        this.lastCombo = 0; this.comboAt = -10; this.coinPulseAge = 1; this.lostAt = -10; this.shownChances = CHANCES;
+        this.lastCombo = 0; this.comboAt = -10; this.coinPulseAge = 1; this.lostAt = this.gainedAt = -10; this.shownChances = CHANCES;
         for (const flight of this.flights) { flight.node.active = false; this.flightPool.push(flight); }
         this.flights.length = 0; this.coinFlights.active = false; this.coinIcon.setScale(1, 1, 1);
     }
@@ -136,18 +137,20 @@ export class MemeRunnerHUD {
         const pulse = 1 + .2 * Math.sin(Math.PI * Math.min(1, this.coinPulseAge / .18));
         this.coinIcon.setScale(pulse, pulse, 1);
     }
-    /** Full hearts are the mistakes left before the kangaroo catches up; the one just lost pops and fades. */
+    /** Full hearts are the mistakes left before the kangaroo catches up; the one just lost pops and fades,
+     * one won back from the dragon swells in. */
     private renderChances(m: MemeRunnerModel): void {
         const left = m.ended && !m.delivered ? 0 : Math.max(0, CHANCES - m.mistakes);
         if (left < this.shownChances) this.lostAt = m.time;
+        if (left > this.shownChances) this.gainedAt = m.time;
         this.shownChances = left;
-        const age = m.time - this.lostAt;
+        const age = m.time - this.lostAt, regained = m.time - this.gainedAt;
         this.hearts.forEach((heart, i) => {
-            const full = i < left, justLost = i === left && age < .45;
+            const full = i < left, justLost = i === left && age < .45, justGained = i === left - 1 && regained < .6;
             // A spent heart turns to grey felt and fades back, still marking how many chances there were.
             heart.grayscale = !full;
             heart.node.getComponent(UIOpacity)!.opacity = full ? 255 : justLost ? Math.round(255 - 135 * age / .45) : 120;
-            const s = justLost ? 1 + .5 * Math.sin(Math.PI * age / .45) : full && left === 1 ? 1 + .08 * Math.sin(m.time * 8) : 1;
+            const s = justGained ? 1 + .6 * Math.sin(Math.PI * regained / .6) : justLost ? 1 + .5 * Math.sin(Math.PI * age / .45) : full && left === 1 ? 1 + .08 * Math.sin(m.time * 8) : 1;
             heart.node.setScale(s, s, 1);
         });
     }

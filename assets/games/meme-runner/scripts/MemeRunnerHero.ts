@@ -29,9 +29,10 @@ export class MemeRunnerHero {
     render(motion: MemeRunnerMotion, x: number, y: number, alpha: number): void {
         const dashing = motion.frame.startsWith('dash-');
         this.root.setPosition(x, y); this.opacity.opacity = dashing ? 255 : alpha;
-        if (this.currentFrame === motion.frame) return;
+        // The four-drawing aura flickers on the same stop-motion clock as the two-pose flight.
         this.dashAura.node.active = dashing;
-        this.dashAura.spriteFrame = dashing ? this.frames[motion.frame.replace('dash-', 'dash-aura-')] : null;
+        this.dashAura.spriteFrame = dashing ? this.frames[`dash-aura-${motion.loop(4)}`] : null;
+        if (this.currentFrame === motion.frame) return;
         this.sprite.node.getComponent(UITransform)!.setContentSize(dashing ? 208 : 160, 144);
         this.currentFrame = motion.frame; this.sprite.spriteFrame = this.frames[motion.frame];
     }

@@ -1,0 +1,5 @@
+Two small game UI markers for a cute felt miniature-town runner game, made of cartoon needle-felted wool exactly like the felt puppet in reference image 1 (soft matte wool, fine fibres, hand-made). FULLY TRANSPARENT background (real alpha), no text, no letters, no numbers, no grid, no shadow outside the objects. Exactly 2 columns x 1 row of equal cells, each object centred with a generous empty margin.
+
+Cell 1: a "land here" pin badge: a plump rounded teal (#3E9C98) felt map-pin / teardrop shape pointing DOWN, with a cream (#FFF6E5) stitched outline and a thick dark plum (#3A2340) felt edge; on its face two bold cream felt chevrons pointing DOWN. Friendly, very readable at small size.
+
+Cell 2: a flat oval teal (#3E9C98) felt ring lying on the ground, seen from slightly above (a wide thin ellipse about 5 times wider than tall), soft glowing light-teal inner edge, cream running-stitch along it, the centre EMPTY and transparent.

@@ -22,7 +22,7 @@ export const RUNNER_AUDIO: BundleAudioBankConfig = {
 };
 
 export const RUNNER_EVENT_CUES: Readonly<Partial<Record<RunnerEvent, FeedbackCue>>> = {
-    jump: 'drop', double: 'fold', land: 'toggle', slide: 'continue', coin: 'merge', bounce: 'popup',
+    jump: 'drop', double: 'fold', land: 'toggle', slide: 'continue', coin: 'merge', bounce: 'popup', heal: 'milestone',
     mount: 'chain', break: 'voice1', dismount: 'voice2', hit: 'collision', fall: 'danger', warning: 'voice5', power: 'milestone', shield: 'voice2',
     perfect: 'voice3', fever: 'milestone', feverEnd: 'voice2', deliver: 'record', pop: 'popup',
 };

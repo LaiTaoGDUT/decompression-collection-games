@@ -7,52 +7,6 @@
     ".json"
   ],
   "subMetas": {
-    "b7fff": {
-      "importer": "sprite-frame",
-      "uuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f@b7fff",
-      "displayName": "",
-      "id": "b7fff",
-      "name": "dlg-confetti",
-      "userData": {
-        "trimThreshold": 1,
-        "rotated": false,
-        "offsetX": 0,
-        "offsetY": 0,
-        "trimX": 2,
-        "trimY": 2,
-        "width": 900,
-        "height": 360,
-        "rawWidth": 900,
-        "rawHeight": 360,
-        "packable": false,
-        "pixelsToUnit": 100,
-        "pivotX": 0.5,
-        "pivotY": 0.5,
-        "meshType": 0,
-        "vertices": {
-          "rawPosition": [],
-          "indexes": [],
-          "uv": [],
-          "nuv": [],
-          "minPos": [],
-          "maxPos": []
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "58edd8d5-be14-51a5-b77e-21cf9b5b48e8@6c48a",
-        "atlasUuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f",
-        "trimType": "custom",
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0
-      },
-      "ver": "1.0.12",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {}
-    },
     "41f03": {
       "importer": "sprite-frame",
       "uuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f@41f03",

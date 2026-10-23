@@ -7,52 +7,6 @@
     ".json"
   ],
   "subMetas": {
-    "ac19a": {
-      "importer": "sprite-frame",
-      "uuid": "d2b39248-1adb-54be-8f76-c3fd12e04c39@ac19a",
-      "displayName": "",
-      "id": "ac19a",
-      "name": "pit-wall-alley",
-      "userData": {
-        "trimThreshold": 1,
-        "rotated": false,
-        "offsetX": 0,
-        "offsetY": 0,
-        "trimX": 202,
-        "trimY": 834,
-        "width": 64,
-        "height": 160,
-        "rawWidth": 64,
-        "rawHeight": 160,
-        "packable": false,
-        "pixelsToUnit": 100,
-        "pivotX": 0.5,
-        "pivotY": 0.5,
-        "meshType": 0,
-        "vertices": {
-          "rawPosition": [],
-          "indexes": [],
-          "uv": [],
-          "nuv": [],
-          "minPos": [],
-          "maxPos": []
-        },
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "11ef3bf5-64bf-5684-8f13-fb1a21b78643@6c48a",
-        "atlasUuid": "d2b39248-1adb-54be-8f76-c3fd12e04c39",
-        "trimType": "custom",
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0
-      },
-      "ver": "1.0.12",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {}
-    },
     "78f76": {
       "importer": "sprite-frame",
       "uuid": "d2b39248-1adb-54be-8f76-c3fd12e04c39@78f76",

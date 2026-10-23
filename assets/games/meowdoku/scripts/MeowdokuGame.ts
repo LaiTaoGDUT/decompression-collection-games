@@ -140,6 +140,37 @@ function clamp(value: number, min: number, max: number): number {
     return value < min ? min : value > max ? max : value;
 }
 
+/**
+ * 以支点（锚点）为原点，量出一组关键姿态下精灵外沿离支点的最远距离。
+ * `pivotY` 是支点在图片高度上的比例；`angle` 与 Cocos 一致（逆时针为正）。
+ */
+function likeHandReach(
+    width: number,
+    height: number,
+    pivotY: number,
+    poses: readonly { sx: number; sy: number; angle: number; lift: number }[],
+): { left: number; right: number; down: number; up: number } {
+    const reach = { left: 0, right: 0, down: 0, up: 0 };
+    for (const pose of poses) {
+        const radians = pose.angle * Math.PI / 180;
+        const cos = Math.cos(radians);
+        const sin = Math.sin(radians);
+        for (const cx of [-width / 2, width / 2]) {
+            for (const cy of [-pivotY * height, (1 - pivotY) * height]) {
+                const px = cx * pose.sx;
+                const py = cy * pose.sy;
+                const rx = px * cos - py * sin;
+                const ry = px * sin + py * cos + pose.lift;
+                reach.left = Math.max(reach.left, -rx);
+                reach.right = Math.max(reach.right, rx);
+                reach.down = Math.max(reach.down, -ry);
+                reach.up = Math.max(reach.up, ry);
+            }
+        }
+    }
+    return reach;
+}
+
 /** 今天的 `YYYY-MM-DD`（每日道具的判重键）。 */
 function todayStamp(): string {
     const now = new Date();
@@ -4386,66 +4417,174 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (this.likeHandState.triggered >= cadence.maxTriggers) return;
         const moment = model.elapsedSeconds;
         if (moment - this.likeHandState.lastCatAt < cadence.minInterval) return;
-        const frame = this.visuals?.frames.likeHand;
+        const fist = this.visuals?.frames.likeHandFist;
+        const thumb = this.visuals?.frames.likeHandThumb;
         const layer = this.scoreLayer;
         const layout = this.requireLayout();
-        if (!frame || !layer?.isValid) return;
+        if (!fist || !thumb || !layer?.isValid) return;
         const [localX, localY] = this.cellCenter(col, row);
         // 挂在页面层，保证手势盖在猫咪上面（原作 z_index 41，高于棋盘）。
         const k = MEOWDOKU_SOURCE_SCALE * layout.fitScale;
+        const spec = MEOWDOKU_LIKE_HAND;
         // 原作先让手势跟着被钳过的气泡 x 走，没有气泡时才自己贴边留白。
         const halfWidth = layout.contentWidth / 2;
-        const margin = MEOWDOKU_LIKE_HAND.edgeMarginDesign * k;
+        const margin = spec.edgeMarginDesign * k;
         const rawX = layout.boardX + localX;
         const suggestedX = this.lastBubbleCenterX !== undefined
             ? this.lastBubbleCenterX
             : clamp(rawX, -halfWidth + margin, halfWidth - margin);
-        const size = MEOWDOKU_LIKE_HAND.designSize * k;
-        const source = frame.originalSize;
+        const size = spec.designSize * k;
+        const source = thumb.originalSize;
         const fit = size / Math.max(1, source.width, source.height);
         const width = source.width * fit;
         const height = source.height * fit;
-        // 用图片对角线覆盖旋转和缩放峰值，整段动作保持在完整屏幕宽度及上下安全区内。
-        const peakHalf = Math.hypot(width, height) * MEOWDOKU_LIKE_HAND.peakScale / 2;
-        const lift = MEOWDOKU_LIKE_HAND.liftDesign * k;
-        const x = clamp(suggestedX, -layout.width / 2 + peakHalf, layout.width / 2 - peakHalf);
         const bubbleCenterY = layout.boardY + localY + MEOWDOKU_CAT_TOP_UNSCALED * layout.cellScale
             + (MEOWDOKU_BUBBLE_GAP + MEOWDOKU_BUBBLE_HEIGHT / 2) * k;
-        const suggestedY = bubbleCenterY + layout.cellFace * 0.52 * 1.15 / 2
-            + MEOWDOKU_LIKE_HAND.bubbleGapDesign * k + height / 2;
-        const y = clamp(suggestedY, -layout.height / 2 + layout.safeBottom + peakHalf,
-            layout.height / 2 - layout.topInset - peakHalf - lift * 1.3);
+        const suggestedCenterY = bubbleCenterY + layout.cellFace * 0.52 * 1.15 / 2
+            + spec.bubbleGapDesign * k + height / 2;
+        // 节点锚在手腕：甩腕和挤压都绕手腕转。
+        const fadeLift = spec.fadeLiftDesign * k;
+        const reach = likeHandReach(width, height, spec.pivotY, [
+            { sx: spec.overshootScale, sy: spec.overshootScale, angle: spec.overshootAngle, lift: 0 },
+            { sx: spec.squash.x, sy: spec.squash.y, angle: spec.overshootAngle, lift: 0 },
+            { sx: spec.stretch.x, sy: spec.stretch.y, angle: 0, lift: 0 },
+            { sx: 1, sy: 1, angle: 0, lift: fadeLift },
+        ]);
+        // 整段动作（按手腕支点逐个关键姿态量出的最大外沿）保持在完整屏幕宽度及上下安全区内。
+        const x = clamp(suggestedX, -layout.width / 2 + reach.left, layout.width / 2 - reach.right);
+        const y = clamp(suggestedCenterY - height * (0.5 - spec.pivotY),
+            -layout.height / 2 + layout.safeBottom + reach.down,
+            layout.height / 2 - layout.topInset - reach.up);
+
+        // 手背后的暖光：竖拇指那一刻亮起。
+        const glowFrame = this.visuals?.frames.glowSoft;
+        const centerY = y + height * (0.5 - spec.pivotY);
+        let glow: Node | undefined;
+        if (glowFrame) {
+            glow = new Node('LikeHandGlow');
+            glow.layer = this.node.layer;
+            glow.setParent(layer);
+            const glowSize = Math.max(width, height) * spec.glowSizeRatio;
+            glow.addComponent(UITransform).setContentSize(glowSize, glowSize);
+            glow.setPosition(x, centerY, 0);
+            const glowSprite = glow.addComponent(Sprite);
+            glowSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            glowSprite.spriteFrame = glowFrame;
+            glowSprite.color = spec.glowColor;
+            glow.addComponent(UIOpacity).opacity = 0;
+            glow.setScale(0.5, 0.5, 1);
+            this.feedbackNodes.add(glow);
+        }
+
         const node = new Node('LikeHand');
         node.layer = this.node.layer;
         node.setParent(layer);
         node.addComponent(UITransform).setContentSize(width, height);
-        node.setPosition(x, y, 0);
+        node.getComponent(UITransform)!.setAnchorPoint(0.5, spec.pivotY);
+        node.setPosition(x, y - spec.riseDropDesign * k, 0);
         const sprite = node.addComponent(Sprite);
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         sprite.trim = false;
-        sprite.spriteFrame = frame;
+        sprite.spriteFrame = fist;
         const opacity = node.addComponent(UIOpacity);
         opacity.opacity = 0;
-        node.angle = -16;
-        node.setScale(0.72, 0.72, 1);
+        node.angle = spec.riseAngle;
+        node.setScale(spec.riseScale, spec.riseScale, 1);
         this.feedbackNodes.add(node);
-        const timing = MEOWDOKU_LIKE_HAND;
+
+        const raiseThumb = (): void => {
+            if (!node.isValid) return;
+            sprite.spriteFrame = thumb;
+            const tipX = (spec.thumbTip.x - 0.5) * width;
+            const tipY = (spec.thumbTip.y - spec.pivotY) * height;
+            const radians = spec.overshootAngle * Math.PI / 180;
+            this.spawnLikeSparks(
+                x + tipX * Math.cos(radians) - tipY * Math.sin(radians),
+                y + tipX * Math.sin(radians) + tipY * Math.cos(radians),
+                k,
+            );
+            if (glow?.isValid) {
+                const peak = new Vec3(1.15, 1.15, 1);
+                tween(glow).to(0.16, { scale: peak }, { easing: 'quadOut' }).start();
+                tween(glow.getComponent(UIOpacity)!)
+                    .to(0.08, { opacity: 230 })
+                    .to(0.5, { opacity: 0 }, { easing: 'quadIn' })
+                    .call(() => { if (glow?.isValid) this.destroyNode(glow); })
+                    .start();
+            }
+        };
+        const restAt = new Vec3(x, y, 0);
         tween(node)
-            .to(timing.popIn, { scale: new Vec3(timing.peakScale, timing.peakScale, 1),
-                angle: 8, position: new Vec3(x, y + lift, 0) }, { easing: 'quadOut' })
-            .to(timing.nod, { scale: new Vec3(0.96, 0.96, 1), angle: -6 }, { easing: 'sineInOut' })
-            .to(timing.settle, { scale: new Vec3(1, 1, 1), angle: 0 }, { easing: 'sineOut' })
-            .delay(timing.hold)
-            .to(timing.fadeOut, { scale: new Vec3(0.86, 0.86, 1), position: new Vec3(x, y + lift * 1.3, 0) },
+            // 握拳从下方甩腕上来，带一点过冲。
+            .to(spec.rise, {
+                scale: new Vec3(spec.overshootScale, spec.overshootScale, 1),
+                angle: spec.overshootAngle,
+                position: restAt,
+            }, { easing: 'backOut' })
+            // 拇指「啪」地竖起：换帧 + 挤压 → 拉伸 → 回弹。
+            .call(raiseThumb)
+            .to(spec.squash.duration, { scale: new Vec3(spec.squash.x, spec.squash.y, 1) }, { easing: 'quadOut' })
+            .to(spec.stretch.duration, { scale: new Vec3(spec.stretch.x, spec.stretch.y, 1), angle: 0 },
+                { easing: 'quadOut' })
+            .to(spec.settle, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+            .delay(spec.hold)
+            .to(spec.fadeOut, { scale: new Vec3(0.88, 0.88, 1), position: new Vec3(x, y + fadeLift, 0) },
                 { easing: 'sineIn' })
             .call(() => this.destroyNode(node))
             .start();
+        const visible = spec.rise + spec.squash.duration + spec.stretch.duration + spec.settle + spec.hold;
         tween(opacity)
-            .to(timing.popIn, { opacity: 255 })
-            .delay(timing.nod + timing.settle + timing.hold)
-            .to(timing.fadeOut, { opacity: 0 })
+            .to(spec.rise * 0.6, { opacity: 255 })
+            .delay(visible - spec.rise * 0.6)
+            .to(spec.fadeOut, { opacity: 0 })
             .start();
         this.likeHandState.triggered += 1;
+    }
+
+    /** 竖拇指瞬间从拇指尖向上半圆迸出的星光。 */
+    private spawnLikeSparks(x: number, y: number, k: number): void {
+        const layer = this.scoreLayer;
+        const layout = this.requireLayout();
+        if (!layer?.isValid) return;
+        const spec = MEOWDOKU_LIKE_HAND;
+        const variants = [this.visuals?.frames.starSpark, this.visuals?.frames.starGold];
+        for (let index = 0; index < spec.sparkCount; index += 1) {
+            const frame = variants[index % variants.length];
+            if (!frame) continue;
+            // 从左上到右上均匀铺开，略带随机，避免整齐得像钟表刻度。
+            const angle = lerp(Math.PI * 0.08, Math.PI * 0.92, (index + 0.5) / spec.sparkCount)
+                + (Math.random() - 0.5) * 0.25;
+            const distance = lerp(spec.sparkDistanceDesign.min, spec.sparkDistanceDesign.max, Math.random()) * k;
+            const starSize = layout.cellFace * lerp(spec.sparkSizeRatio.min, spec.sparkSizeRatio.max, Math.random());
+            const star = new Node('LikeSpark');
+            star.layer = this.node.layer;
+            star.setParent(layer);
+            star.addComponent(UITransform).setContentSize(starSize, starSize);
+            star.setPosition(x, y, 0);
+            star.angle = Math.random() * 90;
+            const sprite = star.addComponent(Sprite);
+            sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+            sprite.spriteFrame = frame;
+            sprite.color = index % 2 === 0 ? new Color(255, 236, 120, 255) : MEOWDOKU_COLORS.scoreGold;
+            const opacity = star.addComponent(UIOpacity);
+            star.setScale(0.4, 0.4, 1);
+            this.feedbackNodes.add(star);
+            tween(star)
+                .to(spec.sparkLife * 0.3, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
+                .to(spec.sparkLife * 0.7, { scale: new Vec3(0.3, 0.3, 1) }, { easing: 'quadIn' })
+                .start();
+            tween(star)
+                .to(spec.sparkLife, {
+                    position: new Vec3(x + Math.cos(angle) * distance, y + Math.sin(angle) * distance, 0),
+                    angle: star.angle + 120,
+                }, { easing: 'quadOut' })
+                .call(() => this.destroyNode(star))
+                .start();
+            tween(opacity)
+                .delay(spec.sparkLife * 0.45)
+                .to(spec.sparkLife * 0.55, { opacity: 0 })
+                .start();
+        }
     }
 
     /**

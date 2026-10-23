@@ -70,7 +70,7 @@ export interface DunkParticleAnchor { x: number; y: number; angle?: number; scal
 interface Point { x: number; y: number; z: number; }
 interface Prepared { spec: Spec; matrix: number[]; shape: number[]; }
 interface Emitter { data: Prepared; anchor: DunkParticleAnchor; previous: DunkParticleAnchor; age: number;
-    carry: number; emitting: boolean; pooled: boolean; touched: boolean; }
+    carry: number; emitting: boolean; pooled: boolean; touched: boolean; liveParticles: number; }
 interface View { node: Node; sprite: Sprite; ui: UITransform; }
 interface Particle { emitter: Emitter; pos: Point; velocity: Point; extra: Point; age: number; total: number;
     width: number; height: number; rotation: number; gravity: number; tint: number[]; random: number; view: View; }
@@ -107,27 +107,35 @@ function shapeMatrix(s: Shape): number[] {
     out = multiply(out, matrix({ position: [0, 0, 0], scale: s.scale, rotation: [0, 0, 0, 1] }));
     out[3] = s.position[0]; out[7] = s.position[1]; out[11] = s.position[2]; return out;
 }
-function anchorPoint(p: Point, a: DunkParticleAnchor, vector = false): Point {
+function anchorPoint(p: Point, a: DunkParticleAnchor, vector = false, out = point()): Point {
     const c = Math.cos((a.angle ?? 0) * DEG), s = Math.sin((a.angle ?? 0) * DEG), scale = a.scale ?? 1;
-    return point((c * p.x - s * p.y) * scale + (vector ? 0 : a.x),
-        (s * p.x + c * p.y) * scale + (vector ? 0 : a.y), p.z * scale);
+    const x = (c * p.x - s * p.y) * scale + (vector ? 0 : a.x);
+    const y = (s * p.x + c * p.y) * scale + (vector ? 0 : a.y);
+    out.x = x; out.y = y; out.z = p.z * scale; return out;
 }
-function gradient(g: Gradient, t: number): number[] {
-    const sample = (keys: number[][], channel: number): number => {
-        if (t <= keys[0][0]) return keys[0][channel];
-        for (let i = 1; i < keys.length; i++) if (t <= keys[i][0]) return lerp(keys[i - 1][channel], keys[i][channel],
-            (t - keys[i - 1][0]) / (keys[i][0] - keys[i - 1][0]));
-        return keys[keys.length - 1][channel];
-    };
-    return [sample(g.colors, 1), sample(g.colors, 2), sample(g.colors, 3), sample(g.alpha, 1)];
+function sampleGradient(keys: number[][], channel: number, t: number): number {
+    if (t <= keys[0][0]) return keys[0][channel];
+    for (let i = 1; i < keys.length; i++) if (t <= keys[i][0]) return lerp(keys[i - 1][channel], keys[i][channel],
+        (t - keys[i - 1][0]) / (keys[i][0] - keys[i - 1][0]));
+    return keys[keys.length - 1][channel];
 }
-function tint(c: Tint, t: number, random: number): number[] {
-    if (c.mode === 0) return c.max;
-    if (c.mode === 1) return gradient(c.gradient, t);
-    if (c.mode === 2) return c.max.map((v, i) => lerp(c.min[i], v, random));
-    if (c.mode === 4) return gradient(c.gradient, random);
-    const a = gradient(c.minGradient, t), b = gradient(c.gradient, t);
-    return a.map((v, i) => lerp(v, b[i], random));
+function gradient(g: Gradient, t: number, out: number[]): number[] {
+    for (let i = 0; i < 4; i++) out[i] = sampleGradient(i === 3 ? g.alpha : g.colors, i === 3 ? 1 : i + 1, t);
+    return out;
+}
+function tint(c: Tint, t: number, random: number, out = [0, 0, 0, 0]): number[] {
+    if (c.mode === 1 || c.mode === 4) return gradient(c.gradient, c.mode === 4 ? random : t, out);
+    for (let i = 0; i < 4; i++) {
+        if (c.mode === 0) out[i] = c.max[i];
+        else if (c.mode === 2) out[i] = lerp(c.min[i], c.max[i], random);
+        else {
+            const channel = i === 3 ? 1 : i + 1;
+            const a = sampleGradient(i === 3 ? c.minGradient.alpha : c.minGradient.colors, channel, t);
+            const b = sampleGradient(i === 3 ? c.gradient.alpha : c.gradient.colors, channel, t);
+            out[i] = lerp(a, b, random);
+        }
+    }
+    return out;
 }
 
 // Coherent gradient noise provides the motion of Unity's native NoiseModule.
@@ -158,6 +166,11 @@ export class FlappyDunkParticles {
     private readonly free: View[] = [];
     private readonly layers = new Map<number, Node>();
     private readonly additive: Material;
+    private readonly drawPosition = point();
+    private readonly drawVelocity = point();
+    private readonly noisePosition = point();
+    private readonly drawTint = [1, 1, 1, 1];
+    private readonly drawColor = new Color();
     get count(): number { return this.particles.length; }
     constructor(config: DunkParticleConfig, private readonly frames: Readonly<Record<string, SpriteFrame>>,
         private readonly back: Node, private readonly front: Node, baseMaterial: Material,
@@ -204,12 +217,13 @@ export class FlappyDunkParticles {
                     }
                 }
             }
-            e.previous = { ...e.anchor };
+            e.previous.x = e.anchor.x; e.previous.y = e.anchor.y;
+            e.previous.angle = e.anchor.angle; e.previous.scale = e.anchor.scale;
             if (!e.pooled && e.age >= s.duration) e.emitting = false;
         }
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i], s = p.emitter.data.spec, step = Math.max(0, Math.min(dt, dt + p.age)); p.age += dt;
-            if (p.age >= p.total) { this.recycle(p.view); this.particles.splice(i, 1); continue; }
+            if (p.age >= p.total) { p.emitter.liveParticles--; this.recycle(p.view); this.particles.splice(i, 1); continue; }
             const t = p.age / p.total;
             const speed = Math.hypot(p.velocity.x, p.velocity.y, p.velocity.z);
             if (s.drag) {
@@ -229,7 +243,7 @@ export class FlappyDunkParticles {
         }
         for (let i = this.emitters.length - 1; i >= 0; i--) {
             const e = this.emitters[i];
-            if (!e.emitting && !this.particles.some(p => p.emitter === e)) this.emitters.splice(i, 1);
+            if (!e.emitting && e.liveParticles === 0) this.emitters.splice(i, 1);
         }
     }
     draw(cameraX: number, unit: number): void {
@@ -244,23 +258,26 @@ export class FlappyDunkParticles {
                     y += noise(local.x * frequency + seed + 37, local.z * frequency + seed + 91) * amplitude;
                     frequency *= n.octaveScale; amplitude *= n.octaveMultiplier;
                 }
-                local = point(local.x + x, local.y + y, local.z);
+                this.noisePosition.x = local.x + x; this.noisePosition.y = local.y + y; this.noisePosition.z = local.z;
+                local = this.noisePosition;
             }
-            const pos = s.world ? local : anchorPoint(local, p.emitter.anchor);
+            const pos = s.world ? local : anchorPoint(local, p.emitter.anchor, false, this.drawPosition);
             const size = s.sizeLife ? value(s.sizeLife, t, p.random) : 1;
             const sizeY = s.sizeLifeY ? value(s.sizeLifeY, t, p.random) : size;
             let width = p.width * size, height = p.height * sizeY, angle = p.rotation;
             if (s.renderMode === 1) {
-                const velocity = s.world ? p.velocity : anchorPoint(p.velocity, p.emitter.anchor, true);
+                const velocity = s.world ? p.velocity : anchorPoint(p.velocity, p.emitter.anchor, true, this.drawVelocity);
                 height = Math.max(width, width * s.lengthScale + Math.hypot(velocity.x, velocity.y) * s.velocityScale);
                 angle = Math.atan2(velocity.y, velocity.x) / DEG - 90;
             }
             if (s.alignment === 2) angle += p.emitter.anchor.angle ?? 0;
-            const c = s.colorLife ? tint(s.colorLife, t, p.random) : [1, 1, 1, 1];
+            const c = this.drawTint;
+            if (s.colorLife) tint(s.colorLife, t, p.random, c); else c.fill(1);
             p.view.node.setPosition((pos.x - cameraX) * unit, pos.y * unit);
             p.view.node.angle = angle;
             p.view.ui.setContentSize(Math.max(0, width * unit), Math.max(0, height * unit));
-            p.view.sprite.color = new Color(...c.map((v, i) => Math.round(Math.max(0, Math.min(1, v * p.tint[i])) * 255)) as [number, number, number, number]);
+            for (let i = 0; i < 4; i++) c[i] = Math.round(Math.max(0, Math.min(1, c[i] * p.tint[i])) * 255);
+            this.drawColor.set(c[0], c[1], c[2], c[3]); p.view.sprite.color = this.drawColor;
         }
     }
     clear(): void {
@@ -273,7 +290,7 @@ export class FlappyDunkParticles {
     }
     private create(group: string, anchor: DunkParticleAnchor, pooled: boolean): Emitter[] {
         const es = (this.prepared.get(group) ?? []).map(data => ({ data, anchor, previous: { ...anchor }, age: 0,
-            carry: 0, emitting: true, pooled, touched: true }));
+            carry: 0, emitting: true, pooled, touched: true, liveParticles: 0 }));
         this.emitters.push(...es); return es;
     }
     private emit(e: Emitter, index: number, count: number, time: number, preAge: number, dt: number): void {
@@ -310,6 +327,7 @@ export class FlappyDunkParticles {
         const scale = s.scaling === 0 ? e.anchor.scale ?? 1 : 1;
         const width = value(s.size, time) * scale;
         const view = this.acquire(s);
+        e.liveParticles++;
         this.particles.push({ emitter: e, pos, velocity, extra, age: preAge - dt, total,
             width, height: (s.sizeY ? value(s.sizeY, time) * scale : width * s.aspect), rotation: value(s.rotation, time) / DEG,
             gravity: value(s.gravity, time), tint: tint(s.color, time, random), random, view });
