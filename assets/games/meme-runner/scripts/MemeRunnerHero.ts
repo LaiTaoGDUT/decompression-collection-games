@@ -1,5 +1,6 @@
 import { Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
 import type { MemeRunnerMotion } from './MemeRunnerMotion';
+import { GIANT } from './MemeRunnerModel';
 
 /** One complete painted pose per frame, sharing a fixed canvas and ground origin. */
 export class MemeRunnerHero {
@@ -26,9 +27,11 @@ export class MemeRunnerHero {
         this.dashAura.sizeMode = Sprite.SizeMode.CUSTOM; this.dashAura.trim = false; aura.active = false;
     }
 
-    render(motion: MemeRunnerMotion, x: number, y: number, alpha: number): void {
+    render(motion: MemeRunnerMotion, x: number, y: number, alpha: number, giant = false): void {
         const dashing = motion.frame.startsWith('dash-');
         this.root.setPosition(x, y); this.opacity.opacity = dashing ? 255 : alpha;
+        const scale = giant && !dashing ? GIANT.scale : 1;
+        this.root.setScale(scale, scale, 1);
         // The four-drawing aura flickers on the same stop-motion clock as the two-pose flight.
         this.dashAura.node.active = dashing;
         this.dashAura.spriteFrame = dashing ? this.frames[`dash-aura-${motion.loop(4)}`] : null;

@@ -10,7 +10,7 @@ import type {
     ScreenOrientation,
     Unsubscribe,
 } from '../core/types/CommonTypes';
-import type { AccelerometerSample, Platform } from './Platform';
+import type { AccelerometerSample, Platform, PlatformJsonRequest } from './Platform';
 import type { PlatformAudioContext } from './PlatformAudio';
 
 interface WebPlatformEvents {
@@ -50,6 +50,19 @@ const DEFAULT_DEVICE_PROFILE: DeviceProfile = Object.freeze({
 /** Creator 浏览器预览和普通 Web 环境使用的平台实现。 */
 export class WebPlatform implements Platform {
     readonly id = 'web';
+    private readonly networkControllers = new Set<AbortController>();
+
+    async requestJson(request: PlatformJsonRequest): Promise<unknown> {
+        const controller = new AbortController(); this.networkControllers.add(controller);
+        const timer = setTimeout(() => controller.abort(), request.timeoutMs);
+        try {
+            const response = await fetch(request.url, { method: request.method,
+                headers: { ...(request.data === undefined ? {} : { 'content-type': 'application/json' }), ...request.headers },
+                ...(request.data === undefined ? {} : { body: JSON.stringify(request.data) }), signal: controller.signal });
+            if (!response.ok) throw Object.assign(new Error('Cloud HTTP ' + response.status), { statusCode: response.status });
+            return await response.json();
+        } finally { clearTimeout(timer); this.networkControllers.delete(controller); }
+    }
 
     createAudioContext(): PlatformAudioContext | undefined {
         if (typeof window === 'undefined') return undefined;
@@ -114,6 +127,7 @@ export class WebPlatform implements Platform {
     }
 
     dispose(): void {
+        this.networkControllers.forEach(controller => controller.abort()); this.networkControllers.clear();
         this.restoreOrientationFrame();
         this.cancelLocalImagePicker();
         this.clearToast();

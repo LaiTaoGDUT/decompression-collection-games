@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "604ac5c3-377e-5f73-9ae1-224947ad1695",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "f9815": {
+      "importer": "sprite-frame",
+      "uuid": "604ac5c3-377e-5f73-9ae1-224947ad1695@f9815",
+      "displayName": "",
+      "id": "f9815",
+      "name": "town-road",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 1536,
+        "height": 160,
+        "rawWidth": 1536,
+        "rawHeight": 160,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "fb3b750b-ac4f-5b8d-92e1-0aff2120dadc@6c48a",
+        "atlasUuid": "604ac5c3-377e-5f73-9ae1-224947ad1695",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "road.png",
+    "format": 2,
+    "uuid": "604ac5c3-377e-5f73-9ae1-224947ad1695",
+    "textureUuid": "fb3b750b-ac4f-5b8d-92e1-0aff2120dadc@6c48a"
+  }
+}

@@ -12,6 +12,7 @@ import type { StorageService } from '../../../services/storage/StorageService';
 import type { AdService } from '../../../services/ads/AdService';
 import { setLabelBold } from '../../../services/font/FontBinding';
 import { DailyToolRewardAnimation } from '../../../shared/ui/DailyToolRewardAnimation';
+import type { ServerTimeService } from '../../../services/cloud/ServerTimeService';
 import { MULTI_COLOR_FILL_LEVELS, type MultiColorFillMode } from './MultiColorFillLevels';
 import { MultiColorFillModel } from './MultiColorFillModel';
 import { MultiColorFillEffects } from './MultiColorFillEffects';
@@ -35,6 +36,7 @@ const WIN_BOARD_SIZE = 460;
 const HEADER = Object.freeze({ chip: 0, title: 0, progress: -72 });
 type FillState = 'idle' | 'ready' | 'playing' | 'selecting' | 'paused' | 'completed' | 'disposed';
 interface FillServices {
+    readonly serverTime?: ServerTimeService;
     readonly assets: AssetService;
     readonly audio: AudioService;
     readonly feedback: FeedbackService;
@@ -172,8 +174,8 @@ export class MultiColorFillGame extends Component implements MiniGame<FillServic
         view.setDesignResolutionSize(750, 1334, ResolutionPolicy.FIXED_WIDTH);
         const stored = context.services.storage.getGameData(context.gameId);
         const savedFill = stored?.dataVersion === MULTI_COLOR_FILL_DATA_VERSION ? stored.custom?.fill : undefined;
-        this.save = readFillSave(savedFill);
-        this.dailyHintReward = grantFillDailyHints(this.save);
+        this.save = readFillSave(savedFill, context.services.serverTime?.day);
+        this.dailyHintReward = grantFillDailyHints(this.save, context.services.serverTime?.day);
         this.mode = this.save.mode;
         this.levelNumber = this.save.modes[this.mode].current;
         this.model = new MultiColorFillModel(this.levels().get(this.levelNumber - 1), this.save.modes[this.mode].draft);
@@ -223,7 +225,7 @@ export class MultiColorFillGame extends Component implements MiniGame<FillServic
         this.dailyReward.setVisible(true);
         if (this.save) {
             const before = this.save.hints;
-            if (grantFillDailyHints(this.save)) {
+            if (grantFillDailyHints(this.save, this.context?.services.serverTime?.day)) {
                 this.finishDailyHintReward();
                 this.dailyHintReward = this.save.hints - before;
                 this.persist();

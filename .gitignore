@@ -40,4 +40,7 @@ output/
 tinypng-output/
 tools/
 docs/
+tests/
 .workspace/
+server/decompression-api/.env
+server/decompression-api/backups/

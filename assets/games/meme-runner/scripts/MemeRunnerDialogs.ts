@@ -1,15 +1,15 @@
-import { Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
-import { runnerNode as node, runnerPlate, runnerSprite as sprite } from './MemeRunnerUI';
+import { Color, Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
+import { runnerLabel, runnerNode as node, runnerPlate, runnerSprite as sprite } from './MemeRunnerUI';
 import { V38_ART } from './MemeRunnerArtV38';
 
 type Frames = Readonly<Record<string, SpriteFrame>>;
 /** Wires a dialog button; the game owns the click sound and the busy guard. */
 export type BindButton = (button: Node, run: () => unknown) => void;
 /** A dialog button: its painted word (`dlg-word-<word>`) and what it runs. */
-export interface DialogAction { name: string; word: string; run: () => unknown; }
+export interface DialogAction { name: string; word: string; caption?: string; run: () => unknown; }
 
-export interface DeliveredResult { runScore: number; deliveryBonus: number; stars: number; starBonus: number; score: number; time: string; best: number; newRecord: boolean; }
-export interface CaughtResult { remaining: number; runScore: number; best: number; newRecord: boolean; }
+export interface DeliveredResult { runScore: number; deliveryBonus: number; stars: number; starBonus: number; score: number; time: string; best: number; newRecord: boolean; records?: string; }
+export interface CaughtResult { remaining: number; runScore: number; best: number; newRecord: boolean; reason?: string; records?: string; }
 /** What the result card animates after it is built: the illustration bob, the stars and the score count. */
 export interface ResultMotion { art: Node; artY: number; stars: Node[]; score?: FeltNumber; target: number; stamp?: Node; }
 
@@ -19,7 +19,7 @@ type Part = { word: string } | { number: string };
 
 /** Result card geometry: a thick-rimmed felt board, the title ribbon overlapping its top edge and the
  * round buttons sitting on its bottom edge, as in the v38 dialog mockups. */
-const CARD = { width: 980, height: 500, ribbonY: 288, buttonY: -250 };
+const CARD = { width: 1160, height: 500, ribbonY: 288, buttonY: -304, originY: 28 };
 /** The receipt's writing grid, measured from its painted frame: the inner margins and the dashed divider. */
 const RECEIPT = { left: -150, right: 150, divider: -36 };
 const GLYPHS: Readonly<Record<string, string>> = { '+': 'plus', ':': 'colon' };
@@ -53,14 +53,15 @@ export class FeltNumber {
 export class MemeRunnerDialogs {
     constructor(private readonly frames: Frames, private readonly bind: BindButton) {}
 
-    pause(parent: Node, resume: () => unknown, restart: () => unknown, exit: () => unknown): Node {
+    pause(parent: Node, resume: () => unknown, restart: () => unknown, exit: () => unknown, records = ''): Node {
         // The sign hangs over the board's top edge; the buttons sit inside its lower part, as in the mockup.
         const root = node('Panel', parent, 600, 800);
         this.board(root, 540, 600, -45);
         const sign = this.art('TitleSign', root, 'dlg-sign'); sign.setPosition(0, 285);
         this.art('DialogTitle', sign, 'dlg-title-pause').setPosition(0, -26);
-        this.art('RestArt', root, 'dlg-art-pause').setPosition(0, 30);
-        this.roundButton(root, { name: 'PauseRestart', word: 'restart', run: restart }, 'dlg-btn-restart', -172, -230);
+        const art = this.art('RestArt', root, 'dlg-art-pause'); art.setPosition(0, 55); art.setScale(.82, .82, 1);
+        runnerLabel('PersonalRecords', root, records.replace(' · 最快', '\n最快'), 0, -124, 490, 60, 21);
+        this.roundButton(root, { name: 'PauseRestart', word: 'restart', caption: '重试这单', run: restart }, 'dlg-btn-restart', -172, -230);
         this.roundButton(root, { name: 'ResumeRunner', word: 'resume', run: resume }, 'dlg-btn-play', 0, -245);
         this.roundButton(root, { name: 'PauseLobby', word: 'home', run: exit }, 'dlg-btn-home', 172, -230);
         return root;
@@ -75,7 +76,7 @@ export class MemeRunnerDialogs {
             star.node.setPosition((i - 1) * 124, i === 1 ? 196 : 182); star.node.angle = (1 - i) * 12;
             star.grayscale = i >= r.stars; star.node.setScale(0, 0, 1); return star.node;
         });
-        const art = this.art('CelebrationArt', root, 'dlg-art-win'); art.setPosition(-212, -20);
+        const art = this.art('CelebrationArt', root, 'dlg-art-win'); art.setPosition(-290, -20); art.setScale(.92, .92, 1);
         // The order receipt: every row shares the same left and right writing edges.
         const receipt = this.art('Receipt', root, 'dlg-receipt'); receipt.setPosition(242, -4);
         this.line(receipt, 'ReceiptTime', [{ word: 'time' }, { number: r.time }], RECEIPT.left, 106, 22, 'left');
@@ -89,23 +90,26 @@ export class MemeRunnerDialogs {
         this.line(receipt, 'ResultScoreCaption', [{ word: 'total' }], RECEIPT.left, RECEIPT.divider - 22, 28, 'left');
         const score = this.number(receipt, 'ResultScore', RECEIPT.left, RECEIPT.divider - 70, 58, 'left');
         let stamp: Node | undefined;
-        if (r.newRecord) stamp = this.stamp(receipt, 106, RECEIPT.divider - 64);
-        else this.line(root, 'ResultBest', [{ word: 'best' }, { number: String(r.best) }], 242, -200, 24, 'center');
+        if (r.newRecord) stamp = this.stamp(root, 412, 198);
+        runnerLabel('PersonalRecords', root, r.records ?? '', 0, -207, 1060, 30, 26);
         this.actions(root, actions);
+        this.centerCard(root);
         return { root, motion: { art, artY: art.position.y, stars, score, target: r.score, stamp } };
     }
 
     caught(parent: Node, r: CaughtResult, actions: DialogAction[]): { root: Node; motion: ResultMotion } {
         const root = this.resultCard(parent, 'dlg-ribbon-lose', 'dlg-title-lose', false);
-        const art = this.art('ChaseArt', root, 'dlg-art-lose'); art.setPosition(-222, 4);
+        const art = this.art('ChaseArt', root, 'dlg-art-lose'); art.setPosition(-290, 4); art.setScale(.90, .90, 1);
         const tag = this.art('RemainingTag', root, 'dlg-tag'); tag.setPosition(252, 80);
         this.line(tag, 'ResultDistance', [{ word: 'short' }, { number: String(r.remaining) }, { word: 'meter' }], 0, 2, 52, 'center');
         const plate = runnerPlate(root, 'RunScore', 330, 92, this.frames); plate.setPosition(252, -40);
         this.line(plate, 'ScoreRun', [{ word: 'run' }, { number: String(r.runScore) }], 0, 0, 34, 'center');
         let stamp: Node | undefined;
-        if (r.newRecord) stamp = this.stamp(root, 380, -60);
-        else this.line(root, 'ResultBest', [{ word: 'best' }, { number: String(r.best) }], 252, -116, 24, 'center');
+        if (r.newRecord) stamp = this.stamp(root, 412, 198);
+        runnerLabel('FailureReason', root, r.reason ?? '', 252, -127, 450, 48, 25);
+        runnerLabel('PersonalRecords', root, r.records ?? '', 0, -207, 1060, 30, 26);
         this.actions(root, actions);
+        this.centerCard(root);
         return { root, motion: { art, artY: art.position.y, stars: [], target: r.runScore, stamp } };
     }
 
@@ -126,12 +130,16 @@ export class MemeRunnerDialogs {
 
     /** The result card body: the board, confetti for a win, and the title ribbon across the board's top edge. */
     private resultCard(parent: Node, ribbon: string, titleKey: string, confetti: boolean): Node {
-        const root = node('Panel', parent, 1040, 730);
+        const root = node('Panel', parent, 1220, 800);
         this.board(root, CARD.width, CARD.height, 0);
         if (confetti) this.art('Confetti', root, 'dlg-confetti').setPosition(0, CARD.ribbonY - 10);
         const banner = this.art('TitleRibbon', root, ribbon); banner.setPosition(0, CARD.ribbonY);
         this.art('DialogTitle', banner, titleKey).setPosition(0, 10);
         return root;
+    }
+    /** The ribbon-to-caption extents are asymmetric; center their complete visible bounds. */
+    private centerCard(root: Node): void {
+        for (const child of root.children) child.setPosition(child.position.x, child.position.y + CARD.originY);
     }
     /** The thick-rimmed felt board, 9-sliced to any size. */
     private board(root: Node, width: number, height: number, y: number): void {
@@ -144,13 +152,18 @@ export class MemeRunnerDialogs {
     }
     private stamp(parent: Node, x: number, y: number): Node {
         const s = this.art('RecordStamp', parent, 'dlg-stamp'); s.setPosition(x, y);
+        s.getComponent(UITransform)!.setContentSize(80, 80);
         s.addComponent(UIOpacity).opacity = 0; return s;
     }
     /** A round felt icon button on the board's edge with its painted word beneath. */
     private roundButton(parent: Node, action: DialogAction, key: string, x: number, y: number): Node {
         const size = V38_ART[key].size[0], n = node(action.name, parent, size, size); n.setPosition(x, y);
         sprite('Face', n, this.frames[key], size, size);
-        this.line(n, 'ButtonText', [{ word: action.word }], 0, -size / 2 - 14, 32, 'center');
+        if (action.caption) {
+            const caption = runnerLabel('ButtonText', n, action.caption, 0, -size / 2 - 14, 170, 38, 30);
+            caption.enableOutline = true; caption.outlineColor = new Color('#FFF2D3'); caption.outlineWidth = 3;
+        }
+        else this.line(n, 'ButtonText', [{ word: action.word }], 0, -size / 2 - 14, 32, 'center');
         this.bind(n, action.run); return n;
     }
     /** Painted words and numbers in a row at one letter height, aligned on x. */

@@ -8,26 +8,33 @@
       "numbers": [
         {
           "path": "custom.fill.modes.normal.cleared",
-          "max": 1000,
+          "max": 2000,
           "metric": "normal-cleared-level",
           "restoreAlso": [
             {
               "path": "custom.fill.modes.normal.current",
               "offset": 1,
-              "max": 1000
+              "max": 2000,
+              "preserveWhen": "custom.fill.modes.normal.draft"
             }
           ]
         },
         {
           "path": "custom.fill.modes.hard.cleared",
-          "max": 1000,
+          "max": 500,
           "restoreAlso": [
             {
               "path": "custom.fill.modes.hard.current",
               "offset": 1,
-              "max": 1000
+              "max": 500,
+              "preserveWhen": "custom.fill.modes.hard.draft"
             }
           ]
+        },
+        {
+          "path": "custom.fill.catalogVersion",
+          "constant": 2,
+          "max": 2
         }
       ],
       "rank": [
@@ -744,6 +751,62 @@
       ],
       "rank": [
         0
+      ]
+    },
+    {
+      "gameId": "city-bloxx",
+      "code": 14,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "highScore"
+        },
+        {
+          "path": "custom.cityBestPeople"
+        },
+        {
+          "path": "custom.cityBestCombo"
+        }
+      ],
+      "rank": [
+        0
+      ]
+    },
+    {
+      "gameId": "ping-pong",
+      "code": 15,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "custom.pingPongBestRally"
+        }
+      ],
+      "rank": [
+        0
+      ]
+    },
+    {
+      "gameId": "sling-puck",
+      "code": 16,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "custom.slingWins0",
+          "record": false
+        },
+        {
+          "path": "custom.slingWins1",
+          "record": false
+        },
+        {
+          "path": "custom.slingWins2",
+          "record": false
+        }
+      ],
+      "rank": [
+        0,
+        1,
+        2
       ]
     }
   ]

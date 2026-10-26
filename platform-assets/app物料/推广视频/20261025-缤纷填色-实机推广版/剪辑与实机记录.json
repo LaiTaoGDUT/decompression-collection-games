@@ -1,0 +1,643 @@
+{
+  "name": "缤纷填色",
+  "duration": 31.65,
+  "fps": 60,
+  "cuts": [
+    {
+      "source": "local/fill-promo-20261025/normal/raw/gameplay.mkv",
+      "start": 0.1,
+      "end": 8.9,
+      "mode": "normal",
+      "level": 14,
+      "completedAt": 5.008300000011921,
+      "completionPageAt": 6.341800000011921,
+      "cadence": {
+        "actualFps": 59.20528293293864,
+        "medianFrameMs": 16.999999999999904,
+        "p99FrameMs": 29.809999999999928,
+        "maxFrameMs": 32.00000000000003
+      },
+      "nativeInput": [
+        {
+          "at": 1.139199999988079,
+          "color": 0,
+          "expected": [
+            12,
+            7,
+            8,
+            3,
+            4
+          ],
+          "actual": [
+            12,
+            7,
+            8,
+            3,
+            4
+          ],
+          "state": "playing",
+          "mode": "normal",
+          "level": 14,
+          "filled": 8,
+          "total": 21,
+          "strokes": 1,
+          "hints": 0,
+          "paths": [
+            [
+              12,
+              7,
+              8,
+              3,
+              4
+            ],
+            [
+              16
+            ],
+            [
+              9
+            ],
+            [
+              23
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        },
+        {
+          "at": 2.622,
+          "color": 1,
+          "expected": [
+            16,
+            11,
+            10,
+            5,
+            6,
+            1
+          ],
+          "actual": [
+            16,
+            11,
+            10,
+            5,
+            6,
+            1
+          ],
+          "state": "playing",
+          "mode": "normal",
+          "level": 14,
+          "filled": 13,
+          "total": 21,
+          "strokes": 2,
+          "hints": 0,
+          "paths": [
+            [
+              12,
+              7,
+              8,
+              3,
+              4
+            ],
+            [
+              16,
+              11,
+              10,
+              5,
+              6,
+              1
+            ],
+            [
+              9
+            ],
+            [
+              23
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        },
+        {
+          "at": 4.071699999988079,
+          "color": 2,
+          "expected": [
+            9,
+            14,
+            13,
+            18,
+            19,
+            24
+          ],
+          "actual": [
+            9,
+            14,
+            13,
+            18,
+            19,
+            24
+          ],
+          "state": "playing",
+          "mode": "normal",
+          "level": 14,
+          "filled": 18,
+          "total": 21,
+          "strokes": 3,
+          "hints": 0,
+          "paths": [
+            [
+              12,
+              7,
+              8,
+              3,
+              4
+            ],
+            [
+              16,
+              11,
+              10,
+              5,
+              6,
+              1
+            ],
+            [
+              9,
+              14,
+              13,
+              18,
+              19,
+              24
+            ],
+            [
+              23
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        },
+        {
+          "at": 5.10640000000596,
+          "color": 3,
+          "expected": [
+            23,
+            22,
+            21,
+            20
+          ],
+          "actual": [
+            23,
+            22,
+            21,
+            20
+          ],
+          "state": "completed",
+          "mode": "normal",
+          "level": 14,
+          "filled": 21,
+          "total": 21,
+          "strokes": 4,
+          "hints": 0,
+          "paths": [
+            [
+              12,
+              7,
+              8,
+              3,
+              4
+            ],
+            [
+              16,
+              11,
+              10,
+              5,
+              6,
+              1
+            ],
+            [
+              9,
+              14,
+              13,
+              18,
+              19,
+              24
+            ],
+            [
+              23,
+              22,
+              21,
+              20
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        }
+      ],
+      "final": {
+        "state": "completed",
+        "mode": "normal",
+        "level": 14,
+        "filled": 21,
+        "total": 21,
+        "strokes": 4,
+        "hints": 0,
+        "paths": [
+          [
+            12,
+            7,
+            8,
+            3,
+            4
+          ],
+          [
+            16,
+            11,
+            10,
+            5,
+            6,
+            1
+          ],
+          [
+            9,
+            14,
+            13,
+            18,
+            19,
+            24
+          ],
+          [
+            23,
+            22,
+            21,
+            20
+          ]
+        ],
+        "overlay": true,
+        "winTime": 2.617100000023841
+      },
+      "fullBoardCompleted": true,
+      "at": 0
+    },
+    {
+      "source": "local/fill-promo-20261025/hard-600/raw/gameplay.mkv",
+      "start": 0.1,
+      "end": 12.5,
+      "mode": "hard",
+      "level": 5,
+      "completedAt": 8.601700000017882,
+      "completionPageAt": 9.984700000017881,
+      "cadence": {
+        "actualFps": 59.67859161754017,
+        "medianFrameMs": 16.99999999999946,
+        "p99FrameMs": 18.000000000000682,
+        "maxFrameMs": 33.00000000000003
+      },
+      "nativeInput": [
+        {
+          "at": 2.1183000000119208,
+          "color": 0,
+          "expected": [
+            29,
+            22,
+            23,
+            16,
+            17,
+            10,
+            11,
+            4,
+            3,
+            2
+          ],
+          "actual": [
+            29,
+            22,
+            23,
+            16,
+            17,
+            10,
+            11,
+            4,
+            3,
+            2
+          ],
+          "state": "playing",
+          "mode": "hard",
+          "level": 5,
+          "filled": 12,
+          "total": 40,
+          "strokes": 1,
+          "hints": 0,
+          "paths": [
+            [
+              29,
+              22,
+              23,
+              16,
+              17,
+              10,
+              11,
+              4,
+              3,
+              2
+            ],
+            [
+              48
+            ],
+            [
+              46
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        },
+        {
+          "at": 4.613600000023842,
+          "color": 1,
+          "expected": [
+            48,
+            41,
+            40,
+            33,
+            26,
+            27,
+            20,
+            19,
+            12,
+            13,
+            6
+          ],
+          "actual": [
+            48,
+            41,
+            40,
+            33,
+            26,
+            27,
+            20,
+            19,
+            12,
+            13,
+            6
+          ],
+          "state": "playing",
+          "mode": "hard",
+          "level": 5,
+          "filled": 22,
+          "total": 40,
+          "strokes": 2,
+          "hints": 0,
+          "paths": [
+            [
+              29,
+              22,
+              23,
+              16,
+              17,
+              10,
+              11,
+              4,
+              3,
+              2
+            ],
+            [
+              48,
+              41,
+              40,
+              33,
+              26,
+              27,
+              20,
+              19,
+              12,
+              13,
+              6
+            ],
+            [
+              46
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        },
+        {
+          "at": 8.698400000005961,
+          "color": 2,
+          "expected": [
+            46,
+            45,
+            38,
+            39,
+            32,
+            25,
+            24,
+            31,
+            30,
+            37,
+            36,
+            43,
+            42,
+            35,
+            28,
+            21,
+            14,
+            15,
+            8
+          ],
+          "actual": [
+            46,
+            45,
+            38,
+            39,
+            32,
+            25,
+            24,
+            31,
+            30,
+            37,
+            36,
+            43,
+            42,
+            35,
+            28,
+            21,
+            14,
+            15,
+            8
+          ],
+          "state": "completed",
+          "mode": "hard",
+          "level": 5,
+          "filled": 40,
+          "total": 40,
+          "strokes": 3,
+          "hints": 0,
+          "paths": [
+            [
+              29,
+              22,
+              23,
+              16,
+              17,
+              10,
+              11,
+              4,
+              3,
+              2
+            ],
+            [
+              48,
+              41,
+              40,
+              33,
+              26,
+              27,
+              20,
+              19,
+              12,
+              13,
+              6
+            ],
+            [
+              46,
+              45,
+              38,
+              39,
+              32,
+              25,
+              24,
+              31,
+              30,
+              37,
+              36,
+              43,
+              42,
+              35,
+              28,
+              21,
+              14,
+              15,
+              8
+            ]
+          ],
+          "overlay": false,
+          "winTime": 0
+        }
+      ],
+      "final": {
+        "state": "completed",
+        "mode": "hard",
+        "level": 5,
+        "filled": 40,
+        "total": 40,
+        "strokes": 3,
+        "hints": 0,
+        "paths": [
+          [
+            29,
+            22,
+            23,
+            16,
+            17,
+            10,
+            11,
+            4,
+            3,
+            2
+          ],
+          [
+            48,
+            41,
+            40,
+            33,
+            26,
+            27,
+            20,
+            19,
+            12,
+            13,
+            6
+          ],
+          [
+            46,
+            45,
+            38,
+            39,
+            32,
+            25,
+            24,
+            31,
+            30,
+            37,
+            36,
+            43,
+            42,
+            35,
+            28,
+            21,
+            14,
+            15,
+            8
+          ]
+        ],
+        "overlay": true,
+        "winTime": 2.616799999982117
+      },
+      "fullBoardCompleted": true,
+      "at": 8.450000000000001
+    }
+  ],
+  "narration": false,
+  "nativeAudio": true,
+  "generatedGameSounds": false,
+  "speed": 1,
+  "freezeFrames": false,
+  "opticalFlow": false,
+  "gameplayViewport": {
+    "x": 89,
+    "y": 138,
+    "width": 902,
+    "height": 1604,
+    "fullNativeScreenVisible": true
+  },
+  "subtitles": {
+    "texts": [
+      "从彩色起点出发，滑动铺满空格",
+      "颜色不重叠，空格都要填满"
+    ],
+    "rect": [
+      112,
+      1385,
+      968,
+      1443
+    ],
+    "background": false
+  },
+  "transition": {
+    "type": "fade",
+    "seconds": 0.35
+  },
+  "lobby": {
+    "source": "local/dunk-promo-20261024-lobby-outro/raw/lobby-outro.mkv",
+    "at": 20.5,
+    "duration": 7.0,
+    "cadence": {
+      "actualFps": 59.862316671655186,
+      "medianFrameMs": 16.999999999999794,
+      "p99FrameMs": 18.00000000000024,
+      "maxFrameMs": 32.999999999999915
+    }
+  },
+  "ending": {
+    "at": 27.15,
+    "duration": 4.5,
+    "source": "local/fill-promo-20261025/edit/end-card.png",
+    "logoWidth": 622,
+    "searchText": "微信搜「随手玩一把」"
+  },
+  "outroMusic": {
+    "source": "tools/audio/multi-color-fill/audition/D-woodwind-strings-waltz-softer.mp3",
+    "onlyAfterGameplay": true
+  },
+  "sequence": [
+    "normal-complete-board",
+    "hard-complete-board",
+    "lobby-scroll",
+    "brand-search-ending"
+  ]
+}

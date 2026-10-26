@@ -1,0 +1,1 @@
+Builtin image_gen, transparent 4-cell strip: silver robot head, turquoise human bust, coral human bust, gold snowflake trophy. Shared premium toy render, no text or panels. Cells cropped and proportionally reduced before atlas packing.

@@ -27,12 +27,14 @@ import { RotateRingsMeshSprite } from './RotateRingsMeshSprite';
 import { ORIGINAL_RING_CONFIG as SOURCE } from './RotateRingsOriginalConfig';
 import * as G from './RotateRingsGeometry';
 import { DailyToolRewardAnimation } from '../../../shared/ui/DailyToolRewardAnimation';
+import type { ServerTimeService } from '../../../services/cloud/ServerTimeService';
 import { RotateRingsGuide } from './RotateRingsGuide';
 
 const { ccclass } = _decorator;
 const RESOURCE_BUNDLE = 'game-rotate-rings-assets';
 type RingState = 'idle' | 'ready' | 'selecting' | 'loading' | 'playing' | 'paused' | 'completed' | 'disposed';
 interface RingServices {
+    serverTime?: ServerTimeService;
     assets: AssetService; audio: AudioService; feedback: FeedbackService; storage: StorageService; platform: Platform; ads: AdService;
 }
 interface RingAction { name: string; text: string; primary?: boolean; icon?: string; action: () => void | Promise<void>; }
@@ -159,8 +161,8 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         this.levelAssets = new RotateRingsLevelAssets(context.services.assets, RESOURCE_BUNDLE, bank.packing.meshCount, bank.packing.collisionShapeCount);
         const stored = context.services.storage.getGameData(context.gameId);
         const savedRings = stored?.dataVersion === ROTATE_RINGS_SAVE_VERSION ? stored.custom?.rings : undefined;
-        this.save = readRingSave(savedRings, bank);
-        const daily = grantRingDailyHints(this.save);
+        this.save = readRingSave(savedRings, bank, context.services.serverTime?.day);
+        const daily = grantRingDailyHints(this.save, context.services.serverTime?.day);
         this.dailyHintReward = savedRings ? daily : this.save.props.hint;
         this.mode = this.save.mode;
         this.levelNumber = this.save.modes[this.mode].current;
@@ -232,7 +234,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     resume(): void {
         if (this.state !== 'paused') return;
         this.state = 'playing'; this.dailyReward.setVisible(true);
-        const added = this.save ? grantRingDailyHints(this.save) : 0;
+        const added = this.save ? grantRingDailyHints(this.save, this.context?.services.serverTime?.day) : 0;
         if (added) { this.finishDailyHintReward(); this.dailyHintReward = added; this.persist(); this.showDailyHintReward(); }
     }
     async restart(context?: MiniGameContext<RingServices>): Promise<void> {

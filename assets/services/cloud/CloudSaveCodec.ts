@@ -1,4 +1,4 @@
-/** 纯 TypeScript 协议；部署脚本将同一份代码编译给云函数，避免两端编码漂移。 */
+/** 纯 TypeScript 协议；部署脚本将同一份代码编译给自建后端，避免两端编码漂移。 */
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 export const CLOUD_PROTOCOL_VERSION = 1;
 export const MAX_CLOUD_NUMBER = 0x1fffffffffffff;

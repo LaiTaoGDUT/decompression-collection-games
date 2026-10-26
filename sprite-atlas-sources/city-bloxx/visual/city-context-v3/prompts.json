@@ -1,0 +1,11 @@
+{
+  "tool": "builtin image_gen",
+  "adopted_prompt_set": "../scenery/skyline-modules/prompts.json",
+  "layout": "../scenery/skyline-modules/layout.json",
+  "source_sheets": 10,
+  "registered_layers": 26,
+  "final_source": "sources/city-native-layout.png",
+  "source_sha256": "30360b98a8e30d6dea0d8407c69f493289316206bb4bc606550ebd8de2777343",
+  "rejected_draft_prompts": "draft-prompts.json",
+  "note": "完整楼体组合保留原版低对比灰色立面，不使用横向分段、接缝补图或模糊混合。"
+}

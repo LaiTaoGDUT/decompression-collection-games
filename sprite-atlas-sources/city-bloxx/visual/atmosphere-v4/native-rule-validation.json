@@ -1,0 +1,28 @@
+{
+  "native_items": 126,
+  "matching_moving_and_space_items": 123,
+  "native_altitude_scale": 1,
+  "matching_sky_bands": 29,
+  "matching_ambient_star_systems": 33,
+  "native_rain_parameters": true,
+  "visual_only_exceptions": [
+    "sky colors",
+    "modern 3D city",
+    "plaza tree and fence artwork"
+  ],
+  "unmodified_fields": [
+    "x",
+    "y",
+    "z",
+    "width",
+    "height",
+    "angle",
+    "flipX",
+    "color",
+    "loop",
+    "sortingLayer",
+    "sortingOrder"
+  ],
+  "matching_looping_items": 48,
+  "star_random_sequence": "local deterministic sequence; not Unity RNG"
+}

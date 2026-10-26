@@ -2,6 +2,36 @@
     "schemaVersion": 3,
     "games": [
         {
+            "id": "sling-puck",
+            "version": "0.1.0",
+            "name": "弹射冰球",
+            "description": "拉满皮筋弹射冰球，抢先清空己方半场！人机或双人同屏对战。",
+            "bundle": "game-sling-puck",
+            "resourceBundle": "game-sling-puck-assets",
+            "resourceDirectories": [
+                "visual"
+            ],
+            "scene": "scenes/SlingPuck",
+            "entryComponent": "SlingPuckGame",
+            "cover": "visual/covers/sling-puck/sling-puck-cover-v2/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "development",
+            "preload": [],
+            "tags": [
+                "arcade",
+                "table",
+                "versus"
+            ],
+            "twoPlayer": true,
+            "lobbyTags": [
+                "new"
+            ]
+        },
+        {
             "id": "meme-runner",
             "version": "0.1.0",
             "name": "咧咧团快跑",

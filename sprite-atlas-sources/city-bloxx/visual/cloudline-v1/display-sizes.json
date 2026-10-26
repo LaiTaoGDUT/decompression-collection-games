@@ -1,0 +1,135 @@
+{
+  "theme": "云端造城",
+  "frames": {
+    "tree": {
+      "pixels": [
+        184,
+        179
+      ],
+      "sourceBounds": [
+        91,
+        91,
+        467,
+        457
+      ],
+      "scale": 0.4890710382513661
+    },
+    "cloud-bank": {
+      "pixels": [
+        149,
+        94
+      ],
+      "sourceBounds": [
+        31,
+        137,
+        488,
+        424
+      ],
+      "scale": 0.32603938730853393
+    },
+    "moon": {
+      "pixels": [
+        163,
+        179
+      ],
+      "sourceBounds": [
+        95,
+        104,
+        407,
+        446
+      ],
+      "scale": 0.5224358974358975
+    },
+    "station": {
+      "pixels": [
+        126,
+        88
+      ],
+      "sourceBounds": [
+        51,
+        62,
+        485,
+        366
+      ],
+      "scale": 0.2894736842105263
+    },
+    "saturn": {
+      "pixels": [
+        281,
+        185
+      ],
+      "sourceBounds": [
+        19,
+        37,
+        517,
+        365
+      ],
+      "scale": 0.5640243902439024
+    },
+    "balloon": {
+      "pixels": [
+        83,
+        115
+      ],
+      "sourceBounds": [
+        45,
+        20,
+        333,
+        419
+      ],
+      "scale": 0.2882205513784461
+    },
+    "crane-arm": {
+      "pixels": [
+        300,
+        142
+      ],
+      "sourceBounds": [
+        1,
+        0,
+        1821,
+        864
+      ],
+      "scale": 0.16483516483516483
+    }
+  },
+  "textures": {
+    "floor-coral": {
+      "pixels": [
+        196,
+        196
+      ],
+      "mode": "RGB"
+    },
+    "floor-blue": {
+      "pixels": [
+        196,
+        196
+      ],
+      "mode": "RGB"
+    },
+    "floor-lobby": {
+      "pixels": [
+        196,
+        196
+      ],
+      "mode": "RGB"
+    },
+    "space": {
+      "pixels": [
+        750,
+        1333
+      ],
+      "mode": "RGB"
+    },
+    "city": {
+      "pixels": [
+        768,
+        266
+      ],
+      "mode": "RGBA"
+    }
+  },
+  "environmentHeightScale": 0.3,
+  "facadeDensity": "196px UV atlas: native front-face triangle area density at 750px design width, including perspective depth"
+}

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>游戏数据 · 随手玩一把</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/viewer.css">
+  <script defer src="/viewer.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="随手玩一把，返回数据概览"><span class="brand-mark" aria-hidden="true">玩</span><span>随手玩一把<small>游戏数据中心</small></span></a>
+    <p class="nav-label">工作空间</p>
+    <nav aria-label="主导航">
+      <a href="#overview" data-view="overview" aria-current="page"><span data-icon="overview"></span>数据概览</a>
+      <a href="#accounts" data-view="accounts"><span data-icon="accounts"></span>账号存档<span id="nav-accounts" class="nav-count">—</span></a>
+      <a href="#playtime" data-view="playtime"><span data-icon="chart"></span>游玩统计</a>
+    </nav>
+    <div class="sidebar-foot"><span class="live-dot"></span><span>本机数据工作台<small>通过 SSH 隧道连接</small></span><span data-icon="lock"></span></div>
+  </aside>
+  <main>
+    <div class="topline"><span>随手玩一把 <span class="breadcrumb-slash">/</span> 数据中心</span><span class="access-badge"><span data-icon="shield"></span>只读访问</span></div>
+    <header class="page-header">
+      <div><p class="eyebrow">GAME ANALYTICS</p><h1 id="view-title">数据概览</h1><p id="view-description" class="muted">从一份存档，了解玩家的游戏进度。</p></div>
+      <div class="header-actions"><span id="updated-at" class="muted">等待首次读取</span><button id="refresh" class="button primary"><span data-icon="refresh"></span><span>刷新数据</span></button></div>
+    </header>
+    <div id="status" class="status-line" role="status"><span class="status-dot"></span><span id="status-text">正在读取服务器数据…</span></div>
+    <section id="metrics" class="metrics" aria-label="数据概览">
+      <article class="metric-card"><div class="metric-label">存档账号<span class="metric-icon mint" data-icon="accounts"></span></div><strong id="accounts">—</strong><small>已保存云端进度的账号</small></article>
+      <article class="metric-card"><div class="metric-label">同步设备<span class="metric-icon blue" data-icon="device"></span></div><strong id="devices">—</strong><small>已成功上传存档的设备</small></article>
+      <article class="metric-card"><div class="metric-label">累计游玩<span class="metric-icon amber" data-icon="clock"></span></div><strong id="duration">—</strong><small>所有设备上报的实际玩法时长</small></article>
+      <article class="metric-card"><div class="metric-label">最近保存<span class="metric-icon violet" data-icon="save"></span></div><strong id="last-saved" class="date-value">—</strong><small id="last-saved-date">北京时间</small></article>
+    </section>
+    <div id="workspace" class="workspace">
+      <section id="accounts-panel" class="panel account-panel">
+        <div class="section-head"><div><div class="section-title"><h2>账号云存档</h2><span id="account-total" class="count-badge">—</span></div><p class="muted">每个账号保留一份合并后的最佳进度</p></div><span class="section-icon" data-icon="save"></span></div>
+        <form id="search" class="search-bar" novalidate><label class="search-input"><span data-icon="search"></span><input id="prefix" aria-label="账号标识前缀" placeholder="输入账号标识或前缀" maxlength="64" autocomplete="off" spellcheck="false"></label><button class="button" type="submit">查找</button><button id="clear-search" class="text-button" type="button" hidden>清除</button></form>
+        <p id="search-error" class="search-error" role="alert" hidden></p>
+        <div class="table-wrap"><table class="save-table"><thead><tr><th>账号标识</th><th>存档版本</th><th>设备</th><th>最后保存 · 北京时间</th><th aria-label="操作"></th></tr></thead><tbody id="saves"><tr><td colspan="5"><div class="loading-state">正在加载账号存档…</div></td></tr></tbody></table></div>
+        <div class="pagination"><span id="page-label">每页 25 个账号</span><div><button id="previous" class="icon-button" aria-label="上一页" disabled><span data-icon="left"></span></button><span id="page-number">1</span><button id="next" class="icon-button" aria-label="下一页" disabled><span data-icon="right"></span></button></div></div>
+      </section>
+      <section id="ranking-panel" class="panel ranking-panel"><div class="section-head"><div><div class="section-title"><h2>游戏时长排行</h2><span class="subtle-badge">累计</span></div><p class="muted">按已上报的游玩时长排序</p></div><span class="section-icon" data-icon="chart"></span></div><div id="games" class="ranking-list"></div><a href="#playtime" class="panel-link">查看全部游玩统计<span data-icon="right"></span></a></section>
+    </div>
+    <section id="playtime-panel" class="panel" hidden>
+      <div class="section-head"><div><div class="section-title"><h2>各游戏游玩表现</h2><span id="timing-rows" class="count-badge">—</span></div><p class="muted">跨账号、跨设备汇总；占比按累计游玩时长计算</p></div><label class="sort-control">排序<select id="game-sort" aria-label="游戏排行排序"><option value="time">累计时长</option><option value="accounts">账号数量</option></select></label></div>
+      <div id="playtime-summary" class="playtime-summary"></div><div id="playtime-table"></div>
+    </section>
+    <footer><span data-icon="info"></span><p>展示已上传到云端的数据，设备尚未上传的进度不会出现。时长随存档增量上报，统计范围为全部历史；页面按需读取，点击刷新即可更新。</p></footer>
+  </main>
+  <dialog id="detail" class="account-drawer" aria-labelledby="detail-title">
+    <div class="drawer-header"><div><p class="eyebrow">ACCOUNT PROFILE</p><h2 id="detail-title">账号详情</h2></div><button id="close-detail" class="icon-button" aria-label="关闭账号详情" autofocus><span data-icon="close"></span></button></div>
+    <div id="detail-content" class="drawer-content"></div>
+  </dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

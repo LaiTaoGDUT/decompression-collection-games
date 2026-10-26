@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "migrations": [
+    {
+      "version": 1,
+      "file": "0001_cloud_save.sql",
+      "minAppVersion": 1
+    }
+  ]
+}

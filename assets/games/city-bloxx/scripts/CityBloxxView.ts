@@ -2,6 +2,8 @@ import { Camera, Color, gfx, Material, Mesh, MeshRenderer, Node, Quat, Rect, Ren
     Sprite, SpriteFrame, Texture2D, UITransform, utils, Vec3, view } from 'cc';
 import type { AssetService } from '../../../services/asset/AssetService';
 import { cityCurve, type CityBloxxModel, type CityConfig, type CityFalling, type CityFloor } from './CityBloxxModel';
+import { CityBloxxGround } from './CityBloxxGround';
+import { CityBloxxBackdrop, cityBackdropInView, CITY_BACKDROP_LAYER } from './CityBloxxBackdrop';
 
 export const CITY_ASSETS = 'game-city-bloxx-assets';
 export const CITY_WORLD_LAYER = 1 << 19;
@@ -10,20 +12,21 @@ export interface CityBuildingData {
     meshes: Record<string, MeshData>;
     prefabs: Record<string, { mesh: string; textures: string[] }>;
 }
-export interface CityGroundData {
-    name: string; mesh: MeshData; textures: string[]; position: number[]; scale: number[]; rotation: number[];
-}
 
-/** Original 3D meshes, camera and world units. The skin changes textures only. */
+/** Native tower meshes and camera, with a miniature plaza at the original landing height. */
 export class CityBloxxView {
     readonly root = new Node('CityBloxxWorld');
     readonly camera: Camera;
     readonly projection: Node;
+    readonly backdropFrame: SpriteFrame;
     private readonly meshes = new Map<string, Mesh>();
     private readonly materials = new Map<string, Material>();
     private readonly floors = new Map<number, Node>();
     private readonly debris = new Map<number, Node>();
-    private readonly ground: Node[] = [];
+    private readonly ground: CityBloxxGround;
+    private readonly backdrop: CityBloxxBackdrop;
+    private readonly backdropCamera: Camera;
+    private readonly backdropTarget: RenderTexture;
     private readonly target: RenderTexture;
     private readonly frame: SpriteFrame;
     private readonly screenPoint = new Vec3();
@@ -32,12 +35,12 @@ export class CityBloxxView {
     private playWidth = 750;
     private playHeight = 800;
     private playCenter = 0;
+    private screenHeight = 1334;
     private worldHeight = 6;
     private skin: 'yellow' | 'blue' = 'yellow';
 
     constructor(scene: Node, uiParent: Node, private readonly assets: AssetService,
         private readonly buildings: CityBuildingData, textures: Readonly<Record<string, Texture2D>>,
-        ground: CityGroundData[],
         private readonly nativeCamera: CityConfig['camera']) {
         scene.addChild(this.root); this.root.layer = CITY_WORLD_LAYER;
         this.camera = this.make('CityCamera').addComponent(Camera);
@@ -51,12 +54,25 @@ export class CityBloxxView {
         this.target.reset({ width: 750, height: 800 }); this.camera.targetTexture = this.target;
         this.frame = assets.trackRuntimeAsset(CITY_ASSETS, new SpriteFrame());
         this.frame.texture = this.target; this.frame.packable = false;
+        this.backdropCamera = this.make('CityNeighborsCamera').addComponent(Camera);
+        this.backdropCamera.projection = Camera.ProjectionType.PERSPECTIVE;
+        this.backdropCamera.fovAxis = Camera.FOVAxis.HORIZONTAL;
+        this.backdropCamera.clearFlags = Camera.ClearFlag.SOLID_COLOR;
+        this.backdropCamera.clearColor = new Color(0, 0, 0, 0);
+        this.backdropCamera.visibility = CITY_BACKDROP_LAYER;
+        // Produce the backdrop before CitySkyCamera (-10) samples its frame.
+        this.backdropCamera.priority = -20; this.backdropCamera.near = .1; this.backdropCamera.far = 100;
+        this.backdropTarget = assets.trackRuntimeAsset(CITY_ASSETS, new RenderTexture());
+        this.backdropTarget.reset({ width: 750, height: 800 }); this.backdropCamera.targetTexture = this.backdropTarget;
+        this.backdropFrame = assets.trackRuntimeAsset(CITY_ASSETS, new SpriteFrame());
+        this.backdropFrame.texture = this.backdropTarget; this.backdropFrame.packable = false;
+        this.backdrop = new CityBloxxBackdrop(this.root, assets, CITY_ASSETS);
         this.projection = new Node('CityWorldProjection'); this.projection.layer = uiParent.layer;
         uiParent.addChild(this.projection); this.projection.addComponent(UITransform).setContentSize(750, 800);
         const sprite = this.projection.addComponent(Sprite);
         sprite.spriteFrame = this.frame; sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         Object.keys(buildings.meshes).forEach(name => this.meshes.set(name, this.mesh(buildings.meshes[name], true)));
-        Object.keys(textures).forEach(name => {
+        Object.keys(textures).filter(name => name !== 'ground').forEach(name => {
             const material = new Material();
             material.initialize({ effectName: 'builtin-unlit', defines: { USE_TEXTURE: true, USE_VERTEX_COLOR: true },
                 states: {
@@ -65,14 +81,7 @@ export class CityBloxxView {
             material.setProperty('mainTexture', textures[name]);
             this.materials.set(name, assets.trackRuntimeAsset(CITY_ASSETS, material));
         });
-        for (const data of ground) {
-            const mesh = this.mesh(data.mesh); this.meshes.set(data.name, mesh);
-            const node = this.meshNode(data.name, mesh, this.materials.get(data.textures[0])!);
-            node.setPosition(data.position[0], data.position[1], -data.position[2]);
-            node.setScale(data.scale[0], data.scale[1], data.scale[2]);
-            node.setRotation(new Quat(-data.rotation[0], -data.rotation[1], data.rotation[2], data.rotation[3]));
-            this.ground.push(node);
-        }
+        this.ground = new CityBloxxGround(this.root, assets, CITY_ASSETS, textures.ground);
     }
 
     private mesh(data: MeshData, facade = false): Mesh {
@@ -90,6 +99,7 @@ export class CityBloxxView {
     }
 
     layout(width: number, height: number, playBottom: number, playTop: number): void {
+        this.screenHeight = height;
         const playHeight = Math.max(1, playTop - playBottom);
         const nativeHeight = 2 * this.nativeCamera.distance * Math.tan(this.nativeCamera.verticalFov * Math.PI / 360);
         const nativeWidth = nativeHeight * this.nativeCamera.referenceWidth / this.nativeCamera.referenceHeight;
@@ -108,13 +118,25 @@ export class CityBloxxView {
         }
         this.camera.rect = new Rect(0, 0, 1, 1);
         this.camera.fov = 2 * Math.atan(width / unit / (2 * this.nativeCamera.distance)) * 180 / Math.PI;
+        this.backdropCamera.fov = this.camera.fov;
+        // Background may cover the full screen, including safe insets. Keep
+        // its optical center aligned with the gameplay pass at every depth.
+        const bw = Math.ceil(width), bh = Math.ceil(height + Math.abs(this.playCenter) * 2);
+        if (this.backdropTarget.width !== bw || this.backdropTarget.height !== bh) {
+            this.backdropTarget.resize(bw, bh); this.backdropFrame.rect = new Rect(0, 0, bw, bh);
+            this.backdropFrame.originalSize = new Size(bw, bh);
+        }
     }
 
     update(model: CityBloxxModel): void {
         const centerY = model.cameraY;
         this.camera.node.setPosition(0, centerY, this.nativeCamera.distance);
         this.camera.camera?.update(true);
-        this.ground.forEach(n => { n.active = model.moveY < 8; });
+        this.backdropCamera.node.setPosition(0, centerY, this.nativeCamera.distance);
+        this.backdropCamera.enabled = cityBackdropInView((x, y, z) => this.project(x, y, z), this.screenHeight);
+        this.backdropCamera.camera?.update(true);
+        // The terrain leaves through the camera frustum; a fixed floor-count
+        // cutoff would pop it out early on tall screens.
         const visible = model.floors.filter(f => f.y > centerY - this.worldHeight / 2 - 1.6
             && f.y < centerY + this.worldHeight / 2 + 1);
         const ids = new Set(visible.map(f => f.id));
@@ -178,8 +200,9 @@ export class CityBloxxView {
         this.active?.destroy(); this.active = undefined;
     }
     dispose(): void {
-        this.clearFloors(); this.camera.targetTexture = null; this.root.destroy(); this.projection.destroy();
-        this.ground.length = 0;
+        this.clearFloors(); this.ground.dispose(); this.backdrop.dispose();
+        this.camera.targetTexture = null; this.backdropCamera.targetTexture = null; this.root.destroy(); this.projection.destroy();
+        this.assets.releaseRuntimeAsset(this.backdropFrame); this.assets.releaseRuntimeAsset(this.backdropTarget);
         this.assets.releaseRuntimeAsset(this.frame); this.assets.releaseRuntimeAsset(this.target);
         this.meshes.forEach(m => this.assets.releaseRuntimeAsset(m)); this.meshes.clear();
         this.materials.forEach(m => this.assets.releaseRuntimeAsset(m)); this.materials.clear();

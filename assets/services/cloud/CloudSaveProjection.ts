@@ -50,14 +50,46 @@ export function moduleRank(schema: CloudGameSchema, payload: string): number {
     return rank;
 }
 
-export function restoreGame(schema: CloudGameSchema, payload: string): GameSaveData {
+/** 最大值/逐关最高星数的合并满足交换律、结合律和幂等性。 */
+export function mergeModule(schema: CloudGameSchema, left?: string, right?: string): string | undefined {
+    if (!left && !right) return undefined;
+    const decode = (value: string) => { moduleRank(schema, value); return decodeModule(value, schema.numbers.length, schema.stars?.keys.length ?? 0); };
+    if (!left) { decode(right!); return right; }
+    if (!right) { decode(left); return left; }
+    const a = decode(left), b = decode(right);
+    const stars = Array.from({ length: Math.max(a.stars.length, b.stars.length) }, (_, i) => Math.max(a.stars[i] ?? 0, b.stars[i] ?? 0));
+    const values = a.numbers.map((n, i) => Math.max(n, b.numbers[i]));
+    schema.numbers.forEach((field, i) => {
+        if (field.starProgress) { let cleared = 0; while (stars[cleared]) cleared++; values[i] = cleared; }
+    });
+    return encodeModule(values, stars);
+}
+
+/** 一个新通关只记一次；已完成关卡的星数真正提升时再记一次，与升了几颗星无关。 */
+export function progressImprovements(schema: CloudGameSchema, previous: string | undefined, next: string): number {
+    const b = decodeModule(next, schema.numbers.length, schema.stars?.keys.length ?? 0);
+    const a = previous ? decodeModule(previous, schema.numbers.length, schema.stars?.keys.length ?? 0)
+        : { numbers: schema.numbers.map(() => 0), stars: [] as number[] };
+    let added = (schema.levels ?? []).reduce((sum, i) => sum + Math.max(0, b.numbers[i] - a.numbers[i]), 0);
+    b.stars.forEach((value, i) => { if (a.stars[i] > 0 && value > a.stars[i]) added++; });
+    return added;
+}
+
+export function restoreGame(schema: CloudGameSchema, payload: string, local?: GameSaveData): GameSaveData {
     moduleRank(schema, payload);
     const decoded = decodeModule(payload, schema.numbers.length, schema.stars?.keys.length ?? 0);
-    const result: Record<string, unknown> = { dataVersion: schema.dataVersion, playCount: 0, highScore: 0, lastPlayedAt: 0 };
-    Object.keys(schema.defaults ?? {}).forEach(path => setPath(result, path, JSON.parse(JSON.stringify(schema.defaults![path]))));
+    // 只覆盖云协议明确包含的进度字段，保留本地道具、每日领取标记和有效棋盘。
+    const result: Record<string, unknown> = local?.dataVersion === schema.dataVersion ? JSON.parse(JSON.stringify(local))
+        : { dataVersion: schema.dataVersion, playCount: 0, highScore: 0, lastPlayedAt: 0 };
+    Object.keys(schema.defaults ?? {}).forEach(path => {
+        if (readPath(result, path) === undefined) setPath(result, path, JSON.parse(JSON.stringify(schema.defaults![path])));
+    });
     schema.numbers.forEach((field, index) => {
         const value = decoded.numbers[index]; setPath(result, field.path, value);
-        field.restoreAlso?.forEach(extra => setPath(result, extra.path, uint(value + extra.offset, extra.max)));
+        field.restoreAlso?.forEach(extra => {
+            if (extra.preserveWhen && readPath(result, extra.preserveWhen)) return;
+            setPath(result, extra.path, uint(value + extra.offset, extra.max));
+        });
     });
     if (schema.stars) {
         const field = schema.stars, values: Record<string, unknown> = {};
@@ -65,15 +97,18 @@ export function restoreGame(schema: CloudGameSchema, payload: string): GameSaveD
             const stars = decoded.stars[index] ?? 0;
             if (!stars) return;
             const value = field.restoreValues?.[stars] ?? stars;
-            if (field.valuePath) { const entry = { ...field.defaults }; setPath(entry, field.valuePath, value); values[key] = entry; }
-            else values[key] = value;
+            const old = readPath(result, `${field.path}.${key}`);
+            if (field.valuePath) {
+                const entry = { ...field.defaults, ...(old && typeof old === 'object' ? old : {}) };
+                setPath(entry, field.valuePath, Math.max(uint(readPath(old, field.valuePath)), value)); values[key] = entry;
+            } else values[key] = Math.max(uint(old), value);
         });
         setPath(result, field.path, values);
     }
     if (schema.achievement) {
         const value = schema.achievement.threeStars ? decoded.stars.filter(n => n === 3).length
             : decoded.numbers[schema.achievement.field!];
-        result.metrics = { [schema.achievement.metric]: uint(value) };
+        result.metrics = { ...(result.metrics as Record<string, number> ?? {}), [schema.achievement.metric]: uint(value) };
     }
     return result as unknown as GameSaveData;
 }
@@ -101,9 +136,12 @@ export function validateCatalog(value: unknown): CloudSaveCatalog {
         codes.add(game.code); ids.add(game.gameId);
         for (const field of game.numbers) {
             if (!pathOk(field.path)) throw new Error('Invalid cloud path.');
+            if (field.record !== undefined && typeof field.record !== 'boolean') throw new Error('Invalid cloud record field.');
             if (field.constant !== undefined && (!Number.isSafeInteger(field.constant) || field.constant < 0
                 || field.constant > (field.max ?? Number.MAX_SAFE_INTEGER))) throw new Error('Invalid constant cloud field.');
-            field.restoreAlso?.forEach(extra => { if (!pathOk(extra.path)) throw new Error('Invalid cloud restore path.'); });
+            field.restoreAlso?.forEach(extra => {
+                if (!pathOk(extra.path) || (extra.preserveWhen && !pathOk(extra.preserveWhen))) throw new Error('Invalid cloud restore path.');
+            });
         }
         [...game.rank, ...(game.levels ?? [])].forEach(i => {
             if (!Number.isInteger(i) || i < 0 || i >= game.numbers.length) throw new Error('Invalid cloud rank field.');

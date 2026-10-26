@@ -1,0 +1,82 @@
+{
+  "duration": 31.65,
+  "fps": 60,
+  "narration": false,
+  "nativeAudio": true,
+  "fullNativeInterfaceVisible": true,
+  "completedBoards": 2,
+  "sourceCadences": [
+    {
+      "actualFps": 59.20528293293864,
+      "medianFrameMs": 16.999999999999904,
+      "p99FrameMs": 29.809999999999928,
+      "maxFrameMs": 32.00000000000003
+    },
+    {
+      "actualFps": 59.67859161754017,
+      "medianFrameMs": 16.99999999999946,
+      "p99FrameMs": 18.000000000000682,
+      "maxFrameMs": 33.00000000000003
+    }
+  ],
+  "speed": 1,
+  "lobbySeconds": 7,
+  "brandEndingSeconds": 4.5,
+  "outputs": [
+    {
+      "file": "缤纷填色-实机推广-1080x1920.mp4",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "frames": 1899,
+      "duration": 31.65,
+      "decodedWithoutErrors": true,
+      "integratedLoudnessLufs": -17.18,
+      "truePeakDbfs": -2.8,
+      "sha256": "5b82dc3ef4724e8f51ec42e564b11c9f68561bcd1aa5596f411cb9419d362f9a",
+      "audioBitIdenticalToPrior": true
+    },
+    {
+      "file": "缤纷填色-实机推广-720x1280.mp4",
+      "dimensions": [
+        720,
+        1280
+      ],
+      "frames": 1899,
+      "duration": 31.65,
+      "decodedWithoutErrors": true,
+      "integratedLoudnessLufs": -17.19,
+      "truePeakDbfs": -2.8,
+      "sha256": "432137e29269c018fc992267b3c2c0d748ac9468ee969232ca2e550968b35907",
+      "audioBitIdenticalToPrior": true
+    }
+  ],
+  "nativeRoutes": [
+    {
+      "mode": "normal",
+      "level": 14,
+      "strokes": 4,
+      "filled": 21,
+      "total": 21,
+      "hints": 0,
+      "nativeDragRoutesAllMatched": true
+    },
+    {
+      "mode": "hard",
+      "level": 5,
+      "strokes": 3,
+      "filled": 40,
+      "total": 40,
+      "hints": 0,
+      "nativeDragRoutesAllMatched": true
+    }
+  ],
+  "visualReview": "passed: explicit centered search phrase in ending; complete boards, native animations, lobby and brand ending",
+  "typescript": "passed",
+  "gitDiffCheck": "passed",
+  "cocosAssetRefresh": "passed",
+  "endingSearchText": "微信搜「随手玩一把」",
+  "endingSearchTextFontSize": 52,
+  "endingLogoRetained": true
+}

@@ -3,8 +3,7 @@
   "appVersion": "0.1.0",
   "cloudSave": {
     "enabled": true,
-    "environmentId": "cloud1-d5g8w0y1z59e9cc72",
-    "functionName": "cloudSave",
+    "baseUrl": "https://api.antcosmos.cn/decompression",
     "requestTimeoutMs": 10000
   },
   "defaultLanguage": "zh-CN",

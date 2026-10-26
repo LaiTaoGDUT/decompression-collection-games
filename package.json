@@ -5,8 +5,10 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "prepare:cloud-save": "node project-scripts/cloud-save/prepare.cjs",
-    "verify:cloud-save": "node tests/cloud-save/verify.cjs && node tests/cloud-save/build-hooks.cjs",
+    "prepare:server": "node project-scripts/server/prepare.cjs",
+    "package:server": "node project-scripts/server/package.cjs",
+    "verify:server": "node project-scripts/server/prepare.cjs --check && node tests/server/deploy.cjs && node tests/server/release.cjs && node --test server/decompression-api/test.cjs server/decompression-api/viewer.test.cjs",
+    "verify:cloud-save": "node tests/cloud-save/verify.cjs && node tests/cloud-save/network.cjs",
     "verify:storage-recovery": "node tests/storage/recovery.cjs",
     "verify:update-reminder": "node tools/verify-update-reminder.cjs",
     "verify:tap": "node tests/tap/platform.cjs && node tests/tap/build-hooks.cjs",

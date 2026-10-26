@@ -1,0 +1,17 @@
+{
+  "name": "decompression-api",
+  "version": "2.0.0",
+  "private": true,
+  "description": "\u89e3\u538b\u5c0f\u6e38\u620f\u5408\u96c6\u540e\u7aef\u63a5\u53e3\u670d\u52a1\uff1a\u8eab\u4efd\u3001\u5b58\u6863\u3001\u7edf\u8ba1\u53ca\u540e\u7eed\u4e1a\u52a1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node index.cjs",
+    "test": "node --test test.cjs viewer.test.cjs",
+    "test:postgres": "node --test postgres.test.cjs migrations.postgres.test.cjs viewer.postgres.test.cjs"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  }
+}

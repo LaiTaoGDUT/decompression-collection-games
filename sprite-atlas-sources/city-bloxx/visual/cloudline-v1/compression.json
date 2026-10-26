@@ -1,0 +1,112 @@
+{
+  "status": "completed",
+  "provider": "Tinify official API",
+  "endpoint": "https://api.tinify.com/shrink",
+  "date": "2026-10-24",
+  "user_authorized": true,
+  "processed": 6,
+  "cached": 0,
+  "failed": 0,
+  "pending": 0,
+  "total_bytes_before": 2224421,
+  "total_bytes_after": 707678,
+  "saved_bytes": 1516743,
+  "reduction_percent": 68.19,
+  "all_dimensions_preserved": true,
+  "atlas_definition_unchanged": true,
+  "all_metadata_unchanged": true,
+  "files": [
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/city.png",
+      "dimensions": [
+        768,
+        266
+      ],
+      "bytes_before": 197895,
+      "bytes_after": 58606,
+      "saved_bytes": 139289,
+      "metadata_unchanged": true,
+      "sha256_before": "c765e78591076488aba875d588b795f8be8e0efb6ab9f4de6863a765cd3218ae",
+      "sha256_after": "43194366dfd991311064d1684c36188108369a382043f73f2705987d8905617c"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/floor-blue.png",
+      "dimensions": [
+        196,
+        196
+      ],
+      "bytes_before": 39248,
+      "bytes_after": 16108,
+      "saved_bytes": 23140,
+      "metadata_unchanged": true,
+      "sha256_before": "0b40e291e3d115492d55d0a0f4454575ab5845286a8ea10f0e02a08d61637fe5",
+      "sha256_after": "85fd6bfdd52e602973f0f1ef62e59ae7743c05f289af517dab2b8ff78d199978"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/floor-coral.png",
+      "dimensions": [
+        196,
+        196
+      ],
+      "bytes_before": 29355,
+      "bytes_after": 14091,
+      "saved_bytes": 15264,
+      "metadata_unchanged": true,
+      "sha256_before": "7895f78b1c23840ba500376f4f889ddefdd677ffd113df42810d91ba83eb838f",
+      "sha256_after": "5103726ef12ec5f8db6ef459f6e8457a6a498657ce418f0b4716f24724816f15"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/floor-lobby.png",
+      "dimensions": [
+        196,
+        196
+      ],
+      "bytes_before": 32942,
+      "bytes_after": 15507,
+      "saved_bytes": 17435,
+      "metadata_unchanged": true,
+      "sha256_before": "369d88fc07b438a8a45bea12cd4770ed51fe0b1a7d43f07d24e729b26da4ee3b",
+      "sha256_after": "d7402d3d5e0b783c6174df7e288abde830375d321b2f8b66e74bfd4cba7dc088"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/space.png",
+      "dimensions": [
+        750,
+        1333
+      ],
+      "bytes_before": 1033650,
+      "bytes_after": 437075,
+      "saved_bytes": 596575,
+      "metadata_unchanged": true,
+      "sha256_before": "165216cbc432848ba2316f377031ba9a3cd3bbc8b66ecda16cb20235595dc775",
+      "sha256_after": "615fac49ca5e1c09ee1adc7385acdc09e0a6bc1b91b0bfec04a3038ef21f5cc2"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/city-sunlit.png",
+      "dimensions": [
+        2040,
+        979
+      ],
+      "bytes_before": 891331,
+      "bytes_after": 166291,
+      "saved_bytes": 725040,
+      "metadata_unchanged": true,
+      "sha256_before": "a79731b38e4578629c0cbd4866f4864401bf1dbba8d8525b4bafb7511e5ddfdf",
+      "sha256_after": "0471ca1d9a5e5476ca4a218e5e64865fd95f6d3a219b5c6f1cc661764849fece"
+    }
+  ],
+  "validation": {
+    "typescript": "passed",
+    "git_diff_check": "passed",
+    "atlas_import_geometry": "passed",
+    "runtime_screenshots": 30,
+    "safe_area_profiles": 8,
+    "runtime_errors": [],
+    "released": {
+      "owned": 0,
+      "world": false,
+      "bundle": false
+    },
+    "review_report": "review/report.json"
+  }
+}

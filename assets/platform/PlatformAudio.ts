@@ -12,6 +12,8 @@ export interface PlatformAudioSource extends PlatformAudioNode {
     buffer: PlatformAudioBuffer | null;
     loop: boolean;
     onended: (() => void) | null;
+    /** Standard WebAudio rate; optional for older native bridges. */
+    readonly playbackRate?: { value: number };
     start(when?: number, offset?: number, duration?: number): void;
     stop(): void;
 }
@@ -23,8 +25,11 @@ export interface PlatformAudioGain extends PlatformAudioNode {
 export interface PlatformAudioContext {
     readonly destination: PlatformAudioNode;
     readonly state: string;
+    readonly currentTime?: number;
+    readonly sampleRate?: number;
     createBufferSource(): PlatformAudioSource;
     createGain(): PlatformAudioGain;
+    createIIRFilter?(feedforward: number[], feedback: number[]): PlatformAudioNode;
     /** 微信使用回调；浏览器也可能同时返回 Promise。 */
     decodeAudioData(data: ArrayBuffer,
         success: (buffer: PlatformAudioBuffer) => void,

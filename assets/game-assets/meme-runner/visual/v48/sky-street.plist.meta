@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "061e610e-6808-5f77-bfe2-fd85e531d408",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "1ac80": {
+      "importer": "sprite-frame",
+      "uuid": "061e610e-6808-5f77-bfe2-fd85e531d408@1ac80",
+      "displayName": "",
+      "id": "1ac80",
+      "name": "sky-street",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 1334,
+        "height": 750,
+        "rawWidth": 1334,
+        "rawHeight": 750,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "9090d041-e399-542d-9249-c3de72b5d855@6c48a",
+        "atlasUuid": "061e610e-6808-5f77-bfe2-fd85e531d408",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "sky-street.png",
+    "format": 2,
+    "uuid": "061e610e-6808-5f77-bfe2-fd85e531d408",
+    "textureUuid": "9090d041-e399-542d-9249-c3de72b5d855@6c48a"
+  }
+}

@@ -3,9 +3,10 @@ export interface RunnerMotionInput {
     y: number; vy: number; grounded: boolean; sliding: boolean;
     jumps: number; jumpAge: number; landAge: number;
     mounted?: number; hurtAge?: number; feverTime?: number; time?: number;
+    speed?: number;
 }
 
-/** Felt stop-motion: every character holds each painted pose for 1/12 s ("on twos"), whatever the speed. */
+/** Painted animation baseline. Running cadence follows speed; other actors keep the 12 Hz clock. */
 export const STOP_MOTION_FPS = 12;
 export const STOP_MOTION_STEP = 1 / STOP_MOTION_FPS;
 export function stopMotionFrame(seconds: number, count: number): number {
@@ -13,15 +14,6 @@ export function stopMotionFrame(seconds: number, count: number): number {
 }
 export const RUN_FRAME_COUNT = 8;
 export const KANGAROO_RUN_FRAME_COUNT = 6;
-export const BULL_RUN_FRAME_COUNT = 4;
-export function bullRunFrame(seconds: number): number { return stopMotionFrame(seconds, BULL_RUN_FRAME_COUNT); }
-/** Stomped: squash, rebound, then a laugh that alternates two drawings. */
-export const DRAGON_REACTION_DURATION = 8 * STOP_MOTION_STEP;
-export function dragonReactionFrame(age: number): number {
-    const tick = Math.floor(Math.max(0, age) * STOP_MOTION_FPS + 1e-8);
-    return tick < 2 ? 2 : tick < 4 ? 3 : 4 + tick % 2;
-}
-export const SPINNER_FRAME_COUNT = 8;
 export const DOUBLE_JUMP_FRAME_COUNT = 4;
 const HERO_KEYS = [
     ...Array.from({ length: RUN_FRAME_COUNT }, (_, i) => `run-${i}`),
@@ -30,7 +22,7 @@ const HERO_KEYS = [
     'slide-0', 'slide-1', 'hurt', 'dash-0', 'dash-1', 'ride-0', 'ride-1', 'win-0', 'win-1', 'lose-0', 'lose-1',
 ];
 export const RUNNER_FRAME_SOURCES: ReadonlyArray<{ key: string; path: string }> =
-    HERO_KEYS.map(key => ({ key, path: `visual/v42/frames/${key}/spriteFrame` }));
+    HERO_KEYS.map(key => ({ key, path: `visual/v50/frames/${key}/spriteFrame` }));
 
 export class MemeRunnerMotion {
     frame = 'run-0';
@@ -40,9 +32,11 @@ export class MemeRunnerMotion {
     private wasSliding = false;
     private slideAge = 1;
     private slideExitAge = 1;
+    private wasGrounded = true;
 
     reset(model: RunnerMotionInput): void {
         this.phase = this.clock = 0; this.wasSliding = model.sliding;
+        this.wasGrounded = model.grounded;
         this.slideAge = model.sliding ? 0 : 1; this.slideExitAge = 1;
         this.frame = (model.feverTime ?? 0) > 0 ? 'dash-0' : !model.grounded ? this.airFrame(model) : model.sliding ? 'slide-1' : 'run-0';
     }
@@ -56,36 +50,41 @@ export class MemeRunnerMotion {
         this.clock += dt;
         this.slideAge = model.sliding ? (this.wasSliding ? this.slideAge + dt : 0) : 0;
         this.slideExitAge = model.sliding || this.wasSliding ? 0 : this.slideExitAge + dt;
+        if (!model.sliding && this.wasSliding) this.phase = 0;
         this.wasSliding = model.sliding;
+        if (model.grounded && !this.wasGrounded) this.phase = 0;
+        this.wasGrounded = model.grounded;
 
         if ((model.feverTime ?? 0) > 0) {
             this.frame = `dash-${this.loop(2)}`;
         } else if (model.mounted) {
-            // The rider bobs with the bull's trot, both on the model clock.
-            this.frame = `ride-${model.grounded ? bullRunFrame(model.time ?? this.clock) % 2 : 1}`;
+            // The rider bobs with the cart's wheels, both on the model clock.
+            this.frame = `ride-${stopMotionFrame(model.time ?? this.clock, 2)}`;
         } else if (model.hurtAge !== undefined && model.hurtAge < .24) {
             this.frame = 'hurt';
         } else if (!model.grounded) {
             this.frame = this.airFrame(model);
         } else if (model.sliding) {
             this.frame = this.slideAge < STOP_MOTION_STEP ? 'slide-0' : 'slide-1';
-        } else if (model.landAge < 2 * STOP_MOTION_STEP) {
+        } else if (model.landAge < STOP_MOTION_STEP) {
             this.frame = 'land-0';
         } else if (this.slideExitAge < STOP_MOTION_STEP) {
             this.frame = 'slide-0';
         } else {
-            this.phase = (this.phase + dt * STOP_MOTION_FPS / RUN_FRAME_COUNT) % 1;
+            // Shorter strides at low speed; the final sprint must not keep the opening walk cadence.
+            const cadence = Math.max(1, Math.min(1.45, (model.speed ?? 470) / 470));
+            this.phase = (this.phase + dt * STOP_MOTION_FPS * cadence / RUN_FRAME_COUNT) % 1;
             this.frame = `run-${Math.floor(this.phase * RUN_FRAME_COUNT + 1e-8) % RUN_FRAME_COUNT}`;
         }
     }
 
     finish(won: boolean, age: number): void {
-        // The win alternates belly laugh and cheer on fours; the loss is a shock, then a slump.
+        // Victory holds its cheer drawing; a loss moves from shock to a disappointed hunch.
         this.frame = won ? `win-${Math.floor(age * STOP_MOTION_FPS / 2) % 2}` : age < .3 ? 'lose-0' : 'lose-1';
     }
 
     private airFrame(model: RunnerMotionInput): string {
-        // The second impulse (and the dragon launch) plays a whole forward roll, then rejoins the
+        // The second impulse (and the spring launch) plays a whole forward roll, then rejoins the
         // velocity-driven rise/apex/fall poses. Ground contact always takes priority.
         const roll = Math.floor(model.jumpAge * STOP_MOTION_FPS + 1e-8);
         if (model.jumps === 2 && roll < DOUBLE_JUMP_FRAME_COUNT) return `double-${roll}`;

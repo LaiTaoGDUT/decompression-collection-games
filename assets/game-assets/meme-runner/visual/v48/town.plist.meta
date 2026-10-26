@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "05ce60a0-7426-5bdf-bb12-3ab04e925604",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "8304b": {
+      "importer": "sprite-frame",
+      "uuid": "05ce60a0-7426-5bdf-bb12-3ab04e925604@8304b",
+      "displayName": "",
+      "id": "8304b",
+      "name": "town-near",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 1242,
+        "height": 300,
+        "rawWidth": 1242,
+        "rawHeight": 300,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "9d1b1fda-92b5-50cf-bde9-4e326e2edcf2@6c48a",
+        "atlasUuid": "05ce60a0-7426-5bdf-bb12-3ab04e925604",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "town.png",
+    "format": 2,
+    "uuid": "05ce60a0-7426-5bdf-bb12-3ab04e925604",
+    "textureUuid": "9d1b1fda-92b5-50cf-bde9-4e326e2edcf2@6c48a"
+  }
+}

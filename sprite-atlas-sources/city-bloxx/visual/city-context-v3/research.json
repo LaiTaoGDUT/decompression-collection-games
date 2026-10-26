@@ -1,0 +1,23 @@
+{
+  "findings": [
+    "原版使用160×480纵向楼群图，场景世界尺寸10×30，深度1.97；不是远景横向天际线。",
+    "开场只能看见灰色建筑底部的大块立面；楼顶随镜头上移逐渐出现。",
+    "楼群底部y=-0.74，在围挡后方，不需要留出一条平坦地平线。",
+    "原版用低对比灰色立面和更小的背景细节，衬托有深色窗框与暖色边缘的可操作楼块。",
+    "上版误用宽幅城市剪影、深度8.5和大面积空街面，改变了高楼之间施工的空间关系。"
+  ],
+  "sources": [
+    "reference/original-ready.png",
+    "reference/original-camera-y25.png",
+    "reference/original-city.png",
+    "reference/original-ground-items.json"
+  ],
+  "original_city_dimensions": [
+    160,
+    480
+  ],
+  "original_city_world_size": [
+    10,
+    30
+  ]
+}

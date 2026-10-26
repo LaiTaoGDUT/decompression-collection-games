@@ -1,0 +1,9 @@
+Game gameplay sprite sheet for a 2D side-scrolling runner, PNG with a FULLY TRANSPARENT background (real alpha). Exactly TWO separate objects in one row, left and right, each centred in its own half of the canvas with a generous empty margin, never touching: no floor, no shadow, no text, no motion lines, no grid.
+
+CHARACTER: the internet meme BONGO CAT, as a cartoon needle-felted wool puppet in the same felt style as the cat in reference image 1: a simple round plump WHITE felt cat (cream-white wool, tiny black bead dot eyes, small pink "w" mouth, short rounded ears with pale pink insides, round paws), sitting BEHIND a joined PAIR OF BONGO DRUMS that it plays. The drums are in front of the cat and wider than it: two short barrel drums side by side, shells in friendly TEAL felt (#3E9C98 family) with cream stitched bands, flat cream felt drum heads on top that together make one wide, flat, level top surface. Chunky, rounded, handmade felt like reference image 2 (felt crate): soft fuzzy wool, visible running stitches, slight three-quarter front view from a little above so the flat drum heads show, warm key light from the upper left, crisp silhouette.
+Proportions: the whole object is a bit wider than tall; the flat drum-head top surface is at about 40% of the object's height from its bottom; the cat's head and ears rise above the drums behind them.
+
+1. READY pose: both front paws raised up beside the cat's head, eyes open, happy.
+2. SLAM pose: both paws slammed down flat on the drum heads, the drum heads visibly dented down, eyes squeezed shut in delight (>w<). Same cat, same drums, same size and position as pose 1 (only the paws, eyes and the dented heads change).
+
+No red-and-yellow stripes, no gold, no text, no extra objects.

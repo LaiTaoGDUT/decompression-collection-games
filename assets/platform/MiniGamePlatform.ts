@@ -11,7 +11,7 @@ import type {
     ScreenOrientation,
     Unsubscribe,
 } from '../core/types/CommonTypes';
-import type { AccelerometerSample, Platform } from './Platform';
+import type { AccelerometerSample, Platform, PlatformJsonRequest } from './Platform';
 import type { PlatformAudioContext } from './PlatformAudio';
 
 interface MiniGameSafeArea {
@@ -143,6 +143,8 @@ interface MiniGameAccelerometerOptions {
 }
 
 export interface MiniGameApi {
+    request?(options: { url: string; method: string; data?: unknown; header: Readonly<Record<string, string>>; timeout: number;
+        success(result: { statusCode: number; data: unknown }): void; fail(error: unknown): void }): { abort?(): void };
     createWebAudioContext?(): PlatformAudioContext;
     getSystemInfoSync(): MiniGameSystemInfo;
     getWindowInfo?(): Partial<MiniGameSystemInfo>;
@@ -216,6 +218,34 @@ export interface MiniGamePlatformOptions {
 /** 小游戏共享能力；具体平台负责提供 API 和平台差异。 */
 export class MiniGamePlatform implements Platform {
     readonly id: string;
+    private readonly networkOperations = new Set<() => void>();
+    requestJson(request: PlatformJsonRequest): Promise<unknown> {
+        const api = this.api;
+        if (!api?.request) return Promise.reject(new Error('WeChat network is unavailable.'));
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            let task: { abort?(): void } | undefined;
+            const finish = (error?: unknown, result?: unknown): void => {
+                if (settled) return;
+                settled = true; clearTimeout(timer); this.networkOperations.delete(cancel);
+                if (error || this.api !== api) reject(error ?? new Error('Cloud request cancelled.'));
+                else resolve(result);
+            };
+            const cancel = (): void => { finish(new Error('Cloud request cancelled.')); task?.abort?.(); };
+            const timer = setTimeout(cancel, request.timeoutMs);
+            this.networkOperations.add(cancel);
+            try {
+                task = api.request!({ url: request.url, method: request.method, data: request.data,
+                    header: { 'content-type': 'application/json', ...request.headers }, timeout: request.timeoutMs,
+                    success: response => {
+                        if (response.statusCode >= 200 && response.statusCode < 300) finish(undefined, response.data);
+                        else finish(Object.assign(new Error('Cloud HTTP ' + response.statusCode), { statusCode: response.statusCode }));
+                    }, fail: error => finish(error) });
+            }
+            catch (error: unknown) { finish(error); }
+        });
+    }
+
     createAudioContext(): PlatformAudioContext | undefined {
         return this.api?.createWebAudioContext?.();
     }
@@ -287,6 +317,7 @@ export class MiniGamePlatform implements Platform {
     }
 
     dispose(): void {
+        this.networkOperations.forEach(cancel => cancel()); this.networkOperations.clear();
         Array.from(this.orientationOperations).forEach(cancel => cancel());
         this.orientationOperations.clear();
         this.cancelLocalImagePicker();

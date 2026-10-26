@@ -1,0 +1,2519 @@
+{
+  "native_items": 126,
+  "previous_items": 126,
+  "previous_altitude_scale": 0.3,
+  "differences": [
+    {
+      "id": 2,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 33.90999984741211,
+          "previous": 12.272999954223632
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 3,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 202.1199951171875,
+          "previous": 62.73599853515625
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 4,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 398.63999938964844,
+          "previous": 121.69199981689452
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 7,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 235.75001525878906,
+          "previous": 72.82500457763672
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 8,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 132.0,
+          "previous": 41.699999999999996
+        },
+        "width": {
+          "native": 4.169614791870117,
+          "previous": 0.809680528716838
+        },
+        "height": {
+          "native": 0.3648608326911926,
+          "previous": 0.5108051657676697
+        }
+      }
+    },
+    {
+      "id": 9,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 101.0,
+          "previous": 32.4
+        },
+        "width": {
+          "native": 3.4374399185180664,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.8593599796295166,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 10,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 386.6700134277344,
+          "previous": 118.1010040283203
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 12,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 109.58999633789062,
+          "previous": 34.97699890136718
+        },
+        "width": {
+          "native": 3.4374399185180664,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.8593599796295166,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 14,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 508.67999267578125,
+          "previous": 154.70399780273436
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 16,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 505.92999267578125,
+          "previous": 153.87899780273438
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 17,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 48.400001525878906,
+          "previous": 16.620000457763673
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 19,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 52.43000030517578,
+          "previous": 17.829000091552736
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 21,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 418.19000244140625,
+          "previous": 127.55700073242187
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 23,
+      "frame": "sky-bluelestar",
+      "differences": {
+        "y": {
+          "native": 352.55999755859375,
+          "previous": 107.86799926757813
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 29,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 259.739990234375,
+          "previous": 80.0219970703125
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 31,
+      "frame": "pluto",
+      "differences": {
+        "y": {
+          "native": 490.7799987792969,
+          "previous": 149.33399963378906
+        }
+      }
+    },
+    {
+      "id": 32,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 385.6100158691406,
+          "previous": 117.78300476074219
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 33,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 406.78997802734375,
+          "previous": 124.13699340820312
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 34,
+      "frame": "cloud-streaks",
+      "differences": {
+        "y": {
+          "native": 27.579999923706055,
+          "previous": 10.373999977111815
+        }
+      }
+    },
+    {
+      "id": 35,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 471.9100036621094,
+          "previous": 143.6730010986328
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 36,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 89.70999908447266,
+          "previous": 29.012999725341796
+        },
+        "width": {
+          "native": 3.4374399185180664,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.8593599796295166,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 39,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 135.86000061035156,
+          "previous": 42.85800018310547
+        },
+        "width": {
+          "native": 4.169614791870117,
+          "previous": 0.809680528716838
+        },
+        "height": {
+          "native": 0.3648608326911926,
+          "previous": 0.5108051657676697
+        }
+      }
+    },
+    {
+      "id": 40,
+      "frame": "sky-bluelestar",
+      "differences": {
+        "y": {
+          "native": 497.05999755859375,
+          "previous": 151.2179992675781
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 41,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 238.85000610351562,
+          "previous": 73.75500183105468
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 42,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 258.9599914550781,
+          "previous": 79.78799743652344
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 43,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 273.69000244140625,
+          "previous": 84.20700073242188
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 47,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 335.25,
+          "previous": 102.675
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 48,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 62.20000076293945,
+          "previous": 20.760000228881836
+        },
+        "width": {
+          "native": 1.8773410320281982,
+          "previous": 1.0415248385135163
+        },
+        "height": {
+          "native": 0.46933525800704956,
+          "previous": 0.6570693612098694
+        }
+      }
+    },
+    {
+      "id": 49,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 203.33999633789062,
+          "previous": 63.10199890136718
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 51,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 384.4300079345703,
+          "previous": 117.42900238037109
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 52,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 79.97700500488281,
+          "previous": 26.093101501464844
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 53,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 87.41000366210938,
+          "previous": 28.323001098632812
+        },
+        "width": {
+          "native": 3.4374399185180664,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.8593599796295166,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 55,
+      "frame": "jupiter",
+      "differences": {
+        "y": {
+          "native": 382.91001892089844,
+          "previous": 116.97300567626952
+        }
+      }
+    },
+    {
+      "id": 56,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 291.969970703125,
+          "previous": 89.6909912109375
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 57,
+      "frame": "sky-bluelestar",
+      "differences": {
+        "y": {
+          "native": 487.20001220703125,
+          "previous": 148.26000366210937
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 58,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 207.29998779296875,
+          "previous": 64.28999633789061
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 60,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 272.4700012207031,
+          "previous": 83.84100036621093
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 61,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 357.69000244140625,
+          "previous": 109.40700073242188
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 67,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 64.9800033569336,
+          "previous": 21.594001007080077
+        },
+        "width": {
+          "native": 1.8773410320281982,
+          "previous": 1.0415248385135163
+        },
+        "height": {
+          "native": 0.46933525800704956,
+          "previous": 0.6570693612098694
+        }
+      }
+    },
+    {
+      "id": 70,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 209.8000030517578,
+          "previous": 65.04000091552734
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 74,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 295.29998779296875,
+          "previous": 90.68999633789062
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 77,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 228.35000610351562,
+          "previous": 70.60500183105468
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 79,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 135.33999633789062,
+          "previous": 42.70199890136718
+        },
+        "width": {
+          "native": 4.169614791870117,
+          "previous": 0.809680528716838
+        },
+        "height": {
+          "native": 0.3648608326911926,
+          "previous": 0.5108051657676697
+        }
+      }
+    },
+    {
+      "id": 80,
+      "frame": "uranus",
+      "differences": {
+        "y": {
+          "native": 455.739990234375,
+          "previous": 138.8219970703125
+        }
+      }
+    },
+    {
+      "id": 81,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 40.43000030517578,
+          "previous": 14.229000091552734
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 83,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 504.4599914550781,
+          "previous": 153.43799743652343
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 86,
+      "frame": "mars",
+      "differences": {
+        "y": {
+          "native": 200.36000061035156,
+          "previous": 62.20800018310547
+        }
+      }
+    },
+    {
+      "id": 92,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 188.6999969482422,
+          "previous": 58.709999084472656
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 98,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 105.37999725341797,
+          "previous": 33.71399917602539
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 101,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 219.80999755859375,
+          "previous": 68.04299926757812
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 102,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 262.28997802734375,
+          "previous": 80.78699340820312
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 105,
+      "frame": "tree",
+      "differences": {
+        "x": {
+          "native": 2.049999952316284,
+          "previous": 2.25
+        },
+        "y": {
+          "native": 1.2199999541044235,
+          "previous": 0.38
+        },
+        "width": {
+          "native": 2.0,
+          "previous": 1.2335195530726257
+        },
+        "height": {
+          "native": 2.0,
+          "previous": 1.2
+        }
+      }
+    },
+    {
+      "id": 107,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 404.239990234375,
+          "previous": 123.37199707031249
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 108,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 436.469970703125,
+          "previous": 133.0409912109375
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 118,
+      "frame": "uranus",
+      "differences": {
+        "y": {
+          "native": 311.239990234375,
+          "previous": 95.4719970703125
+        }
+      }
+    },
+    {
+      "id": 121,
+      "frame": "ufo",
+      "differences": {
+        "y": {
+          "native": 256.1999816894531,
+          "previous": 78.95999450683594
+        }
+      }
+    },
+    {
+      "id": 124,
+      "frame": "flyman-0",
+      "differences": {
+        "y": {
+          "native": 186.97999572753906,
+          "previous": 58.19399871826172
+        }
+      }
+    },
+    {
+      "id": 126,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 442.0799865722656,
+          "previous": 134.72399597167967
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 130,
+      "frame": "sky-bluelestar",
+      "differences": {
+        "y": {
+          "native": 342.70001220703125,
+          "previous": 104.91000366210938
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 131,
+      "frame": "balloon",
+      "differences": {
+        "y": {
+          "native": 73.91000366210938,
+          "previous": 24.27300109863281
+        },
+        "width": {
+          "native": 1.1776509284973145,
+          "previous": 0.8499567570893661
+        }
+      }
+    },
+    {
+      "id": 132,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 364.07000732421875,
+          "previous": 111.32100219726563
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 133,
+      "frame": "blimp",
+      "differences": {
+        "y": {
+          "native": 67.20999908447266,
+          "previous": 22.262999725341796
+        }
+      }
+    },
+    {
+      "id": 135,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 125.51000213623047,
+          "previous": 39.75300064086914
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 136,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 55.75,
+          "previous": 18.825
+        },
+        "width": {
+          "native": 1.8773410320281982,
+          "previous": 1.0415248385135163
+        },
+        "height": {
+          "native": 0.46933525800704956,
+          "previous": 0.6570693612098694
+        }
+      }
+    },
+    {
+      "id": 140,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 415.8000183105469,
+          "previous": 126.84000549316406
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 144,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 403.4599914550781,
+          "previous": 123.13799743652343
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 147,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 254.13999938964844,
+          "previous": 78.34199981689453
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 152,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 94.1500015258789,
+          "previous": 30.34500045776367
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 154,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 79.52999877929688,
+          "previous": 25.958999633789062
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 158,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 271.3000183105469,
+          "previous": 83.49000549316406
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 159,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 416.9700012207031,
+          "previous": 127.19100036621093
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 160,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 242.17001342773438,
+          "previous": 74.75100402832031
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 163,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 131.00999450683594,
+          "previous": 41.40299835205078
+        },
+        "width": {
+          "native": 4.169614791870117,
+          "previous": 0.809680528716838
+        },
+        "height": {
+          "native": 0.3648608326911926,
+          "previous": 0.5108051657676697
+        }
+      }
+    },
+    {
+      "id": 165,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 242.36001586914062,
+          "previous": 74.80800476074218
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 167,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 364.7300109863281,
+          "previous": 111.51900329589843
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 168,
+      "frame": "cloud-streaks",
+      "differences": {
+        "y": {
+          "native": 22.0,
+          "previous": 8.7
+        }
+      }
+    },
+    {
+      "id": 169,
+      "frame": "jupiter",
+      "differences": {
+        "y": {
+          "native": 238.41001892089844,
+          "previous": 73.62300567626953
+        }
+      }
+    },
+    {
+      "id": 170,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 206.26998901367188,
+          "previous": 63.98099670410156
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 171,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 479.75,
+          "previous": 146.025
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 173,
+      "frame": "saturn",
+      "differences": {
+        "y": {
+          "native": 290.7099914550781,
+          "previous": 89.31299743652343
+        },
+        "width": {
+          "native": 3.90691876411438,
+          "previous": 2.885945945945946
+        },
+        "height": {
+          "native": 1.6787541564553976,
+          "previous": 1.9
+        }
+      }
+    },
+    {
+      "id": 175,
+      "frame": "ufo",
+      "differences": {
+        "y": {
+          "native": 277.05999755859375,
+          "previous": 85.21799926757812
+        }
+      }
+    },
+    {
+      "id": 176,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 330.1600036621094,
+          "previous": 101.1480010986328
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 178,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 380.25001525878906,
+          "previous": 116.17500457763671
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 179,
+      "frame": "station",
+      "differences": {
+        "y": {
+          "native": 153.39999389648438,
+          "previous": 48.11999816894531
+        },
+        "width": {
+          "native": 1.2599999904632568,
+          "previous": 1.2886363636363638
+        },
+        "height": {
+          "native": 1.2599999904632568,
+          "previous": 0.9
+        }
+      }
+    },
+    {
+      "id": 180,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 105.93000030517578,
+          "previous": 33.87900009155273
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 181,
+      "frame": "station",
+      "differences": {
+        "y": {
+          "native": 181.39999389648438,
+          "previous": 56.519998168945314
+        },
+        "width": {
+          "native": 1.2599999904632568,
+          "previous": 1.2886363636363638
+        },
+        "height": {
+          "native": 1.2599999904632568,
+          "previous": 0.9
+        }
+      }
+    },
+    {
+      "id": 184,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 241.11001586914062,
+          "previous": 74.43300476074218
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 187,
+      "frame": "saturn",
+      "differences": {
+        "y": {
+          "native": 435.2099914550781,
+          "previous": 132.66299743652343
+        },
+        "width": {
+          "native": 3.90691876411438,
+          "previous": 2.885945945945946
+        },
+        "height": {
+          "native": 1.6787541564553976,
+          "previous": 1.9
+        }
+      }
+    },
+    {
+      "id": 188,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 383.3500061035156,
+          "previous": 117.10500183105468
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 191,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 471.010009765625,
+          "previous": 143.4030029296875
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 193,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 326.510009765625,
+          "previous": 100.0530029296875
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 194,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 386.8600158691406,
+          "previous": 118.15800476074219
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 195,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 54.69000244140625,
+          "previous": 18.507000732421872
+        },
+        "width": {
+          "native": 1.8773410320281982,
+          "previous": 1.0415248385135163
+        },
+        "height": {
+          "native": 0.46933525800704956,
+          "previous": 0.6570693612098694
+        }
+      }
+    },
+    {
+      "id": 197,
+      "frame": "blimp",
+      "differences": {
+        "y": {
+          "native": 58.470001220703125,
+          "previous": 19.641000366210935
+        }
+      }
+    },
+    {
+      "id": 199,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 84.08999633789062,
+          "previous": 27.326998901367187
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 200,
+      "frame": "fence",
+      "differences": {
+        "y": {
+          "native": 0.439999982714653,
+          "previous": 0.10356156501726124
+        },
+        "z": {
+          "native": 1.899999976158142,
+          "previous": 2.3
+        },
+        "width": {
+          "native": 8.736000061035156,
+          "previous": 6.9
+        },
+        "height": {
+          "native": 1.3104000091552734,
+          "previous": 0.6471231300345225
+        }
+      }
+    },
+    {
+      "id": 201,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 203.92999267578125,
+          "previous": 63.278997802734374
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 203,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 297.5799865722656,
+          "previous": 91.37399597167969
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 204,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 59.72999954223633,
+          "previous": 20.0189998626709
+        },
+        "width": {
+          "native": 1.8773410320281982,
+          "previous": 1.0415248385135163
+        },
+        "height": {
+          "native": 0.46933525800704956,
+          "previous": 0.6570693612098694
+        }
+      }
+    },
+    {
+      "id": 205,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 239.9300079345703,
+          "previous": 74.0790023803711
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 207,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 439.79998779296875,
+          "previous": 134.0399963378906
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 210,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 35.56999969482422,
+          "previous": 12.770999908447266
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 211,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 115.8499984741211,
+          "previous": 36.85499954223633
+        },
+        "width": {
+          "native": 2.434807538986206,
+          "previous": 1.350800139980113
+        },
+        "height": {
+          "native": 0.6087018847465515,
+          "previous": 0.8521826386451721
+        }
+      }
+    },
+    {
+      "id": 213,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 372.6100158691406,
+          "previous": 113.88300476074218
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 215,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 71.25,
+          "previous": 23.474999999999998
+        },
+        "width": {
+          "native": 2.647481918334961,
+          "previous": 1.4687891706507255
+        },
+        "height": {
+          "native": 0.6618704795837402,
+          "previous": 0.9266186714172363
+        }
+      }
+    },
+    {
+      "id": 216,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 77.22999572753906,
+          "previous": 25.268998718261717
+        },
+        "width": {
+          "native": 2.647481918334961,
+          "previous": 1.4687891706507255
+        },
+        "height": {
+          "native": 0.6618704795837402,
+          "previous": 0.9266186714172363
+        }
+      }
+    },
+    {
+      "id": 217,
+      "frame": "moon",
+      "differences": {
+        "y": {
+          "native": 162.3000030517578,
+          "previous": 50.790000915527344
+        },
+        "width": {
+          "native": 1.8322800397872925,
+          "previous": 1.6685008183537915
+        }
+      }
+    },
+    {
+      "id": 218,
+      "frame": "whale-0",
+      "differences": {
+        "y": {
+          "native": 171.6999969482422,
+          "previous": 53.609999084472655
+        }
+      }
+    },
+    {
+      "id": 219,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 120.0,
+          "previous": 38.1
+        },
+        "width": {
+          "native": 2.799999952316284,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.699999988079071,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 220,
+      "frame": "airplane",
+      "differences": {
+        "y": {
+          "native": 97.49000549316406,
+          "previous": 31.347001647949217
+        }
+      }
+    },
+    {
+      "id": 221,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 220.47000122070312,
+          "previous": 68.24100036621094
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 222,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 30.739999771118164,
+          "previous": 11.32199993133545
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 223,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 93.02999877929688,
+          "previous": 30.008999633789063
+        },
+        "width": {
+          "native": 0.7462242245674133,
+          "previous": 0.7132978723404255
+        },
+        "height": {
+          "native": 0.25743943452835083,
+          "previous": 0.45
+        }
+      }
+    },
+    {
+      "id": 224,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 197.1699981689453,
+          "previous": 61.250999450683594
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 225,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 123.44999694824219,
+          "previous": 39.13499908447265
+        },
+        "width": {
+          "native": 2.799999952316284,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.699999988079071,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 227,
+      "frame": "sky-purplestar",
+      "differences": {
+        "y": {
+          "native": 474.6600036621094,
+          "previous": 144.4980010986328
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 232,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 327.4100036621094,
+          "previous": 100.32300109863282
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 233,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 213.42999267578125,
+          "previous": 66.12899780273438
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 239,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 45.029998779296875,
+          "previous": 15.608999633789063
+        },
+        "width": {
+          "native": 3.1336045265197754,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.7834011316299438,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 241,
+      "frame": "pluto",
+      "differences": {
+        "y": {
+          "native": 346.2799987792969,
+          "previous": 105.98399963378905
+        }
+      }
+    },
+    {
+      "id": 242,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 127.8499984741211,
+          "previous": 40.45499954223633
+        },
+        "width": {
+          "native": 2.799999952316284,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.699999988079071,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 244,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 113.30000305175781,
+          "previous": 36.09000091552734
+        },
+        "width": {
+          "native": 2.434807538986206,
+          "previous": 1.350800139980113
+        },
+        "height": {
+          "native": 0.6087018847465515,
+          "previous": 0.8521826386451721
+        }
+      }
+    },
+    {
+      "id": 245,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 212.63999938964844,
+          "previous": 65.89199981689453
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    },
+    {
+      "id": 246,
+      "frame": "cloud-bank",
+      "differences": {
+        "y": {
+          "native": 81.83000183105469,
+          "previous": 26.649000549316405
+        },
+        "width": {
+          "native": 3.4374399185180664,
+          "previous": 1.505851063829787
+        },
+        "height": {
+          "native": 0.8593599796295166,
+          "previous": 0.95
+        }
+      }
+    },
+    {
+      "id": 247,
+      "frame": "sky-purplestar_little",
+      "differences": {
+        "y": {
+          "native": 513.7699890136719,
+          "previous": 156.23099670410156
+        },
+        "color": {
+          "native": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "previous": [
+            216,
+            226,
+            255,
+            150
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "runtime": "assets/game-assets/city-bloxx/visual/cloudline/city.png",
+  "pixels": [
+    1183,
+    3549
+  ],
+  "world": {
+    "x": 0.20675348490476608,
+    "y": 14.259999752044678,
+    "z": 1.9700000286102295,
+    "width": 10.0,
+    "height": 30.0
+  },
+  "source": "sprite-atlas-sources/city-bloxx/visual/city-context-v3/sources/city-native-layout.png",
+  "source_pixels": [
+    1183,
+    3549
+  ],
+  "scale": 1.0,
+  "assembly": "26 registered whole-building layers from 10 generated source sheets",
+  "alpha_crop": false,
+  "original_composition": true,
+  "bytes_before": 1725103,
+  "sha256_before": "e4beb2a1b3cd3ec5f255e2c6d57a5e9ea3c980d53216f4e2ade298c698ef8896",
+  "meta_sha256": "fa996b1389e553fb31436e59c84dad50e8034d1a4b2d35850bc3c29f64096111"
+}

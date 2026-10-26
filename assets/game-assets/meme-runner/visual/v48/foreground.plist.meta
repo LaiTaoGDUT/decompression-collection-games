@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "a66cbfaf-aefb-5454-84ca-66e03a2e878f",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "1019a": {
+      "importer": "sprite-frame",
+      "uuid": "a66cbfaf-aefb-5454-84ca-66e03a2e878f@1019a",
+      "displayName": "",
+      "id": "1019a",
+      "name": "town-foreground",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 1003,
+        "height": 160,
+        "rawWidth": 1003,
+        "rawHeight": 160,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d1a0246b-9713-5820-8a1a-100fd416580e@6c48a",
+        "atlasUuid": "a66cbfaf-aefb-5454-84ca-66e03a2e878f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "foreground.png",
+    "format": 2,
+    "uuid": "a66cbfaf-aefb-5454-84ca-66e03a2e878f",
+    "textureUuid": "d1a0246b-9713-5820-8a1a-100fd416580e@6c48a"
+  }
+}

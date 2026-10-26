@@ -1,0 +1,42 @@
+{
+  "cloud-bank": {
+    "pixels": [
+      338,
+      78
+    ],
+    "source_bounds": [
+      61,
+      238,
+      1480,
+      566
+    ],
+    "source_region": [
+      0,
+      0,
+      1536,
+      660
+    ],
+    "scale": 0.23819591261451725,
+    "native_count": 32
+  },
+  "cloud-bank-thin": {
+    "pixels": [
+      409,
+      34
+    ],
+    "source_bounds": [
+      61,
+      91,
+      1489,
+      208
+    ],
+    "source_region": [
+      0,
+      660,
+      1536,
+      1024
+    ],
+    "scale": 0.2864145658263305,
+    "native_count": 4
+  }
+}

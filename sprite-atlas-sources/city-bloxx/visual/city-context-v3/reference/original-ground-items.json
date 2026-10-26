@@ -1,0 +1,65 @@
+[
+  {
+    "id": 90,
+    "name": "bg_buldings2",
+    "frame": "skyline",
+    "x": 0.20675348490476608,
+    "y": 14.259999752044678,
+    "z": 1.9700000286102295,
+    "width": 10.0,
+    "height": 30.0,
+    "flipX": false,
+    "angle": -0.0,
+    "color": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "loop": null,
+    "sortingLayer": 4,
+    "sortingOrder": 10
+  },
+  {
+    "id": 105,
+    "name": "bg_tree",
+    "frame": "tree",
+    "x": 2.049999952316284,
+    "y": 1.2199999541044235,
+    "z": 2.3399999141693115,
+    "width": 2.0,
+    "height": 2.0,
+    "flipX": false,
+    "angle": -0.0,
+    "color": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "loop": null,
+    "sortingLayer": 4,
+    "sortingOrder": 10
+  },
+  {
+    "id": 200,
+    "name": "bg_muban",
+    "frame": "fence",
+    "x": 0.0,
+    "y": 0.439999982714653,
+    "z": 1.899999976158142,
+    "width": 8.736000061035156,
+    "height": 1.3104000091552734,
+    "flipX": false,
+    "angle": -0.0,
+    "color": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "loop": null,
+    "sortingLayer": 4,
+    "sortingOrder": 10
+  }
+]

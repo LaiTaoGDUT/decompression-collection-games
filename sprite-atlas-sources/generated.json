@@ -18291,140 +18291,6 @@
       }
     ]
   },
-  "meme-runner/visual/opening-v27/story": {
-    "rawHash": "ee3b363df5a781349e8837d6e112f58bfcca960572228c03ee0f97ff83d17f7b",
-    "imageUuid": "b6814047-e598-53d3-9b19-4fa7575504fc",
-    "size": [
-      1956,
-      872
-    ],
-    "frames": [
-      {
-        "source": "visual/opening-v27/comic.png",
-        "sourceRect": [
-          0,
-          0,
-          768,
-          512
-        ],
-        "name": "comic-0",
-        "uuid": "93ff33a6-90d7-5e03-a024-8517bf5b67ff@34ee4",
-        "rect": [
-          2,
-          2,
-          648,
-          432
-        ],
-        "originalSize": [
-          648,
-          432
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/opening-v27/comic.png",
-        "sourceRect": [
-          768,
-          0,
-          768,
-          512
-        ],
-        "name": "comic-1",
-        "uuid": "93ff33a6-90d7-5e03-a024-8517bf5b67ff@f2ed9",
-        "rect": [
-          654,
-          2,
-          648,
-          432
-        ],
-        "originalSize": [
-          648,
-          432
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/opening-v27/comic.png",
-        "sourceRect": [
-          0,
-          512,
-          768,
-          512
-        ],
-        "name": "comic-2",
-        "uuid": "93ff33a6-90d7-5e03-a024-8517bf5b67ff@42336",
-        "rect": [
-          1306,
-          2,
-          648,
-          432
-        ],
-        "originalSize": [
-          648,
-          432
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/opening-v27/comic.png",
-        "sourceRect": [
-          768,
-          512,
-          768,
-          512
-        ],
-        "name": "comic-3",
-        "uuid": "93ff33a6-90d7-5e03-a024-8517bf5b67ff@2b4f0",
-        "rect": [
-          2,
-          438,
-          648,
-          432
-        ],
-        "originalSize": [
-          648,
-          432
-        ],
-        "offset": [
-          0.0,
-          0.0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
   "meme-runner/visual/v33/items": {
     "rawHash": "90b90695b7f70cd16c64ef6e5efbaa451d83d9f5db46bc81b36f7fae7c792607",
     "imageUuid": "83e5ebcd-6039-56c0-985e-a9f2b8ed9092",
@@ -18545,47 +18411,6 @@
         "originalSize": [
           160,
           160
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v34/effects": {
-    "rawHash": "4b867e72cd748c7a09e7415d2657d3955bb59f902cc95caafa9ed80467d220e2",
-    "imageUuid": "a06e602e-ba1b-5445-abdf-1d8c32439efc",
-    "size": [
-      148,
-      76
-    ],
-    "frames": [
-      {
-        "source": "visual/v34/frames/nyan-warning.png",
-        "sourceRect": [
-          0,
-          0,
-          144,
-          72
-        ],
-        "name": "nyan-warning",
-        "uuid": "7b7bd833-304d-5a3b-8ad5-26d8b4936062@6a132",
-        "rect": [
-          2,
-          2,
-          144,
-          72
-        ],
-        "originalSize": [
-          144,
-          72
         ],
         "offset": [
           0,
@@ -18735,11 +18560,11 @@
     ]
   },
   "city-bloxx/visual/sunlit/city-sunlit": {
-    "rawHash": "c43c271bd9f78ddaf98b17810c46a575cf7a40baa70fa14dc624747eb4f8e104",
+    "rawHash": "348081163632bee8d97a12aefa91d1867f31111586c51e55da14acebf4be7521",
     "imageUuid": "217b4b69-fd22-5da3-ae1a-7448e1f8927b",
     "size": [
-      2047,
-      1022
+      2048,
+      903
     ],
     "frames": [
       {
@@ -18774,24 +18599,24 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/fence.png",
+        "source": "visual/ground-v2/prepared/fence.png",
         "sourceRect": [
           0,
           0,
-          1039,
-          156
+          796,
+          75
         ],
         "name": "fence",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@dac5b",
         "rect": [
           2,
           201,
-          1039,
-          156
+          796,
+          75
         ],
         "originalSize": [
-          1039,
-          156
+          796,
+          75
         ],
         "offset": [
           0,
@@ -18815,7 +18640,7 @@
         "name": "airplane",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@4add0",
         "rect": [
-          1045,
+          802,
           201,
           616,
           88
@@ -18823,37 +18648,6 @@
         "originalSize": [
           616,
           88
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/sunlit-v1/prepared/crane-arm.png",
-        "sourceRect": [
-          0,
-          0,
-          600,
-          285
-        ],
-        "name": "crane-arm",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@b4560",
-        "rect": [
-          1045,
-          293,
-          600,
-          285
-        ],
-        "originalSize": [
-          600,
-          285
         ],
         "offset": [
           0,
@@ -18877,8 +18671,8 @@
         "name": "whale-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@7ef03",
         "rect": [
-          2,
-          361,
+          1422,
+          201,
           412,
           103
         ],
@@ -18908,8 +18702,8 @@
         "name": "whale-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@e5768",
         "rect": [
-          418,
-          361,
+          2,
+          280,
           412,
           103
         ],
@@ -18929,24 +18723,55 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/cloud-bank.png",
+        "source": "visual/atmosphere-v4/prepared/cloud-bank-thin.png",
         "sourceRect": [
           0,
           0,
           409,
-          103
+          34
+        ],
+        "name": "cloud-bank-thin",
+        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@74445",
+        "rect": [
+          418,
+          293,
+          409,
+          34
+        ],
+        "originalSize": [
+          409,
+          34
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/atmosphere-v4/prepared/cloud-bank.png",
+        "sourceRect": [
+          0,
+          0,
+          338,
+          78
         ],
         "name": "cloud-bank",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@86e94",
         "rect": [
-          2,
-          468,
-          409,
-          103
+          831,
+          293,
+          338,
+          78
         ],
         "originalSize": [
-          409,
-          103
+          338,
+          78
         ],
         "offset": [
           0,
@@ -18960,55 +18785,55 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/saturn.png",
+        "source": "visual/cloudline-v1/prepared/crane-arm.png",
         "sourceRect": [
           0,
           0,
-          380,
-          163
+          300,
+          142
+        ],
+        "name": "crane-arm",
+        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@b4560",
+        "rect": [
+          418,
+          331,
+          300,
+          142
+        ],
+        "originalSize": [
+          300,
+          142
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/cloudline-v1/prepared/saturn.png",
+        "sourceRect": [
+          0,
+          0,
+          281,
+          185
         ],
         "name": "saturn",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d0a27",
         "rect": [
-          1665,
-          201,
-          380,
-          163
+          2,
+          387,
+          281,
+          185
         ],
         "originalSize": [
-          380,
-          163
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/sunlit-v1/prepared/tree.png",
-        "sourceRect": [
-          0,
-          0,
-          230,
-          230
-        ],
-        "name": "tree",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@ccac8",
-        "rect": [
-          1649,
-          368,
-          230,
-          230
-        ],
-        "originalSize": [
-          230,
-          230
+          281,
+          185
         ],
         "offset": [
           0,
@@ -19032,8 +18857,8 @@
         "name": "mars",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@6d2af",
         "rect": [
-          415,
-          468,
+          1173,
+          293,
           227,
           227
         ],
@@ -19063,8 +18888,8 @@
         "name": "jupiter",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@28291",
         "rect": [
-          834,
-          361,
+          1838,
+          201,
           186,
           189
         ],
@@ -19115,6 +18940,37 @@
         }
       },
       {
+        "source": "visual/cloudline-v1/prepared/tree.png",
+        "sourceRect": [
+          0,
+          0,
+          184,
+          179
+        ],
+        "name": "tree",
+        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@ccac8",
+        "rect": [
+          1404,
+          308,
+          184,
+          179
+        ],
+        "originalSize": [
+          184,
+          179
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
         "source": "visual/sunlit-v1/prepared/blimp.png",
         "sourceRect": [
           0,
@@ -19125,8 +18981,8 @@
         "name": "blimp",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@adb84",
         "rect": [
-          646,
-          468,
+          1592,
+          308,
           181,
           91
         ],
@@ -19146,24 +19002,24 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/moon.png",
+        "source": "visual/cloudline-v1/prepared/moon.png",
         "sourceRect": [
           0,
           0,
-          178,
-          178
+          163,
+          179
         ],
         "name": "moon",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@6fa39",
         "rect": [
-          831,
-          554,
-          178,
-          178
+          1777,
+          394,
+          163,
+          179
         ],
         "originalSize": [
-          178,
-          178
+          163,
+          179
         ],
         "offset": [
           0,
@@ -19187,8 +19043,8 @@
         "name": "combo-star-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@dcc4d",
         "rect": [
-          1883,
-          368,
+          1592,
+          403,
           148,
           148
         ],
@@ -19218,8 +19074,8 @@
         "name": "combo-star-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f0ddf",
         "rect": [
-          1883,
-          520,
+          1404,
+          491,
           148,
           148
         ],
@@ -19249,8 +19105,8 @@
         "name": "combo-star-2",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f496c",
         "rect": [
-          646,
-          563,
+          1556,
+          555,
           148,
           148
         ],
@@ -19280,8 +19136,8 @@
         "name": "sling",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@04bb5",
         "rect": [
-          2,
-          575,
+          1708,
+          577,
           148,
           90
         ],
@@ -19311,8 +19167,8 @@
         "name": "sky-purplestar",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@c86b1",
         "rect": [
-          154,
-          575,
+          1860,
+          577,
           142,
           142
         ],
@@ -19342,8 +19198,8 @@
         "name": "pluto",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@c054f",
         "rect": [
-          2,
-          669,
+          1708,
+          671,
           141,
           141
         ],
@@ -19363,24 +19219,24 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/station.png",
+        "source": "visual/cloudline-v1/prepared/station.png",
         "sourceRect": [
           0,
           0,
-          123,
-          123
+          126,
+          88
         ],
         "name": "station",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@e2fcc",
         "rect": [
-          300,
-          699,
-          123,
-          123
+          287,
+          387,
+          126,
+          88
         ],
         "originalSize": [
-          123,
-          123
+          126,
+          88
         ],
         "offset": [
           0,
@@ -19404,8 +19260,8 @@
         "name": "ufo",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@748ae",
         "rect": [
-          147,
-          721,
+          1853,
+          723,
           118,
           118
         ],
@@ -19425,23 +19281,23 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/balloon.png",
+        "source": "visual/cloudline-v1/prepared/balloon.png",
         "sourceRect": [
           0,
           0,
-          115,
+          83,
           115
         ],
         "name": "balloon",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@64e71",
         "rect": [
-          2,
-          814,
-          115,
+          1944,
+          394,
+          83,
           115
         ],
         "originalSize": [
-          115,
+          83,
           115
         ],
         "offset": [
@@ -19466,8 +19322,8 @@
         "name": "flyman-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@30b4d",
         "rect": [
-          300,
-          575,
+          722,
+          331,
           99,
           99
         ],
@@ -19497,8 +19353,8 @@
         "name": "flyman-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@69848",
         "rect": [
-          427,
-          699,
+          825,
+          375,
           99,
           99
         ],
@@ -19528,8 +19384,8 @@
         "name": "resident-blue-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@67671",
         "rect": [
-          530,
-          699,
+          1975,
+          723,
           44,
           87
         ],
@@ -19559,8 +19415,8 @@
         "name": "resident-blue-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8519f",
         "rect": [
-          578,
-          699,
+          1975,
+          814,
           44,
           87
         ],
@@ -19590,8 +19446,8 @@
         "name": "resident-blue-2",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@75417",
         "rect": [
-          626,
-          715,
+          722,
+          434,
           44,
           87
         ],
@@ -19621,8 +19477,8 @@
         "name": "resident-blue-3",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8f825",
         "rect": [
-          530,
-          790,
+          770,
+          434,
           44,
           87
         ],
@@ -19652,8 +19508,8 @@
         "name": "resident-blue-4",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@046cd",
         "rect": [
-          578,
-          790,
+          928,
+          375,
           44,
           87
         ],
@@ -19683,8 +19539,8 @@
         "name": "resident-blue-5",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@6016e",
         "rect": [
-          427,
-          802,
+          976,
+          375,
           44,
           87
         ],
@@ -19714,8 +19570,8 @@
         "name": "resident-blue-6",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@ed5f2",
         "rect": [
-          475,
-          802,
+          1024,
+          375,
           44,
           87
         ],
@@ -19745,8 +19601,8 @@
         "name": "resident-blue-7",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@205f4",
         "rect": [
-          674,
-          715,
+          1072,
+          375,
           44,
           87
         ],
@@ -19776,8 +19632,8 @@
         "name": "resident-blue-8",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@3afda",
         "rect": [
-          722,
-          715,
+          1120,
+          375,
           44,
           87
         ],
@@ -19807,8 +19663,8 @@
         "name": "resident-blue-9",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@53462",
         "rect": [
-          770,
-          715,
+          928,
+          466,
           44,
           87
         ],
@@ -19838,8 +19694,8 @@
         "name": "resident-red-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@2d698",
         "rect": [
-          269,
-          826,
+          818,
+          478,
           44,
           87
         ],
@@ -19869,8 +19725,8 @@
         "name": "resident-red-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@26f2c",
         "rect": [
-          317,
-          826,
+          866,
+          478,
           44,
           87
         ],
@@ -19900,8 +19756,8 @@
         "name": "resident-red-2",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@1eddc",
         "rect": [
-          365,
-          826,
+          976,
+          466,
           44,
           87
         ],
@@ -19931,8 +19787,8 @@
         "name": "resident-red-3",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@73fd4",
         "rect": [
-          121,
-          843,
+          1024,
+          466,
           44,
           87
         ],
@@ -19962,8 +19818,8 @@
         "name": "resident-red-4",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@70492",
         "rect": [
-          169,
-          843,
+          1072,
+          466,
           44,
           87
         ],
@@ -19993,8 +19849,8 @@
         "name": "resident-red-5",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@88aee",
         "rect": [
-          217,
-          843,
+          1120,
+          466,
           44,
           87
         ],
@@ -20024,8 +19880,8 @@
         "name": "resident-red-6",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@00466",
         "rect": [
-          2,
-          933,
+          1168,
+          524,
           44,
           87
         ],
@@ -20055,8 +19911,8 @@
         "name": "resident-red-7",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d8ddb",
         "rect": [
-          50,
-          933,
+          1216,
+          524,
           44,
           87
         ],
@@ -20086,8 +19942,8 @@
         "name": "resident-red-8",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d2a1b",
         "rect": [
-          1013,
-          582,
+          1264,
+          524,
           44,
           87
         ],
@@ -20117,8 +19973,8 @@
         "name": "resident-red-9",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d5ab2",
         "rect": [
-          1061,
-          582,
+          1312,
+          524,
           44,
           87
         ],
@@ -20148,8 +20004,8 @@
         "name": "icon-city",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@1d348",
         "rect": [
-          1109,
-          582,
+          914,
+          557,
           64,
           61
         ],
@@ -20179,8 +20035,8 @@
         "name": "sky-bluelestar",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@90aff",
         "rect": [
-          1177,
-          582,
+          982,
+          557,
           61,
           61
         ],
@@ -20210,8 +20066,8 @@
         "name": "icon-people",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@44094",
         "rect": [
-          1242,
-          582,
+          1944,
+          513,
           60,
           49
         ],
@@ -20241,8 +20097,8 @@
         "name": "hook",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@5f91d",
         "rect": [
-          269,
-          721,
+          2023,
+          513,
           20,
           48
         ],
@@ -20272,8 +20128,8 @@
         "name": "star",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8d3eb",
         "rect": [
-          1306,
-          582,
+          1777,
+          308,
           45,
           45
         ],
@@ -20303,8 +20159,8 @@
         "name": "icon-retry",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@281b2",
         "rect": [
-          1355,
-          582,
+          2006,
+          566,
           40,
           38
         ],
@@ -20334,8 +20190,8 @@
         "name": "icon-home",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@27a49",
         "rect": [
-          1399,
-          582,
+          2006,
+          608,
           40,
           36
         ],
@@ -20365,8 +20221,8 @@
         "name": "icon-video",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@0a4ac",
         "rect": [
-          1443,
-          582,
+          2006,
+          648,
           40,
           30
         ],
@@ -20396,8 +20252,8 @@
         "name": "icon-heart",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f2b5b",
         "rect": [
-          1487,
-          582,
+          1777,
+          357,
           36,
           30
         ],
@@ -20427,8 +20283,8 @@
         "name": "icon-spark",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@c1d6b",
         "rect": [
-          1527,
-          582,
+          1556,
+          491,
           30,
           34
         ],
@@ -20458,8 +20314,8 @@
         "name": "icon-pause",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f676d",
         "rect": [
-          269,
-          773,
+          1744,
+          403,
           27,
           32
         ],
@@ -20489,8 +20345,8 @@
         "name": "sky-purplestar_little",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8f194",
         "rect": [
-          98,
-          933,
+          1556,
+          529,
           19,
           19
         ],
@@ -20910,1315 +20766,6 @@
         "originalSize": [
           36,
           36
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/ground": {
-    "rawHash": "3f952fed8b8cc1fe5fba2421f091487c191417cc5b7b905d73d9ba410d6cc6a4",
-    "imageUuid": "fa482dac-c7f2-5f4e-b3bd-e946a46ce970",
-    "size": [
-      580,
-      656
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/ground-alley.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          160
-        ],
-        "name": "ground-alley",
-        "uuid": "01492ba9-a430-5691-898e-b087fe81024a@9fede",
-        "rect": [
-          2,
-          2,
-          576,
-          160
-        ],
-        "originalSize": [
-          576,
-          160
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/ground-night.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          160
-        ],
-        "name": "ground-night",
-        "uuid": "01492ba9-a430-5691-898e-b087fe81024a@f8f3e",
-        "rect": [
-          2,
-          166,
-          576,
-          160
-        ],
-        "originalSize": [
-          576,
-          160
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/ground-roofs.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          160
-        ],
-        "name": "ground-roofs",
-        "uuid": "01492ba9-a430-5691-898e-b087fe81024a@1aef8",
-        "rect": [
-          2,
-          330,
-          576,
-          160
-        ],
-        "originalSize": [
-          576,
-          160
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/ground-street.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          160
-        ],
-        "name": "ground-street",
-        "uuid": "01492ba9-a430-5691-898e-b087fe81024a@5beb8",
-        "rect": [
-          2,
-          494,
-          576,
-          160
-        ],
-        "originalSize": [
-          576,
-          160
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/backdrop-street": {
-    "rawHash": "1487d5cc8a51bd5c6760883039f4711513014032a33f3734db1bb92a7d046371",
-    "imageUuid": "7483f11f-d040-59c8-81dd-79f9675026f9",
-    "size": [
-      1338,
-      754
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/backdrop-street.png",
-        "sourceRect": [
-          0,
-          0,
-          1334,
-          750
-        ],
-        "name": "backdrop-street",
-        "uuid": "edde3f62-f03a-57db-bf4e-8e0f6411d9a0@1d2cd",
-        "rect": [
-          2,
-          2,
-          1334,
-          750
-        ],
-        "originalSize": [
-          1334,
-          750
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/mid-street": {
-    "rawHash": "1fc33e4145bb129a95e8daa926540bf22eec72912a8bb5a90392380bce9a9aa6",
-    "imageUuid": "041b8d4f-d7ac-5a52-93af-4fb2d7ed284f",
-    "size": [
-      1956,
-      562
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/plaza-street.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          72
-        ],
-        "name": "plaza-street",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@e3d3f",
-        "rect": [
-          2,
-          2,
-          576,
-          72
-        ],
-        "originalSize": [
-          576,
-          72
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-street-0.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-street-0",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@78294",
-        "rect": [
-          582,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-street-1.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-street-1",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@93cec",
-        "rect": [
-          2,
-          78,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-street-2.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-street-2",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@749c9",
-        "rect": [
-          926,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-street-3.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-street-3",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@387da",
-        "rect": [
-          1270,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-street-4.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-street-4",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@1492e",
-        "rect": [
-          1614,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-street-5.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-street-5",
-        "uuid": "0beb626e-0221-5ce5-a5c4-bfef7395a9c4@ef07f",
-        "rect": [
-          346,
-          283,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/foreground": {
-    "rawHash": "2a2688368cda4b9fb5eadb75580215fed7473b490c54eae86cf163a5567b09d4",
-    "imageUuid": "aeb3df09-5710-523d-a5ba-42b527437be9",
-    "size": [
-      552,
-      154
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/fg-0.png",
-        "sourceRect": [
-          0,
-          0,
-          180,
-          150
-        ],
-        "name": "fg-0",
-        "uuid": "c73ba045-ffd9-56f4-a426-f73095a9578a@7beff",
-        "rect": [
-          2,
-          2,
-          180,
-          150
-        ],
-        "originalSize": [
-          180,
-          150
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/fg-1.png",
-        "sourceRect": [
-          0,
-          0,
-          180,
-          150
-        ],
-        "name": "fg-1",
-        "uuid": "c73ba045-ffd9-56f4-a426-f73095a9578a@e158b",
-        "rect": [
-          186,
-          2,
-          180,
-          150
-        ],
-        "originalSize": [
-          180,
-          150
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/fg-2.png",
-        "sourceRect": [
-          0,
-          0,
-          180,
-          150
-        ],
-        "name": "fg-2",
-        "uuid": "c73ba045-ffd9-56f4-a426-f73095a9578a@d1bff",
-        "rect": [
-          370,
-          2,
-          180,
-          150
-        ],
-        "originalSize": [
-          180,
-          150
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/backdrop-alley": {
-    "rawHash": "6986dab46c14a6fe8f742e0ec878900c1eb2e8e5a4f28262ad41c14b8b4ac1c1",
-    "imageUuid": "a02d5701-acd6-5949-ab60-2f8bc28f6252",
-    "size": [
-      1338,
-      754
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/backdrop-alley.png",
-        "sourceRect": [
-          0,
-          0,
-          1334,
-          750
-        ],
-        "name": "backdrop-alley",
-        "uuid": "1d6fa673-cd0c-5ac6-8fb4-4722b13252db@6b093",
-        "rect": [
-          2,
-          2,
-          1334,
-          750
-        ],
-        "originalSize": [
-          1334,
-          750
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/backdrop-roofs": {
-    "rawHash": "a591422a3e993f6c2d369fd39ea106feb0b9bfbe394a32504dcd553d3240fa11",
-    "imageUuid": "1dc5777b-b100-557e-9fd5-2bdb8030d8bc",
-    "size": [
-      1338,
-      754
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/backdrop-roofs.png",
-        "sourceRect": [
-          0,
-          0,
-          1334,
-          750
-        ],
-        "name": "backdrop-roofs",
-        "uuid": "cd19b2fc-bf63-52e6-b604-eb1611429f1d@12f8f",
-        "rect": [
-          2,
-          2,
-          1334,
-          750
-        ],
-        "originalSize": [
-          1334,
-          750
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/backdrop-night": {
-    "rawHash": "285e61032218d7e14f4075bf4e589f8af29dcdcbd672a82d4624cdb8b351ed59",
-    "imageUuid": "139003ac-dc9a-5777-9b38-4e38d3a5016f",
-    "size": [
-      1338,
-      754
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/backdrop-night.png",
-        "sourceRect": [
-          0,
-          0,
-          1334,
-          750
-        ],
-        "name": "backdrop-night",
-        "uuid": "dd6a85d5-55fc-52dc-bf66-ad537d1d7388@824d7",
-        "rect": [
-          2,
-          2,
-          1334,
-          750
-        ],
-        "originalSize": [
-          1334,
-          750
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/mid-alley": {
-    "rawHash": "9e6b58d93f777614d998f3956657debbba872992f0572fc636ae059c0ac460bf",
-    "imageUuid": "14dc0361-52cc-5005-981f-b7717c9d069f",
-    "size": [
-      1956,
-      562
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/plaza-alley.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          72
-        ],
-        "name": "plaza-alley",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@3b32c",
-        "rect": [
-          2,
-          2,
-          576,
-          72
-        ],
-        "originalSize": [
-          576,
-          72
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-alley-0.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-alley-0",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@dcb16",
-        "rect": [
-          582,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-alley-1.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-alley-1",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@15122",
-        "rect": [
-          2,
-          78,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-alley-2.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-alley-2",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@7dc70",
-        "rect": [
-          926,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-alley-3.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-alley-3",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@846b4",
-        "rect": [
-          1270,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-alley-4.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-alley-4",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@5d4cd",
-        "rect": [
-          1614,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-alley-5.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-alley-5",
-        "uuid": "bbab970a-523d-538a-b202-4d6c7a84c358@6ef32",
-        "rect": [
-          346,
-          283,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/mid-roofs": {
-    "rawHash": "d0d48cc4506aa79ff6a73b94f20dcdecf3e55a3f62e93b9d73429f9690ac4d80",
-    "imageUuid": "166ba1db-bb40-5431-97fe-4b4fdc92a6da",
-    "size": [
-      1956,
-      562
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/plaza-roofs.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          72
-        ],
-        "name": "plaza-roofs",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@55a6d",
-        "rect": [
-          2,
-          2,
-          576,
-          72
-        ],
-        "originalSize": [
-          576,
-          72
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-roofs-0.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-roofs-0",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@9cce1",
-        "rect": [
-          582,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-roofs-1.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-roofs-1",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@0484b",
-        "rect": [
-          2,
-          78,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-roofs-2.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-roofs-2",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@1be92",
-        "rect": [
-          926,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-roofs-3.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-roofs-3",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@c6dc2",
-        "rect": [
-          1270,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-roofs-4.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-roofs-4",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@5f4a9",
-        "rect": [
-          1614,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-roofs-5.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-roofs-5",
-        "uuid": "8dc11d3b-6096-520c-b2c3-1c255b4c50fc@d0bb3",
-        "rect": [
-          346,
-          283,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v38/mid-night": {
-    "rawHash": "b3c2ef0a047d643159ef51cadb38d91357783f97293fa69b6b8909ddc373b511",
-    "imageUuid": "eee1a809-ed0e-5df5-ab07-9dbc6c413bf6",
-    "size": [
-      1956,
-      562
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/plaza-night.png",
-        "sourceRect": [
-          0,
-          0,
-          576,
-          72
-        ],
-        "name": "plaza-night",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@a6398",
-        "rect": [
-          2,
-          2,
-          576,
-          72
-        ],
-        "originalSize": [
-          576,
-          72
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-night-0.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-night-0",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@66515",
-        "rect": [
-          582,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-night-1.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-night-1",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@5cc94",
-        "rect": [
-          2,
-          78,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-night-2.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-night-2",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@a6b73",
-        "rect": [
-          926,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-night-3.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-night-3",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@4336a",
-        "rect": [
-          1270,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-night-4.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-night-4",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@80ec9",
-        "rect": [
-          1614,
-          2,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/mid-night-5.png",
-        "sourceRect": [
-          0,
-          0,
-          340,
-          277
-        ],
-        "name": "mid-night-5",
-        "uuid": "e9c3f0f2-5ce5-55f8-8c70-8de304cb23fd@96d2a",
-        "rect": [
-          346,
-          283,
-          340,
-          277
-        ],
-        "originalSize": [
-          340,
-          277
         ],
         "offset": [
           0,
@@ -22822,11 +21369,11 @@
     ]
   },
   "meme-runner/visual/v38/finish": {
-    "rawHash": "23c59d5917256cddda9234e935b2f681692434cac8fe07fc7c42297227fcdedc",
+    "rawHash": "c4259c7024bacafd257f8d92f81348070e10411c7d39f4ab75113c815aa57c44",
     "imageUuid": "ec785c44-7cf0-5e16-b10e-6d78aacf1a00",
     "size": [
       304,
-      720
+      324
     ],
     "frames": [
       {
@@ -22848,99 +21395,6 @@
         "originalSize": [
           300,
           320
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/customer-cheer.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "customer-cheer",
-        "uuid": "8ce42dc4-51b7-5ee8-90c7-5caa9bea413e@2b0dd",
-        "rect": [
-          2,
-          326,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/customer-tea.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "customer-tea",
-        "uuid": "8ce42dc4-51b7-5ee8-90c7-5caa9bea413e@e2f26",
-        "rect": [
-          2,
-          458,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/customer-wait.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "customer-wait",
-        "uuid": "8ce42dc4-51b7-5ee8-90c7-5caa9bea413e@b0aec",
-        "rect": [
-          2,
-          590,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
         ],
         "offset": [
           0,
@@ -24587,1708 +23041,14 @@
       }
     ]
   },
-  "meme-runner/visual/v38/dialog-art": {
-    "rawHash": "d1e0fa57f9943342c7709156e0cc98a0e0f43b62c286db438b2d860680a79fff",
-    "imageUuid": "58edd8d5-be14-51a5-b77e-21cf9b5b48e8",
-    "size": [
-      1882,
-      744
-    ],
-    "frames": [
-      {
-        "source": "visual/v38/frames/dlg-confetti.png",
-        "sourceRect": [
-          0,
-          0,
-          900,
-          360
-        ],
-        "name": "dlg-confetti",
-        "uuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f@bbdc6",
-        "rect": [
-          2,
-          2,
-          900,
-          360
-        ],
-        "originalSize": [
-          900,
-          360
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/dlg-art-lose.png",
-        "sourceRect": [
-          0,
-          0,
-          500,
-          400
-        ],
-        "name": "dlg-art-lose",
-        "uuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f@41f03",
-        "rect": [
-          906,
-          2,
-          500,
-          400
-        ],
-        "originalSize": [
-          500,
-          400
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/dlg-art-win.png",
-        "sourceRect": [
-          0,
-          0,
-          470,
-          376
-        ],
-        "name": "dlg-art-win",
-        "uuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f@064a0",
-        "rect": [
-          1410,
-          2,
-          470,
-          376
-        ],
-        "originalSize": [
-          470,
-          376
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v38/frames/dlg-art-pause.png",
-        "sourceRect": [
-          0,
-          0,
-          470,
-          360
-        ],
-        "name": "dlg-art-pause",
-        "uuid": "ab4867a7-5fc8-575e-ac6a-3a3161138a5f@a1414",
-        "rect": [
-          1410,
-          382,
-          470,
-          360
-        ],
-        "originalSize": [
-          470,
-          360
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v42/hero": {
-    "rawHash": "6cdeea2ece71155fb40205f9afbba9ad9775bf888679a632060fd1816558309a",
-    "imageUuid": "3a09e3b9-0c82-5a6e-9cc3-61c029daa680",
-    "size": [
-      984,
-      888
-    ],
-    "frames": [
-      {
-        "source": "visual/v42/frames/dash-0.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "dash-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@70040",
-        "rect": [
-          2,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dash-1.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "dash-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@ab77e",
-        "rect": [
-          214,
-          2,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/air-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "air-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@9cd80",
-        "rect": [
-          426,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/air-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "air-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@aac39",
-        "rect": [
-          590,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/air-2.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "air-2",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@49e7f",
-        "rect": [
-          754,
-          2,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/air-3.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "air-3",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@be4bc",
-        "rect": [
-          2,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/double-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "double-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@fc3ee",
-        "rect": [
-          2,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/double-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "double-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@f5919",
-        "rect": [
-          2,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/double-2.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "double-2",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@31b0d",
-        "rect": [
-          2,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/double-3.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "double-3",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@88d77",
-        "rect": [
-          2,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/hurt.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "hurt",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@c20d7",
-        "rect": [
-          166,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/land-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "land-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@25d35",
-        "rect": [
-          330,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/lose-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "lose-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@e0df6",
-        "rect": [
-          494,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/lose-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "lose-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@6ca4a",
-        "rect": [
-          658,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/ride-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "ride-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@049fb",
-        "rect": [
-          822,
-          150,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/ride-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "ride-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@7e013",
-        "rect": [
-          166,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@6ef06",
-        "rect": [
-          166,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@569f7",
-        "rect": [
-          166,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-2.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-2",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@1d969",
-        "rect": [
-          166,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-3.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-3",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@c3f12",
-        "rect": [
-          330,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-4.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-4",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@3bd0e",
-        "rect": [
-          494,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-5.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-5",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@62bbc",
-        "rect": [
-          658,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-6.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-6",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@08be3",
-        "rect": [
-          822,
-          298,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/run-7.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "run-7",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@20c23",
-        "rect": [
-          330,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/slide-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "slide-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@fa56a",
-        "rect": [
-          330,
-          594,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/slide-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "slide-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@2f5bd",
-        "rect": [
-          330,
-          742,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/win-0.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "win-0",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@14c84",
-        "rect": [
-          494,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/win-1.png",
-        "sourceRect": [
-          0,
-          0,
-          160,
-          144
-        ],
-        "name": "win-1",
-        "uuid": "eed5cb1c-708b-5d23-bbb2-7fdd818eb5b2@8e340",
-        "rect": [
-          658,
-          446,
-          160,
-          144
-        ],
-        "originalSize": [
-          160,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
   "meme-runner/visual/v42/cast": {
-    "rawHash": "ab0b712e73a29ecdf146ee87bd33c397971d51747c5c4047d55d6af88a40ce52",
+    "rawHash": "c2bbaaa1cae4223907b665b10c2f128ab3335bc2eb06584beeede27717cccc1a",
     "imageUuid": "23706769-db10-5002-9ef1-a851616e40df",
     "size": [
-      1012,
-      1020
+      984,
+      772
     ],
     "frames": [
-      {
-        "source": "visual/v42/frames/spinner-0.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-0",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@c35d6",
-        "rect": [
-          2,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-1.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-1",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@1f750",
-        "rect": [
-          230,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-2.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-2",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@f1048",
-        "rect": [
-          458,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-3.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-3",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@ce21d",
-        "rect": [
-          686,
-          2,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-4.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-4",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@97875",
-        "rect": [
-          2,
-          150,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-5.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-5",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@244a3",
-        "rect": [
-          230,
-          150,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-6.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-6",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@91f4e",
-        "rect": [
-          458,
-          150,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/spinner-7.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          144
-        ],
-        "name": "spinner-7",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@b13b3",
-        "rect": [
-          686,
-          150,
-          224,
-          144
-        ],
-        "originalSize": [
-          224,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dragon-0.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          128
-        ],
-        "name": "dragon-0",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@a40ca",
-        "rect": [
-          2,
-          298,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dragon-1.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          128
-        ],
-        "name": "dragon-1",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@68ea0",
-        "rect": [
-          2,
-          430,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dragon-2.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          128
-        ],
-        "name": "dragon-2",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@7493b",
-        "rect": [
-          2,
-          562,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dragon-3.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          128
-        ],
-        "name": "dragon-3",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@03459",
-        "rect": [
-          2,
-          694,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dragon-4.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          128
-        ],
-        "name": "dragon-4",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@df9a1",
-        "rect": [
-          2,
-          826,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/dragon-5.png",
-        "sourceRect": [
-          0,
-          0,
-          224,
-          128
-        ],
-        "name": "dragon-5",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@62dc6",
-        "rect": [
-          230,
-          298,
-          224,
-          128
-        ],
-        "originalSize": [
-          224,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-0.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-0",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@0f7a7",
-        "rect": [
-          458,
-          298,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-1.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-1",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@76bb8",
-        "rect": [
-          230,
-          430,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-2.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-2",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@a2c7f",
-        "rect": [
-          670,
-          298,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-3.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-3",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@9fe8f",
-        "rect": [
-          230,
-          578,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-4.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-4",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@1a9f5",
-        "rect": [
-          230,
-          726,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-5.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-5",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@0c8fd",
-        "rect": [
-          230,
-          874,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-6.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-6",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@bd8a0",
-        "rect": [
-          442,
-          446,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/bull-7.png",
-        "sourceRect": [
-          0,
-          0,
-          208,
-          144
-        ],
-        "name": "bull-7",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@fecea",
-        "rect": [
-          654,
-          446,
-          208,
-          144
-        ],
-        "originalSize": [
-          208,
-          144
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
       {
         "source": "visual/v42/frames/friend-ring.png",
         "sourceRect": [
@@ -26301,7 +23061,7 @@
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@0e889",
         "rect": [
           2,
-          958,
+          2,
           200,
           48
         ],
@@ -26331,8 +23091,8 @@
         "name": "kangaroo-0",
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@6c4ad",
         "rect": [
-          442,
-          594,
+          206,
+          2,
           176,
           176
         ],
@@ -26362,8 +23122,8 @@
         "name": "kangaroo-1",
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@b4937",
         "rect": [
-          442,
-          774,
+          2,
+          54,
           176,
           176
         ],
@@ -26393,8 +23153,8 @@
         "name": "kangaroo-2",
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@e7fa6",
         "rect": [
-          622,
-          594,
+          386,
+          2,
           176,
           176
         ],
@@ -26424,8 +23184,8 @@
         "name": "kangaroo-3",
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@e1ebd",
         "rect": [
-          802,
-          594,
+          566,
+          2,
           176,
           176
         ],
@@ -26455,8 +23215,8 @@
         "name": "kangaroo-4",
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@6ec92",
         "rect": [
-          622,
-          774,
+          746,
+          2,
           176,
           176
         ],
@@ -26486,8 +23246,8 @@
         "name": "kangaroo-5",
         "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@9de6a",
         "rect": [
-          802,
-          774,
+          2,
+          234,
           176,
           176
         ],
@@ -26506,109 +23266,6 @@
           "Right": 0
         }
       },
-      {
-        "source": "visual/v42/frames/banana-0.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "banana-0",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@71ec9",
-        "rect": [
-          882,
-          298,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/banana-1.png",
-        "sourceRect": [
-          0,
-          0,
-          128,
-          128
-        ],
-        "name": "banana-1",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@c876b",
-        "rect": [
-          882,
-          430,
-          128,
-          128
-        ],
-        "originalSize": [
-          128,
-          128
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/v42/frames/friend-pin.png",
-        "sourceRect": [
-          0,
-          0,
-          56,
-          64
-        ],
-        "name": "friend-pin",
-        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@217f3",
-        "rect": [
-          442,
-          954,
-          56,
-          64
-        ],
-        "originalSize": [
-          56,
-          64
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      }
-    ]
-  },
-  "meme-runner/visual/v42/cast-2": {
-    "rawHash": "22f08a9c9809ba2d2d625f1e4c3cfc2493cd886dd739135a5dbc74441f2d5ad2",
-    "imageUuid": "d855334d-2c47-59b2-b942-48aafad17cad",
-    "size": [
-      984,
-      312
-    ],
-    "frames": [
       {
         "source": "visual/v42/frames/kangaroo-6.png",
         "sourceRect": [
@@ -26618,10 +23275,10 @@
           176
         ],
         "name": "kangaroo-6",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@848b1",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@848b1",
         "rect": [
           2,
-          2,
+          414,
           176,
           176
         ],
@@ -26649,10 +23306,10 @@
           176
         ],
         "name": "kangaroo-7",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@b8037",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@b8037",
         "rect": [
-          182,
           2,
+          594,
           176,
           176
         ],
@@ -26672,24 +23329,1045 @@
         }
       },
       {
-        "source": "visual/v42/frames/nyan-0.png",
+        "source": "visual/v42/frames/friend-pin.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          64
+        ],
+        "name": "friend-pin",
+        "uuid": "88a20bcf-0e63-518e-9dda-2e3b5b7e36da@217f3",
+        "rect": [
+          926,
+          2,
+          56,
+          64
+        ],
+        "originalSize": [
+          56,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v47/props": {
+    "rawHash": "5830f3b4e5eeb703b89388969f4317d8cc65add153977fbfd9dbf64f256f0380",
+    "imageUuid": "97344b2a-3b86-5c64-8270-8bc7be2d9ac7",
+    "size": [
+      60,
+      88
+    ],
+    "frames": [
+      {
+        "source": "visual/v47/frames/balloons.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          84
+        ],
+        "name": "balloons",
+        "uuid": "93d2ba5b-092d-512e-9031-03d609f6b4fe@f7bfe",
+        "rect": [
+          2,
+          2,
+          56,
+          84
+        ],
+        "originalSize": [
+          56,
+          84
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "sling-puck/visual/board/sling-puck-board": {
+    "rawHash": "b86827da83a0c59b19ddd807878ade9b66946006f08b11155333d49b32e2a1e4",
+    "imageUuid": "386434c7-9c65-5916-bb66-72638f4e582a",
+    "size": [
+      1584,
+      1157
+    ],
+    "frames": [
+      {
+        "source": "visual/board/ice-table.png",
+        "sourceRect": [
+          0,
+          0,
+          810,
+          1153
+        ],
+        "name": "ice-table",
+        "uuid": "59796035-fd17-576b-8eab-b1aa71553270@58c0b",
+        "rect": [
+          2,
+          2,
+          810,
+          1153
+        ],
+        "originalSize": [
+          810,
+          1153
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/board/near-rail.png",
+        "sourceRect": [
+          0,
+          0,
+          766,
+          63
+        ],
+        "name": "near-rail",
+        "uuid": "59796035-fd17-576b-8eab-b1aa71553270@9aba9",
+        "rect": [
+          816,
+          2,
+          766,
+          63
+        ],
+        "originalSize": [
+          766,
+          63
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/board/divider.png",
+        "sourceRect": [
+          0,
+          0,
+          662,
+          51
+        ],
+        "name": "divider",
+        "uuid": "59796035-fd17-576b-8eab-b1aa71553270@8c93a",
+        "rect": [
+          816,
+          69,
+          662,
+          51
+        ],
+        "originalSize": [
+          662,
+          51
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "sling-puck/visual/backdrop/sling-puck-backdrop": {
+    "rawHash": "ecba988972c8f0bf278fa515d1c48c7ae160099c94e9b36dbf52d613298542a4",
+    "imageUuid": "9c251db0-424c-5dfe-b220-751109994626",
+    "size": [
+      754,
+      1338
+    ],
+    "frames": [
+      {
+        "source": "visual/materials/slate.png",
+        "sourceRect": [
+          0,
+          0,
+          750,
+          1334
+        ],
+        "name": "slate",
+        "uuid": "fb9d2674-f34c-5dab-96ce-047aa8ad610f@3beee",
+        "rect": [
+          2,
+          2,
+          750,
+          1334
+        ],
+        "originalSize": [
+          750,
+          1334
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "sling-puck/visual/objects/sling-puck-objects": {
+    "rawHash": "25bf592a66e18c687ae193947dd623cd688682aafeacbc9725d6b11df7186b74",
+    "imageUuid": "4ed7bafe-afb9-59ae-8d0a-4002451f8db4",
+    "size": [
+      560,
+      100
+    ],
+    "frames": [
+      {
+        "source": "visual/objects/ripple.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          96
+        ],
+        "name": "ripple",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@216b4",
+        "rect": [
+          2,
+          2,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/puck-shadow.png",
+        "sourceRect": [
+          0,
+          0,
+          88,
+          83
+        ],
+        "name": "puck-shadow",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@f1826",
+        "rect": [
+          102,
+          2,
+          88,
+          83
+        ],
+        "originalSize": [
+          88,
+          83
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/puck.png",
+        "sourceRect": [
+          0,
+          0,
+          72,
+          76
+        ],
+        "name": "puck",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@784a1",
+        "rect": [
+          194,
+          2,
+          72,
+          76
+        ],
+        "originalSize": [
+          72,
+          76
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/puck-ivory.png",
+        "sourceRect": [
+          0,
+          0,
+          72,
+          76
+        ],
+        "name": "puck-ivory",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@25fdb",
+        "rect": [
+          270,
+          2,
+          72,
+          76
+        ],
+        "originalSize": [
+          72,
+          76
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/puck-ring.png",
+        "sourceRect": [
+          0,
+          0,
+          72,
+          76
+        ],
+        "name": "puck-ring",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@0f9e6",
+        "rect": [
+          346,
+          2,
+          72,
+          76
+        ],
+        "originalSize": [
+          72,
+          76
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/soft-glow.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "soft-glow",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@b3008",
+        "rect": [
+          422,
+          2,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/twinkle.png",
+        "sourceRect": [
+          0,
+          0,
+          40,
+          40
+        ],
+        "name": "twinkle",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@b65cd",
+        "rect": [
+          490,
+          2,
+          40,
+          40
+        ],
+        "originalSize": [
+          40,
+          40
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/objects/ice-shard.png",
+        "sourceRect": [
+          0,
+          0,
+          24,
+          24
+        ],
+        "name": "ice-shard",
+        "uuid": "ab2bddb4-25b1-5248-a94a-419393b6bcf7@3e3eb",
+        "rect": [
+          534,
+          2,
+          24,
+          24
+        ],
+        "originalSize": [
+          24,
+          24
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "sling-puck/visual/ui/sling-puck-ui": {
+    "rawHash": "565e85de77c2c61cf1c22e8191bff3b13f2d9ba276570730fa6b708f7a679f9d",
+    "imageUuid": "a9f53b93-ac42-5a91-a0fe-996fc8cc0821",
+    "size": [
+      1020,
+      964
+    ],
+    "frames": [
+      {
+        "source": "visual/ui/logo.png",
+        "sourceRect": [
+          0,
+          0,
+          660,
+          220
+        ],
+        "name": "logo",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@9e5d2",
+        "rect": [
+          2,
+          2,
+          660,
+          220
+        ],
+        "originalSize": [
+          660,
+          220
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/mini-board.png",
+        "sourceRect": [
+          0,
+          0,
+          450,
+          280
+        ],
+        "name": "mini-board",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@b8bc5",
+        "rect": [
+          2,
+          226,
+          450,
+          280
+        ],
+        "originalSize": [
+          450,
+          280
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/countdown-medal.png",
+        "sourceRect": [
+          0,
+          0,
+          360,
+          360
+        ],
+        "name": "countdown-medal",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@5d743",
+        "rect": [
+          2,
+          510,
+          360,
+          360
+        ],
+        "originalSize": [
+          360,
+          360
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/mode-token.png",
+        "sourceRect": [
+          0,
+          0,
+          286,
+          286
+        ],
+        "name": "mode-token",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@aeb66",
+        "rect": [
+          666,
+          2,
+          286,
+          286
+        ],
+        "originalSize": [
+          286,
+          286
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/tutorial-hand.png",
+        "sourceRect": [
+          0,
+          0,
+          150,
+          225
+        ],
+        "name": "tutorial-hand",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@eac7a",
+        "rect": [
+          456,
+          226,
+          150,
+          225
+        ],
+        "originalSize": [
+          150,
+          225
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/mode-players.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          224
+        ],
+        "name": "mode-players",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@28748",
+        "rect": [
+          610,
+          292,
+          224,
+          224
+        ],
+        "originalSize": [
+          224,
+          224
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/mode-robot.png",
+        "sourceRect": [
+          0,
+          0,
+          224,
+          224
+        ],
+        "name": "mode-robot",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@e4814",
+        "rect": [
+          366,
+          510,
+          224,
+          224
+        ],
+        "originalSize": [
+          224,
+          224
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/trophy.png",
+        "sourceRect": [
+          0,
+          0,
+          210,
+          210
+        ],
+        "name": "trophy",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@8b845",
+        "rect": [
+          366,
+          738,
+          210,
+          210
+        ],
+        "originalSize": [
+          210,
+          210
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/chip-off.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          72
+        ],
+        "name": "chip-off",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@8ffa5",
+        "rect": [
+          838,
+          292,
+          180,
+          72
+        ],
+        "originalSize": [
+          180,
+          72
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/chip-on.png",
+        "sourceRect": [
+          0,
+          0,
+          180,
+          72
+        ],
+        "name": "chip-on",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@89738",
+        "rect": [
+          838,
+          368,
+          180,
+          72
+        ],
+        "originalSize": [
+          180,
+          72
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/button-primary.png",
+        "sourceRect": [
+          0,
+          0,
+          172,
+          172
+        ],
+        "name": "button-primary",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@0b6d2",
+        "rect": [
+          838,
+          444,
+          172,
+          172
+        ],
+        "originalSize": [
+          172,
+          172
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/button-round.png",
+        "sourceRect": [
+          0,
+          0,
+          88,
+          88
+        ],
+        "name": "button-round",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@27add",
+        "rect": [
+          2,
+          874,
+          88,
+          88
+        ],
+        "originalSize": [
+          88,
+          88
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/medal-bot.png",
+        "sourceRect": [
+          0,
+          0,
+          88,
+          88
+        ],
+        "name": "medal-bot",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@5690b",
+        "rect": [
+          94,
+          874,
+          88,
+          88
+        ],
+        "originalSize": [
+          88,
+          88
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/medal-north.png",
+        "sourceRect": [
+          0,
+          0,
+          76,
+          76
+        ],
+        "name": "medal-north",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@3fdd8",
+        "rect": [
+          186,
+          874,
+          76,
+          76
+        ],
+        "originalSize": [
+          76,
+          76
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/medal-south.png",
+        "sourceRect": [
+          0,
+          0,
+          76,
+          76
+        ],
+        "name": "medal-south",
+        "uuid": "d1cb49b7-769b-5b71-9328-d8c7a4b9274c@362a3",
+        "rect": [
+          266,
+          874,
+          76,
+          76
+        ],
+        "originalSize": [
+          76,
+          76
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/devices": {
+    "rawHash": "f4ff73b60603b11a13222f0641285308c3a6e5e0110570426a96215906d09ce4",
+    "imageUuid": "17577349-1b9a-5705-a754-0d4a796d6076",
+    "size": [
+      1452,
+      220
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/cart-0.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "cart-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@55edd",
+        "rect": [
+          2,
+          2,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/cart-1.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "cart-1",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@aa655",
+        "rect": [
+          214,
+          2,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/launcher-0.png",
         "sourceRect": [
           0,
           0,
           176,
-          80
+          128
         ],
-        "name": "nyan-0",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@56c8f",
+        "name": "launcher-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@4ad2d",
         "rect": [
-          362,
+          426,
           2,
           176,
-          80
+          128
         ],
         "originalSize": [
           176,
-          80
+          128
         ],
         "offset": [
           0,
@@ -26703,24 +24381,24 @@
         }
       },
       {
-        "source": "visual/v42/frames/nyan-1.png",
+        "source": "visual/v48/frames/launcher-1.png",
         "sourceRect": [
           0,
           0,
           176,
-          80
+          128
         ],
-        "name": "nyan-1",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@22388",
+        "name": "launcher-1",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@0bf68",
         "rect": [
-          542,
+          606,
           2,
           176,
-          80
+          128
         ],
         "originalSize": [
           176,
-          80
+          128
         ],
         "offset": [
           0,
@@ -26734,17 +24412,748 @@
         }
       },
       {
-        "source": "visual/v42/frames/banana-2.png",
+        "source": "visual/v48/frames/compressor-0.png",
+        "sourceRect": [
+          0,
+          0,
+          144,
+          112
+        ],
+        "name": "compressor-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@46f9d",
+        "rect": [
+          786,
+          2,
+          144,
+          112
+        ],
+        "originalSize": [
+          144,
+          112
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/compressor-1.png",
+        "sourceRect": [
+          0,
+          0,
+          144,
+          112
+        ],
+        "name": "compressor-1",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@e8125",
+        "rect": [
+          934,
+          2,
+          144,
+          112
+        ],
+        "originalSize": [
+          144,
+          112
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/saw-0.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          100
+        ],
+        "name": "saw-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@6268d",
+        "rect": [
+          1082,
+          2,
+          132,
+          100
+        ],
+        "originalSize": [
+          132,
+          100
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/saw-1.png",
+        "sourceRect": [
+          0,
+          0,
+          132,
+          100
+        ],
+        "name": "saw-1",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@67040",
+        "rect": [
+          1218,
+          2,
+          132,
+          100
+        ],
+        "originalSize": [
+          132,
+          100
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/hopper-0.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          112
+        ],
+        "name": "hopper-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@3f37d",
+        "rect": [
+          1354,
+          2,
+          96,
+          112
+        ],
+        "originalSize": [
+          96,
+          112
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/hopper-1.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          112
+        ],
+        "name": "hopper-1",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@c08d7",
+        "rect": [
+          1082,
+          106,
+          96,
+          112
+        ],
+        "originalSize": [
+          96,
+          112
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/drone-0.png",
+        "sourceRect": [
+          0,
+          0,
+          112,
+          92
+        ],
+        "name": "drone-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@fcf00",
+        "rect": [
+          1182,
+          106,
+          112,
+          92
+        ],
+        "originalSize": [
+          112,
+          92
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/spring-0.png",
+        "sourceRect": [
+          0,
+          0,
+          102,
+          64
+        ],
+        "name": "spring-0",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@7c070",
+        "rect": [
+          786,
+          118,
+          102,
+          64
+        ],
+        "originalSize": [
+          102,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/spring-1.png",
+        "sourceRect": [
+          0,
+          0,
+          102,
+          64
+        ],
+        "name": "spring-1",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@e3213",
+        "rect": [
+          892,
+          118,
+          102,
+          64
+        ],
+        "originalSize": [
+          102,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/drone-warning.png",
+        "sourceRect": [
+          0,
+          0,
+          84,
+          84
+        ],
+        "name": "drone-warning",
+        "uuid": "e2bbd82d-3e0b-5f6a-bd0a-342a43a50a79@3b01b",
+        "rect": [
+          426,
+          134,
+          84,
+          84
+        ],
+        "originalSize": [
+          84,
+          84
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/town": {
+    "rawHash": "44a544dfa9d721b8f8084300064f6da4f647314151eb12aa7b28d7035b469dc4",
+    "imageUuid": "9d1b1fda-92b5-50cf-bde9-4e326e2edcf2",
+    "size": [
+      1246,
+      304
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/town-near.png",
+        "sourceRect": [
+          0,
+          0,
+          1242,
+          300
+        ],
+        "name": "town-near",
+        "uuid": "05ce60a0-7426-5bdf-bb12-3ab04e925604@8304b",
+        "rect": [
+          2,
+          2,
+          1242,
+          300
+        ],
+        "originalSize": [
+          1242,
+          300
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/road": {
+    "rawHash": "56d5c29c7ab53e75fd2151aaac878fc2bc1ba88e17eede1d26b3114f4993565f",
+    "imageUuid": "fb3b750b-ac4f-5b8d-92e1-0aff2120dadc",
+    "size": [
+      1540,
+      164
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/town-road.png",
+        "sourceRect": [
+          0,
+          0,
+          1536,
+          160
+        ],
+        "name": "town-road",
+        "uuid": "604ac5c3-377e-5f73-9ae1-224947ad1695@f9815",
+        "rect": [
+          2,
+          2,
+          1536,
+          160
+        ],
+        "originalSize": [
+          1536,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/foreground": {
+    "rawHash": "37a6bf3630b53979a4e1b25c0a55df33eab7e7a86f46490b421adaa07696ddef",
+    "imageUuid": "d1a0246b-9713-5820-8a1a-100fd416580e",
+    "size": [
+      1007,
+      164
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/town-foreground.png",
+        "sourceRect": [
+          0,
+          0,
+          1003,
+          160
+        ],
+        "name": "town-foreground",
+        "uuid": "a66cbfaf-aefb-5454-84ca-66e03a2e878f@1019a",
+        "rect": [
+          2,
+          2,
+          1003,
+          160
+        ],
+        "originalSize": [
+          1003,
+          160
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/sky-street": {
+    "rawHash": "d449f6245b9ecb4ba71f9e4f68dca0d1bf6523049b3efc18599ef9bfe803177b",
+    "imageUuid": "9090d041-e399-542d-9249-c3de72b5d855",
+    "size": [
+      1338,
+      754
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-street.png",
+        "sourceRect": [
+          0,
+          0,
+          1334,
+          750
+        ],
+        "name": "sky-street",
+        "uuid": "061e610e-6808-5f77-bfe2-fd85e531d408@1ac80",
+        "rect": [
+          2,
+          2,
+          1334,
+          750
+        ],
+        "originalSize": [
+          1334,
+          750
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/sky-alley": {
+    "rawHash": "5ea1f8684df66a2eea9d96f77e4a9f1395e0453147c171500c7a381917695981",
+    "imageUuid": "8da683bb-91cd-51a8-baf1-1a673bf6a22e",
+    "size": [
+      1338,
+      754
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-alley.png",
+        "sourceRect": [
+          0,
+          0,
+          1334,
+          750
+        ],
+        "name": "sky-alley",
+        "uuid": "5b18ed92-cf43-5cb9-ac62-97d43df77772@c5e6f",
+        "rect": [
+          2,
+          2,
+          1334,
+          750
+        ],
+        "originalSize": [
+          1334,
+          750
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/sky-roofs": {
+    "rawHash": "9594291e8c6cbfb458b6a739be9ffc511d2339b877b04df92277ea1bc98d6b7a",
+    "imageUuid": "121714c3-05f2-50c0-ab83-c8f640a4e340",
+    "size": [
+      1338,
+      754
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-roofs.png",
+        "sourceRect": [
+          0,
+          0,
+          1334,
+          750
+        ],
+        "name": "sky-roofs",
+        "uuid": "1ffa3838-4875-583f-a97b-108c85047bcf@4cf12",
+        "rect": [
+          2,
+          2,
+          1334,
+          750
+        ],
+        "originalSize": [
+          1334,
+          750
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/sky-night": {
+    "rawHash": "72c29a5df41c62998886735a53ad2f61993d89c8b243162185078923d3a269ac",
+    "imageUuid": "d32e7414-2936-5ffb-9c55-7e46cf193fa9",
+    "size": [
+      1338,
+      754
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-night.png",
+        "sourceRect": [
+          0,
+          0,
+          1334,
+          750
+        ],
+        "name": "sky-night",
+        "uuid": "5b38a170-26b3-5e7b-8fd8-841ab573a77b@3babc",
+        "rect": [
+          2,
+          2,
+          1334,
+          750
+        ],
+        "originalSize": [
+          1334,
+          750
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/story": {
+    "rawHash": "a06c3f485e46e52791ca8c1a1d505bfc0756634b67ead6df0e6783bca252e8ef",
+    "imageUuid": "96c6e1b9-d4df-521b-baae-b3bedff358c3",
+    "size": [
+      2014,
+      744
+    ],
+    "frames": [
+      {
+        "source": "visual/v38/frames/dlg-confetti.png",
+        "sourceRect": [
+          0,
+          0,
+          900,
+          360
+        ],
+        "name": "dlg-confetti",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@bbdc6",
+        "rect": [
+          2,
+          2,
+          900,
+          360
+        ],
+        "originalSize": [
+          900,
+          360
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/dlg-art-lose.png",
+        "sourceRect": [
+          0,
+          0,
+          500,
+          400
+        ],
+        "name": "dlg-art-lose",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@41f03",
+        "rect": [
+          906,
+          2,
+          500,
+          400
+        ],
+        "originalSize": [
+          500,
+          400
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/dlg-art-win.png",
+        "sourceRect": [
+          0,
+          0,
+          470,
+          376
+        ],
+        "name": "dlg-art-win",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@064a0",
+        "rect": [
+          1410,
+          2,
+          470,
+          376
+        ],
+        "originalSize": [
+          470,
+          376
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/dlg-art-pause.png",
+        "sourceRect": [
+          0,
+          0,
+          470,
+          360
+        ],
+        "name": "dlg-art-pause",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@a1414",
+        "rect": [
+          1410,
+          382,
+          470,
+          360
+        ],
+        "originalSize": [
+          470,
+          360
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/customer-cheer.png",
         "sourceRect": [
           0,
           0,
           128,
           128
         ],
-        "name": "banana-2",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@63439",
+        "name": "customer-cheer",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@2b0dd",
         "rect": [
-          722,
+          1884,
           2,
           128,
           128
@@ -26765,24 +25174,96 @@
         }
       },
       {
-        "source": "visual/v42/frames/banana-3.png",
+        "source": "visual/v48/frames/customer-tea.png",
         "sourceRect": [
           0,
           0,
           128,
           128
         ],
-        "name": "banana-3",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@8e358",
+        "name": "customer-tea",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@e2f26",
         "rect": [
-          854,
+          1884,
+          134,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/customer-wait.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "customer-wait",
+        "uuid": "2cf3f08c-373d-5e27-8850-249622065610@b0aec",
+        "rect": [
+          1884,
+          266,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v48/comic": {
+    "rawHash": "7eebbcee0a5a60170c3f6d2ab75793e5be14d1772b0ea755fa9787dbd592348d",
+    "imageUuid": "2b6475ab-82ce-50dd-85dc-fb386d1aaf12",
+    "size": [
+      1956,
+      872
+    ],
+    "frames": [
+      {
+        "source": "visual/v48/frames/comic-0.png",
+        "sourceRect": [
+          0,
+          0,
+          648,
+          432
+        ],
+        "name": "comic-0",
+        "uuid": "8b9fd8f8-c84a-5dec-9013-6ad76a992248@34ee4",
+        "rect": [
           2,
-          128,
-          128
+          2,
+          648,
+          432
         ],
         "originalSize": [
-          128,
-          128
+          648,
+          432
         ],
         "offset": [
           0,
@@ -26796,24 +25277,24 @@
         }
       },
       {
-        "source": "visual/v42/frames/popcat-0.png",
+        "source": "visual/v48/frames/comic-1.png",
         "sourceRect": [
           0,
           0,
-          128,
-          128
+          648,
+          432
         ],
-        "name": "popcat-0",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@4cb4f",
+        "name": "comic-1",
+        "uuid": "8b9fd8f8-c84a-5dec-9013-6ad76a992248@f2ed9",
         "rect": [
-          362,
-          86,
-          128,
-          128
+          654,
+          2,
+          648,
+          432
         ],
         "originalSize": [
-          128,
-          128
+          648,
+          432
         ],
         "offset": [
           0,
@@ -26827,24 +25308,871 @@
         }
       },
       {
-        "source": "visual/v42/frames/popcat-1.png",
+        "source": "visual/v48/frames/comic-2.png",
         "sourceRect": [
           0,
           0,
-          128,
-          128
+          648,
+          432
         ],
-        "name": "popcat-1",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@ff1bc",
+        "name": "comic-2",
+        "uuid": "8b9fd8f8-c84a-5dec-9013-6ad76a992248@42336",
+        "rect": [
+          1306,
+          2,
+          648,
+          432
+        ],
+        "originalSize": [
+          648,
+          432
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v48/frames/comic-3.png",
+        "sourceRect": [
+          0,
+          0,
+          648,
+          432
+        ],
+        "name": "comic-3",
+        "uuid": "8b9fd8f8-c84a-5dec-9013-6ad76a992248@2b4f0",
+        "rect": [
+          2,
+          438,
+          648,
+          432
+        ],
+        "originalSize": [
+          648,
+          432
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "meme-runner/visual/v50/hero": {
+    "rawHash": "8c2e9f583ea375213b62227f6584283e766bcb766efcf181e88cf02059ce7878",
+    "imageUuid": "1c5f3396-5420-544c-a42c-6fcd97fe1113",
+    "size": [
+      1900,
+      1924
+    ],
+    "frames": [
+      {
+        "source": "visual/v50/frames/dash-0.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "dash-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@70040",
+        "rect": [
+          2,
+          2,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/dash-1.png",
+        "sourceRect": [
+          0,
+          0,
+          208,
+          144
+        ],
+        "name": "dash-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@ab77e",
+        "rect": [
+          214,
+          2,
+          208,
+          144
+        ],
+        "originalSize": [
+          208,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/air-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@9cd80",
+        "rect": [
+          426,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/air-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@aac39",
+        "rect": [
+          590,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/air-2.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-2",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@49e7f",
+        "rect": [
+          754,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/air-3.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "air-3",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@be4bc",
+        "rect": [
+          918,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/double-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@fc3ee",
+        "rect": [
+          1082,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/double-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@f5919",
+        "rect": [
+          1246,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/double-2.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-2",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@31b0d",
+        "rect": [
+          1410,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/double-3.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "double-3",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@88d77",
+        "rect": [
+          1574,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/hurt.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "hurt",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@c20d7",
+        "rect": [
+          1738,
+          2,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/land-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "land-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@25d35",
+        "rect": [
+          2,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/lose-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "lose-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@e0df6",
+        "rect": [
+          2,
+          298,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/lose-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "lose-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@6ca4a",
+        "rect": [
+          2,
+          446,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/ride-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "ride-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@049fb",
+        "rect": [
+          2,
+          594,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/ride-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "ride-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@7e013",
+        "rect": [
+          2,
+          742,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@6ef06",
+        "rect": [
+          2,
+          890,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@569f7",
+        "rect": [
+          2,
+          1038,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-2.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-2",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@1d969",
+        "rect": [
+          2,
+          1186,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-3.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-3",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@c3f12",
+        "rect": [
+          2,
+          1334,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-4.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-4",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@3bd0e",
+        "rect": [
+          2,
+          1482,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-5.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-5",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@62bbc",
+        "rect": [
+          2,
+          1630,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-6.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-6",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@08be3",
+        "rect": [
+          2,
+          1778,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/run-7.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "run-7",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@20c23",
+        "rect": [
+          166,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/slide-0.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "slide-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@fa56a",
+        "rect": [
+          330,
+          150,
+          160,
+          144
+        ],
+        "originalSize": [
+          160,
+          144
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v50/frames/slide-1.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          144
+        ],
+        "name": "slide-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@2f5bd",
         "rect": [
           494,
-          86,
-          128,
-          128
+          150,
+          160,
+          144
         ],
         "originalSize": [
-          128,
-          128
+          160,
+          144
         ],
         "offset": [
           0,
@@ -26858,24 +26186,24 @@
         }
       },
       {
-        "source": "visual/v42/frames/popcat-2.png",
+        "source": "visual/v50/frames/win-0.png",
         "sourceRect": [
           0,
           0,
-          128,
-          128
+          160,
+          144
         ],
-        "name": "popcat-2",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@8f90c",
+        "name": "win-0",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@14c84",
         "rect": [
-          2,
-          182,
-          128,
-          128
+          658,
+          150,
+          160,
+          144
         ],
         "originalSize": [
-          128,
-          128
+          160,
+          144
         ],
         "offset": [
           0,
@@ -26889,24 +26217,24 @@
         }
       },
       {
-        "source": "visual/v42/frames/popcat-3.png",
+        "source": "visual/v50/frames/win-1.png",
         "sourceRect": [
           0,
           0,
-          128,
-          128
+          160,
+          144
         ],
-        "name": "popcat-3",
-        "uuid": "7b32ef07-b221-57ff-8c1b-1898756c0342@5385a",
+        "name": "win-1",
+        "uuid": "bfbb38a4-8709-5345-be29-6ffb50ac58f8@8e340",
         "rect": [
-          134,
-          182,
-          128,
-          128
+          822,
+          150,
+          160,
+          144
         ],
         "originalSize": [
-          128,
-          128
+          160,
+          144
         ],
         "offset": [
           0,

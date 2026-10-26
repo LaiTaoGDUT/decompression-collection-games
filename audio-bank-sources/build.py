@@ -64,7 +64,7 @@ def bubble_banks():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--game", choices=("bubble-shooter", "rotate-rings", "flappy-dunk", "pingpong", "meme-runner", "city-bloxx"), default="bubble-shooter")
+    parser.add_argument("--game", choices=("bubble-shooter", "rotate-rings", "flappy-dunk", "pingpong", "meme-runner", "city-bloxx", "sling-puck"), default="bubble-shooter")
     parser.add_argument("--check", action="store_true", help="verify committed banks against all source bytes")
     args = parser.parse_args()
     results = build(args.game)

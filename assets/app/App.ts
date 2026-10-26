@@ -43,6 +43,8 @@ import { ConfigService } from '../services/config/ConfigService';
 import { FeedbackService } from '../services/feedback/FeedbackService';
 import { StorageService } from '../services/storage/StorageService';
 import { CloudSaveService } from '../services/cloud/CloudSaveService';
+import { CloudSaveClient } from '../services/cloud/CloudSaveClient';
+import { ServerTimeService } from '../services/cloud/ServerTimeService';
 import { UpdateReminderService } from '../services/notifications/UpdateReminderService';
 import { AchievementService } from '../services/achievements/AchievementService';
 import { AchievementArtService } from '../services/achievements/AchievementArtService';
@@ -70,6 +72,7 @@ export const GAME_RUNTIME_SERVICE = createServiceToken<GameRuntime>('GameRuntime
 export const SCREEN_SERVICE = createServiceToken<ScreenService>('ScreenService');
 export const STORAGE_SERVICE = createServiceToken<StorageService>('StorageService');
 export const CLOUD_SAVE_SERVICE = createServiceToken<CloudSaveService>('CloudSaveService');
+export const SERVER_TIME_SERVICE = createServiceToken<ServerTimeService>('ServerTimeService');
 export const UPDATE_REMINDER_SERVICE = createServiceToken<UpdateReminderService>('UpdateReminderService');
 export const ACHIEVEMENT_SERVICE = createServiceToken<AchievementService>('AchievementService');
 export const ACHIEVEMENT_ART_SERVICE = createServiceToken<AchievementArtService>('AchievementArtService');
@@ -243,8 +246,8 @@ export class App extends Component {
         });
     }
 
-    protected update(): void {
-        if (this.container?.has(CLOUD_SAVE_SERVICE)) this.container.get(CLOUD_SAVE_SERVICE).checkActivity();
+    protected update(deltaTime: number): void {
+        if (this.container?.has(CLOUD_SAVE_SERVICE)) this.container.get(CLOUD_SAVE_SERVICE).advance(deltaTime);
     }
 
     protected onDestroy(): void {
@@ -508,9 +511,14 @@ export class App extends Component {
     private async registerCloudSave(): Promise<void> {
         const services = this.services, platform = services.get(PLATFORM_SERVICE);
         const config = services.get(CONFIG_SERVICE).config.cloudSave;
-        if (!config.enabled || !config.environmentId.trim() || platform.id !== 'wechat'
-            || !platform.initializeCloud || !platform.callCloudFunction) return;
+        if (!config.enabled || !config.baseUrl.trim() || !platform.requestJson) return;
         try {
+            const time = services.get(SERVER_TIME_SERVICE);
+            const client = new CloudSaveClient(platform, config.baseUrl, config.requestTimeoutMs);
+            if (!platform.getCloudLoginCredential) {
+                time.acceptColdStart(await client.call({ v: 2, op: 'load', clockOnly: true }));
+                return;
+            }
             const catalog = await services.get(CONFIG_SERVICE).loadCloudSaveCatalog();
             for (const schema of catalog.games) {
                 const definition = services.get(GAME_REGISTRY_SERVICE).getById(schema.gameId)?.achievement;
@@ -518,11 +526,10 @@ export class App extends Component {
                     || schema.achievement.metric !== definition?.metric))
                     throw new Error(`Cloud achievement schema is outdated: ${schema.gameId}`);
             }
-            await platform.initializeCloud(config.environmentId);
             if (App.activeInstance !== this) return;
             const stateMachine = services.get(APP_STATE_MACHINE_SERVICE), runtime = services.get(GAME_RUNTIME_SERVICE);
             const cloud = new CloudSaveService({ storage:services.get(STORAGE_SERVICE), catalog,
-                call: data => platform.callCloudFunction!(config.functionName,data,config.requestTimeoutMs),
+                call: data => client.call(data), time,
                 activeGame: () => !this.platformHidden && stateMachine.currentState === 'playing'
                     && (runtime.currentEntry?.isGameplayActive?.() ?? true) ? runtime.currentSession?.gameId : undefined,
                 canRestore: () => stateMachine.currentState === 'booting' || stateMachine.currentState === 'lobby',
@@ -538,6 +545,8 @@ export class App extends Component {
 
     private registerGameRuntime(): void {
         const services = this.services;
+
+        if (!services.has(SERVER_TIME_SERVICE)) services.register(SERVER_TIME_SERVICE, new ServerTimeService());
 
         if (services.has(GAME_RUNTIME_SERVICE)) {
             return;
@@ -575,6 +584,10 @@ export class App extends Component {
                 audio: services.get(AUDIO_SERVICE),
                 feedback: services.get(FEEDBACK_SERVICE),
                 storage: services.get(STORAGE_SERVICE),
+                serverTime: services.get(SERVER_TIME_SERVICE),
+                onRoundFinished: (gameId: string) => {
+                    if (services.has(CLOUD_SAVE_SERVICE)) services.get(CLOUD_SAVE_SERVICE).recordRoundFinished(gameId);
+                },
                 achievements: services.get(ACHIEVEMENT_SERVICE),
                 updateReminder: services.get(UPDATE_REMINDER_SERVICE),
                 analytics,

@@ -199,7 +199,9 @@ export class CityBloxxModel {
         f.y -= f.speed * dt; f.x += f.drift;
         f.angle = Math.sign(f.angle) * Math.max(0, Math.abs(f.angle) - dt * 30);
         const top = this.floors[this.tower - 1];
-        const surface = top ? top.y + CITY_RULES.height * Math.cos(top.angle * DEG) : 0;
+        // The original trigger is on House, not its visual RotAnchor. Sway
+        // moves the root through the previous Link but never tilts its collider.
+        const surface = top ? top.y + CITY_RULES.height : 0;
         const targetX = top?.x ?? 0;
         const contactWidth = top ? CITY_RULES.width : 1.5;
         if (beforeY >= surface && f.y <= surface && Math.abs(f.x - targetX) < contactWidth) {
@@ -241,10 +243,17 @@ export class CityBloxxModel {
             previous.linkOffset = offset;
             this.chaos.push(Math.abs(offset)); if (this.chaos.length > 5) this.chaos.shift();
         }
-        const floor: CityFloor = { id: ++this.serial, index: this.totalIndex++, base: first,
+        const floor: CityFloor = { id: ++this.serial, index: this.totalIndex, base: first,
             x, y: this.tower * CITY_RULES.height, angle: 0, linkOffset: 0, people, perfect,
             age: 0, impact: perfect ? 0 : -Math.sign(offset) * this.config.powValue ** Math.abs(offset * 10) };
-        this.floors.push(floor); this.people += people; this.maxFloors = Math.max(this.maxFloors, this.tower);
+        // House.SetIndexAndPos immediately calls House.Update, before Ctrl
+        // increments TotalIndex. OriginalPos is bookkeeping, not a render pose:
+        // showing its theoretical height here makes a bent tower's new floor
+        // teleport to the rotated Link on the following frame.
+        if (previous) this.followSupport(floor, previous);
+        floor.angle = floor.index * this.swayScale(cityCurve(this.config.curves.GlobalParam, 0, this.animationTime));
+        this.floors.push(floor); this.totalIndex++;
+        this.people += people; this.maxFloors = Math.max(this.maxFloors, this.tower);
         this.active = undefined; this.events.push({ type: 'land', floor, people, perfect });
         if (first) { this.phase = 'swing'; this.normalTime = 0; this.attach(); }
         else { this.moveTo((this.tower - 1) * CITY_RULES.height, .5); this.phase = 'settling'; this.delay = CITY_RULES.nextDelay; }
@@ -253,14 +262,24 @@ export class CityBloxxModel {
     private updateTower(dt: number): void {
         const rate = cityCurve(this.config.curves.GlobalParam, 0, this.animationTime);
         const baseSway = (Math.max(6, Math.min(100, this.totalIndex)) - 6) / 166 * rate;
+        const sway = this.swayScale(rate);
         for (let i = 0; i < this.tower; i++) {
             const f = this.floors[i]; f.age += dt;
-            f.angle = f.index / Math.max(20, this.totalIndex) * rate * Math.min(.32, this.rotChaos) * -6;
+            f.angle = f.index * sway;
             if (!i) { f.x = this.baseX + baseSway; f.y = 0; continue; }
-            const p = this.floors[i - 1], a = p.angle * DEG;
-            f.x = p.x + p.linkOffset * Math.cos(a) - CITY_RULES.height * Math.sin(a);
-            f.y = p.y + p.linkOffset * Math.sin(a) + CITY_RULES.height * Math.cos(a);
+            this.followSupport(f, this.floors[i - 1]);
         }
+    }
+
+    private swayScale(rate: number): number {
+        return rate * Math.min(.32, this.rotChaos) * -6 / Math.max(20, this.totalIndex);
+    }
+
+    /** Link is a child of RotAnchor; HouseModel's impact tween never moves it. */
+    private followSupport(floor: CityFloor, support: CityFloor): void {
+        const a = support.angle * DEG, cos = Math.cos(a), sin = Math.sin(a);
+        floor.x = support.x + support.linkOffset * cos - CITY_RULES.height * sin;
+        floor.y = support.y + support.linkOffset * sin + CITY_RULES.height * cos;
     }
 
     private attach(): void {

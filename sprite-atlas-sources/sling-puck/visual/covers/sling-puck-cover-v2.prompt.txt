@@ -1,0 +1,12 @@
+Use case: lobby game cover illustration for a mobile tabletop "sling puck" game (pull pucks back on an elastic cord and fire them through a small gap in a centre wall).
+Asset type: 4:3 landscape cover illustration, approx 1536x1152; it will be shown small (308x231) on a game card, so it must read instantly at thumbnail size.
+
+Style direction "冰台 / Ice Table": a premium, realistic physical tabletop game, product-photography look. A rectangular board with a clear pale blue-white ice playing surface set in a thick dark walnut wood frame with thin brushed-aluminium trim and corner brackets, standing on a dark charcoal slate table, lit by one warm overhead light with soft realistic shadows. Across the middle a short brushed-aluminium divider wall with one small gap in its centre. Near each end a thin silicone cord is stretched between two small aluminium posts: teal cord on the near half, coral cord on the far half.
+
+Hero moment, low 3/4 perspective from the near end: a thick black vulcanised-rubber puck with a thin teal lacquer ring on its top is pulled back against the teal cord, which bends into a V behind it. A second black puck (teal ring) is sliding through the gap in the divider with a few tiny ice chips kicked up. On the far half, slightly out of focus, a few black pucks with thin coral rings wait.
+
+Composition: the pulled puck and the gap are the focal points, in the centre-left two thirds. Keep important content away from the outer 6% edges, and keep the top-right ~25% x 28% as calm dark background (a badge will cover it). Restrained, elegant colour: walnut, aluminium, ice, slate, with small accents of teal and coral. Shallow depth of field.
+Style: photoreal premium 3D render, soft studio lighting, no glow effects, no neon.
+Strictly NO text, letters, numbers, logos, UI, borders, watermarks, people or hands.
+
+Post-processing: generated at 1448x1086, cropped to 4:3, downscaled 1:1 to the 308x231 card cover.

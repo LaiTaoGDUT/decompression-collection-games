@@ -4,6 +4,9 @@ import type { PlatformAudioContext } from '../../platform/PlatformAudio';
 import { AUDIO_VOLUME_DEFAULT_LEVEL, AUDIO_VOLUME_MIN_LEVEL, AUDIO_VOLUME_MAX_LEVEL, normalizeAudioVolumeLevel } from '../../core/types/AudioVolume';
 import { PackedAudioBank, PackedAudioDecodeCancellation, PackedAudioEffect } from './PackedAudioBank';
 import { PackedAudioVoices } from './PackedAudioVoices';
+import { PackedAudioVoice } from './PackedAudioVoice';
+export type { BufferVoicePlayback, BufferVoiceFilter } from './PackedAudioVoice';
+export type { PackedAudioVoice as AudioBufferVoiceScope } from './PackedAudioVoice';
 
 export interface AudioChannel {
     clip: AudioClip | null;
@@ -18,9 +21,18 @@ export interface AudioChannel {
 }
 
 export interface AudioEffectScope {
-    play(clip: AudioClip | PackedAudioEffect, volume: number): void;
+    play(clip: AudioClip | PackedAudioEffect, volume: number, options?: AudioEffectPlaybackOptions): void;
+    isPlaying?(clip: AudioClip | PackedAudioEffect): boolean;
+    /** Adjust an owned cue, including already playing voices, without restarting it. */
+    setClipVolume?(clip: AudioClip | PackedAudioEffect, volume: number): void;
     stop(): void;
     dispose(): void;
+}
+/** Buffer effects can retain authored gain/pitch and start within a long cue. */
+export interface AudioEffectPlaybackOptions {
+    readonly playbackRate?: number;
+    readonly startSeconds?: number;
+    readonly gainDecibels?: number;
 }
 export interface AudioEffectScopeOptions {
     /** 同一 clip 固定复用一个声部，避免交替 cue 时反复加载小程序播放器。 */
@@ -111,7 +123,7 @@ export class AudioService {
     private readonly musicChannels: readonly MusicChannel[];
     private readonly effectScopes = new Set<AudioEffectScope>();
     private readonly presentationScopes = new Set<AudioPresentationScope>();
-    private readonly voiceScopes = new Map<AudioVoiceScope, 'effect' | 'music'>();
+    private readonly voiceScopes = new Map<AudioVoiceScope | PackedAudioVoice, 'effect' | 'music'>();
     private readonly soundVolumeUpdaters = new Set<() => void>();
     private musicGain = 1;
     private readonly musicUnscaledVolumes = new WeakMap<MusicChannel, number>();
@@ -296,6 +308,15 @@ export class AudioService {
         );
     }
 
+    createBufferVoiceScope(kind: 'effect' | 'music' = 'music'): PackedAudioVoice | undefined {
+        if (!this.createAudioContext) return undefined;
+        const scope = new PackedAudioVoice(() => this.getPackedAudioContext(),
+            () => !this.disposed && !this.pausedByBackground && (kind === 'music' ? this.musicEnabled && !this.pausedByGame : this.soundEnabled),
+            () => kind === 'music' ? this.musicGain * this.musicLevel / AUDIO_VOLUME_MAX_LEVEL : this.soundLevel / AUDIO_VOLUME_MAX_LEVEL,
+            () => this.voiceScopes.delete(scope));
+        this.voiceScopes.set(scope, kind); return scope;
+    }
+
     createVoiceScope(kind: 'effect' | 'music' = 'effect'): AudioVoiceScope | undefined {
         if (!this.createEffectChannel) return undefined;
         const voice = this.createEffectChannel();
@@ -357,20 +378,31 @@ export class AudioService {
         if (!create && !this.createAudioContext) return undefined;
         const voices: ScopedAudioChannel[] = [];
         const volumes: number[] = [];
+        const clipVolumes = new WeakMap<AudioClip, number>();
         let cursor = 0, disposed = false;
         const packed = new PackedAudioVoices(() => this.getPackedAudioContext(),
             () => !disposed && !this.disposed && this.soundEnabled && !this.pausedByBackground);
         const updateVolume = (): void => {
             const scale = this.soundLevel / AUDIO_VOLUME_MAX_LEVEL;
             packed.setVolumeScale(scale);
-            voices.forEach((voice, index) => { voice.channel.volume = volumes[index] * scale; });
+            voices.forEach((voice, index) => {
+                voice.channel.volume = volumes[index] * scale * (voice.channel.clip ? clipVolumes.get(voice.channel.clip) ?? 1 : 1);
+            });
         };
         const scope: AudioEffectScope = {
-            play: (clip, volume) => {
+            isPlaying: clip => clip instanceof PackedAudioEffect ? !!clip.buffer && packed.isPlaying(clip.buffer)
+                : voices.some(v => v.channel.clip === clip && v.channel.playing),
+            setClipVolume: (clip, volume) => {
+                if (disposed) return;
+                if (clip instanceof PackedAudioEffect) {
+                    if (clip.buffer) packed.setClipVolume(clip.buffer, volume);
+                } else { clipVolumes.set(clip, clampVolume(volume)); updateVolume(); }
+            },
+            play: (clip, volume, playback) => {
                 if (disposed || !this.soundEnabled || this.pausedByBackground) return;
                 if (clip instanceof PackedAudioEffect) {
                     const buffer = clip.buffer;
-                    if (buffer) packed.play(buffer, volume);
+                    if (buffer) packed.play(buffer, volume, playback, options.reuseByClip);
                     return;
                 }
                 if (!create) return;
@@ -389,7 +421,7 @@ export class AudioService {
                 const voice = voices[index]!.channel;
                 voice.stop(); voice.clip = clip; voice.loop = false;
                 volumes[index] = clampVolume(volume);
-                voice.volume = volumes[index] * this.soundLevel / AUDIO_VOLUME_MAX_LEVEL; voice.play();
+                voice.volume = volumes[index] * this.soundLevel / AUDIO_VOLUME_MAX_LEVEL * (clipVolumes.get(clip) ?? 1); voice.play();
             },
             stop: () => {
                 packed.stop();

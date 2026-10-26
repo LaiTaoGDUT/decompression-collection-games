@@ -1,5 +1,5 @@
 import { _decorator, Camera, Canvas, Color, Component, EffectAsset, EventTouch, JsonAsset,
-    Node, SpriteAtlas, SpriteFrame, Texture2D, TTFFont, UITransform, view } from 'cc';
+    Node, SpriteAtlas, Texture2D, TTFFont, UITransform, view } from 'cc';
 import type { GameResult, Unsubscribe } from '../../../core/types/CommonTypes';
 import type { MiniGame, MiniGameContext, MiniGamePauseModel } from '../../../runtime/MiniGame';
 import type { Platform } from '../../../platform/Platform';
@@ -11,7 +11,7 @@ import type { StorageService } from '../../../services/storage/StorageService';
 import type { AdService } from '../../../services/ads/AdService';
 import { calculateSafeContentBounds } from '../../../shared/ui/PlatformSafeLayout';
 import { CityBloxxModel, type CityConfig } from './CityBloxxModel';
-import { CITY_ASSETS, CityBloxxView, type CityBuildingData, type CityGroundData } from './CityBloxxView';
+import { CITY_ASSETS, CityBloxxView, type CityBuildingData } from './CityBloxxView';
 import { CityBloxxScenery, type CityEnvironment } from './CityBloxxScenery';
 import { CityBloxxHud } from './CityBloxxHud';
 import { cityComboMilestone, cityComboStage, cityPerfectTone } from './CityBloxxFeedback';
@@ -35,10 +35,8 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     private audioBank?: BundleAudioBank;
     private unsubscribe?: Unsubscribe;
     private skyCamera?: Camera;
-    private skyFrame?: SpriteFrame;
     private stage?: Node;
     private ui?: CityBloxxHud;
-    private messageTime = 0;
     private skin: 'yellow' | 'blue' = 'yellow';
     private rewardPending = false;
     private operation = 0;
@@ -55,17 +53,15 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     }
     private async prepare(context: MiniGameContext<Services>): Promise<void> {
         const assets = context.services.assets;
-        const [rules, buildings, groundData, coral, blue, lobby, groundTexture, sky, environment, atlas, hudFont,
+        const [rules, buildings, coral, blue, lobby, groundTexture, environment, atlas, hudFont,
             particleEffect, trailLine, trailMask, rainLine] = await Promise.all([
             assets.loadAsset(CITY_ASSETS, 'configs/original', JsonAsset),
             assets.loadAsset(CITY_ASSETS, 'configs/buildings', JsonAsset),
-            assets.loadAsset(CITY_ASSETS, 'configs/ground', JsonAsset),
-            assets.loadAsset(CITY_ASSETS, 'visual/sunlit/floor-coral/texture', Texture2D),
-            assets.loadAsset(CITY_ASSETS, 'visual/sunlit/floor-blue/texture', Texture2D),
-            assets.loadAsset(CITY_ASSETS, 'visual/sunlit/floor-lobby/texture', Texture2D),
-            assets.loadAsset(CITY_ASSETS, 'visual/sunlit/ground/texture', Texture2D),
-            assets.loadAsset(CITY_ASSETS, 'visual/sunlit/city/texture', Texture2D),
-            assets.loadAsset(CITY_ASSETS, 'configs/sunlit-environment', JsonAsset),
+            assets.loadAsset(CITY_ASSETS, 'visual/cloudline/floor-coral/texture', Texture2D),
+            assets.loadAsset(CITY_ASSETS, 'visual/cloudline/floor-blue/texture', Texture2D),
+            assets.loadAsset(CITY_ASSETS, 'visual/cloudline/floor-lobby/texture', Texture2D),
+            assets.loadAsset(CITY_ASSETS, 'visual/cloudline/pavers/texture', Texture2D),
+            assets.loadAsset(CITY_ASSETS, 'configs/cloudline-environment', JsonAsset),
             assets.loadAsset(CITY_ASSETS, 'visual/sunlit/city-sunlit', SpriteAtlas),
             assets.loadAsset(CITY_ASSETS, 'fonts/native-hud', TTFFont),
             assets.loadAsset(CITY_ASSETS, 'visual/effects/city-particles', EffectAsset),
@@ -82,19 +78,18 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.renderer = new CityBloxxView(this.node.scene, this.node, assets,
             buildings.json as CityBuildingData,
             { house_yellow_m: coral, blue_house: blue, house_yellow_B: lobby, ground: groundTexture },
-            groundData.json as CityGroundData[], this.config.camera);
-        this.skyFrame = assets.trackRuntimeAsset(CITY_ASSETS, new SpriteFrame()); this.skyFrame.texture = sky;
+            this.config.camera);
         const camera = this.make('CitySkyCamera', this.node, 1, 1); camera.layer = SKY_LAYER; camera.setPosition(0, 0, 1000);
         this.skyCamera = camera.addComponent(Camera); this.skyCamera.projection = Camera.ProjectionType.ORTHO;
         this.skyCamera.clearFlags = Camera.ClearFlag.SOLID_COLOR; this.skyCamera.clearColor = new Color('#C7EAF4');
         this.skyCamera.visibility = SKY_LAYER; this.skyCamera.priority = -10; this.skyCamera.near = .1; this.skyCamera.far = 2000;
-        this.scenery = new CityBloxxScenery(this.node, this.renderer.projection, atlas, this.skyFrame, environment.json as CityEnvironment, SKY_LAYER,
+        this.scenery = new CityBloxxScenery(this.node, this.renderer.projection, atlas, this.renderer.backdropFrame, environment.json as CityEnvironment, SKY_LAYER,
             (x, y, z) => this.renderer!.project(x, y, z), assets, particleEffect, trailLine, trailMask, rainLine);
         this.stage = this.make('CityPlayArea', this.node, 750, 1334);
         this.stage.on(Node.EventType.TOUCH_START, this.onTouch, this);
         this.ui = new CityBloxxHud(this.node, atlas, hudFont, run => {
             if (!this.rewardPending) run();
-        }, () => { if (this.state === 'playing') this.context?.requestPause(); }, (environment.json as CityEnvironment).hud,
+        }, () => { if (this.state === 'playing') this.context?.requestPause(); },
         (x, y, z) => this.renderer!.project(x, y, z));
         this.scenery.placeBelowEffects(this.ui.notice);
         this.reset(); this.state = 'ready';
@@ -111,7 +106,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         view.on('canvas-resize', this.onResize, this); this.unsubscribe = context.services.platform.onLayoutChange(this.onResize);
         this.layout();
     }
-    begin(): void { if (this.state === 'ready') { this.state = 'playing'; this.hint('点击屏幕，放下楼层'); } }
+    begin(): void { if (this.state === 'ready') this.state = 'playing'; }
     isGameplayActive(): boolean { return this.state === 'playing' && !this.rewardPending; }
     pause(): boolean {
         if (this.state !== 'playing' && this.state !== 'result') return false;
@@ -122,7 +117,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     async restart(context?: MiniGameContext<Services>): Promise<void> {
         if (this.state === 'disposed') return;
         this.operation++; this.rewardPending = false; if (context) this.context = context;
-        this.reset(); this.audioBank?.restartMusic(); this.state = 'playing'; this.hint('点击屏幕，放下楼层');
+        this.reset(); this.audioBank?.restartMusic(); this.state = 'playing';
         this.context?.services.audio.resumeMusic();
     }
     async dispose(): Promise<void> {
@@ -134,8 +129,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.audioBank?.dispose(); this.audioBank = undefined;
         this.renderer?.dispose(); this.renderer = undefined;
         this.scenery?.dispose(); this.scenery = undefined;
-        if (this.skyFrame) this.context?.services.assets.releaseRuntimeAsset(this.skyFrame);
-        this.skyFrame = undefined; this.config = undefined;
+        this.config = undefined;
         this.ui?.dispose(); this.ui = undefined;
         this.node.children.slice().forEach(child => child.destroy()); this.skyCamera = undefined;
         this.stage = undefined;
@@ -144,15 +138,15 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     showPauseMenu(menu: MiniGamePauseModel): void {
         this.pauseMenuVisible = true;
         if (this.pausedFrom === 'result') {
-            this.ui?.dialog('暂时离开', '本局成绩已保留。', [
-                { name: 'CityResume', text: '返回成绩', run: () => { void menu.resume(); } },
+            this.ui?.pause([
+                { name: 'CityResume', icon: 'play', run: () => { void menu.resume(); } },
             ]);
             return;
         }
-        this.ui?.dialog('暂停施工', '大楼会停在这里，准备好再继续。', [
-            { name: 'CityResume', text: '继续建造', run: () => { void menu.resume(); } },
-            { name: 'CityRestart', text: '重新开始', secondary: true, run: () => { void menu.restart(); } },
-            { name: 'CityLobby', text: '返回大厅', secondary: true, run: () => { void menu.exit(); } },
+        this.ui?.pause([
+            { name: 'CityResume', icon: 'play', run: () => { void menu.resume(); } },
+            { name: 'CityRestart', icon: 'retry', run: () => { void menu.restart(); } },
+            { name: 'CityLobby', icon: 'home', run: () => { void menu.exit(); } },
         ]);
     }
     hidePauseMenu(): void {
@@ -170,7 +164,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.renderer?.setSkin(this.skin);
         this.model?.dispose(); this.model = new CityBloxxModel(this.config!); this.finalized = false;
         this.scenery?.reset(); this.ui?.reset();
-        this.messageTime = 0; this.context?.reportScore(0); this.render();
+        this.context?.reportScore(0); this.render();
     }
     private showResult(): void {
         this.ui?.result(this.model!, () => { void this.revive(); },
@@ -180,15 +174,25 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     private async revive(): Promise<void> {
         const context = this.context, m = this.model;
         if (!context || !m || this.rewardPending || !m.canRevive) return;
-        this.rewardPending = true; this.audioBank?.stopEffects(); const operation = ++this.operation;
+        this.rewardPending = true; this.ui?.setRewardPending(true);
+        this.audioBank?.stopEffects(); const operation = ++this.operation;
         try {
             const result = await context.services.ads.showRewarded({ placement: 'city-bloxx-revive', gameId: context.gameId, sessionId: context.sessionId });
             if (operation !== this.operation || this.state === 'disposed') return;
             if (result.outcome === 'completed') {
-                if (m.revive()) { this.ui?.close(); this.state = 'playing'; this.hint('生命已补满，继续向上'); }
-            } else if (result.errorCode !== 'not-configured') context.services.platform.showToast('未完成视频，可稍后再试');
+                if (m.revive()) {
+                    // The HUD clock is frozen during the video. Retire the
+                    // previous miss/landing feedback before play resumes.
+                    this.ui?.reset(); this.ui?.revived(); this.state = 'playing';
+                }
+            } else if (result.errorCode !== 'not-configured') {
+                context.services.platform.showToast(result.outcome === 'skipped'
+                    ? '未完成视频，可稍后再试' : '视频暂不可用，请稍后再试');
+            }
         } catch { if (operation === this.operation) context.services.platform.showToast('视频暂不可用，请稍后再试'); }
-        finally { if (operation === this.operation) this.rewardPending = false; }
+        finally {
+            if (operation === this.operation) { this.rewardPending = false; this.ui?.setRewardPending(false); }
+        }
     }
     private onTouch(event: EventTouch): void {
         event.propagationStopped = true;
@@ -196,7 +200,8 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.model?.release();
     }
     update(dt: number): void {
-        if ((this.state !== 'playing' && this.state !== 'result') || this.rewardPending || !this.model) return;
+        if (this.rewardPending) { this.ui?.advanceLoading(dt); return; }
+        if ((this.state !== 'playing' && this.state !== 'result') || !this.model) return;
         this.ui?.advance(dt);
         this.scenery?.advance(dt);
         this.model.advance(dt);
@@ -214,9 +219,10 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
                 this.ui?.showBonus(event.people);
                 if (event.people > 0) this.context?.services.feedback.play('milestone', { vibrate: false, volume: .7 });
             }
+            else if (event.type === 'miss') this.ui?.miss(event.lives);
             else if (event.type === 'result') { this.saveBest(); this.state = 'result'; this.showResult(); }
         }
-        this.messageTime = Math.max(0, this.messageTime - dt); this.render();
+        this.render();
     }
     lateUpdate(): void {
         // Cocos emits canvas-resize before Fit Width and Canvas have finished updating their transforms.
@@ -226,11 +232,8 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         const m = this.model; if (!m) return;
         this.renderer?.update(m);
         this.scenery?.update(m);
-        if (this.ui) this.ui.update(m, this.scenery?.skyColorAt(this.ui.top.position.y - 38 * this.ui.top.scale.y));
-        if (this.ui) this.ui.hint.node.active = this.state === 'playing' && !this.ui.modal
-            && (this.messageTime > 0 || m.phase === 'swing');
+        this.ui?.update(m);
     }
-    private hint(text: string): void { if (this.ui) this.ui.hint.string = text; this.messageTime = 2; }
     private saveBest(): void {
         const c = this.context, m = this.model; if (!c || !m) return;
         const old = c.services.storage.getGameData(c.gameId) ?? { dataVersion: 1, playCount: 0 };

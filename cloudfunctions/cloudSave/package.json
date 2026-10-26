@@ -1,8 +1,0 @@
-{
-  "name": "decompression-cloud-save",
-  "version": "1.0.0",
-  "private": true,
-  "main": "index.js",
-  "engines": { "node": ">=18" },
-  "dependencies": { "wx-server-sdk": "3.0.1" }
-}

@@ -1,0 +1,1658 @@
+{
+  "duration": 29.65,
+  "fps": 60,
+  "sequence": [
+    "six-swishes-and-native-result",
+    "lobby-scroll",
+    "original-cta"
+  ],
+  "body": {
+    "source": "local/dunk-promo-20261025-result-pause/raw/flow.mkv",
+    "sourceStart": 0.65,
+    "sourceEnd": 19.2,
+    "duration": 18.55,
+    "scores": [
+      {
+        "at": 2.169,
+        "time": 2.2000000000000015,
+        "event": {
+          "type": "score",
+          "hoop": 0,
+          "x": 4,
+          "y": 0,
+          "points": 2,
+          "swish": true
+        },
+        "cleared": 1,
+        "score": 2,
+        "round": 1
+      },
+      {
+        "at": 4.452800000011921,
+        "time": 4.479999999999992,
+        "event": {
+          "type": "score",
+          "hoop": 1,
+          "x": 8.199999809265137,
+          "y": -0.6409828049940316,
+          "points": 3,
+          "swish": true
+        },
+        "cleared": 2,
+        "score": 5,
+        "round": 1
+      },
+      {
+        "at": 6.66880000001192,
+        "time": 6.699999999999945,
+        "event": {
+          "type": "score",
+          "hoop": 2,
+          "x": 12.399999618530273,
+          "y": -0.125644307340684,
+          "points": 4,
+          "swish": true
+        },
+        "cleared": 3,
+        "score": 9,
+        "round": 1
+      },
+      {
+        "at": 8.9025,
+        "time": 8.939999999999898,
+        "event": {
+          "type": "score",
+          "hoop": 3,
+          "x": 16.59999942779541,
+          "y": 0.323663313234142,
+          "points": 5,
+          "swish": true
+        },
+        "cleared": 4,
+        "score": 14,
+        "round": 1
+      },
+      {
+        "at": 11.151900000005961,
+        "time": 11.17999999999985,
+        "event": {
+          "type": "score",
+          "hoop": 4,
+          "x": 20.799999237060547,
+          "y": 0.9730702675662721,
+          "points": 6,
+          "swish": true
+        },
+        "cleared": 5,
+        "score": 20,
+        "round": 1
+      },
+      {
+        "at": 13.38510000000894,
+        "time": 13.419999999999803,
+        "event": {
+          "type": "score",
+          "hoop": 5,
+          "x": 24.999999046325684,
+          "y": -0.31742832011094746,
+          "points": 7,
+          "swish": true
+        },
+        "cleared": 6,
+        "score": 27,
+        "round": 1
+      }
+    ],
+    "lossAt": 14.90560000000894,
+    "resultAt": 15.835300000011921,
+    "resultSettleSeconds": 1.1,
+    "settledResultHoldSeconds": 1.5,
+    "resultToLobbySeconds": 2.614699999988078,
+    "frameCadence": {
+      "actualFps": 59.29460808512972,
+      "medianFrameMs": 16.99999999999946,
+      "p99FrameMs": 24.400000000000066,
+      "maxFrameMs": 50.00000000000071
+    },
+    "continuousNativeCapture": true,
+    "freezeFrames": false,
+    "includesRoundTwo": false
+  },
+  "lobby": {
+    "source": "local/dunk-promo-20261024-lobby-outro/raw/lobby-outro.mkv",
+    "sourceStart": 0.1,
+    "duration": 7.0,
+    "at": 18.45,
+    "frameCadence": {
+      "actualFps": 59.862316671655186,
+      "medianFrameMs": 16.999999999999794,
+      "p99FrameMs": 18.00000000000024,
+      "maxFrameMs": 32.999999999999915
+    },
+    "games": [
+      {
+        "id": "flappy-dunk",
+        "name": "篮球灌篮",
+        "visibility": "public"
+      },
+      {
+        "id": "rotate-rings",
+        "name": "解个圆环",
+        "visibility": "public"
+      },
+      {
+        "id": "ping-pong",
+        "name": "乒乓球对战",
+        "visibility": "public"
+      },
+      {
+        "id": "wrestle-jump",
+        "name": "欢乐摔跤",
+        "visibility": "public"
+      },
+      {
+        "id": "meowdoku",
+        "name": "猫咪数独",
+        "visibility": "public"
+      },
+      {
+        "id": "multi-color-fill",
+        "name": "缤纷填色",
+        "visibility": "public"
+      },
+      {
+        "id": "cyblockbees",
+        "name": "保护狗头",
+        "visibility": "public"
+      },
+      {
+        "id": "doodle-jump",
+        "name": "纸片跳跃",
+        "visibility": "public"
+      },
+      {
+        "id": "game2048",
+        "name": "霓虹 2048",
+        "visibility": "public"
+      },
+      {
+        "id": "sliding-puzzle",
+        "name": "木框拼图",
+        "visibility": "public"
+      },
+      {
+        "id": "bubble-shooter",
+        "name": "泡泡奇境",
+        "visibility": "public"
+      },
+      {
+        "id": "catch",
+        "name": "桌面大清理",
+        "visibility": "public"
+      },
+      {
+        "id": "watermelon",
+        "name": "水果果冻合成",
+        "visibility": "public"
+      },
+      {
+        "id": "chess-endless",
+        "name": "棋逢对手",
+        "visibility": "public"
+      }
+    ],
+    "shownIds": [
+      "bubble-shooter",
+      "catch",
+      "chess-endless",
+      "cyblockbees",
+      "doodle-jump",
+      "flappy-dunk",
+      "game2048",
+      "meowdoku",
+      "multi-color-fill",
+      "ping-pong",
+      "rotate-rings",
+      "sliding-puzzle",
+      "watermelon",
+      "wrestle-jump"
+    ],
+    "scrollSamples": [
+      {
+        "at": 0.11430000001192094,
+        "offset": 0,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.21330000001192093,
+        "offset": 22.157500000000255,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.31360000000894067,
+        "offset": 55.72829999999976,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.4135,
+        "offset": 89.19880000000012,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.513,
+        "offset": 122.46849999999995,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.6147000000029802,
+        "offset": 156.17320000000018,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.7159000000059604,
+        "offset": 189.91150000000016,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.8308000000119209,
+        "offset": 228.67029999999977,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 0.930800000011921,
+        "offset": 262.1741999999999,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.0306000000089406,
+        "offset": 295.4439000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.130300000011921,
+        "offset": 329.1151,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.2302000000029802,
+        "offset": 362.5187000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.3296000000089407,
+        "offset": 395.8217999999997,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.4294000000059606,
+        "offset": 429.1918999999998,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.5302000000029803,
+        "offset": 462.96360000000004,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.6294000000059605,
+        "offset": 496.1997000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.7302000000029802,
+        "offset": 529.8041000000003,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.8296000000089407,
+        "offset": 563.1406999999999,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 1.9301000000089408,
+        "offset": 596.8455000000004,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.03,
+        "offset": 630.3159,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.1301000000089405,
+        "offset": 663.7864,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.22970000000298,
+        "offset": 696.9556000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.3304000000059606,
+        "offset": 730.7273,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.4297000000029803,
+        "offset": 763.9300000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.5306000000089406,
+        "offset": 797.6348,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.63,
+        "offset": 831.1388000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.7304000000059605,
+        "offset": 864.5758000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.829800000011921,
+        "offset": 897.9123000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 2.9302000000029804,
+        "offset": 931.5836000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.0297000000029803,
+        "offset": 964.8868,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.1294000000059605,
+        "offset": 998.2568000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.2291000000089407,
+        "offset": 1031.6603,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.32970000000298,
+        "offset": 1065.3316,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.4299000000059605,
+        "offset": 1098.8691000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.5299000000059606,
+        "offset": 1132.373,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.63,
+        "offset": 1165.8100000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.729300000011921,
+        "offset": 1199.0462,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.829800000011921,
+        "offset": 1232.7509,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 3.929800000011921,
+        "offset": 1266.1879000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.0295,
+        "offset": 1299.4576000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.129900000005961,
+        "offset": 1333.1958000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.229800000011921,
+        "offset": 1366.5994,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.32940000000596,
+        "offset": 1399.8355000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.429400000005961,
+        "offset": 1433.4064000000003,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.53,
+        "offset": 1467.0777000000003,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.630100000008941,
+        "offset": 1500.5147000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.72970000000298,
+        "offset": 1533.9517,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.82940000000596,
+        "offset": 1567.3218000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 4.9299000000059605,
+        "offset": 1600.9261000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.03,
+        "offset": 1634.3631,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.129800000011921,
+        "offset": 1667.8671,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.23,
+        "offset": 1701.3375,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.329900000005961,
+        "offset": 1734.7745,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.43020000000298,
+        "offset": 1768.2785,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.529800000011921,
+        "offset": 1777.5464000000002,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.62960000000894,
+        "offset": 1781.9532,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.729800000011921,
+        "offset": 1786.3734,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.8296000000089405,
+        "offset": 1790.7891,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 5.929600000008941,
+        "offset": 1795.2048,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.0287000000029805,
+        "offset": 1799.5807,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.129800000011921,
+        "offset": 1804.0406000000003,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.22970000000298,
+        "offset": 1808.4519,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.329700000002981,
+        "offset": 1812.8676,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.42970000000298,
+        "offset": 1817.2833,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.529800000011921,
+        "offset": 1821.699,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.62970000000298,
+        "offset": 1826.1147,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.729,
+        "offset": 1830.4995,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.82920000000298,
+        "offset": 1834.924,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 6.92890000000596,
+        "offset": 1839.3220000000001,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      },
+      {
+        "at": 7.029800000011921,
+        "offset": 1843.7819,
+        "visible": [
+          "flappy-dunk",
+          "rotate-rings",
+          "ping-pong",
+          "wrestle-jump",
+          "meowdoku",
+          "multi-color-fill",
+          "cyblockbees",
+          "doodle-jump",
+          "game2048",
+          "sliding-puzzle",
+          "bubble-shooter",
+          "catch",
+          "watermelon",
+          "chess-endless"
+        ]
+      }
+    ],
+    "publicOnly": true
+  },
+  "originalEnding": {
+    "source": "local/dunk-promo-20261024/edit/end-card.png",
+    "at": 25.15,
+    "duration": 4.5,
+    "sourceStart": 0,
+    "visualsReused": true,
+    "spokenCaptionRemoved": true
+  },
+  "transitionSeconds": {
+    "resultToLobby": 0.1,
+    "lobbyToOriginalEnding": 0.3
+  },
+  "openingNarration": false,
+  "narration": false,
+  "subtitles": [],
+  "voice": null,
+  "voiceSeconds": 0,
+  "audioSources": [
+    "native-game-audio",
+    "instrumental-music"
+  ],
+  "footerSecondary": "还有更多好游戏，等你来玩",
+  "loudnormMeasurement": {
+    "input_i": "-16.82",
+    "input_tp": "0.39",
+    "input_lra": "17.90",
+    "input_thresh": "-29.80",
+    "output_i": "-17.41",
+    "output_tp": "-1.80",
+    "output_lra": "10.60",
+    "output_thresh": "-28.25",
+    "normalization_type": "dynamic",
+    "target_offset": "2.41"
+  }
+}

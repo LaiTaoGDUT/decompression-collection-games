@@ -1,0 +1,28 @@
+{
+  "status": "compressed_pending_validation",
+  "date": "2026-10-25",
+  "provider": "Tinify official API",
+  "endpoint": "https://api.tinify.com/shrink",
+  "user_authorized": true,
+  "processed": 1,
+  "cached": 0,
+  "failed": 0,
+  "pending": 0,
+  "saved_bytes": 2211884,
+  "reduction_percent": 74.43,
+  "files": [
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/city.png",
+      "dimensions": [
+        1183,
+        3549
+      ],
+      "bytes_before": 2971644,
+      "bytes_after": 759760,
+      "sha256_before": "166b85eb82d7fd62778c2321d61435e68181977f98e5034bc82bace11e890e07",
+      "sha256_after": "0999fedff8baeb259e6d44ed8d31b85d592ea08cde8f7502a556dd020e7de6b0",
+      "meta_sha256": "fa996b1389e553fb31436e59c84dad50e8034d1a4b2d35850bc3c29f64096111"
+    }
+  ],
+  "dimensions_and_meta_preserved": true
+}

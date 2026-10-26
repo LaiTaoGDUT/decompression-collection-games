@@ -1,0 +1,1412 @@
+{
+  "gameId": "doodle-jump",
+  "name": "纸片跳跃",
+  "duration": 48.7,
+  "fps": 60,
+  "source": "local/promo-20261025-doodle-quiet-scenes/raw/gameplay.mkv",
+  "recordingSources": [
+    {
+      "source": "local/promo-20261025-doodle-quiet-scenes/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.0037000000178813936,
+          "state": "SensorCalibrating"
+        },
+        {
+          "at": 0.05030000001192093,
+          "state": "Playing"
+        },
+        {
+          "at": 88.13059999999403,
+          "state": "Failing"
+        },
+        {
+          "at": 88.94390000000595,
+          "state": "Result"
+        }
+      ],
+      "controlMode": "canvas-keyboard",
+      "steeringAudit": {
+        "beforeX": 375,
+        "leftX": 298.4204183258493,
+        "rightX": 363.72230845047403,
+        "leftVelocity": -434.335570782423,
+        "rightVelocity": 432.42520093917847
+      }
+    },
+    {
+      "source": "local/promo-20261025-doodle-active/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.008900000005960465,
+          "state": "SensorCalibrating"
+        },
+        {
+          "at": 0.4004000000059605,
+          "state": "Playing"
+        },
+        {
+          "at": 28.047,
+          "state": "Failing"
+        },
+        {
+          "at": 28.15290000000596,
+          "state": "Result"
+        }
+      ],
+      "controlMode": "native-pointer-drag",
+      "steeringAudit": {
+        "beforeX": 375,
+        "leftX": 244.64014696079977,
+        "rightX": 346.1173619366292,
+        "leftVelocity": -397.09340035915375,
+        "rightVelocity": 438.18356841802597,
+        "pointerActive": true
+      }
+    },
+    {
+      "source": "local/promo-20261025-doodle-scenes-a/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.02069999998807907,
+          "state": "SensorCalibrating"
+        },
+        {
+          "at": 0.07269999998807906,
+          "state": "Playing"
+        }
+      ],
+      "controlMode": "native-pointer-drag",
+      "steeringAudit": {
+        "beforeX": 375,
+        "leftX": 271.8554984960712,
+        "rightX": 356.72657275721815,
+        "leftVelocity": -437.3799115419388,
+        "rightVelocity": 436.8583895266056,
+        "pointerActive": true
+      }
+    },
+    {
+      "source": "local/promo-20261025-doodle-cloud-clean/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.003199999988079071,
+          "state": "ResumeCountdown"
+        },
+        {
+          "at": 1.786199999988079,
+          "state": "Playing"
+        },
+        {
+          "at": 1.819899999976158,
+          "state": "Paused"
+        },
+        {
+          "at": 2.0353999999761583,
+          "state": "ResumeCountdown"
+        },
+        {
+          "at": 5.02,
+          "state": "Playing"
+        }
+      ],
+      "controlMode": "canvas-keyboard",
+      "steeringAudit": {
+        "restoredNativeSave": true
+      }
+    },
+    {
+      "source": "local/promo-20261025-doodle-star-replay-l/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.0034000000059604646,
+          "state": "ResumeCountdown"
+        },
+        {
+          "at": 1.788199999988079,
+          "state": "Playing"
+        },
+        {
+          "at": 44.59030000001192,
+          "state": "Paused"
+        },
+        {
+          "at": 44.81890000000596,
+          "state": "ResumeCountdown"
+        },
+        {
+          "at": 47.80269999998808,
+          "state": "Playing"
+        }
+      ],
+      "controlMode": "canvas-keyboard",
+      "steeringAudit": {
+        "restoredNativeSave": true
+      }
+    },
+    {
+      "source": "local/promo-20261025-doodle-star-replay-k/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.004600000023841858,
+          "state": "ResumeCountdown"
+        },
+        {
+          "at": 1.938800000011921,
+          "state": "Playing"
+        },
+        {
+          "at": 94.45130000001193,
+          "state": "Failing"
+        },
+        {
+          "at": 94.55260000002384,
+          "state": "Result"
+        }
+      ],
+      "controlMode": "canvas-keyboard",
+      "steeringAudit": {
+        "restoredNativeSave": true
+      }
+    },
+    {
+      "source": "local/promo-20261025-doodle-observe-monster/raw/gameplay.mkv",
+      "states": [
+        {
+          "at": 0.003300000011920929,
+          "state": "ResumeCountdown"
+        },
+        {
+          "at": 1.7985,
+          "state": "Playing"
+        }
+      ],
+      "controlMode": "canvas-keyboard",
+      "steeringAudit": {
+        "restoredNativeSave": true
+      }
+    }
+  ],
+  "sourceCadence": {
+    "actualFps": 55.49775308259358,
+    "medianFrameMs": 16.999999999995907,
+    "p99FrameMs": 36.87000000000541,
+    "maxFrameMs": 667.0000000000016
+  },
+  "selectedSourceCadence": [
+    {
+      "actualFps": 58.74984341726168,
+      "medianFrameMs": 16.99999999999946,
+      "p99FrameMs": 31.31999999999919,
+      "maxFrameMs": 47.999999999998266
+    },
+    {
+      "actualFps": 59.43152454780367,
+      "medianFrameMs": 16.999999999995907,
+      "p99FrameMs": 26.640000000000995,
+      "maxFrameMs": 33.00000000000125
+    },
+    {
+      "actualFps": 59.43855628759668,
+      "medianFrameMs": 16.999999999995907,
+      "p99FrameMs": 20.860000000001136,
+      "maxFrameMs": 31.00000000000591
+    },
+    {
+      "actualFps": 60.00274612110395,
+      "medianFrameMs": 16.99999999999946,
+      "p99FrameMs": 19.000000000000128,
+      "maxFrameMs": 19.000000000001904
+    },
+    {
+      "actualFps": 60.011458034947005,
+      "medianFrameMs": 16.99999999999946,
+      "p99FrameMs": 18.000000000000682,
+      "maxFrameMs": 19.000000000000128
+    },
+    {
+      "actualFps": 59.85965917227555,
+      "medianFrameMs": 16.999999999995907,
+      "p99FrameMs": 18.000000000000682,
+      "maxFrameMs": 25.99999999999625
+    }
+  ],
+  "cuts": [
+    {
+      "sourceIndex": 1,
+      "start": 10.5,
+      "end": 18.5,
+      "label": "草地跳跃与旋翼帽",
+      "theme": "backgroundWarm",
+      "powers": [
+        "propeller-hat"
+      ],
+      "shooting": false,
+      "source": "local/promo-20261025-doodle-active/raw/gameplay.mkv",
+      "nativeKillDelta": 0,
+      "nativeLandingDelta": 4,
+      "at": 0
+    },
+    {
+      "sourceIndex": 2,
+      "start": 56.6,
+      "end": 60.1,
+      "label": "拾取喷气背包并起飞",
+      "theme": "transitionWarmSky",
+      "powers": [
+        "jetpack"
+      ],
+      "shooting": false,
+      "source": "local/promo-20261025-doodle-scenes-a/raw/gameplay.mkv",
+      "nativeKillDelta": 0,
+      "nativeLandingDelta": 1,
+      "at": 7.6
+    },
+    {
+      "sourceIndex": 0,
+      "start": 51.6,
+      "end": 58.6,
+      "label": "蓝天连续左右跨平台",
+      "theme": "backgroundSky",
+      "zeroProjectiles": true,
+      "shooting": false,
+      "source": "local/promo-20261025-doodle-quiet-scenes/raw/gameplay.mkv",
+      "nativeKillDelta": 0,
+      "nativeLandingDelta": 7,
+      "at": 10.7
+    },
+    {
+      "sourceIndex": 6,
+      "start": 9.8,
+      "end": 17.1,
+      "label": "先看怪物活动，再单发命中",
+      "theme": "backgroundCloud",
+      "combat": true,
+      "showcase": true,
+      "shooting": true,
+      "observedEnemyId": "E1",
+      "nativeShotDelta": 1,
+      "enemyObservedBeforeShotSeconds": 4.0295000000000005,
+      "firstShotSourceAt": 14.880600000023842,
+      "source": "local/promo-20261025-doodle-observe-monster/raw/gameplay.mkv",
+      "nativeKillDelta": 1,
+      "nativeLandingDelta": 6,
+      "at": 17.299999999999997
+    },
+    {
+      "sourceIndex": 3,
+      "start": 5.3,
+      "end": 12.3,
+      "label": "云层继续跳跃",
+      "theme": "backgroundCloud",
+      "zeroProjectiles": true,
+      "shooting": false,
+      "source": "local/promo-20261025-doodle-cloud-clean/raw/gameplay.mkv",
+      "nativeKillDelta": 0,
+      "nativeLandingDelta": 8,
+      "at": 24.199999999999996
+    },
+    {
+      "sourceIndex": 4,
+      "start": 49.5,
+      "end": 56.5,
+      "label": "星空连续跳跃与金萝卜",
+      "theme": "backgroundStar",
+      "zeroProjectiles": true,
+      "shooting": false,
+      "source": "local/promo-20261025-doodle-star-replay-l/raw/gameplay.mkv",
+      "nativeKillDelta": 0,
+      "nativeLandingDelta": 7,
+      "at": 30.799999999999997
+    }
+  ],
+  "speed": 1,
+  "narration": false,
+  "generatedSoundEffects": false,
+  "nativeAudio": true,
+  "musicSource": "assets/game-assets/doodle-jump/audio/doodle-jump-paper-loop.mp3",
+  "initialState": {
+    "state": "SensorCalibrating",
+    "view": {
+      "collectibles": [
+        {
+          "id": "carrot:G6",
+          "anchorPlatformId": "G6",
+          "x": 69.34375,
+          "y": 451.5625,
+          "offsetX": 33.984375,
+          "layoutOffsetX": -47.84375,
+          "variant": 7
+        },
+        {
+          "id": "carrot:G16",
+          "anchorPlatformId": "G16",
+          "x": 390.234375,
+          "y": 1435.9375,
+          "offsetX": -41.015625,
+          "layoutOffsetX": -41.015625,
+          "variant": 3
+        }
+      ],
+      "collectedCarrotCount": 0,
+      "projectiles": [],
+      "playerX": 375,
+      "playerY": 83.015625,
+      "velocityX": 0,
+      "velocityY": 1265.625,
+      "cameraBottomY": 0,
+      "maxAbsoluteWorldY": 83.015625,
+      "elapsedSeconds": 0,
+      "droppedFrameSeconds": 0,
+      "landingCount": 0,
+      "combat": {
+        "hitCount": 0,
+        "killCount": 0,
+        "stompCount": 0,
+        "smallMonsterKills": 0,
+        "largeMonsterKills": 0,
+        "hopperMonsterKills": 0,
+        "weaverMonsterKills": 0,
+        "hoverMonsterKills": 0,
+        "flyerMonsterKills": 0,
+        "tallMonsterKills": 0,
+        "runnerMonsterKills": 0,
+        "bouncerMonsterKills": 0
+      },
+      "hazards": [],
+      "hazardStats": {
+        "ufoInterruptCount": 0
+      },
+      "items": [
+        {
+          "id": "I1",
+          "type": "spring",
+          "x": 182.8125,
+          "y": 709.96875,
+          "radius": 23.4375,
+          "anchorPlatformId": "G11",
+          "phase": 0.7664616073016077,
+          "activationCount": 0,
+          "compressionFrames": 0
+        },
+        {
+          "id": "I2",
+          "type": "spring",
+          "x": 471.09375,
+          "y": 1143.5625,
+          "radius": 23.4375,
+          "anchorPlatformId": "G15",
+          "phase": 0.8411773715633899,
+          "activationCount": 0,
+          "compressionFrames": 0
+        },
+        {
+          "id": "I3",
+          "type": "trampoline",
+          "x": 271.875,
+          "y": 1455.28125,
+          "radius": 32.8125,
+          "anchorPlatformId": "G17",
+          "phase": 0.28373221145011485,
+          "activationCount": 0,
+          "compressionFrames": 0
+        }
+      ],
+      "itemStatus": {
+        "flightRemainingSeconds": 0,
+        "shieldRemainingSeconds": 0,
+        "trampolineJumpActive": false,
+        "trampolineJumpProgress": 0,
+        "headStartRemainingSeconds": 0,
+        "itemPickupCount": 0,
+        "jetpackPickupCount": 0,
+        "usedHeadStart": false,
+        "springShoesRemainingSeconds": 0,
+        "shoeBounceFrame": -1,
+        "trampolineCompressionFrames": 0,
+        "flightVelocity": 0,
+        "inheritedFlightVelocity": false,
+        "flightJustStarted": false
+      },
+      "seed": 4055875386,
+      "generatorCursor": 17,
+      "degradedGenerationCount": 0,
+      "itemRandomCursor": 23,
+      "platforms": [
+        {
+          "id": "P0",
+          "type": "normal",
+          "x": 375,
+          "y": 42,
+          "baseX": 375,
+          "baseY": 42,
+          "width": 750,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "generationAttempts": 0,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 0
+        },
+        {
+          "id": "G1",
+          "type": "normal",
+          "x": 520.3125,
+          "y": 100.59375,
+          "baseX": 520.3125,
+          "baseY": 100.59375,
+          "spawnPlan": {
+            "segmentId": 1,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "P0",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 1
+        },
+        {
+          "id": "G2",
+          "type": "breakable",
+          "x": 166.40625,
+          "y": 159.1875,
+          "baseX": 166.40625,
+          "baseY": 159.1875,
+          "spawnPlan": {
+            "segmentId": 2,
+            "referenceRawType": 2
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G1",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 2
+        },
+        {
+          "id": "G3",
+          "type": "normal",
+          "x": 173.4375,
+          "y": 217.78125,
+          "baseX": 173.4375,
+          "baseY": 217.78125,
+          "spawnPlan": {
+            "segmentId": 3,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G1",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 3
+        },
+        {
+          "id": "G4",
+          "type": "breakable",
+          "x": 621.09375,
+          "y": 276.375,
+          "baseX": 621.09375,
+          "baseY": 276.375,
+          "spawnPlan": {
+            "segmentId": 4,
+            "referenceRawType": 2
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G3",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 4
+        },
+        {
+          "id": "G5",
+          "type": "normal",
+          "x": 396.09375,
+          "y": 334.96875,
+          "baseX": 396.09375,
+          "baseY": 334.96875,
+          "spawnPlan": {
+            "segmentId": 5,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G3",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 5
+        },
+        {
+          "id": "G6",
+          "type": "normal",
+          "x": 117.1875,
+          "y": 393.5625,
+          "baseX": 117.1875,
+          "baseY": 393.5625,
+          "spawnPlan": {
+            "segmentId": 6,
+            "referenceRawType": 0,
+            "collectibleOffsetX": 33.984375,
+            "collectibleVariant": 7
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G5",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 6
+        },
+        {
+          "id": "G7",
+          "type": "breakable",
+          "x": 171.09375,
+          "y": 452.15625,
+          "baseX": 171.09375,
+          "baseY": 452.15625,
+          "spawnPlan": {
+            "segmentId": 7,
+            "referenceRawType": 2
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G6",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 7
+        },
+        {
+          "id": "G8",
+          "type": "normal",
+          "x": 239.0625,
+          "y": 510.75,
+          "baseX": 239.0625,
+          "baseY": 510.75,
+          "spawnPlan": {
+            "segmentId": 8,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G6",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 8
+        },
+        {
+          "id": "G9",
+          "type": "normal",
+          "x": 260.15625,
+          "y": 569.34375,
+          "baseX": 260.15625,
+          "baseY": 569.34375,
+          "spawnPlan": {
+            "segmentId": 9,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G8",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 9
+        },
+        {
+          "id": "G10",
+          "type": "breakable",
+          "x": 625.78125,
+          "y": 627.9375,
+          "baseX": 625.78125,
+          "baseY": 627.9375,
+          "spawnPlan": {
+            "segmentId": 10,
+            "referenceRawType": 2
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G9",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 10
+        },
+        {
+          "id": "G11",
+          "type": "normal",
+          "x": 187.5,
+          "y": 686.53125,
+          "baseX": 187.5,
+          "baseY": 686.53125,
+          "spawnPlan": {
+            "segmentId": 11,
+            "referenceRawType": 0,
+            "content": "item",
+            "itemType": "spring",
+            "itemOffsetX": -4.6875,
+            "itemOffsetY": 23.4375
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G9",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 11
+        },
+        {
+          "id": "G12",
+          "type": "breakable",
+          "x": 281.25,
+          "y": 944.34375,
+          "baseX": 281.25,
+          "baseY": 944.34375,
+          "spawnPlan": {
+            "segmentId": 12,
+            "referenceRawType": 2
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G11",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 12
+        },
+        {
+          "id": "G13",
+          "type": "normal",
+          "x": 588.28125,
+          "y": 1002.9375,
+          "baseX": 588.28125,
+          "baseY": 1002.9375,
+          "spawnPlan": {
+            "segmentId": 13,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G11",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 13
+        },
+        {
+          "id": "G14",
+          "type": "normal",
+          "x": 412.5,
+          "y": 1061.53125,
+          "baseX": 412.5,
+          "baseY": 1061.53125,
+          "spawnPlan": {
+            "segmentId": 14,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G13",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 14
+        },
+        {
+          "id": "G15",
+          "type": "normal",
+          "x": 487.5,
+          "y": 1120.125,
+          "baseX": 487.5,
+          "baseY": 1120.125,
+          "spawnPlan": {
+            "segmentId": 15,
+            "referenceRawType": 0,
+            "content": "item",
+            "itemType": "spring",
+            "itemOffsetX": -16.40625,
+            "itemOffsetY": 23.4375
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G14",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 15
+        },
+        {
+          "id": "G16",
+          "type": "normal",
+          "x": 431.25,
+          "y": 1377.9375,
+          "baseX": 431.25,
+          "baseY": 1377.9375,
+          "spawnPlan": {
+            "segmentId": 16,
+            "referenceRawType": 0,
+            "collectibleOffsetX": -41.015625,
+            "collectibleVariant": 3
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G15",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 16
+        },
+        {
+          "id": "G17",
+          "type": "normal",
+          "x": 269.53125,
+          "y": 1436.53125,
+          "baseX": 269.53125,
+          "baseY": 1436.53125,
+          "spawnPlan": {
+            "segmentId": 17,
+            "referenceRawType": 0,
+            "content": "item",
+            "itemType": "trampoline",
+            "itemOffsetX": 2.34375,
+            "itemOffsetY": 18.75
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G16",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 17
+        }
+      ],
+      "enemies": [],
+      "lastLandedPlatformId": "P0"
+    },
+    "controls": {
+      "listenerCount": 2,
+      "timerCount": 0,
+      "sampleCount": 0,
+      "sensorSubscribed": false,
+      "keyboardMode": true,
+      "enabled": false,
+      "pointerActive": false,
+      "pointerMoved": false,
+      "horizontal": 0
+    }
+  },
+  "finalState": {
+    "state": "Playing",
+    "view": {
+      "collectibles": [
+        {
+          "id": "carrot:G527",
+          "anchorPlatformId": "G527",
+          "x": 443.2897722042092,
+          "y": 67032.96875,
+          "offsetX": -26.953125,
+          "layoutOffsetX": -26.953125,
+          "variant": 1
+        }
+      ],
+      "collectedCarrotCount": 43,
+      "projectiles": [],
+      "playerX": 248.0475769516258,
+      "playerY": 66363.58393211955,
+      "velocityX": 204.15489748120308,
+      "velocityY": -556.875,
+      "cameraBottomY": 65856.8882446289,
+      "maxAbsoluteWorldY": 66561.4663696289,
+      "elapsedSeconds": 125.24999999999417,
+      "droppedFrameSeconds": 0.29250000000000076,
+      "landingCount": 112,
+      "combat": {
+        "hitCount": 8,
+        "killCount": 8,
+        "stompCount": 1,
+        "smallMonsterKills": 2,
+        "largeMonsterKills": 0,
+        "hopperMonsterKills": 0,
+        "weaverMonsterKills": 0,
+        "hoverMonsterKills": 3,
+        "flyerMonsterKills": 0,
+        "tallMonsterKills": 1,
+        "runnerMonsterKills": 1,
+        "bouncerMonsterKills": 1
+      },
+      "hazards": [],
+      "hazardStats": {
+        "ufoInterruptCount": 5
+      },
+      "items": [],
+      "itemStatus": {
+        "flightRemainingSeconds": 0,
+        "shieldRemainingSeconds": 0,
+        "trampolineJumpActive": false,
+        "trampolineJumpProgress": 0,
+        "headStartRemainingSeconds": 0,
+        "itemPickupCount": 12,
+        "jetpackPickupCount": 2,
+        "usedHeadStart": false,
+        "springShoesRemainingSeconds": 0,
+        "shoeBounceFrame": -1,
+        "trampolineCompressionFrames": 0,
+        "flightVelocity": 1873.125,
+        "inheritedFlightVelocity": false,
+        "flightJustStarted": false
+      },
+      "seed": 260786516,
+      "generatorCursor": 529,
+      "degradedGenerationCount": 1,
+      "itemRandomCursor": 375,
+      "platforms": [
+        {
+          "id": "G515",
+          "type": "moving",
+          "x": 289.26567506285176,
+          "y": 65472.625,
+          "baseX": 450,
+          "baseY": 65472.625,
+          "spawnPlan": {
+            "segmentId": 383,
+            "referenceRawType": 1
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G514",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 515
+        },
+        {
+          "id": "G516",
+          "type": "moving",
+          "x": 375.6137053465272,
+          "y": 65540.59375,
+          "baseX": 499.21875,
+          "baseY": 65540.59375,
+          "spawnPlan": {
+            "segmentId": 384,
+            "referenceRawType": 1,
+            "collectibleOffsetX": -41.015625,
+            "collectibleVariant": 1
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G515",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 516
+        },
+        {
+          "id": "G517",
+          "type": "moving",
+          "x": 537.4137128631621,
+          "y": 65685.90625,
+          "baseX": 168.75,
+          "baseY": 65685.90625,
+          "spawnPlan": {
+            "segmentId": 385,
+            "referenceRawType": 1
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G516",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 517
+        },
+        {
+          "id": "G518",
+          "type": "normal",
+          "x": 325.78125,
+          "y": 65742.15625,
+          "baseX": 325.78125,
+          "baseY": 65742.15625,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G517",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 518
+        },
+        {
+          "id": "G519",
+          "type": "disappearing",
+          "x": 581.25,
+          "y": 65906.21875,
+          "baseX": 581.25,
+          "baseY": 65906.21875,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 3
+          },
+          "width": 133.59375,
+          "collisionEnabled": false,
+          "consumed": true,
+          "warningProgress": 1,
+          "predecessorId": "G518",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 519
+        },
+        {
+          "id": "G520",
+          "type": "disappearing",
+          "x": 128.90625,
+          "y": 65976.53125,
+          "baseX": 128.90625,
+          "baseY": 65976.53125,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 3
+          },
+          "width": 133.59375,
+          "collisionEnabled": false,
+          "consumed": true,
+          "warningProgress": 1,
+          "predecessorId": "G519",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 520
+        },
+        {
+          "id": "G521",
+          "type": "disappearing",
+          "x": 461.71875,
+          "y": 66096.0625,
+          "baseX": 461.71875,
+          "baseY": 66096.0625,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 3
+          },
+          "width": 133.59375,
+          "collisionEnabled": false,
+          "consumed": true,
+          "warningProgress": 1,
+          "predecessorId": "G520",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 521
+        },
+        {
+          "id": "G522",
+          "type": "normal",
+          "x": 234.375,
+          "y": 66234.34375,
+          "baseX": 234.375,
+          "baseY": 66234.34375,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 9,
+            "content": "enemy",
+            "enemyType": "hover",
+            "enemyOffsetX": 0,
+            "enemyOffsetY": 0,
+            "entityOnly": true
+          },
+          "width": 133.59375,
+          "collisionEnabled": false,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G521",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 522
+        },
+        {
+          "id": "G523",
+          "type": "disappearing",
+          "x": 321.09375,
+          "y": 66377.3125,
+          "baseX": 321.09375,
+          "baseY": 66377.3125,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 3
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G521",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 523
+        },
+        {
+          "id": "G524",
+          "type": "normal",
+          "x": 602.34375,
+          "y": 66468.71875,
+          "baseX": 602.34375,
+          "baseY": 66468.71875,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G523",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 524
+        },
+        {
+          "id": "G525",
+          "type": "normal",
+          "x": 203.90625,
+          "y": 66553.09375,
+          "baseX": 203.90625,
+          "baseY": 66553.09375,
+          "spawnPlan": {
+            "segmentId": 386,
+            "patternId": 16,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G524",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 525
+        },
+        {
+          "id": "G526",
+          "type": "normal",
+          "x": 452.34375,
+          "y": 66764.03125,
+          "baseX": 452.34375,
+          "baseY": 66764.03125,
+          "spawnPlan": {
+            "segmentId": 387,
+            "referenceRawType": 0
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G525",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 526
+        },
+        {
+          "id": "G527",
+          "type": "moving",
+          "x": 470.2428972042092,
+          "y": 66974.96875,
+          "baseX": 660.9375,
+          "baseY": 66974.96875,
+          "spawnPlan": {
+            "segmentId": 388,
+            "referenceRawType": 1,
+            "collectibleOffsetX": -26.953125,
+            "collectibleVariant": 1
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G526",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 527
+        },
+        {
+          "id": "G528",
+          "type": "breakable",
+          "x": 616.40625,
+          "y": 67185.90625,
+          "baseX": 616.40625,
+          "baseY": 67185.90625,
+          "spawnPlan": {
+            "segmentId": 389,
+            "referenceRawType": 2
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G527",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": false,
+          "layerIndex": 528
+        },
+        {
+          "id": "G529",
+          "type": "moving",
+          "x": 511.76184979971936,
+          "y": 67303.09375,
+          "baseX": 379.6875,
+          "baseY": 67303.09375,
+          "spawnPlan": {
+            "segmentId": 390,
+            "referenceRawType": 1
+          },
+          "width": 133.59375,
+          "collisionEnabled": true,
+          "consumed": false,
+          "warningProgress": 0,
+          "predecessorId": "G527",
+          "generationAttempts": 1,
+          "degraded": false,
+          "mainRoute": true,
+          "layerIndex": 529
+        }
+      ],
+      "enemies": [],
+      "lastLandedPlatformId": "G520"
+    },
+    "controls": {
+      "listenerCount": 2,
+      "timerCount": 0,
+      "sampleCount": 0,
+      "sensorSubscribed": false,
+      "keyboardMode": true,
+      "enabled": true,
+      "pointerActive": false,
+      "pointerMoved": false,
+      "horizontal": 0
+    }
+  },
+  "nativeStates": [
+    {
+      "at": 0.0037000000178813936,
+      "state": "SensorCalibrating"
+    },
+    {
+      "at": 0.05030000001192093,
+      "state": "Playing"
+    },
+    {
+      "at": 88.13059999999403,
+      "state": "Failing"
+    },
+    {
+      "at": 88.94390000000595,
+      "state": "Result"
+    }
+  ],
+  "nativeMoves": [],
+  "freezeFrames": false,
+  "controlMode": "canvas-keyboard",
+  "steeringAudit": {
+    "beforeX": 375,
+    "leftX": 298.4204183258493,
+    "rightX": 363.72230845047403,
+    "leftVelocity": -434.335570782423,
+    "rightVelocity": 432.42520093917847
+  },
+  "horizontalMotion": {
+    "horizontalSpan": 744.6542826048495,
+    "horizontalTravel": 11213.120863690396,
+    "movingFraction": 0.8556962025316456,
+    "leftMovingFraction": 0.4430379746835443,
+    "rightMovingFraction": 0.41265822784810124,
+    "sampleCount": 395
+  },
+  "sceneTour": true,
+  "lobby": {
+    "source": "local/dunk-promo-20261024-lobby-outro/raw/lobby-outro.mkv",
+    "sourceStart": 0.1,
+    "at": 37.5,
+    "duration": 7.0,
+    "cadence": {
+      "actualFps": 59.862316671655186,
+      "medianFrameMs": 16.999999999999794,
+      "p99FrameMs": 18.00000000000024,
+      "maxFrameMs": 32.999999999999915
+    },
+    "publicOnly": true,
+    "shownIds": [
+      "bubble-shooter",
+      "catch",
+      "chess-endless",
+      "cyblockbees",
+      "doodle-jump",
+      "flappy-dunk",
+      "game2048",
+      "meowdoku",
+      "multi-color-fill",
+      "ping-pong",
+      "rotate-rings",
+      "sliding-puzzle",
+      "watermelon",
+      "wrestle-jump"
+    ]
+  },
+  "ending": {
+    "at": 44.2,
+    "duration": 4.5,
+    "source": "local/promo-20261025-doodle-observe-edit/edit/end-card.png",
+    "logoWidth": 622
+  },
+  "gameViewport": {
+    "x": 89,
+    "y": 138,
+    "width": 902,
+    "height": 1604,
+    "fullNativeScreenVisible": true
+  },
+  "sequence": [
+    "native-gameplay",
+    "lobby-scroll",
+    "brand-search-ending"
+  ],
+  "transitionSeconds": 0.3,
+  "sceneTransition": {
+    "type": "fade",
+    "seconds": 0.4,
+    "brandingFixed": true
+  },
+  "editPlan": {
+    "transition": {
+      "type": "fade",
+      "seconds": 0.4
+    },
+    "cuts": [
+      {
+        "sourceIndex": 1,
+        "start": 10.5,
+        "end": 18.5,
+        "label": "草地跳跃与旋翼帽",
+        "theme": "backgroundWarm",
+        "powers": [
+          "propeller-hat"
+        ],
+        "shooting": false
+      },
+      {
+        "sourceIndex": 2,
+        "start": 56.6,
+        "end": 60.1,
+        "label": "拾取喷气背包并起飞",
+        "theme": "transitionWarmSky",
+        "powers": [
+          "jetpack"
+        ],
+        "shooting": false
+      },
+      {
+        "sourceIndex": 0,
+        "start": 51.6,
+        "end": 58.6,
+        "label": "蓝天连续左右跨平台",
+        "theme": "backgroundSky",
+        "zeroProjectiles": true,
+        "shooting": false
+      },
+      {
+        "sourceIndex": 6,
+        "start": 9.8,
+        "end": 17.1,
+        "label": "先看怪物活动，再单发命中",
+        "theme": "backgroundCloud",
+        "combat": true,
+        "showcase": true,
+        "shooting": true
+      },
+      {
+        "sourceIndex": 3,
+        "start": 5.3,
+        "end": 12.3,
+        "label": "云层继续跳跃",
+        "theme": "backgroundCloud",
+        "zeroProjectiles": true,
+        "shooting": false
+      },
+      {
+        "sourceIndex": 4,
+        "start": 49.5,
+        "end": 56.5,
+        "label": "星空连续跳跃与金萝卜",
+        "theme": "backgroundStar",
+        "zeroProjectiles": true,
+        "shooting": false
+      }
+    ]
+  },
+  "zeroProjectilesInSelectedClips": false
+}

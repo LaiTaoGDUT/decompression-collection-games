@@ -1,6 +1,7 @@
 import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
 import { setLabelBold } from '../../../services/font/FontBinding';
 import { DailyToolRewardAnimation } from '../../../shared/ui/DailyToolRewardAnimation';
+import { canReceiveDailyReward, type ServerTimeService } from '../../../services/cloud/ServerTimeService';
 import {
     _decorator,
     BlockInputEvents,
@@ -171,12 +172,6 @@ function likeHandReach(
     return reach;
 }
 
-/** 今天的 `YYYY-MM-DD`（每日道具的判重键）。 */
-function todayStamp(): string {
-    const now = new Date();
-    const two = (value: number): string => (value < 10 ? `0${value}` : String(value));
-    return `${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())}`;
-}
 /** 存档版本；已有题目或存档结构不兼容时加 1；仅追加关卡和兼容字段沿用版本。 */
 const MEOWDOKU_DATA_VERSION = 7;
 /** 连续失败到几次时，下一局免费送一只猫（原作 `_pre_cat_pending_struggle`）。 */
@@ -387,6 +382,7 @@ interface MeowdokuToolStock {
 }
 
 export interface MeowdokuServices {
+    readonly serverTime?: ServerTimeService;
     readonly assets: AssetService;
     readonly audio: AudioService;
     readonly feedback: FeedbackService;
@@ -5610,8 +5606,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
 
     /** 每天首次进入时找猫和提示各送一个，库存和领取日期一次保存。 */
     private grantDailyTools(): MeowdokuTool[] {
-        const today = todayStamp();
-        if (this.toolStock.day === today) return [];
+        const today = this.context?.services.serverTime?.day;
+        if (!today) return [];
+        if (this.toolStock.day > today) { this.toolStock.day = today; this.persistToolStock(); return []; }
+        if (!canReceiveDailyReward(this.toolStock.day, today)) return [];
         const tools: MeowdokuTool[] = ['locate', 'hint'];
         this.toolStock.day = today;
         for (const tool of tools) this.toolStock[tool] = (this.toolStock[tool] ?? 0) + 1;

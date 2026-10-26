@@ -76,8 +76,7 @@ export interface FontConfig {
 export interface AppConfig {
     readonly cloudSave: {
         readonly enabled: boolean;
-        readonly environmentId: string;
-        readonly functionName: string;
+        readonly baseUrl: string;
         readonly requestTimeoutMs: number;
     };
     readonly schemaVersion: number;
@@ -135,7 +134,7 @@ function normalizeValue<T>(fallback: T, value: unknown): T {
 }
 
 const APP_CONFIG_DEFAULTS: AppConfig = {
-    cloudSave: { enabled: false, environmentId: '', functionName: 'cloudSave', requestTimeoutMs: 10000 },
+    cloudSave: { enabled: false, baseUrl: '', requestTimeoutMs: 10000 },
     schemaVersion: 3,
     appVersion: '0.1.0',
     defaultLanguage: 'zh-CN',

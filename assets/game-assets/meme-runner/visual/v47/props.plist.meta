@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "93d2ba5b-092d-512e-9031-03d609f6b4fe",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "f7bfe": {
+      "importer": "sprite-frame",
+      "uuid": "93d2ba5b-092d-512e-9031-03d609f6b4fe@f7bfe",
+      "displayName": "",
+      "id": "f7bfe",
+      "name": "balloons",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 56,
+        "height": 84,
+        "rawWidth": 56,
+        "rawHeight": 84,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "97344b2a-3b86-5c64-8270-8bc7be2d9ac7@6c48a",
+        "atlasUuid": "93d2ba5b-092d-512e-9031-03d609f6b4fe",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "props.png",
+    "format": 2,
+    "uuid": "93d2ba5b-092d-512e-9031-03d609f6b4fe",
+    "textureUuid": "97344b2a-3b86-5c64-8270-8bc7be2d9ac7@6c48a"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "sling-puck-effects": [
+    "visual/audio/clack-soft-v1",
+    "visual/audio/clack-hard-v1",
+    "visual/audio/rail-v1",
+    "visual/audio/launch-soft-v1",
+    "visual/audio/launch-hard-v1",
+    "visual/audio/gate-v1",
+    "visual/audio/clean-v1",
+    "visual/audio/round-win-v1",
+    "visual/audio/round-lose-v1",
+    "visual/audio/match-win-v1",
+    "visual/audio/match-lose-v1",
+    "visual/audio/tick-v1",
+    "visual/audio/go-v1",
+    "visual/audio/grab-v1",
+    "visual/audio/ui-tap-v1"
+  ]
+}

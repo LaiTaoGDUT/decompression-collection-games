@@ -1,0 +1,43 @@
+{
+  "theme": "云端造城 / 城市广场",
+  "textures": {
+    "pavers": {
+      "pixels": [
+        256,
+        256
+      ],
+      "worldRepeat": 1.8
+    },
+    "city": {
+      "pixels": [
+        787,
+        321
+      ],
+      "sourceBounds": [
+        11,
+        85,
+        1801,
+        816
+      ],
+      "source": "highrise-city",
+      "worldWidth": 10.0,
+      "worldHeight": 4.083798882681564,
+      "depth": 8.5,
+      "tintAlpha": 230
+    }
+  },
+  "frames": {
+    "fence": {
+      "pixels": [
+        796,
+        75
+      ],
+      "sourceBounds": [
+        18,
+        381,
+        1756,
+        544
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+EDIT the attached image (it is the edit target, not a style reference). It is a transparent-background side-scrolling game background strip that was cut in two and swapped, so there is a hard vertical seam exactly down the middle where the scenery does not match.
+
+Repaint ONLY a narrow vertical band around the centre (about 18% of the width, centred on the seam) so the scenery flows continuously from the left half into the right half: ground heights, hills, water and shorelines, paths, hedges, trees, flowers and lights join naturally, as if it had always been one continuous panorama. No visible seam, no doubled or cut-off objects in the band.
+
+Keep everything outside that central band EXACTLY as it is: same pixels, same positions, same scale, same colours, same transparent area. Keep the transparent background fully transparent above the scenery. Same canvas size, same felt / wool miniature style and lighting. No text, no frame.

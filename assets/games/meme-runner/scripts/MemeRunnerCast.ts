@@ -1,29 +1,16 @@
-import { Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
-import { bananaMotion, popcatPose, RUNNER, type MemeRunnerModel, type RunnerCompanion } from './MemeRunnerModel';
-import { BULL_RUN_FRAME_COUNT, bullRunFrame, DRAGON_REACTION_DURATION, dragonReactionFrame, KANGAROO_RUN_FRAME_COUNT, SPINNER_FRAME_COUNT, STOP_MOTION_STEP, stopMotionFrame } from './MemeRunnerMotion';
-import { BULL_BACK_Y, RIDER_SEAT_Y } from './MemeRunnerRideAnchors';
+import { Color, Graphics, Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
+import { compressorPose, hopperMotion, RUNNER, type MemeRunnerModel, type RunnerDevice } from './MemeRunnerModel';
+import { KANGAROO_RUN_FRAME_COUNT, stopMotionFrame } from './MemeRunnerMotion';
+import { V48_ART } from './MemeRunnerArtV48';
+import { CART_DECK_Y, RIDER_SEAT_Y } from './MemeRunnerRideAnchors';
 
-/** Felt stop-motion drawings. Bull: trot, two idle, air, landing. Dragon: two idle, squash, rebound,
- * two laughs. Kangaroo: hop cycle, lunge, grab. Banana: stand, crouch, rise, fall. Nyan is the flying obstacle. */
-export const CAST_LAYOUT = {
-    bull: { width: 208, height: 144, frames: BULL_RUN_FRAME_COUNT + 4 },
-    dragon: { width: 224, height: 128, frames: 6 },
-    kangaroo: { width: 176, height: 176, frames: KANGAROO_RUN_FRAME_COUNT + 2 },
-    spinner: { width: 224, height: 144, frames: SPINNER_FRAME_COUNT },
-    popcat: { width: 128, height: 128, frames: 4 },
-    banana: { width: 128, height: 128, frames: 4 },
-    nyan: { width: 176, height: 80, frames: 2 },
-};
-/** Friends (dragon, bull) carry the teal "land here" pin and ground ring; hazards never do. */
-const FRIEND = { pin: [56, 64], ring: [200, 48] };
-export const CAST_FRAME_SOURCES: ReadonlyArray<{ key: string; path: string }> =
-    Object.keys(CAST_LAYOUT).reduce<Array<{ key: string; path: string }>>((all, name) => all.concat(
-        Array.from({ length: CAST_LAYOUT[name].frames }, (_, i) => ({ key: `${name}-${i}`, path: `visual/v42/frames/${name}-${i}/spriteFrame` }))),
-    ['friend-pin', 'friend-ring'].map(key => ({ key, path: `visual/v42/frames/${key}/spriteFrame` })));
-
+/** The kangaroo is the only supporting character; every course interaction is a street machine. */
+export const CAST_FRAME_SOURCES: ReadonlyArray<{ key: string; path: string }> = [
+    ...Array.from({ length: KANGAROO_RUN_FRAME_COUNT + 2 }, (_, i) => ({ key: `kangaroo-${i}`, path: `visual/v42/frames/kangaroo-${i}/spriteFrame` })),
+    ...['friend-pin', 'friend-ring'].map(key => ({ key, path: `visual/v42/frames/${key}/spriteFrame` })),
+];
 interface CastView { node: Node; sprite: Sprite; opacity: UIOpacity; frame: string; pin?: Node; ring?: Node; }
 
-/** Only selects complete painted drawings; physics and animation share the model clock. */
 export class MemeRunnerCast {
     readonly actors = new Map<number, CastView>();
     private readonly pursuer: CastView;
@@ -31,18 +18,35 @@ export class MemeRunnerCast {
         this.pursuer = this.create('kangaroo', 'Pursuer');
     }
     private create(kind: string, name: string): CastView {
-        const d = CAST_LAYOUT[kind], node = new Node(name); node.layer = this.parent.layer; node.parent = this.parent;
-        const transform = node.addComponent(UITransform); transform.setContentSize(d.width, d.height); transform.setAnchorPoint(.5, 0);
+        const enemy = kind === 'stomper' || kind === 'electric';
+        const [w, h] = kind === 'kangaroo' ? [176, 176] : enemy ? [84, 98] : V48_ART[`${kind}-0`].size;
+        const node = new Node(name); node.layer = this.parent.layer; node.parent = this.parent;
+        const transform = node.addComponent(UITransform); transform.setContentSize(w, h); transform.setAnchorPoint(.5, 0);
         const sprite = node.addComponent(Sprite); sprite.sizeMode = Sprite.SizeMode.CUSTOM; sprite.trim = false;
         const opacity = node.addComponent(UIOpacity);
-        if (kind === 'banana') node.setScale(-1, 1, 1);
-        if (kind !== 'dragon' && kind !== 'bull') return { node, sprite, opacity, frame: '' };
-        // The ring lies under the friend's feet, so it is a sibling drawn first; the pin rides above it.
-        const ring = this.marker('FriendRing', this.parent, 'friend-ring', FRIEND.ring); ring.setSiblingIndex(node.getSiblingIndex());
-        ring.addComponent(UIOpacity);
-        return { node, sprite, opacity, frame: '', pin: this.marker('FriendPin', node, 'friend-pin', FRIEND.pin), ring };
+        if (enemy) {
+            const marking = new Node('EnemyContactMark'); marking.layer = node.layer; marking.parent = node;
+            const g = marking.addComponent(Graphics);
+            g.strokeColor = new Color(kind === 'stomper' ? '#86FFE0' : '#FFC069'); g.lineWidth = 6;
+            if (kind === 'stomper') {
+                g.moveTo(-31, 76); g.lineTo(31, 76); g.stroke();
+                g.moveTo(-9, 94); g.lineTo(0, 85); g.lineTo(9, 94); g.stroke();
+            } else {
+                g.moveTo(5, 103); g.lineTo(-7, 87); g.lineTo(6, 87); g.lineTo(-4, 70); g.stroke();
+                g.strokeColor = new Color('#ED73FF'); g.lineWidth = 4;
+                g.roundRect(-44, -2, 88, 82, 10); g.stroke();
+            }
+        }
+        if (kind === 'compressor') {
+            const signal = new Node('ChargeSignal'); signal.layer = node.layer; signal.parent = node;
+            const g = signal.addComponent(Graphics); g.fillColor = new Color('#FFAE51'); g.circle(35, 100, 8); g.fill();
+        }
+        if (kind !== 'launcher' && kind !== 'cart') return { node, sprite, opacity, frame: '' };
+        const ring = this.marker('DeviceLandingRing', this.parent, 'friend-ring', 200, 48);
+        ring.setSiblingIndex(node.getSiblingIndex()); ring.addComponent(UIOpacity);
+        return { node, sprite, opacity, frame: '', pin: this.marker('DeviceLandingPin', node, 'friend-pin', 56, 64), ring };
     }
-    private marker(name: string, parent: Node, key: string, [w, h]: number[]): Node {
+    private marker(name: string, parent: Node, key: string, w: number, h: number): Node {
         const n = new Node(name); n.layer = parent.layer; n.parent = parent; n.addComponent(UITransform).setContentSize(w, h);
         const s = n.addComponent(Sprite); s.sizeMode = Sprite.SizeMode.CUSTOM; s.trim = false; s.spriteFrame = this.frames[key];
         return n;
@@ -56,24 +60,28 @@ export class MemeRunnerCast {
         if (view.frame === key) return;
         view.frame = key; view.sprite.spriteFrame = this.frames[key];
     }
-    /** `clock` is the presentation's stop-motion clock: it keeps running through the run-in and the ending. */
     update(model: MemeRunnerModel, heroX: number, floor: number, left: number, right: number, clock: number, endingAge = 0, entry?: { pursuerX: number }): void {
         const present = new Set<number>();
-        for (const c of model.companions) {
+        for (const c of model.devices) {
             const x = heroX + c.x + c.width / 2 + c.offset - model.x;
             if (!c.active || x < left - 150 || x > right + 150) continue;
             present.add(c.id); let view = this.actors.get(c.id);
-            if (!view) { view = this.create(c.kind, `Cast-${c.kind}-${c.id}`); this.actors.set(c.id, view); }
-            view.node.setPosition(x, floor + c.y);
-            view.opacity.opacity = 255;
-            this.setFrame(view, `${c.kind}-${this.frame(c, model)}`);
+            if (!view) { view = this.create(c.kind, `Device-${c.kind}-${c.id}`); this.actors.set(c.id, view); }
+            view.node.setPosition(x, floor + c.y); view.opacity.opacity = 255;
+            this.setFrame(view, `${c.kind === 'stomper' || c.kind === 'electric' ? 'hopper' : c.kind}-${this.frame(c, model)}`);
+            if (c.kind === 'stomper' || c.kind === 'electric') view.sprite.color = new Color(c.kind === 'stomper' ? '#A7E9DB' : '#D59FE8');
+            if (c.kind === 'compressor') {
+                const pose = compressorPose(c.visibleAge), signal = view.node.getChildByName('ChargeSignal')!;
+                signal.active = pose > 0;
+                view.sprite.color = new Color(pose === 2 ? '#FFD18A' : pose === 1 ? '#FFF0CD' : '#FFFFFF');
+                signal.setScale(pose === 2 ? 1.2 : 1, pose === 2 ? 1.2 : 1, 1);
+            }
             if (view.pin && view.ring) {
-                // Only while it can still be used: a ridden or bounced friend, or a bull during Fever, drops the markers.
-                const available = !c.used && !model.mounted && (c.kind === 'dragon' || model.feverTime <= 0);
+                const available = !c.used && !model.mounted && (c.kind === 'launcher' || model.feverTime <= 0);
                 view.pin.active = view.ring.active = available;
                 if (available) {
-                    view.pin.setPosition(0, c.height + 52 + 6 * Math.sin(model.time * 5));
-                    view.ring.setPosition(x, floor + c.y + 4); view.ring.setScale(c.width * 1.15 / FRIEND.ring[0], 1, 1);
+                    view.pin.setPosition(0, c.height + 48 + 6 * Math.sin(model.time * 5));
+                    view.ring.setPosition(x, floor + c.y + 4); view.ring.setScale(c.width * 1.15 / 200, 1, 1);
                     view.ring.getComponent(UIOpacity)!.opacity = 190 + Math.round(55 * Math.sin(model.time * 5));
                 }
             }
@@ -81,41 +89,26 @@ export class MemeRunnerCast {
         for (const [id, view] of Array.from(this.actors.entries())) if (!present.has(id)) { this.destroy(view); this.actors.delete(id); }
         const offscreen = left - 115, caught = model.ended && !model.delivered;
         const approach = offscreen + (heroX - 155 - offscreen) * model.chase;
-        // Caught: the pursuer closes in and grabs. Delivered: it gives up and drops back out of sight.
         const chaseX = entry?.pursuerX ?? (caught ? approach + (heroX - 65 - approach) * Math.min(1, endingAge / .7)
             : model.delivered ? approach - 420 * endingAge : approach);
         this.pursuer.node.setPosition(chaseX, floor);
         this.pursuer.opacity.opacity = model.delivered ? Math.round(255 * Math.max(0, 1 - endingAge / .5)) : 255;
-        this.setFrame(this.pursuer, `kangaroo-${caught ? KANGAROO_RUN_FRAME_COUNT + (endingAge < 2 * STOP_MOTION_STEP ? 0 : 1) : stopMotionFrame(clock, KANGAROO_RUN_FRAME_COUNT)}`);
+        this.setFrame(this.pursuer, `kangaroo-${caught ? KANGAROO_RUN_FRAME_COUNT + (endingAge < 1 / 6 ? 0 : 1) : stopMotionFrame(clock, KANGAROO_RUN_FRAME_COUNT)}`);
     }
+    /** Align the painted rump's contact plane to the painted deck, independent of alpha margins. */
     riderOffset(model: MemeRunnerModel, riderFrame: string): number {
-        if (!model.mounted) return 0;
-        const view = this.actors.get(model.mounted);
-        if (!view || !riderFrame.startsWith('ride-')) return 0;
-        const bullFrame = Number(view.frame.slice(5)), seat = RIDER_SEAT_Y[Number(riderFrame.slice(5))];
-        return seat === undefined ? 0 : BULL_BACK_Y[bullFrame] - seat - RUNNER.rideHeight;
+        const seat = RIDER_SEAT_Y[Number(riderFrame.slice(5))];
+        return model.mounted && riderFrame.startsWith('ride-') && seat !== undefined ? CART_DECK_Y - RUNNER.rideHeight - seat : 0;
     }
-    private frame(c: RunnerCompanion, m: MemeRunnerModel): number {
-        if (c.kind === 'dragon') {
-            if (c.used && c.actionAge < DRAGON_REACTION_DURATION) return dragonReactionFrame(c.actionAge);
-            // Idle on its back: a happy face with a short squeezed-eye giggle every second and a half.
-            return stopMotionFrame(c.age, 18) === 17 ? 1 : 0;
-        }
-        if (c.kind === 'bull') {
-            const ridden = m.mounted === c.id;
-            if (ridden && !m.grounded) return BULL_RUN_FRAME_COUNT + 2;
-            if (ridden && (m.landAge < .09 || m.breakAge < .15)) return BULL_RUN_FRAME_COUNT + 3;
-            // Waiting, it shifts its weight every half second; ridden or released, it trots on the model clock.
-            return ridden || c.used ? bullRunFrame(m.time) : BULL_RUN_FRAME_COUNT + Math.floor(c.age * 2) % 2;
-        }
-        if (c.kind === 'spinner') return stopMotionFrame(c.visibleAge, SPINNER_FRAME_COUNT);
-        if (c.kind === 'popcat') return popcatPose(c.visibleAge);
-        const jump = bananaMotion(c.visibleAge);
-        return jump.grounded ? 0 : jump.jumpAge < STOP_MOTION_STEP ? 1 : jump.vy > 0 ? 2 : 3;
+    private frame(c: RunnerDevice, m: MemeRunnerModel): number {
+        if (c.kind === 'launcher') return c.used && c.actionAge < .2 ? 1 : 0;
+        if (c.kind === 'cart') return m.mounted === c.id || c.used ? stopMotionFrame(m.time, 2) : 0;
+        if (c.kind === 'saw') return stopMotionFrame(c.visibleAge, 2);
+        if (c.kind === 'compressor') return compressorPose(c.visibleAge) === 3 ? 1 : 0;
+        if (c.kind === 'stomper' || c.kind === 'electric') return stopMotionFrame(c.visibleAge, 2);
+        const jump = hopperMotion(c.visibleAge);
+        return jump.grounded ? 1 : 0;
     }
-    reset(): void {
-        for (const view of Array.from(this.actors.values())) this.destroy(view);
-        this.actors.clear();
-    }
+    reset(): void { for (const view of Array.from(this.actors.values())) this.destroy(view); this.actors.clear(); }
     dispose(): void { this.reset(); this.pursuer.sprite.spriteFrame = null; this.pursuer.node.destroy(); }
 }

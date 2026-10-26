@@ -1,5 +1,18 @@
 import { Button, Color, Label, Node, Sprite, SpriteFrame, UITransform } from 'cc';
 import { setLabelBold } from '../../../services/font/FontBinding';
+import type { HitCause } from './MemeRunnerModel';
+
+export function runnerFailureHint(cause: HitCause): string {
+    const hints: Partial<Record<HitCause, string>> = {
+        fall: '落点没接上，留一次空中跳跃', crate: '碰到纸箱了，提前起跳', 'drop-crate': '留意落箱预警，落地前起跳',
+        tower: '箱塔较高，空中再跳一次', wall: '箱墙较宽，空中再跳一次', spikes: '地刺较宽，空中再跳一次',
+        bar: '横幅门要按住滑铲', 'drone-high': '高位无人机要按住滑铲', 'drone-low': '低位无人机要提前起跳',
+        roller: '滚桶迎面过来，要提早起跳', steam: '蒸汽喷口要起跳跨过', saw: '看准电锯往返再起跳',
+        hopper: '看准压力桶起落再跳', wave: '跟着压力波节奏连续起跳', compressor: '发射结束后还要跳过机身',
+        stomper: '巡逻机可从上方下落踩中', electric: '带电巡逻机四面都危险',
+    };
+    return hints[cause] ?? '再试一次，接稳下一个落点';
+}
 
 /** The v38 felt UI palette (visual spec): plum ink on cream felt, teal route, coin gold, fever orange. */
 export const RUNNER_UI = {

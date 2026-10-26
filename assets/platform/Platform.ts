@@ -45,6 +45,20 @@ export interface ShareMenuOptions {
 export type UpdateSubscriptionState =
     | 'accepted' | 'rejected' | 'blocked' | 'unknown' | 'unsupported' | 'failed';
 
+export interface PlatformJsonRequest {
+    readonly url: string;
+    readonly method: 'GET' | 'POST';
+    readonly data?: unknown;
+    readonly headers?: Readonly<Record<string, string>>;
+    readonly timeoutMs: number;
+}
+
+/** 平台适配层取得的临时票据；账号身份与 AppID 由服务端验证，不能由客户端指定。 */
+export interface CloudLoginCredential {
+    readonly platform: string;
+    readonly code: string;
+}
+
 /**
  * 业务层允许使用的平台能力边界。
  * 具体平台 SDK 类型和全局变量不得越过该接口进入业务层。
@@ -64,8 +78,8 @@ export interface Platform {
     getLaunchOptions(): LaunchOptions;
     /** 公共音频服务拥有上下文和生命周期；业务代码不访问平台音频 SDK。 */
     createAudioContext?(): PlatformAudioContext | undefined;
-    initializeCloud?(environmentId: string): Promise<void>;
-    callCloudFunction?(name: string, data: unknown, timeoutMs: number): Promise<unknown>;
+    requestJson?(request: PlatformJsonRequest): Promise<unknown>;
+    getCloudLoginCredential?(): Promise<CloudLoginCredential>;
     getUpdateSubscription?(): Promise<UpdateSubscriptionState>;
     /** 必须在真实 touchend 回调内同步调用；实现不得先异步查询授权状态。 */
     requestUpdateSubscription?(): Promise<UpdateSubscriptionState>;

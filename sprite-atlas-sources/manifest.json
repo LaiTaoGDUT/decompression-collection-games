@@ -1840,12 +1840,18 @@
           {
             "source": "visual/ui/meowdoku-like-fist-v2.png",
             "geometry": "full",
-            "resize": [99, 128]
+            "resize": [
+              99,
+              128
+            ]
           },
           {
             "source": "visual/ui/meowdoku-like-thumb-v2.png",
             "geometry": "full",
-            "resize": [99, 128]
+            "resize": [
+              99,
+              128
+            ]
           },
           {
             "source": "visual/ui/meowdoku-result-fail-cat-v1.png",
@@ -3900,48 +3906,6 @@
         ]
       },
       {
-        "path": "visual/opening-v27/story",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/opening-v27/comic.png",
-            "frame": "comic-0",
-            "name": "comic-0",
-            "resize": [
-              648,
-              432
-            ]
-          },
-          {
-            "source": "visual/opening-v27/comic.png",
-            "frame": "comic-1",
-            "name": "comic-1",
-            "resize": [
-              648,
-              432
-            ]
-          },
-          {
-            "source": "visual/opening-v27/comic.png",
-            "frame": "comic-2",
-            "name": "comic-2",
-            "resize": [
-              648,
-              432
-            ]
-          },
-          {
-            "source": "visual/opening-v27/comic.png",
-            "frame": "comic-3",
-            "name": "comic-3",
-            "resize": [
-              648,
-              432
-            ]
-          }
-        ]
-      },
-      {
         "path": "visual/v33/items",
         "maxSize": 2048,
         "frames": [
@@ -3960,16 +3924,6 @@
           {
             "source": "visual/v33/frames/shield-loop-3.png",
             "name": "shield-loop-3"
-          }
-        ]
-      },
-      {
-        "path": "visual/v34/effects",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/v34/frames/nyan-warning.png",
-            "name": "nyan-warning"
           }
         ]
       },
@@ -4144,240 +4098,12 @@
         ]
       },
       {
-        "path": "visual/v38/ground",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/v38/frames/ground-street.png",
-            "name": "ground-street"
-          },
-          {
-            "source": "visual/v38/frames/ground-alley.png",
-            "name": "ground-alley"
-          },
-          {
-            "source": "visual/v38/frames/ground-roofs.png",
-            "name": "ground-roofs"
-          },
-          {
-            "source": "visual/v38/frames/ground-night.png",
-            "name": "ground-night"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/backdrop-street",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/backdrop-street.png",
-            "name": "backdrop-street"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/backdrop-alley",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/backdrop-alley.png",
-            "name": "backdrop-alley"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/backdrop-roofs",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/backdrop-roofs.png",
-            "name": "backdrop-roofs"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/backdrop-night",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/backdrop-night.png",
-            "name": "backdrop-night"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/mid-street",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/mid-street-0.png",
-            "name": "mid-street-0"
-          },
-          {
-            "source": "visual/v38/frames/mid-street-1.png",
-            "name": "mid-street-1"
-          },
-          {
-            "source": "visual/v38/frames/mid-street-2.png",
-            "name": "mid-street-2"
-          },
-          {
-            "source": "visual/v38/frames/mid-street-3.png",
-            "name": "mid-street-3"
-          },
-          {
-            "source": "visual/v38/frames/mid-street-4.png",
-            "name": "mid-street-4"
-          },
-          {
-            "source": "visual/v38/frames/mid-street-5.png",
-            "name": "mid-street-5"
-          },
-          {
-            "source": "visual/v38/frames/plaza-street.png",
-            "name": "plaza-street"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/mid-alley",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/mid-alley-0.png",
-            "name": "mid-alley-0"
-          },
-          {
-            "source": "visual/v38/frames/mid-alley-1.png",
-            "name": "mid-alley-1"
-          },
-          {
-            "source": "visual/v38/frames/mid-alley-2.png",
-            "name": "mid-alley-2"
-          },
-          {
-            "source": "visual/v38/frames/mid-alley-3.png",
-            "name": "mid-alley-3"
-          },
-          {
-            "source": "visual/v38/frames/mid-alley-4.png",
-            "name": "mid-alley-4"
-          },
-          {
-            "source": "visual/v38/frames/mid-alley-5.png",
-            "name": "mid-alley-5"
-          },
-          {
-            "source": "visual/v38/frames/plaza-alley.png",
-            "name": "plaza-alley"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/mid-roofs",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/mid-roofs-0.png",
-            "name": "mid-roofs-0"
-          },
-          {
-            "source": "visual/v38/frames/mid-roofs-1.png",
-            "name": "mid-roofs-1"
-          },
-          {
-            "source": "visual/v38/frames/mid-roofs-2.png",
-            "name": "mid-roofs-2"
-          },
-          {
-            "source": "visual/v38/frames/mid-roofs-3.png",
-            "name": "mid-roofs-3"
-          },
-          {
-            "source": "visual/v38/frames/mid-roofs-4.png",
-            "name": "mid-roofs-4"
-          },
-          {
-            "source": "visual/v38/frames/mid-roofs-5.png",
-            "name": "mid-roofs-5"
-          },
-          {
-            "source": "visual/v38/frames/plaza-roofs.png",
-            "name": "plaza-roofs"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/mid-night",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/mid-night-0.png",
-            "name": "mid-night-0"
-          },
-          {
-            "source": "visual/v38/frames/mid-night-1.png",
-            "name": "mid-night-1"
-          },
-          {
-            "source": "visual/v38/frames/mid-night-2.png",
-            "name": "mid-night-2"
-          },
-          {
-            "source": "visual/v38/frames/mid-night-3.png",
-            "name": "mid-night-3"
-          },
-          {
-            "source": "visual/v38/frames/mid-night-4.png",
-            "name": "mid-night-4"
-          },
-          {
-            "source": "visual/v38/frames/mid-night-5.png",
-            "name": "mid-night-5"
-          },
-          {
-            "source": "visual/v38/frames/plaza-night.png",
-            "name": "plaza-night"
-          }
-        ]
-      },
-      {
-        "path": "visual/v38/foreground",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/v38/frames/fg-0.png",
-            "name": "fg-0"
-          },
-          {
-            "source": "visual/v38/frames/fg-1.png",
-            "name": "fg-1"
-          },
-          {
-            "source": "visual/v38/frames/fg-2.png",
-            "name": "fg-2"
-          }
-        ]
-      },
-      {
         "path": "visual/v38/finish",
         "maxSize": 1024,
         "frames": [
           {
             "source": "visual/v38/frames/arch.png",
             "name": "arch"
-          },
-          {
-            "source": "visual/v38/frames/customer-wait.png",
-            "name": "customer-wait"
-          },
-          {
-            "source": "visual/v38/frames/customer-cheer.png",
-            "name": "customer-cheer"
-          },
-          {
-            "source": "visual/v38/frames/customer-tea.png",
-            "name": "customer-tea"
           }
         ]
       },
@@ -4626,146 +4352,6 @@
         ]
       },
       {
-        "path": "visual/v38/dialog-art",
-        "maxSize": 2048,
-        "frames": [
-          {
-            "source": "visual/v38/frames/dlg-confetti.png",
-            "name": "dlg-confetti"
-          },
-          {
-            "source": "visual/v38/frames/dlg-art-win.png",
-            "name": "dlg-art-win"
-          },
-          {
-            "source": "visual/v38/frames/dlg-art-lose.png",
-            "name": "dlg-art-lose"
-          },
-          {
-            "source": "visual/v38/frames/dlg-art-pause.png",
-            "name": "dlg-art-pause"
-          }
-        ]
-      },
-      {
-        "path": "visual/v42/hero",
-        "maxSize": 1024,
-        "frames": [
-          {
-            "source": "visual/v42/frames/run-0.png",
-            "name": "run-0"
-          },
-          {
-            "source": "visual/v42/frames/run-1.png",
-            "name": "run-1"
-          },
-          {
-            "source": "visual/v42/frames/run-2.png",
-            "name": "run-2"
-          },
-          {
-            "source": "visual/v42/frames/run-3.png",
-            "name": "run-3"
-          },
-          {
-            "source": "visual/v42/frames/run-4.png",
-            "name": "run-4"
-          },
-          {
-            "source": "visual/v42/frames/run-5.png",
-            "name": "run-5"
-          },
-          {
-            "source": "visual/v42/frames/run-6.png",
-            "name": "run-6"
-          },
-          {
-            "source": "visual/v42/frames/run-7.png",
-            "name": "run-7"
-          },
-          {
-            "source": "visual/v42/frames/air-0.png",
-            "name": "air-0"
-          },
-          {
-            "source": "visual/v42/frames/air-1.png",
-            "name": "air-1"
-          },
-          {
-            "source": "visual/v42/frames/air-2.png",
-            "name": "air-2"
-          },
-          {
-            "source": "visual/v42/frames/air-3.png",
-            "name": "air-3"
-          },
-          {
-            "source": "visual/v42/frames/land-0.png",
-            "name": "land-0"
-          },
-          {
-            "source": "visual/v42/frames/double-0.png",
-            "name": "double-0"
-          },
-          {
-            "source": "visual/v42/frames/double-1.png",
-            "name": "double-1"
-          },
-          {
-            "source": "visual/v42/frames/double-2.png",
-            "name": "double-2"
-          },
-          {
-            "source": "visual/v42/frames/double-3.png",
-            "name": "double-3"
-          },
-          {
-            "source": "visual/v42/frames/slide-0.png",
-            "name": "slide-0"
-          },
-          {
-            "source": "visual/v42/frames/slide-1.png",
-            "name": "slide-1"
-          },
-          {
-            "source": "visual/v42/frames/hurt.png",
-            "name": "hurt"
-          },
-          {
-            "source": "visual/v42/frames/ride-0.png",
-            "name": "ride-0"
-          },
-          {
-            "source": "visual/v42/frames/ride-1.png",
-            "name": "ride-1"
-          },
-          {
-            "source": "visual/v42/frames/win-0.png",
-            "name": "win-0"
-          },
-          {
-            "source": "visual/v42/frames/win-1.png",
-            "name": "win-1"
-          },
-          {
-            "source": "visual/v42/frames/lose-0.png",
-            "name": "lose-0"
-          },
-          {
-            "source": "visual/v42/frames/lose-1.png",
-            "name": "lose-1"
-          },
-          {
-            "source": "visual/v42/frames/dash-0.png",
-            "name": "dash-0"
-          },
-          {
-            "source": "visual/v42/frames/dash-1.png",
-            "name": "dash-1"
-          }
-        ]
-      },
-      {
         "path": "visual/v42/cast",
         "maxSize": 1024,
         "frames": [
@@ -4802,140 +4388,328 @@
             "name": "kangaroo-7"
           },
           {
-            "source": "visual/v42/frames/bull-0.png",
-            "name": "bull-0"
-          },
-          {
-            "source": "visual/v42/frames/bull-1.png",
-            "name": "bull-1"
-          },
-          {
-            "source": "visual/v42/frames/bull-2.png",
-            "name": "bull-2"
-          },
-          {
-            "source": "visual/v42/frames/bull-3.png",
-            "name": "bull-3"
-          },
-          {
-            "source": "visual/v42/frames/bull-4.png",
-            "name": "bull-4"
-          },
-          {
-            "source": "visual/v42/frames/bull-5.png",
-            "name": "bull-5"
-          },
-          {
-            "source": "visual/v42/frames/bull-6.png",
-            "name": "bull-6"
-          },
-          {
-            "source": "visual/v42/frames/bull-7.png",
-            "name": "bull-7"
-          },
-          {
-            "source": "visual/v42/frames/dragon-0.png",
-            "name": "dragon-0"
-          },
-          {
-            "source": "visual/v42/frames/dragon-1.png",
-            "name": "dragon-1"
-          },
-          {
-            "source": "visual/v42/frames/dragon-2.png",
-            "name": "dragon-2"
-          },
-          {
-            "source": "visual/v42/frames/dragon-3.png",
-            "name": "dragon-3"
-          },
-          {
-            "source": "visual/v42/frames/dragon-4.png",
-            "name": "dragon-4"
-          },
-          {
-            "source": "visual/v42/frames/dragon-5.png",
-            "name": "dragon-5"
-          },
-          {
-            "source": "visual/v42/frames/spinner-0.png",
-            "name": "spinner-0"
-          },
-          {
-            "source": "visual/v42/frames/spinner-1.png",
-            "name": "spinner-1"
-          },
-          {
-            "source": "visual/v42/frames/spinner-2.png",
-            "name": "spinner-2"
-          },
-          {
-            "source": "visual/v42/frames/spinner-3.png",
-            "name": "spinner-3"
-          },
-          {
-            "source": "visual/v42/frames/spinner-4.png",
-            "name": "spinner-4"
-          },
-          {
-            "source": "visual/v42/frames/spinner-5.png",
-            "name": "spinner-5"
-          },
-          {
-            "source": "visual/v42/frames/spinner-6.png",
-            "name": "spinner-6"
-          },
-          {
-            "source": "visual/v42/frames/spinner-7.png",
-            "name": "spinner-7"
-          },
-          {
-            "source": "visual/v42/frames/popcat-0.png",
-            "name": "popcat-0"
-          },
-          {
-            "source": "visual/v42/frames/popcat-1.png",
-            "name": "popcat-1"
-          },
-          {
-            "source": "visual/v42/frames/popcat-2.png",
-            "name": "popcat-2"
-          },
-          {
-            "source": "visual/v42/frames/popcat-3.png",
-            "name": "popcat-3"
-          },
-          {
-            "source": "visual/v42/frames/banana-0.png",
-            "name": "banana-0"
-          },
-          {
-            "source": "visual/v42/frames/banana-1.png",
-            "name": "banana-1"
-          },
-          {
-            "source": "visual/v42/frames/banana-2.png",
-            "name": "banana-2"
-          },
-          {
-            "source": "visual/v42/frames/banana-3.png",
-            "name": "banana-3"
-          },
-          {
-            "source": "visual/v42/frames/nyan-0.png",
-            "name": "nyan-0"
-          },
-          {
-            "source": "visual/v42/frames/nyan-1.png",
-            "name": "nyan-1"
-          },
-          {
             "source": "visual/v42/frames/friend-pin.png",
             "name": "friend-pin"
           },
           {
             "source": "visual/v42/frames/friend-ring.png",
             "name": "friend-ring"
+          }
+        ]
+      },
+      {
+        "path": "visual/v47/props",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v47/frames/balloons.png",
+            "name": "balloons"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/devices",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/cart-0.png",
+            "name": "cart-0"
+          },
+          {
+            "source": "visual/v48/frames/cart-1.png",
+            "name": "cart-1"
+          },
+          {
+            "source": "visual/v48/frames/launcher-0.png",
+            "name": "launcher-0"
+          },
+          {
+            "source": "visual/v48/frames/launcher-1.png",
+            "name": "launcher-1"
+          },
+          {
+            "source": "visual/v48/frames/saw-0.png",
+            "name": "saw-0"
+          },
+          {
+            "source": "visual/v48/frames/saw-1.png",
+            "name": "saw-1"
+          },
+          {
+            "source": "visual/v48/frames/hopper-0.png",
+            "name": "hopper-0"
+          },
+          {
+            "source": "visual/v48/frames/hopper-1.png",
+            "name": "hopper-1"
+          },
+          {
+            "source": "visual/v48/frames/compressor-0.png",
+            "name": "compressor-0"
+          },
+          {
+            "source": "visual/v48/frames/compressor-1.png",
+            "name": "compressor-1"
+          },
+          {
+            "source": "visual/v48/frames/drone-0.png",
+            "name": "drone-0"
+          },
+          {
+            "source": "visual/v48/frames/drone-warning.png",
+            "name": "drone-warning"
+          },
+          {
+            "source": "visual/v48/frames/spring-0.png",
+            "name": "spring-0"
+          },
+          {
+            "source": "visual/v48/frames/spring-1.png",
+            "name": "spring-1"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/town",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/town-near.png",
+            "name": "town-near"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/road",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/town-road.png",
+            "name": "town-road"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/foreground",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/town-foreground.png",
+            "name": "town-foreground"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-street",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-street.png",
+            "name": "sky-street"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-alley",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-alley.png",
+            "name": "sky-alley"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-roofs",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-roofs.png",
+            "name": "sky-roofs"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-night",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-night.png",
+            "name": "sky-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/story",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v50/frames/dlg-art-pause.png",
+            "name": "dlg-art-pause"
+          },
+          {
+            "source": "visual/v50/frames/dlg-art-win.png",
+            "name": "dlg-art-win"
+          },
+          {
+            "source": "visual/v50/frames/dlg-art-lose.png",
+            "name": "dlg-art-lose"
+          },
+          {
+            "source": "visual/v48/frames/customer-wait.png",
+            "name": "customer-wait"
+          },
+          {
+            "source": "visual/v48/frames/customer-cheer.png",
+            "name": "customer-cheer"
+          },
+          {
+            "source": "visual/v48/frames/customer-tea.png",
+            "name": "customer-tea"
+          },
+          {
+            "source": "visual/v38/frames/dlg-confetti.png",
+            "name": "dlg-confetti"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/comic",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/comic-0.png",
+            "name": "comic-0"
+          },
+          {
+            "source": "visual/v48/frames/comic-1.png",
+            "name": "comic-1"
+          },
+          {
+            "source": "visual/v48/frames/comic-2.png",
+            "name": "comic-2"
+          },
+          {
+            "source": "visual/v48/frames/comic-3.png",
+            "name": "comic-3"
+          }
+        ]
+      },
+      {
+        "path": "visual/v50/hero",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v50/frames/run-0.png",
+            "name": "run-0"
+          },
+          {
+            "source": "visual/v50/frames/run-1.png",
+            "name": "run-1"
+          },
+          {
+            "source": "visual/v50/frames/run-2.png",
+            "name": "run-2"
+          },
+          {
+            "source": "visual/v50/frames/run-3.png",
+            "name": "run-3"
+          },
+          {
+            "source": "visual/v50/frames/run-4.png",
+            "name": "run-4"
+          },
+          {
+            "source": "visual/v50/frames/run-5.png",
+            "name": "run-5"
+          },
+          {
+            "source": "visual/v50/frames/run-6.png",
+            "name": "run-6"
+          },
+          {
+            "source": "visual/v50/frames/run-7.png",
+            "name": "run-7"
+          },
+          {
+            "source": "visual/v50/frames/air-0.png",
+            "name": "air-0"
+          },
+          {
+            "source": "visual/v50/frames/double-0.png",
+            "name": "double-0"
+          },
+          {
+            "source": "visual/v50/frames/air-1.png",
+            "name": "air-1"
+          },
+          {
+            "source": "visual/v50/frames/double-1.png",
+            "name": "double-1"
+          },
+          {
+            "source": "visual/v50/frames/air-2.png",
+            "name": "air-2"
+          },
+          {
+            "source": "visual/v50/frames/double-2.png",
+            "name": "double-2"
+          },
+          {
+            "source": "visual/v50/frames/air-3.png",
+            "name": "air-3"
+          },
+          {
+            "source": "visual/v50/frames/double-3.png",
+            "name": "double-3"
+          },
+          {
+            "source": "visual/v50/frames/land-0.png",
+            "name": "land-0"
+          },
+          {
+            "source": "visual/v50/frames/slide-0.png",
+            "name": "slide-0"
+          },
+          {
+            "source": "visual/v50/frames/slide-1.png",
+            "name": "slide-1"
+          },
+          {
+            "source": "visual/v50/frames/hurt.png",
+            "name": "hurt"
+          },
+          {
+            "source": "visual/v50/frames/dash-0.png",
+            "name": "dash-0"
+          },
+          {
+            "source": "visual/v50/frames/dash-1.png",
+            "name": "dash-1"
+          },
+          {
+            "source": "visual/v50/frames/ride-0.png",
+            "name": "ride-0"
+          },
+          {
+            "source": "visual/v50/frames/ride-1.png",
+            "name": "ride-1"
+          },
+          {
+            "source": "visual/v50/frames/win-0.png",
+            "name": "win-0"
+          },
+          {
+            "source": "visual/v50/frames/win-1.png",
+            "name": "win-1"
+          },
+          {
+            "source": "visual/v50/frames/lose-0.png",
+            "name": "lose-0"
+          },
+          {
+            "source": "visual/v50/frames/lose-1.png",
+            "name": "lose-1"
           }
         ]
       }
@@ -4950,19 +4724,19 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/cloud-bank.png",
+            "source": "visual/atmosphere-v4/prepared/cloud-bank.png",
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/tree.png",
+            "source": "visual/cloudline-v1/prepared/tree.png",
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/fence.png",
+            "source": "visual/ground-v2/prepared/fence.png",
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/crane-arm.png",
+            "source": "visual/cloudline-v1/prepared/crane-arm.png",
             "geometry": "full"
           },
           {
@@ -5086,7 +4860,7 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/moon.png",
+            "source": "visual/cloudline-v1/prepared/moon.png",
             "geometry": "full"
           },
           {
@@ -5098,7 +4872,7 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/saturn.png",
+            "source": "visual/cloudline-v1/prepared/saturn.png",
             "geometry": "full"
           },
           {
@@ -5114,7 +4888,7 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/balloon.png",
+            "source": "visual/cloudline-v1/prepared/balloon.png",
             "geometry": "full"
           },
           {
@@ -5126,7 +4900,7 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/station.png",
+            "source": "visual/cloudline-v1/prepared/station.png",
             "geometry": "full"
           },
           {
@@ -5171,6 +4945,154 @@
           },
           {
             "source": "visual/sunlit-v1/prepared/combo-star-2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/atmosphere-v4/prepared/cloud-bank-thin.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "sling-puck": [
+      {
+        "path": "visual/board/sling-puck-board",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/board/ice-table.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/board/near-rail.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/board/divider.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/sling-puck-backdrop",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/materials/slate.png",
+            "geometry": "full",
+            "resize": [
+              750,
+              1334
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/objects/sling-puck-objects",
+        "frames": [
+          {
+            "source": "visual/objects/puck.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/puck-ring.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/puck-shadow.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/soft-glow.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/ripple.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/ice-shard.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/twinkle.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/puck-ivory.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/sling-puck-ui",
+        "frames": [
+          {
+            "source": "visual/ui/button-round.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/medal-south.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/medal-north.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/medal-bot.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/logo.png",
+            "geometry": "full",
+            "resize": [
+              660,
+              220
+            ]
+          },
+          {
+            "source": "visual/ui/button-primary.png",
+            "geometry": "full",
+            "resize": [
+              172,
+              172
+            ]
+          },
+          {
+            "source": "visual/ui/trophy.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/mini-board.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/mode-robot.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/mode-players.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/mode-token.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/chip-on.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/chip-off.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/countdown-medal.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/tutorial-hand.png",
             "geometry": "full"
           }
         ]

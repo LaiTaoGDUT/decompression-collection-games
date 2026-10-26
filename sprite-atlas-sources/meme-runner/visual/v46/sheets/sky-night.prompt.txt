@@ -1,0 +1,9 @@
+Game background SKY layer, 3:2 landscape, full-bleed opaque image. It is shown full-screen behind everything and never scrolls; the lower 40% will be hidden behind other scenery layers.
+STYLE (shared by every background layer of this game):
+Handmade needle-felt and wool miniature diorama, like a premium stop-motion film set photographed with soft natural light. Visible soft wool fibres, fuzzy edges, little running stitches, chunky rounded simplified shapes, gentle three-quarter view. NOT a clean 3D render, NOT flat vector, NOT photorealistic.
+COLOUR: rich, harmonious, MULTI-HUE palette (several clearly different hues in every image, warm and cool together) with strong atmospheric perspective: farther = lighter, cooler, softer and hazier; nearer = warmer and more saturated. Absolutely NOT a monochrome or single-hue image, no overall colour filter.
+This is a BACKGROUND for a side-scrolling runner game: medium saturation, soft contrast, no hard black outlines, calm big shapes with breathing room.
+RESERVED FOR GAMEPLAY — never draw: red-and-yellow diagonal warning stripes, round shiny gold coins or golden discs, teal rings or pins, thin dark poles / lamp posts / fences / railings / benches / signposts, any text, letters, logos or signs, people or large animals.
+
+SCENE "Lantern River Night Market — night":
+A magical night sky: deep navy-indigo at the top, through violet, to a dusky plum-magenta glow near the horizon from the city lights. A large soft cream felt full moon with gentle craters and a pale halo in the upper-right area (not at the top-centre). Small tiny white and pale-lilac felt stars scattered sparsely (tiny pin points, nothing that looks like a coin). A soft flowing aurora ribbon in mint-green and lilac across the upper-left sky. A few dark violet felt clouds with moonlit lilac rims. Horizon at about 60%: distant hazy violet hills with tiny warm apricot window lights. (The lower part will be covered.)

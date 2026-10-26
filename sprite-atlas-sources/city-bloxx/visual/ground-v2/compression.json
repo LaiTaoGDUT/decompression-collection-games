@@ -1,0 +1,158 @@
+{
+  "status": "superseded",
+  "files": [
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/pavers.png",
+      "dimensions": [
+        256,
+        256
+      ],
+      "bytes_before": 71096,
+      "sha256_before": "9894e9fc7e8f37008fab522028f8490cf4dc317b6aa18ce7e2d2e50141a6db11",
+      "meta_sha256": "581fdd95670eb674c7505422158a96b7472640e54844e21bc4adfe97fccbb7a5",
+      "bytes_after": 25617,
+      "sha256_after": "ec0f22044ce77f3388bf18a32bc6b6f90fe80c7426b8675b9d93dcba0a1c0757"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/city.png",
+      "dimensions": [
+        787,
+        321
+      ],
+      "bytes_before": 246411,
+      "sha256_before": "5a964bfb8d5d29c393d80325306721993a1652eba61db4c2eb730be202462f0b",
+      "meta_sha256": "fa996b1389e553fb31436e59c84dad50e8034d1a4b2d35850bc3c29f64096111",
+      "bytes_after": 108407,
+      "sha256_after": "7adc828c663e892a3c1f255f14fcac94ebf43aa51f396713a46e2cc2a02342a2"
+    },
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/city-sunlit.png",
+      "dimensions": [
+        2040,
+        824
+      ],
+      "bytes_before": 768153,
+      "sha256_before": "755ef6fca8cbb6d45e39c22cef23e3971371cad1af9392e02d125b4b675c9456",
+      "meta_sha256": "4ddbcff74df6c9db2660f56c5d034de887f8f29b1f497d8f47fcb04b64aa19da",
+      "bytes_after": 140368,
+      "sha256_after": "6c809a1e0aeeaa039d5ee096fd6a58ba4f66106817d7f55c01173a2369476fe5"
+    }
+  ],
+  "provider": "Tinify official API",
+  "endpoint": "https://api.tinify.com/shrink",
+  "date": "2026-10-25",
+  "user_authorized": true,
+  "processed": 4,
+  "cached": 0,
+  "failed": 0,
+  "pending": 0,
+  "total_bytes_before": 1085660,
+  "total_bytes_after": 274392,
+  "saved_bytes": 811268,
+  "reduction_percent": 74.73,
+  "dimensions_and_meta_preserved": true,
+  "validation": {
+    "typescript": "passed",
+    "git_diff_check": "passed",
+    "atlas_import_geometry": "passed",
+    "screenshots": 33,
+    "safe_profiles": 10,
+    "actual_first_landing": {
+      "tower": 1,
+      "baseY": 0
+    },
+    "errors": [],
+    "released": {
+      "owned": 0,
+      "world": false,
+      "bundle": false
+    }
+  },
+  "history": [
+    {
+      "label": "中间奶白街区版本",
+      "report": {
+        "status": "completed",
+        "files": [
+          {
+            "path": "assets/game-assets/city-bloxx/visual/cloudline/pavers.png",
+            "dimensions": [
+              256,
+              256
+            ],
+            "bytes_before": 71096,
+            "sha256_before": "9894e9fc7e8f37008fab522028f8490cf4dc317b6aa18ce7e2d2e50141a6db11",
+            "meta_sha256": "581fdd95670eb674c7505422158a96b7472640e54844e21bc4adfe97fccbb7a5",
+            "bytes_after": 25617,
+            "sha256_after": "ec0f22044ce77f3388bf18a32bc6b6f90fe80c7426b8675b9d93dcba0a1c0757"
+          },
+          {
+            "path": "assets/game-assets/city-bloxx/visual/cloudline/city.png",
+            "dimensions": [
+              787,
+              321
+            ],
+            "bytes_before": 246411,
+            "sha256_before": "5a964bfb8d5d29c393d80325306721993a1652eba61db4c2eb730be202462f0b",
+            "meta_sha256": "fa996b1389e553fb31436e59c84dad50e8034d1a4b2d35850bc3c29f64096111",
+            "bytes_after": 108407,
+            "sha256_after": "7adc828c663e892a3c1f255f14fcac94ebf43aa51f396713a46e2cc2a02342a2"
+          },
+          {
+            "path": "assets/game-assets/city-bloxx/visual/sunlit/city-sunlit.png",
+            "dimensions": [
+              2040,
+              824
+            ],
+            "bytes_before": 768153,
+            "sha256_before": "755ef6fca8cbb6d45e39c22cef23e3971371cad1af9392e02d125b4b675c9456",
+            "meta_sha256": "4ddbcff74df6c9db2660f56c5d034de887f8f29b1f497d8f47fcb04b64aa19da",
+            "bytes_after": 140368,
+            "sha256_after": "6c809a1e0aeeaa039d5ee096fd6a58ba4f66106817d7f55c01173a2369476fe5"
+          }
+        ],
+        "provider": "Tinify official API",
+        "endpoint": "https://api.tinify.com/shrink",
+        "date": "2026-10-25",
+        "user_authorized": true,
+        "processed": 3,
+        "cached": 0,
+        "failed": 0,
+        "pending": 0,
+        "total_bytes_before": 1081362,
+        "total_bytes_after": 236752,
+        "saved_bytes": 844610,
+        "reduction_percent": 78.11,
+        "dimensions_and_meta_preserved": true,
+        "validation": {
+          "typescript": "passed",
+          "git_diff_check": "passed",
+          "atlas_import_geometry": "passed",
+          "screenshots": 33,
+          "safe_profiles": 10,
+          "actual_first_landing": {
+            "tower": 1,
+            "baseY": 0
+          },
+          "errors": [],
+          "released": {
+            "owned": 0,
+            "world": false,
+            "bundle": false
+          }
+        }
+      }
+    }
+  ],
+  "unique_images": 3,
+  "upload_operations": 4,
+  "final_revision": {
+    "label": "冷蓝灰高楼远景",
+    "processed": 1,
+    "cached": 0,
+    "failed": 0,
+    "saved_bytes": 138004
+  },
+  "replaced_city_by": "../city-context-v3/compression.json",
+  "note": "本记录为历史地面版本，仅铺装继续对应此压缩结果；城市和图集的后续更新见atmosphere-v4。"
+}

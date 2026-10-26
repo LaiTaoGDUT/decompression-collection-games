@@ -9,11 +9,9 @@ type TimelineShareHandler = () => TimelineShareContent;
 const UPDATE_MESSAGE_TYPE = 'SYS_MSG_TYPE_WHATS_NEW';
 
 export interface WeChatApi extends MiniGameApi {
-    cloud?: {
-        init(options: { env: string; traceUser?: boolean }): void | Promise<void>;
-        callFunction(options: { name: string; data: unknown; config: { env: string }; success(result: { result: unknown }): void;
-            fail(error: unknown): void }): unknown;
-    };
+    login?(options: { timeout: number; success(result: { code?: string }): void; fail(error: unknown): void }): void;
+    request?(options: { url: string; method: string; data?: unknown; header: Readonly<Record<string, string>>; timeout: number;
+        success(result: { statusCode: number; data: unknown }): void; fail(error: unknown): void }): { abort?(): void };
     canIUse?(schema: string): boolean;
     getSetting?(options: {
         withSubscriptions: true;
@@ -45,7 +43,6 @@ export interface WeChatPlatformOptions {
 
 /** 微信专有 API 解析和版本约束；共享能力由小游戏平台基类实现。 */
 export class WeChatPlatform extends MiniGamePlatform {
-    private cloudEnvironment?: string;
     private readonly cloudOperations = new Set<() => void>();
     private readonly subscriptionOperations = new Set<() => void>();
     private appMessageContent: ShareContent = Object.freeze({});
@@ -233,29 +230,20 @@ export class WeChatPlatform extends MiniGamePlatform {
         }
     }
 
-    async initializeCloud(environmentId: string): Promise<void> {
+    getCloudLoginCredential(): Promise<{ readonly platform: 'wechat'; readonly code: string }> {
         const api = this.api as WeChatApi | undefined;
-        if (!api?.cloud || !environmentId.trim()) throw new Error('WeChat CloudBase is unavailable or unconfigured.');
-        await api.cloud.init({ env: environmentId.trim(), traceUser: false });
-        if (this.api !== api) throw new Error('CloudBase initialization cancelled.');
-        this.cloudEnvironment = environmentId.trim();
-    }
-
-    callCloudFunction(name: string, data: unknown, timeoutMs: number): Promise<unknown> {
-        const api = this.api as WeChatApi | undefined, env = this.cloudEnvironment;
-        if (!api?.cloud || !env) return Promise.reject(new Error('CloudBase has not been initialized.'));
+        if (!api?.login) return Promise.reject(new Error('WeChat login is unavailable.'));
         return new Promise((resolve, reject) => {
             let settled = false;
-            const finish = (error?: unknown, result?: unknown): void => {
+            const finish = (error?: unknown, code?: string): void => {
                 if (settled) return;
                 settled = true; clearTimeout(timer); this.cloudOperations.delete(cancel);
-                if (error || this.api !== api) reject(error ?? new Error('Cloud request cancelled.'));
-                else resolve(result);
+                if (error || this.api !== api || !code) reject(error ?? new Error('WeChat login cancelled.'));
+                else resolve({ platform: 'wechat', code });
             };
-            const cancel = (): void => finish(new Error('Cloud request cancelled.'));
-            const timer = setTimeout(() => finish(new Error('Cloud request timed out.')), timeoutMs);
-            this.cloudOperations.add(cancel);
-            try { api.cloud!.callFunction({ name, data, config:{env}, success: response => finish(undefined,response.result), fail: error => finish(error) }); }
+            const cancel = (): void => finish(new Error('WeChat login cancelled.'));
+            const timer = setTimeout(cancel, 10000); this.cloudOperations.add(cancel);
+            try { api.login!({ timeout: 10000, success: result => finish(undefined, result.code), fail: error => finish(error) }); }
             catch (error: unknown) { finish(error); }
         });
     }
@@ -266,7 +254,7 @@ export class WeChatPlatform extends MiniGamePlatform {
         this.subscriptionOperations.forEach(cancel => cancel());
         this.subscriptionOperations.clear();
         this.cloudOperations.forEach(cancel => cancel());
-        this.cloudOperations.clear(); this.cloudEnvironment = undefined;
+        this.cloudOperations.clear();
         ++this.shareMenuGeneration;
         const api = this.api as WeChatApi | undefined;
         if (api) {

@@ -1,0 +1,8 @@
+{
+  "tool": "builtin image_gen",
+  "prompt": "Use case: precise-object-edit. Repair the horizontal tile join in this transparent game-background image. It is a 1254 x 768 rectangular crop from a much taller city illustration; the bad join crosses the exact horizontal middle at y=384. Output a single high-resolution rectangle with the SAME 1254:768 aspect ratio (1536 x 940 or larger), same framing and exact normalized building positions.\nMake every facade and cool-blue tower continue smoothly through that middle boundary. Remove the sudden horizontal color/exposure change, any disconnected vertical wall edges, and the tiny artificial breaks at that join. A tall blue tower must be one straight continuous tower with a smooth vertical color gradient, never a darker upper half sitting on a lighter lower half. Preserve the existing roofs and intended window bands, architecture, gray/sage/blue palette and quiet matte shading.\nLOCK the outer top and bottom quarters of the crop: no changes to building widths, vertical edge positions, color or facade division at the image's outer edges. Concentrate the repair around the central third. Do not invent any new horizontal architectural ledge or belt to hide the seam. Do not add windows, new towers, clouds, sky, texture, ground or text. Keep true transparency in the existing gaps between real buildings. No bright edge halo; ignore low-alpha RGB artifact speckles and leave those external pixels transparent. Preserve all actual building faces. This is an invisible continuity repair, not a redesign.",
+  "inputs": [
+    "sources/join-0-target.png",
+    "sources/join-1-target.png"
+  ]
+}

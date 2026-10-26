@@ -17,45 +17,6 @@
 			<key>sourceSize</key>
 			<string>{300,320}</string>
 		</dict>
-		<key>customer-cheer</key>
-		<dict>
-			<key>frame</key>
-			<string>{{2,326},{128,128}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{128,128}}</string>
-			<key>sourceSize</key>
-			<string>{128,128}</string>
-		</dict>
-		<key>customer-tea</key>
-		<dict>
-			<key>frame</key>
-			<string>{{2,458},{128,128}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{128,128}}</string>
-			<key>sourceSize</key>
-			<string>{128,128}</string>
-		</dict>
-		<key>customer-wait</key>
-		<dict>
-			<key>frame</key>
-			<string>{{2,590},{128,128}}</string>
-			<key>offset</key>
-			<string>{0,0}</string>
-			<key>rotated</key>
-			<false/>
-			<key>sourceColorRect</key>
-			<string>{{0.0,0.0},{128,128}}</string>
-			<key>sourceSize</key>
-			<string>{128,128}</string>
-		</dict>
 	</dict>
 	<key>metadata</key>
 	<dict>
@@ -64,7 +25,7 @@
 		<key>realTextureFileName</key>
 		<string>finish.png</string>
 		<key>size</key>
-		<string>{304,720}</string>
+		<string>{304,324}</string>
 		<key>textureFileName</key>
 		<string>finish.png</string>
 	</dict>

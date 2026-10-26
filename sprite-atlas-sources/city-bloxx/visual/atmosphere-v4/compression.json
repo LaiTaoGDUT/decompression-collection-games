@@ -1,0 +1,48 @@
+{
+  "status": "completed",
+  "date": "2026-10-25",
+  "provider": "Tinify official API",
+  "user_authorized": true,
+  "processed": 1,
+  "cached": 0,
+  "failed": 0,
+  "pending": 0,
+  "files": [
+    {
+      "path": "assets/game-assets/city-bloxx/visual/sunlit/city-sunlit.png",
+      "dimensions": [
+        2048,
+        903
+      ],
+      "bytes_before": 791645,
+      "sha256_before": "e7e44d5d4dce04650cb629a59bbc49d669f5e0b78f1f517abd088aadb3972f44",
+      "meta_sha256": "4ddbcff74df6c9db2660f56c5d034de887f8f29b1f497d8f47fcb04b64aa19da",
+      "bytes_after": 151592,
+      "sha256_after": "f84fba1788b072dcf4e814addad33436cc3487f8a90d07765c38c38e210ff337"
+    }
+  ],
+  "saved_bytes": 640053,
+  "reduction_percent": 80.85,
+  "dimensions_and_meta_preserved": true,
+  "validation": {
+    "typescript_full_project": "passed",
+    "typescript_city_scope": "passed",
+    "git_diff_check": "passed",
+    "cocos_mcp_refresh": "passed",
+    "atlas_import_geometry": "passed",
+    "screenshots": 39,
+    "safe_profiles": 10,
+    "native_thin_cloud": true,
+    "actual_first_landing": {
+      "tower": 1,
+      "baseY": 0
+    },
+    "native_rule_comparison": "123 sky/space items, 48 loops, 29 sky-band positions and 33 star systems match source parameters",
+    "errors": [],
+    "released": {
+      "owned": 0,
+      "world": false,
+      "bundle": false
+    }
+  }
+}

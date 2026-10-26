@@ -1,0 +1,9 @@
+Game background SKY layer, 3:2 landscape, full-bleed opaque image. It is shown full-screen behind everything and never scrolls; the lower 40% will be hidden behind other scenery layers.
+STYLE (shared by every background layer of this game):
+Handmade needle-felt and wool miniature diorama, like a premium stop-motion film set photographed with soft natural light. Visible soft wool fibres, fuzzy edges, little running stitches, chunky rounded simplified shapes, gentle three-quarter view. NOT a clean 3D render, NOT flat vector, NOT photorealistic.
+COLOUR: rich, harmonious, MULTI-HUE palette (several clearly different hues in every image, warm and cool together) with strong atmospheric perspective: farther = lighter, cooler, softer and hazier; nearer = warmer and more saturated. Absolutely NOT a monochrome or single-hue image, no overall colour filter.
+This is a BACKGROUND for a side-scrolling runner game: medium saturation, soft contrast, no hard black outlines, calm big shapes with breathing room.
+RESERVED FOR GAMEPLAY — never draw: red-and-yellow diagonal warning stripes, round shiny gold coins or golden discs, teal rings or pins, thin dark poles / lamp posts / fences / railings / benches / signposts, any text, letters, logos or signs, people or large animals.
+
+SCENE "Lighthouse Bay — lilac golden afternoon":
+A glowing late-afternoon sky: soft lavender-lilac at the top, blending through rose-pink and peach into a warm honey-apricot glow at the horizon. A large soft low sun (pale cream-apricot, NOT a gold coin, diffused with a wide warm halo) on the right side just above the horizon. Long stretched felt clouds in lilac, coral and cream, lit warm on their lower edges. Horizon at about 60% of the height: a calm periwinkle-violet sea stretching to the horizon with a glittering path of peach sunlight, and faint distant islands in hazy mauve. (The lower part will be covered.)

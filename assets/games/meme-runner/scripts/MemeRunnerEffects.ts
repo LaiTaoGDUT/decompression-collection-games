@@ -1,5 +1,6 @@
 import { Color, Label, Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
 import type { MemeRunnerModel } from './MemeRunnerModel';
+import { POWER_KINDS, POWER_NAMES } from './MemeRunnerModel';
 import { WORLD_ART } from './MemeRunnerWorldArt';
 import { setLabelBold } from '../../../services/font/FontBinding';
 
@@ -8,7 +9,7 @@ interface Particle { node: Node; sprite: Sprite; opacity: UIOpacity; key: string
 interface Reward { node: Node; label: Label; opacity: UIOpacity; x: number; y: number; age: number; pop: number; }
 const REWARD_STYLE = {
     points: { size: 30, color: new Color(255, 240, 166), pop: 0 },
-    perfect: { size: 44, color: new Color(255, 214, 77), pop: .45 },
+    cheer: { size: 44, color: new Color(255, 214, 77), pop: .45 },
     fever: { size: 64, color: new Color(255, 146, 61), pop: .7 },
     pop: { size: 40, color: new Color(255, 120, 178), pop: .6 },
 };
@@ -53,15 +54,23 @@ export class MemeRunnerEffects {
             if (event === 'double') this.emit('arc', m.x, m.y + 60, m.speed * .45, 10, .32, 1.2, 0, -480);
         }
         for (const e of m.feedbacks) {
-            // Ordinary passes stay quiet so a Perfect reads as the event worth chasing.
-            if (e.kind === 'coin' || e.kind === 'good') continue;
-            if (e.kind === 'perfect') {
-                for (let i = 0; i < 8; i++) {
-                    const angle = i / 8 * Math.PI * 2;
-                    this.emit('spark', e.x, e.y, Math.cos(angle) * 210, Math.sin(angle) * 210, .42, .8, 0, 240);
+            // Clean passes stay quiet: the HUD's chain count and Fever gauge show them.
+            if (e.kind === 'coin' || e.kind === 'clear') continue;
+            if (e.kind === 'power') {
+                this.emit('halo', e.x, e.y, 0, 0, .4, 1.2, 0);
+                this.reward(e.x + 30, e.y + 100, `${POWER_NAMES[POWER_KINDS[e.value]]}！`, 'cheer'); continue;
+            }
+            if (e.kind === 'spring') {
+                this.emit('bounce', e.x, e.y, 0, 5, .4, 1.3, 0);
+                for (let i = 0; i < 6; i++) this.emit('dust-0', e.x + (i - 2.5) * 16, e.y - 10, (i - 2.5) * 40, 60, .45, .9, 200);
+                continue;
+            }
+            if (e.kind === 'streak') {
+                for (let i = 0; i < 12; i++) {
+                    const angle = i / 12 * Math.PI * 2;
+                    this.emit(`confetti-${i % 2}`, e.x, e.y, Math.cos(angle) * 260, 150 + Math.sin(angle) * 220, .75, .8, 480, i % 2 ? 260 : -260);
                 }
-                this.emit('halo', e.x, e.y, 0, 0, .35, 1.1, 0);
-                this.reward(e.x, e.y + 95, '完美！', 'perfect'); this.reward(e.x, e.y + 45, `+${e.value}`, 'points'); continue;
+                this.reward(e.x + 60, e.y + 110, `${e.value} 连击！`, 'fever'); continue;
             }
             if (e.kind === 'pop') {
                 this.emit('halo', e.x - 40, e.y - 70, 0, 0, .3, .9, 0);
@@ -72,7 +81,7 @@ export class MemeRunnerEffects {
                     const angle = i / 6 * Math.PI * 2;
                     this.emit('heart', e.x, e.y, Math.cos(angle) * 160, 120 + Math.sin(angle) * 120, .7, .7, 260, i % 2 ? 120 : -120);
                 }
-                this.reward(e.x + 20, e.y + 80, '回血！', 'perfect'); continue;
+                this.reward(e.x + 20, e.y + 80, '回血！', 'cheer'); continue;
             }
             if (e.kind === 'deliver') {
                 for (let i = 0; i < 18; i++) {

@@ -1,0 +1,40 @@
+{
+  "resultAt": 15.835300000011921,
+  "scoreCountCompleteAt": 16.93530000001192,
+  "lobbyAt": 18.45,
+  "settledResultVisibleSeconds": 1.514699999988078,
+  "nativeCaptureFramesDuringHold": 90,
+  "freezeFrames": false,
+  "includesRoundTwo": false,
+  "narration": false,
+  "lobbyAndEndingUnchanged": true,
+  "endingInstrumentalOnly": true,
+  "instrumentalMixResidual": 8.046627045232846e-08,
+  "duration": 29.65,
+  "outputs": {
+    "篮球灌篮-结算停留版-720x1280.mp4": {
+      "fps": 60,
+      "frames": 1779,
+      "width": 720,
+      "height": 1280,
+      "duration": 29.653,
+      "fullDecode": "passed",
+      "sha256": "7a6c3538b1491d1ed6622043c3a22ca92f613431bc011bc1a84795e992e020b6"
+    },
+    "篮球灌篮-结算停留版-1080x1920.mp4": {
+      "fps": 60,
+      "frames": 1779,
+      "width": 1080,
+      "height": 1920,
+      "duration": 29.65,
+      "fullDecode": "passed",
+      "sha256": "645344ceaefb1fe2317988573430895d98698114b05931d2dbbe49e71522aaad"
+    }
+  },
+  "typescript": "passed",
+  "gitDiffCheck": "passed",
+  "cocosAssetRefresh": "passed",
+  "visualReview": "passed: 27-point result remains visible before lobby; native capture, no restart or narration",
+  "integratedLoudnessLufs": -16.3,
+  "truePeakDbfs": -1.6
+}

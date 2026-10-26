@@ -9,6 +9,7 @@ import {
 import type { AppStateMachine } from '../core/state/AppStateMachine';
 import type { GameResult, ScreenOrientation } from '../core/types/CommonTypes';
 import type { ScreenService } from '../services/ScreenService';
+import type { ServerTimeService } from '../services/cloud/ServerTimeService';
 import type { AssetLoadScope, AssetService } from '../services/asset/AssetService';
 import type { AnalyticsService } from '../services/analytics/AnalyticsService';
 import type { StorageService } from '../services/storage/StorageService';
@@ -107,6 +108,8 @@ interface GameRuntimeServices {
     readonly achievements?: AchievementService;
     readonly updateReminder?: UpdateReminderService;
     readonly screen?: ScreenService;
+    readonly serverTime?: ServerTimeService;
+    readonly onRoundFinished?: (gameId: string) => void;
 }
 
 const DEFAULT_RUNTIME_TIMEOUTS: GameRuntimeTimeouts = Object.freeze({
@@ -1349,7 +1352,10 @@ export class GameRuntime {
             reportScore,
             reportAchievementProgress,
             reportRoundFinished: () => {
-                if (isCurrentSession() && session.state === 'active') this.services.updateReminder?.recordRoundFinished();
+                if (isCurrentSession() && session.state === 'active') {
+                    this.services.updateReminder?.recordRoundFinished();
+                    this.services.onRoundFinished?.(manifest.id);
+                }
             },
             reportEvent: (name, properties, eventId) => {
                 if (!isCurrentSession()) return;
@@ -1579,7 +1585,10 @@ export class GameRuntime {
         }
 
         // completed 在公共协议中表示本局已结算，包含正常失败；暂停退出的默认结果为 false。
-        if (result.completed) this.services.updateReminder?.recordRoundFinished();
+        if (result.completed) {
+            this.services.updateReminder?.recordRoundFinished();
+            this.services.onRoundFinished?.(manifest.id);
+        }
 
         const resultReason = result.extra?.reason;
         const reason = typeof resultReason === 'string' ? resultReason : intent;

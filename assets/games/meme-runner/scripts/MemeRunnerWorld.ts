@@ -1,15 +1,18 @@
-import { Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
+import { Color, Graphics, Node, Sprite, SpriteFrame, UIOpacity, UITransform } from 'cc';
 import type { MemeRunnerModel } from './MemeRunnerModel';
-import { runnerScenery, sceneryCount } from './MemeRunnerScenery';
 import { REGION_ART, REGIONS, regionIndex, type Region } from './MemeRunnerRegions';
 
-/** Fraction of the plaza's height in front of the shop fronts. */
-const PLAZA_SETBACK = .6;
+/** Parallax of the far and near strips; the road moves at 1. */
+const STRIP_PARALLAX = [.3];
+/** The strips reach this far under the road's top edge: their faded bottom rows show only through pits. */
+const STRIP_TUCK = 20;
 
-interface Layer { far: Node; root: Node; plaza: Node[]; mid: Node[]; }
+/** A strip's tiles live under their own node, so a relayout can add tiles without breaking the depth order. */
+interface Strip { node: Node; tiles: Node[]; }
+interface Layer { sky: Node; root: Node; strips: Strip[]; }
 
-/** Painted depth layers per region: a cover-scaled backdrop, then a plaza and the midground pieces
- * standing set back on it, both at .22 parallax.
+/** Painted depth layers per region (visual spec v46): a fixed cover-scaled sky, then a far and a near
+ * scenery strip, each tiled seamlessly at its own parallax and standing on the road line.
  * Regions cross-fade over 1.2 s. Actor/UI coordinates remain owned by the safe stage. */
 export class MemeRunnerWorld {
     private readonly layers: Layer[] = [];
@@ -19,15 +22,21 @@ export class MemeRunnerWorld {
     private previous = 0;
     private transitionStart = -2;
     private disposed = false;
+    private readonly mist: Graphics;
 
-    constructor(parent: Node, stage: Node, private readonly frames: Readonly<Record<string, SpriteFrame>>) {
+    constructor(parent: Node, private readonly stage: Node, private readonly frames: Readonly<Record<string, SpriteFrame>>) {
         REGIONS.forEach((region, i) => {
-            const far = this.sprite(REGION_ART[region].backdrop, parent);
-            far.setSiblingIndex(i); far.addComponent(UIOpacity);
+            const sky = this.sprite(REGION_ART[region].sky, parent);
+            sky.setSiblingIndex(i); sky.addComponent(UIOpacity);
             const root = new Node(`Parallax-${region}`); root.layer = stage.layer; root.parent = stage;
             root.addComponent(UIOpacity);
-            this.layers.push({ far, root, plaza: [], mid: [] });
+            const strips = REGION_ART[region].strips.map((key): Strip => {
+                const node = new Node(key); node.layer = root.layer; node.parent = root; return { node, tiles: [] };
+            });
+            this.layers.push({ sky, root, strips });
         });
+        const veil = new Node('BackgroundAtmosphere'); veil.layer = stage.layer; veil.parent = stage;
+        this.mist = veil.addComponent(Graphics);
     }
 
     get theme(): Region { return REGIONS[this.current]; }
@@ -38,51 +47,52 @@ export class MemeRunnerWorld {
 
     layout(width: number, height: number, left: number, right: number): void {
         this.left = left; this.right = right;
+        // Lift the background's shadows and soften its fine edges; actors, coins and decks stay crisp.
+        this.mist.clear(); this.mist.fillColor = new Color(255, 246, 224, 62);
+        this.mist.rect(left - 2, -height / this.stage.scale.y - 2, right - left + 4, height * 2 / this.stage.scale.y + 4); this.mist.fill();
         this.layers.forEach((layer, i) => {
-            const far = this.frames[REGION_ART[REGIONS[i]].backdrop].originalSize;
-            const cover = Math.max(width / far.width, height / far.height); layer.far.setScale(cover, cover, 1);
-            const plaza = REGION_ART[REGIONS[i]].plaza;
-            const tiles = Math.ceil((right - left) / this.frames[plaza].originalSize.width) + 2;
-            while (layer.plaza.length < tiles) {
-                const n = this.sprite(plaza, layer.root); n.setSiblingIndex(0);
-                n.getComponent(UITransform)!.setAnchorPoint(.5, 0); layer.plaza.push(n);
-            }
-            while (layer.plaza.length > tiles) { const n = layer.plaza.pop()!; n.getComponent(Sprite)!.spriteFrame = null; n.destroy(); }
-            const count = sceneryCount(left, right);
-            while (layer.mid.length < count) {
-                const n = this.sprite(REGION_ART[REGIONS[i]].buildings[0], layer.root);
-                n.getComponent(UITransform)!.setAnchorPoint(.5, 0); layer.mid.push(n);
-            }
-            while (layer.mid.length > count) { const n = layer.mid.pop()!; n.getComponent(Sprite)!.spriteFrame = null; n.destroy(); }
+            const sky = this.frames[REGION_ART[REGIONS[i]].sky].originalSize;
+            const cover = Math.max(width / sky.width, height / sky.height); layer.sky.setScale(cover, cover, 1);
+            REGION_ART[REGIONS[i]].strips.forEach((key, j) => {
+                const { node, tiles } = layer.strips[j], count = Math.ceil((right - left) / this.frames[key].originalSize.width) + 2;
+                while (tiles.length < count) {
+                    const n = this.sprite(key, node); n.getComponent(UITransform)!.setAnchorPoint(.5, 0);
+                    n.getComponent(Sprite)!.color = new Color(REGION_ART[REGIONS[i]].sceneryTint); tiles.push(n);
+                }
+                while (tiles.length > count) { const n = tiles.pop()!; n.getComponent(Sprite)!.spriteFrame = null; n.destroy(); }
+            });
         });
     }
 
-    render(m: MemeRunnerModel, floor: number, cameraY: number): void {
+    render(m: MemeRunnerModel, floor: number): void {
         if (this.disposed) return;
         const next = regionIndex(m.meters);
         if (next !== this.current) {
             this.previous = this.current; this.current = next; this.transitionStart = m.time;
-            // Ordering changes only at a transition. Reordering the same far
+            // Ordering changes only at a transition. Reordering the same sky
             // node twice each frame invalidates the whole UI traversal.
-            this.layers[this.previous].far.setSiblingIndex(0);
-            this.layers[this.current].far.setSiblingIndex(1);
+            this.layers[this.previous].sky.setSiblingIndex(0);
+            this.layers[this.current].sky.setSiblingIndex(1);
         }
         const t = Math.min(1, Math.max(0, (m.time - this.transitionStart) / 1.2));
         this.layers.forEach((layer, i) => {
             const active = i === this.current || (t < 1 && i === this.previous);
-            layer.far.active = layer.root.active = active;
+            layer.sky.active = layer.root.active = active;
             if (!active) return;
             const opacity = this.current === this.previous ? 1 : i === this.current ? t : 1 - t;
             layer.root.getComponent(UIOpacity)!.opacity = Math.round(opacity * 255);
-            layer.far.getComponent(UIOpacity)!.opacity = i === this.current && this.current !== this.previous ? Math.round(t * 255) : 255;
-            // The plaza tucks under the road's top edge; the pieces stand on its back part. Both
-            // follow the camera exactly: vertical parallax would expose the plaza's lower edge.
-            const distance = m.x * .22, base = floor - 4 - cameraY, plaza = REGION_ART[REGIONS[i]].plaza;
-            const size = this.frames[plaza].originalSize, first = Math.floor((this.left + distance) / size.width) - 1;
-            layer.plaza.forEach((n, k) => n.setPosition((first + k + .5) * size.width - distance, base));
-            const setback = Math.round(size.height * PLAZA_SETBACK);
-            const placements = runnerScenery(distance, this.left, this.right, REGIONS[i]);
-            layer.mid.forEach((n, j) => { const p = placements[j]; this.show(n, p.key); n.setPosition(p.x, base + setback - p.sink); });
+            layer.sky.getComponent(UIOpacity)!.opacity = i === this.current && this.current !== this.previous ? Math.round(t * 255) : 255;
+            const base = floor - STRIP_TUCK;
+            REGION_ART[REGIONS[i]].strips.forEach((key, j) => {
+                const width = this.frames[key].originalSize.width, distance = m.x * STRIP_PARALLAX[j];
+                const first = Math.floor((this.left + distance) / width) - 1;
+                layer.strips[j].tiles.forEach((n, k) => {
+                    const slot = first + k;
+                    n.setPosition((slot + .5) * width - distance, base);
+                    // Alternating mirrored strips share the exact edge pixels at every join.
+                    n.setScale(Math.abs(slot % 2) ? -1 : 1, 1, 1);
+                });
+            });
         });
     }
 
@@ -90,22 +100,18 @@ export class MemeRunnerWorld {
         if (this.disposed) return;
         this.disposed = true;
         for (const l of this.layers) {
-            l.far.getComponent(Sprite)!.spriteFrame = null;
+            l.sky.getComponent(Sprite)!.spriteFrame = null;
             for (const s of l.root.getComponentsInChildren(Sprite)) s.spriteFrame = null;
-            l.far.destroy(); l.root.destroy(); l.mid.length = 0;
+            l.sky.destroy(); l.root.destroy(); l.strips.length = 0;
         }
         this.layers.length = 0;
+        this.mist.node.destroy();
     }
 
-    /** Sprites take their painted frame's own size, so regions may mix building widths. */
-    private show(n: Node, key: string): void {
-        const sprite = n.getComponent(Sprite)!, frame = this.frames[key];
-        if (sprite.spriteFrame === frame) return;
-        sprite.spriteFrame = frame; n.getComponent(UITransform)!.setContentSize(frame.originalSize);
-    }
     private sprite(key: string, parent: Node): Node {
-        const n = new Node(key); n.layer = parent.layer; n.parent = parent; n.addComponent(UITransform);
-        const s = n.addComponent(Sprite); s.sizeMode = Sprite.SizeMode.CUSTOM; s.trim = false;
-        this.show(n, key); return n;
+        const n = new Node(key); n.layer = parent.layer; n.parent = parent;
+        const frame = this.frames[key]; n.addComponent(UITransform).setContentSize(frame.originalSize);
+        const s = n.addComponent(Sprite); s.sizeMode = Sprite.SizeMode.CUSTOM; s.trim = false; s.spriteFrame = frame;
+        return n;
     }
 }

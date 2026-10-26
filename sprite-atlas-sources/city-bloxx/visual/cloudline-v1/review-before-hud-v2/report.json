@@ -1,0 +1,329 @@
+{
+  "screenshots": [
+    "00-intro.png",
+    "01-ready.png",
+    "02-dropping.png",
+    "03-landed.png",
+    "combo-1.png",
+    "combo-3.png",
+    "combo-5.png",
+    "combo-10.png",
+    "08-banked.png",
+    "09-missed.png",
+    "09b-collapse.png",
+    "altitude-city.png",
+    "altitude-clouds.png",
+    "altitude-stratosphere.png",
+    "altitude-orbit.png",
+    "altitude-planets.png",
+    "altitude-deep-space.png",
+    "layout-375x540.png",
+    "layout-375x667.png",
+    "layout-390x844.png",
+    "layout-430x932.png",
+    "10-pause.png",
+    "11-result-available.png",
+    "12-paused-result.png",
+    "13-video-pending.png",
+    "14-video-cancelled.png",
+    "15-video-unavailable.png",
+    "16-revived.png",
+    "17-result-exhausted.png",
+    "18-restarted.png"
+  ],
+  "checks": [
+    "城市、云海、平流层、轨道、行星、深空均实际渲染；城市离场、装饰比例和可见节点数量正常。",
+    "实际暂停按钮经应用状态机冻结玩法和动效，继续按钮恢复。",
+    "视频等待、防重复点击、取消、不可用、三次复活与耗尽状态正确，取消和失败不会获得生命。",
+    "四种屏幕、胶囊及上下安全区内全部可见 UI 通过边界检查；退出无运行资源或场景残留，浏览器无错误。"
+  ],
+  "profiles": [
+    {
+      "width": 375,
+      "height": 540,
+      "modal": false,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 35
+    },
+    {
+      "width": 375,
+      "height": 667,
+      "modal": false,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 35
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "modal": false,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 35
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "modal": false,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 35
+    },
+    {
+      "width": 375,
+      "height": 540,
+      "modal": true,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 22
+    },
+    {
+      "width": 375,
+      "height": 667,
+      "modal": true,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 22
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "modal": true,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 22
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "modal": true,
+      "safe": {
+        "topInset": 124,
+        "bottomInset": 40,
+        "topY": 543,
+        "bottomY": -627,
+        "leftInset": 0,
+        "rightInset": 0,
+        "leftX": -375,
+        "rightX": 375,
+        "width": 750,
+        "height": 1170,
+        "centerX": 0,
+        "centerY": -42
+      },
+      "visibleElements": 22
+    }
+  ],
+  "errors": [],
+  "altitudes": [
+    {
+      "floors": 0,
+      "badge": "↑  城市街区",
+      "color": "aadceb",
+      "cityVisible": true,
+      "visibleItems": 4,
+      "frames": [
+        "",
+        "cloud-streaks",
+        "tree",
+        "fence"
+      ],
+      "floorNodes": 0,
+      "missing": 0
+    },
+    {
+      "floors": 18,
+      "badge": "↑  云海之上",
+      "color": "5ba8d2",
+      "cityVisible": false,
+      "visibleItems": 17,
+      "frames": [
+        "cloud-streaks",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-streaks",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "blimp",
+        "cloud-bank",
+        "cloud-bank",
+        "blimp",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank"
+      ],
+      "floorNodes": 6,
+      "missing": 0
+    },
+    {
+      "floors": 40,
+      "badge": "↑  平流层",
+      "color": "18436e",
+      "cityVisible": false,
+      "visibleItems": 18,
+      "frames": [
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "airplane",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank",
+        "cloud-bank"
+      ],
+      "floorNodes": 6,
+      "missing": 0
+    },
+    {
+      "floors": 62,
+      "badge": "↑  近地轨道",
+      "color": "111f39",
+      "cityVisible": false,
+      "visibleItems": 5,
+      "frames": [
+        "station",
+        "station",
+        "moon",
+        "whale-1"
+      ],
+      "floorNodes": 6,
+      "missing": 0
+    },
+    {
+      "floors": 112,
+      "badge": "↑  深空漫游",
+      "color": "171c36",
+      "cityVisible": false,
+      "visibleItems": 8,
+      "frames": [
+        "sky-purplestar_little",
+        "sky-purplestar_little",
+        "sky-purplestar_little",
+        "sky-purplestar_little",
+        "uranus",
+        "saturn",
+        "sky-purplestar"
+      ],
+      "floorNodes": 6,
+      "missing": 0
+    },
+    {
+      "floors": 168,
+      "badge": "↑  深空漫游",
+      "color": "171c36",
+      "cityVisible": false,
+      "visibleItems": 6,
+      "frames": [
+        "uranus",
+        "sky-purplestar_little",
+        "sky-purplestar",
+        "saturn",
+        "sky-purplestar_little"
+      ],
+      "floorNodes": 6,
+      "missing": 0
+    }
+  ],
+  "released": {
+    "owned": 0,
+    "world": false,
+    "bundle": false
+  }
+}

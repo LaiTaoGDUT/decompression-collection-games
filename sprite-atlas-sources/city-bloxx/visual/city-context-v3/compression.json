@@ -1,0 +1,56 @@
+{
+  "status": "superseded",
+  "date": "2026-10-25",
+  "provider": "Tinify official API",
+  "endpoint": "https://api.tinify.com/shrink",
+  "user_authorized": true,
+  "processed": 1,
+  "cached": 0,
+  "failed": 0,
+  "pending": 0,
+  "saved_bytes": 881305,
+  "reduction_percent": 51.09,
+  "upload_operations_this_revision": 2,
+  "previous_draft_report": "draft-compression.json",
+  "files": [
+    {
+      "path": "assets/game-assets/city-bloxx/visual/cloudline/city.png",
+      "dimensions": [
+        1183,
+        3549
+      ],
+      "bytes_before": 1725103,
+      "bytes_after": 843798,
+      "sha256_before": "e4beb2a1b3cd3ec5f255e2c6d57a5e9ea3c980d53216f4e2ade298c698ef8896",
+      "sha256_after": "8a6bd31be11cd3e0ffa55417158edaedede75c0b9bae577e19dbc0eaaf455912",
+      "meta_sha256": "fa996b1389e553fb31436e59c84dad50e8034d1a4b2d35850bc3c29f64096111"
+    }
+  ],
+  "dimensions_and_meta_preserved": true,
+  "validation": {
+    "typescript": "passed",
+    "git_diff_check": "passed",
+    "cocos_mcp_refresh": "passed",
+    "screenshots": 38,
+    "safe_profiles": 10,
+    "actual_first_landing": {
+      "tower": 1,
+      "baseY": 0
+    },
+    "ascent_floors": [
+      8,
+      18,
+      30,
+      40,
+      48
+    ],
+    "errors": [],
+    "released": {
+      "owned": 0,
+      "world": false,
+      "bundle": false
+    }
+  },
+  "replaced_by": "../atmosphere-v4/compression.json",
+  "note": "city.png已归档；当前城市由3D背景生成，不加载长图。"
+}

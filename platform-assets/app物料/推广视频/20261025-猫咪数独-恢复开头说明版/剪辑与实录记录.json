@@ -1,0 +1,529 @@
+{
+  "duration": 64.96666666666667,
+  "fps": 60,
+  "narration": false,
+  "nativeAudio": true,
+  "voiceStems": [],
+  "gameplay": {
+    "source": "local/meow-xhs-20261023/raw/gameplay-commentary.webm",
+    "sourceStart": 12.0,
+    "sourceEnd": 74.8,
+    "duration": 54.06666666666667,
+    "sourceInputs": 1,
+    "continuous": true,
+    "cuts": 0,
+    "freezeFrames": false,
+    "speedStages": [
+      {
+        "sourceStart": 12.0,
+        "sourceEnd": 31.8,
+        "rate": 1
+      },
+      {
+        "sourceStart": 31.8,
+        "sourceEnd": 69.7,
+        "rate": 1.3
+      },
+      {
+        "sourceStart": 69.7,
+        "sourceEnd": 74.8,
+        "rate": 1
+      }
+    ],
+    "leadingIdleTrimSeconds": 12.0,
+    "sourceFps": 30,
+    "opticalFlow": false,
+    "actions": [
+      {
+        "at": 17.606,
+        "cell": [
+          1,
+          6
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            1,
+            6
+          ]
+        ],
+        "videoAt": 5.606000000000002
+      },
+      {
+        "at": 26.040900000000374,
+        "cell": [
+          6,
+          7
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            1,
+            6
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "videoAt": 14.040900000000374
+      },
+      {
+        "at": 31.191200000000187,
+        "cell": [
+          2,
+          4
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "videoAt": 19.191200000000187
+      },
+      {
+        "at": 48.69720000000019,
+        "cell": [
+          0,
+          2
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "videoAt": 32.797846153846294
+      },
+      {
+        "at": 58.97740000000037,
+        "cell": [
+          3,
+          0
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "videoAt": 40.705692307692594
+      },
+      {
+        "at": 64.41060000000056,
+        "cell": [
+          4,
+          3
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "videoAt": 44.88507692307735
+      },
+      {
+        "at": 67.12690000000038,
+        "cell": [
+          5,
+          1
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "videoAt": 46.97453846153876
+      },
+      {
+        "at": 69.35840000000037,
+        "cell": [
+          7,
+          5
+        ],
+        "result": "cat",
+        "lives": 3,
+        "cats": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            5
+          ]
+        ],
+        "videoAt": 48.69107692307721
+      }
+    ],
+    "final": {
+      "level": 14,
+      "lives": 3,
+      "mistakes": 0,
+      "cats": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "state": "clearing",
+      "complete": true,
+      "wrongCell": "mark"
+    }
+  },
+  "opening": {
+    "reference": "20261025-猫咪数独-棋盘下字幕版",
+    "sourceStart": 12.0,
+    "sourceEnd": 31.8,
+    "captionsAndTimingRestored": true,
+    "continuesWithoutCut": true,
+    "highlightsRestored": true,
+    "highlightsAnimatedFromFirstFrame": true,
+    "highlightRect": [
+      89,
+      610,
+      991,
+      1490
+    ],
+    "steps": [
+      "逐行高亮",
+      "逐列高亮",
+      "单格颜色高亮",
+      "第一只猫",
+      "行列排除",
+      "相邻八格",
+      "下一只猫"
+    ]
+  },
+  "openingCorrection": {
+    "text": "橙色区域只有一格，所以先双击放猫",
+    "sourceStart": 15.0,
+    "sourceEnd": 18.7,
+    "videoStart": 3.0,
+    "videoEnd": 6.7,
+    "singleCellRegionVerified": true,
+    "reusedHighlightTrack": "local/meow-promo-20261025-guided-paced/edit/opening-highlights.mov",
+    "otherCaptionsAndTimingUnchanged": true
+  },
+  "captions": [
+    {
+      "start": 0.0,
+      "end": 3.0,
+      "sourceStart": 12.0,
+      "sourceEnd": 15.0,
+      "text": "每行、每列、每种颜色，各一只猫"
+    },
+    {
+      "start": 3.0,
+      "end": 6.7,
+      "sourceStart": 15.0,
+      "sourceEnd": 18.7,
+      "text": "橙色区域只有一格，所以先双击放猫"
+    },
+    {
+      "start": 6.7,
+      "end": 8.7,
+      "sourceStart": 18.7,
+      "sourceEnd": 20.7,
+      "text": "同一行的其他格子，都划掉"
+    },
+    {
+      "start": 8.7,
+      "end": 10.7,
+      "sourceStart": 20.7,
+      "sourceEnd": 22.7,
+      "text": "同一列的其他格子，也划掉"
+    },
+    {
+      "start": 10.7,
+      "end": 13.2,
+      "sourceStart": 22.7,
+      "sourceEnd": 25.2,
+      "text": "猫咪不能相邻，周围八格划掉"
+    },
+    {
+      "start": 13.2,
+      "end": 15.2,
+      "sourceStart": 25.2,
+      "sourceEnd": 27.2,
+      "text": "紫色只剩一格，双击找到下一只"
+    },
+    {
+      "start": 15.2,
+      "end": 19.8,
+      "sourceStart": 27.2,
+      "sourceEnd": 31.8,
+      "text": "排除之后，再找唯一的位置"
+    },
+    {
+      "start": 19.8,
+      "end": 22.492308,
+      "sourceStart": 31.8,
+      "sourceEnd": 35.3,
+      "text": "找到一只，就划掉同行同列"
+    },
+    {
+      "start": 22.492308,
+      "end": 26.338462,
+      "sourceStart": 35.3,
+      "sourceEnd": 40.3,
+      "text": "黄色只能在第一行，划掉别的颜色"
+    },
+    {
+      "start": 26.338462,
+      "end": 29.953846,
+      "sourceStart": 40.3,
+      "sourceEnd": 45.0,
+      "text": "蓝色候选都在这一列，继续排除"
+    },
+    {
+      "start": 29.953846,
+      "end": 33.030769,
+      "sourceStart": 45.0,
+      "sourceEnd": 49.0,
+      "text": "这一行只剩一格，再找到一只"
+    },
+    {
+      "start": 33.030769,
+      "end": 36.107692,
+      "sourceStart": 49.0,
+      "sourceEnd": 53.0,
+      "text": "棕色只能在底行，划掉别的颜色"
+    },
+    {
+      "start": 36.107692,
+      "end": 38.415385,
+      "sourceStart": 53.0,
+      "sourceEnd": 56.0,
+      "text": "蓝绿色锁住一列，继续缩小范围"
+    },
+    {
+      "start": 38.415385,
+      "end": 40.876923,
+      "sourceStart": 56.0,
+      "sourceEnd": 59.2,
+      "text": "第四行只剩左边，双击放猫"
+    },
+    {
+      "start": 40.876923,
+      "end": 45.030769,
+      "sourceStart": 59.2,
+      "sourceEnd": 64.6,
+      "text": "相邻格划掉，找到蓝色的位置"
+    },
+    {
+      "start": 45.030769,
+      "end": 47.184615,
+      "sourceStart": 64.6,
+      "sourceEnd": 67.4,
+      "text": "再找蓝绿色，剩下的越来越少"
+    },
+    {
+      "start": 47.184615,
+      "end": 48.953846,
+      "sourceStart": 67.4,
+      "sourceEnd": 69.7,
+      "text": "最后一只，在棕色区域"
+    },
+    {
+      "start": 48.953846,
+      "end": 50.053846,
+      "sourceStart": 69.7,
+      "sourceEnd": 70.8,
+      "text": "猫猫找齐啦，通关！"
+    },
+    {
+      "start": 50.053846,
+      "end": 54.053846,
+      "sourceStart": 70.8,
+      "sourceEnd": 74.8,
+      "text": ""
+    }
+  ],
+  "tutorialPlacement": {
+    "rect": [
+      112,
+      1496,
+      968,
+      1552
+    ],
+    "font": 48,
+    "belowBoard": true,
+    "background": false,
+    "border": false,
+    "shadow": false,
+    "singleLine": true
+  },
+  "gameViewport": {
+    "x": 89,
+    "y": 138,
+    "width": 902,
+    "height": 1604,
+    "crop": null,
+    "fullNativeScreenVisible": true
+  },
+  "lobby": {
+    "source": "local/dunk-promo-20261024-lobby-outro/raw/lobby-outro.mkv",
+    "sourceStart": 0.1,
+    "at": 53.76666666666667,
+    "seconds": 7.0
+  },
+  "ending": {
+    "source": "local/meow-xhs-20261024-xiaoxiao/edit/09-cta.mp4",
+    "at": 60.466666666666676,
+    "seconds": 4.5,
+    "originalApprovedEndCard": true
+  },
+  "sequence": [
+    "approved-opening-then-continuous-round",
+    "lobby-scroll",
+    "original-brand-ending"
+  ]
+}

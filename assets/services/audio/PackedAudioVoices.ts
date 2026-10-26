@@ -1,4 +1,5 @@
 import type { PlatformAudioBuffer, PlatformAudioContext, PlatformAudioGain, PlatformAudioSource } from '../../platform/PlatformAudio';
+import type { AudioEffectPlaybackOptions } from './AudioService';
 
 interface Voice {
     readonly source: PlatformAudioSource;
@@ -11,6 +12,7 @@ interface Voice {
 /** 每个游戏音效 Scope 独立拥有六个声部；起播、结束和取消都释放节点引用。 */
 export class PackedAudioVoices {
     private readonly voices = new Set<Voice>();
+    private readonly clipVolumes = new WeakMap<PlatformAudioBuffer, number>();
     private volumeScale = 1;
 
     constructor(private readonly context: () => PlatformAudioContext,
@@ -18,26 +20,45 @@ export class PackedAudioVoices {
 
     setVolumeScale(scale: number): void {
         this.volumeScale = Math.max(0, Math.min(1, scale));
-        this.voices.forEach(voice => { voice.gain.gain.value = voice.volume * this.volumeScale; });
+        this.voices.forEach(voice => this.updateGain(voice));
     }
 
-    play(buffer: PlatformAudioBuffer, volume: number): void {
+    setClipVolume(buffer: PlatformAudioBuffer, volume: number): void {
+        this.clipVolumes.set(buffer, Math.max(0, Math.min(1, volume)));
+        this.voices.forEach(voice => { if (voice.source.buffer === buffer) this.updateGain(voice); });
+    }
+
+    private updateGain(voice: Voice): void {
+        voice.gain.gain.value = voice.volume * this.volumeScale * (voice.source.buffer ? this.clipVolumes.get(voice.source.buffer) ?? 1 : 1);
+    }
+
+    isPlaying(buffer: PlatformAudioBuffer): boolean {
+        for (const voice of this.voices) if (!voice.cancelled && voice.source.buffer === buffer) return true;
+        return false;
+    }
+
+    play(buffer: PlatformAudioBuffer, volume: number, options: AudioEffectPlaybackOptions = {}, reuseByBuffer = false): void {
         if (!this.audible()) return;
         const context = this.context();
+        if (reuseByBuffer) Array.from(this.voices).forEach(voice => { if (voice.source.buffer === buffer) this.release(voice, true); });
         if (this.voices.size >= 6) {
             const oldest = this.voices.values().next().value as Voice | undefined;
             if (oldest) this.release(oldest, true);
         }
         const source = context.createBufferSource(), gain = context.createGain();
-        const voice: Voice = { source, gain, volume: Math.max(0, Math.min(1, volume)), started: false, cancelled: false };
-        source.buffer = buffer; source.loop = false; gain.gain.value = voice.volume * this.volumeScale;
+        const decibels = Number.isFinite(options.gainDecibels) ? Math.max(-80, Math.min(24, options.gainDecibels!)) : 0;
+        const offset = Number.isFinite(options.startSeconds) ? Math.max(0, Math.min(buffer.duration, options.startSeconds!)) : 0;
+        const rate = Number.isFinite(options.playbackRate) ? Math.max(.05, Math.min(4, options.playbackRate!)) : 1;
+        const voice: Voice = { source, gain, volume: Math.max(0, Math.min(1, volume)) * Math.pow(10, decibels / 20), started: false, cancelled: false };
+        source.buffer = buffer; source.loop = false; this.updateGain(voice);
+        if (source.playbackRate) source.playbackRate.value = rate;
         source.connect(gain); gain.connect(context.destination);
         source.onended = () => this.release(voice, false);
         this.voices.add(voice);
         const start = (): void => {
             if (voice.cancelled) return;
             if (!this.audible()) { this.release(voice, false); return; }
-            try { source.start(); voice.started = true; }
+            try { source.start(0, offset); voice.started = true; }
             catch (_error: unknown) { this.release(voice, false); }
         };
         try {

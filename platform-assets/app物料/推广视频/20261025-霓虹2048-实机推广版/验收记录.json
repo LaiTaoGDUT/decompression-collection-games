@@ -1,0 +1,65 @@
+{
+  "name": "霓虹2048",
+  "duration": 30.966666666666665,
+  "nativeAudio": true,
+  "narration": false,
+  "fullNativeInterfaceVisible": true,
+  "sameSevenSecondLobby": true,
+  "publicLobbyGames": 14,
+  "nativePopupVisibleBeforeLobbySeconds": 1.7163999999909976,
+  "selectedSourceCadence": [
+    {
+      "fps": 59.8,
+      "p99Ms": 18.999999999998494,
+      "maxMs": 33.99999999999892
+    },
+    {
+      "fps": 60.012002400480156,
+      "p99Ms": 21.000000000000796,
+      "maxMs": 30.9999999999917
+    },
+    {
+      "fps": 59.8981731057203,
+      "p99Ms": 19.99999999998181,
+      "maxMs": 33.999999999991815
+    }
+  ],
+  "noGameplayFreeze": true,
+  "noRestartSequence": true,
+  "outputs": {
+    "霓虹2048-实机推广-1080x1920.mp4": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 60,
+      "frames": 1858,
+      "fullDecode": "passed",
+      "bytes": 21016242,
+      "sha256": "40ebb82da258d7db8e81d69d1c5cf40edee8b00cdf1d1113df5e6db2d075a7a6"
+    },
+    "霓虹2048-实机推广-720x1280.mp4": {
+      "width": 720,
+      "height": 1280,
+      "fps": 60,
+      "frames": 1858,
+      "fullDecode": "passed",
+      "bytes": 6113768,
+      "sha256": "fedcbbcb2b4c7e5aa012fc5d3582c87073bbaa2749429cf54e1014b6ef44e3f4"
+    }
+  },
+  "nativeOutcome": {
+    "mergeMilestones": [
+      512,
+      1024,
+      2048
+    ],
+    "score": 21220,
+    "validatedNativeMoves": 896,
+    "boardConservation": "passed"
+  },
+  "integratedLoudnessLufs": -15.1,
+  "truePeakDbfs": -1.8,
+  "visualReview": "passed: gameplay, native result, first/last lobby rows, large-logo brand ending",
+  "typescript": "passed",
+  "gitDiffCheck": "passed",
+  "cocosAssetRefresh": "passed"
+}

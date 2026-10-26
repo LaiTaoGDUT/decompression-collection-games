@@ -5,6 +5,8 @@ import { CITY_ASSETS } from './CityBloxxView';
 import type { CityHudConfig } from './CityBloxxHud';
 import { CityBloxxRain, type CityRainConfig } from './CityBloxxRain';
 import { cityComboMilestone, cityComboStage } from './CityBloxxFeedback';
+import { CITY_GROUND } from './CityBloxxGround';
+import { cityBackdropInView } from './CityBloxxBackdrop';
 
 interface Decoration {
     id: number; name: string; frame: string; x: number; y: number; z: number;
@@ -44,6 +46,8 @@ interface Contact { graphics: Graphics; floor: CityFloor; startedAt: number; lif
 export class CityBloxxScenery {
     private readonly background: Node;
     private readonly gradient: Graphics;
+    private readonly rearPavement: Graphics;
+    private readonly streetBackZ: number;
     private readonly city: Node;
     private readonly decorations: Node;
     private readonly rig: Node;
@@ -75,12 +79,15 @@ export class CityBloxxScenery {
         private readonly assets: AssetService, particleEffect: EffectAsset, trailLine: Texture2D, trailMask: Texture2D, rainLine: Texture2D) {
         this.background = this.make('CityAltitudeSky', parent); this.background.layer = skyLayer; this.background.setSiblingIndex(0);
         this.gradient = this.background.addComponent(Graphics);
+        const rearPavement = this.make('CityRearPavement', parent); rearPavement.layer = skyLayer;
+        this.rearPavement = rearPavement.addComponent(Graphics);
         this.decorations = this.make('CityAltitudeScenery', parent); this.decorations.layer = skyLayer;
-        this.city = this.make('CitySunlitBackdrop', this.decorations);
+        this.city = this.make('CityCloudlineBackdrop', this.decorations);
         const citySprite = this.city.addComponent(Sprite);
         citySprite.sizeMode = Sprite.SizeMode.CUSTOM; citySprite.spriteFrame = cityFrame;
         const skyline = data.items.find(item => item.frame === 'skyline');
         if (!skyline) throw Error('City skyline configuration is missing');
+        this.streetBackZ = Math.min(CITY_GROUND.backZ, -skyline.z);
         this.city.active = false; this.items.set(skyline.id, this.city);
         // The projected opaque floor faces must occlude the rig. Residents and
         // effects keep their separate foreground pass in front of those faces.
@@ -169,7 +176,9 @@ export class CityBloxxScenery {
         }
     }
     update(model: CityBloxxModel): void {
-        if (Math.abs(model.cameraY - this.lastBand) > .015) { this.paintSky(); this.lastBand = model.cameraY; }
+        if (Math.abs(model.cameraY - this.lastBand) > .015) {
+            this.paintSky(); this.paintRearPavement(); this.lastBand = model.cameraY;
+        }
         const visible = new Set<number>();
         const drawOrder: SceneryOrder[] = [];
         for (const d of this.data.items) {
@@ -183,8 +192,12 @@ export class CityBloxxScenery {
             const pos = this.project(x, y, -z);
             const edge = this.project(x + d.width, y + d.height, -z);
             const w = Math.abs(edge.x - pos.x), h = Math.abs(edge.y - pos.y);
-            if (pos.y + h / 2 < -this.height / 2 || pos.y - h / 2 > this.height / 2) continue;
+            if (d.frame === 'skyline') {
+                if (!cityBackdropInView(this.project, this.height)) continue;
+            } else if (pos.y + h / 2 < -this.height / 2 || pos.y - h / 2 > this.height / 2
+                || pos.x + w / 2 < -this.width / 2 || pos.x - w / 2 > this.width / 2) continue;
             let frame = d.frame;
+            if (frame === 'cloud-bank' && d.width / d.height > 6) frame = 'cloud-bank-thin';
             if (frame === 'flyman-0') frame = 'flyman-' + Math.floor(model.animationTime * 12) % 2;
             if (frame === 'whale-0') frame = 'whale-' + Math.floor(model.animationTime) % 2;
             const spriteFrame = this.getFrame(frame);
@@ -194,7 +207,18 @@ export class CityBloxxScenery {
             node.active = true;
             node.getComponent(Sprite)!.spriteFrame = spriteFrame;
             node.getComponent(Sprite)!.color = new Color(d.color[0], d.color[1], d.color[2], d.color[3]);
-            node.getComponent(UITransform)!.setContentSize(w, h); node.setPosition(pos.x, pos.y);
+            if (d.frame === 'skyline') {
+                // The neighbors have their own 3D pass, sharing the gameplay
+                // camera. Composite that pass below the crane and floor pass.
+                node.getComponent(UITransform)!.setContentSize(this.width, this.height + Math.abs(this.center) * 2);
+                node.setPosition(0, this.center);
+            } else {
+                // Native dimensions describe placement bounds. New artwork
+                // keeps its own aspect ratio within those bounds.
+                const ratio = Math.min(w / spriteFrame.rect.width, h / spriteFrame.rect.height);
+                node.getComponent(UITransform)!.setContentSize(spriteFrame.rect.width * ratio, spriteFrame.rect.height * ratio);
+                node.setPosition(pos.x, pos.y);
+            }
             node.setScale(d.flipX ? -1 : 1, 1, 1); node.setRotationFromEuler(0, 0, d.angle);
             drawOrder.push({ node, layer: d.sortingLayer, order: d.sortingOrder,
                 distance: x * x + (y - model.cameraY) ** 2 + (z + model.config.camera.distance) ** 2, id: d.id });
@@ -382,19 +406,22 @@ export class CityBloxxScenery {
             bottomY + CITY_RULES.height * Math.cos(angle), 0);
         const unit = Math.abs(this.project(0, 1, 0).y - this.project(0, 0, 0).y);
         const armFrame = this.atlas.getSpriteFrame('crane-arm')!;
-        const arm = model.config.rigSprites.arm, root = joints[0];
-        const armScale = Math.min(arm.width * root.sx * unit / armFrame.rect.width,
-            arm.height * root.sy * unit / armFrame.rect.height);
-        const armWidth = armFrame.rect.width * armScale, armHeight = armFrame.rect.height * armScale;
-        const armCenter = this.project(root.x, root.y + model.moveY, 0);
+        // The native rig root sits outside a portrait viewport. Keep its
+        // decorative boom inside the safe playfield; the hook and load still
+        // use the unchanged animated world joints and collision geometry.
+        const safeHeight = this.rig.getComponent(UITransform)!.height;
+        const uiScale = Math.min(1, this.width / 750, safeHeight / 960);
+        const armWidth = 300 * uiScale, armHeight = armWidth * armFrame.rect.height / armFrame.rect.width;
+        const armTop = this.center + safeHeight / 2 - 235 * uiScale;
+        const armX = this.width / 2 - 24 * uiScale - armWidth / 2;
         this.crane.getComponent(UITransform)!.setAnchorPoint(.5, .5);
         this.crane.getComponent(UITransform)!.setContentSize(armWidth, armHeight);
-        this.crane.setPosition(armCenter.x, armCenter.y - this.center);
-        this.crane.setRotationFromEuler(0, 0, root.angle);
+        this.crane.setPosition(armX, armTop - armHeight / 2 - this.center);
+        this.crane.setScale(-1, 1, 1);
+        this.crane.setRotationFromEuler(0, 0, 0);
         // Suspension continues to use the original animated joint in world
         // coordinates; decorative artwork never moves the playable floor.
-        const tip = this.project(joints[1].x, joints[1].y + model.moveY, 0);
-        const tipX = tip.x, tipY = tip.y;
+        const tipX = armX - armWidth * .43, tipY = armTop - armHeight * .1;
         const slingFrame = this.atlas.getSpriteFrame('sling')!;
         const slingWidth = unit * 1.04, slingHeight = slingWidth * slingFrame.rect.height / slingFrame.rect.width;
         const apexX = floorTop.x - slingHeight * Math.sin(angle), apexY = floorTop.y + slingHeight * Math.cos(angle);
@@ -415,21 +442,45 @@ export class CityBloxxScenery {
         const origin = this.project(0, 0, -5), unit = this.project(0, 1, -5).y - origin.y;
         const altitude = (screenY - origin.y) / unit;
         let a = bands[0].color, b = a, t = 0;
-        for (let i = 0; i < bands.length; i++) {
-            const band = bands[i], edge = band.y + band.height / 2;
-            a = band.color; b = bands[Math.min(i + 1, bands.length - 1)].color;
-            if (altitude < edge + .75) { t = Math.max(0, Math.min(1, (altitude - edge + .75) / 1.5)); break; }
-            if (i === bands.length - 1) t = 0;
+        for (let i = 0; i < bands.length - 1; i++) {
+            const low = bands[i], high = bands[i + 1];
+            if (altitude < low.y) break;
+            a = low.color; b = high.color;
+            t = Math.max(0, Math.min(1, (altitude - low.y) / (high.y - low.y)));
+            if (altitude <= high.y) break;
         }
         return new Color(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
     }
     private paintSky(): void {
         const g = this.gradient; g.clear();
-        // Broad color bands are joined by 1.5-world-unit gradient strips.
+        // Continuous color interpolation keeps the entire ascent readable.
         for (let y = -this.height / 2; y < this.height / 2; y += 8) {
             g.fillColor = this.skyColorAt(y);
             g.rect(-this.width / 2, y, this.width, 9); g.fill();
         }
+    }
+    private paintRearPavement(): void {
+        // Keep the background street joined to the actual building depth.
+        // The original city is made of neighboring full-height facades;
+        // a separate distant horizon would expose an empty strip on ascent.
+        const y = CITY_GROUND.surfaceY, farZ = this.streetBackZ, nearZ = 9.5;
+        const far = this.project(0, y, farZ), near = this.project(0, y, nearZ), g = this.rearPavement;
+        g.node.active = far.y >= -this.height / 2 && near.y <= this.height / 2;
+        g.clear(); if (!g.node.active) return;
+        // Continue the background under the bottom safe inset as well. The
+        // interactive world is safely clipped, but the plaza must cover the screen.
+        g.fillColor = new Color(CITY_GROUND.pavingColor);
+        g.rect(-this.width / 2, -this.height / 2, this.width, far.y + this.height / 2); g.fill();
+        g.strokeColor = new Color(151, 169, 162, 70); g.lineWidth = .65;
+        for (let z = farZ; z < nearZ; z += CITY_GROUND.cell) {
+            const a = this.project(-12, y, z), b = this.project(12, y, z);
+            g.moveTo(a.x, a.y); g.lineTo(b.x, b.y);
+        }
+        for (let x = -9; x <= 9; x += CITY_GROUND.cell) {
+            const a = this.project(x, y, nearZ), b = this.project(x, y, farZ);
+            g.moveTo(a.x, a.y); g.lineTo(b.x, b.y);
+        }
+        g.stroke();
     }
     private make(name: string, parent: Node): Node { const n = new Node(name); n.layer = parent.layer; parent.addChild(n); n.addComponent(UITransform); return n; }
     private getFrame(frame: string): SpriteFrame | null {
@@ -450,7 +501,8 @@ export class CityBloxxScenery {
         this.clearGlows(); this.lastBand = -Infinity;
     }
     dispose(): void {
-        this.clearEffects(); this.rain.dispose(); this.items.clear(); this.background.destroy(); this.decorations.destroy(); this.rig.destroy(); this.foreground.destroy();
+        this.clearEffects(); this.rain.dispose(); this.items.clear(); this.background.destroy(); this.rearPavement.node.destroy();
+        this.decorations.destroy(); this.rig.destroy(); this.foreground.destroy();
         this.assets.releaseRuntimeAsset(this.trailFrame);
         this.assets.releaseRuntimeAsset(this.trailMaterial); this.assets.releaseRuntimeAsset(this.glowMaterial);
     }

@@ -1,4 +1,5 @@
 import type { RingLevelBank, RingMode, RingSnapshot, RingProp } from './RotateRingsTypes';
+import { canReceiveDailyReward } from '../../../services/cloud/ServerTimeService';
 
 export const ROTATE_RINGS_SAVE_VERSION = 1;
 export interface RingBest { moves: number; seconds: number; }
@@ -17,15 +18,15 @@ export function ringDayStamp(now = new Date()): string {
     const month = now.getMonth() + 1, day = now.getDate();
     return `${now.getFullYear()}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
 }
-/** 每个本地自然日首次登录加三个；日期回拨、同日重进和重开均不重复发放。 */
-export function grantRingDailyHints(save: RotateRingsSave, today = ringDayStamp()): number {
-    if (save.hintDay >= today) return 0;
+/** 按本次冷启动取得的服务器日期赠送；同日重进和重开均不重复发放。 */
+export function grantRingDailyHints(save: RotateRingsSave, today?: string): number {
+    if (!canReceiveDailyReward(save.hintDay, today)) return 0;
     save.hintDay = today;
     const before = save.props.hint;
     save.props.hint = Math.min(999, before + 3);
     return save.props.hint - before;
 }
-export function readRingSave(value: unknown, bank: RingLevelBank, today = ringDayStamp()): RotateRingsSave {
+export function readRingSave(value: unknown, bank: RingLevelBank, today?: string): RotateRingsSave {
     const raw = value && typeof value === 'object' ? value as Partial<RotateRingsSave> : {};
     const modeProgress = (mode: RingMode): RingModeProgress => {
         const p = raw.modes?.[mode];
@@ -46,7 +47,8 @@ export function readRingSave(value: unknown, bank: RingLevelBank, today = ringDa
     const normal = modeProgress('normal'), hard = modeProgress('hard');
     const props = { hint: Math.max(0, Math.min(999, integer(raw.props?.hint, RING_PROP_START))) };
     // 旧存档保留已有提示与关内状态；首次使用每日奖励时领取当天三个，初次创建存档的三个已在初始库存中。
-    const hintDay = typeof raw.hintDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.hintDay) ? raw.hintDay : raw.modes ? '' : today;
+    let hintDay = typeof raw.hintDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.hintDay) ? raw.hintDay : raw.modes ? '' : today ?? '';
+    if (today && hintDay > today) hintDay = today;
     return { mode: raw.mode === 'hard' ? 'hard' : 'normal', modes: { normal, hard }, props, hintDay,
         tutorialCompleted: raw.tutorialCompleted === true || normal.cleared > 0 || (normal.draft?.moves ?? 0) > 0 };
 }

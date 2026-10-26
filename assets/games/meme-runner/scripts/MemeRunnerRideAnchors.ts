@@ -1,3 +1,3 @@
-// Painted ride contact points, measured by tools/meme-runner/prepare-cast-v42.py.
-export const BULL_BACK_Y: ReadonlyArray<number> = [88.0, 88.0, 88.0, 88.0, 84.0, 83.0, 80.0, 74.5];
-export const RIDER_SEAT_Y: ReadonlyArray<number> = [5, 6];
+// Contact planes from the registered v50 seated drawing and v48 cart.
+export const CART_DECK_Y = 59;
+export const RIDER_SEAT_Y: ReadonlyArray<number> = [4, 4];
