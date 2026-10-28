@@ -1,0 +1,4992 @@
+{
+  "games": {
+    "watermelon": [
+      {
+        "path": "visual/cats/frames-c6/watermelon-fruits",
+        "frames": [
+          {
+            "source": "visual/cats/frames-c6/cat-00-cream-kitten-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-01-calico-idle-1-c6-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-02-gray-tabby-idle-1-c6-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-03-tuxedo-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-04-white-fluffy-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-05-brown-tabby-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-06-siamese-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-07-golden-shorthair-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-08-blue-scottish-fold-idle-1-c8-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-09-orange-tabby-idle-1-c6-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/cats/frames-c6/cat-10-fat-orange-idle-1-c6-v1.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/watermelon-hud",
+        "frames": [
+          {
+            "source": "visual/ui/c1-cat-high-score-panel-v2.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/c1-cat-instruction-strip-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-cat-next-panel-v2.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/c1-cat-pause-button-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-cat-score-panel-v2.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/watermelon-popup-controls",
+        "frames": [
+          {
+            "source": "visual/ui/c1-cat-popup-button-cream-350-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-cat-popup-button-mint-350-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-continue-video-button-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-continue-video-icon-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-pause-score-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/c1-watermelon-record-restart-button-v1.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "chess-endless": [
+      {
+        "path": "visual/pieces/chess-pieces",
+        "frames": [
+          {
+            "source": "visual/pieces/piece_enemy_advisor.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_enemy_cannon.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_enemy_elephant.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_enemy_general.png",
+            "geometry": "meta",
+            "resize": [
+              75,
+              77
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_enemy_horse.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_enemy_pawn.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_enemy_rook.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              66
+            ]
+          },
+          {
+            "source": "visual/pieces/piece_player_rook.png",
+            "geometry": "meta",
+            "resize": [
+              71,
+              67
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/icons/chess-items",
+        "frames": [
+          {
+            "source": "visual/icons/icon_item_banish.png",
+            "geometry": "meta",
+            "resize": [
+              100,
+              103
+            ]
+          },
+          {
+            "source": "visual/icons/icon_item_cross_slash.png",
+            "geometry": "meta",
+            "resize": [
+              102,
+              103
+            ]
+          },
+          {
+            "source": "visual/icons/icon_item_delay.png",
+            "geometry": "meta",
+            "resize": [
+              103,
+              100
+            ]
+          },
+          {
+            "source": "visual/icons/icon_item_freeze.png",
+            "geometry": "meta",
+            "resize": [
+              100,
+              103
+            ]
+          },
+          {
+            "source": "visual/icons/icon_item_teleport.png",
+            "geometry": "meta",
+            "resize": [
+              103,
+              102
+            ]
+          },
+          {
+            "source": "visual/icons/icon_revive.png",
+            "geometry": "meta",
+            "resize": [
+              85,
+              86
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/chess-controls",
+        "frames": [
+          {
+            "source": "visual/ui/chess-endless-rewarded-video-icon-v1.png",
+            "geometry": "full",
+            "resize": [
+              42,
+              40
+            ]
+          },
+          {
+            "source": "visual/ui/icon_close.png",
+            "geometry": "full",
+            "resize": [
+              52,
+              52
+            ]
+          },
+          {
+            "source": "visual/ui/icon_help.png",
+            "geometry": "full",
+            "resize": [
+              40,
+              40
+            ]
+          },
+          {
+            "source": "visual/ui/icon_pause.png",
+            "geometry": "full",
+            "resize": [
+              58,
+              58
+            ]
+          },
+          {
+            "source": "visual/ui/icon_rules.png",
+            "geometry": "full",
+            "resize": [
+              58,
+              58
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/vfx/chess-combat",
+        "frames": [
+          {
+            "source": "visual/vfx/vfx_capture_burst.png",
+            "geometry": "full",
+            "resize": [
+              136,
+              136
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_combo_burst.png",
+            "geometry": "full",
+            "resize": [
+              560,
+              233
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_cross_slash.png",
+            "geometry": "full",
+            "resize": [
+              726,
+              137
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_ink_particle.png",
+            "geometry": "full",
+            "resize": [
+              100,
+              100
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_light_particle.png",
+            "geometry": "full",
+            "resize": [
+              130,
+              130
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_wood_chip.png",
+            "geometry": "full",
+            "resize": [
+              100,
+              100
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/vfx/chess-item-feedback",
+        "frames": [
+          {
+            "source": "visual/vfx/vfx_item_banish.png",
+            "geometry": "full",
+            "resize": [
+              166,
+              166
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_item_cross.png",
+            "geometry": "full",
+            "resize": [
+              170,
+              170
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_item_delay.png",
+            "geometry": "full",
+            "resize": [
+              142,
+              142
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_item_freeze.png",
+            "geometry": "full",
+            "resize": [
+              142,
+              142
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_item_teleport.png",
+            "geometry": "full",
+            "resize": [
+              146,
+              146
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_talisman.png",
+            "geometry": "full",
+            "resize": [
+              60,
+              60
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/vfx/chess-reward-chest",
+        "frames": [
+          {
+            "source": "visual/vfx/vfx_reward_chest_closed.png",
+            "geometry": "full",
+            "resize": [
+              336,
+              272
+            ]
+          },
+          {
+            "source": "visual/vfx/vfx_reward_chest_open.png",
+            "geometry": "full",
+            "resize": [
+              368,
+              298
+            ]
+          }
+        ]
+      }
+    ],
+    "twenty48": [
+      {
+        "path": "visual/pieces/t48-tiles",
+        "frames": [
+          {
+            "source": "visual/pieces/t48-tile-2-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-4-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-8-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-16-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-32-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-64-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-128-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-256-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-512-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-1024-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-2048-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-4096-v3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/pieces/t48-tile-8192-v3.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/fx/t48-merge-effects",
+        "frames": [
+          {
+            "source": "visual/fx/t48-fx-glow-square-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/fx/t48-fx-echo-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/fx/t48-fx-sparkle-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/fx/t48-fx-rays-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/fx/t48-fx-tech-ring-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/fx/t48-fx-shockwave-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/t48-popup-controls",
+        "frames": [
+          {
+            "source": "visual/ui/t48-popup-button-amber-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-button-cyan-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-button-violet-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-score-amber-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-popup-score-cyan-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-rewarded-ad-icon-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/t48-hud",
+        "frames": [
+          {
+            "source": "visual/ui/t48-hud-card-cyan-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-hud-card-amber-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/t48-chrome",
+        "frames": [
+          {
+            "source": "visual/ui/t48-title-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/t48-pause-v2.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "sliding-puzzle": [
+      {
+        "path": "visual/icons/puzzle-icons",
+        "frames": [
+          {
+            "source": "visual/icons/pz1-album-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-back-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-close-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-crop-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-library-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-pause-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-random-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-reference-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/icons/pz1-selected-v1.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/puzzle-modes",
+        "frames": [
+          {
+            "source": "visual/ui/pz1-display-mode-number-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/pz1-display-mode-original-v1.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "catch": [
+      {
+        "path": "visual/ui/desktop-hud-tools",
+        "frames": [
+          {
+            "source": "visual/ui/desktop-cleanup-hud-help-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-hud-pause-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-rewarded-video-icon-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-tool-magnet-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-tool-return-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-tool-shuffle-v2.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/desktop-popup-buttons",
+        "frames": [
+          {
+            "source": "visual/ui/desktop-cleanup-popup-button-teal-v1.png",
+            "crop": [
+              20,
+              30,
+              459,
+              118
+            ],
+            "insets": {
+              "borderLeft": 91.80000000000001,
+              "borderRight": 91.80000000000001,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-popup-button-coral-v1.png",
+            "crop": [
+              33,
+              30,
+              433,
+              105
+            ],
+            "insets": {
+              "borderLeft": 86.60000000000001,
+              "borderRight": 86.60000000000001,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/desktop-cleanup-popup-button-paper-v1.png",
+            "crop": [
+              24,
+              18,
+              452,
+              126
+            ],
+            "insets": {
+              "borderLeft": 90.4,
+              "borderRight": 90.4,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      }
+    ],
+    "doodle-jump": [
+      {
+        "path": "visual/enemies/doodle-enemies",
+        "frames": [
+          {
+            "source": "visual/enemies/enemy-small-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-small-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hopper-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hopper-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hover-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-hover-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-weaver-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-weaver-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-large-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-large-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-flyer-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-flyer-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-bouncer-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-bouncer-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-runner-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-runner-02.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-tall-01.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/enemies/enemy-tall-02.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/items/doodle-items",
+        "frames": [
+          {
+            "source": "visual/items/pickup-propeller-hat-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-rocket.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-shield.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-spring-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/items/pickup-trampoline.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/platforms/doodle-platforms",
+        "frames": [
+          {
+            "source": "visual/platforms/platform-breakable-left.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-breakable-right.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-breakable-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-disappearing-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-exploding-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-moving-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-normal-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-shifting-shadowed-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-spiked-shadowed-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platforms/platform-vertical-moving-shadowed-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/platform-effects/doodle-platform-effects",
+        "frames": [
+          {
+            "source": "visual/platform-effects/breakable-cracks.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platform-effects/disappearing-fade.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platform-effects/explosion-fragments.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/platform-effects/explosive-countdown.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/projectiles/doodle-projectiles",
+        "frames": [
+          {
+            "source": "visual/projectiles/aim-reticle-trimmed.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/projectiles/carrot-bullet.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/hud/doodle-hud",
+        "frames": [
+          {
+            "source": "visual/ui/hud/back-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/height-card.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/item-progress-fill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/pause-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/play-again-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/retry-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/rules-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/hud/carrot-card.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/item-icons/doodle-item-icons",
+        "frames": [
+          {
+            "source": "visual/ui/item-icons/head-start.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/propeller-hat.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/rocket.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/shield.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/spring.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/ui/item-icons/trampoline.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-warm",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/warm-wildflowers.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/warm-grass.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/warm-clover.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/warm-leaf-sprig.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-sky",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/sky-kite.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/sky-rainbow.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/sky-sun.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/sky-wind.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-cloud",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-lightning.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-moon-wind.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-rain.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/cloud-warning-zigzag.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/backgrounds/decor-v2/doodle-star",
+        "frames": [
+          {
+            "source": "visual/backgrounds/decor-v2/star-comet.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/star-constellation.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/star-moon.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/backgrounds/decor-v2/star-planet.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hazards/doodle-trap",
+        "frames": [
+          {
+            "source": "visual/hazards/bear-trap-flash.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/bear-trap.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hazards/doodle-black-hole",
+        "frames": [
+          {
+            "source": "visual/hazards/black-hole-core.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/black-hole-ring.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hazards/doodle-ufo",
+        "frames": [
+          {
+            "source": "visual/hazards/ufo-beam.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/ufo-lock-target.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/ufo-tether.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/hazards/ufo.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-rocket",
+        "frames": [
+          {
+            "source": "visual/effects/rocket-flame.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/rocket-paper-scraps.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/rocket-paper-trail.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-enemy-impact",
+        "frames": [
+          {
+            "source": "visual/effects/enemy-defeat-fragments.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/enemy-hit-scratch.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/player-enemy-contact-impact.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-rebound",
+        "frames": [
+          {
+            "source": "visual/effects/spring-rebound.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/trampoline-rebound.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/doodle-player-motion",
+        "frames": [
+          {
+            "source": "visual/effects/player-fall-drag-streaks.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effects/player-screen-wrap-afterimages.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/tutorial/doodle-tutorial",
+        "frames": [
+          {
+            "source": "visual/ui/tutorial/sensor-tilt.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/tutorial/hazard-symbols.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/player/doodle-rabbit",
+        "frames": [
+          {
+            "source": "visual/player/rabbit-jumping.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/rabbit-falling.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/rabbit-propeller.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/rabbit-propeller-spin.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/rabbit-rocket.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/rabbit-shoes-jumping.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/rabbit-shoes-falling.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/player-rocket.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/player/shield-overlay.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/collectibles/doodle-collectibles",
+        "frames": [
+          {
+            "source": "visual/collectibles/golden-carrot.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/collectibles/golden-carrot-glow.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "bubble-shooter": [
+      {
+        "path": "visual/common/dialog-common/common-dialog-common",
+        "frames": [
+          {
+            "source": "visual/common/dialog-common/dialog-panel.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/dialog-common/dialog-primary.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/dialog-common/dialog-secondary.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/reward-common/common-reward-common",
+        "frames": [
+          {
+            "source": "visual/common/reward-common/reward-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-card.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-check.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-panel.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-selection.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/reward-common/reward-subtitle.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/items/common-items",
+        "frames": [
+          {
+            "source": "visual/common/items/item-bomb.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-button-base.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-clear-bottom.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-count-badge.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-name-plate.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/items/item-wildcard.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/hud/common-hud",
+        "frames": [
+          {
+            "source": "visual/common/hud/hud-boss-health-fill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-boss-health-track.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-counter-bead.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-counter-slot-empty.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/hud-insert-row.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/common/hud/round-panel.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/common/combo/common-combo",
+        "frames": [
+          {
+            "source": "visual/common/combo/banner-6.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-10.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-7.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-9.png",
+            "frame": "banner"
+          },
+          {
+            "source": "visual/common/combo/banner-8.png",
+            "frame": "banner"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/bubbles/cloud-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-blue.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-purple.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-red.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-support.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/bubble-yellow.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/bubbles/frosting-overlay.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/launcher/cloud-launcher",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/launcher/launcher-connector.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/launcher/launcher-head.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/launcher/launcher-pedestal.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/launcher/swap-icon.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/boss/cloud-boss",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-body.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-crown.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-fist-left.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/boss/boss-pudding-fist-right.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/foreground/cloud-foreground",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/foreground/cloud-a.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/foreground/cloud-b.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/foreground/cloud-c.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/vfx/cloud-vfx",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/blue-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/blue-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/purple-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/purple-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/red-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/red-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/yellow-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-candy-shards/yellow-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/attack-energy-heart.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-03.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-04.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-05.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-06.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/vfx/frosting-debris/fragment-07.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/bubbles/ocean-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-blue.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-purple.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-red.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-support.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/bubbles/bubble-yellow.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/launcher/ocean-launcher",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/launcher/base.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/launcher/turret.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/boss/ocean-boss",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/boss/boss-reclining-arm.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/boss/boss-reclining-body.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/boss/boss-reclining-staff.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/vfx/ocean-vfx",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/vfx/attack-pearl-v1.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/blue-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/blue-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/purple-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/purple-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/red-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/red-02.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/yellow-01.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/vfx/pop-fragments/yellow-02.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/cloud/hud/cloud-hud",
+        "frames": [
+          {
+            "source": "visual/regions/cloud/hud/hud-pause-button.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/hud/rules-icon-v2.png",
+            "frame": "rules"
+          },
+          {
+            "source": "visual/regions/cloud/hud/hud-frosting-skill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/cloud/hud/hud-down-arrow.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/ocean/hud/ocean-hud",
+        "frames": [
+          {
+            "source": "visual/regions/ocean/hud/health-track.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/rules-icon-v2.png",
+            "frame": "rules"
+          },
+          {
+            "source": "visual/regions/ocean/hud/skill-petrify.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/down.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/swap.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/health-fill.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/pause.png",
+            "geometry": "meta"
+          },
+          {
+            "source": "visual/regions/ocean/hud/item-base.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/magic/bubbles/magic-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "red"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "yellow"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "blue"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/solid-v9.png",
+            "frame": "purple"
+          },
+          {
+            "source": "visual/regions/magic/bubbles/bubble-support.png",
+            "geometry": "meta"
+          }
+        ]
+      },
+      {
+        "path": "visual/regions/toy/bubbles/toy-bubbles",
+        "frames": [
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "red"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "yellow"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "blue"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/crafted-v5.png",
+            "frame": "purple"
+          },
+          {
+            "source": "visual/regions/toy/bubbles/bubble-support.png",
+            "geometry": "meta"
+          }
+        ]
+      }
+    ],
+    "meowdoku": [
+      {
+        "path": "visual/ui/meow-hud",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-icon-ad-play-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-icon-back-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-icon-pause-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-panel-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-tool-hint-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-tool-locate-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-guides",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-guide-hand-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-color-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-highlight-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-line-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-rule-touch-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effect/meow-board-feedback",
+        "frames": [
+          {
+            "source": "visual/effect/meowdoku-broken-heart-1-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-broken-heart-2-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-cross-bar-v2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-cross-shadow-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-glow-radial-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-glow-soft-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-grid-glow-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-hint-light-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-paw-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-prompt-cat-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-prompt-frame-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-prompt-x-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/effect/meow-scoring",
+        "frames": [
+          {
+            "source": "visual/effect/meowdoku-star-gold-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-star-spark-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-star-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/effect/meowdoku-trail-gold-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-win-toast",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-win-toast-1-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-2-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-3-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-4-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-win-toast-bg-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-result-cats",
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-like-fist-v2.png",
+            "geometry": "full",
+            "resize": [
+              99,
+              128
+            ]
+          },
+          {
+            "source": "visual/ui/meowdoku-like-thumb-v2.png",
+            "geometry": "full",
+            "resize": [
+              99,
+              128
+            ]
+          },
+          {
+            "source": "visual/ui/meowdoku-result-fail-cat-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-win-cat-hop-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-win-cat-v1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/meowdoku-result-win-cat-wink-v1.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/meow-genius-cat",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/ui/meowdoku-result-genius-cat-v2.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ],
+    "cyblockbees": [
+      {
+        "path": "visual/game/cyblockbees-dog",
+        "frames": [
+          {
+            "source": "visual/game/dog-idle-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-scared-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-win-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-lose-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/dog-beaten-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/bee-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              64,
+              46
+            ]
+          },
+          {
+            "source": "visual/game/bee-die-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              64,
+              45
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-props-1",
+        "frames": [
+          {
+            "source": "visual/game/box-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 15,
+              "borderBottom": 14,
+              "borderRight": 15,
+              "borderTop": 15
+            }
+          },
+          {
+            "source": "visual/game/box-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderBottom": 14,
+              "borderRight": 16,
+              "borderTop": 15
+            }
+          },
+          {
+            "source": "visual/game/box-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderBottom": 15,
+              "borderRight": 16,
+              "borderTop": 14
+            }
+          },
+          {
+            "source": "visual/game/box-inner-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 15,
+              "borderBottom": 14,
+              "borderRight": 15,
+              "borderTop": 15
+            },
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/game/box-outline-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/game/brick-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/brick-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 5,
+              "borderBottom": 5,
+              "borderRight": 5,
+              "borderTop": 5
+            }
+          },
+          {
+            "source": "visual/game/ice-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              40,
+              41
+            ]
+          },
+          {
+            "source": "visual/game/ice-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              41,
+              41
+            ]
+          },
+          {
+            "source": "visual/game/ice-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              42,
+              30
+            ]
+          },
+          {
+            "source": "visual/game/spike-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              36,
+              64
+            ]
+          },
+          {
+            "source": "visual/game/saw-gear-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              116,
+              116
+            ]
+          },
+          {
+            "source": "visual/game/saw-spin-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              44
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-props-2",
+        "frames": [
+          {
+            "source": "visual/game/knife-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              32,
+              118
+            ]
+          },
+          {
+            "source": "visual/game/bomb-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              104,
+              109
+            ]
+          },
+          {
+            "source": "visual/game/black-hole-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              132,
+              129
+            ]
+          },
+          {
+            "source": "visual/game/ball-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/spiky-ball-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              144,
+              144
+            ]
+          },
+          {
+            "source": "visual/game/spiky-ball-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/spiky-ball-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/stone-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/move-arrow-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderBottom": 16,
+              "borderRight": 16,
+              "borderTop": 16
+            }
+          },
+          {
+            "source": "visual/game/solid-red-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-spider",
+        "frames": [
+          {
+            "source": "visual/game/spider-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              80,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              80,
+              75
+            ]
+          },
+          {
+            "source": "visual/game/spider-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              84,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-4-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              86,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-5-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              88,
+              76
+            ]
+          },
+          {
+            "source": "visual/game/spider-6-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              16,
+              16
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/game/cyblockbees-hive",
+        "frames": [
+          {
+            "source": "visual/game/hive-a-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/game/hive-b-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              108,
+              131
+            ]
+          },
+          {
+            "source": "visual/game/hive-fan-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              156,
+              101
+            ]
+          },
+          {
+            "source": "visual/game/hive-fan-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              156,
+              101
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/cyblockbees-terrain",
+        "frames": [
+          {
+            "source": "visual/backdrop/ground-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/backdrop/platform-round-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/backdrop/platform-cube-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/backdrop/grass-1-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              96,
+              117
+            ]
+          },
+          {
+            "source": "visual/backdrop/grass-2-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              106,
+              90
+            ]
+          },
+          {
+            "source": "visual/backdrop/grass-3-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              96,
+              113
+            ]
+          },
+          {
+            "source": "visual/backdrop/grass-outline-1-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/backdrop/grass-outline-2-v1.png",
+            "geometry": "full",
+            "insets": {}
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/cyblockbees-clouds",
+        "frames": [
+          {
+            "source": "visual/backdrop/cloud-1-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              220,
+              115
+            ]
+          },
+          {
+            "source": "visual/backdrop/cloud-2-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              250,
+              137
+            ]
+          },
+          {
+            "source": "visual/backdrop/cloud-3-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              236,
+              99
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/cyblockbees-landscape",
+        "frames": [
+          {
+            "source": "visual/backdrop/water-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/backdrop/tree-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              420,
+              841
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/cyblockbees-hud",
+        "frames": [
+          {
+            "source": "visual/ui/icon-pencil-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/bar-fill-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 18,
+              "borderBottom": 17,
+              "borderRight": 18,
+              "borderTop": 17
+            }
+          },
+          {
+            "source": "visual/ui/bar-track-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 17,
+              "borderBottom": 17,
+              "borderRight": 18,
+              "borderTop": 17
+            }
+          },
+          {
+            "source": "visual/ui/timer-fill-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/timer-track-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/star-on-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/star-off-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          },
+          {
+            "source": "visual/ui/hand-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            },
+            "resize": [
+              96,
+              96
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/effect/cyblockbees-fx",
+        "frames": [
+          {
+            "source": "visual/effect/fx-glow-1-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-glow-2-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-glow-3-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-spark-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              64
+            ]
+          },
+          {
+            "source": "visual/effect/fx-smoke-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-ripple-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              32,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-wind-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-swirl-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-sequence-1-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-ring-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-bubble-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-prop-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              64
+            ]
+          },
+          {
+            "source": "visual/effect/fx-sequence-2-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              64
+            ]
+          },
+          {
+            "source": "visual/effect/fx-sequence-3-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-sequence-4-v1.png",
+            "geometry": "full",
+            "insets": {}
+          },
+          {
+            "source": "visual/effect/fx-noise-v1.png",
+            "geometry": "full",
+            "insets": {},
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/effect/fx-noise-poison-v1.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 0,
+              "borderBottom": 0,
+              "borderRight": 0,
+              "borderTop": 0
+            }
+          }
+        ]
+      }
+    ],
+    "rotate-rings": [
+      {
+        "path": "visual/ui/rings-ui",
+        "frames": [
+          {
+            "source": "visual/ui/btn_primary_blue.png",
+            "geometry": "full",
+            "resize": [
+              376,
+              96
+            ],
+            "insets": {
+              "borderLeft": 156,
+              "borderRight": 156,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_primary_orange.png",
+            "geometry": "full",
+            "resize": [
+              342,
+              96
+            ],
+            "insets": {
+              "borderLeft": 156,
+              "borderRight": 156,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_secondary.png",
+            "geometry": "full",
+            "resize": [
+              374,
+              96
+            ],
+            "insets": {
+              "borderLeft": 156,
+              "borderRight": 156,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/badge_lock.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_round_back.png",
+            "geometry": "full",
+            "resize": [
+              76,
+              76
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/btn_round_settings.png",
+            "geometry": "full",
+            "resize": [
+              76,
+              76
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/prop_plate.png",
+            "geometry": "full",
+            "resize": [
+              132,
+              132
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/icon_hint.png",
+            "geometry": "full",
+            "resize": [
+              72,
+              83
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/icon_hint_large.png",
+            "geometry": "full",
+            "resize": [
+              148,
+              170
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/badge_number.png",
+            "geometry": "full",
+            "resize": [
+              48,
+              48
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/badge_ad.png",
+            "geometry": "full",
+            "resize": [
+              48,
+              48
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/icon_ad.png",
+            "geometry": "full",
+            "resize": [
+              44,
+              44
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/dialog_panel.png",
+            "geometry": "full",
+            "resize": [
+              203,
+              200
+            ],
+            "insets": {
+              "borderLeft": 132,
+              "borderRight": 132,
+              "borderTop": 132,
+              "borderBottom": 132
+            }
+          },
+          {
+            "source": "visual/ui/dialog_header.png",
+            "geometry": "full",
+            "resize": [
+              460,
+              90
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/guide_hand.png",
+            "geometry": "full",
+            "resize": [
+              100,
+              120
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/ui/hard_flame.png",
+            "geometry": "full",
+            "resize": [
+              34,
+              42
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "path": "visual/effects/rings-effects",
+        "frames": [
+          {
+            "source": "visual/effects/fx_sparkle.png",
+            "geometry": "full",
+            "resize": [
+              64,
+              64
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/fx_glow.png",
+            "geometry": "full",
+            "resize": [
+              256,
+              256
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_0.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_1.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_2.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_3.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_4.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_5.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_6.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/effects/explosion_7.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "path": "visual/objects/rings-objects",
+        "frames": [
+          {
+            "source": "visual/objects/bomb.png",
+            "geometry": "full",
+            "resize": [
+              96,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/catch.png",
+            "geometry": "full",
+            "resize": [
+              92,
+              92
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/game-bg-mask.png",
+            "geometry": "full",
+            "resize": [
+              384,
+              384
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/ring-normal.png",
+            "geometry": "full",
+            "resize": [
+              768,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/ring-sdf.png",
+            "geometry": "full",
+            "resize": [
+              768,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/objects/ring-texture.png",
+            "geometry": "full",
+            "resize": [
+              768,
+              96
+            ],
+            "insets": {
+              "borderLeft": 0,
+              "borderRight": 0,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          }
+        ]
+      }
+    ],
+    "flappy-dunk": [
+      {
+        "path": "visual/objects/dunk-objects",
+        "frames": [
+          {
+            "source": "visual/objects/Ball.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/objects/Wing.png",
+            "geometry": "full",
+            "resize": [
+              44,
+              45
+            ]
+          },
+          {
+            "source": "visual/objects/Hoop_0.png",
+            "geometry": "full",
+            "resize": [
+              218,
+              40
+            ]
+          },
+          {
+            "source": "visual/objects/Hoop_1.png",
+            "geometry": "full",
+            "resize": [
+              218,
+              30
+            ]
+          },
+          {
+            "source": "visual/objects/Shield.png",
+            "geometry": "full",
+            "resize": [
+              63,
+              72
+            ]
+          },
+          {
+            "source": "visual/objects/BeyBlade.png",
+            "geometry": "full",
+            "resize": [
+              50,
+              48
+            ]
+          },
+          {
+            "source": "visual/objects/CircleBlur.png",
+            "geometry": "full",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/objects/BordoCircle.png",
+            "geometry": "full",
+            "resize": [
+              200,
+              200
+            ]
+          },
+          {
+            "source": "visual/objects/Cerchio_128.png",
+            "geometry": "full",
+            "resize": [
+              128,
+              128
+            ]
+          },
+          {
+            "source": "visual/objects/StarGlow1.png",
+            "geometry": "full",
+            "resize": [
+              200,
+              200
+            ]
+          },
+          {
+            "source": "visual/objects/Star2.png",
+            "geometry": "full",
+            "resize": [
+              118,
+              118
+            ]
+          },
+          {
+            "source": "visual/objects/DirectionArrow.png",
+            "geometry": "full",
+            "resize": [
+              170,
+              105
+            ]
+          },
+          {
+            "source": "visual/objects/RingHighlightSmall.png",
+            "geometry": "full",
+            "resize": [
+              57,
+              54
+            ]
+          },
+          {
+            "source": "visual/objects/NativeParticle207.png",
+            "geometry": "full",
+            "resize": [
+              64,
+              64
+            ]
+          },
+          {
+            "source": "visual/objects/NativeParticle205.png",
+            "geometry": "full",
+            "resize": [
+              64,
+              64
+            ]
+          },
+          {
+            "source": "visual/objects/Tris_X.png",
+            "geometry": "full",
+            "resize": [
+              170,
+              170
+            ]
+          },
+          {
+            "source": "visual/font/Glyph-48.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-49.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-50.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-51.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-52.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-53.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-54.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-55.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-56.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-57.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-43.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-83.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-87.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-73.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-72.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-33.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-120.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-112.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-108.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-97.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-115.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-104.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-105.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-101.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-100.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-99.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-116.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-118.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-80.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-76.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-65.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-88.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-69.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-68.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-67.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-84.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-86.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/Net.png",
+            "geometry": "full",
+            "resize": [
+              184,
+              64
+            ]
+          },
+          {
+            "source": "visual/objects/Moon.png",
+            "geometry": "full",
+            "resize": [
+              140,
+              140
+            ]
+          },
+          {
+            "source": "visual/objects/MoonBadge.png",
+            "geometry": "full",
+            "resize": [
+              56,
+              56
+            ]
+          },
+          {
+            "source": "visual/objects/IconPlay.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconRestart.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconHome.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconVideo.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconFlag.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconBall.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconPause.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/objects/IconBack.png",
+            "geometry": "full",
+            "resize": [
+              28,
+              28
+            ]
+          },
+          {
+            "source": "visual/font/Glyph-31354.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-24515.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-20837.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-32593.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-36830.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-20987.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-25252.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-30462.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-29983.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-25928.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-215.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/Ball_2.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/objects/Ball_3.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/font/Glyph-31726.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-29699.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-28748.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-26376.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-22812.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-22825.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/font/Glyph-21488.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/objects/Ball_4.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          },
+          {
+            "source": "visual/objects/Ball_5.png",
+            "geometry": "full",
+            "resize": [
+              70,
+              70
+            ]
+          }
+        ]
+      }
+    ],
+    "pingpong": [
+      {
+        "path": "visual/objects/pingpong-objects",
+        "frames": [
+          {
+            "source": "visual/objects/paddle-red.png",
+            "geometry": "full",
+            "resize": [
+              155,
+              198
+            ]
+          },
+          {
+            "source": "visual/objects/paddle-black.png",
+            "geometry": "full",
+            "resize": [
+              155,
+              198
+            ]
+          },
+          {
+            "source": "visual/objects/Cerchio_128.png",
+            "geometry": "full",
+            "resize": [
+              69,
+              69
+            ]
+          },
+          {
+            "source": "visual/objects/Cerchio_128_Bucato.png",
+            "geometry": "full",
+            "resize": [
+              69,
+              69
+            ]
+          },
+          {
+            "source": "visual/objects/Impatto.png",
+            "geometry": "full",
+            "resize": [
+              24,
+              47
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/backdrop/pingpong-backdrop",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/backdrop/arena-floor.png",
+            "geometry": "full",
+            "resize": [
+              750,
+              1334
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/ui/pingpong-ready",
+        "frames": [
+          {
+            "source": "visual/ui/ready-hero-v2.png",
+            "geometry": "full",
+            "resize": [
+              456,
+              304
+            ]
+          }
+        ]
+      }
+    ],
+    "meme-runner": [
+      {
+        "path": "visual/world-v19/world-pieces",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-0",
+            "name": "fx-dust-0",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-1",
+            "name": "fx-dust-1",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-2",
+            "name": "fx-dust-2",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-dust-3",
+            "name": "fx-dust-3",
+            "resize": [
+              96,
+              64
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-spark",
+            "name": "fx-spark",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-halo",
+            "name": "fx-halo",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-shard",
+            "name": "fx-shard",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-bounce",
+            "name": "fx-bounce",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-wood-0",
+            "name": "fx-wood-0",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-wood-1",
+            "name": "fx-wood-1",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-wood-2",
+            "name": "fx-wood-2",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-flash",
+            "name": "fx-flash",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-heart",
+            "name": "fx-heart",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-confetti-0",
+            "name": "fx-confetti-0",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-confetti-1",
+            "name": "fx-confetti-1",
+            "resize": [
+              120,
+              80
+            ]
+          },
+          {
+            "source": "visual/world-v19/effects-sheet.png",
+            "frame": "fx-arc",
+            "name": "fx-arc",
+            "resize": [
+              120,
+              80
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v33/items",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v33/frames/shield-loop-0.png",
+            "name": "shield-loop-0"
+          },
+          {
+            "source": "visual/v33/frames/shield-loop-1.png",
+            "name": "shield-loop-1"
+          },
+          {
+            "source": "visual/v33/frames/shield-loop-2.png",
+            "name": "shield-loop-2"
+          },
+          {
+            "source": "visual/v33/frames/shield-loop-3.png",
+            "name": "shield-loop-3"
+          }
+        ]
+      },
+      {
+        "path": "visual/dash-aura-v3/dash-aura",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-0.png",
+            "name": "dash-aura-0"
+          },
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-1.png",
+            "name": "dash-aura-1"
+          },
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-2.png",
+            "name": "dash-aura-2"
+          },
+          {
+            "source": "visual/dash-aura-v3/frames/dash-aura-3.png",
+            "name": "dash-aura-3"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate.png",
+            "name": "crate"
+          },
+          {
+            "source": "visual/v38/frames/roller.png",
+            "name": "roller"
+          },
+          {
+            "source": "visual/v38/frames/spikes.png",
+            "name": "spikes"
+          },
+          {
+            "source": "visual/v38/frames/steam-base.png",
+            "name": "steam-base"
+          },
+          {
+            "source": "visual/v38/frames/steam-jet.png",
+            "name": "steam-jet"
+          },
+          {
+            "source": "visual/v38/frames/gate.png",
+            "name": "gate"
+          },
+          {
+            "source": "visual/v38/frames/bridge-planks.png",
+            "name": "bridge-planks"
+          },
+          {
+            "source": "visual/v38/frames/coin.png",
+            "name": "coin"
+          },
+          {
+            "source": "visual/v38/frames/coin-gold.png",
+            "name": "coin-gold"
+          },
+          {
+            "source": "visual/v38/frames/power-magnet.png",
+            "name": "power-magnet"
+          },
+          {
+            "source": "visual/v38/frames/power-shield.png",
+            "name": "power-shield"
+          },
+          {
+            "source": "visual/v38/frames/awning.png",
+            "name": "awning"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall.png",
+            "name": "pit-wall"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props-alley",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate-alley.png",
+            "name": "crate-alley"
+          },
+          {
+            "source": "visual/v38/frames/roller-alley.png",
+            "name": "roller-alley"
+          },
+          {
+            "source": "visual/v38/frames/spikes-alley.png",
+            "name": "spikes-alley"
+          },
+          {
+            "source": "visual/v38/frames/gate-alley.png",
+            "name": "gate-alley"
+          },
+          {
+            "source": "visual/v38/frames/awning-alley.png",
+            "name": "awning-alley"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall-alley.png",
+            "name": "pit-wall-alley"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props-roofs",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate-roofs.png",
+            "name": "crate-roofs"
+          },
+          {
+            "source": "visual/v38/frames/roller-roofs.png",
+            "name": "roller-roofs"
+          },
+          {
+            "source": "visual/v38/frames/spikes-roofs.png",
+            "name": "spikes-roofs"
+          },
+          {
+            "source": "visual/v38/frames/gate-roofs.png",
+            "name": "gate-roofs"
+          },
+          {
+            "source": "visual/v38/frames/awning-roofs.png",
+            "name": "awning-roofs"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall-roofs.png",
+            "name": "pit-wall-roofs"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/props-night",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/crate-night.png",
+            "name": "crate-night"
+          },
+          {
+            "source": "visual/v38/frames/roller-night.png",
+            "name": "roller-night"
+          },
+          {
+            "source": "visual/v38/frames/spikes-night.png",
+            "name": "spikes-night"
+          },
+          {
+            "source": "visual/v38/frames/gate-night.png",
+            "name": "gate-night"
+          },
+          {
+            "source": "visual/v38/frames/awning-night.png",
+            "name": "awning-night"
+          },
+          {
+            "source": "visual/v38/frames/pit-wall-night.png",
+            "name": "pit-wall-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/finish",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/arch.png",
+            "name": "arch"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/hud",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v38/frames/hud-panel.png",
+            "name": "hud-panel",
+            "insets": {
+              "borderLeft": 28,
+              "borderRight": 28,
+              "borderTop": 28,
+              "borderBottom": 28
+            }
+          },
+          {
+            "source": "visual/v38/frames/hud-track.png",
+            "name": "hud-track",
+            "insets": {
+              "borderLeft": 20,
+              "borderRight": 20,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/v38/frames/hud-fever-fill.png",
+            "name": "hud-fever-fill",
+            "insets": {
+              "borderLeft": 10,
+              "borderRight": 10,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/v38/frames/hud-route.png",
+            "name": "hud-route"
+          },
+          {
+            "source": "visual/v38/frames/hud-tag.png",
+            "name": "hud-tag"
+          },
+          {
+            "source": "visual/v38/frames/hud-pause.png",
+            "name": "hud-pause"
+          },
+          {
+            "source": "visual/v38/frames/hud-heart.png",
+            "name": "hud-heart"
+          },
+          {
+            "source": "visual/v38/frames/hud-kangaroo.png",
+            "name": "hud-kangaroo"
+          },
+          {
+            "source": "visual/v38/frames/hud-bag.png",
+            "name": "hud-bag"
+          },
+          {
+            "source": "visual/v38/frames/hud-house.png",
+            "name": "hud-house"
+          },
+          {
+            "source": "visual/v38/frames/hud-flame.png",
+            "name": "hud-flame"
+          },
+          {
+            "source": "visual/v38/frames/hud-button-slide.png",
+            "name": "hud-button-slide"
+          },
+          {
+            "source": "visual/v38/frames/hud-button-jump.png",
+            "name": "hud-button-jump"
+          }
+        ]
+      },
+      {
+        "path": "visual/v38/dialog",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v38/frames/dlg-board.png",
+            "name": "dlg-board",
+            "insets": {
+              "borderLeft": 60,
+              "borderRight": 60,
+              "borderTop": 60,
+              "borderBottom": 60
+            }
+          },
+          {
+            "source": "visual/v38/frames/dlg-ribbon-win.png",
+            "name": "dlg-ribbon-win"
+          },
+          {
+            "source": "visual/v38/frames/dlg-ribbon-lose.png",
+            "name": "dlg-ribbon-lose"
+          },
+          {
+            "source": "visual/v38/frames/dlg-sign.png",
+            "name": "dlg-sign"
+          },
+          {
+            "source": "visual/v38/frames/dlg-receipt.png",
+            "name": "dlg-receipt"
+          },
+          {
+            "source": "visual/v38/frames/dlg-tag.png",
+            "name": "dlg-tag"
+          },
+          {
+            "source": "visual/v38/frames/dlg-stamp.png",
+            "name": "dlg-stamp"
+          },
+          {
+            "source": "visual/v38/frames/dlg-star.png",
+            "name": "dlg-star"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-replay.png",
+            "name": "dlg-btn-replay"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-play.png",
+            "name": "dlg-btn-play"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-home.png",
+            "name": "dlg-btn-home"
+          },
+          {
+            "source": "visual/v38/frames/dlg-btn-restart.png",
+            "name": "dlg-btn-restart"
+          },
+          {
+            "source": "visual/v38/frames/dlg-title-win.png",
+            "name": "dlg-title-win"
+          },
+          {
+            "source": "visual/v38/frames/dlg-title-lose.png",
+            "name": "dlg-title-lose"
+          },
+          {
+            "source": "visual/v38/frames/dlg-title-pause.png",
+            "name": "dlg-title-pause"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-replay.png",
+            "name": "dlg-word-replay"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-home.png",
+            "name": "dlg-word-home"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-restart.png",
+            "name": "dlg-word-restart"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-resume.png",
+            "name": "dlg-word-resume"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-run.png",
+            "name": "dlg-word-run"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-delivery.png",
+            "name": "dlg-word-delivery"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-rating.png",
+            "name": "dlg-word-rating"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-total.png",
+            "name": "dlg-word-total"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-short.png",
+            "name": "dlg-word-short"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-meter.png",
+            "name": "dlg-word-meter"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-best.png",
+            "name": "dlg-word-best"
+          },
+          {
+            "source": "visual/v38/frames/dlg-word-time.png",
+            "name": "dlg-word-time"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-0.png",
+            "name": "dlg-digit-0"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-1.png",
+            "name": "dlg-digit-1"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-2.png",
+            "name": "dlg-digit-2"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-3.png",
+            "name": "dlg-digit-3"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-4.png",
+            "name": "dlg-digit-4"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-5.png",
+            "name": "dlg-digit-5"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-6.png",
+            "name": "dlg-digit-6"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-7.png",
+            "name": "dlg-digit-7"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-8.png",
+            "name": "dlg-digit-8"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-9.png",
+            "name": "dlg-digit-9"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-plus.png",
+            "name": "dlg-digit-plus"
+          },
+          {
+            "source": "visual/v38/frames/dlg-digit-colon.png",
+            "name": "dlg-digit-colon"
+          }
+        ]
+      },
+      {
+        "path": "visual/v42/cast",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v42/frames/kangaroo-0.png",
+            "name": "kangaroo-0"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-1.png",
+            "name": "kangaroo-1"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-2.png",
+            "name": "kangaroo-2"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-3.png",
+            "name": "kangaroo-3"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-4.png",
+            "name": "kangaroo-4"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-5.png",
+            "name": "kangaroo-5"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-6.png",
+            "name": "kangaroo-6"
+          },
+          {
+            "source": "visual/v42/frames/kangaroo-7.png",
+            "name": "kangaroo-7"
+          },
+          {
+            "source": "visual/v42/frames/friend-pin.png",
+            "name": "friend-pin"
+          },
+          {
+            "source": "visual/v42/frames/friend-ring.png",
+            "name": "friend-ring"
+          }
+        ]
+      },
+      {
+        "path": "visual/v47/props",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/v47/frames/balloons.png",
+            "name": "balloons"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/devices",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/cart-0.png",
+            "name": "cart-0"
+          },
+          {
+            "source": "visual/v48/frames/cart-1.png",
+            "name": "cart-1"
+          },
+          {
+            "source": "visual/v48/frames/launcher-0.png",
+            "name": "launcher-0"
+          },
+          {
+            "source": "visual/v48/frames/launcher-1.png",
+            "name": "launcher-1"
+          },
+          {
+            "source": "visual/v48/frames/saw-0.png",
+            "name": "saw-0"
+          },
+          {
+            "source": "visual/v48/frames/saw-1.png",
+            "name": "saw-1"
+          },
+          {
+            "source": "visual/v48/frames/hopper-0.png",
+            "name": "hopper-0"
+          },
+          {
+            "source": "visual/v48/frames/hopper-1.png",
+            "name": "hopper-1"
+          },
+          {
+            "source": "visual/v48/frames/compressor-0.png",
+            "name": "compressor-0"
+          },
+          {
+            "source": "visual/v48/frames/compressor-1.png",
+            "name": "compressor-1"
+          },
+          {
+            "source": "visual/v48/frames/drone-0.png",
+            "name": "drone-0"
+          },
+          {
+            "source": "visual/v48/frames/drone-warning.png",
+            "name": "drone-warning"
+          },
+          {
+            "source": "visual/v48/frames/spring-0.png",
+            "name": "spring-0"
+          },
+          {
+            "source": "visual/v48/frames/spring-1.png",
+            "name": "spring-1"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/town",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/town-near.png",
+            "name": "town-near"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/road",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/town-road.png",
+            "name": "town-road"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/foreground",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/town-foreground.png",
+            "name": "town-foreground"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-street",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-street.png",
+            "name": "sky-street"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-alley",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-alley.png",
+            "name": "sky-alley"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-roofs",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-roofs.png",
+            "name": "sky-roofs"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/sky-night",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/sky-night.png",
+            "name": "sky-night"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/story",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v50/frames/dlg-art-pause.png",
+            "name": "dlg-art-pause"
+          },
+          {
+            "source": "visual/v50/frames/dlg-art-win.png",
+            "name": "dlg-art-win"
+          },
+          {
+            "source": "visual/v50/frames/dlg-art-lose.png",
+            "name": "dlg-art-lose"
+          },
+          {
+            "source": "visual/v48/frames/customer-wait.png",
+            "name": "customer-wait"
+          },
+          {
+            "source": "visual/v48/frames/customer-cheer.png",
+            "name": "customer-cheer"
+          },
+          {
+            "source": "visual/v48/frames/customer-tea.png",
+            "name": "customer-tea"
+          },
+          {
+            "source": "visual/v38/frames/dlg-confetti.png",
+            "name": "dlg-confetti"
+          }
+        ]
+      },
+      {
+        "path": "visual/v48/comic",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v48/frames/comic-0.png",
+            "name": "comic-0"
+          },
+          {
+            "source": "visual/v48/frames/comic-1.png",
+            "name": "comic-1"
+          },
+          {
+            "source": "visual/v48/frames/comic-2.png",
+            "name": "comic-2"
+          },
+          {
+            "source": "visual/v48/frames/comic-3.png",
+            "name": "comic-3"
+          }
+        ]
+      },
+      {
+        "path": "visual/v50/hero",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/v51/frames/run-0.png",
+            "name": "run-0"
+          },
+          {
+            "source": "visual/v51/frames/run-1.png",
+            "name": "run-1"
+          },
+          {
+            "source": "visual/v51/frames/run-2.png",
+            "name": "run-2"
+          },
+          {
+            "source": "visual/v51/frames/run-3.png",
+            "name": "run-3"
+          },
+          {
+            "source": "visual/v51/frames/run-4.png",
+            "name": "run-4"
+          },
+          {
+            "source": "visual/v51/frames/run-5.png",
+            "name": "run-5"
+          },
+          {
+            "source": "visual/v51/frames/run-6.png",
+            "name": "run-6"
+          },
+          {
+            "source": "visual/v51/frames/run-7.png",
+            "name": "run-7"
+          },
+          {
+            "source": "visual/v50/frames/air-0.png",
+            "name": "air-0"
+          },
+          {
+            "source": "visual/v50/frames/double-0.png",
+            "name": "double-0"
+          },
+          {
+            "source": "visual/v50/frames/air-1.png",
+            "name": "air-1"
+          },
+          {
+            "source": "visual/v50/frames/double-1.png",
+            "name": "double-1"
+          },
+          {
+            "source": "visual/v50/frames/air-2.png",
+            "name": "air-2"
+          },
+          {
+            "source": "visual/v50/frames/double-2.png",
+            "name": "double-2"
+          },
+          {
+            "source": "visual/v50/frames/air-3.png",
+            "name": "air-3"
+          },
+          {
+            "source": "visual/v50/frames/double-3.png",
+            "name": "double-3"
+          },
+          {
+            "source": "visual/v50/frames/land-0.png",
+            "name": "land-0"
+          },
+          {
+            "source": "visual/v50/frames/slide-0.png",
+            "name": "slide-0"
+          },
+          {
+            "source": "visual/v50/frames/slide-1.png",
+            "name": "slide-1"
+          },
+          {
+            "source": "visual/v50/frames/hurt.png",
+            "name": "hurt"
+          },
+          {
+            "source": "visual/v50/frames/dash-0.png",
+            "name": "dash-0"
+          },
+          {
+            "source": "visual/v50/frames/dash-1.png",
+            "name": "dash-1"
+          },
+          {
+            "source": "visual/v50/frames/ride-0.png",
+            "name": "ride-0"
+          },
+          {
+            "source": "visual/v50/frames/ride-1.png",
+            "name": "ride-1"
+          },
+          {
+            "source": "visual/v50/frames/win-0.png",
+            "name": "win-0"
+          },
+          {
+            "source": "visual/v50/frames/win-1.png",
+            "name": "win-1"
+          },
+          {
+            "source": "visual/v50/frames/lose-0.png",
+            "name": "lose-0"
+          },
+          {
+            "source": "visual/v50/frames/lose-1.png",
+            "name": "lose-1"
+          }
+        ]
+      },
+      {
+        "path": "visual/v52/hero-rig",
+        "maxSize": 512,
+        "frames": [
+          {
+            "source": "visual/v52/frames/rig-body.png",
+            "name": "rig-body"
+          },
+          {
+            "source": "visual/v52/frames/rig-upper-arm.png",
+            "name": "rig-upper-arm"
+          },
+          {
+            "source": "visual/v52/frames/rig-forearm.png",
+            "name": "rig-forearm"
+          },
+          {
+            "source": "visual/v52/frames/rig-hand.png",
+            "name": "rig-hand"
+          },
+          {
+            "source": "visual/v52/frames/rig-thigh.png",
+            "name": "rig-thigh"
+          },
+          {
+            "source": "visual/v52/frames/rig-shin.png",
+            "name": "rig-shin"
+          },
+          {
+            "source": "visual/v52/frames/rig-foot.png",
+            "name": "rig-foot"
+          }
+        ]
+      }
+    ],
+    "city-bloxx": [
+      {
+        "path": "visual/sunlit/city-sunlit",
+        "maxSize": 2048,
+        "frames": [
+          {
+            "source": "visual/sunlit-v1/prepared/cloud-streaks.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/atmosphere-v4/prepared/cloud-bank.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cloudline-v1/prepared/tree.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ground-v2/prepared/fence.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cloudline-v1/prepared/crane-arm.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/hook.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sling.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-city.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-people.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-heart.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-spark.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-home.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-retry.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-video.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/icon-pause.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-4.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-5.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-6.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-7.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-8.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-blue-9.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-3.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-4.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-5.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-6.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-7.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-8.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/resident-red-9.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cloudline-v1/prepared/moon.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/mars.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/jupiter.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cloudline-v1/prepared/saturn.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/uranus.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/pluto.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/airplane.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cloudline-v1/prepared/balloon.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/blimp.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/ufo.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/cloudline-v1/prepared/station.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/whale-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/whale-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/flyman-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/flyman-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/star.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sky-purplestar.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sky-bluelestar.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/sky-purplestar_little.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/combo-star-0.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/combo-star-1.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/sunlit-v1/prepared/combo-star-2.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/atmosphere-v4/prepared/cloud-bank-thin.png",
+            "geometry": "full"
+          }
+        ]
+      }
+    ]
+  }
+}

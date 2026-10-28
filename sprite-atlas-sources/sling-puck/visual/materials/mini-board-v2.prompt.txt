@@ -1,1 +1,0 @@
-Builtin image_gen, transparent production sprite: miniature isometric sling puck board, pale ash rails, calm powder blue surface, two black/ivory pucks, two end elastic cords, middle divider with central gap. No text/UI/other objects. Decorative menu identity accent, displayed in a 330x208 design-pixel box. Reference: visual-proposal-v2.png.

@@ -1,0 +1,13 @@
+{
+  "gameId": "meme-runner",
+  "code": 13,
+  "dataVersion": 1,
+  "numbers": [
+    {
+      "path": "highScore"
+    }
+  ],
+  "rank": [
+    0
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-28",
+  "archivedFiles": 1110,
+  "status": "passed",
+  "checks": [
+    "remaining archive files verified by SHA-256; six auxiliary packages removed",
+    "full isolated restore of the original 1769 files included the removed auxiliary packages",
+    "restore preserved an unrelated edit to another game",
+    "conflicting target rejected before any restore writes",
+    "current workspace restore preflight passed",
+    "323 owned resource UUIDs have no external asset references",
+    "only meme-runner entries removed from game and cloud-save configurations",
+    "TypeScript noEmit passed",
+    "game Bundle/subpackage validation passed",
+    "87 atlas pages / 604 imported frames and compression inputs verified",
+    "server generated protocol files current",
+    "cloud-save regression and network regression passed",
+    "10 server / viewer tests passed",
+    "Cocos browser lobby loaded 14 games; runner absent; no page errors",
+    "Cocos asset database refreshed",
+    "git diff --check passed"
+  ],
+  "buildAndDeployment": "Existing build outputs and deployed services were not changed."
+}

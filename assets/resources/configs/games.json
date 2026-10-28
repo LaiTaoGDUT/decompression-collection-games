@@ -2,65 +2,6 @@
     "schemaVersion": 3,
     "games": [
         {
-            "id": "sling-puck",
-            "version": "0.1.0",
-            "name": "弹射冰球",
-            "description": "拉满皮筋弹射冰球，抢先清空己方半场！人机或双人同屏对战。",
-            "bundle": "game-sling-puck",
-            "resourceBundle": "game-sling-puck-assets",
-            "resourceDirectories": [
-                "visual"
-            ],
-            "scene": "scenes/SlingPuck",
-            "entryComponent": "SlingPuckGame",
-            "cover": "visual/covers/sling-puck/sling-puck-cover-v2/texture",
-            "orientation": "portrait",
-            "renderMode": "2d",
-            "minimumDeviceTier": "low",
-            "minAppVersion": "0.1.0",
-            "enabled": true,
-            "visibility": "development",
-            "preload": [],
-            "tags": [
-                "arcade",
-                "table",
-                "versus"
-            ],
-            "twoPlayer": true,
-            "lobbyTags": [
-                "new"
-            ]
-        },
-        {
-            "id": "meme-runner",
-            "version": "0.1.0",
-            "name": "咧咧团快跑",
-            "description": "短腿也能跑！卡点跳跃、滑铲，甩开袋鼠把外卖送到客户手里。",
-            "bundle": "game-meme-runner",
-            "resourceBundle": "game-meme-runner-assets",
-            "resourceDirectories": [
-                "visual"
-            ],
-            "scene": "scenes/MemeRunner",
-            "entryComponent": "MemeRunnerGame",
-            "cover": "visual/covers/meme-runner/lie-cover-v1/texture",
-            "orientation": "landscape",
-            "renderMode": "2d",
-            "minimumDeviceTier": "low",
-            "minAppVersion": "0.1.0",
-            "enabled": true,
-            "visibility": "development",
-            "preload": [],
-            "tags": [
-                "arcade",
-                "runner",
-                "timing"
-            ],
-            "lobbyTags": [
-                "new"
-            ]
-        },
-        {
             "id": "city-bloxx",
             "version": "1.0.0",
             "name": "都市摩天楼",

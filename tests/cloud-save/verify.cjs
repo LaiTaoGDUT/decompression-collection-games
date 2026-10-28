@@ -13,7 +13,7 @@ const catalog = JSON.parse(fs.readFileSync(path.join(root, 'assets/resources/con
 const meow = catalog.games.find(g => g.gameId === 'meowdoku');
 const cy = catalog.games.find(g => g.gameId === 'cyblockbees');
 const bubble = catalog.games.find(g => g.gameId === 'bubble-shooter');
-const runner = catalog.games.find(g => g.gameId === 'meme-runner');
+const scoreGame = catalog.games.find(g => g.gameId === 'city-bloxx');
 const stamp = Date.UTC(2026, 9, 24, 17);
 const base = () => ({ schemaVersion: 3, settings: { musicEnabled: true, soundEnabled: true, vibrationEnabled: true }, games: {}, achievements: {} });
 const game = (schema, values, extra = {}) => ({ dataVersion: schema.dataVersion, playCount: 0, ...extra,
@@ -70,7 +70,7 @@ async function main() {
         });
     }
     for (const [total, perGame, enabled] of [[119 * 60000, 44 * 60000, false], [120 * 60000, 0, true], [0, 45 * 60000, true]]) {
-        const data = base(); data.cloudSave = { version: 1, enabled: true, totalMs: total, gameMs: { 'meme-runner': perGame } };
+        const data = base(); data.cloudSave = { version: 1, enabled: true, totalMs: total, gameMs: { 'city-bloxx': perGame } };
         await use(data, async ({ c, remote }) => {
             assert.equal(c.status.enabled, enabled, 'Old CloudBase enabled flag is not a new-server acknowledgement');
             if (enabled) assert.deepEqual(saves(remote)[0].t, {}, 'Do not fabricate pre-upgrade analytics');
@@ -131,25 +131,25 @@ async function main() {
     });
 
     await use(initial, async ({ f, c, remote }) => {
-        f.storage.writeGameData('meme-runner', { dataVersion: 1, playCount: 0, highScore: 99 });
+        f.storage.writeGameData('city-bloxx', { dataVersion: 1, playCount: 0, highScore: 99 });
         await c.pump(); assert.equal(saves(remote).length, 1, 'Live score changes do not upload');
-        c.recordRoundFinished('meme-runner'); c.recordRoundFinished('meme-runner'); await pause(); await c.pump();
+        c.recordRoundFinished('city-bloxx'); c.recordRoundFinished('city-bloxx'); await pause(); await c.pump();
         assert.equal(saves(remote).length, 2, 'A settled new record uploads once');
-        c.recordRoundFinished('meme-runner'); await pause(); await c.pump();
+        c.recordRoundFinished('city-bloxx'); await pause(); await c.pump();
         assert.equal(saves(remote).length, 2, 'Same record on duplicate settlement does not upload');
-        f.storage.writeGameData('meme-runner', { dataVersion: 1, playCount: 0, highScore: 100 });
-        c.recordRoundFinished('meme-runner'); await pause(); await c.pump();
+        f.storage.writeGameData('city-bloxx', { dataVersion: 1, playCount: 0, highScore: 100 });
+        c.recordRoundFinished('city-bloxx'); await pause(); await c.pump();
         assert.equal(saves(remote).length, 3);
     });
 
     await use(initial, async ({ f, c, remote }) => {
-        f.storage.writeGameData('sling-puck', { dataVersion: 1, playCount: 1,
-            custom: { slingWins0: 1 } });
-        c.recordRoundFinished('sling-puck'); await pause(); await c.pump();
+        f.storage.writeGameData('city-bloxx', { dataVersion: 1, playCount: 1, highScore: 1 });
+        c.recordRoundFinished('city-bloxx'); await pause(); await c.pump();
         assert.equal(saves(remote).length, 1, 'Cumulative match/win counters are not a settled best record');
         f.storage.writeGameData('meowdoku', meowGame(25)); await c.pump();
-        assert.ok(saves(remote)[1].m[16], 'Counters still accompany the next eligible upload');
-    });
+        assert.ok(saves(remote)[1].m[scoreGame.code], 'Counters still accompany the next eligible upload');
+    }, { catalog: { ...catalog, games: catalog.games.map(schema => schema === scoreGame
+        ? { ...schema, numbers: schema.numbers.map(field => ({ ...field, record: false })) } : schema) } });
 
     await use(initial, async ({ c, f, setActive }) => {
         setActive('meowdoku');
@@ -168,16 +168,16 @@ async function main() {
     const inFlight = new Promise(resolve => { signal = resolve; });
     await use(initial, async ({ c, f, remote }) => {
         hold = true;
-        f.storage.writeGameData('meme-runner', { dataVersion: 1, playCount: 0, highScore: 100 });
-        c.recordRoundFinished('meme-runner'); await pause();
+        f.storage.writeGameData('city-bloxx', { dataVersion: 1, playCount: 0, highScore: 100 });
+        c.recordRoundFinished('city-bloxx'); await pause();
         const saving = c.pump(); await inFlight;
-        f.storage.writeGameData('meme-runner', { dataVersion: 1, playCount: 0, highScore: 101 });
-        c.recordRoundFinished('meme-runner'); await pause();
+        f.storage.writeGameData('city-bloxx', { dataVersion: 1, playCount: 0, highScore: 101 });
+        c.recordRoundFinished('city-bloxx'); await pause();
         hold = false; release(); await saving;
         assert.equal(f.storage.snapshot.cloudSave.requested, true, 'An in-flight ACK preserves a newer record trigger');
         await c.pump();
         assert.equal(saves(remote).length, 3);
-        assert.equal(decodeModule(saves(remote)[2].m[runner.code], runner.numbers.length).numbers[0], 101);
+        assert.equal(decodeModule(saves(remote)[2].m[scoreGame.code], scoreGame.numbers.length).numbers[0], 101);
     }, { remote: concurrent, call: async request => {
         const response = await concurrent.call(request);
         if (request.op === 'save' && hold) { signal(); await new Promise(resolve => { release = resolve; }); }

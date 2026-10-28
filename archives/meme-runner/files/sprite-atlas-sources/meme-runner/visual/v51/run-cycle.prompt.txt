@@ -1,0 +1,12 @@
+Use case stylized-concept. Production sprite sheet, 8 frames, 4 columns x 2 rows, RGBA transparent, generous empty gutters. Reference only establishes the identity of the yellow Naiwa character: yellow chubby teardrop torso, cream oval belly, green spherical eyes, tiny closed horizontal mouth, charcoal glove-like hands, stubby yellow feet. Match its original soft clay material.
+Draw a NEW animated RUN cycle in STRICT SIDE PROFILE, facing RIGHT. All characters must be in pure side profile for readable leg mechanics. Do NOT copy the reference poses or its three-quarter view. Fixed head size and hip position, no perspective changes.
+Two alternating legs with realistic human sprint mechanics, a clearly visible NEAR leg and a darker FAR leg:
+0. RIGHT FOOT leading rightward, LEFT FOOT trailing leftward, arms counter swing.
+1. RIGHT FOOT planted directly under hip, LEFT THIGH swings forward with bent knee.
+2. RIGHT THIGH extends backwards toward LEFT, right foot pushes off behind, LEFT KNEE raised ahead toward RIGHT.
+3. RIGHT HEEL folded high behind on LEFT, LEFT LEG extends ahead RIGHT in airborne flight.
+4. LEFT FOOT leading rightward, RIGHT LEG trailing backwards to LEFT, arms opposite frame 0.
+5. LEFT FOOT planted under hip, RIGHT THIGH passes beneath body.
+6. LEFT THIGH extends backwards to LEFT, left foot pushes off behind, RIGHT KNEE raised ahead RIGHT.
+7. LEFT HEEL folded high behind on LEFT, RIGHT LEG extends ahead RIGHT, airborne into frame 0.
+ALL FEET TOES POINT RIGHT even when the leg extends backwards left. Hip and head stay at same horizontal place. Body leans 10 degrees forward into run, small vertical bounce. Character maintains the same size and volume. Alternate support legs and frames with FEET TOGETHER versus FEET APART; true sequential movement. No checkerboard, floor, text, glow, cast shadow, motion blur, motion lines or duplicate pictures.

@@ -124,7 +124,7 @@ function controls() {
     byId('previous').disabled = state.loading || !state.saves || state.page <= 1;
     byId('next').disabled = state.loading || !state.saves || state.page * state.saves.pageSize >= Number(state.saves.total);
 }
-const glyphs = { 'multi-color-fill': '填', meowdoku: '数', 'doodle-jump': '跳', cyblockbees: '护', 'sliding-puzzle': '拼', 'bubble-shooter': '泡', catch: '清', watermelon: '果', game2048: '2048', 'chess-endless': '棋', 'rotate-rings': '环', 'flappy-dunk': '篮', 'meme-runner': '跑', 'city-bloxx': '城', 'ping-pong': '乒', 'sling-puck': '弹' };
+const glyphs = { 'multi-color-fill': '填', meowdoku: '数', 'doodle-jump': '跳', cyblockbees: '护', 'sliding-puzzle': '拼', 'bubble-shooter': '泡', catch: '清', watermelon: '果', game2048: '2048', 'chess-endless': '棋', 'rotate-rings': '环', 'flappy-dunk': '篮', 'city-bloxx': '城', 'ping-pong': '乒' };
 function gameAvatar(game) {
     const key = game.game_id || game.gameId || '', index = Array.from(key).reduce((sum, char) => sum + char.charCodeAt(0), 0);
     return el('span', glyphs[key] || game.name?.slice(0, 1) || '?', 'game-avatar tone-' + index % 6);

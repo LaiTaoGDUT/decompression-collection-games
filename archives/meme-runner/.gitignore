@@ -1,0 +1,2 @@
+# Keep the self-contained archive, including auxiliary ZIPs.
+!auxiliary-*.zip

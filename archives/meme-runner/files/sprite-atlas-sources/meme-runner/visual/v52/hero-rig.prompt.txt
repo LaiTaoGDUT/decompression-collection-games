@@ -1,0 +1,11 @@
+Use case: stylized-concept. Asset: modular 2D character animation parts for a side-scrolling game.
+Reference image establishes ONLY the exact Naiwa identity and soft sculpted yellow clay appearance. Create a CLEAN CHARACTER RIG PART SHEET of SEVEN completely detached body parts, precise 4 columns x 2 rows on transparent RGBA. Equal grid cells, generous transparent margins. Do NOT draw full poses. No text labels, floor, shadows, halos, borders.
+Cell 0 (top left): ONLY the head and torso combined, no arms, no hands, no legs, no feet. A plump yellow bean-shaped torso with connected head, big green round eyes and black pupils, tiny closed neutral mouth, oval cream belly. Facing RIGHT in three-quarter side view, same reference identity, natural coherent proportions. Hip base at bottom is rounded smooth yellow with no holes or joint sockets. Shoulders blend smoothly into body silhouette. This is a static continuous head/torso cutout.
+Cell 1: ONLY one upper arm, a short yellow smooth tapered capsule oriented vertically DOWN, rounded overlapping joint ends; no hands.
+Cell 2: ONLY one forearm, a smaller yellow smooth short capsule oriented vertically DOWN, both ends rounded; no hands.
+Cell 3: ONLY one charcoal-gray mitten hand, wrist at TOP, fingers curled naturally, thumb on RIGHT; no yellow arm.
+Cell 4 (bottom left): ONLY one thick yellow upper thigh, rounded bulging pear-shaped capsule oriented vertically DOWN, hip end wider than knee end. No foot.
+Cell 5: ONLY one yellow lower leg / shin, thick soft capsule oriented vertically DOWN, rounded knee and ankle ends. No foot.
+Cell 6: ONLY one yellow bare FOOT in side view pointing RIGHT, broad short heel on LEFT, three rounded toes on RIGHT. FLAT HORIZONTAL SOLE at bottom, ankle connection on upper left third. FOOT MUST BE HORIZONTAL not tipped upward. Same creature yellow clay. Clearly visible solid sole.
+Cell 7: EMPTY fully transparent.
+All yellow pieces share EXACT same warm golden color and lighting, smooth soft shading with no dark contour at overlapping joints. Black glove matches reference. Camera and lighting consistent. Parts should be large within each cell but never touch adjacent cells. Final output is a reusable animation part atlas, NOT seven complete characters. Preserve actual transparency.

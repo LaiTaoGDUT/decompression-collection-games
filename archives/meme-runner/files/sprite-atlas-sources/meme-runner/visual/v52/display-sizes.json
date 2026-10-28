@@ -1,0 +1,30 @@
+{
+  "rig-body": [
+    87,
+    98
+  ],
+  "rig-upper-arm": [
+    16,
+    32
+  ],
+  "rig-forearm": [
+    15,
+    26
+  ],
+  "rig-hand": [
+    22,
+    21
+  ],
+  "rig-thigh": [
+    29,
+    40
+  ],
+  "rig-shin": [
+    20,
+    40
+  ],
+  "rig-foot": [
+    34,
+    19
+  ]
+}

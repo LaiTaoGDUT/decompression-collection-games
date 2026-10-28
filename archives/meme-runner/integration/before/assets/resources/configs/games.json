@@ -1,0 +1,524 @@
+{
+    "schemaVersion": 3,
+    "games": [
+        {
+            "id": "meme-runner",
+            "version": "0.1.0",
+            "name": "咧咧团快跑",
+            "description": "短腿也能跑！卡点跳跃、滑铲，甩开袋鼠把外卖送到客户手里。",
+            "bundle": "game-meme-runner",
+            "resourceBundle": "game-meme-runner-assets",
+            "resourceDirectories": [
+                "visual"
+            ],
+            "scene": "scenes/MemeRunner",
+            "entryComponent": "MemeRunnerGame",
+            "cover": "visual/covers/meme-runner/lie-cover-v1/texture",
+            "orientation": "landscape",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "development",
+            "preload": [],
+            "tags": [
+                "arcade",
+                "runner",
+                "timing"
+            ],
+            "lobbyTags": [
+                "new"
+            ]
+        },
+        {
+            "id": "city-bloxx",
+            "version": "1.0.0",
+            "name": "都市摩天楼",
+            "description": "点击放下楼层，把城市建到云端",
+            "bundle": "game-city-bloxx",
+            "resourceBundle": "game-city-bloxx-assets",
+            "scene": "scenes/CityBloxx",
+            "entryComponent": "CityBloxxGame",
+            "cover": "visual/covers/city-bloxx/city-cover/texture",
+            "orientation": "portrait",
+            "renderMode": "3d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "development",
+            "preload": [],
+            "tags": [
+                "stack",
+                "timing",
+                "endless"
+            ],
+            "lobbyTags": [
+                "new"
+            ]
+        },
+        {
+            "id": "flappy-dunk",
+            "version": "0.1.0",
+            "name": "篮球灌篮",
+            "description": "振翅飞行，连续空心灌篮！",
+            "bundle": "game-flappy-dunk",
+            "resourceBundle": "game-flappy-dunk-assets",
+            "resourceDirectories": [
+                "visual",
+                "configs"
+            ],
+            "scene": "scenes/FlappyDunk",
+            "entryComponent": "FlappyDunkGame",
+            "cover": "visual/covers/flappy-dunk/dunk-cover-v2/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "arcade",
+                "basketball",
+                "endless"
+            ],
+            "achievement": {
+                "id": "flappy-dunk-trophy-v2",
+                "name": "空心大师",
+                "description": "在极限模式的一局游戏中连续空心入网 10 次",
+                "metric": "swish-streak",
+                "target": 10,
+                "unit": "次",
+                "trophy": "dunk",
+                "color": "#E2763F",
+                "lobbyProgress": "best"
+            },
+            "lobbyTags": [
+                "new"
+            ]
+        },
+        {
+            "id": "rotate-rings",
+            "version": "0.1.0",
+            "name": "解个圆环",
+            "description": "转到缺口，解开圆环机关！",
+            "bundle": "game-rotate-rings",
+            "resourceBundle": "game-rotate-rings-assets",
+            "resourceDirectories": [
+                "visual",
+                "configs"
+            ],
+            "scene": "scenes/RotateRings",
+            "entryComponent": "RotateRingsGame",
+            "cover": "visual/covers/rotate-rings/rotate-rings-cover-v5/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "logic",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "rotate-rings-trophy-v1",
+                "name": "解环大师",
+                "description": "通关解个圆环 300 关普通关卡",
+                "metric": "normal-cleared-level",
+                "target": 300,
+                "unit": "关",
+                "trophy": "ring-knot",
+                "color": "#58A2EC",
+                "lobbyProgress": "count"
+            },
+            "lobbyTags": [
+                "new"
+            ]
+        },
+        {
+            "id": "ping-pong",
+            "version": "0.1.0",
+            "name": "乒乓球对战",
+            "description": "双人对决或与机器人较量！",
+            "bundle": "game-pingpong",
+            "resourceBundle": "game-pingpong-assets",
+            "resourceDirectories": [
+                "visual",
+                "configs"
+            ],
+            "scene": "scenes/PingPong",
+            "entryComponent": "PingPongGame",
+            "cover": "visual/covers/pingpong/pingpong-cover/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "sports",
+                "ping-pong"
+            ],
+            "twoPlayer": true,
+            "lobbyTags": [
+                "new"
+            ]
+        },
+        {
+            "id": "meowdoku",
+            "version": "0.1.0",
+            "name": "猫咪数独",
+            "lobbyTags": [
+                "hot"
+            ],
+            "description": "发动才智，找到所有猫咪！",
+            "bundle": "game-meowdoku",
+            "resourceBundle": "game-meowdoku-assets",
+            "scene": "scenes/Meowdoku",
+            "entryComponent": "MeowdokuGame",
+            "cover": "visual/covers/meowdoku/meowdoku-cover-v2/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "logic",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "meowdoku-trophy-v3",
+                "name": "猫咪指挥家",
+                "description": "通关猫咪数独第 500 关",
+                "metric": "cleared-level",
+                "target": 500,
+                "unit": "关",
+                "trophy": "cat",
+                "color": "#EBAA72",
+                "lobbyProgress": "count"
+            }
+        },
+        {
+            "id": "multi-color-fill",
+            "version": "0.1.0",
+            "name": "缤纷填色",
+            "lobbyTags": [],
+            "description": "拖动彩色路线，填满每一格！",
+            "bundle": "game-multi-color-fill",
+            "resourceBundle": "game-multi-color-fill-assets",
+            "scene": "scenes/MultiColorFill",
+            "entryComponent": "MultiColorFillGame",
+            "cover": "visual/covers/multi-color-fill/multi-color-fill-cover-v2/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "logic",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "multi-color-fill-trophy-v1",
+                "name": "彩路大师",
+                "description": "通关缤纷填色 1000 关普通关卡",
+                "metric": "normal-cleared-level",
+                "target": 1000,
+                "unit": "关",
+                "trophy": "color-route",
+                "color": "#5F91DF",
+                "lobbyProgress": "count"
+            }
+        },
+        {
+            "id": "cyblockbees",
+            "version": "0.2.0",
+            "name": "保护狗头",
+            "lobbyTags": [],
+            "description": "画线挡住，别让蜜蜂蜇到狗头！",
+            "bundle": "game-cyblockbees",
+            "resourceBundle": "game-cyblockbees-assets",
+            "scene": "scenes/CyBlockBees",
+            "entryComponent": "CyBlockBeesGame",
+            "cover": "visual/covers/cyblockbees/cyblockbees-cover-v2/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "arcade",
+                "physics",
+                "draw",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "cyblockbees-trophy-v1",
+                "name": "蜂蜂进不来",
+                "description": "以三星通关挡住蜜蜂全部 200 关",
+                "metric": "three-star-levels",
+                "target": 200,
+                "unit": "关",
+                "trophy": "bee-shield",
+                "color": "#E6B44C",
+                "lobbyProgress": "count"
+            }
+        },
+        {
+            "id": "doodle-jump",
+            "version": "0.1.0",
+            "name": "纸片跳跃",
+            "lobbyTags": [],
+            "description": "和小兔子一起跳上云霄！",
+            "bundle": "game-doodle-jump",
+            "resourceBundle": "game-doodle-jump-assets",
+            "scene": "scenes/DoodleJump",
+            "entryComponent": "DoodleJumpGame",
+            "cover": "visual/covers/doodle-jump/lobby-cover/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "endless",
+                "action",
+                "tilt",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "doodle-jump-trophy-v2",
+                "name": "冲上云霄",
+                "description": "在一局游戏中跳到 1200 米以上",
+                "metric": "height-meters",
+                "target": 1200,
+                "unit": "米",
+                "trophy": "rocket",
+                "color": "#7FB7DE",
+                "lobbyProgress": "best"
+            }
+        },
+        {
+            "id": "game2048",
+            "version": "1.0.0",
+            "name": "霓虹 2048",
+            "lobbyTags": [],
+            "description": "点亮霓虹，合出炫酷2048！",
+            "bundle": "game-2048",
+            "resourceBundle": "game-2048-assets",
+            "scene": "scenes/Game2048",
+            "entryComponent": "Game2048Game",
+            "cover": "visual/covers/game2048/t48-cover-v6/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "numbers",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "game2048-trophy-v2",
+                "name": "霓虹之巅",
+                "description": "合成一次 8192",
+                "metric": "highest-tile",
+                "target": 8192,
+                "unit": "",
+                "trophy": "neon",
+                "color": "#9478F0",
+                "lobbyProgress": "best"
+            }
+        },
+        {
+            "id": "sliding-puzzle",
+            "version": "0.1.0",
+            "name": "木框拼图",
+            "description": "滑动拼图块，还原完整拼图",
+            "bundle": "game-sliding-puzzle",
+            "resourceBundle": "game-sliding-puzzle-assets",
+            "scene": "scenes/SlidingPuzzle",
+            "entryComponent": "SlidingPuzzleGame",
+            "cover": "visual/covers/sliding-puzzle/sliding-puzzle-cover-v5/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "sliding",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "sliding-puzzle-trophy-v2",
+                "name": "完美拼合",
+                "description": "完成一幅 7×7 的木框拼图",
+                "metric": "completed-7x7",
+                "target": 1,
+                "unit": "幅",
+                "trophy": "puzzle",
+                "color": "#DAA56C"
+            }
+        },
+        {
+            "id": "bubble-shooter",
+            "version": "0.1.0",
+            "name": "泡泡奇境",
+            "description": "消除同色泡泡，挑战四大boss",
+            "bundle": "game-bubble-shooter",
+            "resourceBundle": "game-bubble-shooter-assets",
+            "scene": "scenes/BubbleShooter",
+            "entryComponent": "BubbleShooterGame",
+            "cover": "visual/covers/bubble-shooter/bubble-wonderland-cover-v7/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "bubble-shooter",
+                "aiming",
+                "relaxing"
+            ],
+            "resourceDirectories": [
+                "visual/common"
+            ],
+            "initializeTimeoutMs": 30000,
+            "achievement": {
+                "id": "bubble-shooter-trophy-v3",
+                "name": "奇境征服者",
+                "description": "通过泡泡奇境第 120 关",
+                "metric": "cleared-level",
+                "target": 120,
+                "unit": "关",
+                "trophy": "bubble",
+                "color": "#9E92E4",
+                "lobbyProgress": "count"
+            }
+        },
+        {
+            "id": "catch",
+            "version": "0.1.0",
+            "name": "桌面大清理",
+            "description": "收集相同物品，清空桌面！",
+            "bundle": "game-catch",
+            "resourceBundle": "game-catch-assets",
+            "scene": "scenes/DesktopCleanup",
+            "entryComponent": "DesktopCleanupGame",
+            "cover": "visual/covers/catch/desktop-cleanup-cover-v4/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "match-3",
+                "hidden-object",
+                "daily",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "catch-trophy-v2",
+                "name": "收纳魔法师",
+                "description": "3 分钟内清空一次桌面",
+                "metric": "fast-clears",
+                "target": 1,
+                "unit": "次",
+                "trophy": "tidy",
+                "color": "#E89CAD"
+            }
+        },
+        {
+            "id": "watermelon",
+            "version": "1.0.0",
+            "name": "水果果冻合成",
+            "description": "你能合成大西瓜果冻吗？",
+            "bundle": "game-watermelon",
+            "resourceBundle": "game-watermelon-assets",
+            "scene": "scenes/Watermelon",
+            "entryComponent": "WatermelonGame",
+            "cover": "visual/covers/watermelon/watermelon-jelly-cover-v9/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "merge",
+                "physics",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "watermelon-trophy-v2",
+                "name": "果冻大王",
+                "description": "在一局游戏中合成 2 个大西瓜果冻",
+                "metric": "watermelons",
+                "target": 2,
+                "unit": "个",
+                "trophy": "watermelon",
+                "color": "#69BE87",
+                "lobbyProgress": "best"
+            }
+        },
+        {
+            "id": "chess-endless",
+            "version": "1.0.0",
+            "name": "棋逢对手",
+            "description": "操控一枚车，击溃敌军！！",
+            "bundle": "game-chess-endless",
+            "resourceBundle": "game-chess-endless-assets",
+            "scene": "scenes/ChessEndless",
+            "entryComponent": "ChessEndlessGame",
+            "cover": "visual/covers/chess-endless/chess-endless-cover-v5/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "strategy",
+                "turn-based",
+                "endless"
+            ],
+            "achievement": {
+                "id": "chess-endless-trophy-v2",
+                "name": "一车破阵",
+                "description": "在一局游戏中击败 10 枚敌方将领",
+                "metric": "generals",
+                "target": 10,
+                "unit": "枚",
+                "trophy": "rook",
+                "color": "#5EAA94",
+                "lobbyProgress": "best"
+            }
+        }
+    ]
+}

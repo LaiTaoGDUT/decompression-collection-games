@@ -1,0 +1,994 @@
+[
+  {
+    "path": "visual/world-v19/world-pieces",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-dust-0",
+        "name": "fx-dust-0",
+        "resize": [
+          96,
+          64
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-dust-1",
+        "name": "fx-dust-1",
+        "resize": [
+          96,
+          64
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-dust-2",
+        "name": "fx-dust-2",
+        "resize": [
+          96,
+          64
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-dust-3",
+        "name": "fx-dust-3",
+        "resize": [
+          96,
+          64
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-spark",
+        "name": "fx-spark",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-halo",
+        "name": "fx-halo",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-shard",
+        "name": "fx-shard",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-bounce",
+        "name": "fx-bounce",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-wood-0",
+        "name": "fx-wood-0",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-wood-1",
+        "name": "fx-wood-1",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-wood-2",
+        "name": "fx-wood-2",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-flash",
+        "name": "fx-flash",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-heart",
+        "name": "fx-heart",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-confetti-0",
+        "name": "fx-confetti-0",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-confetti-1",
+        "name": "fx-confetti-1",
+        "resize": [
+          120,
+          80
+        ]
+      },
+      {
+        "source": "visual/world-v19/effects-sheet.png",
+        "frame": "fx-arc",
+        "name": "fx-arc",
+        "resize": [
+          120,
+          80
+        ]
+      }
+    ]
+  },
+  {
+    "path": "visual/v33/items",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v33/frames/shield-loop-0.png",
+        "name": "shield-loop-0"
+      },
+      {
+        "source": "visual/v33/frames/shield-loop-1.png",
+        "name": "shield-loop-1"
+      },
+      {
+        "source": "visual/v33/frames/shield-loop-2.png",
+        "name": "shield-loop-2"
+      },
+      {
+        "source": "visual/v33/frames/shield-loop-3.png",
+        "name": "shield-loop-3"
+      }
+    ]
+  },
+  {
+    "path": "visual/dash-aura-v3/dash-aura",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/dash-aura-v3/frames/dash-aura-0.png",
+        "name": "dash-aura-0"
+      },
+      {
+        "source": "visual/dash-aura-v3/frames/dash-aura-1.png",
+        "name": "dash-aura-1"
+      },
+      {
+        "source": "visual/dash-aura-v3/frames/dash-aura-2.png",
+        "name": "dash-aura-2"
+      },
+      {
+        "source": "visual/dash-aura-v3/frames/dash-aura-3.png",
+        "name": "dash-aura-3"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/props",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v38/frames/crate.png",
+        "name": "crate"
+      },
+      {
+        "source": "visual/v38/frames/roller.png",
+        "name": "roller"
+      },
+      {
+        "source": "visual/v38/frames/spikes.png",
+        "name": "spikes"
+      },
+      {
+        "source": "visual/v38/frames/steam-base.png",
+        "name": "steam-base"
+      },
+      {
+        "source": "visual/v38/frames/steam-jet.png",
+        "name": "steam-jet"
+      },
+      {
+        "source": "visual/v38/frames/gate.png",
+        "name": "gate"
+      },
+      {
+        "source": "visual/v38/frames/bridge-planks.png",
+        "name": "bridge-planks"
+      },
+      {
+        "source": "visual/v38/frames/coin.png",
+        "name": "coin"
+      },
+      {
+        "source": "visual/v38/frames/coin-gold.png",
+        "name": "coin-gold"
+      },
+      {
+        "source": "visual/v38/frames/power-magnet.png",
+        "name": "power-magnet"
+      },
+      {
+        "source": "visual/v38/frames/power-shield.png",
+        "name": "power-shield"
+      },
+      {
+        "source": "visual/v38/frames/awning.png",
+        "name": "awning"
+      },
+      {
+        "source": "visual/v38/frames/pit-wall.png",
+        "name": "pit-wall"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/props-alley",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v38/frames/crate-alley.png",
+        "name": "crate-alley"
+      },
+      {
+        "source": "visual/v38/frames/roller-alley.png",
+        "name": "roller-alley"
+      },
+      {
+        "source": "visual/v38/frames/spikes-alley.png",
+        "name": "spikes-alley"
+      },
+      {
+        "source": "visual/v38/frames/gate-alley.png",
+        "name": "gate-alley"
+      },
+      {
+        "source": "visual/v38/frames/awning-alley.png",
+        "name": "awning-alley"
+      },
+      {
+        "source": "visual/v38/frames/pit-wall-alley.png",
+        "name": "pit-wall-alley"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/props-roofs",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v38/frames/crate-roofs.png",
+        "name": "crate-roofs"
+      },
+      {
+        "source": "visual/v38/frames/roller-roofs.png",
+        "name": "roller-roofs"
+      },
+      {
+        "source": "visual/v38/frames/spikes-roofs.png",
+        "name": "spikes-roofs"
+      },
+      {
+        "source": "visual/v38/frames/gate-roofs.png",
+        "name": "gate-roofs"
+      },
+      {
+        "source": "visual/v38/frames/awning-roofs.png",
+        "name": "awning-roofs"
+      },
+      {
+        "source": "visual/v38/frames/pit-wall-roofs.png",
+        "name": "pit-wall-roofs"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/props-night",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v38/frames/crate-night.png",
+        "name": "crate-night"
+      },
+      {
+        "source": "visual/v38/frames/roller-night.png",
+        "name": "roller-night"
+      },
+      {
+        "source": "visual/v38/frames/spikes-night.png",
+        "name": "spikes-night"
+      },
+      {
+        "source": "visual/v38/frames/gate-night.png",
+        "name": "gate-night"
+      },
+      {
+        "source": "visual/v38/frames/awning-night.png",
+        "name": "awning-night"
+      },
+      {
+        "source": "visual/v38/frames/pit-wall-night.png",
+        "name": "pit-wall-night"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/finish",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v38/frames/arch.png",
+        "name": "arch"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/hud",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v38/frames/hud-panel.png",
+        "name": "hud-panel",
+        "insets": {
+          "borderLeft": 28,
+          "borderRight": 28,
+          "borderTop": 28,
+          "borderBottom": 28
+        }
+      },
+      {
+        "source": "visual/v38/frames/hud-track.png",
+        "name": "hud-track",
+        "insets": {
+          "borderLeft": 20,
+          "borderRight": 20,
+          "borderTop": 0,
+          "borderBottom": 0
+        }
+      },
+      {
+        "source": "visual/v38/frames/hud-fever-fill.png",
+        "name": "hud-fever-fill",
+        "insets": {
+          "borderLeft": 10,
+          "borderRight": 10,
+          "borderTop": 0,
+          "borderBottom": 0
+        }
+      },
+      {
+        "source": "visual/v38/frames/hud-route.png",
+        "name": "hud-route"
+      },
+      {
+        "source": "visual/v38/frames/hud-tag.png",
+        "name": "hud-tag"
+      },
+      {
+        "source": "visual/v38/frames/hud-pause.png",
+        "name": "hud-pause"
+      },
+      {
+        "source": "visual/v38/frames/hud-heart.png",
+        "name": "hud-heart"
+      },
+      {
+        "source": "visual/v38/frames/hud-kangaroo.png",
+        "name": "hud-kangaroo"
+      },
+      {
+        "source": "visual/v38/frames/hud-bag.png",
+        "name": "hud-bag"
+      },
+      {
+        "source": "visual/v38/frames/hud-house.png",
+        "name": "hud-house"
+      },
+      {
+        "source": "visual/v38/frames/hud-flame.png",
+        "name": "hud-flame"
+      },
+      {
+        "source": "visual/v38/frames/hud-button-slide.png",
+        "name": "hud-button-slide"
+      },
+      {
+        "source": "visual/v38/frames/hud-button-jump.png",
+        "name": "hud-button-jump"
+      }
+    ]
+  },
+  {
+    "path": "visual/v38/dialog",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v38/frames/dlg-board.png",
+        "name": "dlg-board",
+        "insets": {
+          "borderLeft": 60,
+          "borderRight": 60,
+          "borderTop": 60,
+          "borderBottom": 60
+        }
+      },
+      {
+        "source": "visual/v38/frames/dlg-ribbon-win.png",
+        "name": "dlg-ribbon-win"
+      },
+      {
+        "source": "visual/v38/frames/dlg-ribbon-lose.png",
+        "name": "dlg-ribbon-lose"
+      },
+      {
+        "source": "visual/v38/frames/dlg-sign.png",
+        "name": "dlg-sign"
+      },
+      {
+        "source": "visual/v38/frames/dlg-receipt.png",
+        "name": "dlg-receipt"
+      },
+      {
+        "source": "visual/v38/frames/dlg-tag.png",
+        "name": "dlg-tag"
+      },
+      {
+        "source": "visual/v38/frames/dlg-stamp.png",
+        "name": "dlg-stamp"
+      },
+      {
+        "source": "visual/v38/frames/dlg-star.png",
+        "name": "dlg-star"
+      },
+      {
+        "source": "visual/v38/frames/dlg-btn-replay.png",
+        "name": "dlg-btn-replay"
+      },
+      {
+        "source": "visual/v38/frames/dlg-btn-play.png",
+        "name": "dlg-btn-play"
+      },
+      {
+        "source": "visual/v38/frames/dlg-btn-home.png",
+        "name": "dlg-btn-home"
+      },
+      {
+        "source": "visual/v38/frames/dlg-btn-restart.png",
+        "name": "dlg-btn-restart"
+      },
+      {
+        "source": "visual/v38/frames/dlg-title-win.png",
+        "name": "dlg-title-win"
+      },
+      {
+        "source": "visual/v38/frames/dlg-title-lose.png",
+        "name": "dlg-title-lose"
+      },
+      {
+        "source": "visual/v38/frames/dlg-title-pause.png",
+        "name": "dlg-title-pause"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-replay.png",
+        "name": "dlg-word-replay"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-home.png",
+        "name": "dlg-word-home"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-restart.png",
+        "name": "dlg-word-restart"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-resume.png",
+        "name": "dlg-word-resume"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-run.png",
+        "name": "dlg-word-run"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-delivery.png",
+        "name": "dlg-word-delivery"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-rating.png",
+        "name": "dlg-word-rating"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-total.png",
+        "name": "dlg-word-total"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-short.png",
+        "name": "dlg-word-short"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-meter.png",
+        "name": "dlg-word-meter"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-best.png",
+        "name": "dlg-word-best"
+      },
+      {
+        "source": "visual/v38/frames/dlg-word-time.png",
+        "name": "dlg-word-time"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-0.png",
+        "name": "dlg-digit-0"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-1.png",
+        "name": "dlg-digit-1"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-2.png",
+        "name": "dlg-digit-2"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-3.png",
+        "name": "dlg-digit-3"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-4.png",
+        "name": "dlg-digit-4"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-5.png",
+        "name": "dlg-digit-5"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-6.png",
+        "name": "dlg-digit-6"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-7.png",
+        "name": "dlg-digit-7"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-8.png",
+        "name": "dlg-digit-8"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-9.png",
+        "name": "dlg-digit-9"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-plus.png",
+        "name": "dlg-digit-plus"
+      },
+      {
+        "source": "visual/v38/frames/dlg-digit-colon.png",
+        "name": "dlg-digit-colon"
+      }
+    ]
+  },
+  {
+    "path": "visual/v42/cast",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v42/frames/kangaroo-0.png",
+        "name": "kangaroo-0"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-1.png",
+        "name": "kangaroo-1"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-2.png",
+        "name": "kangaroo-2"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-3.png",
+        "name": "kangaroo-3"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-4.png",
+        "name": "kangaroo-4"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-5.png",
+        "name": "kangaroo-5"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-6.png",
+        "name": "kangaroo-6"
+      },
+      {
+        "source": "visual/v42/frames/kangaroo-7.png",
+        "name": "kangaroo-7"
+      },
+      {
+        "source": "visual/v42/frames/friend-pin.png",
+        "name": "friend-pin"
+      },
+      {
+        "source": "visual/v42/frames/friend-ring.png",
+        "name": "friend-ring"
+      }
+    ]
+  },
+  {
+    "path": "visual/v47/props",
+    "maxSize": 1024,
+    "frames": [
+      {
+        "source": "visual/v47/frames/balloons.png",
+        "name": "balloons"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/devices",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/cart-0.png",
+        "name": "cart-0"
+      },
+      {
+        "source": "visual/v48/frames/cart-1.png",
+        "name": "cart-1"
+      },
+      {
+        "source": "visual/v48/frames/launcher-0.png",
+        "name": "launcher-0"
+      },
+      {
+        "source": "visual/v48/frames/launcher-1.png",
+        "name": "launcher-1"
+      },
+      {
+        "source": "visual/v48/frames/saw-0.png",
+        "name": "saw-0"
+      },
+      {
+        "source": "visual/v48/frames/saw-1.png",
+        "name": "saw-1"
+      },
+      {
+        "source": "visual/v48/frames/hopper-0.png",
+        "name": "hopper-0"
+      },
+      {
+        "source": "visual/v48/frames/hopper-1.png",
+        "name": "hopper-1"
+      },
+      {
+        "source": "visual/v48/frames/compressor-0.png",
+        "name": "compressor-0"
+      },
+      {
+        "source": "visual/v48/frames/compressor-1.png",
+        "name": "compressor-1"
+      },
+      {
+        "source": "visual/v48/frames/drone-0.png",
+        "name": "drone-0"
+      },
+      {
+        "source": "visual/v48/frames/drone-warning.png",
+        "name": "drone-warning"
+      },
+      {
+        "source": "visual/v48/frames/spring-0.png",
+        "name": "spring-0"
+      },
+      {
+        "source": "visual/v48/frames/spring-1.png",
+        "name": "spring-1"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/town",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/town-near.png",
+        "name": "town-near"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/road",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/town-road.png",
+        "name": "town-road"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/foreground",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/town-foreground.png",
+        "name": "town-foreground"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/sky-street",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-street.png",
+        "name": "sky-street"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/sky-alley",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-alley.png",
+        "name": "sky-alley"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/sky-roofs",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-roofs.png",
+        "name": "sky-roofs"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/sky-night",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/sky-night.png",
+        "name": "sky-night"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/story",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v50/frames/dlg-art-pause.png",
+        "name": "dlg-art-pause"
+      },
+      {
+        "source": "visual/v50/frames/dlg-art-win.png",
+        "name": "dlg-art-win"
+      },
+      {
+        "source": "visual/v50/frames/dlg-art-lose.png",
+        "name": "dlg-art-lose"
+      },
+      {
+        "source": "visual/v48/frames/customer-wait.png",
+        "name": "customer-wait"
+      },
+      {
+        "source": "visual/v48/frames/customer-cheer.png",
+        "name": "customer-cheer"
+      },
+      {
+        "source": "visual/v48/frames/customer-tea.png",
+        "name": "customer-tea"
+      },
+      {
+        "source": "visual/v38/frames/dlg-confetti.png",
+        "name": "dlg-confetti"
+      }
+    ]
+  },
+  {
+    "path": "visual/v48/comic",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v48/frames/comic-0.png",
+        "name": "comic-0"
+      },
+      {
+        "source": "visual/v48/frames/comic-1.png",
+        "name": "comic-1"
+      },
+      {
+        "source": "visual/v48/frames/comic-2.png",
+        "name": "comic-2"
+      },
+      {
+        "source": "visual/v48/frames/comic-3.png",
+        "name": "comic-3"
+      }
+    ]
+  },
+  {
+    "path": "visual/v50/hero",
+    "maxSize": 2048,
+    "frames": [
+      {
+        "source": "visual/v51/frames/run-0.png",
+        "name": "run-0"
+      },
+      {
+        "source": "visual/v51/frames/run-1.png",
+        "name": "run-1"
+      },
+      {
+        "source": "visual/v51/frames/run-2.png",
+        "name": "run-2"
+      },
+      {
+        "source": "visual/v51/frames/run-3.png",
+        "name": "run-3"
+      },
+      {
+        "source": "visual/v51/frames/run-4.png",
+        "name": "run-4"
+      },
+      {
+        "source": "visual/v51/frames/run-5.png",
+        "name": "run-5"
+      },
+      {
+        "source": "visual/v51/frames/run-6.png",
+        "name": "run-6"
+      },
+      {
+        "source": "visual/v51/frames/run-7.png",
+        "name": "run-7"
+      },
+      {
+        "source": "visual/v50/frames/air-0.png",
+        "name": "air-0"
+      },
+      {
+        "source": "visual/v50/frames/double-0.png",
+        "name": "double-0"
+      },
+      {
+        "source": "visual/v50/frames/air-1.png",
+        "name": "air-1"
+      },
+      {
+        "source": "visual/v50/frames/double-1.png",
+        "name": "double-1"
+      },
+      {
+        "source": "visual/v50/frames/air-2.png",
+        "name": "air-2"
+      },
+      {
+        "source": "visual/v50/frames/double-2.png",
+        "name": "double-2"
+      },
+      {
+        "source": "visual/v50/frames/air-3.png",
+        "name": "air-3"
+      },
+      {
+        "source": "visual/v50/frames/double-3.png",
+        "name": "double-3"
+      },
+      {
+        "source": "visual/v50/frames/land-0.png",
+        "name": "land-0"
+      },
+      {
+        "source": "visual/v50/frames/slide-0.png",
+        "name": "slide-0"
+      },
+      {
+        "source": "visual/v50/frames/slide-1.png",
+        "name": "slide-1"
+      },
+      {
+        "source": "visual/v50/frames/hurt.png",
+        "name": "hurt"
+      },
+      {
+        "source": "visual/v50/frames/dash-0.png",
+        "name": "dash-0"
+      },
+      {
+        "source": "visual/v50/frames/dash-1.png",
+        "name": "dash-1"
+      },
+      {
+        "source": "visual/v50/frames/ride-0.png",
+        "name": "ride-0"
+      },
+      {
+        "source": "visual/v50/frames/ride-1.png",
+        "name": "ride-1"
+      },
+      {
+        "source": "visual/v50/frames/win-0.png",
+        "name": "win-0"
+      },
+      {
+        "source": "visual/v50/frames/win-1.png",
+        "name": "win-1"
+      },
+      {
+        "source": "visual/v50/frames/lose-0.png",
+        "name": "lose-0"
+      },
+      {
+        "source": "visual/v50/frames/lose-1.png",
+        "name": "lose-1"
+      }
+    ]
+  },
+  {
+    "path": "visual/v52/hero-rig",
+    "maxSize": 512,
+    "frames": [
+      {
+        "source": "visual/v52/frames/rig-body.png",
+        "name": "rig-body"
+      },
+      {
+        "source": "visual/v52/frames/rig-upper-arm.png",
+        "name": "rig-upper-arm"
+      },
+      {
+        "source": "visual/v52/frames/rig-forearm.png",
+        "name": "rig-forearm"
+      },
+      {
+        "source": "visual/v52/frames/rig-hand.png",
+        "name": "rig-hand"
+      },
+      {
+        "source": "visual/v52/frames/rig-thigh.png",
+        "name": "rig-thigh"
+      },
+      {
+        "source": "visual/v52/frames/rig-shin.png",
+        "name": "rig-shin"
+      },
+      {
+        "source": "visual/v52/frames/rig-foot.png",
+        "name": "rig-foot"
+      }
+    ]
+  }
+]
