@@ -1,0 +1,101 @@
+project-scripts/server/open-data-viewer.command
+  s_0a9fc0a5d31c92::t_f6138ccb8536de 1-67,71-87
+  s_0a9fc0a5d31c92::t_fc345aaebcc974 68-70
+server/decompression-api/DATA_VIEWER.md
+  s_0a9fc0a5d31c92::t_fc345aaebcc974 48,50,55-63
+  s_0a9fc0a5d31c92::t_999a45f10c64c5 34,41-47,49,51-54,65
+  s_0a9fc0a5d31c92::t_c066acaf4af4a7 64
+archives/meme-runner/verification.json
+  s_29839c453e7067::t_de13bc9e738bec 3-7
+  s_29839c453e7067::t_d4ec3d9badfb01 1-2
+  s_29839c453e7067::t_2fb9c67841f196 8-10
+archives/meme-runner/files/assets/game-assets/meme-runner/visual/v52/hero-rig.plist
+  s_13086c85fb2b32::t_4304eca5a97722 7,10,16,18,20,23,29,31,33,36,42,44,46,49,55,57,59,62,68,70,72,75,81,83,85,88,94,96,104,106,108
+archives/meme-runner/files/assets/game-assets/meme-runner/visual/v52/hero-rig.png.meta
+  s_13086c85fb2b32::t_efeda88da68426 5,13-14,25,40
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerCast.ts
+  s_6e33cb47e86fe8::t_ebc3f46a0b201f 94-95
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerCustomer.ts
+  s_6e33cb47e86fe8::t_48009775198d39 37
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerGait.ts
+  s_6e33cb47e86fe8::t_372e34a817bd4d 1-22
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerGait.ts.meta
+  s_13086c85fb2b32::t_b3bcddba4fff75 5
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerGame.ts
+  s_6e33cb47e86fe8::t_1991000d5806bf 10,37,127-128,193,214-215,232,235,322,355,427-429,432-437,580
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerRig.ts
+  s_6e33cb47e86fe8::t_1ab2dda8743944 2-4,6-8,10-15,17-27,29-48,51-57,59-78
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerRig.ts.meta
+  s_13086c85fb2b32::t_471e1741391d7a 5
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerRigArt.ts
+  s_6e33cb47e86fe8::t_2a015601ee0ee5 1-10
+archives/meme-runner/files/assets/games/meme-runner/scripts/MemeRunnerRigArt.ts.meta
+  s_13086c85fb2b32::t_5538acee87fb04 5
+archives/meme-runner/files/assets/games/meme-runner/scripts/PackedSpritePaths.ts
+  s_13086c85fb2b32::t_20835859d314af 313-342
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/display-sizes.json
+  s_6e33cb47e86fe8::t_bb9a66fbcb8148 2-29
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-body.png.meta
+  s_6e33cb47e86fe8::t_dbcad0b7a4cb81 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-foot.png.meta
+  s_6e33cb47e86fe8::t_2d34b1a88e383e 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-forearm.png.meta
+  s_6e33cb47e86fe8::t_9d7f48915a052c 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-hand.png.meta
+  s_6e33cb47e86fe8::t_15512f8e5f31a2 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-shin.png.meta
+  s_6e33cb47e86fe8::t_88bb202d09c574 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-thigh.png.meta
+  s_6e33cb47e86fe8::t_d88dd871e9ca88 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/frames/rig-upper-arm.png.meta
+  s_6e33cb47e86fe8::t_26491400ca811d 1-5
+archives/meme-runner/files/sprite-atlas-sources/meme-runner/visual/v52/hero-rig.prompt.txt
+  s_6e33cb47e86fe8::t_b437ce5de00693 1-11
+archives/meme-runner/integration/before/sprite-atlas-sources/compression-inputs.json
+  s_13086c85fb2b32::t_b41e5445c8e781 1-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "24b2df3f5734f1907a73d1acaa5bf79e9a3b8e7f",
+  "prompts": {},
+  "logical_commit_id": "24b2df3f5734f1907a73d1acaa5bf79e9a3b8e7f",
+  "sessions": {
+    "s_0a9fc0a5d31c92": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a16ebc-5c66-7703-9418-159dc053caff",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 94493,
+      "total_deletions": 683
+    },
+    "s_13086c85fb2b32": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a17d42-41df-7ef3-bc42-8617b9c0d057",
+        "model": "gpt-6.1-terra"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    },
+    "s_29839c453e7067": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ffb39562-c27a-4126-9e76-a3cd751591e0",
+        "model": "grok-4.7"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 8,
+      "total_deletions": 7296
+    },
+    "s_6e33cb47e86fe8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a180ba-bdbf-72a3-ba20-1dae94c553b3",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
