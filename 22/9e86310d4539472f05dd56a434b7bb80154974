@@ -1,0 +1,49 @@
+.mcp.json
+  s_efe1289ac207b7::t_2d465aab34215c 11-15
+.agents/skills/reverse-engineer-anything/SKILL.md
+  s_fb0d5612e99c46::t_2d9c942add3175 1-489
+.agents/skills/reverse-engineer-anything/references/android-applications.md
+  s_fb0d5612e99c46::t_3000f5d43a1865 1-63
+.agents/skills/reverse-engineer-anything/references/connection-and-recovery.md
+  s_fb0d5612e99c46::t_3ff1087eccf3b5 1-253
+.agents/skills/reverse-engineer-anything/references/desktop-build.md
+  s_fb0d5612e99c46::t_3ee67102b926ce 1-860
+.agents/skills/reverse-engineer-anything/references/environments.md
+  s_fb0d5612e99c46::t_dca741d17122a7 1-53,55-76,78-83,85-125,127-399
+.agents/skills/reverse-engineer-anything/references/evidence-workflows.md
+  s_fb0d5612e99c46::t_80f20f5e4add05 1-193
+.agents/skills/reverse-engineer-anything/references/javascript-applications.md
+  s_fb0d5612e99c46::t_1940d59fe374c9 1-280
+.agents/skills/reverse-engineer-anything/references/native-and-artifacts.md
+  s_fb0d5612e99c46::t_6944cbf1ef8481 1-1048
+.agents/skills/reverse-engineer-anything/references/runtime-observation.md
+  s_fb0d5612e99c46::t_5abb66fe4c2304 1-140
+skills-lock.json
+  s_fb0d5612e99c46::t_84f54b6aba55ca 2,8,14,20,26,30,33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "229e86310d4539472f05dd56a434b7bb80154974",
+  "prompts": {},
+  "logical_commit_id": "229e86310d4539472f05dd56a434b7bb80154974",
+  "sessions": {
+    "s_efe1289ac207b7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0c8bb722-dbe5-4689-b91e-8c588a7876c0",
+        "model": "grok-4.7"
+      },
+      "human_author": "laitao <laitao@bigo.sg>",
+      "total_additions": 5
+    },
+    "s_fb0d5612e99c46": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "29f7ab3b-3512-451a-b7f1-e745c3270044",
+        "model": "grok-4.7"
+      },
+      "human_author": "laitao <laitao@bigo.sg>"
+    }
+  }
+}
