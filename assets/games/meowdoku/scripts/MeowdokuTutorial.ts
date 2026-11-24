@@ -19,22 +19,7 @@ import {
     MEOWDOKU_TUTORIAL_STEPS,
 } from './MeowdokuTheme';
 
-/**
- * 新手引导的**界面层**，对齐原作 `scripts/module/tutorial/view/tutorial_page.gd`
- * 的默认流程（`nu_guide` 默认档 `VALUE_CURRENT_FLOW` → `_run_guide_flow_default`）。
- *
- * 关键点：**演示盘直接用游戏自己的棋盘**。原作引导页是一整页（自己实例化 `board.tscn` +
- * `cell.tscn`），本项目把引导叠在第一关上，为了让渲染、命中、层级、动效和正式棋盘**完全一致**
- * （不再出现「模糊 / 黑线 / 层级不对 / 点不中」），这里不自己画盘，而是让 `MeowdokuGame`
- * 把**引导关卡的盘面**（原作 SP 题库 `pattern == "guide"` 那一关：4×4、解位 `[2,0,3,1]`、
- * 配色槽位 `[8,4,10,1]`）装进正式棋盘，本模块只负责：
- *
- * - 全屏压暗蒙层（0.75）并在要操作的格子上**挖洞**（格子保持明亮）；
- * - 顶部文案条、棋盘下方副提示条、右上角「跳过」、底部「明白了 / 开始游戏」；
- * - 静态指尖图片的单击、双击与划动演示，以及点击波纹；
- * - 七步流程的状态机 + 点错格子的抖动反馈。
- */
-
+/** 在教学棋盘上高亮可操作格，并演示放猫、点击与划动标记。 */
 type Cell = readonly [number, number];
 
 interface TutorialHost {

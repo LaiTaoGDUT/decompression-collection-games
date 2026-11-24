@@ -12,11 +12,13 @@ import {
     sys,
     UITransform,
     Vec2,
+    Vec3,
     view,
     Widget,
 } from 'cc';
 import {
     App,
+    AD_SERVICE,
     ACHIEVEMENT_SERVICE,
     ACHIEVEMENT_ART_SERVICE,
     ACHIEVEMENT_CELEBRATION_SERVICE,
@@ -48,6 +50,7 @@ import { AchievementWallMusic } from '../../services/achievements/AchievementWal
 import type { FeedbackService } from '../../services/feedback/FeedbackService';
 import type { StorageService } from '../../services/storage/StorageService';
 import type { AssetService } from '../../services/asset/AssetService';
+import { LOBBY_LIST_CUSTOM_AD, type InlineAd } from '../../services/ads/InlineAd';
 import {
     calculateLobbyScrollViewportMetrics,
     calculateLobbySafeContentFromPlatform,
@@ -104,6 +107,14 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
     private gridLayout?: LobbyGridLayout;
     private gridTop = 0;
     private badgeLayer?: Node;
+    private inlineAd?: InlineAd;
+    private unsubscribeInlineAd?: () => void;
+    private unsubscribePlatformLayout?: () => void;
+    private inlineAdLayoutDirty = false;
+    private inlineAdSafeTop = 0;
+    private canShowInlineAd?: () => boolean;
+    private readonly inlineAdWorld = new Vec3();
+    private readonly inlineAdLocal = new Vec3();
 
     get presentationReady(): Promise<void> {
         return this.presentationGate.ready;
@@ -152,6 +163,10 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         const registry = services.get(GAME_REGISTRY_SERVICE);
         const platform = services.get(PLATFORM_SERVICE);
         this.platformLayout = platform.getLayoutInfo();
+        this.unsubscribePlatformLayout = platform.onLayoutChange(layout => {
+            this.platformLayout = layout;
+            this.layoutCards();
+        });
         this.setupHeader();
         this.setupGridViewport();
         const configService = services.get(CONFIG_SERVICE);
@@ -192,6 +207,16 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         this.catalogGames = playableGames;
         this.refreshGameOrder();
         const runtime = services.get(GAME_RUNTIME_SERVICE);
+        this.canShowInlineAd = () => runtime.isLobbyVisible
+            && !services.get(ACHIEVEMENT_CELEBRATION_SERVICE).isPendingOrVisible;
+        if (this.games.length >= 2) {
+            const metrics = this.readLobbyViewportMetrics();
+            const width = Math.max(0, calculateLobbyScrollViewportMetrics(metrics).contentWidth - GRID_SIDE_PADDING * 2);
+            this.inlineAd = services.get(AD_SERVICE).createInlineAd(
+                { placement: LOBBY_LIST_CUSTOM_AD, gameId: 'lobby' }, width / metrics.width,
+            );
+            this.unsubscribeInlineAd = this.inlineAd?.subscribe(() => { this.inlineAdLayoutDirty = true; });
+        }
         this.setEnterGameRequest((manifest) => runtime.enterGame(manifest));
         const achievements = services.get(ACHIEVEMENT_SERVICE);
         this.cardStatuses = new Map(this.games.map((manifest) => [
@@ -231,6 +256,13 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
     }
 
     protected onDestroy(): void {
+        this.unsubscribeInlineAd?.();
+        this.unsubscribeInlineAd = undefined;
+        this.inlineAd?.dispose();
+        this.inlineAd = undefined;
+        this.canShowInlineAd = undefined;
+        this.unsubscribePlatformLayout?.();
+        this.unsubscribePlatformLayout = undefined;
         this.unsubscribeStorage?.();
         this.unsubscribeStorage = undefined;
         this.presentationGate.dispose();
@@ -252,6 +284,38 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         this.hasLaidOut = false;
         this.gridLayout = undefined;
         this.badgeLayer = undefined;
+    }
+
+    protected onDisable(): void {
+        this.inlineAd?.setVisible(false);
+    }
+
+    protected lateUpdate(): void {
+        if (this.inlineAdLayoutDirty) {
+            this.inlineAdLayoutDirty = false;
+            this.layoutCards();
+        }
+        const ad = this.inlineAd;
+        if (!ad) return;
+        const slot = this.gridLayout?.inlineAd;
+        const list = this.gameList?.getComponent(UITransform);
+        const viewport = this.gridViewport?.getComponent(UITransform);
+        if (!slot || !list || !viewport || !this.canShowInlineAd?.() || this.isEnterRequestPending
+            || this.settingsPanel.isVisible || this.announcementPanel.isVisible || this.achievementWall.isVisible) {
+            ad.setVisible(false);
+            return;
+        }
+        const metrics = this.readLobbyViewportMetrics();
+        this.inlineAdLocal.set(0, slot.y - this.gridTop, 0);
+        list.convertToWorldSpaceAR(this.inlineAdLocal, this.inlineAdWorld);
+        viewport.convertToNodeSpaceAR(this.inlineAdWorld, this.inlineAdLocal);
+        const height = ad.size.height * metrics.width;
+        const top = metrics.height / 2 - this.inlineAdLocal.y - height / 2;
+        // 原生层没有 ScrollView 裁切；只有整张广告避开固定工具栏和底部安全区才展示。
+        const visible = ad.ready && ad.size.width <= 1 && top >= this.inlineAdSafeTop
+            && top + height <= metrics.height - metrics.safeBottom;
+        if (visible) ad.setPosition((1 - ad.size.width) / 2, top / metrics.width);
+        ad.setVisible(visible);
     }
 
     private bindShowcaseSkin(sprite: Sprite, onLoaded: () => void): void {
@@ -447,12 +511,17 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         viewport.setPosition(viewportMetrics.contentX, viewportMetrics.contentY);
 
         const gridWidth = Math.max(0, viewportMetrics.contentWidth - GRID_SIDE_PADDING * 2);
+        this.inlineAd?.setWidth(gridWidth / safeContentMetrics.width);
         const headerBottom = safeContentMetrics.safeTop + headerMetrics.headerHeight;
         const cards = gameList.children.filter((child) => Boolean(child.getComponent(GameCardView)));
         const layout = calculateLobbyGridLayout(
             Math.max(cards.length, this.gameItems.length + (this.games.length > 0 ? 1 : 0)),
             gridWidth,
+            undefined,
+            undefined,
+            this.inlineAd?.ready ? this.inlineAd.size.height * safeContentMetrics.width : 0,
         );
+        this.inlineAdSafeTop = headerBottom;
         const showcaseTop = headerBottom + LOBBY_BRAND_TO_SHOWCASE_GAP * headerMetrics.scale;
         this.achievementWall.layoutShowcase(
             gridWidth,
@@ -579,6 +648,7 @@ export class LobbyEntry extends Component implements ScenePresentationEntry {
         const ownerNode = this.node;
         const cardView = this.cardViews.get(manifest.id);
         void this.enterRequestLock.run(() => {
+            this.inlineAd?.setVisible(false);
             cardView?.setLoading();
             return request(manifest);
         }).catch(

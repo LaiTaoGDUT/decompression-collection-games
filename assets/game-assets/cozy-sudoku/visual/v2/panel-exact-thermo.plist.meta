@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "ca671392-02d2-5f8e-a223-5e11d407164f",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "82484": {
+      "importer": "sprite-frame",
+      "uuid": "ca671392-02d2-5f8e-a223-5e11d407164f@82484",
+      "displayName": "",
+      "id": "82484",
+      "name": "panel-exact-thermo",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 642,
+        "height": 859,
+        "rawWidth": 642,
+        "rawHeight": 859,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c4eddab6-9edc-5a88-a34f-60c8e102c633@6c48a",
+        "atlasUuid": "ca671392-02d2-5f8e-a223-5e11d407164f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "panel-exact-thermo.png",
+    "format": 2,
+    "uuid": "ca671392-02d2-5f8e-a223-5e11d407164f",
+    "textureUuid": "c4eddab6-9edc-5a88-a34f-60c8e102c633@6c48a"
+  }
+}

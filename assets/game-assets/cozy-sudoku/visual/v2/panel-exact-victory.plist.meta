@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "1cf4ddf8-1b03-5bc4-a109-1a91015169c6",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "f8ebf": {
+      "importer": "sprite-frame",
+      "uuid": "1cf4ddf8-1b03-5bc4-a109-1a91015169c6@f8ebf",
+      "displayName": "",
+      "id": "f8ebf",
+      "name": "panel-exact-victory",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 650,
+        "height": 866,
+        "rawWidth": 650,
+        "rawHeight": 866,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "68a04386-5ef3-5ffe-b4cf-3a56b362591b@6c48a",
+        "atlasUuid": "1cf4ddf8-1b03-5bc4-a109-1a91015169c6",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "panel-exact-victory.png",
+    "format": 2,
+    "uuid": "1cf4ddf8-1b03-5bc4-a109-1a91015169c6",
+    "textureUuid": "68a04386-5ef3-5ffe-b4cf-3a56b362591b@6c48a"
+  }
+}

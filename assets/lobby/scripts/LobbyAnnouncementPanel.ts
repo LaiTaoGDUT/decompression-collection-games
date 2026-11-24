@@ -167,6 +167,10 @@ export class LobbyAnnouncementPanel {
     private generation = 0;
     private opened = false;
 
+    get isVisible(): boolean {
+        return !!this.root?.activeInHierarchy;
+    }
+
     mount(overlayParent: Node, entrySlot: Node, announcement: Announcement | null, services: AnnouncementServices,
         games: AnnouncementGameEntry): void {
         this.unmount();

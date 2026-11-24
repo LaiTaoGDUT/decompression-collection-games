@@ -20,6 +20,7 @@ export function cityNextComboMilestone(combo: number): number {
     return combo < 3 ? 3 : combo < 5 ? 5 : combo < 10 ? 10 : (Math.floor(combo / 10) + 1) * 10;
 }
 
+/** Combo n sounds scale degree n - 1 (do re mi fa sol la si, then high do); milestones land on the same degree. */
 export function cityPerfectTone(combo: number): number {
-    return Math.min(6, Math.max(0, combo - 1));
+    return Math.min(7, Math.max(0, combo - 1));
 }

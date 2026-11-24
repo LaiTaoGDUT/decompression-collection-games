@@ -1,4 +1,4 @@
-import { BlockInputEvents, Color, Graphics, Label, Node, Sprite, UIOpacity, UITransform, Vec2, Vec3 } from 'cc';
+import { BlockInputEvents, Color, Font, Graphics, Label, Node, Sprite, UIOpacity, UITransform, Vec2, Vec3 } from 'cc';
 import { FontBinding, setLabelBold } from '../../services/font/FontBinding';
 
 export interface DailyToolRewardBounds {
@@ -14,6 +14,7 @@ interface DailyToolRewardItem {
     readonly createIcon: (parent: Node) => Node;
     /** 每帧取当前道具图标，屏幕重排后不会飞向旧节点。 */
     readonly target: () => Node | undefined;
+    readonly pulseTarget?: () => Node | undefined;
     readonly onArrive: () => void;
 }
 
@@ -22,8 +23,14 @@ interface DailyToolRewardOptions {
     readonly bounds: DailyToolRewardBounds;
     readonly items: readonly DailyToolRewardItem[];
     readonly colors: { readonly dim: Color; readonly shadow: Color; readonly accent: Color; readonly text: Color };
+    readonly title?: string;
     readonly titleFontSize?: number;
+    readonly amountFontSize?: number;
+    readonly labelFont?: Font;
+    readonly labelShadow?: boolean;
     readonly titleGap?: number;
+    readonly drawRevealBackdrop?: (graphics: Graphics) => void;
+    readonly setBackdropStrength?: (strength: number) => void;
     readonly systemFontOnly?: boolean;
     readonly onFinish?: () => void;
 }
@@ -82,10 +89,15 @@ export class DailyToolRewardAnimation {
         this.halo = this.makeNode(root, 'RewardHalo', 330 + 60 * (count - 1), 330);
         this.haloOpacity = this.halo.addComponent(UIOpacity);
         const glow = this.halo.addComponent(Graphics);
-        // 多层低透明度柔光，不画有硬边的底盘或放射线；道具本身是视觉主体。
-        for (let i = 0; i < 16; i++) {
-            glow.fillColor = new Color(255, 251, 242, 2 + Math.floor(i / 4));
-            glow.ellipse(0, 0, 162 - i * 8 + 30 * (count - 1), 162 - i * 8); glow.fill();
+        if (options.drawRevealBackdrop) {
+            options.drawRevealBackdrop(glow);
+        } else {
+            // 多层低透明度柔光，不画有硬边的底盘或放射线；道具本身是视觉主体。
+            for (let i = 0; i < 16; i++) {
+                glow.fillColor = new Color(255, 251, 242, 2 + Math.floor(i / 4));
+                glow.ellipse(0, 0, 162 - i * 8 + 30 * (count - 1), 162 - i * 8); glow.fill();
+            }
+            this.sparkles = this.makeNode(this.halo, 'RewardTwinkles', 230, 210).addComponent(Graphics);
         }
         for (let i = 5; i >= 0; i--) {
             const shadow = options.colors.shadow;
@@ -94,7 +106,6 @@ export class DailyToolRewardAnimation {
                 glow.ellipse(index * ITEM_SPACING - span / 2, -77, 30 + i * 4, 4 + i); glow.fill();
             }
         }
-        this.sparkles = this.makeNode(this.halo, 'RewardTwinkles', 230, 210).addComponent(Graphics);
         this.captions = this.makeNode(root, 'RewardCaptions', Math.max(300, span + 230) * DISPLAY_SCALE, 260 * DISPLAY_SCALE);
         this.captionOpacity = this.captions.addComponent(UIOpacity);
         options.items.forEach((item, index) => {
@@ -104,15 +115,15 @@ export class DailyToolRewardAnimation {
             const opacity = flying.addComponent(UIOpacity), icon = item.createIcon(flying);
             this.rewards.push({ item, offsetX, flying, icon, opacity, trail, trailPoints: [], arrived: false, unavailable: false });
             const iconHeight = icon.getComponent(UITransform)!.height * Math.abs(icon.scale.y);
-            const amountY = Math.max(112, iconHeight / 2 + 16 + 25 * .7);
+            const amountY = Math.max(112, iconHeight / 2 + 16 + (options.amountFontSize ?? 25) * .7);
             this.label(this.captions!, `RewardAmount${suffix}`, item.caption, -amountY * DISPLAY_SCALE,
-                Math.round(25 * DISPLAY_SCALE), options.colors.text, offsetX * DISPLAY_SCALE, count === 1 ? 300 : 230);
+                Math.round((options.amountFontSize ?? 25) * DISPLAY_SCALE), options.colors.text, offsetX * DISPLAY_SCALE, count === 1 ? 300 : 230);
         });
         const titleFontSize = options.titleFontSize ?? 23;
         const iconHalfHeight = Math.max(...this.rewards.map(reward =>
             reward.icon.getComponent(UITransform)!.height * Math.abs(reward.icon.scale.y) / 2));
         const titleY = Math.max(112, iconHalfHeight + (options.titleGap ?? 16) + titleFontSize * .7);
-        this.label(this.captions, 'DailyTitle', '每日赠礼', titleY * DISPLAY_SCALE,
+        this.label(this.captions, 'DailyTitle', options.title ?? '每日赠礼', titleY * DISPLAY_SCALE,
             Math.round(titleFontSize * DISPLAY_SCALE), options.colors.text);
         // GameRuntime 在 begin 后用 180ms 收起加载层，留出这段时间再完整弹出。
         this.elapsed = -.2;
@@ -120,7 +131,14 @@ export class DailyToolRewardAnimation {
         this.advance(0);
     }
 
-    setVisible(visible: boolean): void { if (this.root?.isValid) this.root.active = visible; }
+    setVisible(visible: boolean): void {
+        if (!this.root?.isValid) return;
+        this.root.active = visible;
+        if (this.options?.setBackdropStrength) {
+            if (visible) this.render();
+            else this.options.setBackdropStrength(0);
+        }
+    }
 
     relayout(bounds: DailyToolRewardBounds): void {
         this.bounds = bounds;
@@ -156,6 +174,7 @@ export class DailyToolRewardAnimation {
 
     dispose(): void {
         for (const reward of this.rewards) this.restorePulse(reward);
+        this.options?.setBackdropStrength?.(0);
         const root = this.root;
         this.root = undefined;
         if (root?.isValid) {
@@ -191,7 +210,9 @@ export class DailyToolRewardAnimation {
         const haloScale = displayScale * (1 + .02 * Math.sin(this.elapsed * 3));
         this.halo!.setScale(haloScale, haloScale, 1);
         this.haloOpacity!.opacity = Math.round(255 * clamp(reveal / .75) * (1 - clamp(flight * 2)));
-        this.dimOpacity!.opacity = Math.round(255 * clamp(reveal / .6) * (1 - flight));
+        const backdropStrength = clamp(reveal / .6) * (1 - flight);
+        this.dimOpacity!.opacity = Math.round(255 * backdropStrength);
+        options.setBackdropStrength?.(root.activeInHierarchy ? backdropStrength : 0);
         this.drawTwinkles();
         for (const reward of this.rewards) {
             const flying = reward.flying;
@@ -241,11 +262,15 @@ export class DailyToolRewardAnimation {
                 });
                 reward.trail.stroke();
             } else {
-                if (reward.pulsing !== target) {
-                    this.restorePulse(reward); reward.pulsing = target; reward.pulseScale = target.scale.clone();
+                const pulseTarget = reward.item.pulseTarget?.() ?? target;
+                if (!pulseTarget.isValid || !pulseTarget.activeInHierarchy) continue;
+                if (reward.pulsing !== pulseTarget) {
+                    this.restorePulse(reward);
+                    reward.pulsing = pulseTarget;
+                    reward.pulseScale = pulseTarget.scale.clone();
                 }
                 const bounce = 1 + .15 * Math.sin(Math.PI * clamp((this.elapsed - ARRIVAL) / PULSE));
-                target.setScale(reward.pulseScale!.x * bounce, reward.pulseScale!.y * bounce, reward.pulseScale!.z);
+                pulseTarget.setScale(reward.pulseScale!.x * bounce, reward.pulseScale!.y * bounce, reward.pulseScale!.z);
             }
         }
     }
@@ -281,7 +306,7 @@ export class DailyToolRewardAnimation {
     }
 
     private label(parent: Node, name: string, text: string, y: number, size: number, color: Color, x = 0, width = 300): void {
-        const node = this.makeNode(parent, name, width * DISPLAY_SCALE, 44 * DISPLAY_SCALE); node.setPosition(x, y);
+        const node = this.makeNode(parent, name, width * DISPLAY_SCALE, Math.max(44 * DISPLAY_SCALE, size * 1.5)); node.setPosition(x, y);
         const label = node.addComponent(Label); label.string = text; label.fontSize = size; label.lineHeight = size * 1.4;
         if (this.options?.systemFontOnly) {
             label.font = null; label.useSystemFont = true; label.fontFamily = 'Arial';
@@ -289,8 +314,9 @@ export class DailyToolRewardAnimation {
         }
         label.color = color; label.horizontalAlign = Label.HorizontalAlign.CENTER;
         label.verticalAlign = Label.VerticalAlign.CENTER; label.overflow = Label.Overflow.SHRINK;
-        label.enableShadow = true; label.shadowColor = new Color(38, 26, 30, 125);
+        label.enableShadow = this.options?.labelShadow ?? true; label.shadowColor = new Color(38, 26, 30, 125);
         label.shadowOffset = new Vec2(0, -2); label.shadowBlur = 0;
         label.enableWrapText = false; setLabelBold(label, true);
+        if (this.options?.labelFont) { label.font = this.options.labelFont; label.useSystemFont = false; label.isBold = false; }
     }
 }

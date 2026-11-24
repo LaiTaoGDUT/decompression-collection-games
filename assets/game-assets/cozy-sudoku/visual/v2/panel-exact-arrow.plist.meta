@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "78f2c82e-8b4c-5631-b709-859094f8438b",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "e91c8": {
+      "importer": "sprite-frame",
+      "uuid": "78f2c82e-8b4c-5631-b709-859094f8438b@e91c8",
+      "displayName": "",
+      "id": "e91c8",
+      "name": "panel-exact-arrow",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 667,
+        "height": 888,
+        "rawWidth": 667,
+        "rawHeight": 888,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "57e8d052-1f6a-571f-8300-2f92fc15f264@6c48a",
+        "atlasUuid": "78f2c82e-8b4c-5631-b709-859094f8438b",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "panel-exact-arrow.png",
+    "format": 2,
+    "uuid": "78f2c82e-8b4c-5631-b709-859094f8438b",
+    "textureUuid": "57e8d052-1f6a-571f-8300-2f92fc15f264@6c48a"
+  }
+}

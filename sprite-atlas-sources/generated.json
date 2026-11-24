@@ -17786,44 +17786,13 @@
     ]
   },
   "city-bloxx/visual/sunlit/city-sunlit": {
-    "rawHash": "348081163632bee8d97a12aefa91d1867f31111586c51e55da14acebf4be7521",
+    "rawHash": "900e12d8837b7f1e57a0f20e82c9fa04308620d761c7963d50ed6a42ba9eb48d",
     "imageUuid": "217b4b69-fd22-5da3-ae1a-7448e1f8927b",
     "size": [
-      2048,
-      903
+      2047,
+      615
     ],
     "frames": [
-      {
-        "source": "visual/sunlit-v1/prepared/cloud-streaks.png",
-        "sourceRect": [
-          0,
-          0,
-          1942,
-          195
-        ],
-        "name": "cloud-streaks",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@2eab9",
-        "rect": [
-          2,
-          2,
-          1942,
-          195
-        ],
-        "originalSize": [
-          1942,
-          195
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
       {
         "source": "visual/ground-v2/prepared/fence.png",
         "sourceRect": [
@@ -17836,7 +17805,7 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@dac5b",
         "rect": [
           2,
-          201,
+          2,
           796,
           75
         ],
@@ -17867,7 +17836,7 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@4add0",
         "rect": [
           802,
-          201,
+          2,
           616,
           88
         ],
@@ -17898,7 +17867,7 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@7ef03",
         "rect": [
           1422,
-          201,
+          2,
           412,
           103
         ],
@@ -17929,75 +17898,13 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@e5768",
         "rect": [
           2,
-          280,
+          81,
           412,
           103
         ],
         "originalSize": [
           412,
           103
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/atmosphere-v4/prepared/cloud-bank-thin.png",
-        "sourceRect": [
-          0,
-          0,
-          409,
-          34
-        ],
-        "name": "cloud-bank-thin",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@74445",
-        "rect": [
-          418,
-          293,
-          409,
-          34
-        ],
-        "originalSize": [
-          409,
-          34
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/atmosphere-v4/prepared/cloud-bank.png",
-        "sourceRect": [
-          0,
-          0,
-          338,
-          78
-        ],
-        "name": "cloud-bank",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@86e94",
-        "rect": [
-          831,
-          293,
-          338,
-          78
-        ],
-        "originalSize": [
-          338,
-          78
         ],
         "offset": [
           0,
@@ -18022,7 +17929,7 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@b4560",
         "rect": [
           418,
-          331,
+          81,
           300,
           142
         ],
@@ -18053,7 +17960,7 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d0a27",
         "rect": [
           2,
-          387,
+          188,
           281,
           185
         ],
@@ -18083,8 +17990,8 @@
         "name": "mars",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@6d2af",
         "rect": [
-          1173,
-          293,
+          722,
+          94,
           227,
           227
         ],
@@ -18115,7 +18022,7 @@
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@28291",
         "rect": [
           1838,
-          201,
+          2,
           186,
           189
         ],
@@ -18145,8 +18052,8 @@
         "name": "uranus",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@9fc3b",
         "rect": [
-          1948,
-          2,
+          287,
+          188,
           90,
           185
         ],
@@ -18176,8 +18083,8 @@
         "name": "tree",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@ccac8",
         "rect": [
-          1404,
-          308,
+          381,
+          227,
           184,
           179
         ],
@@ -18207,8 +18114,8 @@
         "name": "blimp",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@adb84",
         "rect": [
-          1592,
-          308,
+          2,
+          377,
           181,
           91
         ],
@@ -18238,107 +18145,14 @@
         "name": "moon",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@6fa39",
         "rect": [
-          1777,
-          394,
+          187,
+          377,
           163,
           179
         ],
         "originalSize": [
           163,
           179
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/sunlit-v1/prepared/combo-star-0.png",
-        "sourceRect": [
-          0,
-          0,
-          148,
-          148
-        ],
-        "name": "combo-star-0",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@dcc4d",
-        "rect": [
-          1592,
-          403,
-          148,
-          148
-        ],
-        "originalSize": [
-          148,
-          148
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/sunlit-v1/prepared/combo-star-1.png",
-        "sourceRect": [
-          0,
-          0,
-          148,
-          148
-        ],
-        "name": "combo-star-1",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f0ddf",
-        "rect": [
-          1404,
-          491,
-          148,
-          148
-        ],
-        "originalSize": [
-          148,
-          148
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/sunlit-v1/prepared/combo-star-2.png",
-        "sourceRect": [
-          0,
-          0,
-          148,
-          148
-        ],
-        "name": "combo-star-2",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f496c",
-        "rect": [
-          1556,
-          555,
-          148,
-          148
-        ],
-        "originalSize": [
-          148,
-          148
         ],
         "offset": [
           0,
@@ -18362,8 +18176,8 @@
         "name": "sling",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@04bb5",
         "rect": [
-          1708,
-          577,
+          569,
+          227,
           148,
           90
         ],
@@ -18393,8 +18207,8 @@
         "name": "sky-purplestar",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@c86b1",
         "rect": [
-          1860,
-          577,
+          569,
+          321,
           142,
           142
         ],
@@ -18424,8 +18238,8 @@
         "name": "pluto",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@c054f",
         "rect": [
-          1708,
-          671,
+          2,
+          472,
           141,
           141
         ],
@@ -18455,8 +18269,8 @@
         "name": "station",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@e2fcc",
         "rect": [
-          287,
-          387,
+          354,
+          410,
           126,
           88
         ],
@@ -18486,8 +18300,8 @@
         "name": "ufo",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@748ae",
         "rect": [
-          1853,
-          723,
+          953,
+          94,
           118,
           118
         ],
@@ -18517,8 +18331,8 @@
         "name": "balloon",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@64e71",
         "rect": [
-          1944,
-          394,
+          1075,
+          94,
           83,
           115
         ],
@@ -18548,8 +18362,8 @@
         "name": "flyman-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@30b4d",
         "rect": [
-          722,
-          331,
+          1162,
+          94,
           99,
           99
         ],
@@ -18579,8 +18393,8 @@
         "name": "flyman-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@69848",
         "rect": [
-          825,
-          375,
+          1265,
+          94,
           99,
           99
         ],
@@ -18610,8 +18424,8 @@
         "name": "resident-blue-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@67671",
         "rect": [
-          1975,
-          723,
+          1368,
+          94,
           44,
           87
         ],
@@ -18641,8 +18455,8 @@
         "name": "resident-blue-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8519f",
         "rect": [
-          1975,
-          814,
+          484,
+          410,
           44,
           87
         ],
@@ -18672,8 +18486,8 @@
         "name": "resident-blue-2",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@75417",
         "rect": [
-          722,
-          434,
+          1416,
+          109,
           44,
           87
         ],
@@ -18703,8 +18517,8 @@
         "name": "resident-blue-3",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8f825",
         "rect": [
-          770,
-          434,
+          1368,
+          185,
           44,
           87
         ],
@@ -18734,8 +18548,8 @@
         "name": "resident-blue-4",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@046cd",
         "rect": [
-          928,
-          375,
+          1162,
+          197,
           44,
           87
         ],
@@ -18765,8 +18579,8 @@
         "name": "resident-blue-5",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@6016e",
         "rect": [
-          976,
-          375,
+          1075,
+          213,
           44,
           87
         ],
@@ -18796,8 +18610,8 @@
         "name": "resident-blue-6",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@ed5f2",
         "rect": [
-          1024,
-          375,
+          953,
+          216,
           44,
           87
         ],
@@ -18827,8 +18641,8 @@
         "name": "resident-blue-7",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@205f4",
         "rect": [
-          1072,
-          375,
+          1001,
+          216,
           44,
           87
         ],
@@ -18858,8 +18672,8 @@
         "name": "resident-blue-8",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@3afda",
         "rect": [
-          1120,
-          375,
+          1210,
+          197,
           44,
           87
         ],
@@ -18889,8 +18703,8 @@
         "name": "resident-blue-9",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@53462",
         "rect": [
-          928,
-          466,
+          1258,
+          197,
           44,
           87
         ],
@@ -18920,8 +18734,8 @@
         "name": "resident-red-0",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@2d698",
         "rect": [
-          818,
-          478,
+          1306,
+          197,
           44,
           87
         ],
@@ -18951,8 +18765,8 @@
         "name": "resident-red-1",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@26f2c",
         "rect": [
-          866,
-          478,
+          1464,
+          109,
           44,
           87
         ],
@@ -18982,8 +18796,8 @@
         "name": "resident-red-2",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@1eddc",
         "rect": [
-          976,
-          466,
+          1512,
+          109,
           44,
           87
         ],
@@ -19013,8 +18827,8 @@
         "name": "resident-red-3",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@73fd4",
         "rect": [
-          1024,
-          466,
+          1560,
+          109,
           44,
           87
         ],
@@ -19044,8 +18858,8 @@
         "name": "resident-red-4",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@70492",
         "rect": [
-          1072,
-          466,
+          1608,
+          109,
           44,
           87
         ],
@@ -19075,8 +18889,8 @@
         "name": "resident-red-5",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@88aee",
         "rect": [
-          1120,
-          466,
+          1656,
+          109,
           44,
           87
         ],
@@ -19106,8 +18920,8 @@
         "name": "resident-red-6",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@00466",
         "rect": [
-          1168,
-          524,
+          1704,
+          109,
           44,
           87
         ],
@@ -19137,8 +18951,8 @@
         "name": "resident-red-7",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d8ddb",
         "rect": [
-          1216,
-          524,
+          1752,
+          109,
           44,
           87
         ],
@@ -19168,8 +18982,8 @@
         "name": "resident-red-8",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d2a1b",
         "rect": [
-          1264,
-          524,
+          1800,
+          195,
           44,
           87
         ],
@@ -19199,45 +19013,14 @@
         "name": "resident-red-9",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@d5ab2",
         "rect": [
-          1312,
-          524,
+          1848,
+          195,
           44,
           87
         ],
         "originalSize": [
           44,
           87
-        ],
-        "offset": [
-          0,
-          0
-        ],
-        "insets": {
-          "Top": 0,
-          "Bottom": 0,
-          "Left": 0,
-          "Right": 0
-        }
-      },
-      {
-        "source": "visual/sunlit-v1/prepared/icon-city.png",
-        "sourceRect": [
-          0,
-          0,
-          64,
-          61
-        ],
-        "name": "icon-city",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@1d348",
-        "rect": [
-          914,
-          557,
-          64,
-          61
-        ],
-        "originalSize": [
-          64,
-          61
         ],
         "offset": [
           0,
@@ -19261,8 +19044,8 @@
         "name": "sky-bluelestar",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@90aff",
         "rect": [
-          982,
-          557,
+          1896,
+          195,
           61,
           61
         ],
@@ -19282,28 +19065,28 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/icon-people.png",
+        "source": "visual/skyward-v7/hud-icons.png",
         "sourceRect": [
-          0,
-          0,
-          60,
-          49
+          111,
+          169,
+          616,
+          679
         ],
-        "name": "icon-people",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@44094",
+        "name": "icon-city",
+        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@1d348",
         "rect": [
-          1944,
-          513,
-          60,
-          49
+          1961,
+          195,
+          53,
+          58
         ],
         "originalSize": [
-          60,
-          49
+          53,
+          58
         ],
         "offset": [
-          0,
-          0
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -19323,8 +19106,8 @@
         "name": "hook",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@5f91d",
         "rect": [
-          2023,
-          513,
+          1049,
+          216,
           20,
           48
         ],
@@ -19344,28 +19127,28 @@
         }
       },
       {
-        "source": "visual/sunlit-v1/prepared/star.png",
+        "source": "visual/skyward-v7/hud-icons.png",
         "sourceRect": [
-          0,
-          0,
-          45,
-          45
+          799,
+          261,
+          640,
+          599
         ],
-        "name": "star",
-        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8d3eb",
+        "name": "icon-people",
+        "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@44094",
         "rect": [
-          1777,
-          308,
-          45,
-          45
+          1961,
+          257,
+          44,
+          41
         ],
         "originalSize": [
-          45,
-          45
+          44,
+          41
         ],
         "offset": [
-          0,
-          0
+          0.0,
+          0.0
         ],
         "insets": {
           "Top": 0,
@@ -19385,8 +19168,8 @@
         "name": "icon-retry",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@281b2",
         "rect": [
-          2006,
-          566,
+          1896,
+          260,
           40,
           38
         ],
@@ -19416,8 +19199,8 @@
         "name": "icon-home",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@27a49",
         "rect": [
-          2006,
-          608,
+          1416,
+          200,
           40,
           36
         ],
@@ -19447,8 +19230,8 @@
         "name": "icon-video",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@0a4ac",
         "rect": [
-          2006,
-          648,
+          1460,
+          200,
           40,
           30
         ],
@@ -19478,8 +19261,8 @@
         "name": "icon-heart",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f2b5b",
         "rect": [
-          1777,
-          357,
+          147,
+          472,
           36,
           30
         ],
@@ -19509,8 +19292,8 @@
         "name": "icon-spark",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@c1d6b",
         "rect": [
-          1556,
-          491,
+          381,
+          188,
           30,
           34
         ],
@@ -19540,8 +19323,8 @@
         "name": "icon-pause",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@f676d",
         "rect": [
-          1744,
-          403,
+          2018,
+          195,
           27,
           32
         ],
@@ -19571,14 +19354,7413 @@
         "name": "sky-purplestar_little",
         "uuid": "27fd5d92-ea60-541d-a9d7-dc7499b17f1a@8f194",
         "rect": [
-          1556,
-          529,
+          1049,
+          268,
           19,
           19
         ],
         "originalSize": [
           19,
           19
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/gameplay-top": {
+    "rawHash": "e273a27fd1b0525bb33bedb3a2d27f73f3a95833441b6066c99c4be1b25e9884",
+    "imageUuid": "3b85c94a-5008-518c-af03-4f6d2a914437",
+    "size": [
+      754,
+      671
+    ],
+    "frames": [
+      {
+        "source": "visual/v3/gameplay-bleed-750.png",
+        "sourceRect": [
+          0,
+          0,
+          750,
+          667
+        ],
+        "name": "gameplay-top",
+        "uuid": "c33af135-436a-55ab-a66e-6255a19cf02a@07fba",
+        "rect": [
+          2,
+          2,
+          750,
+          667
+        ],
+        "originalSize": [
+          750,
+          667
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/gameplay-bottom": {
+    "rawHash": "051f92ba31c2251da468f0adf5326a1153e1979a1364ce9232e20ea0523c94e5",
+    "imageUuid": "bf87f841-b65f-5f13-9d54-c71d40de20d5",
+    "size": [
+      754,
+      671
+    ],
+    "frames": [
+      {
+        "source": "visual/v3/gameplay-bleed-750.png",
+        "sourceRect": [
+          0,
+          667,
+          750,
+          667
+        ],
+        "name": "gameplay-bottom",
+        "uuid": "0cf68caf-126f-5584-b532-43b9e11d2af5@d6b64",
+        "rect": [
+          2,
+          2,
+          750,
+          667
+        ],
+        "originalSize": [
+          750,
+          667
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/map-top": {
+    "rawHash": "e03f6d64bdcc9d1e0056de90040872dd91973343c2d40cdf5788b45af7d0cdbc",
+    "imageUuid": "1540a619-e107-57cf-9d59-fcf6717669eb",
+    "size": [
+      754,
+      671
+    ],
+    "frames": [
+      {
+        "source": "visual/v4/map-paper-750.png",
+        "sourceRect": [
+          0,
+          0,
+          750,
+          667
+        ],
+        "name": "map-top",
+        "uuid": "9f3dc1aa-529b-56c9-8f01-a518830cca81@4124e",
+        "rect": [
+          2,
+          2,
+          750,
+          667
+        ],
+        "originalSize": [
+          750,
+          667
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/map-bottom": {
+    "rawHash": "6ae36ee971064fc396c72ad1826fd6fb9196c2dcc829bfa32e37e9d80855c0ab",
+    "imageUuid": "7f4aa459-90d9-5dbb-a8fa-7e5cdbcb5c08",
+    "size": [
+      754,
+      671
+    ],
+    "frames": [
+      {
+        "source": "visual/v4/map-paper-750.png",
+        "sourceRect": [
+          0,
+          667,
+          750,
+          667
+        ],
+        "name": "map-bottom",
+        "uuid": "4ba0080f-fb3a-5e84-90bb-ac9a83b86b2e@4239e",
+        "rect": [
+          2,
+          2,
+          750,
+          667
+        ],
+        "originalSize": [
+          750,
+          667
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/controls": {
+    "rawHash": "92593c7230c6305e52660cf383d01004f3549d0c827e3fa91ecbc4321d07852c",
+    "imageUuid": "fe617cc0-f0a6-56eb-b9b6-479f1b4dcc28",
+    "size": [
+      1013,
+      427
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          21,
+          1028,
+          351,
+          149
+        ],
+        "name": "primary",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@351a2",
+        "rect": [
+          2,
+          2,
+          351,
+          149
+        ],
+        "originalSize": [
+          351,
+          149
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 45,
+          "Bottom": 45,
+          "Left": 55,
+          "Right": 55
+        }
+      },
+      {
+        "source": "visual/v2/keys-native-original.png",
+        "sourceRect": [
+          326,
+          317,
+          288,
+          76
+        ],
+        "name": "rule-classic-4",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@16e81",
+        "rect": [
+          357,
+          2,
+          230,
+          61
+        ],
+        "originalSize": [
+          230,
+          61
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/keys-nine-original.png",
+        "sourceRect": [
+          326,
+          317,
+          288,
+          76
+        ],
+        "name": "rule-classic-9",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@e7f8a",
+        "rect": [
+          591,
+          2,
+          230,
+          61
+        ],
+        "originalSize": [
+          230,
+          61
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          911,
+          145,
+          335,
+          146
+        ],
+        "name": "rule-chip",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@0441e",
+        "rect": [
+          357,
+          67,
+          228,
+          99
+        ],
+        "originalSize": [
+          228,
+          99
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 31,
+          "Bottom": 31,
+          "Left": 37,
+          "Right": 37
+        }
+      },
+      {
+        "source": "visual/v2/guide-exact-original.png",
+        "sourceRect": [
+          301,
+          564,
+          393,
+          739
+        ],
+        "name": "guide-arrow",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@821d6",
+        "rect": [
+          825,
+          2,
+          120,
+          226
+        ],
+        "originalSize": [
+          120,
+          226
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          958,
+          962,
+          279,
+          269
+        ],
+        "name": "stamp",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@98a67",
+        "rect": [
+          589,
+          67,
+          160,
+          154
+        ],
+        "originalSize": [
+          160,
+          154
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          377,
+          1032,
+          273,
+          134
+        ],
+        "name": "tape-peach",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@a75fa",
+        "rect": [
+          2,
+          155,
+          160,
+          79
+        ],
+        "originalSize": [
+          160,
+          79
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          660,
+          1042,
+          297,
+          133
+        ],
+        "name": "tape-sage",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@2fc0b",
+        "rect": [
+          166,
+          155,
+          160,
+          72
+        ],
+        "originalSize": [
+          160,
+          72
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/selected-exact-original.png",
+        "sourceRect": [
+          141,
+          134,
+          983,
+          976
+        ],
+        "name": "cell-selected",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@d8e67",
+        "rect": [
+          330,
+          170,
+          155,
+          154
+        ],
+        "originalSize": [
+          155,
+          154
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/keys-four-alpha-original.png",
+        "sourceRect": [
+          72,
+          1370,
+          200,
+          186
+        ],
+        "name": "key",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@388cd",
+        "rect": [
+          166,
+          231,
+          149,
+          139
+        ],
+        "originalSize": [
+          149,
+          139
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/keys-four-alpha-original.png",
+        "sourceRect": [
+          272,
+          1370,
+          200,
+          186
+        ],
+        "name": "key-selected",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@6cda5",
+        "rect": [
+          2,
+          238,
+          149,
+          139
+        ],
+        "originalSize": [
+          149,
+          139
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/keys-nine-alpha-original.png",
+        "sourceRect": [
+          110,
+          1364,
+          144,
+          115
+        ],
+        "name": "key-wide",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@76d78",
+        "rect": [
+          489,
+          225,
+          115,
+          92
+        ],
+        "originalSize": [
+          115,
+          92
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/keys-nine-alpha-original.png",
+        "sourceRect": [
+          257,
+          1364,
+          144,
+          115
+        ],
+        "name": "key-wide-selected",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@c6c8d",
+        "rect": [
+          608,
+          225,
+          115,
+          92
+        ],
+        "originalSize": [
+          115,
+          92
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/gameplay-reference.png",
+        "sourceRect": [
+          722,
+          150,
+          125,
+          124
+        ],
+        "name": "pause-button",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@4ddde",
+        "rect": [
+          727,
+          232,
+          98,
+          97
+        ],
+        "originalSize": [
+          98,
+          97
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/gameplay-reference.png",
+        "sourceRect": [
+          95,
+          150,
+          127,
+          124
+        ],
+        "name": "back-button",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@32fe2",
+        "rect": [
+          829,
+          232,
+          98,
+          96
+        ],
+        "originalSize": [
+          98,
+          96
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          650,
+          98,
+          246,
+          244
+        ],
+        "name": "square",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@2cdd0",
+        "rect": [
+          829,
+          332,
+          94,
+          93
+        ],
+        "originalSize": [
+          94,
+          93
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 17,
+          "Bottom": 17,
+          "Left": 21,
+          "Right": 21
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          945,
+          690,
+          287,
+          265
+        ],
+        "name": "hint",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@eed59",
+        "rect": [
+          931,
+          232,
+          80,
+          74
+        ],
+        "originalSize": [
+          80,
+          74
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          675,
+          716,
+          201,
+          225
+        ],
+        "name": "note",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@ac507",
+        "rect": [
+          753,
+          67,
+          62,
+          69
+        ],
+        "originalSize": [
+          62,
+          69
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/keys-native-original.png",
+        "sourceRect": [
+          632,
+          316,
+          85,
+          78
+        ],
+        "name": "help-button",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@68e9e",
+        "rect": [
+          753,
+          140,
+          68,
+          62
+        ],
+        "originalSize": [
+          68,
+          62
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          80,
+          727,
+          201,
+          216
+        ],
+        "name": "undo",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@257bc",
+        "rect": [
+          949,
+          2,
+          62,
+          67
+        ],
+        "originalSize": [
+          62,
+          67
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          377,
+          719,
+          219,
+          220
+        ],
+        "name": "erase",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@2b574",
+        "rect": [
+          949,
+          73,
+          62,
+          62
+        ],
+        "originalSize": [
+          62,
+          62
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/controls-original.png",
+        "sourceRect": [
+          705,
+          434,
+          163,
+          199
+        ],
+        "name": "lock",
+        "uuid": "8fd0f19b-e3ac-5139-bd2d-e1190da7d67c@d1068",
+        "rect": [
+          489,
+          170,
+          29,
+          35
+        ],
+        "originalSize": [
+          29,
+          35
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panels": {
+    "rawHash": "42483105a0eacf781b2d48b64f34cdc0fb82e8476950cf194ed8eb5c01fd4e79",
+    "imageUuid": "700b4c24-ffae-5b9d-b3e6-37dd1812f967",
+    "size": [
+      654,
+      900
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panels-original.png",
+        "sourceRect": [
+          38,
+          84,
+          668,
+          921
+        ],
+        "name": "panel-victory",
+        "uuid": "0c52af63-d99f-59f4-9977-d26e35d9cdbf@b5e9f",
+        "rect": [
+          2,
+          2,
+          650,
+          896
+        ],
+        "originalSize": [
+          650,
+          896
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panels-2": {
+    "rawHash": "64e54935135ba64312cfeec8f8efc49188838cfe77b167586b66ffd23e7af26a",
+    "imageUuid": "9b64fc87-70a5-5d29-bd5a-c476428bf166",
+    "size": [
+      654,
+      891
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panels-original.png",
+        "sourceRect": [
+          743,
+          94,
+          669,
+          913
+        ],
+        "name": "panel-pause",
+        "uuid": "2fa4314d-4a0e-54a1-849a-4edfe1566ba4@34811",
+        "rect": [
+          2,
+          2,
+          650,
+          887
+        ],
+        "originalSize": [
+          650,
+          887
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/extras": {
+    "rawHash": "9ed81bcc7b1382f836cf17d24333e53f3dbb32038f49faada2ed8351bc3b8a6d",
+    "imageUuid": "8dd66677-0771-5f39-a5d5-e47040d22f49",
+    "size": [
+      972,
+      185
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          963,
+          1018,
+          266,
+          139
+        ],
+        "name": "best-badge",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@324d2",
+        "rect": [
+          2,
+          2,
+          120,
+          63
+        ],
+        "originalSize": [
+          120,
+          63
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          702,
+          51,
+          144,
+          259
+        ],
+        "name": "thermo",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@8ffeb",
+        "rect": [
+          126,
+          2,
+          64,
+          115
+        ],
+        "originalSize": [
+          64,
+          115
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          1022,
+          653,
+          156,
+          279
+        ],
+        "name": "sound",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@0d4bb",
+        "rect": [
+          2,
+          69,
+          64,
+          114
+        ],
+        "originalSize": [
+          64,
+          114
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          641,
+          368,
+          256,
+          256
+        ],
+        "name": "clock",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@01cb3",
+        "rect": [
+          194,
+          2,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          93,
+          103,
+          120,
+          178
+        ],
+        "name": "back",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@40c10",
+        "rect": [
+          294,
+          2,
+          64,
+          95
+        ],
+        "originalSize": [
+          64,
+          95
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          402,
+          106,
+          140,
+          164
+        ],
+        "name": "pause",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@e9ec9",
+        "rect": [
+          362,
+          2,
+          64,
+          75
+        ],
+        "originalSize": [
+          64,
+          75
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          57,
+          379,
+          201,
+          219
+        ],
+        "name": "cage",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@9acbb",
+        "rect": [
+          430,
+          2,
+          64,
+          70
+        ],
+        "originalSize": [
+          64,
+          70
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          369,
+          696,
+          198,
+          191
+        ],
+        "name": "restart",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@8c1c4",
+        "rect": [
+          498,
+          2,
+          64,
+          62
+        ],
+        "originalSize": [
+          64,
+          62
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          52,
+          686,
+          213,
+          204
+        ],
+        "name": "house",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@2de81",
+        "rect": [
+          566,
+          2,
+          64,
+          61
+        ],
+        "originalSize": [
+          64,
+          61
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          344,
+          366,
+          259,
+          240
+        ],
+        "name": "arrow",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@95d3a",
+        "rect": [
+          634,
+          2,
+          64,
+          59
+        ],
+        "originalSize": [
+          64,
+          59
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          691,
+          709,
+          211,
+          174
+        ],
+        "name": "music",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@19b40",
+        "rect": [
+          702,
+          2,
+          64,
+          53
+        ],
+        "originalSize": [
+          64,
+          53
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          963,
+          396,
+          263,
+          202
+        ],
+        "name": "book",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@82267",
+        "rect": [
+          770,
+          2,
+          64,
+          49
+        ],
+        "originalSize": [
+          64,
+          49
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          976,
+          113,
+          244,
+          152
+        ],
+        "name": "kropki",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@49c20",
+        "rect": [
+          838,
+          2,
+          64,
+          40
+        ],
+        "originalSize": [
+          64,
+          40
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/extras-original.png",
+        "sourceRect": [
+          39,
+          1037,
+          244,
+          123
+        ],
+        "name": "tape-blue",
+        "uuid": "a92b1980-97b9-508b-973a-1a4720557314@788c4",
+        "rect": [
+          906,
+          2,
+          64,
+          32
+        ],
+        "originalSize": [
+          64,
+          32
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/digits": {
+    "rawHash": "49762ca2d1393d5835d4394206aa584b75f7d648d6c0d74982cecb55c2974643",
+    "imageUuid": "070255de-aa0b-53f1-ac3a-548687da0f4e",
+    "size": [
+      132,
+      1011
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          648,
+          411,
+          162,
+          225
+        ],
+        "name": "digit-6",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@64a48",
+        "rect": [
+          2,
+          2,
+          58,
+          81
+        ],
+        "originalSize": [
+          58,
+          81
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          648,
+          90,
+          155,
+          223
+        ],
+        "name": "digit-3",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@acac8",
+        "rect": [
+          2,
+          87,
+          56,
+          81
+        ],
+        "originalSize": [
+          56,
+          81
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          98,
+          99,
+          93,
+          214
+        ],
+        "name": "digit-1",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@bb145",
+        "rect": [
+          2,
+          172,
+          35,
+          81
+        ],
+        "originalSize": [
+          35,
+          81
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          91,
+          1589,
+          145,
+          164
+        ],
+        "name": "digit-7-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@680a6",
+        "rect": [
+          2,
+          257,
+          71,
+          80
+        ],
+        "originalSize": [
+          71,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          72,
+          1309,
+          185,
+          219
+        ],
+        "name": "digit-4-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@a118a",
+        "rect": [
+          41,
+          172,
+          68,
+          80
+        ],
+        "originalSize": [
+          68,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          653,
+          1581,
+          144,
+          172
+        ],
+        "name": "digit-9-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@40159",
+        "rect": [
+          62,
+          87,
+          67,
+          80
+        ],
+        "originalSize": [
+          67,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          72,
+          413,
+          185,
+          223
+        ],
+        "name": "digit-4",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@8dd29",
+        "rect": [
+          64,
+          2,
+          66,
+          80
+        ],
+        "originalSize": [
+          66,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          370,
+          1581,
+          142,
+          172
+        ],
+        "name": "digit-8-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@3328b",
+        "rect": [
+          2,
+          341,
+          66,
+          80
+        ],
+        "originalSize": [
+          66,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          364,
+          1018,
+          159,
+          213
+        ],
+        "name": "digit-2-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@ac3fb",
+        "rect": [
+          2,
+          425,
+          60,
+          80
+        ],
+        "originalSize": [
+          60,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          364,
+          92,
+          159,
+          215
+        ],
+        "name": "digit-2",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@47bfc",
+        "rect": [
+          2,
+          509,
+          59,
+          80
+        ],
+        "originalSize": [
+          59,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          362,
+          726,
+          161,
+          218
+        ],
+        "name": "digit-8",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@3877b",
+        "rect": [
+          2,
+          593,
+          59,
+          80
+        ],
+        "originalSize": [
+          59,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          646,
+          1305,
+          162,
+          224
+        ],
+        "name": "digit-6-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@c30df",
+        "rect": [
+          2,
+          677,
+          58,
+          80
+        ],
+        "originalSize": [
+          58,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          83,
+          735,
+          155,
+          213
+        ],
+        "name": "digit-7",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@5eaa1",
+        "rect": [
+          2,
+          761,
+          58,
+          80
+        ],
+        "originalSize": [
+          58,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          646,
+          726,
+          159,
+          219
+        ],
+        "name": "digit-9",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@9fd96",
+        "rect": [
+          2,
+          845,
+          58,
+          80
+        ],
+        "originalSize": [
+          58,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          647,
+          1018,
+          156,
+          220
+        ],
+        "name": "digit-3-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@b9d0f",
+        "rect": [
+          2,
+          929,
+          57,
+          80
+        ],
+        "originalSize": [
+          57,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          368,
+          1310,
+          152,
+          218
+        ],
+        "name": "digit-5-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@0801c",
+        "rect": [
+          63,
+          929,
+          56,
+          80
+        ],
+        "originalSize": [
+          56,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          368,
+          415,
+          152,
+          221
+        ],
+        "name": "digit-5",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@35de9",
+        "rect": [
+          64,
+          677,
+          55,
+          80
+        ],
+        "originalSize": [
+          55,
+          80
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/ink-digits-refined-original.png",
+        "sourceRect": [
+          97,
+          1025,
+          94,
+          213
+        ],
+        "name": "digit-1-green",
+        "uuid": "364269b9-13b1-5ee5-9e1a-50dfbab6f819@2ee9d",
+        "rect": [
+          65,
+          509,
+          35,
+          79
+        ],
+        "originalSize": [
+          35,
+          79
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/materials": {
+    "rawHash": "449fadf2fc2be5bd5a655e5bb2cda04e1f78320b745a5068ea90f910b3b66582",
+    "imageUuid": "056af480-77d0-558d-b7ac-3422cd8969f6",
+    "size": [
+      847,
+      619
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/materials-original.png",
+        "sourceRect": [
+          16,
+          368,
+          856,
+          334
+        ],
+        "name": "inset",
+        "uuid": "5093e500-811e-5bf5-9513-0240c82cd339@90953",
+        "rect": [
+          2,
+          2,
+          575,
+          224
+        ],
+        "originalSize": [
+          575,
+          224
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 32,
+          "Bottom": 32,
+          "Left": 67,
+          "Right": 67
+        }
+      },
+      {
+        "source": "visual/v2/materials-original.png",
+        "sourceRect": [
+          24,
+          1276,
+          840,
+          198
+        ],
+        "name": "secondary-cream",
+        "uuid": "5093e500-811e-5bf5-9513-0240c82cd339@bfaba",
+        "rect": [
+          2,
+          230,
+          550,
+          130
+        ],
+        "originalSize": [
+          550,
+          130
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 32,
+          "Bottom": 32,
+          "Left": 65,
+          "Right": 65
+        }
+      },
+      {
+        "source": "visual/v2/materials-original.png",
+        "sourceRect": [
+          20,
+          94,
+          852,
+          194
+        ],
+        "name": "sage-button",
+        "uuid": "5093e500-811e-5bf5-9513-0240c82cd339@c167b",
+        "rect": [
+          2,
+          364,
+          550,
+          125
+        ],
+        "originalSize": [
+          550,
+          125
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 31,
+          "Bottom": 31,
+          "Left": 65,
+          "Right": 65
+        }
+      },
+      {
+        "source": "visual/v2/materials-original.png",
+        "sourceRect": [
+          14,
+          769,
+          860,
+          194
+        ],
+        "name": "secondary-gray",
+        "uuid": "5093e500-811e-5bf5-9513-0240c82cd339@974de",
+        "rect": [
+          2,
+          493,
+          550,
+          124
+        ],
+        "originalSize": [
+          550,
+          124
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 31,
+          "Bottom": 31,
+          "Left": 64,
+          "Right": 64
+        }
+      },
+      {
+        "source": "visual/v2/materials-original.png",
+        "sourceRect": [
+          137,
+          1028,
+          613,
+          197
+        ],
+        "name": "secondary-peach",
+        "uuid": "5093e500-811e-5bf5-9513-0240c82cd339@69783",
+        "rect": [
+          581,
+          2,
+          264,
+          85
+        ],
+        "originalSize": [
+          264,
+          85
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 21,
+          "Bottom": 21,
+          "Left": 43,
+          "Right": 43
+        }
+      },
+      {
+        "source": "visual/v2/materials-original.png",
+        "sourceRect": [
+          210,
+          1522,
+          471,
+          177
+        ],
+        "name": "badge",
+        "uuid": "5093e500-811e-5bf5-9513-0240c82cd339@d758c",
+        "rect": [
+          581,
+          91,
+          184,
+          69
+        ],
+        "originalSize": [
+          184,
+          69
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 19,
+          "Bottom": 19,
+          "Left": 39,
+          "Right": 39
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/geometry": {
+    "rawHash": "d17ca4788abeaa953dcdc29d2d5118ead04f44f20cb3fa6169cca7c588f6f08f",
+    "imageUuid": "1c059477-a1d5-502a-b31e-584d682d8b10",
+    "size": [
+      713,
+      220
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          581,
+          1022,
+          367,
+          160
+        ],
+        "name": "rule-brush",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@42fe6",
+        "rect": [
+          2,
+          2,
+          228,
+          99
+        ],
+        "originalSize": [
+          228,
+          99
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          984,
+          947,
+          255,
+          257
+        ],
+        "name": "cell-highlight",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@951d1",
+        "rect": [
+          234,
+          2,
+          155,
+          156
+        ],
+        "originalSize": [
+          155,
+          156
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          720,
+          99,
+          162,
+          286
+        ],
+        "name": "thermo-icon",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@31aaf",
+        "rect": [
+          2,
+          105,
+          64,
+          113
+        ],
+        "originalSize": [
+          64,
+          113
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          946,
+          458,
+          293,
+          171
+        ],
+        "name": "switch-on",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@427ef",
+        "rect": [
+          70,
+          105,
+          104,
+          61
+        ],
+        "originalSize": [
+          104,
+          61
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          24,
+          724,
+          289,
+          165
+        ],
+        "name": "switch-off",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@23ca0",
+        "rect": [
+          393,
+          2,
+          104,
+          59
+        ],
+        "originalSize": [
+          104,
+          59
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          25,
+          942,
+          252,
+          241
+        ],
+        "name": "hint-gold",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@9ba59",
+        "rect": [
+          501,
+          2,
+          74,
+          71
+        ],
+        "originalSize": [
+          74,
+          71
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          680,
+          707,
+          215,
+          211
+        ],
+        "name": "erase-peach",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@7f61a",
+        "rect": [
+          393,
+          65,
+          64,
+          63
+        ],
+        "originalSize": [
+          64,
+          63
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          366,
+          716,
+          202,
+          193
+        ],
+        "name": "undo-green",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@4e346",
+        "rect": [
+          579,
+          2,
+          64,
+          61
+        ],
+        "originalSize": [
+          64,
+          61
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          993,
+          705,
+          215,
+          202
+        ],
+        "name": "note-blue",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@11ec8",
+        "rect": [
+          647,
+          2,
+          64,
+          60
+        ],
+        "originalSize": [
+          64,
+          60
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          365,
+          1016,
+          175,
+          174
+        ],
+        "name": "switch-thumb",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@97054",
+        "rect": [
+          178,
+          105,
+          42,
+          42
+        ],
+        "originalSize": [
+          42,
+          42
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          710,
+          481,
+          137,
+          136
+        ],
+        "name": "dot-black",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@3f772",
+        "rect": [
+          461,
+          65,
+          24,
+          24
+        ],
+        "originalSize": [
+          24,
+          24
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v2/geometry-original.png",
+        "sourceRect": [
+          398,
+          482,
+          134,
+          133
+        ],
+        "name": "dot-white",
+        "uuid": "d850929f-3a7b-58ac-bb60-088842bd6e28@399dc",
+        "rect": [
+          178,
+          151,
+          24,
+          24
+        ],
+        "originalSize": [
+          24,
+          24
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panel-exact-thermo": {
+    "rawHash": "758df826fc67689c3478adce48fcaf41e3adfa67ada64b27e2d0104d09db6d6e",
+    "imageUuid": "c4eddab6-9edc-5a88-a34f-60c8e102c633",
+    "size": [
+      646,
+      863
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panel-exact-thermo-750.png",
+        "sourceRect": [
+          58,
+          239,
+          642,
+          859
+        ],
+        "name": "panel-exact-thermo",
+        "uuid": "ca671392-02d2-5f8e-a223-5e11d407164f@82484",
+        "rect": [
+          2,
+          2,
+          642,
+          859
+        ],
+        "originalSize": [
+          642,
+          859
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panel-exact-kropki": {
+    "rawHash": "906287a2fca3a1925de09ca120eb99162a33801d61b632861d17efabf60948db",
+    "imageUuid": "7a83ef90-2cc7-5f87-b86b-d442894c35bb",
+    "size": [
+      630,
+      897
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panel-exact-kropki-750.png",
+        "sourceRect": [
+          32,
+          188,
+          694,
+          990
+        ],
+        "name": "panel-exact-kropki",
+        "uuid": "cd614a7e-79cc-59a7-9212-853cd4809bdf@73ffe",
+        "rect": [
+          2,
+          2,
+          626,
+          893
+        ],
+        "originalSize": [
+          626,
+          893
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panel-exact-cage": {
+    "rawHash": "66c2062f233a689876e01a348119b4785e8231e9de5d17dba903378aceb9b150",
+    "imageUuid": "17c5fffe-7505-5da3-95b0-b16e71965152",
+    "size": [
+      700,
+      975
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panel-exact-cage-750.png",
+        "sourceRect": [
+          28,
+          184,
+          696,
+          971
+        ],
+        "name": "panel-exact-cage",
+        "uuid": "f4d8fbb9-2e4b-58de-b456-de5db8ff6148@f53bb",
+        "rect": [
+          2,
+          2,
+          696,
+          971
+        ],
+        "originalSize": [
+          696,
+          971
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panel-exact-arrow": {
+    "rawHash": "f7fa1594838fcf4ff870cf98ac29856678f1be91de75658372b537abe16bb313",
+    "imageUuid": "57e8d052-1f6a-571f-8300-2f92fc15f264",
+    "size": [
+      671,
+      892
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panel-exact-arrow-750.png",
+        "sourceRect": [
+          42,
+          239,
+          667,
+          888
+        ],
+        "name": "panel-exact-arrow",
+        "uuid": "78f2c82e-8b4c-5631-b709-859094f8438b@e91c8",
+        "rect": [
+          2,
+          2,
+          667,
+          888
+        ],
+        "originalSize": [
+          667,
+          888
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v2/panel-exact-victory": {
+    "rawHash": "76b2acf924f58f6a896cb2a193a6b9977b242876a95f5dd6f7444fcc47b5ab93",
+    "imageUuid": "68a04386-5ef3-5ffe-b4cf-3a56b362591b",
+    "size": [
+      654,
+      870
+    ],
+    "frames": [
+      {
+        "source": "visual/v2/panel-exact-victory-750.png",
+        "sourceRect": [
+          50,
+          269,
+          650,
+          866
+        ],
+        "name": "panel-exact-victory",
+        "uuid": "1cf4ddf8-1b03-5bc4-a109-1a91015169c6@f8ebf",
+        "rect": [
+          2,
+          2,
+          650,
+          866
+        ],
+        "originalSize": [
+          650,
+          866
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v3/pause": {
+    "rawHash": "4004c8ac6b6da75a45c375fe2bb9c67b389c64669a2620f2648c7334ed305495",
+    "imageUuid": "4d23a25a-013b-55d9-803d-b68a15270f98",
+    "size": [
+      604,
+      745
+    ],
+    "frames": [
+      {
+        "source": "visual/v6/pause-three-original.png",
+        "sourceRect": [
+          132,
+          200,
+          867,
+          1071
+        ],
+        "name": "panel-exact-pause",
+        "uuid": "3d2b2e31-5236-544b-a993-c8cba2fa2cd6@e7588",
+        "rect": [
+          2,
+          2,
+          600,
+          741
+        ],
+        "originalSize": [
+          600,
+          741
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v4/map-route": {
+    "rawHash": "77441ac45e4ab539d029c1e6a4d335b120b318344bd94b43de179bdee976a067",
+    "imageUuid": "f8c71435-f47f-57bc-8fc1-428577293c19",
+    "size": [
+      548,
+      938
+    ],
+    "frames": [
+      {
+        "source": "visual/v4/map-route-750.png",
+        "sourceRect": [
+          260,
+          300,
+          240,
+          650
+        ],
+        "name": "page-route",
+        "uuid": "7766a58d-6aaa-5871-853e-33bb5b61b271@8fbb1",
+        "rect": [
+          2,
+          2,
+          240,
+          650
+        ],
+        "originalSize": [
+          240,
+          650
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v4/map-route-750.png",
+        "sourceRect": [
+          0,
+          321,
+          260,
+          440
+        ],
+        "name": "map-stairs",
+        "uuid": "7766a58d-6aaa-5871-853e-33bb5b61b271@fb3f9",
+        "rect": [
+          246,
+          2,
+          260,
+          440
+        ],
+        "originalSize": [
+          260,
+          440
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v4/map-route-750.png",
+        "sourceRect": [
+          450,
+          678,
+          300,
+          404
+        ],
+        "name": "map-cottage",
+        "uuid": "7766a58d-6aaa-5871-853e-33bb5b61b271@78611",
+        "rect": [
+          246,
+          446,
+          300,
+          404
+        ],
+        "originalSize": [
+          300,
+          404
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v3/rule-loop-original.png",
+        "sourceRect": [
+          91,
+          113,
+          1403,
+          766
+        ],
+        "name": "rule-loop",
+        "uuid": "7766a58d-6aaa-5871-853e-33bb5b61b271@af960",
+        "rect": [
+          2,
+          854,
+          150,
+          82
+        ],
+        "originalSize": [
+          150,
+          82
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v4/map-ui": {
+    "rawHash": "d2c5bbc3bf131fd12f252e77dfc354b733459f5c8dd6e9a1ff608ef8ff1973d7",
+    "imageUuid": "629ad09e-fa5a-5e4d-9b6d-df78aa7fc9b3",
+    "size": [
+      1016,
+      339
+    ],
+    "frames": [
+      {
+        "source": "visual/v4/map-pieces-original.png",
+        "sourceRect": [
+          28,
+          1111,
+          789,
+          201
+        ],
+        "name": "map-primary",
+        "uuid": "aeb56730-424d-5aed-8679-f506327d5281@ba50d",
+        "rect": [
+          2,
+          2,
+          550,
+          140
+        ],
+        "originalSize": [
+          550,
+          140
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/title-original.png",
+        "sourceRect": [
+          138,
+          213,
+          1809,
+          375
+        ],
+        "name": "map-title",
+        "uuid": "aeb56730-424d-5aed-8679-f506327d5281@39676",
+        "rect": [
+          556,
+          2,
+          420,
+          87
+        ],
+        "originalSize": [
+          420,
+          87
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v4/map-pieces-original.png",
+        "sourceRect": [
+          641,
+          215,
+          417,
+          253
+        ],
+        "name": "rule-tag",
+        "uuid": "aeb56730-424d-5aed-8679-f506327d5281@e2bc2",
+        "rect": [
+          556,
+          93,
+          250,
+          152
+        ],
+        "originalSize": [
+          250,
+          152
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v4/map-pieces-original.png",
+        "sourceRect": [
+          639,
+          595,
+          393,
+          360
+        ],
+        "name": "level-active",
+        "uuid": "aeb56730-424d-5aed-8679-f506327d5281@d355f",
+        "rect": [
+          810,
+          93,
+          155,
+          142
+        ],
+        "originalSize": [
+          155,
+          142
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v4/map-pieces-original.png",
+        "sourceRect": [
+          164,
+          658,
+          276,
+          277
+        ],
+        "name": "level",
+        "uuid": "aeb56730-424d-5aed-8679-f506327d5281@c467d",
+        "rect": [
+          810,
+          239,
+          98,
+          98
+        ],
+        "originalSize": [
+          98,
+          98
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v4/map-pieces-original.png",
+        "sourceRect": [
+          900,
+          1132,
+          155,
+          155
+        ],
+        "name": "check",
+        "uuid": "aeb56730-424d-5aed-8679-f506327d5281@09987",
+        "rect": [
+          980,
+          2,
+          34,
+          34
+        ],
+        "originalSize": [
+          34,
+          34
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v5/map-decors-a": {
+    "rawHash": "83407971c9c1446d25268e068b05bce59b8bf2b018f25a23594b375a81f20f55",
+    "imageUuid": "9130f4ff-a3da-5285-b925-2ee8b9e0c323",
+    "size": [
+      916,
+      355
+    ],
+    "frames": [
+      {
+        "source": "visual/v5/decor-a-original.png",
+        "sourceRect": [
+          595,
+          550,
+          438,
+          403
+        ],
+        "name": "map-decor-a-1-right",
+        "uuid": "ac2d1481-1be2-5cbe-828f-2d4cb8281702@199ef",
+        "rect": [
+          2,
+          2,
+          230,
+          212
+        ],
+        "originalSize": [
+          230,
+          212
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-a-original.png",
+        "sourceRect": [
+          584,
+          84,
+          449,
+          379
+        ],
+        "name": "map-decor-a-0-right",
+        "uuid": "ac2d1481-1be2-5cbe-828f-2d4cb8281702@6512e",
+        "rect": [
+          236,
+          2,
+          230,
+          194
+        ],
+        "originalSize": [
+          230,
+          194
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-a-original.png",
+        "sourceRect": [
+          586,
+          1094,
+          477,
+          286
+        ],
+        "name": "map-decor-a-2-right",
+        "uuid": "ac2d1481-1be2-5cbe-828f-2d4cb8281702@8dab1",
+        "rect": [
+          470,
+          2,
+          230,
+          138
+        ],
+        "originalSize": [
+          230,
+          138
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-a-original.png",
+        "sourceRect": [
+          72,
+          566,
+          360,
+          390
+        ],
+        "name": "map-decor-a-1-left",
+        "uuid": "ac2d1481-1be2-5cbe-828f-2d4cb8281702@8b534",
+        "rect": [
+          704,
+          2,
+          210,
+          228
+        ],
+        "originalSize": [
+          210,
+          228
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-a-original.png",
+        "sourceRect": [
+          86,
+          137,
+          355,
+          324
+        ],
+        "name": "map-decor-a-0-left",
+        "uuid": "ac2d1481-1be2-5cbe-828f-2d4cb8281702@04bb0",
+        "rect": [
+          470,
+          144,
+          210,
+          192
+        ],
+        "originalSize": [
+          210,
+          192
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-a-original.png",
+        "sourceRect": [
+          27,
+          1032,
+          486,
+          354
+        ],
+        "name": "map-decor-a-2-left",
+        "uuid": "ac2d1481-1be2-5cbe-828f-2d4cb8281702@24017",
+        "rect": [
+          236,
+          200,
+          210,
+          153
+        ],
+        "originalSize": [
+          210,
+          153
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v5/map-decors-b": {
+    "rawHash": "08e10d83eb932af0892784de0aa6305246fed9fc31935271381a44b32be9e0bc",
+    "imageUuid": "41265438-65d7-5167-9fcd-32a128795765",
+    "size": [
+      428,
+      1006
+    ],
+    "frames": [
+      {
+        "source": "visual/v5/decor-b-original.png",
+        "sourceRect": [
+          704,
+          995,
+          301,
+          384
+        ],
+        "name": "map-decor-b-2-right",
+        "uuid": "4cf86022-455f-5ab4-8a9e-562b9f8de448@01242",
+        "rect": [
+          2,
+          2,
+          230,
+          293
+        ],
+        "originalSize": [
+          230,
+          293
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-b-original.png",
+        "sourceRect": [
+          604,
+          148,
+          435,
+          359
+        ],
+        "name": "map-decor-b-0-right",
+        "uuid": "4cf86022-455f-5ab4-8a9e-562b9f8de448@9878c",
+        "rect": [
+          2,
+          299,
+          230,
+          190
+        ],
+        "originalSize": [
+          230,
+          190
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-b-original.png",
+        "sourceRect": [
+          572,
+          638,
+          472,
+          280
+        ],
+        "name": "map-decor-b-1-right",
+        "uuid": "4cf86022-455f-5ab4-8a9e-562b9f8de448@11427",
+        "rect": [
+          2,
+          493,
+          230,
+          136
+        ],
+        "originalSize": [
+          230,
+          136
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-b-original.png",
+        "sourceRect": [
+          43,
+          65,
+          467,
+          436
+        ],
+        "name": "map-decor-b-0-left",
+        "uuid": "4cf86022-455f-5ab4-8a9e-562b9f8de448@b8f90",
+        "rect": [
+          2,
+          633,
+          210,
+          196
+        ],
+        "originalSize": [
+          210,
+          196
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-b-original.png",
+        "sourceRect": [
+          49,
+          966,
+          484,
+          395
+        ],
+        "name": "map-decor-b-2-left",
+        "uuid": "4cf86022-455f-5ab4-8a9e-562b9f8de448@8fdd7",
+        "rect": [
+          2,
+          833,
+          210,
+          171
+        ],
+        "originalSize": [
+          210,
+          171
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v5/decor-b-original.png",
+        "sourceRect": [
+          45,
+          616,
+          472,
+          298
+        ],
+        "name": "map-decor-b-1-left",
+        "uuid": "4cf86022-455f-5ab4-8a9e-562b9f8de448@8f86b",
+        "rect": [
+          216,
+          633,
+          210,
+          133
+        ],
+        "originalSize": [
+          210,
+          133
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v6/glyphs": {
+    "rawHash": "b551f9973b8a89c30f7b7d38ea62ca55995cb2af0dd98b02e412b16e0fd77ed8",
+    "imageUuid": "38713d4d-4abe-5301-8eb5-d37833a9720f",
+    "size": [
+      30,
+      101
+    ],
+    "frames": [
+      {
+        "source": "visual/v6/centered-glyphs-original.png",
+        "sourceRect": [
+          296,
+          210,
+          193,
+          307
+        ],
+        "name": "nav-left",
+        "uuid": "4dbc018b-8189-5052-9336-a32af255ab89@8ae07",
+        "rect": [
+          2,
+          2,
+          20,
+          32
+        ],
+        "originalSize": [
+          20,
+          32
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v6/centered-glyphs-original.png",
+        "sourceRect": [
+          979,
+          210,
+          193,
+          307
+        ],
+        "name": "nav-right",
+        "uuid": "4dbc018b-8189-5052-9336-a32af255ab89@6bc31",
+        "rect": [
+          2,
+          38,
+          20,
+          32
+        ],
+        "originalSize": [
+          20,
+          32
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v6/centered-glyphs-original.png",
+        "sourceRect": [
+          1618,
+          218,
+          303,
+          293
+        ],
+        "name": "close",
+        "uuid": "4dbc018b-8189-5052-9336-a32af255ab89@73467",
+        "rect": [
+          2,
+          74,
+          26,
+          25
+        ],
+        "originalSize": [
+          26,
+          25
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v9/board-rules": {
+    "rawHash": "0f3524192b9b3879995d78b8723a4018d4079842c2e2674b8e0f91ab5f6036dd",
+    "imageUuid": "3e037f4d-1561-50fb-a213-2a4d23cf5c02",
+    "size": [
+      403,
+      142
+    ],
+    "frames": [
+      {
+        "source": "visual/v9/board-rules-original.png",
+        "sourceRect": [
+          530,
+          246,
+          428,
+          86
+        ],
+        "name": "thermo-pipe",
+        "uuid": "5b2b9cc1-9a68-5574-bd40-ee0138cb54f8@8a612",
+        "rect": [
+          2,
+          2,
+          169,
+          34
+        ],
+        "originalSize": [
+          169,
+          34
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v9/board-rules-original.png",
+        "sourceRect": [
+          572,
+          594,
+          341,
+          341
+        ],
+        "name": "arrow-circle",
+        "uuid": "5b2b9cc1-9a68-5574-bd40-ee0138cb54f8@c4ba4",
+        "rect": [
+          175,
+          2,
+          132,
+          132
+        ],
+        "originalSize": [
+          132,
+          132
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v9/board-rules-original.png",
+        "sourceRect": [
+          86,
+          128,
+          315,
+          315
+        ],
+        "name": "thermo-bulb",
+        "uuid": "5b2b9cc1-9a68-5574-bd40-ee0138cb54f8@5ac30",
+        "rect": [
+          2,
+          40,
+          100,
+          100
+        ],
+        "originalSize": [
+          100,
+          100
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v9/board-rules-original.png",
+        "sourceRect": [
+          550,
+          1078,
+          337,
+          337
+        ],
+        "name": "number-backing",
+        "uuid": "5b2b9cc1-9a68-5574-bd40-ee0138cb54f8@f2594",
+        "rect": [
+          311,
+          2,
+          90,
+          90
+        ],
+        "originalSize": [
+          90,
+          90
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v9/board-rules-original.png",
+        "sourceRect": [
+          199,
+          1136,
+          126,
+          221
+        ],
+        "name": "arrow-head",
+        "uuid": "5b2b9cc1-9a68-5574-bd40-ee0138cb54f8@5d4dc",
+        "rect": [
+          106,
+          40,
+          24,
+          42
+        ],
+        "originalSize": [
+          24,
+          42
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v9/board-rules-original.png",
+        "sourceRect": [
+          90,
+          615,
+          304,
+          304
+        ],
+        "name": "thermo-joint",
+        "uuid": "5b2b9cc1-9a68-5574-bd40-ee0138cb54f8@255d3",
+        "rect": [
+          134,
+          40,
+          34,
+          34
+        ],
+        "originalSize": [
+          34,
+          34
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cozy-sudoku/visual/v10/new-rules": {
+    "rawHash": "1fdfe74ec1acf8080695afdcdd189cab5863f74c195847671a60b94291d396c8",
+    "imageUuid": "f06dcad4-3c39-5702-8a88-fe191ffd1b4c",
+    "size": [
+      309,
+      132
+    ],
+    "frames": [
+      {
+        "source": "visual/v10/new-rules-original.png",
+        "sourceRect": [
+          842,
+          778,
+          553,
+          52
+        ],
+        "name": "diagonal-band",
+        "uuid": "786d676b-dc6e-5852-8055-58df11bcf549@0e6d7",
+        "rect": [
+          2,
+          2,
+          191,
+          18
+        ],
+        "originalSize": [
+          191,
+          18
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v10/new-rules-original.png",
+        "sourceRect": [
+          121,
+          35,
+          501,
+          510
+        ],
+        "name": "parity-odd",
+        "uuid": "786d676b-dc6e-5852-8055-58df11bcf549@c9433",
+        "rect": [
+          197,
+          2,
+          110,
+          112
+        ],
+        "originalSize": [
+          110,
+          112
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v10/new-rules-original.png",
+        "sourceRect": [
+          873,
+          49,
+          501,
+          482
+        ],
+        "name": "parity-even",
+        "uuid": "786d676b-dc6e-5852-8055-58df11bcf549@6e82e",
+        "rect": [
+          2,
+          24,
+          110,
+          106
+        ],
+        "originalSize": [
+          110,
+          106
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/v10/new-rules-original.png",
+        "sourceRect": [
+          246,
+          659,
+          283,
+          305
+        ],
+        "name": "inequality-sign",
+        "uuid": "786d676b-dc6e-5852-8055-58df11bcf549@92c85",
+        "rect": [
+          116,
+          24,
+          46,
+          50
+        ],
+        "originalSize": [
+          46,
+          50
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "city-bloxx/visual/hud/city-hud": {
+    "rawHash": "cb559c9613c6f240fd9b064bd51fd7796cf617d51d1297039cbb80004737e31b",
+    "imageUuid": "5e3c5c9a-f6bd-5633-bb63-d05f8c6e5e6a",
+    "size": [
+      1014,
+      1020
+    ],
+    "frames": [
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          1009,
+          163,
+          506,
+          714
+        ],
+        "name": "hud-panel",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@50b0a",
+        "rect": [
+          2,
+          2,
+          506,
+          714
+        ],
+        "originalSize": [
+          506,
+          714
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 236,
+          "Bottom": 54,
+          "Left": 54,
+          "Right": 54
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          37,
+          823,
+          918,
+          176
+        ],
+        "name": "hud-ribbon",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@91135",
+        "rect": [
+          2,
+          720,
+          600,
+          115
+        ],
+        "originalSize": [
+          600,
+          115
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 84,
+          "Right": 84
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          29,
+          55,
+          952,
+          270
+        ],
+        "name": "hud-plate",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@5c27b",
+        "rect": [
+          2,
+          839,
+          296,
+          84
+        ],
+        "originalSize": [
+          296,
+          84
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 80,
+          "Right": 35
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          39,
+          613,
+          560,
+          184
+        ],
+        "name": "hud-pill-large",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@3b176",
+        "rect": [
+          2,
+          927,
+          268,
+          88
+        ],
+        "originalSize": [
+          268,
+          88
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 80,
+          "Right": 37
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          39,
+          613,
+          560,
+          184
+        ],
+        "name": "hud-pill",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@fa3c8",
+        "rect": [
+          274,
+          927,
+          219,
+          72
+        ],
+        "originalSize": [
+          219,
+          72
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 66,
+          "Right": 31
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          855,
+          859,
+          376,
+          376
+        ],
+        "name": "zone-galaxy",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@63725",
+        "rect": [
+          606,
+          2,
+          188,
+          188
+        ],
+        "originalSize": [
+          188,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          19,
+          25,
+          374,
+          376
+        ],
+        "name": "zone-city",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@ea682",
+        "rect": [
+          798,
+          2,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          855,
+          25,
+          374,
+          376
+        ],
+        "name": "zone-clouds",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@4cbcc",
+        "rect": [
+          606,
+          194,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          19,
+          859,
+          374,
+          376
+        ],
+        "name": "zone-moon",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@3d14e",
+        "rect": [
+          797,
+          194,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          437,
+          859,
+          374,
+          376
+        ],
+        "name": "zone-nebula",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@0f13c",
+        "rect": [
+          512,
+          386,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          855,
+          443,
+          374,
+          376
+        ],
+        "name": "zone-orbit",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@09b01",
+        "rect": [
+          703,
+          386,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          437,
+          25,
+          374,
+          376
+        ],
+        "name": "zone-rooftop",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@10720",
+        "rect": [
+          606,
+          578,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          437,
+          443,
+          374,
+          376
+        ],
+        "name": "zone-stratosphere",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@116e0",
+        "rect": [
+          797,
+          578,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/zone-icons.png",
+        "sourceRect": [
+          19,
+          443,
+          374,
+          376
+        ],
+        "name": "zone-sunset",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@b50b5",
+        "rect": [
+          606,
+          770,
+          187,
+          188
+        ],
+        "originalSize": [
+          187,
+          188
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          51,
+          365,
+          216,
+          218
+        ],
+        "name": "hud-button-gold",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@ddbb2",
+        "rect": [
+          797,
+          770,
+          139,
+          140
+        ],
+        "originalSize": [
+          139,
+          140
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          279,
+          369,
+          208,
+          216
+        ],
+        "name": "hud-button-cream",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@11d70",
+        "rect": [
+          797,
+          914,
+          100,
+          104
+        ],
+        "originalSize": [
+          100,
+          104
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          507,
+          379,
+          222,
+          198
+        ],
+        "name": "hud-heart",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@b6fa5",
+        "rect": [
+          940,
+          770,
+          72,
+          64
+        ],
+        "originalSize": [
+          72,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/hud-kit.png",
+        "sourceRect": [
+          741,
+          379,
+          220,
+          196
+        ],
+        "name": "hud-heart-empty",
+        "uuid": "26ebeb7e-5f02-5cda-b43d-9cfae90b36ff@1c2d0",
+        "rect": [
+          940,
+          838,
+          72,
+          64
+        ],
+        "originalSize": [
+          72,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "city-bloxx/visual/fx/city-fx": {
+    "rawHash": "e00fc159125c131a90d4cc7b6aa67a65f2c9963959b5da865bd558384f8433b5",
+    "imageUuid": "97fd4641-98b1-5392-9b0d-5879453117a4",
+    "size": [
+      1024,
+      999
+    ],
+    "frames": [
+      {
+        "source": "visual/skyward-v7/sky-life-glows.png",
+        "sourceRect": [
+          240,
+          0,
+          160,
+          600
+        ],
+        "name": "sky-shaft",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@d0ae5",
+        "rect": [
+          2,
+          2,
+          160,
+          600
+        ],
+        "originalSize": [
+          160,
+          600
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          12,
+          522,
+          390,
+          390
+        ],
+        "name": "fx-rays",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@a1d79",
+        "rect": [
+          2,
+          606,
+          360,
+          360
+        ],
+        "originalSize": [
+          360,
+          360
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          1155,
+          131,
+          348,
+          282
+        ],
+        "name": "fx-word-3",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@b3a20",
+        "rect": [
+          366,
+          2,
+          300,
+          243
+        ],
+        "originalSize": [
+          300,
+          243
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          42,
+          190,
+          350,
+          187
+        ],
+        "name": "fx-word-0",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@18752",
+        "rect": [
+          670,
+          2,
+          300,
+          160
+        ],
+        "originalSize": [
+          300,
+          160
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          413,
+          191,
+          350,
+          182
+        ],
+        "name": "fx-word-1",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@28b49",
+        "rect": [
+          670,
+          166,
+          300,
+          156
+        ],
+        "originalSize": [
+          300,
+          156
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          782,
+          193,
+          353,
+          184
+        ],
+        "name": "fx-word-2",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@8c910",
+        "rect": [
+          366,
+          249,
+          300,
+          156
+        ],
+        "originalSize": [
+          300,
+          156
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          396,
+          531,
+          378,
+          378
+        ],
+        "name": "fx-ring",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@93d3b",
+        "rect": [
+          670,
+          326,
+          256,
+          256
+        ],
+        "originalSize": [
+          256,
+          256
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-glows.png",
+        "sourceRect": [
+          48,
+          0,
+          192,
+          12
+        ],
+        "name": "sky-streak",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@7d502",
+        "rect": [
+          166,
+          2,
+          192,
+          12
+        ],
+        "originalSize": [
+          192,
+          12
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          1183,
+          673,
+          305,
+          149
+        ],
+        "name": "sky-comet",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@59604",
+        "rect": [
+          166,
+          18,
+          132,
+          64
+        ],
+        "originalSize": [
+          132,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          1105,
+          608,
+          395,
+          225
+        ],
+        "name": "fx-dust",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@55555",
+        "rect": [
+          166,
+          86,
+          120,
+          68
+        ],
+        "originalSize": [
+          120,
+          68
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/fx-kit.png",
+        "sourceRect": [
+          774,
+          546,
+          344,
+          344
+        ],
+        "name": "fx-sparkle",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@74cb2",
+        "rect": [
+          290,
+          86,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          432,
+          589,
+          288,
+          295
+        ],
+        "name": "sky-lantern",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@0a95c",
+        "rect": [
+          302,
+          18,
+          60,
+          61
+        ],
+        "originalSize": [
+          60,
+          61
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          790,
+          181,
+          331,
+          172
+        ],
+        "name": "sky-gull-0",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@6221c",
+        "rect": [
+          290,
+          154,
+          52,
+          27
+        ],
+        "originalSize": [
+          52,
+          27
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          1159,
+          170,
+          331,
+          172
+        ],
+        "name": "sky-gull-1",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@bf829",
+        "rect": [
+          2,
+          970,
+          52,
+          27
+        ],
+        "originalSize": [
+          52,
+          27
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-glows.png",
+        "sourceRect": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "name": "sky-glow",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@5d0b7",
+        "rect": [
+          974,
+          2,
+          48,
+          48
+        ],
+        "originalSize": [
+          48,
+          48
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          794,
+          637,
+          314,
+          170
+        ],
+        "name": "sky-satellite",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@fce95",
+        "rect": [
+          974,
+          54,
+          48,
+          26
+        ],
+        "originalSize": [
+          48,
+          26
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          68,
+          666,
+          248,
+          164
+        ],
+        "name": "sky-plane",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@38f5e",
+        "rect": [
+          974,
+          84,
+          46,
+          30
+        ],
+        "originalSize": [
+          46,
+          30
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          98,
+          153,
+          265,
+          249
+        ],
+        "name": "sky-bird-0",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@40110",
+        "rect": [
+          974,
+          118,
+          28,
+          26
+        ],
+        "originalSize": [
+          28,
+          26
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/skyward-v7/sky-life-kit.png",
+        "sourceRect": [
+          415,
+          153,
+          265,
+          249
+        ],
+        "name": "sky-bird-1",
+        "uuid": "5021d6f2-83c1-594f-884a-f56d2bb76cd4@ecbf6",
+        "rect": [
+          974,
+          148,
+          28,
+          26
+        ],
+        "originalSize": [
+          28,
+          26
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cube-away/visual/ui/cube_ui": {
+    "rawHash": "42ef582042ad279026bf2cf009e1a5df0cdbb808d9eec7da5c19ac1b8d219a36",
+    "imageUuid": "e99bfd5e-83fc-5d7d-b9ec-1e22c78205fe",
+    "size": [
+      1024,
+      575
+    ],
+    "frames": [
+      {
+        "source": "visual/ui/chapter_banner.png",
+        "sourceRect": [
+          0,
+          0,
+          686,
+          171
+        ],
+        "name": "chapter_banner",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@56ad9",
+        "rect": [
+          2,
+          2,
+          686,
+          171
+        ],
+        "originalSize": [
+          686,
+          171
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 28,
+          "Bottom": 34,
+          "Left": 48,
+          "Right": 240
+        }
+      },
+      {
+        "source": "visual/ui/btn_cobalt.png",
+        "sourceRect": [
+          0,
+          0,
+          280,
+          109
+        ],
+        "name": "btn_cobalt",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@0ba9a",
+        "rect": [
+          692,
+          2,
+          280,
+          109
+        ],
+        "originalSize": [
+          280,
+          109
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 26,
+          "Bottom": 33,
+          "Left": 52,
+          "Right": 52
+        }
+      },
+      {
+        "source": "visual/ui/btn_emerald.png",
+        "sourceRect": [
+          0,
+          0,
+          280,
+          106
+        ],
+        "name": "btn_emerald",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@698ac",
+        "rect": [
+          692,
+          115,
+          280,
+          106
+        ],
+        "originalSize": [
+          280,
+          106
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 25,
+          "Bottom": 32,
+          "Left": 51,
+          "Right": 51
+        }
+      },
+      {
+        "source": "visual/ui/btn_amber.png",
+        "sourceRect": [
+          0,
+          0,
+          280,
+          101
+        ],
+        "name": "btn_amber",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@fda96",
+        "rect": [
+          2,
+          177,
+          280,
+          101
+        ],
+        "originalSize": [
+          280,
+          101
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 24,
+          "Bottom": 30,
+          "Left": 48,
+          "Right": 48
+        }
+      },
+      {
+        "source": "visual/ui/btn_slate.png",
+        "sourceRect": [
+          0,
+          0,
+          280,
+          75
+        ],
+        "name": "btn_slate",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@71915",
+        "rect": [
+          286,
+          177,
+          280,
+          75
+        ],
+        "originalSize": [
+          280,
+          75
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 18,
+          "Bottom": 22,
+          "Left": 36,
+          "Right": 36
+        }
+      },
+      {
+        "source": "visual/ui/dialog_panel.png",
+        "sourceRect": [
+          0,
+          0,
+          220,
+          220
+        ],
+        "name": "dialog_panel",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@80d9b",
+        "rect": [
+          570,
+          225,
+          220,
+          220
+        ],
+        "originalSize": [
+          220,
+          220
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 52,
+          "Bottom": 62,
+          "Left": 56,
+          "Right": 56
+        }
+      },
+      {
+        "source": "visual/ui/puck_current.png",
+        "sourceRect": [
+          0,
+          0,
+          112,
+          112
+        ],
+        "name": "puck_current",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@c551a",
+        "rect": [
+          794,
+          225,
+          112,
+          112
+        ],
+        "originalSize": [
+          112,
+          112
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/puck_milestone.png",
+        "sourceRect": [
+          0,
+          0,
+          112,
+          112
+        ],
+        "name": "puck_milestone",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@75955",
+        "rect": [
+          910,
+          225,
+          112,
+          112
+        ],
+        "originalSize": [
+          112,
+          112
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/btn_circle.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          96
+        ],
+        "name": "btn_circle",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@11b2d",
+        "rect": [
+          794,
+          341,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/puck_cleared.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          96
+        ],
+        "name": "puck_cleared",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@e139c",
+        "rect": [
+          894,
+          341,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/puck_locked.png",
+        "sourceRect": [
+          0,
+          0,
+          92,
+          92
+        ],
+        "name": "puck_locked",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@7e2f1",
+        "rect": [
+          794,
+          441,
+          92,
+          92
+        ],
+        "originalSize": [
+          92,
+          92
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_hammer.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "icon_hammer",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@a59f9",
+        "rect": [
+          890,
+          441,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_hint.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "icon_hint",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@967dc",
+        "rect": [
+          958,
+          441,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_rotate.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "icon_rotate",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@9013e",
+        "rect": [
+          890,
+          509,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_star.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "icon_star",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@7edfb",
+        "rect": [
+          958,
+          509,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_help.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          56
+        ],
+        "name": "icon_help",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@7163b",
+        "rect": [
+          286,
+          256,
+          56,
+          56
+        ],
+        "originalSize": [
+          56,
+          56
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_sound_off.png",
+        "sourceRect": [
+          0,
+          0,
+          52,
+          52
+        ],
+        "name": "icon_sound_off",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@75e97",
+        "rect": [
+          346,
+          256,
+          52,
+          52
+        ],
+        "originalSize": [
+          52,
+          52
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_sound_on.png",
+        "sourceRect": [
+          0,
+          0,
+          52,
+          52
+        ],
+        "name": "icon_sound_on",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@4eca2",
+        "rect": [
+          402,
+          256,
+          52,
+          52
+        ],
+        "originalSize": [
+          52,
+          52
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_back.png",
+        "sourceRect": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "name": "icon_back",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@cf1c5",
+        "rect": [
+          458,
+          256,
+          48,
+          48
+        ],
+        "originalSize": [
+          48,
+          48
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_heart.png",
+        "sourceRect": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "name": "icon_heart",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@e08aa",
+        "rect": [
+          510,
+          256,
+          48,
+          48
+        ],
+        "originalSize": [
+          48,
+          48
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ui/icon_star_sm.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          44
+        ],
+        "name": "icon_star_sm",
+        "uuid": "76010d80-4804-5017-ac48-73642885a47e@09502",
+        "rect": [
+          570,
+          177,
+          44,
+          44
+        ],
+        "originalSize": [
+          44,
+          44
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cube-away/visual/ingame/cube_ingame": {
+    "rawHash": "9a9266d773853c30766feb9efa37af15abb559da1e4b162fd9216629b9863444",
+    "imageUuid": "39853156-1274-5d28-81ff-f0036aaed3dd",
+    "size": [
+      1021,
+      634
+    ],
+    "frames": [
+      {
+        "source": "visual/ingame/ribbon_banner.png",
+        "sourceRect": [
+          0,
+          0,
+          560,
+          122
+        ],
+        "name": "ribbon_banner",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@d1937",
+        "rect": [
+          2,
+          2,
+          560,
+          122
+        ],
+        "originalSize": [
+          560,
+          122
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/fx_sunburst.png",
+        "sourceRect": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "name": "fx_sunburst",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@a6f23",
+        "rect": [
+          566,
+          2,
+          256,
+          256
+        ],
+        "originalSize": [
+          256,
+          256
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/combo_gauge_frame.png",
+        "sourceRect": [
+          0,
+          0,
+          212,
+          46
+        ],
+        "name": "combo_gauge_frame",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@694d1",
+        "rect": [
+          2,
+          128,
+          212,
+          46
+        ],
+        "originalSize": [
+          212,
+          46
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 8,
+          "Bottom": 8,
+          "Left": 22,
+          "Right": 22
+        }
+      },
+      {
+        "source": "visual/ingame/combo_gauge_off.png",
+        "sourceRect": [
+          0,
+          0,
+          200,
+          32
+        ],
+        "name": "combo_gauge_off",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@79ca8",
+        "rect": [
+          218,
+          128,
+          200,
+          32
+        ],
+        "originalSize": [
+          200,
+          32
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 6,
+          "Bottom": 6,
+          "Left": 16,
+          "Right": 16
+        }
+      },
+      {
+        "source": "visual/ingame/combo_gauge_on.png",
+        "sourceRect": [
+          0,
+          0,
+          200,
+          32
+        ],
+        "name": "combo_gauge_on",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@821dd",
+        "rect": [
+          218,
+          164,
+          200,
+          32
+        ],
+        "originalSize": [
+          200,
+          32
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 6,
+          "Bottom": 6,
+          "Left": 16,
+          "Right": 16
+        }
+      },
+      {
+        "source": "visual/ingame/icon_star_fail.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          151
+        ],
+        "name": "icon_star_fail",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@153aa",
+        "rect": [
+          826,
+          2,
+          160,
+          151
+        ],
+        "originalSize": [
+          160,
+          151
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_heart_broken.png",
+        "sourceRect": [
+          0,
+          0,
+          160,
+          145
+        ],
+        "name": "icon_heart_broken",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@642fe",
+        "rect": [
+          826,
+          157,
+          160,
+          145
+        ],
+        "originalSize": [
+          160,
+          145
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/item_btn.png",
+        "sourceRect": [
+          0,
+          0,
+          148,
+          148
+        ],
+        "name": "item_btn",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@e8f06",
+        "rect": [
+          2,
+          178,
+          148,
+          148
+        ],
+        "originalSize": [
+          148,
+          148
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 14,
+          "Bottom": 52,
+          "Left": 30,
+          "Right": 32
+        }
+      },
+      {
+        "source": "visual/ingame/pop_frame.png",
+        "sourceRect": [
+          0,
+          0,
+          142,
+          142
+        ],
+        "name": "pop_frame",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@d839f",
+        "rect": [
+          154,
+          200,
+          142,
+          142
+        ],
+        "originalSize": [
+          142,
+          142
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 28,
+          "Bottom": 28,
+          "Left": 28,
+          "Right": 28
+        }
+      },
+      {
+        "source": "visual/ingame/btn_green.png",
+        "sourceRect": [
+          0,
+          0,
+          138,
+          136
+        ],
+        "name": "btn_green",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@4a554",
+        "rect": [
+          422,
+          128,
+          138,
+          136
+        ],
+        "originalSize": [
+          138,
+          136
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 10,
+          "Bottom": 30,
+          "Left": 17,
+          "Right": 17
+        }
+      },
+      {
+        "source": "visual/ingame/btn_orange.png",
+        "sourceRect": [
+          0,
+          0,
+          138,
+          136
+        ],
+        "name": "btn_orange",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@b599a",
+        "rect": [
+          2,
+          330,
+          138,
+          136
+        ],
+        "originalSize": [
+          138,
+          136
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 14,
+          "Bottom": 32,
+          "Left": 19,
+          "Right": 19
+        }
+      },
+      {
+        "source": "visual/ingame/pop_inner_frame.png",
+        "sourceRect": [
+          0,
+          0,
+          120,
+          130
+        ],
+        "name": "pop_inner_frame",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@d119b",
+        "rect": [
+          564,
+          262,
+          120,
+          130
+        ],
+        "originalSize": [
+          120,
+          130
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 18,
+          "Bottom": 14,
+          "Left": 14,
+          "Right": 14
+        }
+      },
+      {
+        "source": "visual/ingame/fx_glow_disc.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "fx_glow_disc",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@bcf17",
+        "rect": [
+          688,
+          262,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_header_frame.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "ingame_header_frame",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@a963d",
+        "rect": [
+          820,
+          306,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 14,
+          "Bottom": 32,
+          "Left": 18,
+          "Right": 19
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_header_hard.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "ingame_header_hard",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@006e0",
+        "rect": [
+          688,
+          394,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 12,
+          "Bottom": 32,
+          "Left": 20,
+          "Right": 19
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_header_superhard.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "ingame_header_superhard",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@bdb6c",
+        "rect": [
+          820,
+          438,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 13,
+          "Bottom": 32,
+          "Left": 20,
+          "Right": 19
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_message_pop.png",
+        "sourceRect": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "name": "ingame_message_pop",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@1523b",
+        "rect": [
+          300,
+          268,
+          128,
+          128
+        ],
+        "originalSize": [
+          128,
+          128
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 1,
+          "Bottom": 1,
+          "Left": 56,
+          "Right": 56
+        }
+      },
+      {
+        "source": "visual/ingame/booster_cane.png",
+        "sourceRect": [
+          0,
+          0,
+          98,
+          121
+        ],
+        "name": "booster_cane",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@6722c",
+        "rect": [
+          432,
+          268,
+          98,
+          121
+        ],
+        "originalSize": [
+          98,
+          121
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/booster_hint.png",
+        "sourceRect": [
+          0,
+          0,
+          98,
+          121
+        ],
+        "name": "booster_hint",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@b0f22",
+        "rect": [
+          432,
+          393,
+          98,
+          121
+        ],
+        "originalSize": [
+          98,
+          121
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/booster_eraser.png",
+        "sourceRect": [
+          0,
+          0,
+          98,
+          120
+        ],
+        "name": "booster_eraser",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@4a5d6",
+        "rect": [
+          534,
+          396,
+          98,
+          120
+        ],
+        "originalSize": [
+          98,
+          120
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_level_frame.png",
+        "sourceRect": [
+          0,
+          0,
+          116,
+          78
+        ],
+        "name": "ingame_level_frame",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@b80b5",
+        "rect": [
+          144,
+          346,
+          116,
+          78
+        ],
+        "originalSize": [
+          116,
+          78
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 18,
+          "Bottom": 30,
+          "Left": 25,
+          "Right": 25
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_level_hard.png",
+        "sourceRect": [
+          0,
+          0,
+          116,
+          78
+        ],
+        "name": "ingame_level_hard",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@3a26c",
+        "rect": [
+          264,
+          400,
+          116,
+          78
+        ],
+        "originalSize": [
+          116,
+          78
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 18,
+          "Bottom": 30,
+          "Left": 25,
+          "Right": 25
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_level_superhard.png",
+        "sourceRect": [
+          0,
+          0,
+          116,
+          78
+        ],
+        "name": "ingame_level_superhard",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@3ca68",
+        "rect": [
+          144,
+          428,
+          116,
+          78
+        ],
+        "originalSize": [
+          116,
+          78
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 18,
+          "Bottom": 30,
+          "Left": 25,
+          "Right": 25
+        }
+      },
+      {
+        "source": "visual/ingame/setting_off.png",
+        "sourceRect": [
+          0,
+          0,
+          112,
+          60
+        ],
+        "name": "setting_off",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@e2314",
+        "rect": [
+          300,
+          200,
+          112,
+          60
+        ],
+        "originalSize": [
+          112,
+          60
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/setting_on.png",
+        "sourceRect": [
+          0,
+          0,
+          112,
+          60
+        ],
+        "name": "setting_on",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@865bc",
+        "rect": [
+          2,
+          470,
+          112,
+          60
+        ],
+        "originalSize": [
+          112,
+          60
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/fx_ring.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          96
+        ],
+        "name": "fx_ring",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@4b6b9",
+        "rect": [
+          264,
+          482,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/fx_star.png",
+        "sourceRect": [
+          0,
+          0,
+          96,
+          96
+        ],
+        "name": "fx_star",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@248fc",
+        "rect": [
+          118,
+          510,
+          96,
+          96
+        ],
+        "originalSize": [
+          96,
+          96
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/setting_btn.png",
+        "sourceRect": [
+          0,
+          0,
+          88,
+          88
+        ],
+        "name": "setting_btn",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@4afd6",
+        "rect": [
+          2,
+          534,
+          88,
+          88
+        ],
+        "originalSize": [
+          88,
+          88
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 8,
+          "Bottom": 8,
+          "Left": 8,
+          "Right": 8
+        }
+      },
+      {
+        "source": "visual/ingame/close_btn.png",
+        "sourceRect": [
+          0,
+          0,
+          72,
+          74
+        ],
+        "name": "close_btn",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@7a92d",
+        "rect": [
+          364,
+          518,
+          72,
+          74
+        ],
+        "originalSize": [
+          72,
+          74
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/fx_glow_star.png",
+        "sourceRect": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "name": "fx_glow_star",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@69bae",
+        "rect": [
+          952,
+          306,
+          64,
+          64
+        ],
+        "originalSize": [
+          64,
+          64
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_label_hard.png",
+        "sourceRect": [
+          0,
+          0,
+          62,
+          55
+        ],
+        "name": "ingame_label_hard",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@a8142",
+        "rect": [
+          952,
+          374,
+          62,
+          55
+        ],
+        "originalSize": [
+          62,
+          55
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/ingame_label_superhard.png",
+        "sourceRect": [
+          0,
+          0,
+          62,
+          55
+        ],
+        "name": "ingame_label_superhard",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@6e157",
+        "rect": [
+          952,
+          433,
+          62,
+          55
+        ],
+        "originalSize": [
+          62,
+          55
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/circle_frame.png",
+        "sourceRect": [
+          0,
+          0,
+          52,
+          56
+        ],
+        "name": "circle_frame",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@72965",
+        "rect": [
+          952,
+          492,
+          52,
+          56
+        ],
+        "originalSize": [
+          52,
+          56
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_se.png",
+        "sourceRect": [
+          0,
+          0,
+          56,
+          45
+        ],
+        "name": "icon_se",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@20d22",
+        "rect": [
+          952,
+          552,
+          56,
+          45
+        ],
+        "originalSize": [
+          56,
+          45
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_bgm.png",
+        "sourceRect": [
+          0,
+          0,
+          52,
+          52
+        ],
+        "name": "icon_bgm",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@d29d2",
+        "rect": [
+          440,
+          518,
+          52,
+          52
+        ],
+        "originalSize": [
+          52,
+          52
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_haptic.png",
+        "sourceRect": [
+          0,
+          0,
+          52,
+          50
+        ],
+        "name": "icon_haptic",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@a0d3e",
+        "rect": [
+          218,
+          582,
+          52,
+          50
+        ],
+        "originalSize": [
+          52,
+          50
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/setting_gear.png",
+        "sourceRect": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "name": "setting_gear",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@88cd7",
+        "rect": [
+          636,
+          396,
+          48,
+          48
+        ],
+        "originalSize": [
+          48,
+          48
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_lock.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          46
+        ],
+        "name": "icon_lock",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@5f240",
+        "rect": [
+          384,
+          400,
+          44,
+          46
+        ],
+        "originalSize": [
+          44,
+          46
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_movie.png",
+        "sourceRect": [
+          0,
+          0,
+          46,
+          39
+        ],
+        "name": "icon_movie",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@61ffe",
+        "rect": [
+          636,
+          448,
+          46,
+          39
+        ],
+        "originalSize": [
+          46,
+          39
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/icon_arrow.png",
+        "sourceRect": [
+          0,
+          0,
+          32,
+          45
+        ],
+        "name": "icon_arrow",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@ec4e1",
+        "rect": [
+          264,
+          346,
+          32,
+          45
+        ],
+        "originalSize": [
+          32,
+          45
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/confetti_pink.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          43
+        ],
+        "name": "confetti_pink",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@56e7e",
+        "rect": [
+          384,
+          450,
+          44,
+          43
+        ],
+        "originalSize": [
+          44,
+          43
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/confetti_cyan.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          41
+        ],
+        "name": "confetti_cyan",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@de83d",
+        "rect": [
+          636,
+          491,
+          44,
+          41
+        ],
+        "originalSize": [
+          44,
+          41
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/confetti_red.png",
+        "sourceRect": [
+          0,
+          0,
+          33,
+          44
+        ],
+        "name": "confetti_red",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@f8d1a",
+        "rect": [
+          496,
+          518,
+          33,
+          44
+        ],
+        "originalSize": [
+          33,
+          44
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/confetti_green.png",
+        "sourceRect": [
+          0,
+          0,
+          29,
+          44
+        ],
+        "name": "confetti_green",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@04f78",
+        "rect": [
+          990,
+          2,
+          29,
+          44
+        ],
+        "originalSize": [
+          29,
+          44
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/confetti_purple.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          29
+        ],
+        "name": "confetti_purple",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@2ce21",
+        "rect": [
+          274,
+          582,
+          44,
+          29
+        ],
+        "originalSize": [
+          44,
+          29
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/confetti_gold.png",
+        "sourceRect": [
+          0,
+          0,
+          44,
+          26
+        ],
+        "name": "confetti_gold",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@0826a",
+        "rect": [
+          533,
+          520,
+          44,
+          26
+        ],
+        "originalSize": [
+          44,
+          26
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/heart_off.png",
+        "sourceRect": [
+          0,
+          0,
+          36,
+          32
+        ],
+        "name": "heart_off",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@b593b",
+        "rect": [
+          322,
+          582,
+          36,
+          32
+        ],
+        "originalSize": [
+          36,
+          32
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/ingame/heart_on.png",
+        "sourceRect": [
+          0,
+          0,
+          36,
+          32
+        ],
+        "name": "heart_on",
+        "uuid": "a5a63ad0-c274-57bf-8d92-d51227576139@7e350",
+        "rect": [
+          218,
+          510,
+          36,
+          32
+        ],
+        "originalSize": [
+          36,
+          32
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cube-away/visual/mint/cube_mint": {
+    "rawHash": "30b165d07d32ad703906caf4d183914b7e68cc9e5682cf063b20084445dcb634",
+    "imageUuid": "c54b85a7-32f3-5508-a8c3-672e8bb60d03",
+    "size": [
+      868,
+      484
+    ],
+    "frames": [
+      {
+        "source": "visual/mint/victory_badge.png",
+        "sourceRect": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "name": "victory_badge",
+        "uuid": "ad3e54a1-460c-546f-aeeb-49ca9d71641b@19401",
+        "rect": [
+          2,
+          2,
+          480,
+          480
+        ],
+        "originalSize": [
+          480,
+          480
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/mint/failure_portrait.png",
+        "sourceRect": [
+          0,
+          0,
+          1774,
+          887
+        ],
+        "name": "failure_portrait",
+        "uuid": "ad3e54a1-460c-546f-aeeb-49ca9d71641b@c2069",
+        "rect": [
+          486,
+          2,
+          380,
+          190
+        ],
+        "originalSize": [
+          380,
+          190
+        ],
+        "offset": [
+          0.0,
+          0.0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      }
+    ]
+  },
+  "cube-away/visual/mint/snake_heads": {
+    "rawHash": "1ad18fc1d3acac2cca4bb99ca62aeaeb5657794efa58ebbbf9fadad0e6415744",
+    "imageUuid": "e7703b17-7a99-50d7-ba21-cbbd2696c1bc",
+    "size": [
+      162,
+      80
+    ],
+    "frames": [
+      {
+        "source": "visual/mint/snake_head_side.png",
+        "sourceRect": [
+          0,
+          0,
+          88,
+          68
+        ],
+        "name": "snake_head_side",
+        "uuid": "902be4ac-2976-5650-b1c9-a88d768df10f@5120b",
+        "rect": [
+          2,
+          2,
+          88,
+          68
+        ],
+        "originalSize": [
+          88,
+          68
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "insets": {
+          "Top": 0,
+          "Bottom": 0,
+          "Left": 0,
+          "Right": 0
+        }
+      },
+      {
+        "source": "visual/mint/snake_head_front.png",
+        "sourceRect": [
+          0,
+          0,
+          66,
+          76
+        ],
+        "name": "snake_head_front",
+        "uuid": "902be4ac-2976-5650-b1c9-a88d768df10f@e2334",
+        "rect": [
+          94,
+          2,
+          66,
+          76
+        ],
+        "originalSize": [
+          66,
+          76
         ],
         "offset": [
           0,

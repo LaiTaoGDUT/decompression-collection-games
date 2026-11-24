@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>failure_portrait</key>
+		<dict>
+			<key>frame</key>
+			<string>{{486,2},{380,190}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{380,190}}</string>
+			<key>sourceSize</key>
+			<string>{380,190}</string>
+		</dict>
+		<key>victory_badge</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{480,480}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{480,480}}</string>
+			<key>sourceSize</key>
+			<string>{480,480}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>cube_mint.png</string>
+		<key>size</key>
+		<string>{868,484}</string>
+		<key>textureFileName</key>
+		<string>cube_mint.png</string>
+	</dict>
+</dict>
+</plist>

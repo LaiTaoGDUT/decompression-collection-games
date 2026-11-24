@@ -1,0 +1,208 @@
+[
+  {
+    "name": "meme-runner",
+    "schema": {
+      "gameId": "meme-runner",
+      "code": 13,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "highScore"
+        }
+      ],
+      "rank": [
+        0
+      ]
+    }
+  },
+  {
+    "name": "sling-puck",
+    "schema": {
+      "gameId": "sling-puck",
+      "code": 16,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "custom.slingWins0",
+          "record": false
+        },
+        {
+          "path": "custom.slingWins1",
+          "record": false
+        },
+        {
+          "path": "custom.slingWins2",
+          "record": false
+        }
+      ],
+      "rank": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "name": "wrestle-jump",
+    "schema": {
+      "gameId": "wrestle-jump",
+      "code": 17,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "custom.wrestleMatches",
+          "record": false
+        },
+        {
+          "path": "custom.wrestleWins",
+          "record": false
+        }
+      ],
+      "rank": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "猫咪数独（旧版题库）",
+    "schema": {
+      "gameId": "meowdoku-legacy",
+      "code": 2,
+      "dataVersion": 7,
+      "numbers": [
+        {
+          "path": "custom.meowdokuCleared",
+          "max": 3000,
+          "metric": "cleared-level",
+          "restoreAlso": [
+            {
+              "path": "custom.meowdokuUnlocked",
+              "offset": 1,
+              "max": 3000
+            }
+          ]
+        },
+        {
+          "path": "custom.meowdokuHard.cleared",
+          "max": 200,
+          "restoreAlso": [
+            {
+              "path": "custom.meowdokuHard.unlocked",
+              "offset": 1,
+              "max": 200
+            }
+          ]
+        }
+      ],
+      "rank": [
+        0,
+        1
+      ],
+      "levels": [
+        0,
+        1
+      ],
+      "defaults": {
+        "custom.meowdokuChallengeHistory": {},
+        "custom.meowdokuGeniusClears": {},
+        "custom.meowdokuHard.challengeHistory": {},
+        "custom.meowdokuHard.geniusClears": {}
+      },
+      "achievement": {
+        "code": 2,
+        "id": "meowdoku-trophy-v3",
+        "metric": "cleared-level",
+        "target": 500,
+        "field": 0
+      }
+    }
+  },
+  {
+    "name": "猫咪数独（首版原创题库）",
+    "schema": {
+      "gameId": "meowdoku-original-v8",
+      "code": 20,
+      "dataVersion": 8,
+      "numbers": [
+        {
+          "path": "custom.meowdokuCleared",
+          "max": 3500,
+          "metric": "original-cleared-level",
+          "restoreAlso": [
+            {
+              "path": "custom.meowdokuUnlocked",
+              "offset": 1,
+              "max": 3500
+            }
+          ]
+        },
+        {
+          "path": "custom.meowdokuHard.cleared",
+          "max": 300,
+          "restoreAlso": [
+            {
+              "path": "custom.meowdokuHard.unlocked",
+              "offset": 1,
+              "max": 300
+            }
+          ]
+        }
+      ],
+      "rank": [
+        0,
+        1
+      ],
+      "levels": [
+        0,
+        1
+      ],
+      "defaults": {
+        "custom.meowdokuChallengeHistory": {},
+        "custom.meowdokuGeniusClears": {},
+        "custom.meowdokuHard.challengeHistory": {},
+        "custom.meowdokuHard.geniusClears": {}
+      },
+      "achievement": {
+        "code": 20,
+        "id": "meowdoku-trophy-v4",
+        "metric": "original-cleared-level",
+        "target": 500,
+        "field": 0
+      }
+    }
+  },
+  {
+    "name": "解个圆环（旧版题库）",
+    "schema": {
+      "gameId": "rotate-rings-legacy",
+      "code": 11,
+      "dataVersion": 1,
+      "numbers": [
+        {
+          "path": "custom.rings.modes.normal.cleared",
+          "max": 1000,
+          "metric": "normal-cleared-level"
+        },
+        {
+          "path": "custom.rings.modes.hard.cleared",
+          "max": 1000
+        }
+      ],
+      "rank": [
+        0,
+        1
+      ],
+      "levels": [
+        0,
+        1
+      ],
+      "achievement": {
+        "code": 11,
+        "id": "rotate-rings-trophy-v1",
+        "metric": "normal-cleared-level",
+        "target": 300,
+        "field": 0
+      }
+    }
+  }
+]

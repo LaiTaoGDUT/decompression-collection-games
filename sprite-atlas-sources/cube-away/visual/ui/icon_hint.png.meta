@@ -1,0 +1,94 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "acdaa231-6c64-5093-83f5-7d14fa6ac36b",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "acdaa231-6c64-5093-83f5-7d14fa6ac36b@f9941",
+      "displayName": "icon_hint",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "rawWidth": 64,
+        "rawHeight": 64,
+        "width": 64,
+        "height": 64,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "maxPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "acdaa231-6c64-5093-83f5-7d14fa6ac36b@6c48a"
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "acdaa231-6c64-5093-83f5-7d14fa6ac36b@6c48a",
+      "displayName": "icon_hint",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "acdaa231-6c64-5093-83f5-7d14fa6ac36b",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": true,
+    "hasAlpha": true,
+    "redirect": "acdaa231-6c64-5093-83f5-7d14fa6ac36b@f9941"
+  }
+}

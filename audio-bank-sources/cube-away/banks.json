@@ -1,0 +1,18 @@
+{
+  "cube-effects": [
+    "visual/audio/cube-tap",
+    "visual/audio/cube-fly",
+    "visual/audio/cube-fly-2",
+    "visual/audio/cube-combo",
+    "visual/audio/cube-blocked",
+    "visual/audio/cube-pause",
+    "visual/audio/cube-turn",
+    "visual/audio/cube-split",
+    "visual/audio/cube-smash",
+    "visual/audio/cube-hint",
+    "visual/audio/cube-win",
+    "visual/audio/cube-lose",
+    "visual/audio/cube-cane",
+    "visual/audio/cube-popup"
+  ]
+}

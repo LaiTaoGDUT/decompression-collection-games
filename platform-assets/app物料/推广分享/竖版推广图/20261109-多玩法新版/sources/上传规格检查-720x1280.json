@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "requirements": {
+    "width": 720,
+    "height": 1280,
+    "maxBytes": 200000,
+    "imageCount": 3,
+    "formats": [
+      "JPEG",
+      "JPG",
+      "PNG"
+    ],
+    "source": "用户提供的微信后台上传要求截图"
+  },
+  "compression": {
+    "tool": "tinypng-batch",
+    "processed": 3,
+    "cached": 0,
+    "failed": 0,
+    "savedBytes": 522161
+  },
+  "images": [
+    {
+      "id": "portrait-v2-01",
+      "file": "720x1280-200KB/01-晴空合集-随心切换-720x1280.jpg",
+      "width": 720,
+      "height": 1280,
+      "format": "JPEG",
+      "bytes": 95293,
+      "bytesBeforeTinify": 258060,
+      "source": "01-晴空合集-随心切换-原图.png",
+      "sha256": "2d9d33988a5cdffb3b60d7c25ce2d64491d7df0169a68b672444a5696d4049e9"
+    },
+    {
+      "id": "portrait-v2-02",
+      "file": "720x1280-200KB/02-活力合集-来一局-720x1280.jpg",
+      "width": 720,
+      "height": 1280,
+      "format": "JPEG",
+      "bytes": 170179,
+      "bytesBeforeTinify": 340670,
+      "source": "02-活力合集-来一局-原图.png",
+      "sha256": "366d3ead2d2fef73002592ae640fd13adad0865383517e4ceb0b50bd9ec70e4f"
+    },
+    {
+      "id": "portrait-v2-03",
+      "file": "720x1280-200KB/03-暖阳合集-放松一下-720x1280.jpg",
+      "width": 720,
+      "height": 1280,
+      "format": "JPEG",
+      "bytes": 103666,
+      "bytesBeforeTinify": 292569,
+      "source": "03-暖阳合集-放松一下-原图.png",
+      "sha256": "d918443450b7d4230390c0532d51ebbfd6b71d21b64ab7571ca1ba1e0ced5154"
+    }
+  ]
+}

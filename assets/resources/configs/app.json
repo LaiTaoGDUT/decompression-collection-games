@@ -20,11 +20,12 @@
         "给脑袋放个小假，进来挑个小游戏玩"
       ],
       "imageUrl": "",
-      "imageUrlId": "Cfyc0QMZT+eCMQEAoaFTow==",
+      "imageUrlId": "gqIPqTPbRCyWrhvm56y1BA==",
       "imageUrlIds": [
-        "Cfyc0QMZT+eCMQEAoaFTow==",
-        "YdjzF/6cQFKjuVRht30+rw==",
-        "fcvpWzC1SkCtTtQm2DyASw=="
+        "gqIPqTPbRCyWrhvm56y1BA==",
+        "v0+XqOtwQ9C1C14cY+zilw==",
+        "pwYmpOrKQsahFGNmq5R4ew==",
+        "vDt1BvUyTdu1NRASJxSR5w=="
       ],
       "query": "source=share_app_message"
     },
@@ -39,11 +40,12 @@
         "只想放松一下，结果又开了一局"
       ],
       "imageUrl": "",
-      "imageUrlId": "Cfyc0QMZT+eCMQEAoaFTow==",
+      "imageUrlId": "gqIPqTPbRCyWrhvm56y1BA==",
       "imageUrlIds": [
-        "Cfyc0QMZT+eCMQEAoaFTow==",
-        "YdjzF/6cQFKjuVRht30+rw==",
-        "fcvpWzC1SkCtTtQm2DyASw=="
+        "gqIPqTPbRCyWrhvm56y1BA==",
+        "v0+XqOtwQ9C1C14cY+zilw==",
+        "pwYmpOrKQsahFGNmq5R4ew==",
+        "vDt1BvUyTdu1NRASJxSR5w=="
       ],
       "imagePreviewUrl": "",
       "imagePreviewUrlId": "",
@@ -92,39 +94,42 @@
   "ads": {
     "games": {
       "watermelon": {
-        "enabled": false
+        "enabled": true
       },
       "chess-endless": {
-        "enabled": false
+        "enabled": true
       },
       "game2048": {
-        "enabled": false
+        "enabled": true
       },
       "sliding-puzzle": {
         "enabled": false
       },
       "catch": {
-        "enabled": false
+        "enabled": true
       },
       "doodle-jump": {
-        "enabled": false
+        "enabled": true
       },
       "bubble-shooter": {
-        "enabled": false
+        "enabled": true
       },
       "flappy-dunk": {
-        "enabled": false
+        "enabled": true
       },
       "meowdoku": {
-        "enabled": false
+        "enabled": true
       },
       "multi-color-fill": {
-        "enabled": false
+        "enabled": true
       },
       "city-bloxx": {
         "enabled": true
       },
       "rotate-rings": {
+        "enabled": true
+      },
+      "cube-away": {
         "enabled": true
       }
     },
@@ -134,38 +139,47 @@
       }
     },
     "wechat": {
-      "watermelonReviveRewarded": {
+      "lobbyListCustom": {
         "adUnitId": ""
+      },
+      "lobbyReturnInterstitial": {
+        "adUnitId": "adunit-388f8e440b45316d"
+      },
+      "watermelonReviveRewarded": {
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "chessEndlessReviveRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "desktopCleanupRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "doodleJumpReviveRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "game2048ClearSmallTilesRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "bubbleShooterReviveRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "flappyDunkReviveRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "meowdokuToolRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "multiColorFillHintRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "cityBloxxReviveRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       },
       "rotateRingsHintRewarded": {
-        "adUnitId": ""
+        "adUnitId": "adunit-656e9f2c8c5c3586"
+      },
+      "cubeAwayReviveRewarded": {
+        "adUnitId": "adunit-656e9f2c8c5c3586"
       }
     }
   },

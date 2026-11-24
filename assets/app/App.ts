@@ -16,7 +16,8 @@ import { AppStateMachine } from '../core/state/AppStateMachine';
 import type { Unsubscribe } from '../core/types/CommonTypes';
 import type { Platform } from '../platform/Platform';
 import { WebPlatform } from '../platform/WebPlatform';
-import { WeChatRewardedAdProvider } from '../platform/WeChatAdProvider';
+import { WeChatInterstitialAdProvider, WeChatRewardedAdProvider } from '../platform/WeChatAdProvider';
+import { WeChatInlineAdProvider } from '../platform/WeChatInlineAdProvider';
 import { WeChatPlatform } from '../platform/WeChatPlatform';
 import { TapMiniGamePlatform } from '../platform/TapMiniGamePlatform';
 import { isTapMiniGameEnvironment } from '../platform/TapMiniGameApi';
@@ -34,11 +35,13 @@ import {
 } from '../services/analytics/AnalyticsService';
 import {
     AD_PLACEMENTS,
+    LOBBY_RETURN_INTERSTITIAL,
     AdService,
     MockRewardedAdProvider,
     RewardedAdRouter,
     type RewardedAdProvider,
 } from '../services/ads/AdService';
+import { LOBBY_LIST_CUSTOM_AD } from '../services/ads/InlineAd';
 import { ConfigService } from '../services/config/ConfigService';
 import { FeedbackService } from '../services/feedback/FeedbackService';
 import { StorageService } from '../services/storage/StorageService';
@@ -354,6 +357,7 @@ export class App extends Component {
         await this.runStartupStage('game-catalog', async () => {
             const manifests = await configService.loadGameManifests();
             gameRegistry.load(manifests);
+            this.services.get(ACHIEVEMENT_SERVICE).migrateEarned(manifests);
         });
         await configService.loadAnnouncement();
 
@@ -453,6 +457,11 @@ export class App extends Component {
                 placement: AD_PLACEMENTS.rotateRingsHint,
                 adUnitId: wechatAds.rotateRingsHintRewarded.adUnitId,
             }),
+            Object.freeze({
+                gameId: 'cube-away',
+                placement: AD_PLACEMENTS.cubeAwayRevive,
+                adUnitId: wechatAds.cubeAwayReviveRewarded.adUnitId,
+            }),
         ]);
         const gameAdEnablement: Record<string, boolean> = {};
         Object.keys(config.ads.games).forEach((gameId) => {
@@ -461,6 +470,7 @@ export class App extends Component {
             gameAdEnablement[gameId] = config.ads.games[gameId]?.enabled === true;
         });
         const providers: Record<string, RewardedAdProvider> = {};
+        const wechatRewarded = new Map<string, WeChatRewardedAdProvider>();
         const tapRewarded = useRealTapAds ? new TapRewardedAdProvider({
             adUnitId: config.ads.tap.rewardedVideo.adUnitId,
             placements: rewardedRoutes.map((route) => route.placement),
@@ -469,22 +479,43 @@ export class App extends Component {
             const configuredEnabled = config.ads.games[route.gameId]?.enabled === true;
             gameAdEnablement[route.gameId] = configuredEnabled;
             // 未配置的广告位在所有平台都不可用；只有显式开启模拟广告才允许模拟奖励。
-            const adUnitId = useRealTapAds ? config.ads.tap.rewardedVideo.adUnitId : route.adUnitId;
-            if (!adUnitId.trim() && !useMockAds) return;
-            providers[route.placement] = tapRewarded ?? (useRealWeChatAds
-                ? new WeChatRewardedAdProvider({
-                    placement: route.placement,
-                    adUnitId,
-                })
-                : mockRewarded);
+            const adUnitId = (useRealTapAds ? config.ads.tap.rewardedVideo.adUnitId : route.adUnitId).trim();
+            if (!adUnitId && !useMockAds) return;
+            if (useRealWeChatAds) {
+                let provider = wechatRewarded.get(adUnitId);
+                if (!provider) {
+                    provider = new WeChatRewardedAdProvider({
+                        placements: rewardedRoutes
+                            .filter((entry) => entry.adUnitId.trim() === adUnitId)
+                            .map((entry) => entry.placement),
+                        adUnitId,
+                    });
+                    wechatRewarded.set(adUnitId, provider);
+                }
+                providers[route.placement] = provider;
+            } else {
+                providers[route.placement] = tapRewarded ?? mockRewarded;
+            }
         });
         const rewardedProvider = new RewardedAdRouter(providers);
+        const interstitialProvider = useRealWeChatAds && wechatAds.lobbyReturnInterstitial.adUnitId.trim()
+            ? new WeChatInterstitialAdProvider({
+                placements: [LOBBY_RETURN_INTERSTITIAL],
+                adUnitId: wechatAds.lobbyReturnInterstitial.adUnitId,
+            }) : undefined;
+        const inlineProvider = useRealWeChatAds && wechatAds.lobbyListCustom.adUnitId.trim()
+            ? new WeChatInlineAdProvider({
+                placement: LOBBY_LIST_CUSTOM_AD,
+                adUnitId: wechatAds.lobbyListCustom.adUnitId,
+            }) : undefined;
         const adService = new AdService(
             services.get(APP_STATE_MACHINE_SERVICE),
             rewardedProvider,
             services.get(ANALYTICS_SERVICE),
             Object.freeze(gameAdEnablement),
             platform,
+            interstitialProvider,
+            inlineProvider,
         );
         services.register(AD_SERVICE, adService);
 
@@ -499,8 +530,12 @@ export class App extends Component {
         }
         if (!useRealWeChatAds) return;
 
+        void adService.preloadInterstitial({ placement: LOBBY_RETURN_INTERSTITIAL, gameId: 'lobby' }).catch(() => {});
+        const preloadedWeChatUnits = new Set<string>();
         rewardedRoutes.forEach((route) => {
-            if (!adService.isEnabledForGame(route.gameId)) return;
+            const adUnitId = route.adUnitId.trim();
+            if (!adService.isEnabledForGame(route.gameId) || preloadedWeChatUnits.has(adUnitId)) return;
+            preloadedWeChatUnits.add(adUnitId);
             void adService.preloadRewarded({
                 placement: route.placement,
                 gameId: route.gameId,

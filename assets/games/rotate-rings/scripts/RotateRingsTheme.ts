@@ -12,9 +12,9 @@ export const RING_THEME = Object.freeze({
     primary: '#3D9BFF', hard: '#FF8A3A', gold: '#FFC83D',
     /** 主色加深：全屏通关页白字标题的描边。 */
     primaryDeep: '#1E6FD0', hardDeep: '#D9621A',
-    lockedText: '#A3AEC2', disabledTint: '#C5CCDA', dim: '#2A3350', shadow: '#2F3D5C',
-    /** 未解锁关卡格的陶瓷釉色、关内进度条底槽色。 */
-    lockedRing: '#D9DEE8', track: '#E9DCCD',
+    disabledTint: '#C5CCDA', dim: '#2A3350', shadow: '#2F3D5C',
+    /** 关内进度条底槽色。 */
+    track: '#E9DCCD',
     /** 棋盘物件的投影：向右下偏移（棋盘单位），网格与精灵共用颜色和透明度；偏移与柔化足以读出物件离开盘面的高度。 */
     boardShadow: { offsetX: .07, offsetY: -.22, softness: .42, spread: -.14, alpha: .34 },
     colors: ['#FF9A3C', '#3CC0F0', '#A46AF2', '#FF5B60', '#86D45A', '#5A82FF', '#FF74B4'],

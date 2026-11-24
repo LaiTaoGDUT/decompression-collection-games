@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "requirements": {
+    "width": 1280,
+    "height": 720,
+    "maxBytes": 200000,
+    "imageCount": 3,
+    "formats": [
+      "JPEG",
+      "JPG",
+      "PNG"
+    ],
+    "source": "用户提供的微信后台横版推广图上传要求截图"
+  },
+  "compression": {
+    "tool": "tinypng-batch",
+    "processed": 3,
+    "cached": 0,
+    "failed": 0,
+    "savedBytes": 547335
+  },
+  "images": [
+    {
+      "id": "landscape-v2-01",
+      "file": "1280x720-200KB/01-晴空合集-随心切换-1280x720.jpg",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "bytes": 96947,
+      "bytesBeforeTinify": 248512,
+      "source": "01-晴空合集-随心切换-原图.png",
+      "sha256": "001eb2a0d5bb97e39301ac4be6645c5929fc3f57d97d4eefaeb500ddb2ee2b86"
+    },
+    {
+      "id": "landscape-v2-02",
+      "file": "1280x720-200KB/02-活力合集-来一局-1280x720.jpg",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "bytes": 112247,
+      "bytesBeforeTinify": 312293,
+      "source": "02-活力合集-来一局-原图.png",
+      "sha256": "d2fa3b136ae30579555384cdb11bc6ee8c94c4062069c0c300197f5c4db1aa87"
+    },
+    {
+      "id": "landscape-v2-03",
+      "file": "1280x720-200KB/03-暖阳合集-放松一下-1280x720.jpg",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "bytes": 132998,
+      "bytesBeforeTinify": 328722,
+      "source": "03-暖阳合集-放松一下-原图.png",
+      "sha256": "13f388a9e4acaa3af935e6d875bf701346caf111585b7c5a2f54a3b9afb4b75d"
+    }
+  ]
+}

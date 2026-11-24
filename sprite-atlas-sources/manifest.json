@@ -3760,14 +3760,6 @@
         "maxSize": 2048,
         "frames": [
           {
-            "source": "visual/sunlit-v1/prepared/cloud-streaks.png",
-            "geometry": "full"
-          },
-          {
-            "source": "visual/atmosphere-v4/prepared/cloud-bank.png",
-            "geometry": "full"
-          },
-          {
             "source": "visual/cloudline-v1/prepared/tree.png",
             "geometry": "full"
           },
@@ -3788,12 +3780,32 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/icon-city.png",
-            "geometry": "full"
+            "source": "visual/skyward-v7/hud-icons.png",
+            "name": "icon-city",
+            "crop": [
+              111,
+              169,
+              616,
+              679
+            ],
+            "resize": [
+              53,
+              58
+            ]
           },
           {
-            "source": "visual/sunlit-v1/prepared/icon-people.png",
-            "geometry": "full"
+            "source": "visual/skyward-v7/hud-icons.png",
+            "name": "icon-people",
+            "crop": [
+              799,
+              261,
+              640,
+              599
+            ],
+            "resize": [
+              44,
+              41
+            ]
           },
           {
             "source": "visual/sunlit-v1/prepared/icon-heart.png",
@@ -3960,10 +3972,6 @@
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/star.png",
-            "geometry": "full"
-          },
-          {
             "source": "visual/sunlit-v1/prepared/sky-purplestar.png",
             "geometry": "full"
           },
@@ -3974,21 +3982,2927 @@
           {
             "source": "visual/sunlit-v1/prepared/sky-purplestar_little.png",
             "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/hud/city-hud",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-plate",
+            "crop": [
+              29,
+              55,
+              952,
+              270
+            ],
+            "resize": [
+              296,
+              84
+            ],
+            "insets": {
+              "borderLeft": 258,
+              "borderRight": 112,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
           },
           {
-            "source": "visual/sunlit-v1/prepared/combo-star-0.png",
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-panel",
+            "crop": [
+              1009,
+              163,
+              506,
+              714
+            ],
+            "insets": {
+              "borderLeft": 54,
+              "borderRight": 54,
+              "borderTop": 236,
+              "borderBottom": 54
+            }
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-button-gold",
+            "crop": [
+              51,
+              365,
+              216,
+              218
+            ],
+            "resize": [
+              139,
+              140
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-button-cream",
+            "crop": [
+              279,
+              369,
+              208,
+              216
+            ],
+            "resize": [
+              100,
+              104
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-heart",
+            "crop": [
+              507,
+              379,
+              222,
+              198
+            ],
+            "resize": [
+              72,
+              64
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-heart-empty",
+            "crop": [
+              741,
+              379,
+              220,
+              196
+            ],
+            "resize": [
+              72,
+              64
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-pill",
+            "crop": [
+              39,
+              613,
+              560,
+              184
+            ],
+            "resize": [
+              219,
+              72
+            ],
+            "insets": {
+              "borderLeft": 168,
+              "borderRight": 78,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-pill-large",
+            "crop": [
+              39,
+              613,
+              560,
+              184
+            ],
+            "resize": [
+              268,
+              88
+            ],
+            "insets": {
+              "borderLeft": 168,
+              "borderRight": 78,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/skyward-v7/hud-kit.png",
+            "name": "hud-ribbon",
+            "crop": [
+              37,
+              823,
+              918,
+              176
+            ],
+            "resize": [
+              600,
+              115
+            ],
+            "insets": {
+              "borderLeft": 128,
+              "borderRight": 128,
+              "borderTop": 0,
+              "borderBottom": 0
+            }
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-city",
+            "crop": [
+              19,
+              25,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-rooftop",
+            "crop": [
+              437,
+              25,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-clouds",
+            "crop": [
+              855,
+              25,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-sunset",
+            "crop": [
+              19,
+              443,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-stratosphere",
+            "crop": [
+              437,
+              443,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-orbit",
+            "crop": [
+              855,
+              443,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-moon",
+            "crop": [
+              19,
+              859,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-nebula",
+            "crop": [
+              437,
+              859,
+              374,
+              376
+            ],
+            "resize": [
+              187,
+              188
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/zone-icons.png",
+            "name": "zone-galaxy",
+            "crop": [
+              855,
+              859,
+              376,
+              376
+            ],
+            "resize": [
+              188,
+              188
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/fx/city-fx",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-word-0",
+            "crop": [
+              42,
+              190,
+              350,
+              187
+            ],
+            "resize": [
+              300,
+              160
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-word-1",
+            "crop": [
+              413,
+              191,
+              350,
+              182
+            ],
+            "resize": [
+              300,
+              156
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-word-2",
+            "crop": [
+              782,
+              193,
+              353,
+              184
+            ],
+            "resize": [
+              300,
+              156
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-word-3",
+            "crop": [
+              1155,
+              131,
+              348,
+              282
+            ],
+            "resize": [
+              300,
+              243
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-rays",
+            "crop": [
+              12,
+              522,
+              390,
+              390
+            ],
+            "resize": [
+              360,
+              360
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-ring",
+            "crop": [
+              396,
+              531,
+              378,
+              378
+            ],
+            "resize": [
+              256,
+              256
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-sparkle",
+            "crop": [
+              774,
+              546,
+              344,
+              344
+            ],
+            "resize": [
+              64,
+              64
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/fx-kit.png",
+            "name": "fx-dust",
+            "crop": [
+              1105,
+              608,
+              395,
+              225
+            ],
+            "resize": [
+              120,
+              68
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-glows.png",
+            "name": "sky-glow",
+            "crop": [
+              0,
+              0,
+              48,
+              48
+            ],
+            "resize": [
+              48,
+              48
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-glows.png",
+            "name": "sky-streak",
+            "crop": [
+              48,
+              0,
+              192,
+              12
+            ],
+            "resize": [
+              192,
+              12
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-glows.png",
+            "name": "sky-shaft",
+            "crop": [
+              240,
+              0,
+              160,
+              600
+            ],
+            "resize": [
+              160,
+              600
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-bird-0",
+            "crop": [
+              98,
+              153,
+              265,
+              249
+            ],
+            "resize": [
+              28,
+              26
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-bird-1",
+            "crop": [
+              415,
+              153,
+              265,
+              249
+            ],
+            "resize": [
+              28,
+              26
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-gull-0",
+            "crop": [
+              790,
+              181,
+              331,
+              172
+            ],
+            "resize": [
+              52,
+              27
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-gull-1",
+            "crop": [
+              1159,
+              170,
+              331,
+              172
+            ],
+            "resize": [
+              52,
+              27
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-plane",
+            "crop": [
+              68,
+              666,
+              248,
+              164
+            ],
+            "resize": [
+              46,
+              30
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-lantern",
+            "crop": [
+              432,
+              589,
+              288,
+              295
+            ],
+            "resize": [
+              60,
+              61
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-satellite",
+            "crop": [
+              794,
+              637,
+              314,
+              170
+            ],
+            "resize": [
+              48,
+              26
+            ]
+          },
+          {
+            "source": "visual/skyward-v7/sky-life-kit.png",
+            "name": "sky-comet",
+            "crop": [
+              1183,
+              673,
+              305,
+              149
+            ],
+            "resize": [
+              132,
+              64
+            ]
+          }
+        ]
+      }
+    ],
+    "cozy-sudoku": [
+      {
+        "path": "visual/v2/gameplay-top",
+        "frames": [
+          {
+            "source": "visual/v3/gameplay-bleed-750.png",
+            "geometry": "full",
+            "name": "gameplay-top",
+            "crop": [
+              0,
+              0,
+              750,
+              667
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/gameplay-bottom",
+        "frames": [
+          {
+            "source": "visual/v3/gameplay-bleed-750.png",
+            "geometry": "full",
+            "name": "gameplay-bottom",
+            "crop": [
+              0,
+              667,
+              750,
+              667
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/map-top",
+        "frames": [
+          {
+            "source": "visual/v4/map-paper-750.png",
+            "geometry": "full",
+            "name": "map-top",
+            "crop": [
+              0,
+              0,
+              750,
+              667
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/map-bottom",
+        "frames": [
+          {
+            "source": "visual/v4/map-paper-750.png",
+            "geometry": "full",
+            "name": "map-bottom",
+            "crop": [
+              0,
+              667,
+              750,
+              667
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/controls",
+        "frames": [
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "square",
+            "crop": [
+              650,
+              98,
+              246,
+              244
+            ],
+            "resize": [
+              94,
+              93
+            ],
+            "insets": {
+              "borderLeft": 55,
+              "borderRight": 55,
+              "borderTop": 45,
+              "borderBottom": 45
+            }
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "rule-chip",
+            "crop": [
+              911,
+              145,
+              335,
+              146
+            ],
+            "resize": [
+              228,
+              99
+            ],
+            "insets": {
+              "borderLeft": 55,
+              "borderRight": 55,
+              "borderTop": 45,
+              "borderBottom": 45
+            }
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "lock",
+            "crop": [
+              705,
+              434,
+              163,
+              199
+            ],
+            "resize": [
+              29,
+              35
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "undo",
+            "crop": [
+              80,
+              727,
+              201,
+              216
+            ],
+            "resize": [
+              62,
+              67
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "erase",
+            "crop": [
+              377,
+              719,
+              219,
+              220
+            ],
+            "resize": [
+              62,
+              62
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "note",
+            "crop": [
+              675,
+              716,
+              201,
+              225
+            ],
+            "resize": [
+              62,
+              69
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "hint",
+            "crop": [
+              945,
+              690,
+              287,
+              265
+            ],
+            "resize": [
+              80,
+              74
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "primary",
+            "crop": [
+              21,
+              1028,
+              351,
+              149
+            ],
+            "insets": {
+              "borderLeft": 55,
+              "borderRight": 55,
+              "borderTop": 45,
+              "borderBottom": 45
+            }
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "tape-peach",
+            "crop": [
+              377,
+              1032,
+              273,
+              134
+            ],
+            "resize": [
+              160,
+              79
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "tape-sage",
+            "crop": [
+              660,
+              1042,
+              297,
+              133
+            ],
+            "resize": [
+              160,
+              72
+            ]
+          },
+          {
+            "source": "visual/v2/controls-original.png",
+            "geometry": "full",
+            "name": "stamp",
+            "crop": [
+              958,
+              962,
+              279,
+              269
+            ],
+            "resize": [
+              160,
+              154
+            ]
+          },
+          {
+            "source": "visual/v2/gameplay-reference.png",
+            "geometry": "full",
+            "name": "back-button",
+            "crop": [
+              95,
+              150,
+              127,
+              124
+            ],
+            "resize": [
+              98,
+              96
+            ]
+          },
+          {
+            "source": "visual/v2/gameplay-reference.png",
+            "geometry": "full",
+            "name": "pause-button",
+            "crop": [
+              722,
+              150,
+              125,
+              124
+            ],
+            "resize": [
+              98,
+              97
+            ]
+          },
+          {
+            "source": "visual/v2/keys-native-original.png",
+            "geometry": "full",
+            "name": "rule-classic-4",
+            "crop": [
+              326,
+              317,
+              288,
+              76
+            ],
+            "resize": [
+              230,
+              61
+            ]
+          },
+          {
+            "source": "visual/v2/keys-nine-original.png",
+            "geometry": "full",
+            "name": "rule-classic-9",
+            "crop": [
+              326,
+              317,
+              288,
+              76
+            ],
+            "resize": [
+              230,
+              61
+            ]
+          },
+          {
+            "source": "visual/v2/keys-native-original.png",
+            "geometry": "full",
+            "name": "help-button",
+            "crop": [
+              632,
+              316,
+              85,
+              78
+            ],
+            "resize": [
+              68,
+              62
+            ]
+          },
+          {
+            "source": "visual/v2/keys-four-alpha-original.png",
+            "geometry": "full",
+            "name": "key",
+            "crop": [
+              72,
+              1370,
+              200,
+              186
+            ],
+            "resize": [
+              149,
+              139
+            ]
+          },
+          {
+            "source": "visual/v2/keys-four-alpha-original.png",
+            "geometry": "full",
+            "name": "key-selected",
+            "crop": [
+              272,
+              1370,
+              200,
+              186
+            ],
+            "resize": [
+              149,
+              139
+            ]
+          },
+          {
+            "source": "visual/v2/keys-nine-alpha-original.png",
+            "geometry": "full",
+            "name": "key-wide",
+            "crop": [
+              110,
+              1364,
+              144,
+              115
+            ],
+            "resize": [
+              115,
+              92
+            ]
+          },
+          {
+            "source": "visual/v2/keys-nine-alpha-original.png",
+            "geometry": "full",
+            "name": "key-wide-selected",
+            "crop": [
+              257,
+              1364,
+              144,
+              115
+            ],
+            "resize": [
+              115,
+              92
+            ]
+          },
+          {
+            "source": "visual/v2/selected-exact-original.png",
+            "geometry": "full",
+            "name": "cell-selected",
+            "crop": [
+              141,
+              134,
+              983,
+              976
+            ],
+            "resize": [
+              155,
+              154
+            ]
+          },
+          {
+            "source": "visual/v2/guide-exact-original.png",
+            "geometry": "full",
+            "name": "guide-arrow",
+            "crop": [
+              301,
+              564,
+              393,
+              739
+            ],
+            "resize": [
+              120,
+              226
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/panels",
+        "frames": [
+          {
+            "source": "visual/v2/panels-original.png",
+            "geometry": "full",
+            "name": "panel-victory",
+            "crop": [
+              38,
+              84,
+              668,
+              921
+            ],
+            "resize": [
+              650,
+              896
+            ]
+          },
+          {
+            "source": "visual/v2/panels-original.png",
+            "geometry": "full",
+            "name": "panel-pause",
+            "crop": [
+              743,
+              94,
+              669,
+              913
+            ],
+            "resize": [
+              650,
+              887
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/extras",
+        "frames": [
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "back",
+            "crop": [
+              93,
+              103,
+              120,
+              178
+            ],
+            "resize": [
+              64,
+              95
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "pause",
+            "crop": [
+              402,
+              106,
+              140,
+              164
+            ],
+            "resize": [
+              64,
+              75
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "thermo",
+            "crop": [
+              702,
+              51,
+              144,
+              259
+            ],
+            "resize": [
+              64,
+              115
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "kropki",
+            "crop": [
+              976,
+              113,
+              244,
+              152
+            ],
+            "resize": [
+              64,
+              40
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "cage",
+            "crop": [
+              57,
+              379,
+              201,
+              219
+            ],
+            "resize": [
+              64,
+              70
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "arrow",
+            "crop": [
+              344,
+              366,
+              259,
+              240
+            ],
+            "resize": [
+              64,
+              59
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "clock",
+            "crop": [
+              641,
+              368,
+              256,
+              256
+            ],
+            "resize": [
+              96,
+              96
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "book",
+            "crop": [
+              963,
+              396,
+              263,
+              202
+            ],
+            "resize": [
+              64,
+              49
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "house",
+            "crop": [
+              52,
+              686,
+              213,
+              204
+            ],
+            "resize": [
+              64,
+              61
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "restart",
+            "crop": [
+              369,
+              696,
+              198,
+              191
+            ],
+            "resize": [
+              64,
+              62
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "music",
+            "crop": [
+              691,
+              709,
+              211,
+              174
+            ],
+            "resize": [
+              64,
+              53
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "sound",
+            "crop": [
+              1022,
+              653,
+              156,
+              279
+            ],
+            "resize": [
+              64,
+              114
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "tape-blue",
+            "crop": [
+              39,
+              1037,
+              244,
+              123
+            ],
+            "resize": [
+              64,
+              32
+            ]
+          },
+          {
+            "source": "visual/v2/extras-original.png",
+            "geometry": "full",
+            "name": "best-badge",
+            "crop": [
+              963,
+              1018,
+              266,
+              139
+            ],
+            "resize": [
+              120,
+              63
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v4/map-route",
+        "frames": [
+          {
+            "source": "visual/v4/map-route-750.png",
+            "geometry": "full",
+            "name": "page-route",
+            "crop": [
+              260,
+              300,
+              240,
+              650
+            ]
+          },
+          {
+            "source": "visual/v4/map-route-750.png",
+            "geometry": "full",
+            "name": "map-stairs",
+            "crop": [
+              0,
+              321,
+              260,
+              440
+            ]
+          },
+          {
+            "source": "visual/v4/map-route-750.png",
+            "geometry": "full",
+            "name": "map-cottage",
+            "crop": [
+              450,
+              678,
+              300,
+              404
+            ]
+          },
+          {
+            "source": "visual/v3/rule-loop-original.png",
+            "geometry": "full",
+            "name": "rule-loop",
+            "crop": [
+              91,
+              113,
+              1403,
+              766
+            ],
+            "resize": [
+              150,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v5/map-decors-a",
+        "frames": [
+          {
+            "source": "visual/v5/decor-a-original.png",
+            "geometry": "full",
+            "name": "map-decor-a-0-left",
+            "crop": [
+              86,
+              137,
+              355,
+              324
+            ],
+            "resize": [
+              210,
+              192
+            ]
+          },
+          {
+            "source": "visual/v5/decor-a-original.png",
+            "geometry": "full",
+            "name": "map-decor-a-0-right",
+            "crop": [
+              584,
+              84,
+              449,
+              379
+            ],
+            "resize": [
+              230,
+              194
+            ]
+          },
+          {
+            "source": "visual/v5/decor-a-original.png",
+            "geometry": "full",
+            "name": "map-decor-a-1-left",
+            "crop": [
+              72,
+              566,
+              360,
+              390
+            ],
+            "resize": [
+              210,
+              228
+            ]
+          },
+          {
+            "source": "visual/v5/decor-a-original.png",
+            "geometry": "full",
+            "name": "map-decor-a-1-right",
+            "crop": [
+              595,
+              550,
+              438,
+              403
+            ],
+            "resize": [
+              230,
+              212
+            ]
+          },
+          {
+            "source": "visual/v5/decor-a-original.png",
+            "geometry": "full",
+            "name": "map-decor-a-2-left",
+            "crop": [
+              27,
+              1032,
+              486,
+              354
+            ],
+            "resize": [
+              210,
+              153
+            ]
+          },
+          {
+            "source": "visual/v5/decor-a-original.png",
+            "geometry": "full",
+            "name": "map-decor-a-2-right",
+            "crop": [
+              586,
+              1094,
+              477,
+              286
+            ],
+            "resize": [
+              230,
+              138
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v5/map-decors-b",
+        "frames": [
+          {
+            "source": "visual/v5/decor-b-original.png",
+            "geometry": "full",
+            "name": "map-decor-b-0-left",
+            "crop": [
+              43,
+              65,
+              467,
+              436
+            ],
+            "resize": [
+              210,
+              196
+            ]
+          },
+          {
+            "source": "visual/v5/decor-b-original.png",
+            "geometry": "full",
+            "name": "map-decor-b-0-right",
+            "crop": [
+              604,
+              148,
+              435,
+              359
+            ],
+            "resize": [
+              230,
+              190
+            ]
+          },
+          {
+            "source": "visual/v5/decor-b-original.png",
+            "geometry": "full",
+            "name": "map-decor-b-1-left",
+            "crop": [
+              45,
+              616,
+              472,
+              298
+            ],
+            "resize": [
+              210,
+              133
+            ]
+          },
+          {
+            "source": "visual/v5/decor-b-original.png",
+            "geometry": "full",
+            "name": "map-decor-b-1-right",
+            "crop": [
+              572,
+              638,
+              472,
+              280
+            ],
+            "resize": [
+              230,
+              136
+            ]
+          },
+          {
+            "source": "visual/v5/decor-b-original.png",
+            "geometry": "full",
+            "name": "map-decor-b-2-left",
+            "crop": [
+              49,
+              966,
+              484,
+              395
+            ],
+            "resize": [
+              210,
+              171
+            ]
+          },
+          {
+            "source": "visual/v5/decor-b-original.png",
+            "geometry": "full",
+            "name": "map-decor-b-2-right",
+            "crop": [
+              704,
+              995,
+              301,
+              384
+            ],
+            "resize": [
+              230,
+              293
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/geometry",
+        "frames": [
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "thermo-icon",
+            "crop": [
+              720,
+              99,
+              162,
+              286
+            ],
+            "resize": [
+              64,
+              113
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "dot-white",
+            "crop": [
+              398,
+              482,
+              134,
+              133
+            ],
+            "resize": [
+              24,
+              24
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "dot-black",
+            "crop": [
+              710,
+              481,
+              137,
+              136
+            ],
+            "resize": [
+              24,
+              24
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "switch-on",
+            "crop": [
+              946,
+              458,
+              293,
+              171
+            ],
+            "resize": [
+              104,
+              61
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "switch-off",
+            "crop": [
+              24,
+              724,
+              289,
+              165
+            ],
+            "resize": [
+              104,
+              59
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "undo-green",
+            "crop": [
+              366,
+              716,
+              202,
+              193
+            ],
+            "resize": [
+              64,
+              61
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "erase-peach",
+            "crop": [
+              680,
+              707,
+              215,
+              211
+            ],
+            "resize": [
+              64,
+              63
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "note-blue",
+            "crop": [
+              993,
+              705,
+              215,
+              202
+            ],
+            "resize": [
+              64,
+              60
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "hint-gold",
+            "crop": [
+              25,
+              942,
+              252,
+              241
+            ],
+            "resize": [
+              74,
+              71
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "switch-thumb",
+            "crop": [
+              365,
+              1016,
+              175,
+              174
+            ],
+            "resize": [
+              42,
+              42
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "rule-brush",
+            "crop": [
+              581,
+              1022,
+              367,
+              160
+            ],
+            "resize": [
+              228,
+              99
+            ]
+          },
+          {
+            "source": "visual/v2/geometry-original.png",
+            "geometry": "full",
+            "name": "cell-highlight",
+            "crop": [
+              984,
+              947,
+              255,
+              257
+            ],
+            "resize": [
+              155,
+              156
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v9/board-rules",
+        "frames": [
+          {
+            "source": "visual/v9/board-rules-original.png",
+            "geometry": "full",
+            "name": "thermo-bulb",
+            "crop": [
+              86,
+              128,
+              315,
+              315
+            ],
+            "resize": [
+              100,
+              100
+            ]
+          },
+          {
+            "source": "visual/v9/board-rules-original.png",
+            "geometry": "full",
+            "name": "thermo-pipe",
+            "crop": [
+              530,
+              246,
+              428,
+              86
+            ],
+            "resize": [
+              169,
+              34
+            ]
+          },
+          {
+            "source": "visual/v9/board-rules-original.png",
+            "geometry": "full",
+            "name": "thermo-joint",
+            "crop": [
+              90,
+              615,
+              304,
+              304
+            ],
+            "resize": [
+              34,
+              34
+            ]
+          },
+          {
+            "source": "visual/v9/board-rules-original.png",
+            "geometry": "full",
+            "name": "arrow-circle",
+            "crop": [
+              572,
+              594,
+              341,
+              341
+            ],
+            "resize": [
+              132,
+              132
+            ]
+          },
+          {
+            "source": "visual/v9/board-rules-original.png",
+            "geometry": "full",
+            "name": "arrow-head",
+            "crop": [
+              199,
+              1136,
+              126,
+              221
+            ],
+            "resize": [
+              24,
+              42
+            ]
+          },
+          {
+            "source": "visual/v9/board-rules-original.png",
+            "geometry": "full",
+            "name": "number-backing",
+            "crop": [
+              550,
+              1078,
+              337,
+              337
+            ],
+            "resize": [
+              90,
+              90
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v10/new-rules",
+        "frames": [
+          {
+            "source": "visual/v10/new-rules-original.png",
+            "geometry": "full",
+            "name": "parity-odd",
+            "crop": [
+              121,
+              35,
+              501,
+              510
+            ],
+            "resize": [
+              110,
+              112
+            ]
+          },
+          {
+            "source": "visual/v10/new-rules-original.png",
+            "geometry": "full",
+            "name": "parity-even",
+            "crop": [
+              873,
+              49,
+              501,
+              482
+            ],
+            "resize": [
+              110,
+              106
+            ]
+          },
+          {
+            "source": "visual/v10/new-rules-original.png",
+            "geometry": "full",
+            "name": "inequality-sign",
+            "crop": [
+              246,
+              659,
+              283,
+              305
+            ],
+            "resize": [
+              46,
+              50
+            ]
+          },
+          {
+            "source": "visual/v10/new-rules-original.png",
+            "geometry": "full",
+            "name": "diagonal-band",
+            "crop": [
+              842,
+              778,
+              553,
+              52
+            ],
+            "resize": [
+              191,
+              18
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/digits",
+        "frames": [
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-1",
+            "crop": [
+              98,
+              99,
+              93,
+              214
+            ],
+            "resize": [
+              35,
+              81
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-2",
+            "crop": [
+              364,
+              92,
+              159,
+              215
+            ],
+            "resize": [
+              59,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-3",
+            "crop": [
+              648,
+              90,
+              155,
+              223
+            ],
+            "resize": [
+              56,
+              81
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-4",
+            "crop": [
+              72,
+              413,
+              185,
+              223
+            ],
+            "resize": [
+              66,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-5",
+            "crop": [
+              368,
+              415,
+              152,
+              221
+            ],
+            "resize": [
+              55,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-6",
+            "crop": [
+              648,
+              411,
+              162,
+              225
+            ],
+            "resize": [
+              58,
+              81
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-7",
+            "crop": [
+              83,
+              735,
+              155,
+              213
+            ],
+            "resize": [
+              58,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-8",
+            "crop": [
+              362,
+              726,
+              161,
+              218
+            ],
+            "resize": [
+              59,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-9",
+            "crop": [
+              646,
+              726,
+              159,
+              219
+            ],
+            "resize": [
+              58,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-1-green",
+            "crop": [
+              97,
+              1025,
+              94,
+              213
+            ],
+            "resize": [
+              35,
+              79
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-2-green",
+            "crop": [
+              364,
+              1018,
+              159,
+              213
+            ],
+            "resize": [
+              60,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-3-green",
+            "crop": [
+              647,
+              1018,
+              156,
+              220
+            ],
+            "resize": [
+              57,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-4-green",
+            "crop": [
+              72,
+              1309,
+              185,
+              219
+            ],
+            "resize": [
+              68,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-5-green",
+            "crop": [
+              368,
+              1310,
+              152,
+              218
+            ],
+            "resize": [
+              56,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-6-green",
+            "crop": [
+              646,
+              1305,
+              162,
+              224
+            ],
+            "resize": [
+              58,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-7-green",
+            "crop": [
+              91,
+              1589,
+              145,
+              164
+            ],
+            "resize": [
+              71,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-8-green",
+            "crop": [
+              370,
+              1581,
+              142,
+              172
+            ],
+            "resize": [
+              66,
+              80
+            ]
+          },
+          {
+            "source": "visual/v2/ink-digits-refined-original.png",
+            "geometry": "full",
+            "name": "digit-9-green",
+            "crop": [
+              653,
+              1581,
+              144,
+              172
+            ],
+            "resize": [
+              67,
+              80
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v4/map-ui",
+        "frames": [
+          {
+            "source": "visual/v5/title-original.png",
+            "geometry": "full",
+            "name": "map-title",
+            "crop": [
+              138,
+              213,
+              1809,
+              375
+            ],
+            "resize": [
+              420,
+              87
+            ]
+          },
+          {
+            "source": "visual/v4/map-pieces-original.png",
+            "geometry": "full",
+            "name": "rule-tag",
+            "crop": [
+              641,
+              215,
+              417,
+              253
+            ],
+            "resize": [
+              250,
+              152
+            ]
+          },
+          {
+            "source": "visual/v4/map-pieces-original.png",
+            "geometry": "full",
+            "name": "level",
+            "crop": [
+              164,
+              658,
+              276,
+              277
+            ],
+            "resize": [
+              98,
+              98
+            ]
+          },
+          {
+            "source": "visual/v4/map-pieces-original.png",
+            "geometry": "full",
+            "name": "level-active",
+            "crop": [
+              639,
+              595,
+              393,
+              360
+            ],
+            "resize": [
+              155,
+              142
+            ]
+          },
+          {
+            "source": "visual/v4/map-pieces-original.png",
+            "geometry": "full",
+            "name": "map-primary",
+            "crop": [
+              28,
+              1111,
+              789,
+              201
+            ],
+            "resize": [
+              550,
+              140
+            ]
+          },
+          {
+            "source": "visual/v4/map-pieces-original.png",
+            "geometry": "full",
+            "name": "check",
+            "crop": [
+              900,
+              1132,
+              155,
+              155
+            ],
+            "resize": [
+              34,
+              34
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/materials",
+        "frames": [
+          {
+            "source": "visual/v2/materials-original.png",
+            "geometry": "full",
+            "name": "sage-button",
+            "crop": [
+              20,
+              94,
+              852,
+              194
+            ],
+            "resize": [
+              550,
+              125
+            ],
+            "insets": {
+              "borderLeft": 100,
+              "borderRight": 100,
+              "borderTop": 48,
+              "borderBottom": 48
+            }
+          },
+          {
+            "source": "visual/v2/materials-original.png",
+            "geometry": "full",
+            "name": "inset",
+            "crop": [
+              16,
+              368,
+              856,
+              334
+            ],
+            "resize": [
+              575,
+              224
+            ],
+            "insets": {
+              "borderLeft": 100,
+              "borderRight": 100,
+              "borderTop": 48,
+              "borderBottom": 48
+            }
+          },
+          {
+            "source": "visual/v2/materials-original.png",
+            "geometry": "full",
+            "name": "secondary-gray",
+            "crop": [
+              14,
+              769,
+              860,
+              194
+            ],
+            "resize": [
+              550,
+              124
+            ],
+            "insets": {
+              "borderLeft": 100,
+              "borderRight": 100,
+              "borderTop": 48,
+              "borderBottom": 48
+            }
+          },
+          {
+            "source": "visual/v2/materials-original.png",
+            "geometry": "full",
+            "name": "secondary-peach",
+            "crop": [
+              137,
+              1028,
+              613,
+              197
+            ],
+            "resize": [
+              264,
+              85
+            ],
+            "insets": {
+              "borderLeft": 100,
+              "borderRight": 100,
+              "borderTop": 48,
+              "borderBottom": 48
+            }
+          },
+          {
+            "source": "visual/v2/materials-original.png",
+            "geometry": "full",
+            "name": "secondary-cream",
+            "crop": [
+              24,
+              1276,
+              840,
+              198
+            ],
+            "resize": [
+              550,
+              130
+            ],
+            "insets": {
+              "borderLeft": 100,
+              "borderRight": 100,
+              "borderTop": 48,
+              "borderBottom": 48
+            }
+          },
+          {
+            "source": "visual/v2/materials-original.png",
+            "geometry": "full",
+            "name": "badge",
+            "crop": [
+              210,
+              1522,
+              471,
+              177
+            ],
+            "resize": [
+              184,
+              69
+            ],
+            "insets": {
+              "borderLeft": 100,
+              "borderRight": 100,
+              "borderTop": 48,
+              "borderBottom": 48
+            }
+          }
+        ]
+      },
+      {
+        "path": "visual/v3/pause",
+        "frames": [
+          {
+            "source": "visual/v6/pause-three-original.png",
+            "geometry": "full",
+            "name": "panel-exact-pause",
+            "crop": [
+              132,
+              200,
+              867,
+              1071
+            ],
+            "resize": [
+              600,
+              741
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v6/glyphs",
+        "frames": [
+          {
+            "source": "visual/v6/centered-glyphs-original.png",
+            "geometry": "full",
+            "name": "nav-left",
+            "crop": [
+              296,
+              210,
+              193,
+              307
+            ],
+            "resize": [
+              20,
+              32
+            ]
+          },
+          {
+            "source": "visual/v6/centered-glyphs-original.png",
+            "geometry": "full",
+            "name": "nav-right",
+            "crop": [
+              979,
+              210,
+              193,
+              307
+            ],
+            "resize": [
+              20,
+              32
+            ]
+          },
+          {
+            "source": "visual/v6/centered-glyphs-original.png",
+            "geometry": "full",
+            "name": "close",
+            "crop": [
+              1618,
+              218,
+              303,
+              293
+            ],
+            "resize": [
+              26,
+              25
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/panel-exact-thermo",
+        "frames": [
+          {
+            "source": "visual/v2/panel-exact-thermo-750.png",
+            "geometry": "full",
+            "name": "panel-exact-thermo",
+            "crop": [
+              58,
+              239,
+              642,
+              859
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/panel-exact-kropki",
+        "frames": [
+          {
+            "source": "visual/v2/panel-exact-kropki-750.png",
+            "geometry": "full",
+            "name": "panel-exact-kropki",
+            "crop": [
+              32,
+              188,
+              694,
+              990
+            ],
+            "resize": [
+              626,
+              893
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/panel-exact-cage",
+        "frames": [
+          {
+            "source": "visual/v2/panel-exact-cage-750.png",
+            "geometry": "full",
+            "name": "panel-exact-cage",
+            "crop": [
+              28,
+              184,
+              696,
+              971
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/panel-exact-arrow",
+        "frames": [
+          {
+            "source": "visual/v2/panel-exact-arrow-750.png",
+            "geometry": "full",
+            "name": "panel-exact-arrow",
+            "crop": [
+              42,
+              239,
+              667,
+              888
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/v2/panel-exact-victory",
+        "frames": [
+          {
+            "source": "visual/v2/panel-exact-victory-750.png",
+            "geometry": "full",
+            "name": "panel-exact-victory",
+            "crop": [
+              50,
+              269,
+              650,
+              866
+            ]
+          }
+        ]
+      }
+    ],
+    "cube-away": [
+      {
+        "path": "visual/ui/cube_ui",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/ui/btn_cobalt.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 52,
+              "borderRight": 52,
+              "borderTop": 26,
+              "borderBottom": 33
+            }
+          },
+          {
+            "source": "visual/ui/btn_emerald.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 51,
+              "borderRight": 51,
+              "borderTop": 25,
+              "borderBottom": 32
+            }
+          },
+          {
+            "source": "visual/ui/btn_amber.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 48,
+              "borderRight": 48,
+              "borderTop": 24,
+              "borderBottom": 30
+            }
+          },
+          {
+            "source": "visual/ui/btn_slate.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 36,
+              "borderRight": 36,
+              "borderTop": 18,
+              "borderBottom": 22
+            }
+          },
+          {
+            "source": "visual/ui/btn_circle.png",
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/combo-star-1.png",
+            "source": "visual/ui/dialog_panel.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 56,
+              "borderRight": 56,
+              "borderTop": 52,
+              "borderBottom": 62
+            }
+          },
+          {
+            "source": "visual/ui/chapter_banner.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 48,
+              "borderRight": 240,
+              "borderTop": 28,
+              "borderBottom": 34
+            }
+          },
+          {
+            "source": "visual/ui/puck_cleared.png",
             "geometry": "full"
           },
           {
-            "source": "visual/sunlit-v1/prepared/combo-star-2.png",
+            "source": "visual/ui/puck_current.png",
             "geometry": "full"
           },
           {
-            "source": "visual/atmosphere-v4/prepared/cloud-bank-thin.png",
+            "source": "visual/ui/puck_locked.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/puck_milestone.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_hint.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_hammer.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_rotate.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_star.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_back.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_help.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_sound_on.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_sound_off.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_heart.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ui/icon_star_sm.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/ingame/cube_ingame",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/ingame/ingame_header_frame.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 18,
+              "borderRight": 19,
+              "borderTop": 14,
+              "borderBottom": 32
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_header_hard.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 20,
+              "borderRight": 19,
+              "borderTop": 12,
+              "borderBottom": 32
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_header_superhard.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 20,
+              "borderRight": 19,
+              "borderTop": 13,
+              "borderBottom": 32
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_level_frame.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 25,
+              "borderRight": 25,
+              "borderTop": 18,
+              "borderBottom": 30
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_level_hard.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 25,
+              "borderRight": 25,
+              "borderTop": 18,
+              "borderBottom": 30
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_level_superhard.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 25,
+              "borderRight": 25,
+              "borderTop": 18,
+              "borderBottom": 30
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_label_hard.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/ingame_label_superhard.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/setting_btn.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 8,
+              "borderRight": 8,
+              "borderTop": 8,
+              "borderBottom": 8
+            }
+          },
+          {
+            "source": "visual/ingame/setting_gear.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/item_btn.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 30,
+              "borderRight": 32,
+              "borderTop": 14,
+              "borderBottom": 52
+            }
+          },
+          {
+            "source": "visual/ingame/booster_hint.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/booster_eraser.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/booster_cane.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/circle_frame.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_movie.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_lock.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_arrow.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/heart_on.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/heart_off.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/combo_gauge_frame.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 22,
+              "borderRight": 22,
+              "borderTop": 8,
+              "borderBottom": 8
+            }
+          },
+          {
+            "source": "visual/ingame/combo_gauge_on.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderRight": 16,
+              "borderTop": 6,
+              "borderBottom": 6
+            }
+          },
+          {
+            "source": "visual/ingame/combo_gauge_off.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 16,
+              "borderRight": 16,
+              "borderTop": 6,
+              "borderBottom": 6
+            }
+          },
+          {
+            "source": "visual/ingame/ingame_message_pop.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 56,
+              "borderRight": 56,
+              "borderTop": 1,
+              "borderBottom": 1
+            }
+          },
+          {
+            "source": "visual/ingame/pop_frame.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 28,
+              "borderRight": 28,
+              "borderTop": 28,
+              "borderBottom": 28
+            }
+          },
+          {
+            "source": "visual/ingame/pop_inner_frame.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 14,
+              "borderRight": 14,
+              "borderTop": 18,
+              "borderBottom": 14
+            }
+          },
+          {
+            "source": "visual/ingame/btn_green.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 17,
+              "borderRight": 17,
+              "borderTop": 10,
+              "borderBottom": 30
+            }
+          },
+          {
+            "source": "visual/ingame/btn_orange.png",
+            "geometry": "full",
+            "insets": {
+              "borderLeft": 19,
+              "borderRight": 19,
+              "borderTop": 14,
+              "borderBottom": 32
+            }
+          },
+          {
+            "source": "visual/ingame/close_btn.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/ribbon_banner.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_heart_broken.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_star_fail.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/setting_on.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/setting_off.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_bgm.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_se.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/icon_haptic.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/fx_star.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/fx_glow_star.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/fx_sunburst.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/fx_glow_disc.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/fx_ring.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/confetti_pink.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/confetti_cyan.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/confetti_gold.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/confetti_green.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/confetti_purple.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/ingame/confetti_red.png",
+            "geometry": "full"
+          }
+        ]
+      },
+      {
+        "path": "visual/mint/cube_mint",
+        "maxSize": 1024,
+        "frames": [
+          {
+            "source": "visual/mint/victory_badge.png",
+            "geometry": "full",
+            "resize": [
+              480,
+              480
+            ]
+          },
+          {
+            "source": "visual/mint/failure_portrait.png",
+            "geometry": "full",
+            "resize": [
+              380,
+              190
+            ]
+          }
+        ]
+      },
+      {
+        "path": "visual/mint/snake_heads",
+        "maxSize": 256,
+        "frames": [
+          {
+            "source": "visual/mint/snake_head_side.png",
+            "geometry": "full"
+          },
+          {
+            "source": "visual/mint/snake_head_front.png",
             "geometry": "full"
           }
         ]

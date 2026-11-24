@@ -1,0 +1,94 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "9db4d792-f684-5b51-b560-684c7dd78ddc",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "9db4d792-f684-5b51-b560-684c7dd78ddc@f9941",
+      "displayName": "btn_amber",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "rawWidth": 280,
+        "rawHeight": 101,
+        "width": 280,
+        "height": 101,
+        "borderTop": 24,
+        "borderBottom": 30,
+        "borderLeft": 48,
+        "borderRight": 48,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "maxPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "9db4d792-f684-5b51-b560-684c7dd78ddc@6c48a"
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "9db4d792-f684-5b51-b560-684c7dd78ddc@6c48a",
+      "displayName": "btn_amber",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "9db4d792-f684-5b51-b560-684c7dd78ddc",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": true,
+    "hasAlpha": true,
+    "redirect": "9db4d792-f684-5b51-b560-684c7dd78ddc@f9941"
+  }
+}

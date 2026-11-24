@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""生成猫咪数独普通与困难模式的独立关卡序列。
+"""历史题库的提取与核对工具。当前发行题库用 build-level-bank.cjs 生成。
+
+本工具需指定独立的 --output，供检查旧题库来源。
 
 数据来源是 Meowdoku（com.oakever.meowdoku）Android 包里的题库 json。这些 json
 在运行时用固定串循环异或（见原作 `scripts/module/bank/model/level_bank_io.gd`），
@@ -9,19 +11,19 @@
 
     # 直接从 xapk / apk 里取题库（推荐）
     python3 project-scripts/meowdoku/build-level-bank.py \
-        --xapk ~/Downloads/Meowdoku_+Brain+Puzzle+Games_1.18.0_APKPure.xapk
+        --xapk ~/Downloads/Meowdoku.xapk --output /tmp/meowdoku-old.ts
 
     # 或者指向已经解密的题库目录
-    python3 project-scripts/meowdoku/build-level-bank.py --banks /tmp/meowdoku-levels
+    python3 project-scripts/meowdoku/build-level-bank.py --banks /tmp/meowdoku-levels --output /tmp/meowdoku-old.ts
 
-    # 独立困难模式：SuperHard 题库，前 rank4 后 rank5，默认 200 关
-    python3 project-scripts/meowdoku/build-level-bank.py --banks /tmp/meowdoku-levels --mode hard
+    # 独立困难模式：SuperHard 题库，前 rank4 后 rank5，默认取完全部不重复题
+    python3 project-scripts/meowdoku/build-level-bank.py --banks /tmp/meowdoku-levels --mode hard --output /tmp/meowdoku-old-hard.ts
 
     # 只校验不写文件
-    python3 project-scripts/meowdoku/build-level-bank.py --banks ... --check
+    python3 project-scripts/meowdoku/build-level-bank.py --banks ... --output /tmp/meowdoku-old.ts --check
 
 普通模式出题规则（题源、筛题与原作默认组 NLControlStrategy 一致；边长与难度是本项目
-为 3000 关固化的确定曲线，不随机、不做 DDA；前 2000 关保持原有题目与顺序）：
+为 3500 关固化的确定曲线，不随机、不做 DDA；前 3000 关保持原有题目与顺序）：
 
 1. 边长：1..10 关 = 4/5/6/6/8/6/7/8/9/7（原作教学段）；之后按阶段每 10 关一组循环，
    见 `SIZE_PHASES`。最大 10x10。
@@ -34,8 +36,10 @@
    `bankDataLKModified`（同边长、同 rank，排除原作保留题号），插完即止。
 4. 游标：每个 (边长, rank, tier) 一个游标按题库顺序往后取；第 51 关起接着前面的进度。
 5. 筛题：单格颜色区最多 1 个（原作 `single_region_num` 默认档 ALL_ONE；LKModified 不受限）；
-   答案必须合法；整份关卡内同一道题（含 8 种旋转/镜像）只出现一次。
-   任何题池被取空都直接报错，不回绕、不出重复题。
+   答案必须合法；优先交付未用原题（含 8 种旋转/镜像去重），题池不回绕。
+   第 3001 关起，只有对应题池取空时才使用前 3000 关中同边长、同 rank 的旋转变体；
+   与来源至少间隔 1000 关，每道来源最多复用一次，且变体不能与已有题面完全相同。
+   `--unique-only` 禁用此回退，题池取空仍直接报错。
 6. 1..10 关按 `LevelData.compute_prefill` 预置一只猫。
 7. 不出原作特殊关（SP / LK 图案题）、11x11 以上的盘，也不用 A/B 实验组的题库。
 
@@ -321,6 +325,8 @@ def compute_prefill(level: int, regions: list, solution: list) -> list[int] | No
 
 
 TRANSFORMS = 8
+ROTATION_SOURCE_LEVEL_MAX = 3000
+ROTATION_MIN_LEVEL_GAP = 1000
 
 
 def transform_grid(grid: list, transform: int) -> list:
@@ -346,6 +352,38 @@ def normalize_regions(grid: list) -> tuple:
 def canonical_puzzle(regions: list) -> tuple:
     """题目的规范形：8 种变换下归一化颜色编号后取最小，旋转/镜像的同一道题结果相同。"""
     return (len(regions), min(normalize_regions(transform_grid(regions, t)) for t in range(TRANSFORMS)))
+
+
+def rotation_fallback(
+    levels: list[dict], level: int, size: int, rank: int,
+    used_sources: set[int], seen_orientations: set[tuple],
+) -> dict:
+    """仅在原题池耗尽后复用较早的同档题，区域和答案同步顺时针旋转。"""
+    last_source = min(ROTATION_SOURCE_LEVEL_MAX, level - ROTATION_MIN_LEVEL_GAP)
+    first_turn = len(used_sources) % 3 + 1
+    for entry in levels:
+        if entry["level"] > last_source:
+            break
+        if (entry["level"] in used_sources or entry["size"] != size or entry["rank"] != rank):
+            continue
+        for offset in range(3):
+            turns = (first_turn - 1 + offset) % 3 + 1
+            regions = transform_grid(entry["regions"], turns)
+            if (size, normalize_regions(regions)) in seen_orientations:
+                continue
+            solution = list(entry["solution"])
+            for _ in range(turns):
+                rotated = [-1] * size
+                for row, col in enumerate(solution):
+                    rotated[col] = size - 1 - row
+                solution = rotated
+            if not validate_solution(regions, solution):
+                raise SystemExit(f"第 {level} 关：旋转后的答案不合法")
+            return {
+                "sourceLevel": entry["level"], "turns": turns, "seed": entry["seed"],
+                "regions": regions, "solution": solution,
+            }
+    raise SystemExit(f"第 {level} 关：{size}x{size} rank {rank} 没有满足间隔与去重条件的旋转来源")
 
 
 def tier_for(banks: Banks, size: int, rank: int) -> str:
@@ -388,10 +426,13 @@ class Cursor:
         self.since_lk = 0
 
 
-def generate(banks: Banks, count: int) -> tuple[list[dict], dict]:
+def generate(banks: Banks, count: int, allow_rotations: bool = True) -> tuple[list[dict], dict]:
     cursors: dict[tuple, Cursor] = {}
     lk_progress: dict[tuple, int] = {}
     seen: dict[tuple, int] = {}
+    seen_orientations: set[tuple] = set()
+    rotation_sources: set[int] = set()
+    rotations: list[dict] = []
     usage: dict[tuple, list[int]] = {}
     levels = []
     for level in range(1, count + 1):
@@ -414,6 +455,7 @@ def generate(banks: Banks, count: int) -> tuple[list[dict], dict]:
         lk_pool = banks.lk_modified(size, rank, hard) if main_path else []
 
         chosen = None
+        rotation = None
         while chosen is None:
             use_lk = main_path and cursor.since_lk >= LK_MOD_INTERVAL and lk_progress.get(lk_key, 0) < len(lk_pool)
             if use_lk:
@@ -424,33 +466,44 @@ def generate(banks: Banks, count: int) -> tuple[list[dict], dict]:
             else:
                 index = cursor.main if main_path else cursor.legacy
                 if index >= main_total:
-                    raise SystemExit(
-                        f"第 {level} 关：{size}x{size} rank {rank} tier '{tier}' 题池已取空（共 {main_total} 道），"
-                        "请调整边长/难度曲线"
-                    )
-                offset = index
-                for source, pool in segments:
-                    if offset < len(pool):
-                        bank_index, entry = offset + 1, pool[offset]
-                        break
-                    offset -= len(pool)
-                if main_path:
-                    cursor.main = index + 1
-                    cursor.since_lk += 1
+                    if not allow_rotations or level <= ROTATION_SOURCE_LEVEL_MAX:
+                        raise SystemExit(
+                            f"第 {level} 关：{size}x{size} rank {rank} tier '{tier}' 题池已取空（共 {main_total} 道），"
+                            "请调整边长/难度曲线或允许旋转变体"
+                        )
+                    rotation = rotation_fallback(levels, level, size, rank, rotation_sources, seen_orientations)
+                    source, bank_index = "rotation", rotation["sourceLevel"]
+                    entry = {"seed": rotation["seed"], "regionMap": rotation["regions"],
+                             "solution": rotation["solution"]}
                 else:
-                    cursor.legacy = index + 1
+                    offset = index
+                    for source, pool in segments:
+                        if offset < len(pool):
+                            bank_index, entry = offset + 1, pool[offset]
+                            break
+                        offset -= len(pool)
+                    if main_path:
+                        cursor.main = index + 1
+                        cursor.since_lk += 1
+                    else:
+                        cursor.legacy = index + 1
             regions = [[int(v) for v in row] for row in entry["regionMap"]]
             solution = [int(v) for v in entry["solution"]]
             if len(regions) != size or any(len(row) != size for row in regions):
                 continue
-            if source != "lkmod" and single_region_count(regions) > SINGLE_REGION_LIMIT:
+            if source not in ("lkmod", "rotation") and single_region_count(regions) > SINGLE_REGION_LIMIT:
                 continue
             if not validate_solution(regions, solution):
                 continue
             puzzle = canonical_puzzle(regions)
-            if puzzle in seen:
+            if source != "rotation" and puzzle in seen:
                 continue
-            seen[puzzle] = level
+            seen.setdefault(puzzle, level)
+            seen_orientations.add((size, normalize_regions(regions)))
+            if rotation is not None:
+                rotation_sources.add(rotation["sourceLevel"])
+                rotations.append({"level": level, "sourceLevel": rotation["sourceLevel"],
+                                  "degrees": rotation["turns"] * 90})
             chosen = (source, bank_index, entry, regions, solution)
 
         source, bank_index, entry, regions, solution = chosen
@@ -472,11 +525,11 @@ def generate(banks: Banks, count: int) -> tuple[list[dict], dict]:
         key: (cursor.main if cursor.main is not None else cursor.legacy)
         for key, cursor in cursors.items()
     }
-    return levels, {"usage": usage, "cursor": remaining}
+    return levels, {"usage": usage, "cursor": remaining, "rotations": rotations}
 
 
-def generate_hard(banks: Banks, count: int) -> list[dict]:
-    """独立困难序列：先取全部 rank4，再按原库顺序取 rank5，不筛 tier、不回绕。"""
+def generate_hard(banks: Banks, count: int | None = None) -> list[dict]:
+    """先取 rank4 再取 rank5；默认取完去重后的全部题，指定数量时不回绕。"""
     pool = banks.super_hard()
     seen = set()
     levels = []
@@ -502,6 +555,10 @@ def generate_hard(banks: Banks, count: int) -> list[dict]:
             })
             if len(levels) == count:
                 return levels
+    if count is None:
+        if not levels:
+            raise SystemExit("SuperHard 题库中没有可用的 rank4/rank5 题目")
+        return levels
     raise SystemExit(f"SuperHard 去重后只有 {len(levels)} 题，无法生成 {count} 关")
 
 
@@ -510,7 +567,8 @@ HEADER = '''/**
  *
  * 题目取自原作题库，取题、筛题规则与原作默认组（NLControlStrategy）一致；边长与难度档
  * 是本项目固化的确定曲线（分阶段每 10 关一组，难关从第 51 关起每 20 关一次），
- * 整份序列内同一道题（含旋转/镜像）只出现一次。完整规则见生成脚本的说明。
+ * 前 3000 关保持原样；后续优先取未用原题，题池耗尽时使用同尺寸、同难度的早期题旋转变体。
+ * 变体与来源至少相隔 1000 关，每道来源最多复用一次。完整规则见生成脚本的说明。
  *
  * 数据使用 4 bit + Base64 无损存储，模块加载时还原为原有只读关卡接口。
  * `regions` 每行一个字符串，字符是 36 进制的颜色编号；`solution` 每一位是该行
@@ -677,15 +735,17 @@ def main() -> int:
     source.add_argument("--xapk", help="Meowdoku 的 xapk 或 apk 路径")
     source.add_argument("--banks", help="已经解密的 bankData*.json 目录")
     parser.add_argument("--mode", choices=("normal", "hard"), default="normal", help="普通或困难模式")
-    parser.add_argument("--count", type=int, help="生成多少关（普通默认 3000，困难默认 200）")
-    parser.add_argument("--output", help="输出 TS 路径（按模式选择默认文件）")
+    parser.add_argument("--count", type=int, help="生成多少关（普通默认 3500，困难默认取完全部不重复题）")
+    parser.add_argument("--unique-only", action="store_true", help="普通题池耗尽时报错，不使用旋转变体")
+    parser.add_argument("--output", required=True, help="历史题库的独立输出路径")
     parser.add_argument("--check", action="store_true", help="只校验现有输出是否一致")
     parser.add_argument("--report", action="store_true", help="打印逐关来源与预置信息")
     args = parser.parse_args()
     hard = args.mode == "hard"
-    args.count = args.count if args.count is not None else (200 if hard else 3000)
-    args.output = args.output or (DEFAULT_HARD_OUTPUT if hard else DEFAULT_OUTPUT)
-    if args.count < 1:
+    args.count = args.count if args.count is not None else (None if hard else 3500)
+    if os.path.realpath(args.output) in (DEFAULT_OUTPUT, DEFAULT_HARD_OUTPUT):
+        parser.error("请指定发行题库路径之外的历史输出路径")
+    if args.count is not None and args.count < 1:
         parser.error("关卡数必须大于 0")
 
     files = extract_bank_files(args.xapk) if args.xapk else load_bank_files(args.banks)
@@ -694,7 +754,7 @@ def main() -> int:
         levels = generate_hard(banks, args.count)
         stats = {"usage": {}, "cursor": {}}
     else:
-        levels, stats = generate(banks, args.count)
+        levels, stats = generate(banks, args.count, allow_rotations=not args.unique_only)
     rendered = render(levels, hard)
 
     if args.report:
@@ -707,8 +767,12 @@ def main() -> int:
                     entry["prefill"] or "-", entry["colorMap"],
                 )
             )
+        for rotation in stats.get("rotations", []):
+            print("  L%d 来自 L%d，顺时针旋转 %d°" % (
+                rotation["level"], rotation["sourceLevel"], rotation["degrees"]))
 
-    print(f"关卡数 {len(levels)}（整份序列内无重复题）")
+    rotation_count = len(stats.get("rotations", []))
+    print(f"关卡数 {len(levels)}（未用原题 {len(levels) - rotation_count}，早期题旋转变体 {rotation_count}）")
     if hard:
         print("SuperHard 难度分布:", dict(Counter(entry["rank"] for entry in levels)))
     else:

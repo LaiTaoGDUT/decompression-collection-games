@@ -18,6 +18,7 @@ export class RotateRingsModel {
     readonly removedPulls = new Set<string>();
     readonly removedFixed = new Set<string>();
     readonly explodedBombs = new Set<number>();
+    pullObstacle?: string;
     moves = 0;
     seconds = 0;
     private pullGeometry = new Map<string, { offset: number; poly: RingPoint[] }>();
@@ -96,25 +97,36 @@ export class RotateRingsModel {
         }
         return { x: local.x, y: local.y };
     }
-    /** 原 BombRelative：只响应外部实体接触，忽略自身宿主及销的触发口；消除宿主和接触部件。 */
+    private bombHitsRing(id: string, center: RingPoint, radius: number): boolean {
+        const pose = this.pose(id);
+        return G.circleHitsRingBand(center, radius, pose)
+            || this.pins(id).some(pin => pin.shape.prongs.some(claw => G.rectHitsCircle(claw, center.x, center.y, radius)))
+            || this.hardBlocks(pose).some(poly => G.polygonHitsCircle(poly, center.x, center.y, radius));
+    }
+
+    /** 移动宿主时扫描所有外部实体；宿主静止时，仅当移动件触及炸弹才收集同一时刻的全部接触。 */
     private probeBombs(movedId: string): void {
         for (let i = 0; i < this.level.bombs.length; i++) {
             const bomb = this.level.bombs[i];
             if (this.bombCleared(i)) continue;
-            const c = this.bombPoint(i), targets = new Set<string>();
-            for (const ring of this.level.rings) {
-                if (ring.id === bomb.ringId || this.removedRings.has(ring.id)) continue;
-                if (G.circleHitsRingBand(c, bomb.radius, this.pose(ring.id))
-                    || this.pins(ring.id).some(p => p.shape.prongs.some(r => G.rectHitsCircle(r, c.x, c.y, bomb.radius)))
-                    || this.hardBlocks(this.pose(ring.id)).some(p => G.polygonHitsCircle(p, c.x, c.y, bomb.radius))) targets.add(ring.id);
+            const c = this.bombPoint(i), hostId = bomb.ringId || bomb.pullId;
+            if (hostId !== movedId) {
+                const touched = this.rings.has(movedId) ? this.bombHitsRing(movedId, c, bomb.radius)
+                    : G.polygonHitsCircle(this.pullPolygon(movedId), c.x, c.y, bomb.radius);
+                if (!touched) continue;
             }
-            for (const pull of this.level.pullObjects) if (pull.id !== bomb.pullId && !this.removedPulls.has(pull.id)
-                && G.polygonHitsCircle(this.pullPolygon(pull.id), c.x, c.y, bomb.radius)) targets.add(pull.id);
+            const targets = new Set<string>();
+            for (const ring of this.level.rings) {
+                if (ring.id !== hostId && !this.removedRings.has(ring.id)
+                    && (ring.id === movedId || this.bombHitsRing(ring.id, c, bomb.radius))) targets.add(ring.id);
+            }
+            for (const pull of this.level.pullObjects) {
+                if (pull.id !== hostId && !this.removedPulls.has(pull.id)
+                    && (pull.id === movedId || G.polygonHitsCircle(this.pullPolygon(pull.id), c.x, c.y, bomb.radius))) targets.add(pull.id);
+            }
             for (const fixed of this.fixedGeometry) if (!this.removedFixed.has(fixed.id)
                 && G.polygonHitsCircle(fixed.poly, c.x, c.y, bomb.radius)) targets.add(fixed.id);
-            // 静止宿主的旧接触不由无关拖动触发；移动宿主时扫描全部当前接触。
-            const hostId = bomb.ringId || bomb.pullId;
-            if (!targets.size || hostId !== movedId && !targets.has(movedId)) continue;
+            if (!targets.size) continue;
             if (hostId) targets.add(hostId);
             const pending = this.pendingBombContacts.get(i) ?? new Set<string>();
             targets.forEach(id => pending.add(id)); this.pendingBombContacts.set(i, pending);
@@ -159,6 +171,7 @@ export class RotateRingsModel {
     /** 按住期间只更新合法姿态、收集炸弹接触，不消除实体，也不锁住拖动。 */
     beginGesture(): void {
         if (this.gestureActive) return;
+        this.pullObstacle = undefined;
         this.gestureActive = true; this.pendingBombContacts.clear(); this.movedPulls.clear();
     }
 
@@ -214,7 +227,12 @@ export class RotateRingsModel {
 
     rotateRing(id: string, target: number): { rotated: number; blocked: boolean } {
         if (!this.rings.has(id) || this.removedRings.has(id) || !finite(target)) return { rotated: 0, blocked: false };
-        let angle = this.angles.get(id)!, remaining = G.angleDiff(target, angle), rotated = 0;
+        return this.rotateRingBy(id, G.angleDiff(target, this.angles.get(id)!));
+    }
+
+    rotateRingBy(id: string, sweep: number): { rotated: number; blocked: boolean } {
+        if (!this.rings.has(id) || this.removedRings.has(id) || !finite(sweep)) return { rotated: 0, blocked: false };
+        let angle = this.angles.get(id)!, remaining = sweep, rotated = 0;
         const reach = this.rotationReach.get(id)!;
         const step = Math.min(.5, .025 / reach / G.DEG, Math.abs(remaining));
         for (let i = 0; i < 1440 && Math.abs(remaining) > 1e-6; i++) {
@@ -222,41 +240,43 @@ export class RotateRingsModel {
             if (this.blockReason(id, angle + delta)) { this.angles.set(id, G.norm180(angle)); return { rotated, blocked: true }; }
             angle += delta; this.angles.set(id, G.norm180(angle)); rotated += Math.abs(delta);
             this.probeBombs(id);
-            remaining = G.angleDiff(target, angle);
+            remaining -= delta;
         }
         return { rotated, blocked: false };
     }
 
-    private pullBlocked(id: string, offset: number): boolean {
-        const poly = this.pullPolygon(id, offset);
+    private pullBlocker(id: string, poly: RingPoint[]): string | undefined {
         for (const ring of this.level.rings) {
             if (this.removedRings.has(ring.id)) continue;
             if (G.polygonHitsRingBand(poly, this.pose(ring.id), BLOCK_TOL)
                 || this.pins(ring.id).some(pin => pin.shape.prongs.some(claw => G.rectHitsPolygon(claw, poly)))
-                || this.hardBlocks(this.pose(ring.id)).some(hard => G.polygonsIntersect(hard, poly))) return true;
+                || this.hardBlocks(this.pose(ring.id)).some(hard => G.polygonsIntersect(hard, poly))) return ring.id;
         }
         for (const other of this.level.pullObjects) {
-            if (other.id !== id && !this.removedPulls.has(other.id) && G.polygonsIntersect(poly, this.pullPolygon(other.id))) return true;
+            if (other.id !== id && !this.removedPulls.has(other.id) && G.polygonsIntersect(poly, this.pullPolygon(other.id))) return other.id;
         }
         // 该滑杆的导轨允许沿轨道穿行，其他导轨仍然是实体阻挡。
         const guides = this.pullGuides.get(id);
         for (const fixed of this.fixedGeometry) {
             if (this.removedFixed.has(fixed.id)) continue;
             if (guides?.has(fixed.id)) continue;
-            if (G.polygonsIntersect(poly, fixed.poly)) return true;
+            if (G.polygonsIntersect(poly, fixed.poly)) return fixed.id;
         }
-        return false;
+        return undefined;
     }
 
     dragPull(id: string, delta: number): { moved: number; blocked: boolean } {
         const p = this.pulls.get(id);
         if (!p || this.removedPulls.has(id) || !finite(delta) || Math.abs(delta) < .005) return { moved: 0, blocked: false };
-        if ((delta < 0 && !p.negative) || (delta > 0 && !p.positive)) return { moved: 0, blocked: true };
-        const before = this.offsets.get(id)!, goal = before + delta;
+        const before = this.offsets.get(id)!;
+        const goal = before + delta;
+        this.pullObstacle = undefined;
         let current = before;
         for (let i = 0; i < 160 && Math.abs(goal - current) > 1e-5; i++) {
             const next = current + Math.sign(delta) * Math.min(.08, Math.abs(goal - current));
-            if (this.pullBlocked(id, next)) {
+            const blocker = this.pullBlocker(id, this.pullPolygon(id, next));
+            if (blocker) {
+                this.pullObstacle = blocker;
                 this.offsets.set(id, current); return { moved: current - before, blocked: true };
             }
             current = next; this.offsets.set(id, current); this.movedPulls.add(id); this.probeBombs(id);
@@ -266,22 +286,52 @@ export class RotateRingsModel {
 
     private releasePull(id: string): void {
         const current = this.offsets.get(id)!;
-        if (this.removedPulls.has(id) || Math.abs(current) <= .7) return;
+        if (this.removedPulls.has(id) || Math.abs(current) <= this.pulls.get(id)!.moveThreshold) return;
+        const sign = Math.sign(current), axis = G.polar(sign, this.pullAxis(id));
+        const poly = this.pullPolygon(id), distance = this.pullExitDistance(id, poly, axis);
+        if (!this.level.bombs.length) {
+            // Every swept point enters through the moving outline. Extruding the edges also preserves concave grips.
+            const end = poly.map(p => ({ x: p.x + axis.x * distance, y: p.y + axis.y * distance }));
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                if (Math.abs((poly[i].x - poly[j].x) * axis.y - (poly[i].y - poly[j].y) * axis.x) < 1e-8) continue;
+                const blocker = this.pullBlocker(id, [poly[j], poly[i], end[i], end[j]]);
+                if (blocker) { this.pullObstacle = blocker; return; }
+            }
+            this.removePart(id);
+            return;
+        }
         // 松手才探测完整出口；沿途先处理实际炸弹接触，再检查剩余实体是否挡路。
         // 探测失败时不提交，成功时保留最后可见位置，供消除碎片取样。
         const snapshot = this.snapshot(), probe = new RotateRingsModel(this.level, snapshot);
-        const sign = Math.sign(current), distance = this.pullExitDistance(id);
         for (let step = .08; step <= distance; step += .08) {
             probe.offsets.set(id, current + sign * step); probe.probeBombs(id); probe.commitBombs();
             if (probe.removedPulls.has(id)) break;
-            if (probe.pullBlocked(id, current + sign * step)) return;
+            const blocker = probe.pullBlocker(id, probe.pullPolygon(id, current + sign * step));
+            if (blocker) { this.pullObstacle = blocker; return; }
         }
         probe.removePart(id);
         this.restore({ ...probe.snapshot(), offsets: snapshot.offsets });
     }
-    private pullExitDistance(id: string): number {
-        const p = this.pulls.get(id)!, axis = G.polar(1, p.dragAxis);
-        return Math.max(4, ...p.polyLocal.map(v => Math.abs(v.x * axis.x + v.y * axis.y))) * 2 + 4;
+    private pullExitDistance(id: string, poly: RingPoint[], axis: RingPoint): number {
+        const project = (p: RingPoint) => p.x * axis.x + p.y * axis.y;
+        const trailing = Math.min(...poly.map(project));
+        let far = trailing;
+        for (const ring of this.level.rings) {
+            if (!this.removedRings.has(ring.id)) {
+                far = Math.max(far, project(ring) + this.rotationReach.get(ring.id)!);
+                for (const block of this.hardBlocks(this.pose(ring.id))) for (const p of block) far = Math.max(far, project(p));
+            }
+        }
+        for (const bar of this.level.pullObjects) {
+            if (bar.id !== id && !this.removedPulls.has(bar.id))
+                for (const p of this.pullPolygon(bar.id)) far = Math.max(far, project(p));
+        }
+        for (const fixed of this.fixedGeometry) if (!this.removedFixed.has(fixed.id))
+            for (const p of fixed.poly) far = Math.max(far, project(p));
+        this.level.bombs.forEach((bomb, i) => {
+            if (!this.bombCleared(i)) far = Math.max(far, project(this.bombPoint(i)) + bomb.radius);
+        });
+        return far - trailing + .16;
     }
     evaluate(): void {
         this.solved.clear();
@@ -323,51 +373,172 @@ export class RotateRingsModel {
             && pins.some(pin => G.rectHitsPolygon(pin.shape.mouth, this.pullPolygon(pull.id))));
     }
 
+    /** 在副本上模拟完整手势和松手结算，并记录手指实际能走的有向角度。 */
+    private previewHint(candidate: RingHint, snapshot: RingSnapshot): { hint: RingHint; next: RotateRingsModel } | undefined {
+        const next = new RotateRingsModel(this.level, snapshot);
+        next.beginGesture();
+        if (candidate.kind === 'ring') {
+            const start = this.angles.get(candidate.id)!;
+            const sweep = candidate.sweep ?? G.angleDiff(candidate.target, start);
+            const { rotated } = next.rotateRingBy(candidate.id, sweep);
+            if (rotated < .01) return undefined;
+            candidate = { ...candidate, target: next.angles.get(candidate.id)!, sweep: Math.sign(sweep) * rotated };
+        } else {
+            const { moved } = next.dragPull(candidate.id, candidate.target);
+            if (Math.abs(moved) < .005) return undefined;
+            candidate = { ...candidate, target: moved };
+        }
+        next.endGesture(true);
+        return { hint: candidate, next };
+    }
+
+    private advances(next: RotateRingsModel): boolean {
+        return next.progress > this.progress || next.removedRings.size > this.removedRings.size
+            || next.removedPulls.size > this.removedPulls.size;
+    }
+
+    /** 同一缺口有多个卡扣可对准时，先放走已经可以脱开的邻环。 */
+    private preferRingRelease(ring: RingPart, first: { hint: RingHint; next: RotateRingsModel }, snapshot: RingSnapshot): RingHint {
+        if (first.next.removedRings.size > this.removedRings.size) return first.hint;
+        let best = first;
+        const start = this.angles.get(ring.id)!;
+        for (const index of this.incidentLinks.get(ring.id)!) {
+            const link = this.level.links[index];
+            if (link.targetPartId !== ring.id || this.removedRings.has(link.sourceRingId)) continue;
+            const pin = this.pins(link.sourceRingId).find(p => p.featureId === link.pinFeatureId);
+            if (!pin) continue;
+            const target = G.angleTo(ring, pin.shape.center) - ring.gapDir;
+            const shortest = G.angleDiff(target, start);
+            if (!this.level.bombs.length && Math.abs(G.angleDiff(target, first.hint.target)) < .01) continue;
+            for (const sweep of [shortest, shortest - Math.sign(shortest) * 360]) {
+                if (Math.abs(sweep) < .01 || Math.abs(sweep - first.hint.sweep!) < .01) continue;
+                const probe = this.previewHint({ kind: 'ring', id: ring.id, target, sweep }, snapshot);
+                if (probe && probe.next.removedRings.size > best.next.removedRings.size) best = probe;
+                // A full turn to the same endpoint has identical contact geometry.
+                if (probe && !this.level.bombs.length && Math.abs(G.angleDiff(target, probe.hint.target)) < .01) break;
+            }
+        }
+        return best.hint;
+    }
+
     hint(): RingHint | undefined {
-        // 提示只建议经同一碰撞内核验证过的操作，不穿墙、不强行消除。
+        const direct = this.releaseHint();
+        if (direct) return direct;
+        // A parked slider or a twisted clasp can block the exit even when its guard is gone.
+        // Offer a repositioning gesture only after verifying a follow-up on that exact pose.
         const snapshot = this.snapshot();
-        const deadline = Date.now() + 140;
-        let best: RingHint | undefined, bestProgress = -Infinity;
-        const candidates: RingHint[] = [];
-        for (let i = 0; i < this.level.links.length; i++) {
-            if (this.solved.has(i)) continue;
-            const link = this.level.links[i], source = this.pose(link.sourceRingId);
-            const pin = this.pins(source.id).find(p => p.featureId === link.pinFeatureId)!;
-            if (this.rings.has(link.targetPartId)) {
-                const target = this.pose(link.targetPartId);
-                if (target.gapWidth > 0) candidates.push({ kind: 'ring', id: target.id, target: G.angleTo(target, pin.shape.center) - target.gapDir });
-                candidates.push({ kind: 'ring', id: source.id, target: G.angleTo(source, target) - pin.angleDeg });
-                if (target.gapWidth <= 0) for (const delta of [-90, 90, 180]) {
-                    candidates.push({ kind: 'ring', id: source.id, target: source.angle + delta });
+        const prepare = (candidate: RingHint) => {
+            const setup = this.previewHint(candidate, snapshot);
+            if (!setup) return undefined;
+            if (this.advances(setup.next)) return setup.hint;
+            let next = setup.next;
+            // A follow-up can itself be a clasp alignment. Compare the final release with the
+            // original board so that re-locking and re-opening the same link never qualifies.
+            for (let i = 0; i < 2; i++) {
+                const follow = next.releaseHint();
+                if (!follow) break;
+                const result = next.previewHint(follow, next.snapshot());
+                if (!result) break;
+                if (this.advances(result.next)) return { ...setup.hint, prepareNext: true };
+                next = result.next;
+            }
+            return undefined;
+        };
+        for (const p of this.level.pullObjects) {
+            if (this.removedPulls.has(p.id) || Math.abs(this.offsets.get(p.id)!) < .005) continue;
+            const hint = prepare({ kind: 'pull', id: p.id, target: -this.offsets.get(p.id)! });
+            if (hint) return hint;
+        }
+        for (const r of this.level.rings) {
+            if (this.removedRings.has(r.id)) continue;
+            const sweep = G.angleDiff(r.angle, this.angles.get(r.id)!);
+            if (Math.abs(sweep) < .01) continue;
+            const hint = prepare({ kind: 'ring', id: r.id, target: r.angle, sweep });
+            if (hint) return hint;
+        }
+        return undefined;
+    }
+
+    private releaseHint(): RingHint | undefined {
+        const snapshot = this.snapshot();
+        const advancing = (candidate: RingHint) => {
+            const result = this.previewHint(candidate, snapshot);
+            return result && this.advances(result.next) ? result.hint : undefined;
+        };
+        for (const p of this.level.pullObjects) {
+            if (this.removedPulls.has(p.id)) continue;
+            for (const sign of [1, -1]) {
+                // The target is an offset from the mount. A parked bar may have to cross the mount to exit.
+                const offset = this.offsets.get(p.id)!;
+                const hint = advancing({ kind: 'pull', id: p.id, target: sign * 1.2 - (sign * offset < 0 ? offset : 0) });
+                if (hint) return hint;
+            }
+        }
+        // 转动卡扣可能叉住其他邻环，按眼前的套接关系寻找可动部件。
+        const locks: { source: RingPart; target: RingPart; pin: RingPin; toward: number }[] = [];
+        const live = this.level.rings.filter(r => !this.removedRings.has(r.id));
+        for (const target of live.slice().reverse()) for (const source of live) {
+            if (source === target) continue;
+            for (const pin of this.pins(source.id)) {
+                if (G.pinThroughRing(pin, this.pose(target.id))) continue;
+                locks.push({ source, target, pin, toward: G.angleTo(target, pin.shape.center) - target.gapDir });
+            }
+        }
+        for (const longWay of [false, true]) {
+            for (const { target, toward } of locks) {
+                if (target.gapWidth <= 0) continue;
+                const shortest = G.angleDiff(toward, this.angles.get(target.id)!);
+                const sweep = longWay ? shortest - Math.sign(shortest) * 360 : shortest;
+                const probe = this.previewHint({ kind: 'ring', id: target.id, target: toward, sweep }, snapshot);
+                if (probe && this.advances(probe.next)) return this.preferRingRelease(target, probe, snapshot);
+            }
+        }
+        // 对准来环的缺口后，自身的另一只卡扣仍可能叉住滑杆。在开口范围内继续转动，直到整个环都能脱离。
+        for (const ring of live) {
+            if (!ring.pins.length || ring.gapWidth <= 0
+                || !this.incidentLinks.get(ring.id)!.every(index => this.solved.has(index))) continue;
+            const gripsSlider = this.level.pullObjects.some(p => !this.removedPulls.has(p.id)
+                && this.pins(ring.id).some(pin => G.rectHitsPolygon(pin.shape.mouth, this.pullPolygon(p.id))));
+            if (!gripsSlider) continue;
+            const angle = this.angles.get(ring.id)!;
+            for (let step = 1; step <= 12; step++) {
+                for (const sign of [1, -1]) {
+                    const sweep = sign * step * ring.gapWidth / 12;
+                    const result = this.previewHint({ kind: 'ring', id: ring.id, target: angle + sweep, sweep }, snapshot);
+                    if (result?.next.removedRings.has(ring.id)) return result.hint;
                 }
             }
         }
-        for (const p of this.level.pullObjects) if (!this.removedPulls.has(p.id)) {
-            if (p.positive) candidates.push({ kind: 'pull', id: p.id, target: 1.2 });
-            if (p.negative) candidates.push({ kind: 'pull', id: p.id, target: -1.2 });
-        }
-        for (let index = 0; index < this.level.bombs.length; index++) if (!this.bombCleared(index)) {
-            const bomb = this.level.bombs[index];
-            const rings = bomb.ringId ? [this.rings.get(bomb.ringId)!] : this.level.rings.filter(r => !this.removedRings.has(r.id));
-            for (const ring of rings) {
-                const angle = this.angles.get(ring.id)!;
-                candidates.push({ kind: 'ring', id: ring.id, target: angle + 45 }, { kind: 'ring', id: ring.id, target: angle - 45 });
+        // 偏斜的卡扣可能挡住两个转向。先尝试摆正或让出半个叉口，再验证邻环确实能脱开。
+        for (const side of [0, -1, 1]) for (const { source, target, pin } of locks) {
+            const halfMouth = Math.atan2(pin.mouthSize.y / 2, pin.radius) / G.DEG;
+            const angle = G.angleTo(source, target) - pin.angleDeg + side * halfMouth;
+            const setup = this.previewHint({ kind: 'ring', id: source.id, target: angle }, snapshot);
+            if (!setup) continue;
+            if (this.advances(setup.next)) return setup.hint;
+            if (target.gapWidth <= 0) continue;
+            const centered = setup.next.pins(source.id).find(p => p.featureId === pin.featureId)!;
+            const toward = G.angleTo(target, centered.shape.center) - target.gapDir;
+            const shortest = G.angleDiff(toward, setup.next.angles.get(target.id)!);
+            const aligned = setup.next.snapshot();
+            for (const sweep of [shortest, shortest - Math.sign(shortest) * 360]) {
+                const follow = setup.next.previewHint({ kind: 'ring', id: target.id, target: toward, sweep }, aligned);
+                if (follow && this.advances(follow.next)) return { ...setup.hint, prepareNext: true };
             }
         }
-        for (const candidate of candidates.slice(0, 48)) {
-            if (Date.now() > deadline) break;
-            const probe = new RotateRingsModel(this.level, snapshot);
-            probe.beginGesture();
-            const result = candidate.kind === 'ring' ? probe.rotateRing(candidate.id, candidate.target)
-                : probe.dragPull(candidate.id, candidate.target);
-            const moved = 'rotated' in result ? result.rotated : Math.abs(result.moved) * 30;
-            if (moved < .1) continue;
-            probe.endGesture(true);
-            const value = (probe.progress - this.progress) * 1000 + moved;
-            if (value > bestProgress) { bestProgress = value; best = candidate; }
-            if (probe.progress > this.progress) break;
+        // 独立炸弹也可能是棋盘上最后的目标，保留能实际触发爆炸的转动提示。
+        for (let i = 0; i < this.level.bombs.length; i++) {
+            if (this.bombCleared(i)) continue;
+            const host = this.level.bombs[i].ringId;
+            for (const ring of live) {
+                if (host && host !== ring.id) continue;
+                for (const sweep of [-45, 45]) {
+                    const hint = advancing({ kind: 'ring', id: ring.id, target: this.angles.get(ring.id)! + sweep, sweep });
+                    if (hint) return hint;
+                }
+            }
         }
-        return best;
+        return undefined;
     }
 
     snapshot(): RingSnapshot {

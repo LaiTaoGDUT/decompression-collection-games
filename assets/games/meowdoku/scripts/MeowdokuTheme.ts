@@ -28,10 +28,6 @@ export const MEOWDOKU_THEME = Object.freeze({
  * 步数与 `scale` 相等 = PERFECT，再按 p5 / p10 / p20 分档，超出就没有提示条。
  * 4×4 / 5×5 不在表里，也就是小盘面不弹。
  */
-/**
- * 引导关卡的盘面，取自原作 `assets/resources/levels/bankDataSP.json` 里
- * `pattern == "guide"` 的那一关（id 51）：4×4、解位在 `solution`、配色槽位 `colorMap`。
- */
 /** 圆角面板底（128×128，圆角 34，四周留 2px 透明边）的 9-slice 内缩。 */
 export const MEOWDOKU_PANEL_INSET = 34;
 
@@ -39,91 +35,88 @@ export const MEOWDOKU_PANEL_INSET = 34;
 export const MEOWDOKU_TUTORIAL_MASK_ALPHA = 0.62;
 export const MEOWDOKU_TUTORIAL_STEP_PAUSE = 0.4;
 
+/** 原创教学盘。依次演示同色、同行同列和相邻排除，最后由玩家找到剩下的猫。 */
 export const MEOWDOKU_TUTORIAL_BOARD = Object.freeze({
     size: 4,
     regions: Object.freeze([
-        Object.freeze([0, 1, 2, 1]),
-        Object.freeze([0, 1, 1, 1]),
-        Object.freeze([0, 0, 3, 1]),
-        Object.freeze([0, 3, 3, 1]),
+        Object.freeze([0, 0, 3, 3]),
+        Object.freeze([1, 1, 1, 3]),
+        Object.freeze([1, 2, 1, 3]),
+        Object.freeze([1, 2, 2, 3]),
     ]),
-    solution: Object.freeze([2, 0, 3, 1]),
-    colorMap: Object.freeze([8, 4, 10, 1]),
+    solution: Object.freeze([1, 3, 0, 2]),
+    colorMap: Object.freeze([4, 8, 2, 10]),
 });
 
-/**
- * 引导默认流程（原作 `tutorial_page.gd` 的 `_run_guide_flow_default`，
- * `nu_guide` 默认档 `VALUE_CURRENT_FLOW` 走的就是这条）：
- * 放第一只猫 → 明白了 → 叉掉同行同列 → 放第二只猫 → 划动排除四周 → 放第三只猫 → 自由放最后一只。
- */
+type TutorialCell = readonly [number, number];
+const guideFirst: TutorialCell = [0, 1];
+const guideSecond: TutorialCell = [3, 2];
+const guideThird: TutorialCell = [1, 3];
+const guideLines: readonly TutorialCell[] = [[0, 0], [0, 2], [0, 3], [1, 1], [2, 1], [3, 1]];
+const guideNeighbors: readonly TutorialCell[] = [[2, 2], [2, 3], [3, 3]];
+
 export const MEOWDOKU_TUTORIAL_STEPS = Object.freeze([
-    Object.freeze({
+    {
         mode: 'place' as const,
-        // `TUTORIAL_STEP1_RICH`：{breath} 双击把猫咪放到格子里（玫红格）
-        // 原作 `TUTORIAL_STEP1_RICH`：不带颜色，只说「双击把猫咪放到格子里」
-        message: '双击或长按把猫咪放到格子里',
+        message: '双击或长按亮起的格子，放下第一只猫。',
         subMessage: '',
-        allowed: Object.freeze([[0, 2]] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([[0, 2]] as readonly (readonly [number, number])[]),
-        hand: Object.freeze([0, 2] as readonly [number, number]),
-    }),
-    Object.freeze({
+        allowed: [guideFirst],
+        maskCells: [guideFirst],
+        hand: guideFirst,
+    },
+    {
         mode: 'confirm' as const,
-        message: "真棒！每种颜色只能放一只猫咪。",
+        message: '每种颜色的区域只能放一只猫。',
         subMessage: '',
-        allowed: Object.freeze([] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([] as readonly (readonly [number, number])[]),
+        allowed: [],
+        maskCells: [],
         hand: null,
-    }),
-    Object.freeze({
+    },
+    {
         mode: 'mark' as const,
-        message: "非常好！每行、每列都只能有一只猫咪。",
-        subMessage: '点击这些空格以排除它们。',
-        allowed: Object.freeze([
-            [0, 0], [0, 1], [0, 3], [1, 2], [2, 2], [3, 2],
-        ] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([
-            [0, 0], [0, 1], [0, 3], [1, 2], [2, 2], [3, 2],
-        ] as readonly (readonly [number, number])[]),
-        maskKeep: Object.freeze([[0, 2]] as readonly (readonly [number, number])[]),
+        message: '每一行、每一列也只能放一只猫。',
+        subMessage: '点一下亮起的空格，把它们标成叉。',
+        allowed: guideLines,
+        maskCells: guideLines,
+        maskKeep: [guideFirst],
         hand: null,
-    }),
-    Object.freeze({
+    },
+    {
         mode: 'place' as const,
-        message: "玫红色区域只剩这一个格子了，双击或长按放猫吧！",
+        message: '紫色区域只剩一个空位，放下第二只猫吧。',
         subMessage: '',
-        allowed: Object.freeze([[3, 1]] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([[3, 1]] as readonly (readonly [number, number])[]),
-        maskKeep: Object.freeze([[2, 2], [3, 2]] as readonly (readonly [number, number])[]),
-        hand: Object.freeze([3, 1] as readonly [number, number]),
-    }),
-    Object.freeze({
+        allowed: [guideSecond],
+        maskCells: [guideSecond],
+        maskKeep: [[2, 1], [3, 1]] as readonly TutorialCell[],
+        hand: guideSecond,
+    },
+    {
         mode: 'mark' as const,
-        message: "猫咪周围八个格子都不能放另一只猫。",
-        subMessage: '划动这些空格以排除它们。',
-        allowed: Object.freeze([[2, 0], [2, 1], [3, 0]] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([[2, 0], [2, 1], [3, 0]] as readonly (readonly [number, number])[]),
-        maskKeep: Object.freeze([[3, 1]] as readonly (readonly [number, number])[]),
+        message: '两只猫不能挨着，斜角相邻也算。',
+        subMessage: '划过亮起的空格，把它们一起标成叉。',
+        allowed: guideNeighbors,
+        maskCells: guideNeighbors,
+        maskKeep: [guideSecond],
         hand: null,
-        swipe: Object.freeze([[3, 0], [2, 0], [2, 1]] as readonly (readonly [number, number])[]),
-    }),
-    Object.freeze({
+        swipe: guideNeighbors,
+    },
+    {
         mode: 'place' as const,
-        message: "蓝色区域只剩这一个格子了，双击或长按放猫吧！",
+        message: '浅绿色区域只剩一个空位，放下第三只猫吧。',
         subMessage: '',
-        allowed: Object.freeze([[1, 0]] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([[1, 0]] as readonly (readonly [number, number])[]),
-        maskKeep: Object.freeze([[0, 0], [2, 0], [2, 1], [3, 0]] as readonly (readonly [number, number])[]),
-        hand: Object.freeze([1, 0] as readonly [number, number]),
-    }),
-    Object.freeze({
+        allowed: [guideThird],
+        maskCells: [guideThird],
+        maskKeep: [[0, 2], [0, 3], [2, 3], [3, 3]] as readonly TutorialCell[],
+        hand: guideThird,
+    },
+    {
         mode: 'free' as const,
-        message: '找到最后一只猫咪吧！',
+        message: '用刚才的规则，找出最后一只猫。',
         subMessage: '',
-        allowed: Object.freeze([[2, 3]] as readonly (readonly [number, number])[]),
-        maskCells: Object.freeze([] as readonly (readonly [number, number])[]),
+        allowed: [[2, 0]] as readonly TutorialCell[],
+        maskCells: [],
         hand: null,
-    }),
+    },
 ]);
 
 export const MEOWDOKU_WIN_TOAST_THRESHOLDS: Readonly<Record<number, Readonly<{ p5: number; p10: number; p20: number }>>> = Object.freeze({
@@ -392,11 +385,16 @@ export const MEOWDOKU_HARD_MODE_COLORS: typeof MEOWDOKU_COLORS = Object.freeze({
  * 4x4 关卡只会用到其中 4 个索引，但色板长度必须保持 12，
  * 才能复现原作 `LevelGenerator.compute_color_map` 的选色算法。
  */
-export const MEOWDOKU_REGION_PALETTE_HEX: readonly string[] = Object.freeze([
-    '#D3AF1F', '#D8809C', '#9789DE', '#F9A7E8',
-    '#FBA970', '#FBDE92', '#6586B0', '#B0CDEA',
-    '#50B3C8', '#449A68', '#99DA8D', '#B27F60',
-]);
+const REGION_SWATCHES = [
+    ['#D3AF1F', '金黄色'], ['#D8809C', '玫瑰色'], ['#9789DE', '紫色'], ['#F9A7E8', '粉紫色'],
+    ['#FBA970', '橙色'], ['#FBDE92', '浅黄色'], ['#6586B0', '灰蓝色'], ['#B0CDEA', '浅蓝色'],
+    ['#50B3C8', '青色'], ['#449A68', '深绿色'], ['#99DA8D', '浅绿色'], ['#B27F60', '棕色'],
+] as const;
+export const MEOWDOKU_REGION_PALETTE_HEX: readonly string[] = Object.freeze(REGION_SWATCHES.map(([hex]) => hex));
+
+export function meowdokuRegionName(paletteSlot: number): string {
+    return REGION_SWATCHES[paletteSlot % REGION_SWATCHES.length]![1];
+}
 
 /**
  * 原作 `LevelGenerator.compute_color_map*` 用来评估“相邻区域颜色差”的 RGB 采样表。
@@ -631,18 +629,16 @@ export const MEOWDOKU_LIKE_HAND = Object.freeze({
     /** 拇指尖在图片中的位置比例（左下为原点），星光从这里迸出。 */
     thumbTip: Object.freeze({ x: 0.38, y: 0.95 }),
     /** 握拳从下方甩上来：起始下沉、倾角和缩放。 */
-    riseDropDesign: 46,
-    riseAngle: -34,
+    riseDropDesign: 32,
+    riseAngle: -24,
     riseScale: 0.45,
-    rise: 0.17,
-    /** 甩到顶点时的过冲。 */
-    overshootAngle: 7,
-    overshootScale: 1.1,
-    /** 竖拇指瞬间的挤压 → 拉伸 → 回弹（x, y 分别缩放）。 */
-    squash: Object.freeze({ x: 1.2, y: 0.86, duration: 0.05 }),
-    stretch: Object.freeze({ x: 0.92, y: 1.14, duration: 0.07 }),
-    settle: 0.2,
-    hold: 0.82,
+    rise: 0.12,
+    /** 握拳压扁蓄力，竖拇指时向上弹开，再轻轻回压一次。 */
+    squash: Object.freeze({ x: 1.16, y: 0.82, angle: -7 }),
+    stretch: Object.freeze({ x: 0.91, y: 1.23, angle: 6, duration: 0.11 }),
+    rebound: Object.freeze({ x: 1.06, y: 0.95, angle: -2, duration: 0.09 }),
+    settle: 0.10,
+    hold: 0.60,
     fadeOut: 0.24,
     fadeLiftDesign: 26,
     /** 竖拇指时的星光：向上半圆迸出。 */
@@ -1197,6 +1193,11 @@ export const MEOWDOKU_COPY = Object.freeze({
     /** 道具卡上名称下面的一句说明。 */
     toolLocateDesc: "直接找到一只猫",
     toolHintDesc: '推理下一步',
+    toolLoading: '加载中',
+    toolBusy: '请稍候，再使用道具',
+    toolInDraft: '请先应用或取消草稿',
+    toolTutorial: '请先完成或跳过引导',
+    hintPending: '请先应用当前提示',
     /** 广告角标上的字（原作 `GAME_AD`）。 */
     adTag: 'AD',
     /** 草稿：状态行开关（关 / 开）与草稿期间底部的取消 / 应用按钮。 */
@@ -1246,6 +1247,7 @@ export const MEOWDOKU_COPY = Object.freeze({
      */
     /** 广告没看完 / 拉不到时的提示。 */
     adUnavailable: '广告暂时不可用，稍后再试',
+    adLoading: '广告加载中，请稍候',
     failEncourageHigh: Object.freeze([
         '就快成功了！',
         '就差一点点了！',

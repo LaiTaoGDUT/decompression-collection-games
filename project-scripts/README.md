@@ -18,7 +18,8 @@
 | `cocos-refresh.cjs` | 文案审校与合集配置编辑共用的 Cocos 资源刷新，经 `cocos_creator_stdio` 同一项目 MCP 刷新 `db://assets`。 |
 | `copy-review/` | `npm run copy:review` 与 `npm run verify:copy-review` 的完整实现，包含页面、扫描与精确写回、建议数据、服务及校验。 |
 | `generate-desktop-cleanup-hit-polygons.py`、`desktop-cleanup/generate-dessert-hit-shapes.py` | 从当前物品图集生成桌面清理的命中多边形，保留甜点与便利店物品的孔洞。后者从 `DesktopCleanupTheme.ts` 读取图集顺序，不依赖本机 `docs`。 |
-| `meowdoku/build-level-bank.py` | 生成普通 `MeowdokuLevels.ts`（默认 3000 关）或 `--mode hard` 的 `MeowdokuHardLevels.ts`（SuperHard，默认 200 关，先 rank4 后 rank5）；输入 APK/XAPK 或已解密题库由调用方提供，支持 `--check`。 |
+| `meowdoku/build-level-bank.cjs` | 从固定种子生成猫咪数独的原创题库（普通 3500 关、困难 300 关）。使用游戏提示推理分档，验证唯一解并对棋盘对称变换去重，支持 `--check`。 |
+| `meowdoku/build-level-bank.py` | 历史题库来源核对工具，须指定发行题库以外的输出路径。 |
 | `meowdoku/verify-modes-browser.cjs` | 使用隔离存档在 Cocos 预览回归双模式切换/续玩、一命无复活、旧关顺序进入下一关、200 关末页及胶囊/底部安全区与长短屏布局；需要本机 Playwright，可用 `PLAYWRIGHT_MODULE` 指定路径。 |
 | `meowdoku/build-board-textures.py` | 生成当前数独棋盘、叉笔画与投影贴图。棋盘保持为独立纹理；已参与 SpriteAtlas 的笔画与投影更新源图片，再统一合图。 |
 

@@ -1,0 +1,94 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "de50f996-0e9e-592a-b536-8b8720a6eff0",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "de50f996-0e9e-592a-b536-8b8720a6eff0@f9941",
+      "displayName": "setting_off",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "rawWidth": 112,
+        "rawHeight": 60,
+        "width": 112,
+        "height": 60,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "maxPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "de50f996-0e9e-592a-b536-8b8720a6eff0@6c48a"
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "de50f996-0e9e-592a-b536-8b8720a6eff0@6c48a",
+      "displayName": "setting_off",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "de50f996-0e9e-592a-b536-8b8720a6eff0",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": true,
+    "redirect": "de50f996-0e9e-592a-b536-8b8720a6eff0@f9941"
+  }
+}

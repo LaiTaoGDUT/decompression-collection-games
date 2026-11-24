@@ -1,0 +1,42 @@
+{
+  "width": 750,
+  "overlap": 260,
+  "panels": [
+    {
+      "path": "sky/sky-00-dawn",
+      "height": 1312
+    },
+    {
+      "path": "sky/sky-01-rooftop",
+      "height": 1215
+    },
+    {
+      "path": "sky/sky-02-clouds",
+      "height": 1312
+    },
+    {
+      "path": "sky/sky-03-sunset",
+      "height": 1215
+    },
+    {
+      "path": "sky/sky-04-stratosphere",
+      "height": 1215
+    },
+    {
+      "path": "sky/sky-05-orbit",
+      "height": 1215
+    },
+    {
+      "path": "sky/sky-06-moonlight",
+      "height": 1215
+    },
+    {
+      "path": "sky/sky-07-nebula",
+      "height": 1215
+    },
+    {
+      "path": "sky/sky-08-galaxy",
+      "height": 2124
+    }
+  ]
+}

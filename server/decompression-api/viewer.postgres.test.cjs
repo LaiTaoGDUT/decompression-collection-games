@@ -17,8 +17,16 @@ test('viewer PostgreSQL reports count correctly, decode progress and prevent wri
     try {
         await applyMigrations(pool);
         assert.equal((await store.overview()).counts.accounts, '0');
+        const modules = {
+            2: encodeModule([25, 3]),
+            4: encodeModule([2, 4], [3, 1]),
+            18: encodeModule([3, 1], [0, 1]),
+            19: encodeModule([12]),
+            20: encodeModule([80, 8]),
+            22: encodeModule([3500, 300]),
+        };
         await pool.query('INSERT INTO cloud_saves(user_id,modules,achievements,revision) VALUES($1,$2,$3,7)',
-            [uid, { 2: encodeModule([25, 3]), 4: encodeModule([2, 4], [3, 1]) }, encodeAchievements({ 2: 20000 })]);
+            [uid, modules, encodeAchievements({ 2: 20000 })]);
         await pool.query('INSERT INTO sync_devices(user_id,device_id,last_seq) VALUES($1,$2,3)', [uid, device]);
         await pool.query('INSERT INTO game_playtime(user_id,device_id,game_id,total_ms) VALUES($1,$2,$3,90000)', [uid, device, 'meowdoku']);
         const overview = await store.overview();
@@ -27,8 +35,21 @@ test('viewer PostgreSQL reports count correctly, decode progress and prevent wri
         assert.equal((await store.saves({ page: 1, prefix: 'aaa' })).total, '1');
         assert.equal((await store.saves({ page: 1, prefix: 'bbb' })).total, '0');
         const account = await store.account(uid);
-        assert.equal(account.revision, '7'); assert.equal(account.games.find(game => game.gameId === 'meowdoku').fields[0].value, 25);
-        assert.deepEqual(account.games.find(game => game.gameId === 'cyblockbees').stars, [{ level: '1', stars: 3 }, { level: '2', stars: 1 }]);
+        assert.equal(account.revision, '7');
+        for (const [id, progress] of [
+            ['meowdoku-legacy', [25, 3]],
+            ['meowdoku-original-v8', [80, 8]],
+            ['meowdoku', [3500, 300]],
+        ]) {
+            const game = account.games.find(g => g.gameId === id);
+            assert.ok(game, id);
+            assert.deepEqual(game.fields.map(field => field.value), progress, id);
+        }
+        assert.equal(account.games.find(game => game.gameId === 'cube-away')?.name, '救出小蛇');
+        assert.deepEqual(account.games.find(game => game.gameId === 'cyblockbees').stars, [{ level: '1', number: 1, stars: 3 }, { level: '2', number: 2, stars: 1 }]);
+        const cozy = account.games.find(game => game.gameId === 'cozy-sudoku');
+        assert.equal(cozy.completionOnly, true); assert.equal(cozy.stars[0].number, 2);
+        assert.equal(cozy.fields[1].value, 1); assert.equal(cozy.name, '慢慢数独');
         assert.equal(account.achievements.length, 1); assert.equal(account.playtime[0].total_ms, '90000');
         assert.equal(await store.account('b'.repeat(64)), undefined);
         await assert.rejects(store.snapshot(db => db.query('DELETE FROM cloud_saves')), { code: '25006' });

@@ -10,6 +10,7 @@ import type { CyBlockBeesPrefab } from './CyBlockBeesPrefab';
 import { buildDrawnLine, buildDrawnSpine, DrawnSpineCache } from './CyBlockBeesSpline';
 import { CyBlockBeesStrokeCollider2D } from './CyBlockBeesStrokeCollider2D';
 import { CyBlockBeesPolygonCollider2D } from './CyBlockBeesPolygonCollider2D';
+import { configureCyBlockBeesBox2DMath } from './CyBlockBeesBox2DMath';
 import { CYBLOCKBEES_KIND_SPRITES, CYBLOCKBEES_RULES } from './CyBlockBeesTheme';
 
 const UNIT = 100, PTM = 32, DEG = 180 / Math.PI, LINE_WIDTH = .148796886, MAX_ROPE_PARTICLES = 6;
@@ -17,6 +18,8 @@ const INK = new Color(20, 19, 18, 255);
 const ROPE_COLOR = new Color(49, 40, 28);
 const GUIDE_OUTLINE = new Color(96, 58, 32, 190);
 const GUIDE_INK = new Color(255, 230, 146, 240);
+const INVALID_INK = new Color(216, 52, 51);
+const DRAFT_CHUNK_SEGMENTS = 32;
 const MATRIX_FIELDS = ['m00', 'm01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07',
     'm08', 'm09', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15'] as const;
 // Box2D 的过滤位是 uint16，Unity 的 layer 编号不能直接用于高于 15 的位。
@@ -37,6 +40,7 @@ interface Actor {
     physicsScale?: Vec3;
     syncedTransform?: TransformSnapshot;
     bee?: { phase: 'fly' | 'seek' | 'back' | 'dead'; time: number; direction: number; removeAfter: number;
+        target?: Actor;
         velocity: Vec2; ignoredHives: readonly Node[]; contacts: Map<Node, Set<IPhysics2DContact>>; processed: Set<Node> };
 }
 interface PathBounds { minX: number; minY: number; maxX: number; maxY: number; }
@@ -93,6 +97,8 @@ export class CyBlockBeesBoard {
         fixedTimeStep: number; velocityIterations: number; positionIterations: number };
     private readonly broadPhase: BoardBroadPhase;
     private draft: Graphics;
+    private readonly draftChunks: { graphics: Graphics; coordinates: number[] }[] = [];
+    private draftInvalid?: Graphics;
     private ropes: Graphics;
     private spriteOf: (slug: string) => SpriteFrame | undefined = () => undefined;
     private scale = 1;
@@ -118,11 +124,15 @@ export class CyBlockBeesBoard {
         // 与原版主相机一致：水池和场外地形继续存在于物理世界，渲染限于安全玩法窗口。
         this.root.addComponent(Mask).type = Mask.Type.GRAPHICS_RECT;
         this.draft = this.makeNode('draft').addComponent(Graphics);
+        this.draftChunks.push({ graphics: this.draft, coordinates: [] });
         this.ropes = this.makeNode('ropes').addComponent(Graphics);
         const system = PhysicsSystem2D.instance;
         this.physicsBefore = { enabled: system.enable, auto: system.autoSimulation, gravity: system.gravity.clone(),
             fixedTimeStep: system.fixedTimeStep, velocityIterations: system.velocityIterations, positionIterations: system.positionIterations };
-        this.broadPhase = configureBox2DBroadPhase(system);
+        this.broadPhase = configureBox2DBroadPhase(system, (first, second) => {
+            const a = this.byNode.get(first), b = this.byNode.get(second);
+            return (a?.bee?.ignoredHives.indexOf(second) ?? -1) < 0 && (b?.bee?.ignoredHives.indexOf(first) ?? -1) < 0;
+        });
         system.enable = false;
         system.autoSimulation = false;
         system.fixedTimeStep = CYBLOCKBEES_RULES.physicsTimeStep;
@@ -700,13 +710,8 @@ export class CyBlockBeesBoard {
                 // Lua FlyTo/GoBack 只切换状态；下一次 Update 才执行 FindDog。
                 continue;
             }
-            let dog: Actor | undefined, distance = Infinity;
+            const dog = this.beeTarget(a);
             const p = a.node.position;
-            for (const candidate of this.dogs) {
-                if (!candidate.alive) continue;
-                const q = candidate.node.position, squared = (p.x - q.x) ** 2 + (p.y - q.y) ** 2;
-                if (squared <= distance) { distance = squared; dog = candidate; }
-            }
             if (!dog) { a.body.linearVelocity = state.velocity.set(0, 0); continue; }
             const dir = state.velocity.set(dog.node.position.x - p.x, dog.node.position.y - p.y).normalize();
             const angle = Math.atan2(-dir.y, -dir.x) * DEG;
@@ -721,6 +726,27 @@ export class CyBlockBeesBoard {
             }
             a.node.angle = angle;
         }
+    }
+    private beeTarget(bee: Actor): Actor | undefined {
+        const state = bee.bee!;
+        if (state.target?.alive && state.target.node.activeInHierarchy) return state.target;
+        // 先覆盖追兵较少的狗头，数量相同再选最近的；选定后持续追踪。
+        // 每帧重选最近目标会让蜂群全部聚在岸边，远处裸露的狗头也无需防护。
+        let target: Actor | undefined, fewest = Infinity, distance = Infinity;
+        const p = bee.node.position;
+        for (const dog of this.dogs) {
+            if (!dog.alive || !dog.node.activeInHierarchy) continue;
+            let count = 0;
+            for (const other of this.bees) {
+                if (other.alive && other.node.activeInHierarchy && other.bee!.target === dog) count++;
+            }
+            const q = dog.node.position, squared = (p.x - q.x) ** 2 + (p.y - q.y) ** 2;
+            if (count < fewest || count === fewest && squared < distance) {
+                target = dog; fewest = count; distance = squared;
+            }
+        }
+        state.target = target;
+        return target;
     }
     /** 固定物理步运行原 Lua 的力。 */
     applyBeeForces(dt: number): void {
@@ -958,7 +984,7 @@ export class CyBlockBeesBoard {
         // OnEnterDici 只关闭 AI、改变质量和重力，没有定时删除尸体。
         // 尸体随后仍能落水或被炸掉；正在消失的蜂不能重复安排移除。
         if (!a.alive && (fall || a.bee!.removeAfter !== Infinity)) return;
-        a.alive = false; a.bee!.phase = 'dead'; a.bee!.removeAfter = fall ? Infinity : delay;
+        a.alive = false; a.bee!.phase = 'dead'; a.bee!.target = undefined; a.bee!.removeAfter = fall ? Infinity : delay;
         if (fall) {
             if (a.sprite) a.sprite.spriteFrame = this.spriteOf('bee-die') ?? a.sprite.spriteFrame;
             a.body.gravityScale = 1.5; a.body.fixedRotation = false; a.mass = .07;
@@ -1007,17 +1033,54 @@ export class CyBlockBeesBoard {
         // 一帧内可能收到多次 TOUCH_MOVE。只保存最新输入，渲染帧统一生成一次网格。
         this.draftPoints = points; this.draftTail = illegalTail instanceof Vec2 ? illegalTail : undefined;
         this.draftDirty = true;
-        if (!points.length) { this.draft.clear(); this.draftDirty = false; this.draftSpine.clear(); }
+        if (!points.length) {
+            for (const chunk of this.draftChunks) {
+                if (chunk.coordinates.length) chunk.graphics.clear();
+                chunk.coordinates.length = 0; chunk.graphics.node.active = false;
+            }
+            this.draftInvalid?.clear();
+            this.draftDirty = false; this.draftSpine.clear();
+        }
     }
     private flushDraft(): void {
         if (!this.draftDirty) return;
-        this.draftDirty = false; this.draft.clear();
+        this.draftDirty = false;
         // 线性补点不改变轮廓，Graphics 不需要用于切线的密集采样。
         const spine = this.draftSpine.update(this.draftPoints, this.scale, (to, from) => !this.isBlocked(
             new Vec2(to.x * this.scale, to.y * this.scale), new Vec2(from.x * this.scale, from.y * this.scale)), this.planningRevision);
-        this.drawStroke(this.draft, spine, INK, LINE_WIDTH * this.scale);
-        if (this.draftTail && this.draftPoints.length) this.drawStroke(this.draft,
-            [this.draftPoints[this.draftPoints.length - 1], this.draftTail], new Color(216, 52, 51), LINE_WIDTH * this.scale);
+        // Catmull-Rom 追加点只改变尾段；稳定的笔迹保留网格，避免线越长每帧重建越多。
+        // 相邻块共享端点，圆头/圆角的实色覆盖并集与整条笔迹相同。
+        const count = Math.max(1, Math.ceil((spine.length - 1) / DRAFT_CHUNK_SEGMENTS));
+        this.draft.node.active = true;
+        for (let index = 0; index < Math.max(count, this.draftChunks.length); index++) {
+            let chunk = this.draftChunks[index];
+            if (!chunk) {
+                chunk = { graphics: this.makeNode('draft-part', this.draft.node).addComponent(Graphics), coordinates: [] };
+                this.draftChunks.push(chunk);
+            }
+            if (index >= count) {
+                chunk.graphics.node.active = false; chunk.coordinates.length = 0; continue;
+            }
+            const first = index * DRAFT_CHUNK_SEGMENTS, end = Math.min(spine.length, first + DRAFT_CHUNK_SEGMENTS + 1);
+            const coordinates = chunk.coordinates;
+            let changed = coordinates.length !== (end - first) * 2;
+            for (let i = first; i < end; i++) {
+                const j = (i - first) * 2, p = spine[i];
+                if (coordinates[j] !== p.x || coordinates[j + 1] !== p.y) changed = true;
+                coordinates[j] = p.x; coordinates[j + 1] = p.y;
+            }
+            coordinates.length = (end - first) * 2;
+            chunk.graphics.node.active = true;
+            if (!changed) continue;
+            chunk.graphics.clear();
+            this.drawStroke(chunk.graphics, spine.slice(first, end), INK, LINE_WIDTH * this.scale);
+        }
+        if (this.draftInvalid) this.draftInvalid.clear();
+        if (this.draftTail && this.draftPoints.length) {
+            this.draftInvalid ??= this.makeNode('draft-invalid', this.draft.node).addComponent(Graphics);
+            this.draftInvalid.node.setSiblingIndex(this.draft.node.children.length - 1);
+            this.drawStroke(this.draftInvalid, [this.draftPoints[this.draftPoints.length - 1], this.draftTail], INVALID_INK, LINE_WIDTH * this.scale);
+        }
     }
     private smooth(points: readonly Vec2[], interpolate = true): Vec2[] {
         // Lua 的 .1 插值阈值是世界单位，不是 .1 UI 像素。
@@ -1254,6 +1317,7 @@ export class CyBlockBeesBoard {
         a.colliders.forEach(c => { c.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this); c.off(Contact2DType.PRE_SOLVE, this.onPreSolve, this);
             c.off(Contact2DType.END_CONTACT, this.onEndContact, this); });
         a.bee?.contacts.clear(); a.bee?.processed.clear();
+        if (a.bee) a.bee.target = undefined;
         a.colliders.forEach(c => this.fixtureByCollider.delete(c));
         this.byNode.delete(a.node);
         this.pathCache.delete(a);
@@ -1269,6 +1333,7 @@ export class CyBlockBeesBoard {
         this.ignoredBeeHives.length = 0; this.ropeCommands.length = 0; this.physicsParent.length = 0;
         this.draftPoints = []; this.draftTail = undefined; this.draftDirty = false;
         this.draftSpine.clear();
+        this.draftChunks.length = 0; this.draftInvalid = undefined;
         this.root.destroy();
         this.broadPhase.restore();
         const system = PhysicsSystem2D.instance;
@@ -1316,15 +1381,18 @@ function boundsOverlap(a: PathBounds, b: PathBounds): boolean {
  * 重新遍历整棵树。多个输入变换合并查询，但必须在 Step 前完成接触创建。
  * 这些适配仅在本游戏的 Session 内生效，退出关卡后恢复原实现。
  */
-function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
+function configureBox2DBroadPhase(system: PhysicsSystem2D, allowsContact?: (a: Node, b: Node) => boolean): BoardBroadPhase {
     interface NativeFixture {
+        m_userData?: { collider?: Collider2D };
         GetBody(): object; GetType(): number;
         GetFilterData(): { categoryBits: number; maskBits: number; groupIndex: number };
         m_proxies: { treeNode: Proxy | null }[];
     }
     interface ProxyData { fixture: NativeFixture; childIndex: number; }
     interface Bounds {
-        lowerBound: { x: number; y: number }; upperBound: { x: number; y: number };
+        lowerBound: { x: number; y: number; data: Float32Array }; upperBound: { x: number; y: number; data: Float32Array };
+        Combine2(first: Bounds, second: Bounds): Bounds;
+        GetPerimeter(): number;
         TestOverlap(other: Bounds): boolean;
     }
     interface Proxy { m_id: number; aabb: Bounds; userData: ProxyData; parent: Proxy | null; child1: Proxy | null; child2: Proxy | null; }
@@ -1336,6 +1404,8 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
         m_proxyCount: number;
         m_pairBuffer: Pair[];
         m_tree: { m_root: Proxy | null; m_insertionCount: number;
+            constructor: { s_aabb: Bounds; s_combinedAABB: Bounds };
+            AllocateNode(): Proxy;
             MoveProxy(proxy: Proxy, bounds: Bounds, displacement: { x: number; y: number }): boolean;
             RemoveLeaf(proxy: Proxy): void; InsertLeaf(proxy: Proxy): void; Balance(proxy: Proxy): Proxy };
         UnBufferMove(proxy: Proxy): void;
@@ -1344,20 +1414,78 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
     interface NativeContact {
         m_fixtureA: NativeFixture; m_fixtureB: NativeFixture; m_indexA: number; m_indexB: number; m_next: NativeContact | null;
     }
-    type World = { m_contactManager: { m_broadPhase: BroadPhase; m_contactList: NativeContact | null;
+    type DistanceProxy = { m_vertices: readonly { x: number; y: number }[]; m_count: number;
+        GetSupport(direction: { x: number; y: number }): number };
+    type World = { constructor: { SolveTOI_s_toi_input: { proxyA: DistanceProxy } };
+        m_contactManager: { m_broadPhase: BroadPhase; m_contactList: NativeContact | null;
         FindNewContacts(): void; AddPair(a: ProxyData, b: ProxyData): void;
         Destroy(contact: NativeContact): void;
         m_contactFactory: { m_registers: { createFcn: (() => unknown) | null }[][] };
         m_contactFilter: { ShouldCollide(a: NativeFixture, b: NativeFixture): boolean } } };
     const world = system.physicsWorld as unknown as { impl?: World; _world?: World };
     const manager = (world.impl ?? world._world)!.m_contactManager, broad = manager.m_broadPhase;
+    const restoreMath = configureCyBlockBeesBox2DMath(world.impl ?? world._world);
     const contactTypes = manager.m_contactFactory.m_registers;
     const compatibleTypes = contactTypes.map(row => row.reduce((mask, entry, type) => entry.createFcn ? mask | (1 << type) : mask, 0));
     const tree = broad.m_tree, originalMovement = tree.MoveProxy;
+    const originalAllocate = tree.AllocateNode;
+    // 本后端的 b2Vec2.x/y 是 Float32Array 的访问器。密集 CCD 会在树更新和
+    // GJK 支撑点搜索里重复调用数百万次；直接访问相同数组，保留运算/舍入/比较顺序。
+    const boundsBefore = new Map<Bounds, PropertyDescriptorMap>();
+    const optimizeBounds = (bounds: Bounds): void => {
+        if (boundsBefore.has(bounds)) return;
+        const descriptors: PropertyDescriptorMap = {};
+        for (const name of ['Combine2', 'GetPerimeter', 'TestOverlap']) {
+            const descriptor = Object.getOwnPropertyDescriptor(bounds, name);
+            if (descriptor) descriptors[name] = descriptor;
+        }
+        boundsBefore.set(bounds, descriptors);
+        bounds.Combine2 = function (first, second): Bounds {
+            const lower = this.lowerBound.data, upper = this.upperBound.data;
+            const al = first.lowerBound.data, au = first.upperBound.data, bl = second.lowerBound.data, bu = second.upperBound.data;
+            // b2Min/b2Max 在相等时选择第二项，保留正负零与非有限数的原语义。
+            lower[0] = al[0] < bl[0] ? al[0] : bl[0]; lower[1] = al[1] < bl[1] ? al[1] : bl[1];
+            upper[0] = au[0] > bu[0] ? au[0] : bu[0]; upper[1] = au[1] > bu[1] ? au[1] : bu[1];
+            return this;
+        };
+        bounds.GetPerimeter = function (): number {
+            const lower = this.lowerBound.data, upper = this.upperBound.data;
+            const width = upper[0] - lower[0], height = upper[1] - lower[1];
+            return 2 * (width + height);
+        };
+        bounds.TestOverlap = function (other): boolean {
+            const lower = this.lowerBound.data, upper = this.upperBound.data;
+            const ol = other.lowerBound.data, ou = other.upperBound.data;
+            return !(upper[0] < ol[0] || upper[1] < ol[1] || ou[0] < lower[0] || ou[1] < lower[1]);
+        };
+    };
+    optimizeBounds(tree.constructor.s_aabb); optimizeBounds(tree.constructor.s_combinedAABB);
+    tree.AllocateNode = function (): Proxy {
+        const node = originalAllocate.call(this); optimizeBounds(node.aabb); return node;
+    };
+    const supportPrototype = Object.getPrototypeOf((world.impl ?? world._world)!.constructor.SolveTOI_s_toi_input.proxyA) as DistanceProxy;
+    const originalSupport = Object.getOwnPropertyDescriptor(supportPrototype, 'GetSupport')!;
+    supportPrototype.GetSupport = function (direction): number {
+        const x = direction.x, y = direction.y, vertices = this.m_vertices;
+        let best = 0, value = vertices[0].x * x + vertices[0].y * y;
+        for (let i = 1; i < this.m_count; i++) {
+            const next = vertices[i].x * x + vertices[i].y * y;
+            if (next > value) { best = i; value = next; }
+        }
+        return best;
+    };
     const originalInsert = tree.InsertLeaf, originalRemove = tree.RemoveLeaf, originalBalance = tree.Balance;
     const originalRemoval = broad.UnBufferMove, originalPairs = broad.UpdatePairs;
     const originalFind = manager.FindNewContacts, originalAdd = manager.AddPair;
     const originalDestroy = manager.Destroy;
+    const filter = manager.m_contactFilter, originalFilter = filter.ShouldCollide;
+    // IgnoreCollision 应在创建接触前生效。等 PRE_SOLVE 再 disabled，蜂巢的每个凸片
+    // 仍会做窄相位和连续碰撞检测；蜂群从蜂巢出发时会放大这部分无效开销。
+    filter.ShouldCollide = function (a: NativeFixture, b: NativeFixture): boolean {
+        if (!originalFilter.call(this, a, b)) return false;
+        const first = a.m_userData?.collider?.node, second = b.m_userData?.collider?.node;
+        return !allowsContact || !first || !second || allowsContact(first, second);
+    };
     let batching = false, pendingFind = false;
     manager.FindNewContacts = function (): void {
         if (batching) { pendingFind = true; return; }
@@ -1447,6 +1575,7 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
         summary.positiveGroup = first.positiveGroup || second.positiveGroup;
     };
     const initializeSummary = (node: Proxy): void => {
+        optimizeBounds(node.aabb);
         if (node.child1) { initializeSummary(node.child1); initializeSummary(node.child2!); }
         summarize(node);
     };
@@ -1580,10 +1709,22 @@ function configureBox2DBroadPhase(system: PhysicsSystem2D): BoardBroadPhase {
             }
         },
         restore(): void {
+            restoreMath();
+            tree.AllocateNode = originalAllocate;
+            Object.defineProperty(supportPrototype, 'GetSupport', originalSupport);
+            boundsBefore.forEach((descriptors, bounds) => {
+                for (const name of ['Combine2', 'GetPerimeter', 'TestOverlap']) {
+                    const descriptor = descriptors[name];
+                    if (descriptor) Object.defineProperty(bounds, name, descriptor);
+                    else Reflect.deleteProperty(bounds, name);
+                }
+            });
+            boundsBefore.clear();
             tree.MoveProxy = originalMovement; tree.InsertLeaf = originalInsert;
             tree.RemoveLeaf = originalRemove; tree.Balance = originalBalance;
             broad.UnBufferMove = originalRemoval; broad.UpdatePairs = originalPairs;
             manager.FindNewContacts = originalFind; manager.AddPair = originalAdd; manager.Destroy = originalDestroy;
+            filter.ShouldCollide = originalFilter;
             contacts = new WeakMap();
             summaries = new WeakMap(); reusableGroups = new WeakMap(); pairPool.length = 0;
             queries.clear(); groups.clear(); stack.length = 0; matching.length = 0;

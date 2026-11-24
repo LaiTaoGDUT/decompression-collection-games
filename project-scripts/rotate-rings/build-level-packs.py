@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""原形状逐字节去重、独立无损压缩，再按索引合入关卡与网格两个原生文件。"""
-import hashlib
+"""生成并打包晴空糖环的原创棋盘、碰撞轮廓和渲染网格。"""
+import argparse
 import json
+import math
+import subprocess
 import struct
-import uuid
 import zlib
+from functools import lru_cache
 from pathlib import Path
 
+from campaign import ARRANGEMENTS, CHALLENGE_INTERVAL, CLASP, MODE_COUNTS, TUBE, candidate_for, make_level, point, polar
+
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / 'local/rotate-rings-build-source/configs'
 DEST = ROOT / 'assets/game-assets/rotate-rings/configs'
-BANK_SIZE = 64
+BANK_SIZE = 16
 
 
 def compressed(raw):
@@ -29,118 +32,191 @@ def archive(records):
     return b'RRA1' + struct.pack('<I', len(records)) + b''.join(entries) + b''.join(payload for _, payload in records)
 
 
-def emit(relative, data, importer='buffer'):
-    path = DEST / relative
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.exists() or path.read_bytes() != data:
-        path.write_bytes(data)
-    meta = path.with_suffix(path.suffix + '.meta')
-    if not meta.exists():
-        meta.write_text(json.dumps({'ver': '1.0.3' if importer == 'buffer' else '2.0.0',
-            'importer': importer, 'imported': True,
-            'uuid': str(uuid.uuid5(uuid.NAMESPACE_URL, f'rotate-rings/packed/{relative}')),
-            'files': ['.json', '.bin'] if importer == 'buffer' else ['.json'],
-            'subMetas': {}, 'userData': {}}, indent=2) + '\n')
-    return len(data)
+@lru_cache(maxsize=None)
+def ring_contour(radius, gap):
+    """Outline the same tube and rounded endcaps used by the ceramic arc."""
+    start, end = gap / 2, 360 - gap / 2
+    steps = math.ceil((end - start) / 7)
+    angles = [start + (end - start) * i / steps for i in range(steps + 1)]
+
+    def cap(deg, offset):
+        center = polar(radius, deg)
+        result = []
+        for i in range(1, 8):
+            p = polar(TUBE, deg + offset + i * 180 / 8)
+            result.append(point(center['x'] + p['x'], center['y'] + p['y']))
+        return result
+
+    return [[polar(radius + TUBE, a) for a in angles] + cap(end, 0)
+            + [polar(radius - TUBE, a) for a in reversed(angles)] + cap(start, 180)]
 
 
-def read_meshes(path):
-    data = path.read_bytes()
-    if data[:4] != b'RRM2':
-        raise ValueError(f'Original RRM2 source required: {path}')
-    count = struct.unpack_from('<H', data, 4)[0]
-    offset = 8
-    for _ in range(count):
-        length = data[offset]
-        offset += 1
-        name = data[offset:offset + length].decode('ascii')
-        offset += length
-        color = int.from_bytes(data[offset:offset + 3], 'big')
-        offset += 3
-        vertices, indices = struct.unpack_from('<HH', data, offset)
-        size = 4 + vertices * 24 + indices * 2
-        shape = data[offset:offset + size]
-        if len(shape) != size:
-            raise ValueError(f'Truncated mesh: {path}/{name}')
-        offset += size
-        yield name, color, shape
-    if offset != len(data):
-        raise ValueError(f'Unexpected original mesh tail: {path}')
+class Mesh:
+    def __init__(self):
+        self.vertices = []
+        self.indices = []
+
+    def strip(self, points, width, length, style):
+        first = len(self.vertices)
+        for i, (x, y, tx, ty, u) in enumerate(points):
+            for sign, v in ((1, 65535), (-1, 0)):
+                self.vertices.append(struct.pack('<4fH2hbb', x + sign * ty * width, y - sign * tx * width,
+                                                 u, length, v, round(tx * 32767), round(ty * 32767), -1, style))
+            if i:
+                a = first + (i - 1) * 2
+                self.indices.extend((a, a + 1, a + 2, a + 1, a + 3, a + 2))
+
+    def line(self, x, y, angle, length, width, style):
+        tx, ty = math.cos(angle), math.sin(angle)
+        if style < 0:
+            # The rectangular clasp sprite occupies the middle half of its UV region.
+            x -= tx * length / 2
+            y -= ty * length / 2
+            length *= 2
+        self.strip([(x, y, tx, ty, 0), (x + tx * length, y + ty * length, tx, ty, length)],
+                   width, length, style)
+
+    def encode(self):
+        return (struct.pack('<HH', len(self.vertices), len(self.indices)) + b''.join(self.vertices)
+                + struct.pack('<' + 'H' * len(self.indices), *self.indices))
+
+
+def ring_mesh(ring):
+    mesh = Mesh()
+    radius = round((ring['outer'] + ring['inner']) / 2, 3)
+    start = math.radians(ring['gapWidth'] / 2)
+    span = 2 * math.pi - start * 2
+    # Path coordinates match createRingArcMesh and the ceramic material's two cap regions.
+    cap = TUBE * 2
+    length = span * radius + cap * 2
+    path = []
+    for i in range(49):
+        a = start + span * i / 48
+        x, y = math.cos(a), math.sin(a)
+        path.append((radius * x, radius * y, -y, x, cap + span * radius * i / 48))
+    for i, sign in ((0, -1), (-1, 1)):
+        x, y, tx, ty, _ = path[i]
+        p = (x + sign * tx * cap, y + sign * ty * cap, tx, ty, 0 if sign < 0 else length)
+        if sign < 0:
+            path.insert(0, p)
+        else:
+            path.append(p)
+    mesh.strip(path, TUBE * 2, length, 2)
+    for pin in ring['pins']:
+        a = math.radians(pin['angleDeg'])
+        x, y = math.cos(a), math.sin(a)
+        reach = pin['radius']
+        # A glazed crosspiece lies over the neighbouring tube, with a jaw at each edge.
+        mesh.line(radius * x, radius * y, a, reach + CLASP - radius, .21, -1)
+        for sign in (-1, 1):
+            at = reach + sign * CLASP
+            mesh.line(at * x + y * .28, at * y - x * .28, a + math.pi / 2, .56, .12, -1)
+    return mesh.encode()
+
+
+def packed_json(obj):
+    return json.dumps(obj, separators=(',', ':')).encode('ascii')
+
+
+def select_layouts(mode, start, stop):
+    """Find a playable seed for each slot under its authored arrangement constraints."""
+    with subprocess.Popen(['node', str(Path(__file__).with_name('solve-board.cjs'))],
+                          stdin=subprocess.PIPE, stdout=subprocess.PIPE) as solver:
+        for number in range(start, stop + 1):
+            rejected = False
+            for attempt in range(10000):
+                candidate = candidate_for(mode, number, attempt)
+                if candidate is None:
+                    continue
+                level = candidate[0]
+                for ring in level['rings']:
+                    radius = round((ring['inner'] + ring['outer']) / 2, 3)
+                    ring['bodyLocal'] = ring_contour(radius, ring['gapWidth'])
+                solver.stdin.write(packed_json(dict(mode=mode, number=number, level=level)) + b'\n')
+                solver.stdin.flush()
+                answer = solver.stdout.readline()
+                if not answer:
+                    raise RuntimeError('Candidate solver exited')
+                if answer == b'ok\n':
+                    if rejected or str(number) in ARRANGEMENTS[mode]:
+                        print(f'{mode} {number} {attempt}', flush=True)
+                    break
+                rejected = True
+            else:
+                raise ValueError(f'No playable layout for {mode} {number}')
+        solver.stdin.close()
 
 
 def build():
-    catalog = json.loads((SOURCE / 'index.json').read_text())
-    shapes, lookup, level_refs = [], {}, {}
-    raw_mesh_bytes = 0
-    ids = [summary['id'] for mode in ('normal', 'hard') for summary in catalog['modes'][mode]]
-    for level_id in ids:
-        source = SOURCE / f'visual-level{level_id}.bin'
-        raw_mesh_bytes += source.stat().st_size
-        refs = []
-        for name, color, shape in read_meshes(source):
-            fingerprint = hashlib.sha256(shape).digest()
-            index = lookup.get(fingerprint)
-            if index is None:
-                index = len(shapes)
-                lookup[fingerprint] = index
-                shapes.append(shape)
-            elif shapes[index] != shape:
-                raise ValueError('Geometry fingerprint collision')
-            refs.append([name, index, color])
-        level_refs[level_id] = refs
-    mesh_packs = []
+    modes = {'normal': [], 'hard': []}
+    meshes, bodies = {}, {}
+    boards = []
+    seen = set()
+
+    for mode, count in MODE_COUNTS.items():
+        for number in range(1, count + 1):
+            level, colors = make_level(mode, number)
+            rings, pulls = level['rings'], level['pullObjects']
+            fingerprint = packed_json([rings, level['links'], pulls, level['bombs']])
+            if fingerprint in seen:
+                raise ValueError(f'Duplicate board: {mode} {number}')
+            seen.add(fingerprint)
+            refs = []
+            for part, color in zip(rings + pulls, colors):
+                if 'pins' in part:
+                    radius = round((part['outer'] + part['inner']) / 2, 3)
+                    shape = packed_json(ring_contour(radius, part['gapWidth']))
+                    part['bodyIndex'] = bodies.setdefault(shape, len(bodies))
+                    geometry = ring_mesh(part)
+                else:
+                    bar = Mesh()
+                    half = max(p['x'] for p in part['polyLocal']) + .18
+                    bar.line(-half, 0, 0, 2 * half, .36, 2)
+                    geometry = bar.encode()
+                refs.append([part['id'], meshes.setdefault(geometry, len(meshes)), color])
+            boards.append((level, refs))
+            summary = dict(id=level['id'], rings=len(rings), pulls=len(pulls),
+                           links=len(level['links']), bombs=len(level['bombs']))
+            if number % CHALLENGE_INTERVAL == 0:
+                summary['challenge'] = True
+            modes[mode].append(summary)
+    # Similar arc vertices compress together. Small banks limit how much one board inflates.
+    shapes = sorted(meshes, key=lambda shape: shape[4:256])
+    banks = []
+    indices = {}
     for first in range(0, len(shapes), BANK_SIZE):
         bank = shapes[first:first + BANK_SIZE]
+        for i, shape in enumerate(bank, first):
+            indices[meshes[shape]] = i
         raw = b'RRG3' + struct.pack('<IHH', first, len(bank), 0)
         raw += b''.join(struct.pack('<I', len(shape)) + shape for shape in bank)
-        mesh_packs.append((first // BANK_SIZE, compressed(raw)))
-    mesh_bytes = emit('geometry.bin', archive(mesh_packs))
-    raw_logic_bytes = 0
-    level_packs = []
-    collisions, collision_lookup = [], {}
-    bomb_kinds = {'ring': 0, 'pull': 0, 'board': 0}
-    for level_id in ids:
-        source = SOURCE / f'level{level_id}.json'
-        raw_logic_bytes += source.stat().st_size
-        level = json.loads(source.read_text())
-        for ring in level['rings']:
-            body = ring.pop('bodyLocal')
-            fingerprint = json.dumps(body, separators=(',', ':'))
-            if fingerprint not in collision_lookup:
-                collision_lookup[fingerprint] = len(collisions)
-                collisions.append(body)
-            ring['bodyIndex'] = collision_lookup[fingerprint]
-        for bomb in level['bombs']:
-            bomb_kinds['ring' if bomb.get('ringId') else 'pull' if bomb.get('pullId') else 'board'] += 1
-        raw = json.dumps([level, level_refs[level_id]], ensure_ascii=True, separators=(',', ':')).encode('ascii')
-        level_packs.append((level_id, compressed(raw)))
-    level_bytes = emit('levels.bin', archive(level_packs))
-    collision_bytes = emit('collisions.bin', compressed(json.dumps(collisions, separators=(',', ':')).encode('ascii')))
-    catalog['packing'] = {'version': 2, 'meshCount': len(shapes), 'bankSize': BANK_SIZE, 'collisionShapeCount': len(collisions)}
-    index_bytes = emit('index.json', (json.dumps(catalog, separators=(',', ':')) + '\n').encode(), 'json')
-    # 原始导入数据只作为离线构建输入；旧生产文件不能继续占据 JSON 合包或原生资源目录。
-    for pattern in ('level*.json', 'level*.json.meta', 'visual-level*.bin', 'visual-level*.bin.meta'):
-        for path in DEST.glob(pattern):
-            path.unlink()
-    # 合包生成成功后只清理旧生成物；原始关卡与网格继续保存在 assets 外。
-    for directory in ('levels', 'geometry'):
-        folder = DEST / directory
-        for path in folder.glob('*.bin'):
-            path.unlink()
-            path.with_suffix('.bin.meta').unlink(missing_ok=True)
-        if folder.is_dir() and not any(folder.iterdir()):
-            folder.rmdir()
-            folder.with_suffix('.meta').unlink(missing_ok=True)
-    report = {'levels': len(ids), 'meshInstances': sum(map(len, level_refs.values())), 'uniqueMeshes': len(shapes),
-        'meshBanks': len(mesh_packs), 'nativeFiles': 3, 'archiveEntries': len(level_packs) + len(mesh_packs), 'originalLogicBytes': raw_logic_bytes,
-        'originalMeshBytes': raw_mesh_bytes, 'packedLevelBytes': level_bytes, 'packedMeshBytes': mesh_bytes,
-        'catalogBytes': index_bytes, 'collisionShapes': len(collisions), 'collisionBytes': collision_bytes,
-        'totalPackedBytes': level_bytes + mesh_bytes + index_bytes + collision_bytes,
-        'geometrySha256': hashlib.sha256(b''.join(shapes)).hexdigest(), 'bankSize': BANK_SIZE,
-        'bombs': sum(bomb_kinds.values()), 'bombKinds': bomb_kinds}
-    (ROOT / 'rotate-rings-sources/level-packs.json').write_text(json.dumps(report, indent=2) + '\n')
-    print(json.dumps(report))
+        banks.append((first // BANK_SIZE, compressed(raw)))
+    records = []
+    for level, refs in boards:
+        for ref in refs:
+            ref[1] = indices[ref[1]]
+        records.append((level['id'], compressed(packed_json([level, refs]))))
+    index = dict(version=2, modes=modes, packing=dict(version=2, meshCount=len(meshes),
+                 bankSize=BANK_SIZE, collisionShapeCount=len(bodies)))
+    return {'levels.bin': archive(records), 'geometry.bin': archive(banks),
+            'collisions.bin': compressed(b'[' + b','.join(bodies) + b']'),
+            'index.json': packed_json(index) + b'\n'}
 
 
 if __name__ == '__main__':
-    build()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check', action='store_true')
+    parser.add_argument('--select-layouts', choices=tuple(MODE_COUNTS))
+    parser.add_argument('--start', type=int, default=1)
+    parser.add_argument('--stop', type=int)
+    args = parser.parse_args()
+    if args.select_layouts:
+        select_layouts(args.select_layouts, args.start, args.stop or MODE_COUNTS[args.select_layouts])
+        raise SystemExit(0)
+    for name, data in build().items():
+        path = DEST / name
+        if not path.exists() or path.read_bytes() != data:
+            if args.check:
+                raise SystemExit(f'Out of date: {path}')
+            path.write_bytes(data)
+        print(f'{name}: {len(data):,} bytes')

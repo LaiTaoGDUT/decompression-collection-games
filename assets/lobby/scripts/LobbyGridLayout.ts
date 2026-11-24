@@ -15,6 +15,7 @@ export interface LobbyGridLayout {
     readonly cardWidth: number;
     readonly contentHeight: number;
     readonly items: readonly LobbyGridItemLayout[];
+    readonly inlineAd?: Readonly<{ x: number; y: number; width: number; height: number }>;
 }
 
 /** Row-major two-column layout; an odd tail always remains in the left column. */
@@ -23,6 +24,7 @@ export function calculateLobbyGridLayout(
     containerWidth: number,
     gap = LOBBY_GRID_GAP,
     cardHeight?: number,
+    inlineAdHeight = 0,
 ): LobbyGridLayout {
     const count = Math.max(0, Math.floor(itemCount));
     const safeWidth = Math.max(0, containerWidth);
@@ -31,9 +33,11 @@ export function calculateLobbyGridLayout(
     // Card height follows the card's own vertical layout unless overridden.
     const safeCardHeight = Math.max(0, cardHeight ?? calculateLobbyCardHeight(cardWidth));
     const rows = Math.ceil(count / 2);
+    const adHeight = count > 2 && Number.isFinite(inlineAdHeight) ? Math.max(0, inlineAdHeight) : 0;
+    const adOffset = adHeight > 0 ? adHeight + safeGap : 0;
     const contentHeight = rows === 0
         ? 0
-        : rows * safeCardHeight + (rows - 1) * safeGap;
+        : rows * safeCardHeight + (rows - 1) * safeGap + adOffset;
     const columnOffset = (cardWidth + safeGap) / 2;
     const items: LobbyGridItemLayout[] = [];
 
@@ -42,7 +46,7 @@ export function calculateLobbyGridLayout(
         const column = (index % 2) as 0 | 1;
         items.push(Object.freeze({
             x: column === 0 ? -columnOffset : columnOffset,
-            y: -safeCardHeight / 2 - row * (safeCardHeight + safeGap),
+            y: -safeCardHeight / 2 - row * (safeCardHeight + safeGap) - (row > 0 ? adOffset : 0),
             width: cardWidth,
             height: safeCardHeight,
             row,
@@ -54,5 +58,8 @@ export function calculateLobbyGridLayout(
         cardWidth,
         contentHeight,
         items: Object.freeze(items),
+        ...(adHeight > 0 ? { inlineAd: Object.freeze({
+            x: 0, y: -safeCardHeight - safeGap - adHeight / 2, width: safeWidth, height: adHeight,
+        }) } : {}),
     });
 }

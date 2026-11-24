@@ -102,6 +102,10 @@ def load_frame(game, entry):
         x, y, w, h = entry['crop']
         data.update(trimX=x, trimY=y, width=w, height=h, rawWidth=w, rawHeight=h,
                     offsetX=0, offsetY=0, rotated=False)
+        # A sheet can author several independent frames. Its whole-image alias
+        # cannot identify each crop; use the explicitly named frame instead.
+        if 'name' in entry:
+            aliases = [str(Path(entry['source']).with_suffix('')) + '/' + entry['name']]
     if data.get('rotated'):
         raise ValueError('Rotated authoring frame needs explicit unpacking: ' + str(source))
     rect = [int(data[k]) for k in ('trimX', 'trimY', 'width', 'height')]

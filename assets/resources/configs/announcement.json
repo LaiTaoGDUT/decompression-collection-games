@@ -1,39 +1,28 @@
 {
   "schemaVersion": 1,
   "announcement": {
-    "id": "v0.0.9-20261021-6d4451",
-    "version": "0.0.9",
-    "date": "2026-10-21",
+    "id": "v0.0.10-20261106-fc01c3",
+    "version": "0.0.11",
+    "date": "2026-11-23",
     "newGames": [
       {
-        "gameId": "flappy-dunk",
-        "gameName": "篮球灌篮",
-        "text": "点按振翅穿过篮圈，挑战连续空心灌篮！"
-      },
-      {
-        "gameId": "rotate-rings",
-        "gameName": "解个圆环",
-        "text": "转动圆环找准缺口，解开层层相扣的机关！"
-      },
-      {
-        "gameId": "ping-pong",
-        "gameName": "乒乓球对战",
-        "text": "挑战机器人，或叫上朋友同屏来一场乒乓对决！"
+        "gameId": "cube-away",
+        "gameName": "救出小蛇",
+        "text": "旋转立方体，帮小蛇找到畅通的出口！"
       }
     ],
     "features": [
       {
-        "gameId": "chess-endless",
-        "gameName": "棋逢对手",
-        "text": "优化斩将奖励与难度节奏，道具特效更带感！"
+        "gameId": "meowdoku",
+        "gameName": "猫咪数独",
+        "text": "关卡全面焕新，等你来挑战！"
+      },
+      {
+        "gameId": "rotate-rings",
+        "gameName": "解个圆环",
+        "text": "关卡全面焕新，等你来挑战！"
       }
     ],
-    "fixes": [
-      {
-        "gameId": "cyblockbees",
-        "gameName": "保护狗头",
-        "text": "优化画线与蜂群运行，减少游玩卡顿。"
-      }
-    ]
+    "fixes": []
   }
 }

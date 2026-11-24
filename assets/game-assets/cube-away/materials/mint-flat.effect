@@ -1,0 +1,318 @@
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: mint-vs:vert
+      frag: mint-fs:frag
+      properties:
+        mainColor: { value: [1, 1, 1, 1], editor: { type: color } }
+        headAtlas: { value: white }
+        headDistance: { value: white }
+        boardAtlas: { value: white }
+        boardInvSize: { value: [1, 1, 1, 0] }
+        sideFrame: { value: [0, 0, 1, 1] }
+        frontFrame: { value: [0, 0, 1, 1] }
+        hintPulse: { value: [1, 1, 0, 0] }
+  - name: board-display
+    passes:
+    - vert: display-vs:vert
+      frag: display-fs:frag
+      depthStencilState: { depthTest: false, depthWrite: false }
+      rasterizerState: { cullMode: none }
+      blendState:
+        targets:
+        - { blend: true, blendSrc: one, blendDst: one_minus_src_alpha, blendDstAlpha: one_minus_src_alpha }
+      properties:
+        shadowProjection: { value: [0.001, 0.001, 0.05, 0.05] }
+        shadowRotation: { value: [0, 0, 0, 1] }
+}%
+CCProgram mint-light %{
+  const vec3 KEY_LIGHT = vec3(-0.52, 0.76, 0.39);
+}%
+CCProgram display-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #include <common/common-define>
+  #include <mint-light>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  uniform ContactProjection { vec4 shadowProjection; vec4 shadowRotation; };
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  out vec2 uv;
+  out vec4 tint;
+  out vec4 xShadow;
+  out vec4 yShadow;
+  out vec4 zShadow;
+  vec4 contactPlane(vec3 axis) {
+    vec3 q = shadowRotation.xyz;
+    vec3 n = axis + 2.0 * cross(q, cross(q, axis) + shadowRotation.w * axis);
+    if (n.z < 0.0) n = -n;
+    vec3 light = normalize(KEY_LIGHT);
+    float flipY = cc_cameraPos.w > 1.0 ? 1.0 : -1.0;
+    n.y *= flipY;
+    light.y *= flipY;
+    float incidence = dot(n, light);
+    // Flatten the contact footprint onto the visible face. Keep the lightward
+    // offset smaller than the radius so every footprint includes its origin.
+    vec2 tilt = n.xy * inversesqrt(1.0 + n.z);
+    vec2 faceLight = light.xy - n.xy * ((incidence + light.z) / (1.0 + n.z));
+    vec2 projectedLight = faceLight - tilt * dot(tilt, faceLight);
+    return vec4(tilt, projectedLight * mix(.080, .115, smoothstep(-.25, .35, incidence)));
+  }
+  vec4 vert () {
+    vec4 p = vec4(a_position, 1.0);
+    #if USE_LOCAL
+      p = cc_matWorld * p;
+    #endif
+    uv = a_texCoord;
+    CC_HANDLE_RT_SAMPLE_FLIP(uv);
+    tint = a_color;
+    xShadow = contactPlane(vec3(1.0, 0.0, 0.0));
+    yShadow = contactPlane(vec3(0.0, 1.0, 0.0));
+    zShadow = contactPlane(vec3(0.0, 0.0, 1.0));
+    return cc_matViewProj * p;
+  }
+}%
+CCProgram display-fs %{
+  precision highp float;
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  uniform ContactProjection { vec4 shadowProjection; vec4 shadowRotation; };
+  in vec2 uv;
+  in vec4 tint;
+  in vec4 xShadow;
+  in vec4 yShadow;
+  in vec4 zShadow;
+
+  float castsOnPlane(vec2 at, vec2 texel, float caster) {
+    vec2 center = (floor(at / texel) + .5) * texel;
+    return 1.0 - step(.5, abs(texture(cc_spriteTexture, center).a * 255.0 - caster));
+  }
+  float edgeContact(vec2 reach, vec2 texel, float caster) {
+    float middle = castsOnPlane(uv + .5 * reach, texel, caster);
+    float endHit = castsOnPlane(uv + reach, texel, caster);
+    if (middle + endHit < .5) return 0.0;
+    // A ray can cross a narrow tail before its endpoint. Integrate the
+    // occupied part of the ray so its shadow fades into the wider body.
+    float quarter = mix(.75, .25, middle);
+    float hit = castsOnPlane(uv + quarter * reach, texel, caster);
+    float edge = quarter + (.5 - hit) * .25;
+    float contact = 1.0 - smoothstep(0.0, 1.0, edge);
+    return contact - (1.0 - endHit) * (1.0 - smoothstep(0.0, 1.0, .75));
+  }
+  float contactPair(vec2 axis, vec4 face, vec2 texel, float caster) {
+    // Trace back toward the light from the receiver. The cast side widens
+    // while the short reaches keep the shadow attached at the silhouette.
+    vec2 radius = .15 * (axis - face.xy * dot(face.xy, axis));
+    return edgeContact((face.zw + radius) * shadowProjection.zw, texel, caster)
+         + edgeContact((face.zw - radius) * shadowProjection.zw, texel, caster);
+  }
+  vec4 frag () {
+    // The offscreen alpha channel carries a surface ID. Resolve coverage at
+    // texel centers before filtering, so the clear silhouette stays antialiased.
+    vec2 texel = shadowProjection.xy;
+    vec2 p = uv / texel - .5;
+    vec2 base = (floor(p) + .5) * texel;
+    vec2 f = fract(p);
+    vec4 a = texture(cc_spriteTexture, base);
+    vec4 b = texture(cc_spriteTexture, base + vec2(texel.x, 0.0));
+    vec4 c = texture(cc_spriteTexture, base + vec2(0.0, texel.y));
+    vec4 d = texture(cc_spriteTexture, base + texel);
+    vec2 nearest = step(vec2(.5), f);
+    float id = floor(mix(mix(a.a, b.a, nearest.x), mix(c.a, d.a, nearest.x), nearest.y) * 255.0 + .5);
+    vec3 rgb = mix(mix(a.rgb, b.rgb, f.x), mix(c.rgb, d.rgb, f.x), f.y);
+    vec4 coverage = step(vec4(.5 / 255.0), vec4(a.a, b.a, c.a, d.a));
+    float alpha = mix(mix(coverage.x, coverage.y, f.x), mix(coverage.z, coverage.w, f.x), f.y);
+    if (id > 0.0 && id < 128.0) {
+      vec4 face = id <= 40.0 ? xShadow : (id <= 80.0 ? yShadow : zShadow);
+      float caster = id + 128.0;
+      float shadow = (contactPair(vec2(1.0, 0.0), face, texel, caster)
+                    + contactPair(vec2(.5, .8660254), face, texel, caster)
+                    + contactPair(vec2(-.5, .8660254), face, texel, caster)) / 6.0;
+      rgb *= mix(vec3(1.0), vec3(.40, .37, .45), shadow);
+    }
+    return vec4(rgb * tint.rgb * tint.a, alpha * tint.a);
+  }
+}%
+CCProgram mint-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/input>
+  #include <legacy/local-batch>
+  #include <mint-light>
+  in vec4 a_color;
+  out vec4 v_color;
+  out float v_plane;
+  #if USE_BOARD_SKIN
+    uniform BoardDimensions { vec4 boardInvSize; };
+    out vec3 v_boardPos;
+  #endif
+  #if USE_HINT_OUTLINE
+    uniform HintAnimation { vec4 hintPulse; };
+  #endif
+  #if USE_SNAKE_HEAD
+    out vec3 v_artUV;
+    out float v_pose;
+    out float v_inkLight;
+  #endif
+  vec4 vert () {
+    vec4 position;
+    CCVertInput(position);
+    #if USE_HINT_OUTLINE
+      // Keep the inner edge exactly on the silhouette while the outer edge breathes.
+      float bandWidth = hintPulse.x * mix(hintPulse.y, 1.0, a_color.r);
+      if (a_tangent.w == 0.0) position.xyz -= (1.0 - bandWidth) * a_tangent.xyz;
+    #endif
+    #if USE_BOARD_SKIN
+      v_boardPos = position.xyz * boardInvSize.xyz + 0.5;
+    #endif
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+    // The key light stays above and to the left as the board turns underneath it.
+    vec3 paintNormal = a_normal;
+    #if USE_SNAKE_HEAD
+      // The ink's shallow curvature only affects lighting. Its supporting
+      // surface stays flat for picking, folds and contact-shadow matching.
+      if (a_tangent.w >= 0.0) paintNormal += a_tangent.xyz;
+    #endif
+    vec3 worldNormal = normalize(mat3(matWorldIT) * paintNormal);
+    float direct = dot(worldNormal, normalize(KEY_LIGHT));
+    float light = smoothstep(-0.65, 0.90, direct);
+    v_color = a_color;
+    // Identify a supporting plane in cube space. Parallel shelves have different
+    // codes, so a nearby snake in the image does not darken the floor of a cut.
+    vec3 n = abs(a_normal);
+    bool onX = n.x >= n.y && n.x >= n.z;
+    bool onY = !onX && n.y >= n.z;
+    float plane = onX ? position.x : (onY ? position.y : position.z);
+    v_plane = 1.0 + (onX ? 0.0 : (onY ? 40.0 : 80.0)) + mod(floor(plane + 0.25), 40.0);
+    #if USE_SNAKE_HEAD
+      v_artUV = vec3(a_texCoord, a_tangent.z);
+      #if USE_HINT_OUTLINE
+        v_artUV.z *= bandWidth;
+      #endif
+      v_pose = a_tangent.w;
+      #if USE_FEEDBACK_INK
+        v_inkLight = 1.0;
+      #else
+        v_inkLight = mix(0.80, 1.075, light);
+      #endif
+    #elif USE_BOARD_SKIN
+      v_color.rgb *= mix(vec3(0.86, 0.89, 0.95), vec3(1.0), light);
+    #else
+      v_color.rgb *= mix(vec3(0.78, 0.83, 0.92), vec3(1.0, 1.0, 0.99), light);
+    #endif
+    return cc_matProj * cc_matView * matWorld * position;
+  }
+}%
+CCProgram mint-fs %{
+  precision highp float;
+  in vec4 v_color;
+  in float v_plane;
+  uniform MintColor { vec4 mainColor; };
+  #if USE_BOARD_SKIN
+    in vec3 v_boardPos;
+    uniform sampler2D boardAtlas;
+
+    // Two rectified walls form a panorama. x+z follows both front faces,
+    // then follows the same panorama back around the rear of the board.
+    vec3 boardArt(vec3 p) {
+      p = clamp(p, 0.0, 1.0);
+      float inset = min(min(p.x, 1.0-p.x), min(p.z, 1.0-p.z));
+      float wallU = (p.x + p.z) * 0.5;
+      float wallV = clamp(1.0-p.y + 0.5*(p.x-p.z)*inset, 0.0, 1.0);
+      // Each region has a two-texel extruded gutter in the 1024px texture.
+      const float pad = 2.5 / 1024.0;
+      vec2 sideUV = mix(vec2(pad, 0.5+pad), vec2(1.0-pad), vec2(wallU, wallV));
+      vec3 wall = texture(boardAtlas, sideUV).rgb;
+      // Relative depth extends the caps into carved shelves. All projections
+      // use local position so both sides of an inner or rounded edge agree.
+      float blendWidth = mix(0.055, 0.18, min(1.0, 4.0*inset));
+      float top = 1.0 - smoothstep(0.0, blendWidth, 1.0-p.y-inset);
+      float bottom = 1.0 - smoothstep(0.0, blendWidth, p.y-inset);
+      vec2 capUV = mix(vec2(pad), vec2(0.5-pad), p.xz);
+      if (top > 0.0) wall = mix(wall, texture(boardAtlas, capUV).rgb, top);
+      if (bottom > 0.0) wall = mix(wall, texture(boardAtlas, capUV+vec2(0.5, 0.0)).rgb, bottom);
+      return wall;
+    }
+  #endif
+  #if USE_SNAKE_HEAD
+    in vec3 v_artUV;
+    in float v_pose;
+    in float v_inkLight;
+    uniform sampler2D headAtlas;
+    uniform sampler2D headDistance;
+    uniform SnakeHeadFrames {
+      vec4 sideFrame;
+      vec4 frontFrame;
+    };
+
+    vec4 snakeInk(vec3 ink, float tag) {
+      vec3 rgb = ink * v_inkLight * mainColor.rgb;
+      #if USE_MUTED_INK
+        float luma = dot(rgb, vec3(.213, .715, .072));
+        rgb = mix(rgb, vec3(luma * .62 + .37), .52);
+      #endif
+      return vec4(rgb, tag);
+    }
+  #endif
+  #if USE_HINT_OUTLINE
+    vec4 hintInk() {
+      return vec4(mix(vec3(1.0, .967, .83), mainColor.rgb, v_color.r), 1.0);
+    }
+  #endif
+
+  vec4 frag () {
+    #if USE_BOARD_SKIN
+      if (v_color.a < 0.5) {
+        // Keep the watercolor recognizable behind the stronger foreground inks.
+        vec3 art = boardArt(v_boardPos);
+        float luma = dot(art, vec3(0.2126, 0.7152, 0.0722));
+        vec3 wash = mix(vec3(luma), art, 0.92);
+        vec3 printColor = mix(vec3(1.0, 0.99, 0.975), wash, 0.62);
+        return vec4(printColor * v_color.rgb, floor(v_plane + .5) / 255.0);
+      }
+    #endif
+    #if USE_SNAKE_HEAD
+      #if USE_FEEDBACK_INK
+        float tag = 1.0;
+      #else
+        float tag = (128.0 + floor(v_plane + .5)) / 255.0;
+      #endif
+      if (abs(v_pose) > 0.5) {
+        if (v_pose < 0.0) {
+          if (texture(headDistance, v_artUV.xy).a > v_artUV.z) discard;
+          #if USE_HINT_OUTLINE
+            return hintInk();
+          #else
+            return snakeInk(v_color.rgb, tag);
+          #endif
+        }
+        vec4 frame = v_pose < 1.5 ? sideFrame : frontFrame;
+        vec2 uv = frame.xy + frame.zw * v_artUV.xy;
+        vec4 art = texture(headAtlas, uv);
+        if (art.a < 0.46) discard;
+
+        // Transfer only the coral skin tones to the snake's body palette.
+        // Cream eyes, dark ink and pink cheeks keep their illustrated colors.
+        float skin = smoothstep(0.12, 0.27, art.r - art.g)
+          * smoothstep(0.035, 0.083, art.g - art.b) * smoothstep(0.45, 0.78, art.r);
+        vec3 sourceSkin = v_pose < 1.5 ? vec3(0.99, 0.49, 0.41) : vec3(0.99, 0.46, 0.35);
+        vec3 paletteColor = clamp(v_color.rgb + 0.8 * (art.rgb - sourceSkin), 0.0, 1.0);
+        vec3 base = mix(art.rgb, paletteColor, skin);
+        float neck = v_pose < 1.5 ? v_artUV.x : v_artUV.y;
+        base = mix(v_color.rgb, base, smoothstep(0.10, 0.23, neck));
+        return snakeInk(base, tag);
+      }
+      #if USE_HINT_OUTLINE
+        return hintInk();
+      #else
+        return snakeInk(v_color.rgb, tag);
+      #endif
+    #else
+      return vec4(v_color.rgb * mainColor.rgb, v_color.a < .5 ? floor(v_plane + .5) / 255.0 : 1.0);
+    #endif
+  }
+}%

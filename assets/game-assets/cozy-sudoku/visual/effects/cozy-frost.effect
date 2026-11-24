@@ -1,0 +1,63 @@
+// A small live offscreen pass softens the actual board behind paper dialogs.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: cozy-frost-vs:vert
+      frag: cozy-frost-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        frostStep: { value: [0.008, 0.004, 0, 0] }
+}%
+CCProgram cozy-frost-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+  out vec2 uv;
+  out vec4 tint;
+  vec4 vert () {
+    vec4 p = vec4(a_position, 1.0);
+    #if USE_LOCAL
+      p = cc_matWorld * p;
+    #endif
+    uv = vec2(a_texCoord.x, 1.0 - a_texCoord.y);
+    tint = a_color;
+    return cc_matViewProj * p;
+  }
+}%
+CCProgram cozy-frost-fs %{
+  precision highp float;
+  in vec2 uv;
+  in vec4 tint;
+  #pragma builtin(local)
+  layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  uniform FrostParams {
+    vec4 frostStep;
+  };
+  vec4 frag () {
+    vec2 d = frostStep.xy;
+    vec4 c = texture(cc_spriteTexture, uv) * 0.25;
+    c += texture(cc_spriteTexture, uv + vec2(d.x, 0.0)) * 0.125;
+    c += texture(cc_spriteTexture, uv - vec2(d.x, 0.0)) * 0.125;
+    c += texture(cc_spriteTexture, uv + vec2(0.0, d.y)) * 0.125;
+    c += texture(cc_spriteTexture, uv - vec2(0.0, d.y)) * 0.125;
+    c += texture(cc_spriteTexture, uv + d) * 0.0625;
+    c += texture(cc_spriteTexture, uv - d) * 0.0625;
+    c += texture(cc_spriteTexture, uv + vec2(d.x, -d.y)) * 0.0625;
+    c += texture(cc_spriteTexture, uv + vec2(-d.x, d.y)) * 0.0625;
+    return c * tint;
+  }
+}%

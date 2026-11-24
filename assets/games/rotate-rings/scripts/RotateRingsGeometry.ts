@@ -112,17 +112,14 @@ export function pointInRingHole(p, ring) {
   return Math.hypot(p.x - ring.x, p.y - ring.y) < ring.inner - EPS_LEN;
 }
 
-/** 命中真实圆环轮廓，点击容差只扩大输入范围，不改变物理轮廓。 */
-export function pointNearRingBand(point, ring, tolerance) {
-  if (!ring.bodyLocal?.length) return pointInRingBandLocal(point,
-    { ...ring, inner: Math.max(0, ring.inner - tolerance), outer: ring.outer + tolerance });
+/** 多个触控容差重叠时，根据触点到实体轮廓的距离选择最近的部件。 */
+export function ringTouchDistance(point, ring) {
   const contours = ringContours(ring, 0);
-  const near = contours.some(poly => {
-    const box = polygonBounds(poly);
-    return point.x >= box.minX - tolerance && point.x <= box.maxX + tolerance
-      && point.y >= box.minY - tolerance && point.y <= box.maxY + tolerance;
-  });
-  return near && (pointInContours(point, contours) || contours.some(poly => contourDistance(point, poly) <= tolerance));
+  return pointInContours(point, contours) ? 0 : Math.min(...contours.map(poly => contourDistance(point, poly)));
+}
+
+export function polygonTouchDistance(point, poly) {
+  return pointInPolygon(point, poly) ? 0 : contourDistance(point, poly);
 }
 
 /**
@@ -167,14 +164,12 @@ export function pinShape(ring, attach, radius) {
 
 /** 矩形四角（世界坐标） */
 export function rectCorners(r) {
-  const pts = [];
-  for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-      pts.push({
-        x: r.cx + r.axisX.x * r.hx * sx + r.axisY.x * r.hy * sy,
-        y: r.cy + r.axisX.y * r.hx * sx + r.axisY.y * r.hy * sy,
-      });
-  }
-  return pts;
+  const xx = r.axisX.x * r.hx, xy = r.axisX.y * r.hx;
+  const yx = r.axisY.x * r.hy, yy = r.axisY.y * r.hy;
+  return [
+    { x: r.cx - xx - yx, y: r.cy - xy - yy }, { x: r.cx + xx - yx, y: r.cy + xy - yy },
+    { x: r.cx + xx + yx, y: r.cy + xy + yy }, { x: r.cx - xx + yx, y: r.cy - xy + yy },
+  ];
 }
 
 /** 采样点：四角 + 中心 + 边中点 + 内部 3×3（用于可靠的形状相交判定） */
@@ -214,7 +209,12 @@ export function rectHitsBandDense(r, ring, tol = 0) {
 
 /** 矩形与「环带实体」是否相交（采样法：矩形采样点落在带内，或带的采样点落在矩形内） */
 export function rectHitsRingBand(r, ring, ignoreGap = false, tol = 0) {
-  if (ring.bodyLocal?.length && !ignoreGap) return polygonHitsContours(rectCorners(r), ringContours(ring, tol));
+  if (ring.bodyLocal?.length && !ignoreGap) {
+    const hx = Math.abs(r.axisX.x * r.hx) + Math.abs(r.axisY.x * r.hy);
+    const hy = Math.abs(r.axisX.y * r.hx) + Math.abs(r.axisY.y * r.hy);
+    if (boxMissesRing(r.cx, r.cy, hx, hy, ring, tol)) return false;
+    return polygonHitsContours(rectCorners(r), ringContours(ring, tol));
+  }
   for (const p of rectSamples(r)) {
     if (pointInRingBandLocal(p, ring, ignoreGap, tol)) return true;
   }
@@ -308,8 +308,12 @@ export function segIntersect(p1, p2, p3, p4) {
 
 /** 矩形 vs 多边形 */
 export function rectHitsPolygon(r, poly) {
+  const box = polygonBounds(poly);
+  const hx = Math.abs(r.axisX.x * r.hx) + Math.abs(r.axisY.x * r.hy);
+  const hy = Math.abs(r.axisX.y * r.hx) + Math.abs(r.axisY.y * r.hy);
+  if (r.cx + hx < box.minX || r.cx - hx > box.maxX || r.cy + hy < box.minY || r.cy - hy > box.maxY) return false;
   const corners = rectCorners(r);
-  if (!boundsOverlap(polygonBounds(corners), polygonBounds(poly))) return false;
+  if (!boundsOverlap(polygonBounds(corners), box)) return false;
   for (const p of corners) if (pointInPolygon(p, poly)) return true;
   for (const p of rectSamples(r, 3)) if (pointInPolygon(p, poly)) return true;
   for (const v of poly) if (pointInRect(v, r)) return true;
@@ -325,6 +329,8 @@ export function rectHitsPolygon(r, poly) {
 
 /** 多边形 vs 圆 */
 export function polygonHitsCircle(poly, cx, cy, radius) {
+  const box = polygonBounds(poly);
+  if (cx + radius < box.minX || cx - radius > box.maxX || cy + radius < box.minY || cy - radius > box.maxY) return false;
   if (pointInPolygon({ x: cx, y: cy }, poly)) return true;
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i], b = poly[(i + 1) % poly.length], dx = b.x - a.x, dy = b.y - a.y;
@@ -337,6 +343,7 @@ export function polygonHitsCircle(poly, cx, cy, radius) {
 /** 圆与带缺口的环带：按最近径向距离和缺口两端的径向边精确判定。 */
 export function circleHitsRingBand(center, radius, ring) {
   if (ring.bodyLocal?.length) {
+    if (boxMissesRing(center.x, center.y, radius, radius, ring, 0)) return false;
     const contours = ringContours(ring, 0);
     return pointInContours(center, contours) || contours.some(poly => contourDistance(center, poly) <= radius);
   }
@@ -362,8 +369,12 @@ export function polygonsIntersect(a, b) {
   return false;
 }
 export function polygonHitsRingBand(poly, ring, tol = .05) {
-  if (ring.bodyLocal?.length) return polygonHitsContours(poly, ringContours(ring, tol));
   const box = polygonBounds(poly);
+  if (ring.bodyLocal?.length) {
+    if (boxMissesRing((box.minX + box.maxX) / 2, (box.minY + box.maxY) / 2,
+      (box.maxX - box.minX) / 2, (box.maxY - box.minY) / 2, ring, tol)) return false;
+    return polygonHitsContours(poly, ringContours(ring, tol));
+  }
   if (!boundsOverlap(box, { minX: ring.x - ring.outer, maxX: ring.x + ring.outer,
     minY: ring.y - ring.outer, maxY: ring.y + ring.outer })) return false;
   if (poly.some(p => pointInRingBandLocal(p, ring, false, tol))) return true;
@@ -424,20 +435,18 @@ function pointInContours(point, contours) {
 }
 
 function contourDistance(point, poly) {
-  let distance = Infinity;
+  let squared = Infinity;
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i], b = poly[(i + 1) % poly.length], x = b.x - a.x, y = b.y - a.y;
     const t = Math.max(0, Math.min(1, ((point.x - a.x) * x + (point.y - a.y) * y) / Math.max(1e-15, x * x + y * y)));
-    distance = Math.min(distance, Math.hypot(point.x - a.x - x * t, point.y - a.y - y * t));
+    const dx = point.x - a.x - x * t, dy = point.y - a.y - y * t;
+    squared = Math.min(squared, dx * dx + dy * dy);
   }
-  return distance;
+  return Math.sqrt(squared);
 }
 
 /** 保留原容差：实体轮廓向内偏移，孔向外偏移；圆头同样参与，不把缺口截成直边。 */
-function ringContours(ring, tolerance) {
-  let world = worldContours.get(ring);
-  if (!world) { world = new Map(); worldContours.set(ring, world); }
-  const existing = world.get(tolerance); if (existing) return existing;
+function localContours(ring, tolerance) {
   const local = ring.bodyLocal?.length ? ring.bodyLocal : analyticContours(ring);
   let insets = insetContours.get(local);
   if (!insets) { insets = new Map(); insetContours.set(local, insets); }
@@ -464,6 +473,29 @@ function ringContours(ring, tolerance) {
     });
     insets.set(tolerance, contours);
   }
+  return contours;
+}
+
+const reachSquared = new WeakMap<object, number>();
+/** 用实际偏移后的局部轮廓求包围圆，任意旋转下都能先排除远处的物体。 */
+function boxMissesRing(x, y, hx, hy, ring, tolerance) {
+  const local = localContours(ring, tolerance);
+  let radius2 = reachSquared.get(local);
+  if (radius2 === undefined) {
+    radius2 = 0;
+    for (const poly of local) for (const p of poly) radius2 = Math.max(radius2, p.x * p.x + p.y * p.y);
+    reachSquared.set(local, radius2);
+  }
+  const dx = Math.max(0, Math.abs(x - ring.x) - hx - EPS_LEN);
+  const dy = Math.max(0, Math.abs(y - ring.y) - hy - EPS_LEN);
+  return dx * dx + dy * dy > radius2;
+}
+
+function ringContours(ring, tolerance) {
+  let world = worldContours.get(ring);
+  if (!world) { world = new Map(); worldContours.set(ring, world); }
+  const existing = world.get(tolerance); if (existing) return existing;
+  const contours = localContours(ring, tolerance);
   const transformed = contours.map(poly => polygonWorld(poly, ring.x, ring.y, ring.angle));
   world.set(tolerance, transformed); return transformed;
 }
@@ -472,12 +504,17 @@ function ringContours(ring, tolerance) {
 function polygonHitsContours(poly, contours) {
   const bounds = polygonBounds(poly);
   if (!contours.some(contour => boundsOverlap(bounds, polygonBounds(contour)))) return false;
-  if (poly.some(point => pointInContours(point, contours))) return true;
   for (const contour of contours) {
-    if (contour.some(point => pointInPolygon(point, poly))) return true;
-    for (let i = 0; i < poly.length; i++) for (let j = 0; j < contour.length; j++) {
-      if (segIntersect(poly[i], poly[(i + 1) % poly.length], contour[j], contour[(j + 1) % contour.length])) return true;
+    // 细爪通常只靠近一小段环带；只让进入其包围盒的顶点和边参与精确检测。
+    for (let i = 0, j = contour.length - 1; i < contour.length; j = i++) {
+      const a = contour[j], b = contour[i];
+      if ((a.x < bounds.minX && b.x < bounds.minX) || (a.x > bounds.maxX && b.x > bounds.maxX)
+        || (a.y < bounds.minY && b.y < bounds.minY) || (a.y > bounds.maxY && b.y > bounds.maxY)) continue;
+      if (pointInPolygon(b, poly)) return true;
+      for (let n = 0, m = poly.length - 1; n < poly.length; m = n++) {
+        if (segIntersect(poly[m], poly[n], a, b)) return true;
+      }
     }
   }
-  return false;
+  return poly.some(point => pointInContours(point, contours));
 }

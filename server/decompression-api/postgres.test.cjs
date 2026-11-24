@@ -4,8 +4,8 @@ const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
 const { Pool } = require('pg');
 const { PostgresStore } = require('./store.cjs');
-const { encodeModule, decodeModule } = require('./generated/CloudSaveCodec');
-const { EMPTY } = require('./protocol.cjs');
+const { encodeModule, decodeModule, encodeAchievements, decodeAchievements } = require('./generated/CloudSaveCodec');
+const { EMPTY, validateSave } = require('./protocol.cjs');
 const { applyMigrations } = require('./migrate.cjs');
 
 test('real PostgreSQL transactions preserve concurrent devices and count each timing batch once', async () => {
@@ -38,6 +38,17 @@ test('real PostgreSQL transactions preserve concurrent devices and count each ti
         value = await store.load(uid);
         assert.equal(decodeModule(value.m[2], 2).numbers[0], 125);
         assert.equal(await total(), 204000);
+        const puzzle = (device, flags) => validateSave({ v: 2, op: 'save', device: device.repeat(32), seq: 1,
+            m: { 18: encodeModule([3, 1], flags), 14: encodeModule([520, 1000, 30]) },
+            a: encodeAchievements({ 14: 20000, 18: 20001 }), t: { 'cozy-sudoku': 10000 } });
+        const left = puzzle('e', [1]), right = puzzle('f', [0, 1]);
+        await Promise.all([store.save(uid, left), store.save(uid, right), store.save(uid, left), store.save(uid, right)]);
+        value = await store.load(uid);
+        assert.deepEqual(decodeModule(value.m[18], 2, 600), { numbers: [3, 2], stars: [1, 1] });
+        assert.equal(decodeModule(value.m[14], 3).numbers[0], 520);
+        assert.deepEqual(decodeAchievements(value.a), { 14: 20000, 18: 20001 });
+        assert.equal(decodeModule(value.m[2], 2).numbers[0], 125, 'Existing game progress survives a new-game save');
+        assert.equal(await total(), 224000, 'New-game retries count each timing batch once');
         console.log(JSON.stringify({ postgresConcurrency: 24, durationMs: Math.round(performance.now() - started), isolatedTestSchema: true }));
     } finally {
         await store.close();

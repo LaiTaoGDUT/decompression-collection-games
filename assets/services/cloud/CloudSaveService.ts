@@ -1,5 +1,6 @@
 import type { CloudSaveCatalog, CloudSaveLocalState, CloudSavePatch } from '../../core/types/CloudSave';
 import type { AchievementSaveData, StorageService } from '../storage/StorageService';
+import { PREVIOUS_TROPHIES } from '../achievements/AchievementService';
 import { dayToTimestamp, decodeAchievements, decodeModule, encodeAchievements, timestampToDay, uint } from './CloudSaveCodec';
 import { mergeModule, moduleRank, progressImprovements, projectGame, projectModules, restoreGame } from './CloudSaveProjection';
 import type { ServerTimeService } from './ServerTimeService';
@@ -75,7 +76,9 @@ export class CloudSaveService {
         const storage = this.options.storage, previous = record(storage.snapshot.cloudSave);
         for (const schema of this.options.catalog.games) {
             const a = schema.achievement, old = storage.getAchievement(schema.gameId);
-            if (a && old?.achievementId === a.id) storage.recordGameMetric(schema.gameId, a.metric, old.progress);
+            if (a && old?.achievementId === a.id && !(old.unlockedAt && PREVIOUS_TROPHIES[a.id])) {
+                storage.recordGameMetric(schema.gameId, a.metric, old.progress);
+            }
         }
         const valid = previous.version === 2 && typeof previous.device === 'string' && /^[a-f0-9]{32}$/.test(previous.device);
         const modules = projectModules(this.options.catalog, storage.snapshot);
@@ -348,6 +351,7 @@ export class CloudSaveService {
     private applyRemote(response: Record<string, unknown>): void {
         const storage = this.options.storage, modules = strings(response.m), dates = decodeAchievements(response.a as string);
         const games = { ...storage.snapshot.games }, achievements = { ...storage.snapshot.achievements };
+        let uploadMigratedTrophy = false;
         for (const schema of this.options.catalog.games) {
             const payload = modules[String(schema.code)], local = projectGame(schema, games[schema.gameId]);
             const merged = mergeModule(schema, local, payload);
@@ -355,8 +359,18 @@ export class CloudSaveService {
             const a = schema.achievement;
             if (!a) continue;
             const current = achievements[schema.gameId]?.achievementId === a.id ? achievements[schema.gameId] : undefined;
-            const restoredAt = dates[String(a.code)] === undefined ? undefined : dayToTimestamp(dates[String(a.code)]);
-            const unlockedAt = current?.unlockedAt && restoredAt ? Math.min(current.unlockedAt, restoredAt) : current?.unlockedAt ?? restoredAt;
+            const serverDay = dates[a.code], previous = PREVIOUS_TROPHIES[a.id];
+            let earliestDay = serverDay;
+            for (const trophy of previous ?? []) {
+                const day = dates[trophy.code];
+                if (day !== undefined && (earliestDay === undefined || day < earliestDay)) earliestDay = day;
+            }
+            // 云端只精确到日期，同一天优先保留本机领取的准确时间。
+            let unlockedAt = current?.unlockedAt;
+            if (earliestDay !== undefined && (!unlockedAt || earliestDay < timestampToDay(unlockedAt))) {
+                unlockedAt = dayToTimestamp(earliestDay);
+            }
+            if (previous && unlockedAt && (serverDay === undefined || timestampToDay(unlockedAt) < serverDay)) uploadMigratedTrophy = true;
             const progress = unlockedAt ? a.target : Math.min(a.target, uint(games[schema.gameId]?.metrics?.[a.metric]));
             const saved: AchievementSaveData = { achievementId: a.id, progress,
                 ...(unlockedAt ? { unlockedAt, celebratedAt: current?.celebratedAt ?? this.options.time.timestamp ?? Date.now() } : {}) };
@@ -365,6 +379,7 @@ export class CloudSaveService {
         const best = projectModules(this.options.catalog, { ...storage.snapshot, games });
         this.state = { ...this.state, ack: modules, ackAchievements: response.a as string,
             progressPeaks: this.mergeModules(this.state.progressPeaks, best) };
+        if (uploadMigratedTrophy && !this.state.requested) this.requestUpload();
         this.roundRecords = this.mergeModules(this.roundRecords, best);
         this.unsubscribe?.(); this.unsubscribe = undefined;
         try { storage.restoreCloudProgress(games, achievements, this.state); this.persist(); storage.flush(); }

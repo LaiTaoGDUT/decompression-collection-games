@@ -1061,7 +1061,7 @@ export class MultiColorFillGame extends Component implements MiniGame<FillServic
             if (this.context !== context || this.save !== save || (this.state as FillState) === 'disposed') return;
             if (result.outcome === 'completed') {
                 save.hints += 1; this.persist(); this.showToast('提示 +1，点提示绘制完整路线');
-            } else if (result.errorCode !== 'not-configured') {
+            } else if (!result.feedbackShown) {
                 this.showToast(result.outcome === 'skipped' ? '看完广告就能获得 1 个提示' : '广告暂时无法播放，请稍后再试');
             }
         } catch {

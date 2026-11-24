@@ -16,12 +16,14 @@ export interface CityConfig {
     rigSprites: Record<'arm' | 'line' | 'first' | 'normal', { width: number; height: number; pivot: number[] }>;
 }
 export interface CityTransform { x: number; y: number; sx: number; sy: number; angle: number; }
-export interface CityFloor {
+export interface CityPose { x: number; y: number; angle: number; }
+interface CityMotion extends CityPose { previousPose?: CityPose; }
+export interface CityFloor extends CityMotion {
     id: number; index: number; base: boolean; x: number; y: number; angle: number;
     /** Offset to the next floor belongs to its support, as in House.LinkPoint. */
     linkOffset: number; people: number; perfect: boolean; age: number; impact: number;
 }
-export interface CityFalling { x: number; y: number; angle: number; base: boolean; speed: number; drift: number; }
+export interface CityFalling extends CityMotion { base: boolean; speed: number; drift: number; }
 export interface CityDebris extends CityFalling { id: number; age: number; direction: number; originX: number; originY: number; }
 export type CityEvent =
     | { type: 'land'; floor: CityFloor; people: number; perfect: boolean }
@@ -35,7 +37,30 @@ export const CITY_RULES = Object.freeze({
     collapse: .2, acceleration: 50, lives: 3, revives: 3,
     comboSeconds: 8, nextDelay: .35, missDelay: 1, collapseDelay: .2,
 });
+const SNAPSHOT_NUMBERS = ['time', 'animationTime', 'normalTime', 'lives', 'revives', 'people', 'totalIndex',
+    'maxFloors', 'maxCombo', 'combo', 'comboTime', 'pendingPeople', 'moveY', 'baseX', 'introY', 'shakeY',
+    'remainder', 'previousMoveY', 'previousSkyFloors', 'previousAnimationTime', 'previousNormalTime',
+    'serial', 'delay', 'collapseLeft', 'collapseDirection', 'moveFrom', 'moveTarget', 'moveAge', 'moveDuration'] as const;
+export interface CitySnapshot {
+    version: 1;
+    phase: 'intro' | 'swing' | 'falling' | 'settling' | 'recovering';
+    values: Record<typeof SNAPSHOT_NUMBERS[number], number>;
+    shakeAge: number | null;
+    shakeKind: 'foundation' | 'drop';
+    previousCameraY: number | null;
+    collapseHud?: { tower: number; people: number };
+    floors: CityFloor[];
+    debris: CityDebris[];
+    active?: CityFalling;
+    chaos: number[];
+}
 const DEG = Math.PI / 180;
+
+/** House.TweenStable affects HouseModel only, never the support Link or collider. */
+export function cityImpactAngle(impact: number, age: number): number {
+    return impact * (age < .3 ? 1 - (1 - Math.max(0, age) / .3) ** 3
+        : age < .5 ? 1 - ((age - .3) / .2) ** 3 : 0);
+}
 
 /** Unity streamed key stores a cubic polynomial in seconds since the key. */
 export function cityCurve(clip: CityCurve, channel: number, time: number, loop = true): number {
@@ -49,31 +74,31 @@ export function cityCurve(clip: CityCurve, channel: number, time: number, loop =
 }
 
 /** The animation's two separate swings are evaluated through the original transform chain. */
-export function cityCrane(config: CityConfig, first: boolean, time: number): { x: number; y: number; angle: number } {
-    const joints = cityCraneRig(config, first, time), last = joints[joints.length - 1];
-    return { x: last.x, y: last.y, angle: first ? 0 : last.x * config.rotRate };
+export function cityCrane(config: CityConfig, first: boolean, time: number,
+    out = { x: 0, y: 0, angle: 0 }, rig: CityTransform[] = []): { x: number; y: number; angle: number } {
+    const joints = cityCraneRig(config, first, time, rig), last = joints[joints.length - 1];
+    out.x = last.x; out.y = last.y; out.angle = first ? 0 : last.x * config.rotRate; return out;
 }
 
-export function cityCraneRig(config: CityConfig, first: boolean, time: number): CityTransform[] {
+export function cityCraneRig(config: CityConfig, first: boolean, time: number, joints: CityTransform[] = []): CityTransform[] {
     const clip = config.curves[first ? 'FirstLoop' : 'NormalLoop'];
-    const chain = (first ? config.chains.first : config.chains.normal).map(p => ({ ...p }));
-    chain[1].x = cityCurve(clip, 0, time);
-    chain[1].y = cityCurve(clip, 1, time);
-    chain[1].angle = cityCurve(clip, first ? 5 : 8, time);
-    if (first) chain[2].angle = cityCurve(clip, 8, time);
-    else { chain[3].x = cityCurve(clip, 3, time); chain[3].y = cityCurve(clip, 4, time); }
+    const chain = first ? config.chains.first : config.chains.normal;
     // A full affine transform preserves the scene's slightly nonuniform scales.
     let a = 1, b = 0, c = 0, d = 1, x = 0, y = 0;
-    const joints: CityTransform[] = [];
-    for (const p of chain) {
-        x += a * p.x + c * p.y; y += b * p.x + d * p.y;
-        const cos = Math.cos(p.angle * DEG), sin = Math.sin(p.angle * DEG);
+    for (let i = 0; i < chain.length; i++) {
+        const p = chain[i]; let px = p.x, py = p.y, angle = p.angle;
+        if (i === 1) { px = cityCurve(clip, 0, time); py = cityCurve(clip, 1, time); angle = cityCurve(clip, first ? 5 : 8, time); }
+        if (first && i === 2) angle = cityCurve(clip, 8, time);
+        if (!first && i === 3) { px = cityCurve(clip, 3, time); py = cityCurve(clip, 4, time); }
+        x += a * px + c * py; y += b * px + d * py;
+        const cos = Math.cos(angle * DEG), sin = Math.sin(angle * DEG);
         const na = (a * cos + c * sin) * p.sx, nb = (b * cos + d * sin) * p.sx;
         c = (-a * sin + c * cos) * p.sy; d = (-b * sin + d * cos) * p.sy;
         a = na; b = nb;
-        joints.push({ x, y, angle: Math.atan2(b, a) / DEG, sx: Math.hypot(a, b), sy: Math.hypot(c, d) });
+        const joint = joints[i] ?? (joints[i] = { x: 0, y: 0, angle: 0, sx: 1, sy: 1 });
+        joint.x = x; joint.y = y; joint.angle = Math.atan2(b, a) / DEG; joint.sx = Math.hypot(a, b); joint.sy = Math.hypot(c, d);
     }
-    return joints;
+    joints.length = chain.length; return joints;
 }
 
 export class CityBloxxModel {
@@ -102,6 +127,11 @@ export class CityBloxxModel {
     private shakeAge = Infinity;
     private shakeKind: 'foundation' | 'drop' = 'foundation';
     private remainder = 0;
+    private previousCameraY?: number;
+    private previousMoveY = 0;
+    private previousSkyFloors = 0;
+    private previousAnimationTime = 0;
+    private previousNormalTime = 0;
     private serial = 0;
     private delay = 0;
     private collapseLeft = 0;
@@ -112,23 +142,92 @@ export class CityBloxxModel {
     private moveAge = 1;
     private moveDuration = .5;
     private readonly chaos: number[] = [];
+    private readonly craneJoints: CityTransform[] = [];
+    private readonly cranePose = { x: 0, y: 0, angle: 0 };
 
     constructor(readonly config: CityConfig, intro = true) {
         this.phase = intro ? 'intro' : 'swing'; this.introY = intro ? 5 : 0; this.attach();
     }
     get cameraY(): number { return this.moveY + 1.58 + this.introY + this.shakeY; }
     get tower(): number { return this.floors.length; }
+    /** Continuous camera altitude in floors; it eases with the camera instead of stepping per landing. */
+    get skyFloors(): number { return Math.max(0, (this.moveY + this.introY) / CITY_RULES.height); }
     /** UIFightPanel publishes collapsed floor/population totals together with the life deduction. */
     get hudTower(): number { return this.collapseHud?.tower ?? this.tower; }
     get hudPeople(): number { return this.collapseHud?.people ?? this.people; }
     get canRevive(): boolean { return this.phase === 'result' && this.revives < CITY_RULES.revives; }
     get rotChaos(): number { return this.chaos.reduce((a, b) => a + b, 0) * 1.4; }
 
+    /** A detached, JSON-safe continuation, including the in-flight tick and camera tweens. */
+    snapshot(): CitySnapshot | undefined {
+        if (this.lives <= 0 || this.phase === 'result' || this.phase === 'disposed') return undefined;
+        const values = {} as CitySnapshot['values'];
+        for (const key of SNAPSHOT_NUMBERS) values[key] = this[key];
+        const copy = <T extends CityMotion>(f: T): T => ({ ...f,
+            ...(f.previousPose ? { previousPose: { ...f.previousPose } } : {}) });
+        return { version: 1, phase: this.phase, values,
+            shakeAge: Number.isFinite(this.shakeAge) ? this.shakeAge : null, shakeKind: this.shakeKind,
+            previousCameraY: this.previousCameraY ?? null, collapseHud: this.collapseHud ? { ...this.collapseHud } : undefined,
+            floors: this.floors.map(copy), debris: this.debris.map(copy), active: this.active ? copy(this.active) : undefined,
+            chaos: this.chaos.slice() };
+    }
+
+    static restore(config: CityConfig, saved: unknown): CityBloxxModel | undefined {
+        if (!validSnapshot(saved, config)) return undefined;
+        const m = new CityBloxxModel(config, false), copy = <T extends CityMotion>(f: T): T => ({ ...f,
+            ...(f.previousPose ? { previousPose: { ...f.previousPose } } : {}) });
+        for (const key of SNAPSHOT_NUMBERS) m[key] = saved.values[key];
+        m.phase = saved.phase; m.shakeAge = saved.shakeAge ?? Infinity; m.shakeKind = saved.shakeKind;
+        m.previousCameraY = saved.previousCameraY ?? undefined;
+        m.collapseHud = saved.collapseHud ? { ...saved.collapseHud } : undefined;
+        for (const f of saved.floors) m.floors.push(copy(f));
+        for (const f of saved.debris) m.debris.push(copy(f));
+        m.active = saved.active ? copy(saved.active) : undefined;
+        for (const error of saved.chaos) m.chaos.push(error);
+        // Keep rounds saved by the withdrawn smoothing implementation. Restore
+        // native poses under the loading cover, without restarting the round.
+        if ('sway' in saved) {
+            m.updateTower(0, false);
+            for (const f of m.floors) m.rememberPose(f);
+        }
+        return m;
+    }
+
+    // Fixed simulation ticks are not display frames: 16/17 ms pacing otherwise
+    // repeats a pose then jumps two ticks. Interpolate presentation. On input,
+    // release latches that displayed pose once; rendering itself never mutates physics.
+    get renderAlpha(): number { return Math.max(0, Math.min(1, this.remainder / CITY_RULES.step)); }
+    private interpolate(previous: number, current: number): number { return previous + (current - previous) * this.renderAlpha; }
+    get renderCameraY(): number { return this.interpolate(this.previousCameraY ?? this.cameraY, this.cameraY); }
+    get renderMoveY(): number { return this.interpolate(this.previousMoveY, this.moveY); }
+    get renderSkyFloors(): number { return this.interpolate(this.previousCameraY === undefined ? this.skyFloors : this.previousSkyFloors, this.skyFloors); }
+    get renderAnimationTime(): number { return this.interpolate(this.previousAnimationTime, this.animationTime); }
+    get renderNormalTime(): number { return this.interpolate(this.previousNormalTime, this.normalTime); }
+    samplePose(source: CityMotion, out: CityPose): CityPose {
+        const before = source.previousPose ?? source, alpha = this.renderAlpha;
+        out.x = before.x + (source.x - before.x) * alpha;
+        out.y = before.y + (source.y - before.y) * alpha;
+        out.angle = before.angle + (source.angle - before.angle) * alpha;
+        return out;
+    }
+    renderAge(age: number): number { return Math.max(0, age - CITY_RULES.step * (1 - this.renderAlpha)); }
+    private rememberPose(source: CityMotion): void {
+        const before = source.previousPose ?? (source.previousPose = { x: 0, y: 0, angle: 0 });
+        before.x = source.x; before.y = source.y; before.angle = source.angle;
+    }
+
     release(): boolean {
         if (this.phase !== 'swing' || !this.active) return false;
         const first = this.tower === 0, t = first ? this.animationTime : this.normalTime;
-        const previous = cityCrane(this.config, first, Math.max(0, t - CITY_RULES.step));
-        this.active.drift = first ? 0 : (this.active.x - previous.x) * .5;
+        const f = this.active, before = f.previousPose;
+        // Ctrl.Update releases the visible locking object and carries half of
+        // its last-frame displacement. Our display lies between fixed ticks:
+        // latch both pose and the matching displacement at that same fraction,
+        // instead of launching from the simulation's one-tick-ahead position.
+        const older = cityCrane(this.config, first, Math.max(0, t - CITY_RULES.step * (before ? 2 : 1)), this.cranePose, this.craneJoints);
+        const displacement = before ? this.interpolate(before.x - older.x, f.x - before.x) : f.x - older.x;
+        f.drift = first ? 0 : displacement * .5;
+        this.samplePose(f, f); this.rememberPose(f);
         this.active.speed = 0; this.phase = 'falling'; this.events.push({ type: 'release' });
         return true;
     }
@@ -143,9 +242,12 @@ export class CityBloxxModel {
     }
 
     private step(dt: number): void {
+        this.previousCameraY = this.cameraY; this.previousMoveY = this.moveY; this.previousSkyFloors = this.skyFloors;
+        this.previousAnimationTime = this.animationTime; this.previousNormalTime = this.normalTime;
+        if (this.active) this.rememberPose(this.active);
         this.animationTime += dt; if (this.tower) this.normalTime += dt;
         for (let i = this.debris.length - 1; i >= 0; i--) {
-            const f = this.debris[i]; f.age += dt;
+            const f = this.debris[i]; this.rememberPose(f); f.age += dt;
             // House.PlayDrop: DOMove(±1.3, -7, 0), .9 seconds, Ease.Linear.
             const progress = Math.min(1, f.age / .9);
             f.x = f.originX + f.direction * 1.3 * progress; f.y = f.originY - 7 * progress;
@@ -235,36 +337,52 @@ export class CityBloxxModel {
         else {
             if (perfect) {
                 x = previous.x; offset = 0; this.comboTime = CITY_RULES.comboSeconds;
+            }
+            // GlobalParam.TriggerStackHouse: an ordinary stable landing also
+            // continues SuperTime, but only a perfect landing refills its timer.
+            if (this.comboTime > 0) {
                 this.combo++; this.maxCombo = Math.max(this.combo, this.maxCombo);
                 // Native TriggerSupperTime/TriggerStackHouse use ARM64 FCVTPS (ceiling).
                 // The decompiled C cast loses that rounding mode: floors 1–10 already award 2 per combo.
                 this.pendingPeople += this.combo * Math.ceil(this.tower / 10) * 2;
-            } else this.bankCombo();
+            }
             previous.linkOffset = offset;
             this.chaos.push(Math.abs(offset)); if (this.chaos.length > 5) this.chaos.shift();
         }
         const floor: CityFloor = { id: ++this.serial, index: this.totalIndex, base: first,
             x, y: this.tower * CITY_RULES.height, angle: 0, linkOffset: 0, people, perfect,
             age: 0, impact: perfect ? 0 : -Math.sign(offset) * this.config.powValue ** Math.abs(offset * 10) };
-        // House.SetIndexAndPos immediately calls House.Update, before Ctrl
-        // increments TotalIndex. OriginalPos is bookkeeping, not a render pose:
-        // showing its theoretical height here makes a bent tower's new floor
-        // teleport to the rotated Link on the following frame.
+        // House.SetIndexAndPos first follows the support Link. Preserve the
+        // previous display tick for this newly created floor as well, so its
+        // interpolation stays attached to the already rendered support.
         if (previous) this.followSupport(floor, previous);
         floor.angle = floor.index * this.swayScale(cityCurve(this.config.curves.GlobalParam, 0, this.animationTime));
+        if (previous) {
+            const before = previous.previousPose ?? previous, a = before.angle * DEG;
+            floor.previousPose = {
+                x: before.x + offset * Math.cos(a) - CITY_RULES.height * Math.sin(a),
+                y: before.y + offset * Math.sin(a) + CITY_RULES.height * Math.cos(a),
+                angle: previous.index > 0 ? before.angle * floor.index / previous.index : 0,
+            };
+        }
         this.floors.push(floor); this.totalIndex++;
+        // In Unity the collision handler changes Chaos/TotalIndex before the
+        // frame's House.Update callbacks are rendered. Finish that same update
+        // here; otherwise one display frame mixes the new floor's coefficient
+        // with every older floor's previous coefficient.
+        this.updateTower(0, false);
         this.people += people; this.maxFloors = Math.max(this.maxFloors, this.tower);
         this.active = undefined; this.events.push({ type: 'land', floor, people, perfect });
         if (first) { this.phase = 'swing'; this.normalTime = 0; this.attach(); }
         else { this.moveTo((this.tower - 1) * CITY_RULES.height, .5); this.phase = 'settling'; this.delay = CITY_RULES.nextDelay; }
     }
 
-    private updateTower(dt: number): void {
+    private updateTower(dt: number, remember = true): void {
         const rate = cityCurve(this.config.curves.GlobalParam, 0, this.animationTime);
         const baseSway = (Math.max(6, Math.min(100, this.totalIndex)) - 6) / 166 * rate;
         const sway = this.swayScale(rate);
         for (let i = 0; i < this.tower; i++) {
-            const f = this.floors[i]; f.age += dt;
+            const f = this.floors[i]; if (remember) this.rememberPose(f); f.age += dt;
             f.angle = f.index * sway;
             if (!i) { f.x = this.baseX + baseSway; f.y = 0; continue; }
             this.followSupport(f, this.floors[i - 1]);
@@ -283,8 +401,10 @@ export class CityBloxxModel {
     }
 
     private attach(): void {
-        const base = !this.tower, p = cityCrane(this.config, base, base ? this.animationTime : this.normalTime);
-        this.active = { ...p, y: p.y + this.moveY - (base ? CITY_RULES.height : 0), base, speed: 0, drift: 0 };
+        const base = !this.tower, p = cityCrane(this.config, base, base ? this.animationTime : this.normalTime, this.cranePose, this.craneJoints);
+        const active = this.active ?? (this.active = { x: 0, y: 0, angle: 0, base, speed: 0, drift: 0 });
+        active.x = p.x; active.y = p.y + this.moveY - (base ? CITY_RULES.height : 0); active.angle = p.angle;
+        active.base = base; active.speed = active.drift = 0;
     }
     private moveTo(y: number, duration: number): void {
         this.moveFrom = this.moveY; this.moveTarget = y; this.moveAge = 0; this.moveDuration = duration;
@@ -325,6 +445,50 @@ export class CityBloxxModel {
     }
     finish(): void { if (this.phase !== 'disposed') { this.bankCombo(); this.active = undefined; this.collapseHud = undefined; this.phase = 'result'; } }
     dispose(): void { this.phase = 'disposed'; this.active = undefined; this.collapseHud = undefined; this.floors.length = this.debris.length = this.events.length = 0; }
+}
+
+function validSnapshot(value: unknown, config: CityConfig): value is CitySnapshot {
+    if (!value || typeof value !== 'object') return false;
+    const s = value as CitySnapshot, v = s.values;
+    const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
+    const uint = (n: unknown): n is number => finite(n) && Number.isSafeInteger(n) && n >= 0;
+    const pose = (p: CityPose): boolean => !!p && finite(p.x) && finite(p.y) && finite(p.angle);
+    const motion = (p: CityMotion): boolean => pose(p) && (!p.previousPose || pose(p.previousPose));
+    const falling = (p: CityFalling): boolean => motion(p) && typeof p.base === 'boolean' && finite(p.drift)
+        && finite(p.speed) && p.speed >= 0 && p.speed <= config.houseDropSpeed;
+    if (s.version !== 1 || ['intro', 'swing', 'falling', 'settling', 'recovering'].indexOf(s.phase) < 0
+        || !v || !SNAPSHOT_NUMBERS.every(k => finite(v[k]))
+        || !['lives', 'revives', 'people', 'totalIndex', 'maxFloors', 'maxCombo', 'combo', 'pendingPeople', 'serial', 'collapseLeft']
+            .every(k => uint(v[k as keyof typeof v]))
+        || v.lives < 1 || v.lives > CITY_RULES.lives || v.revives > CITY_RULES.revives
+        || v.time < 0 || v.animationTime < 0 || v.normalTime < 0 || v.moveDuration <= 0
+        || v.remainder < -1e-8 || v.remainder >= CITY_RULES.step || v.collapseLeft > 2
+        || Math.abs(v.collapseDirection) !== 1 || v.comboTime < 0 || v.comboTime > CITY_RULES.comboSeconds
+        || v.maxCombo < v.combo || v.introY < 0 || v.introY > 5
+        || (s.shakeAge !== null && (!finite(s.shakeAge) || s.shakeAge < 0))
+        || (s.previousCameraY !== null && !finite(s.previousCameraY))
+        || ['foundation', 'drop'].indexOf(s.shakeKind) < 0
+        || !Array.isArray(s.floors) || !Array.isArray(s.debris) || !Array.isArray(s.chaos)
+        || s.chaos.length > 5 || !s.chaos.every(n => finite(n) && n >= 0 && n <= CITY_RULES.stable)) return false;
+    const ids = new Set<number>();
+    if (!s.floors.every((f, i) => {
+        if (!f || !motion(f) || !uint(f.id) || !f.id || ids.has(f.id) || f.id > v.serial
+            || !uint(f.index) || f.index >= v.totalIndex || (i > 0 && f.index <= s.floors[i - 1].index)
+            || f.base !== (i === 0) || !finite(f.linkOffset) || Math.abs(f.linkOffset) > CITY_RULES.stable
+            || !uint(f.people) || f.people > 4 || typeof f.perfect !== 'boolean'
+            || !finite(f.age) || f.age < 0 || !finite(f.impact)) return false;
+        ids.add(f.id); return true;
+    }) || !s.debris.every(f => {
+        if (!f || !falling(f) || !uint(f.id) || !f.id || ids.has(f.id) || f.id > v.serial
+            || !finite(f.age) || f.age < 0 || f.age >= .9 || Math.abs(f.direction) !== 1
+            || !finite(f.originX) || !finite(f.originY)) return false;
+        ids.add(f.id); return true;
+    })) return false;
+    const needsActive = s.phase === 'intro' || s.phase === 'swing' || s.phase === 'falling';
+    return v.maxFloors >= s.floors.length && v.totalIndex >= v.maxFloors
+        && (needsActive ? !!s.active && falling(s.active) && s.active.base === !s.floors.length : !s.active)
+        && (!s.collapseHud || (s.phase === 'recovering' && uint(s.collapseHud.tower) && uint(s.collapseHud.people)))
+        && (s.phase !== 'intro' || s.floors.length === 0);
 }
 
 /** NGUI's unweighted AnimationCurve keys: time, value, incoming slope, outgoing slope. */

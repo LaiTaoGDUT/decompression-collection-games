@@ -79,6 +79,7 @@ import {
     meowdokuMaxUnmarkedAllowed,
     meowdokuWinToastTier,
     meowdokuRegionPalette,
+    meowdokuRegionName,
     type MeowdokuVisuals,
 } from './MeowdokuTheme';
 import { MEOWDOKU_AUDIO_BANK } from './MeowdokuAudio';
@@ -101,8 +102,9 @@ import {
     solverBoardFromCells,
     solveMeowdokuHint,
     type MeowdokuHint,
+    type MeowdokuSolverUnit,
 } from './MeowdokuSolver';
-import { MEOWDOKU_LEVELS, type MeowdokuLevelDefinition } from './MeowdokuLevels';
+import { MEOWDOKU_BANK_REVISION, MEOWDOKU_LEVELS, type MeowdokuLevelDefinition } from './MeowdokuLevels';
 import { MEOWDOKU_HARD_LEVELS } from './MeowdokuHardLevels';
 import {
     MEOWDOKU_CAT_COLOR_RATIO,
@@ -173,7 +175,8 @@ function likeHandReach(
 }
 
 /** 存档版本；已有题目或存档结构不兼容时加 1；仅追加关卡和兼容字段沿用版本。 */
-const MEOWDOKU_DATA_VERSION = 7;
+const MEOWDOKU_DATA_VERSION = 9;
+const MEOWDOKU_CLEAR_METRIC = 'deduction-cleared-level';
 /** 连续失败到几次时，下一局免费送一只猫（原作 `_pre_cat_pending_struggle`）。 */
 const PRE_CAT_FAIL_THRESHOLD = 2;
 
@@ -199,6 +202,7 @@ const LEVEL_SELECT_PER_PAGE = LEVEL_SELECT_COLUMNS * LEVEL_SELECT_ROWS;
 /** 松手时拖过页宽的这个比例，或者甩动速度超过这个值（px/s），就翻页。 */
 const LEVEL_SELECT_FLIP_RATIO = 0.18;
 const LEVEL_SELECT_FLIP_SPEED = 600;
+const LEVEL_SELECT_TAP_SLOP = 12;
 
 interface ModeSwitchView {
     readonly node: Node;
@@ -208,7 +212,7 @@ interface ModeSwitchView {
     readonly hardLabel: Label;
 }
 
-/** 选关页运行时状态：保留三页节点，模式切换与翻页均复用。 */
+/** 选关页只展示当前页，滑动时复用另一页作为目的页。 */
 interface LevelSelectView {
     readonly root: Node;
     readonly modeSwitch: ModeSwitchView;
@@ -217,7 +221,7 @@ interface LevelSelectView {
     readonly backButton: Node;
     readonly jumpCurrent: Node;
     readonly jumpLatest: Node;
-    /** 三页并排的滑轨，拖动 / 翻页时整体平移。 */
+    /** 拖动 / 翻页时整体平移。 */
     readonly track: Node;
     readonly trackOpacity: UIOpacity;
     readonly pageLabel: Label;
@@ -228,12 +232,11 @@ interface LevelSelectView {
     readonly tileHeight: number;
     readonly gapX: number;
     readonly gapY: number;
-    /** [上一页, 当前页, 下一页]；越界的一侧为 undefined。 */
-    pages: (Node | undefined)[];
-    /** 与三个位置对应的可复用页；越界时隐藏，切回有效页时继续使用。 */
-    pagePool: (Node | undefined)[];
+    currentPage?: Node;
+    neighbor?: Node;
+    neighborDirection: number;
     page: number;
-    drag?: { startX: number; lastX: number; lastAt: number; velocity: number };
+    drag?: { startX: number; lastX: number; lastAt: number; velocity: number; moved: boolean };
     sliding: boolean;
     modeAnimating: boolean;
 }
@@ -461,11 +464,13 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     private pendingCombo?: number;
     private pendingStepsUsed?: number;
     private toolAdPending = false;
+    private toolAdTool?: MeowdokuTool;
     private preCatCell?: readonly [number, number];
 
     private backgroundNode?: Node;
     private toolsRowNode?: Node;
     private hintBarNode?: Node;
+    private hintBarLabel?: Label;
     private boardNode?: Node;
     private boardGlowNode?: Node;
     /** 所有猫都画在全部格子与标记之上，放大动画不受格子创建顺序影响。 */
@@ -608,6 +613,9 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (this.state !== 'ready') {
             throw new Error(`Cannot begin MeowdokuGame from ${this.state}.`);
         }
+        const context = this.context;
+        const stored = context?.services.storage.getGameData(context.gameId);
+        if (stored && stored.dataVersion !== MEOWDOKU_DATA_VERSION) this.persistProgress();
         this.dailyToolRewards = this.grantDailyTools();
         // 进游戏总是直接进当前关卡（选关页不记存档）。
         const restored = this.pendingLevelCells;
@@ -616,9 +624,9 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.pendingLives = undefined;
         this.startLevel(this.levelIndex, restored, lives, true);
         this.showDailyToolReward();
-        // 成就条件调整后，以已有通关进度恢复新条件下的成就，不要求重过旧关。
+        // 恢复当前题库通关进度对应的成就。
         if (this.mode !== 'hard') {
-            this.context?.reportAchievementProgress('cleared-level', this.clearedLevel);
+            this.context?.reportAchievementProgress(MEOWDOKU_CLEAR_METRIC, this.clearedLevel);
         }
     }
 
@@ -726,6 +734,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.failPageNode = undefined;
         this.hintMaskNode = undefined;
         this.hintBarNode = undefined;
+        this.hintBarLabel = undefined;
         this.toastLabel = undefined;
         this.toastOpacity = undefined;
         this.toastNode = undefined;
@@ -800,7 +809,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             return;
         }
         this.releaseRetiredPageNodes(24);
-        if (this.state === 'selecting' && !this.levelSelectView?.modeAnimating) this.warmBoardCells();
+        const selector = this.levelSelectView;
+        if (this.state === 'selecting' && selector && !selector.modeAnimating && !selector.sliding && !selector.drag) {
+            this.warmBoardCells();
+        }
         if (this.state === 'playing' || this.state === 'failing' || this.state === 'clearing') {
             this.model?.tick(dt * 1000);
         }
@@ -898,23 +910,29 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (!context) return;
         // 只读取当前版本的存档。
         const data = context.services.storage.getGameData(context.gameId);
-        // 提示历史独立于关卡版本；旧存档已选过困难或留下困难进度，也视为已发现。
-        const savedHard = data?.custom?.meowdokuHard;
+        const custom = data?.dataVersion === MEOWDOKU_DATA_VERSION ? data.custom : undefined;
+        const savedHard = custom?.meowdokuHard;
         this.hardModeDiscovered = this.hardModeDiscovered
-            || data?.custom?.meowdokuHardModeDiscovered === true
-            || data?.custom?.meowdokuMode === 'hard'
+            || custom?.meowdokuHardModeDiscovered === true
+            || custom?.meowdokuMode === 'hard'
             || (typeof savedHard === 'object' && savedHard !== null && !Array.isArray(savedHard)
                 && Object.keys(savedHard).length > 0);
-        const custom = data?.dataVersion === MEOWDOKU_DATA_VERSION ? data.custom : undefined;
         this.mode = requestedMode ?? (custom?.meowdokuMode === 'hard' ? 'hard' : 'normal');
         const hard = custom?.meowdokuHard;
         const scoped: Record<string, unknown> = this.mode === 'hard'
             ? (typeof hard === 'object' && hard !== null && !Array.isArray(hard) ? hard as Record<string, unknown> : {})
             : {
-                cleared: custom?.meowdokuCleared,
+                cleared: custom?.meowdokuCleared, bankRevision: custom?.meowdokuBankRevision,
                 progress: custom?.meowdokuProgress, fails: custom?.meowdokuFails,
                 challengeHistory: custom?.meowdokuChallengeHistory, geniusClears: custom?.meowdokuGeniusClears,
             };
+        const levels = this.levelDefinitions();
+        const storedRevision = scoped.bankRevision;
+        const revision = typeof storedRevision === 'number' && Number.isInteger(storedRevision) ? storedRevision : 0;
+        const sameBoard = (level: number): boolean => {
+            const definition = levels[level - 1];
+            return !!definition && revision >= (definition.revision ?? 0) && revision <= MEOWDOKU_BANK_REVISION;
+        };
         this.clearPendingProgress();
         this.failCounts = {};
         this.clearedLevel = this.readClearedLevel(scoped.cleared, this.levelDefinitions().length);
@@ -925,6 +943,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (hasChallengeHistory) {
             const record = histories as Record<string, unknown>;
             Object.keys(record).forEach((key) => {
+                if (!sameBoard(Number(key))) return;
                 const value = record[key];
                 if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
                     const usage = value as Record<string, unknown>;
@@ -941,6 +960,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             const counts: Record<string, number> = {};
             const record = fails as Record<string, unknown>;
             Object.keys(record).forEach((key) => {
+                if (!sameBoard(Number(key))) return;
                 const value = record[key];
                 if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
                     counts[key] = Math.floor(value);
@@ -979,11 +999,13 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             ? raw as Record<string, unknown> : undefined;
         const level = record?.level;
         if (record && typeof level === 'number' && Number.isInteger(level)
-            && level >= 1 && level <= this.levelDefinitions().length) {
+            && level >= 1 && level <= this.unlockedLevel) {
             this.levelIndex = this.levelIndexOf(level);
             const legacyClearedReplay = !hasChallengeHistory && level >= 1 && level <= this.clearedLevel;
-            const cells = record.cells;
-            const challenge = record.challenge;
+            // 换题后仍回到同一关；棋子、生命和本盘操作记录只在题面相同时恢复。
+            const compatible = sameBoard(level);
+            const cells = compatible ? record.cells : undefined;
+            const challenge = compatible ? record.challenge : undefined;
             let hasWrongGuessRecord = false;
             if (!legacyClearedReplay && typeof challenge === 'object' && challenge !== null && !Array.isArray(challenge)) {
                 const usage = challenge as Record<string, unknown>;
@@ -1146,6 +1168,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.writeSave((custom) => {
             if (this.mode === 'hard') {
                 custom.meowdokuHard = Object.freeze({
+                    bankRevision: MEOWDOKU_BANK_REVISION,
                     fails: Object.freeze({ ...this.failCounts }),
                     challengeHistory: Object.freeze({ ...this.levelChallengeHistories }),
                     geniusClears: Object.freeze({ ...this.geniusClearedLevels }),
@@ -1153,6 +1176,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                 });
                 return;
             }
+            custom.meowdokuBankRevision = MEOWDOKU_BANK_REVISION;
             custom.meowdokuFails = Object.freeze({ ...this.failCounts });
             custom.meowdokuChallengeHistory = Object.freeze({ ...this.levelChallengeHistories });
             custom.meowdokuGeniusClears = Object.freeze({ ...this.geniusClearedLevels });
@@ -1176,7 +1200,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         const previous = stored?.dataVersion === MEOWDOKU_DATA_VERSION ? stored : undefined;
         // 写入时不带入其他版本的数据。
         const custom: Record<string, unknown> = {};
-        for (const key of ['meowdokuUnlocked', 'meowdokuCleared', 'meowdokuProgress', 'meowdokuFails',
+        for (const key of ['meowdokuBankRevision', 'meowdokuUnlocked', 'meowdokuCleared', 'meowdokuProgress', 'meowdokuFails',
             'meowdokuChallengeHistory', 'meowdokuGeniusClears', 'meowdokuTools', 'meowdokuHard']) {
             if (previous?.custom?.[key] !== undefined) custom[key] = previous.custom[key];
         }
@@ -1459,6 +1483,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.failPageNode = undefined;
         this.hintMaskNode = undefined;
         this.hintBarNode = undefined;
+        this.hintBarLabel = undefined;
         this.toastLabel = undefined;
         this.toastOpacity = undefined;
         this.toastNode = undefined;
@@ -2298,21 +2323,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         if (mask?.isValid) this.destroyNode(mask);
     }
 
-    /**
-     * 提示面板，对齐原作 `hint_overlay.tscn`：
-     *
-     * - 顶部横幅（`Banner`，900×190）里有策略码（`StrategyLabel`，如 `R4`，字号 56、红色）
-     *   和说明（`DescLabel`，字号 36、`#935A5A`）；
-     * - 底部一个 750×160 的「应用」大按钮（`ApplyBtn`）。
-     *
-     * 按需求**去掉了取消按钮**（原作默认档 `hint_ue = VALUE_CONTROL` 也不走关闭按钮流程）。
-     */
-    /**
-     * 提示的**应用按钮**。
-     *
-     * 需求：把原来那套「顶部横幅」（左上角策略码 `R1/R2/…` + 说明文案）整段删掉，
-     * 提示只保留：全屏蒙层 + 目标格子高亮 + 一个「应用」按钮。
-     */
+    /** 沿用旧版 900×190 顶部横幅，左侧显示提示道具图标，右侧显示说明（1080 参考）。 */
     private buildHintBar(): void {
         const layout = this.requireLayout();
         const k = MEOWDOKU_SOURCE_SCALE * layout.fitScale;
@@ -2325,7 +2336,51 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         root.active = false;
         this.hintBarNode = root;
 
-        // 底部「应用」大按钮：原作 750×160，提示期间正好压在道具栏的位置上（道具栏被蒙层压暗）。
+        // 顶部横幅：原作在屏幕上方 279~469 设计像素处（1080 参考）。
+        const bannerWidth = Math.min(layout.width - 40 * k, 900 * k);
+        const bannerHeight = 190 * k;
+        const banner = new Node('Banner');
+        banner.layer = this.node.layer;
+        banner.setParent(root);
+        banner.addComponent(UITransform).setContentSize(bannerWidth, bannerHeight);
+        banner.setPosition(0, layout.height / 2 - (279 + 95) * k, 0);
+        this.drawRoundedRect(
+            banner.addComponent(Graphics),
+            bannerWidth,
+            bannerHeight,
+            24 * k,
+            new Color(255, 246, 240, 255),
+        );
+
+        const iconFrame = this.toolIconFrame('hint');
+        const frameRect = iconFrame?.rect;
+        const aspect = frameRect && frameRect.height > 0 ? frameRect.width / frameRect.height : 1;
+        const iconBox = 110 * k;
+        const icon = new Node('HintIcon');
+        icon.layer = this.node.layer;
+        icon.setParent(banner);
+        icon.addComponent(UITransform).setContentSize(
+            aspect >= 1 ? iconBox : iconBox * aspect,
+            aspect >= 1 ? iconBox / aspect : iconBox,
+        );
+        icon.setPosition(-bannerWidth / 2 + 115 * k, 0, 0);
+        const iconSprite = icon.addComponent(Sprite);
+        iconSprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        iconSprite.spriteFrame = iconFrame;
+
+        const desc = this.createLabel(
+            banner,
+            'Desc',
+            bannerWidth - 260 * k,
+            bannerHeight - 20 * k,
+            36 * k,
+            MEOWDOKU_COLORS.ruleText,
+        );
+        desc.string = '';
+        desc.node.setPosition(50 * k, 0, 0);
+        this.hintBarLabel = desc;
+
+        // 底部「应用」大按钮继续覆盖当前道具栏。
         const buttonWidth = Math.min(layout.width - 60 * k, 750 * k);
         const buttonHeight = 160 * k;
         const apply = new Node('Apply');
@@ -4440,10 +4495,12 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             + spec.bubbleGapDesign * k + height / 2;
         // 节点锚在手腕：甩腕和挤压都绕手腕转。
         const fadeLift = spec.fadeLiftDesign * k;
+        const riseDrop = spec.riseDropDesign * k;
         const reach = likeHandReach(width, height, spec.pivotY, [
-            { sx: spec.overshootScale, sy: spec.overshootScale, angle: spec.overshootAngle, lift: 0 },
-            { sx: spec.squash.x, sy: spec.squash.y, angle: spec.overshootAngle, lift: 0 },
-            { sx: spec.stretch.x, sy: spec.stretch.y, angle: 0, lift: 0 },
+            { sx: spec.riseScale, sy: spec.riseScale, angle: spec.riseAngle, lift: -riseDrop },
+            { sx: spec.squash.x, sy: spec.squash.y, angle: spec.squash.angle, lift: 0 },
+            { sx: spec.stretch.x, sy: spec.stretch.y, angle: spec.stretch.angle, lift: 0 },
+            { sx: spec.rebound.x, sy: spec.rebound.y, angle: spec.rebound.angle, lift: 0 },
             { sx: 1, sy: 1, angle: 0, lift: fadeLift },
         ]);
         // 整段动作（按手腕支点逐个关键姿态量出的最大外沿）保持在完整屏幕宽度及上下安全区内。
@@ -4477,7 +4534,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         node.setParent(layer);
         node.addComponent(UITransform).setContentSize(width, height);
         node.getComponent(UITransform)!.setAnchorPoint(0.5, spec.pivotY);
-        node.setPosition(x, y - spec.riseDropDesign * k, 0);
+        node.setPosition(x, y - riseDrop, 0);
         const sprite = node.addComponent(Sprite);
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
         sprite.trim = false;
@@ -4488,12 +4545,11 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         node.setScale(spec.riseScale, spec.riseScale, 1);
         this.feedbackNodes.add(node);
 
-        const raiseThumb = (): void => {
+        const flashAtThumbTip = (): void => {
             if (!node.isValid) return;
-            sprite.spriteFrame = thumb;
-            const tipX = (spec.thumbTip.x - 0.5) * width;
-            const tipY = (spec.thumbTip.y - spec.pivotY) * height;
-            const radians = spec.overshootAngle * Math.PI / 180;
+            const tipX = (spec.thumbTip.x - 0.5) * width * node.scale.x;
+            const tipY = (spec.thumbTip.y - spec.pivotY) * height * node.scale.y;
+            const radians = node.angle * Math.PI / 180;
             this.spawnLikeSparks(
                 x + tipX * Math.cos(radians) - tipY * Math.sin(radians),
                 y + tipX * Math.sin(radians) + tipY * Math.cos(radians),
@@ -4511,24 +4567,24 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         };
         const restAt = new Vec3(x, y, 0);
         tween(node)
-            // 握拳从下方甩腕上来，带一点过冲。
             .to(spec.rise, {
-                scale: new Vec3(spec.overshootScale, spec.overshootScale, 1),
-                angle: spec.overshootAngle,
+                scale: new Vec3(spec.squash.x, spec.squash.y, 1),
+                angle: spec.squash.angle,
                 position: restAt,
-            }, { easing: 'backOut' })
-            // 拇指「啪」地竖起：换帧 + 挤压 → 拉伸 → 回弹。
-            .call(raiseThumb)
-            .to(spec.squash.duration, { scale: new Vec3(spec.squash.x, spec.squash.y, 1) }, { easing: 'quadOut' })
-            .to(spec.stretch.duration, { scale: new Vec3(spec.stretch.x, spec.stretch.y, 1), angle: 0 },
+            }, { easing: 'quadOut' })
+            .call(() => { sprite.spriteFrame = thumb; })
+            .to(spec.stretch.duration, { scale: new Vec3(spec.stretch.x, spec.stretch.y, 1), angle: spec.stretch.angle },
                 { easing: 'quadOut' })
-            .to(spec.settle, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+            .call(flashAtThumbTip)
+            .to(spec.rebound.duration, { scale: new Vec3(spec.rebound.x, spec.rebound.y, 1), angle: spec.rebound.angle },
+                { easing: 'sineInOut' })
+            .to(spec.settle, { scale: new Vec3(1, 1, 1), angle: 0 }, { easing: 'sineOut' })
             .delay(spec.hold)
             .to(spec.fadeOut, { scale: new Vec3(0.88, 0.88, 1), position: new Vec3(x, y + fadeLift, 0) },
                 { easing: 'sineIn' })
             .call(() => this.destroyNode(node))
             .start();
-        const visible = spec.rise + spec.squash.duration + spec.stretch.duration + spec.settle + spec.hold;
+        const visible = spec.rise + spec.stretch.duration + spec.rebound.duration + spec.settle + spec.hold;
         tween(opacity)
             .to(spec.rise * 0.6, { opacity: 255 })
             .delay(visible - spec.rise * 0.6)
@@ -4588,13 +4644,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
      * 这里按同样的顺序做三步：双击或长按放猫 → 点击打叉 → 猫咪不能相邻；
      * 玩家做出对应操作后自动推进，随时可以「跳过」。
      */
-    /**
-     * 新手引导：原作 `tutorial_page.gd` 的默认七步流程。
-     *
-     * 演示盘**直接用游戏自己的棋盘**：把原作 SP 题库里 `pattern == "guide"` 那一关
-     * （4×4、解位 `[2,0,3,1]`、配色 `[8,4,10,1]`）装进真实棋盘，这样渲染、命中、层级、
-     * 猫的出场/待机动效和正式关卡完全一致（之前自己画盘会出现模糊、黑线、层级和点不中）。
-     */
+    /** 用正式棋盘组件呈现独立的教学盘，让演示与进关后的操作一致。 */
     private startTutorial(): void {
         const model = this.model;
         if (!model || model.level !== 1) return;
@@ -5589,7 +5639,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             if (view.countLabel.isValid) {
                 view.countLabel.string = count > 99 ? '99+' : String(count);
             }
-            const enabled = this.state === 'playing' && !this.inputLocked && (stock > 0 || adsEnabled);
+            if (view.label.isValid) view.label.string = this.toolAdPending && this.toolAdTool === tool
+                ? MEOWDOKU_COPY.toolLoading : this.toolLabel(tool);
+            const enabled = this.state === 'playing' && !this.inputLocked && !this.toolAdPending
+                && !this.draftMode && !this.activeHint && (stock > 0 || adsEnabled);
             if (view.node.isValid) view.node.setScale(enabled ? 1 : 0.96, enabled ? 1 : 0.96, 1);
         }
     }
@@ -5661,9 +5714,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
 
     /** 数量为 0 时点道具：看一次激励广告换一个（原作 `game_ad_badge` 的绿色角标）。 */
     private async requestToolByAd(tool: MeowdokuTool): Promise<void> {
-        if (this.toolAdPending || !this.isAdsEnabled()) return;
+        if (this.toolAdPending) { this.showToast(MEOWDOKU_COPY.adLoading); return; }
+        if (!this.isAdsEnabled()) { this.showToast(MEOWDOKU_COPY.adUnavailable); return; }
         this.toolAdPending = true;
-        this.context?.services.feedback.play('uiButton');
+        this.toolAdTool = tool;
         // 看完广告**不补库存**，直接把这一次道具用掉（原作 `_on_ad_rewarded` 后立即执行道具）。
         const model = this.model;
         const context = this.context;
@@ -5679,6 +5733,8 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             this.applyTool(tool);
         };
         try {
+            this.syncToolButtons();
+            this.context?.services.feedback.play('uiButton');
             const ads = this.context?.services.ads;
             if (!ads) {
                 this.showToast(MEOWDOKU_COPY.adUnavailable);
@@ -5694,7 +5750,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                 return;
             }
             // 没看完就说一声，避免「点了没反应」。
-            if (result?.errorCode !== 'not-configured') {
+            if (!result.feedbackShown) {
                 this.showToast(MEOWDOKU_COPY.adUnavailable);
             }
         } catch (error) {
@@ -5702,14 +5758,19 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             this.showToast(MEOWDOKU_COPY.adUnavailable);
         } finally {
             this.toolAdPending = false;
+            this.toolAdTool = undefined;
+            this.syncToolButtons();
         }
     }
 
     /** 提示先求解再扣库存；无提示不消耗，也不发起广告。 */
     private pressTool(tool: MeowdokuTool): void {
-        if (this.tutorial) return;
-        if (this.state !== 'playing' || this.inputLocked || this.dailyReward.active) return;
-        if (this.toolAdPending || this.draftMode || this.activeHint || !this.model || this.model.isComplete) return;
+        if (this.tutorial) { this.showToast(MEOWDOKU_COPY.toolTutorial); return; }
+        if (this.toolAdPending) { this.showToast(MEOWDOKU_COPY.adLoading); return; }
+        if (this.state !== 'playing' || !this.model || this.model.isComplete) return;
+        if (this.inputLocked || this.dailyReward.active) { this.showToast(MEOWDOKU_COPY.toolBusy); return; }
+        if (this.draftMode) { this.showToast(MEOWDOKU_COPY.toolInDraft); return; }
+        if (this.activeHint) { this.showToast(MEOWDOKU_COPY.hintPending); return; }
         this.resetBoardGesture();
         if (tool === 'hint') {
             this.useHint();
@@ -5939,11 +6000,12 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.hintPreviewNodes = [];
     }
 
-    /** 只控制「应用」按钮的显隐（横幅与 `R1` 策略码已整段删除）。 */
+    /** 说明与高亮使用同一条已付费提示，重排后也恢复相同的推理原因。 */
     private showHintBar(hint: MeowdokuHint | undefined): void {
         const bar = this.hintBarNode;
         if (!bar?.isValid) return;
         if (hint) {
+            if (this.hintBarLabel?.isValid) this.hintBarLabel.string = this.hintMessage(hint);
             const label = bar.getChildByName('Apply')?.getChildByName('Label')?.getComponent(Label);
             if (label) label.string = hint.action === 'unmark' ? "取消错误标记" : MEOWDOKU_COPY.hintApply;
             bar.active = true;
@@ -5952,6 +6014,34 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         }
         bar.active = false;
         this.activeHint = undefined;
+    }
+
+    private hintUnitName(unit: MeowdokuSolverUnit): string {
+        if (unit.type === 'row') return `第${unit.index + 1}行`;
+        if (unit.type === 'col') return `第${unit.index + 1}列`;
+        return `${meowdokuRegionName(this.board?.colorMap[unit.index] ?? unit.index)}区域`;
+    }
+
+    private hintMessage(hint: MeowdokuHint): string {
+        if (hint.key === 'HINT_WRONG_MARK') return '这个位置的叉标记有误，请先撤销';
+        if (hint.key === 'HINT_FULL_LINE') return '同色完整行列的交点必须放猫咪';
+        if (hint.key === 'HINT_R1_MARK') return '这只猫咪的同行、同列及相邻格不会有其他猫咪，可以排除';
+        if (hint.key === 'HINT_R1_MARK_COMBINE') return '这只猫咪的同行、同列、同色及相邻格都不能再放猫，可以排除';
+        if (hint.key === 'HINT_REGION_ONLY') return `${this.hintUnitName(hint.unit!)}仅剩一格可放猫咪`;
+        if (hint.key === 'HINT_SET_LOCKING') return '集合锁定：可排除相关格子';
+        if (hint.key === 'HINT_R2A_ROW') return `候选格都在同一行 — 可排除该行其他颜色`;
+        if (hint.key === 'HINT_R2A_COL') return `候选格都在同一列 — 可排除该列其他颜色`;
+        if (hint.key === 'HINT_R3_ROW') return `${hint.args[0]} 种颜色共同占据 ${hint.args[0]} 行，可排除这些行中的其他格子`;
+        if (hint.key === 'HINT_R3_COL') return `${hint.args[0]} 种颜色共同占据 ${hint.args[0]} 列，可排除这些列中的其他格子`;
+        const { steps, firstStepUnit, contradiction } = hint.chain;
+        const unitName = this.hintUnitName(contradiction);
+        const first = steps[0];
+        if (!first || !firstStepUnit) return `若叉号处有猫，${unitName}就没有地方放猫了，所以这格要画叉。`;
+        const row = `第${first[0] + 1}行`, col = `第${first[1] + 1}列`;
+        const onlyCell = firstStepUnit.type === 'row' ? col : firstStepUnit.type === 'col' ? row : row + col;
+        const forced = `${this.hintUnitName(firstStepUnit)}只剩${onlyCell}能放猫`;
+        const next = steps.length > 1 ? `再推${steps.length - 1}步，` : '这样一来，';
+        return `若叉号处有猫，${forced}。${next}${unitName}就无处放猫，所以要叉掉最初那格。`;
     }
 
     private clearHint(): void {
@@ -6052,7 +6142,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         this.context?.services.feedback.play('record');
         this.showWinOverlay(model?.isPerfectClear ?? false, this.geniusClear);
         if (model && this.mode !== 'hard') {
-            this.context?.reportAchievementProgress('cleared-level', this.clearedLevel);
+            this.context?.reportAchievementProgress(MEOWDOKU_CLEAR_METRIC, this.clearedLevel);
         }
     }
 
@@ -6603,7 +6693,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             if (this.model !== model || this.levelRunId !== runId || !this.isFailureState()) return;
             const paused = this.state === 'paused';
             if (result?.outcome !== 'completed') {
-                if (result?.errorCode !== 'not-configured') {
+                if (!result.feedbackShown) {
                     this.showToast(MEOWDOKU_COPY.adUnavailable);
                 }
                 return;
@@ -6638,6 +6728,8 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         const toast = this.toastNode;
         const opacity = this.toastOpacity;
         if (!toast?.isValid || !opacity) return;
+        // 失败页等弹层会晚于 Toast 创建，每次展示时按当前层级置顶。
+        toast.setSiblingIndex(toast.parent!.children.length - 1);
         if (this.toastLabel) this.toastLabel.string = text;
         toast.active = true;
         opacity.opacity = 0;
@@ -7634,7 +7726,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                 ? MEOWDOKU_COPY.levelSelectJumpCurrent(this.currentLevelNumber())
                 : MEOWDOKU_COPY.levelSelectJumpLatest(this.unlockedLevel);
         }
-        this.fillLevelSelectPages(view);
+        this.showCurrentLevelPage(view);
         view.modeAnimating = true;
         this.refreshModeSwitch(view.modeSwitch, true, () => {
             if (this.levelSelectView === view) view.modeAnimating = false;
@@ -7819,7 +7911,6 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         const jumpWidth = (width - margin * 2 - jumpGap) / 2;
         const jumpY = bottom + 28 * s + jumpHeight / 2;
         const current = this.currentLevelNumber();
-        const latest = this.unlockedLevel;
         const jumpCurrent = this.createPillButton(
             root,
             'JumpCurrent',
@@ -7836,7 +7927,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             'JumpLatest',
             jumpWidth,
             jumpHeight,
-            MEOWDOKU_COPY.levelSelectJumpLatest(latest),
+            MEOWDOKU_COPY.levelSelectJumpLatest(this.unlockedLevel),
             'secondary',
             { palette: this.levelSelectButtonPalette('secondary') },
         );
@@ -7908,14 +7999,13 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             tileHeight,
             gapX,
             gapY,
-            pages: [],
-            pagePool: [],
+            neighborDirection: 0,
             page: Math.max(0, Math.min(pageCount - 1, page)),
             sliding: false,
             modeAnimating: false,
         };
         this.levelSelectView = view;
-        this.fillLevelSelectPages(view);
+        this.showCurrentLevelPage(view);
 
         // 手指拖动整条滑轨；格子上的触摸会冒泡到这里，格子自己只认「没拖动」的点按。
         pager.on(Node.EventType.TOUCH_START, (event: EventTouch) => this.onLevelPagerStart(view, event), this);
@@ -7932,43 +8022,55 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         return Math.floor(this.levelIndexOf(level) / LEVEL_SELECT_PER_PAGE);
     }
 
-    /** 更新当前页和左右两页；模式切换和远距离跳转复用已有节点。 */
-    private fillLevelSelectPages(view: LevelSelectView): void {
-        view.pages = [-1, 0, 1].map((slot) =>
-            this.createLevelSelectPage(view, view.page + slot, slot, view.pagePool[slot + 1]));
+    private showCurrentLevelPage(view: LevelSelectView): void {
         Tween.stopAllByTarget(view.track);
         view.track.setPosition(0, 0, 0);
+        this.hideLevelNeighbor(view);
+        view.currentPage = this.createLevelSelectPage(view, view.page, 0, view.currentPage);
         this.syncLevelSelectPager(view);
     }
 
-    private createLevelSelectPage(view: LevelSelectView, page: number, slot: number, reusable?: Node): Node | undefined {
-        if (page < 0 || page >= this.levelSelectPageCount()) {
-            if (reusable?.isValid) {
-                reusable.children.forEach(tile => this.stopLevelTileAnimations(tile));
-                reusable.active = false;
-            }
-            return undefined;
+    private hideLevelNeighbor(view: LevelSelectView): void {
+        if (view.neighbor?.active) {
+            view.neighbor.children.forEach(tile => this.stopLevelTileAnimations(tile));
+            view.neighbor.active = false;
         }
+        view.neighborDirection = 0;
+    }
+
+    private showLevelNeighbor(view: LevelSelectView, direction: number): boolean {
+        const page = view.page + direction;
+        if (page < 0 || page >= this.levelSelectPageCount()) {
+            this.hideLevelNeighbor(view);
+            return false;
+        }
+        if (view.neighborDirection !== direction) {
+            view.neighbor = this.createLevelSelectPage(view, page, direction, view.neighbor);
+            view.neighborDirection = direction;
+        }
+        return true;
+    }
+
+    private createLevelSelectPage(view: LevelSelectView, page: number, slot: number, reusable?: Node): Node {
         const node = reusable ?? new Node(`Page${page}`);
         if (!reusable) {
             node.layer = this.node.layer;
             node.setParent(view.track);
             node.addComponent(UITransform);
         }
-        view.pagePool[slot + 1] = node;
         node.name = `Page${page}`;
-        node.active = true;
         const gridWidth = LEVEL_SELECT_COLUMNS * view.tileWidth + (LEVEL_SELECT_COLUMNS - 1) * view.gapX;
         const gridHeight = LEVEL_SELECT_ROWS * view.tileHeight + (LEVEL_SELECT_ROWS - 1) * view.gapY;
         node.getComponent(UITransform)!.setContentSize(gridWidth, gridHeight);
         node.setPosition(slot * view.pageWidth, 0, 0);
         const current = this.currentLevelNumber();
         const first = page * LEVEL_SELECT_PER_PAGE;
-        const last = Math.min(this.levelDefinitions().length, first + LEVEL_SELECT_PER_PAGE);
-        const tiles = node.children.slice();
+        const levels = this.levelDefinitions();
+        const last = Math.min(levels.length, first + LEVEL_SELECT_PER_PAGE);
         for (let index = first; index < last; index += 1) {
-            const definition = this.levelDefinitions()[index]!;
+            const definition = levels[index]!;
             const cell = index - first;
+            const reusableTile = node.children[cell];
             const col = cell % LEVEL_SELECT_COLUMNS;
             const row = Math.floor(cell / LEVEL_SELECT_COLUMNS);
             const tile = this.createLevelTile(
@@ -7977,25 +8079,27 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
                 view.tileWidth,
                 view.tileHeight,
                 current,
-                tiles[cell],
+                reusableTile,
             );
             tile.setPosition(
                 -gridWidth / 2 + view.tileWidth / 2 + col * (view.tileWidth + view.gapX),
                 gridHeight / 2 - view.tileHeight / 2 - row * (view.tileHeight + view.gapY),
                 0,
             );
-            const base = tile.position.clone();
-            // 索引随页和模式变化；先移除旧处理器，避免复用格子误选旧关或重复响应。
-            tile.targetOff(this);
-            this.bindScrollTap(tile, () => {
-                if (view.sliding || this.levelSelectView !== view) return;
-                if (!this.selectLevel(index)) this.shakeLevelTile(tile, base);
-            });
+            if (!reusableTile) {
+                const base = tile.position.clone();
+                this.bindScrollTap(tile, () => {
+                    if (view.sliding || view.drag?.moved || this.levelSelectView !== view || view.currentPage !== node) return;
+                    if (!this.selectLevel(view.page * LEVEL_SELECT_PER_PAGE + cell)) this.shakeLevelTile(tile, base);
+                });
+            }
         }
-        for (let cell = last - first; cell < tiles.length; cell += 1) {
-            this.stopLevelTileAnimations(tiles[cell]!);
-            tiles[cell]!.active = false;
+        for (let cell = last - first; cell < node.children.length; cell += 1) {
+            const tile = node.children[cell]!;
+            this.stopLevelTileAnimations(tile);
+            tile.active = false;
         }
+        node.active = true;
         return node;
     }
 
@@ -8007,14 +8111,14 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             const opacity = button.getComponent(UIOpacity) ?? button.addComponent(UIOpacity);
             opacity.opacity = enabled ? 255 : 90;
         };
-        setEnabled(view.prevButton, !!view.pages[0]);
-        setEnabled(view.nextButton, !!view.pages[2]);
+        setEnabled(view.prevButton, view.page > 0);
+        setEnabled(view.nextButton, view.page + 1 < this.levelSelectPageCount());
     }
 
     private onLevelPagerStart(view: LevelSelectView, event: EventTouch): void {
         if (this.levelSelectView !== view || view.sliding) return;
         const x = event.getUILocation().x;
-        view.drag = { startX: x, lastX: x, lastAt: Date.now(), velocity: 0 };
+        view.drag = { startX: x, lastX: x, lastAt: Date.now(), velocity: 0, moved: false };
     }
 
     private onLevelPagerMove(view: LevelSelectView, event: EventTouch): void {
@@ -8026,8 +8130,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         drag.lastX = x;
         drag.lastAt = now;
         let dx = x - drag.startX;
+        if (!drag.moved && Math.abs(dx) <= LEVEL_SELECT_TAP_SLOP) return;
+        drag.moved = true;
         // 第一页往右 / 最后一页往左拖时加阻尼，松手回弹。
-        if ((dx > 0 && !view.pages[0]) || (dx < 0 && !view.pages[2])) dx *= 0.3;
+        if (dx !== 0 && !this.showLevelNeighbor(view, dx < 0 ? 1 : -1)) dx *= 0.3;
         view.track.setPosition(dx, 0, 0);
     }
 
@@ -8036,10 +8142,11 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         view.drag = undefined;
         if (this.levelSelectView !== view || !drag) return;
         const dx = event.getUILocation().x - drag.startX;
+        if (!drag.moved && Math.abs(dx) <= LEVEL_SELECT_TAP_SLOP) return;
         const threshold = view.pageWidth * LEVEL_SELECT_FLIP_RATIO;
         let direction = 0;
-        if (dx < 0 && view.pages[2] && (dx < -threshold || drag.velocity < -LEVEL_SELECT_FLIP_SPEED)) direction = 1;
-        if (dx > 0 && view.pages[0] && (dx > threshold || drag.velocity > LEVEL_SELECT_FLIP_SPEED)) direction = -1;
+        if (dx < 0 && (dx < -threshold || drag.velocity < -LEVEL_SELECT_FLIP_SPEED)) direction = 1;
+        if (dx > 0 && (dx > threshold || drag.velocity > LEVEL_SELECT_FLIP_SPEED)) direction = -1;
         this.slideLevelSelect(direction);
     }
 
@@ -8047,36 +8154,31 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
     private slideLevelSelect(direction: number, onDone?: () => void): void {
         const view = this.levelSelectView;
         if (!view || view.sliding) return;
-        if (direction > 0 && !view.pages[2]) direction = 0;
-        if (direction < 0 && !view.pages[0]) direction = 0;
+        if (direction !== 0 && !this.showLevelNeighbor(view, direction)) direction = 0;
+        if (direction === 0 && view.track.position.x === 0) {
+            this.hideLevelNeighbor(view);
+            return;
+        }
         view.sliding = true;
         Tween.stopAllByTarget(view.track);
         tween(view.track)
             .to(0.22, { position: new Vec3(-direction * view.pageWidth, 0, 0) }, { easing: 'quadOut' })
             .call(() => {
                 if (this.levelSelectView !== view) return;
-                if (direction !== 0) this.shiftLevelSelectPages(view, direction);
+                if (direction !== 0) {
+                    const previous = view.currentPage;
+                    view.currentPage = view.neighbor!;
+                    view.currentPage.setPosition(0, 0, 0);
+                    view.neighbor = previous;
+                    view.page += direction;
+                    this.syncLevelSelectPager(view);
+                }
+                this.hideLevelNeighbor(view);
                 view.track.setPosition(0, 0, 0);
                 view.sliding = false;
                 onDone?.();
             })
             .start();
-    }
-
-    /** 翻过一页：两页直接挪位，离开视野那一页复用为新的相邻页。 */
-    private shiftLevelSelectPages(view: LevelSelectView, direction: number): void {
-        const [prev, current, next] = view.pages;
-        const [prevPool, currentPool, nextPool] = view.pagePool;
-        view.page += direction;
-        if (direction > 0) {
-            view.pagePool = [currentPool, nextPool, prevPool];
-            view.pages = [current, next, this.createLevelSelectPage(view, view.page + 1, 1, prevPool)];
-        } else {
-            view.pagePool = [nextPool, prevPool, currentPool];
-            view.pages = [this.createLevelSelectPage(view, view.page - 1, -1, nextPool), prev, current];
-        }
-        view.pages.forEach((page, slot) => page?.setPosition((slot - 1) * view.pageWidth, 0, 0));
-        this.syncLevelSelectPager(view);
     }
 
     /** 快捷跳转：相邻页滑过去，远处的页直接换页并淡入，然后让目标关卡跳一下。 */
@@ -8094,14 +8196,14 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             return;
         }
         view.page = target;
-        this.fillLevelSelectPages(view);
+        this.showCurrentLevelPage(view);
         Tween.stopAllByTarget(view.trackOpacity);
         view.trackOpacity.opacity = 0;
         tween(view.trackOpacity).to(0.18, { opacity: 255 }).call(highlight).start();
     }
 
     private pulseLevelTile(level: number): void {
-        const tile = this.levelSelectView?.pages[1]?.getChildByName(`Level${level}`);
+        const tile = this.levelSelectView?.currentPage?.getChildByName(`Level${level}`);
         if (!tile?.isValid) return;
         Tween.stopAllByTarget(tile);
         tile.setScale(1, 1, 1);
@@ -8225,7 +8327,10 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
             Math.min(44 * s, height * 0.4),
             numberColor,
         );
-        if (!reusable) setLabelBold(number, true);
+        if (!reusable) {
+            number.cacheMode = Label.CacheMode.CHAR;
+            setLabelBold(number, true);
+        }
         number.color = numberColor;
         number.string = String(level);
         // 只有「进行中」「最新」两种格子带一行说明，其余格子只放居中的关卡号。
@@ -8306,7 +8411,7 @@ export class MeowdokuGame extends Component implements MiniGame<MeowdokuServices
         }, this);
         node.on(Node.EventType.TOUCH_END, (event: EventTouch) => {
             if (node.isValid) node.setScale(1, 1, 1);
-            if (Vec2.distance(event.getUIStartLocation(), event.getUILocation()) > 12) return;
+            if (Vec2.distance(event.getUIStartLocation(), event.getUILocation()) > LEVEL_SELECT_TAP_SLOP) return;
             onTap();
         }, this);
     }

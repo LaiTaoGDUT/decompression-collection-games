@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "c33af135-436a-55ab-a66e-6255a19cf02a",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "07fba": {
+      "importer": "sprite-frame",
+      "uuid": "c33af135-436a-55ab-a66e-6255a19cf02a@07fba",
+      "displayName": "",
+      "id": "07fba",
+      "name": "gameplay-top",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 750,
+        "height": 667,
+        "rawWidth": 750,
+        "rawHeight": 667,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "3b85c94a-5008-518c-af03-4f6d2a914437@6c48a",
+        "atlasUuid": "c33af135-436a-55ab-a66e-6255a19cf02a",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "gameplay-top.png",
+    "format": 2,
+    "uuid": "c33af135-436a-55ab-a66e-6255a19cf02a",
+    "textureUuid": "3b85c94a-5008-518c-af03-4f6d2a914437@6c48a"
+  }
+}

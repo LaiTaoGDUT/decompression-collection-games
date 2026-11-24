@@ -13,8 +13,10 @@ const PLACEMENTS = Object.freeze([
     { key: 'doodleJumpReviveRewarded', gameId: 'doodle-jump', label: '复活' },
     { key: 'game2048ClearSmallTilesRewarded', gameId: 'game2048', label: '清除小方块' },
     { key: 'bubbleShooterReviveRewarded', gameId: 'bubble-shooter', label: '复活' },
+    { key: 'flappyDunkReviveRewarded', gameId: 'flappy-dunk', label: '复活' },
     { key: 'meowdokuToolRewarded', gameId: 'meowdoku', label: '道具' },
     { key: 'multiColorFillHintRewarded', gameId: 'multi-color-fill', label: '提示' },
+    { key: 'cityBloxxReviveRewarded', gameId: 'city-bloxx', label: '复活' },
     { key: 'rotateRingsHintRewarded', gameId: 'rotate-rings', label: '提示' },
 ]);
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};

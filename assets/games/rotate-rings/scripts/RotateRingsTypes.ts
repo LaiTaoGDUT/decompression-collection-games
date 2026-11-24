@@ -34,7 +34,7 @@ export interface RingLevel {
     links: RingLink[]; guides: { guidePartId: string; stickPartId: string }[];
     bombs: RingBomb[];
 }
-export interface RingLevelSummary { id: number; rings: number; links: number; pulls: number; bombs: number; }
+export interface RingLevelSummary { id: number; challenge?: boolean; rings: number; links: number; pulls: number; bombs: number; }
 export interface RingLevelBank { version: number; modes: Record<RingMode, RingLevelSummary[]>;
     packing?: { version: number; meshCount: number; bankSize: number; collisionShapeCount: number }; }
 export interface RingSnapshot {
@@ -45,4 +45,9 @@ export interface RingSnapshot {
     pullAxes?: number;
     comboStreak?: number; comboMisses?: number;
 }
-export interface RingHint { kind: 'ring' | 'pull'; id: string; target: number; }
+export interface RingHint {
+    kind: 'ring' | 'pull'; id: string; target: number;
+    /** 从真实姿态起算、经碰撞验证的有向旋转角，可以超过半圈。 */
+    sweep?: number;
+    prepareNext?: boolean;
+}

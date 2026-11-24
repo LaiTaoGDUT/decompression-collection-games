@@ -13,7 +13,7 @@ export function calculateRingSelectionLayout(top: number, bottom: number): {
     firstRowY: number; rowStep: number; rows: number; pageSize: number; gridY: number; gridHeight: number;
     pageNumberY: number; trayY: number; toastY: number;
 } {
-    // 底栏：两端翻页箭头 + 中间「当前关卡」「最新解锁」两个跳转按钮；页码在底栏上方。
+    // 底栏：两端翻页箭头 + 中间「当前关卡」「最后一关」两个跳转按钮；页码在底栏上方。
     const titleY = top - 52, subtitleY = titleY - 60, tabsY = subtitleY - 70, progressY = tabsY - 64;
     const trayY = bottom + 52, pageNumberY = trayY + 84;
     const gridTop = progressY - 52, gridBottom = pageNumberY + 34, gridHeight = Math.max(84, gridTop - gridBottom);
@@ -44,12 +44,14 @@ export interface RingPlayLayout {
 }
 
 /** HUD 按自身半高贴近安全区，避让胶囊；不再保留固定 183/201 的顶底空白。 */
-export function calculateRingPlayLayout(height: number, top: number, bottom: number): RingPlayLayout {
+export function calculateRingPlayLayout(height: number, top: number, bottom: number, width = 750): RingPlayLayout {
     const headerY = top - 58, propsY = bottom + 86;
     const boardTop = headerY - 86, boardBottom = propsY + 140;
     const boardY = (boardTop + boardBottom) / 2;
-    return { headerY, propsY, boardY, boardWidth: 694, boardHeight: Math.max(1, boardTop - boardBottom),
-        boardSafetyWidth: 718, boardSafetyHeight: Math.max(1, Math.min(headerY - 70 - boardY, boardY - propsY - 128) * 2) };
+    // Fit Width 下以当前视口作为旋转和滑动的共同边界，每侧留 6 个设计单位显示阴影。
+    const boardWidth = Math.max(1, width - 12);
+    return { headerY, propsY, boardY, boardWidth, boardHeight: Math.max(1, boardTop - boardBottom),
+        boardSafetyWidth: boardWidth, boardSafetyHeight: Math.max(1, Math.min(headerY - 70 - boardY, boardY - propsY - 128) * 2) };
 }
 
 /** 标题牌骑在面板上边缘居中（上沿伸出 headerOverhang）；正文与按钮始终位于面板内边距之内。

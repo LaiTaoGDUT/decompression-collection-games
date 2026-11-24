@@ -1,0 +1,174 @@
+{
+  "orientation": "portrait",
+  "composition": "Four distinct games in equally weighted 2x2 areas; cat puzzle is one of four",
+  "exportSizes": [
+    {
+      "width": 750,
+      "height": 1334
+    },
+    {
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "width": 720,
+      "height": 1280
+    }
+  ],
+  "resizeMethod": "Preserve aspect ratio, then minimal centered crop to exact delivery dimensions",
+  "requiredInEveryPoster": [
+    "猫咪数独"
+  ],
+  "excluded": [
+    "泡泡龙",
+    "泡泡奇境",
+    "象棋",
+    "棋逢对手",
+    "合成大西瓜",
+    "水果果冻合成"
+  ],
+  "cards": [
+    {
+      "id": "portrait-v2-01",
+      "games": [
+        "都市摩天楼",
+        "解个圆环",
+        "猫咪数独",
+        "缤纷填色"
+      ],
+      "original": "01-晴空合集-随心切换-原图.png",
+      "originalSize": {
+        "width": 941,
+        "height": 1672
+      },
+      "deliveries": [
+        {
+          "file": "750x1334/01-晴空合集-随心切换-750x1334.png",
+          "width": 750,
+          "height": 1334
+        },
+        {
+          "file": "1080x1920/01-晴空合集-随心切换-1080x1920.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "720x1280-200KB/01-晴空合集-随心切换-720x1280.jpg",
+          "width": 720,
+          "height": 1280,
+          "format": "JPEG",
+          "maxBytes": 200000,
+          "bytes": 95293
+        }
+      ],
+      "generationMode": "built-in image_gen",
+      "referenceImages": [
+        "assets/lobby-covers/visual/covers/city-bloxx/city-cover.jpg",
+        "assets/lobby-covers/visual/covers/rotate-rings/rotate-rings-cover-v5.jpg",
+        "platform-assets/app物料/通用素材封面/sources/v14-实机截图/meowdoku.png",
+        "assets/lobby-covers/visual/covers/multi-color-fill/multi-color-fill-cover-v2.jpg"
+      ],
+      "prompt": "Create ONE polished Chinese portrait promotional poster for a REAL casual MINI-GAME COLLECTION. Strict VERTICAL 9:16 canvas, ideally 1440 by 2560 pixels, full bleed, designed to remain immediately readable as a small 180×320 recommendation thumbnail. This is newly composed PORTRAIT art, NOT a landscape card placed on a tall page. Do not imitate earlier fruit-themed posters.\nLAYOUT AND HIERARCHY: Comfortable 5 percent outer safety margins. Upper 25 percent holds a small centered brand line then a much larger TWO-LINE bold rounded Chinese headline, with clean negative space. Middle/lower 64 percent holds exactly FOUR equal-scale game scenes in a balanced 2×2 arrangement; all four worlds have comparable area, detail and visual weight. Each scene fits entirely inside its quadrant. A modest footer at bottom around 94 percent height carries exactly \"休闲小游戏合集\". Keep important artwork and all text inside safety margins. Large simple visual subjects with breathing room, no hundreds of tiny props. The game scenes communicate real gameplay, not abstract unrelated toys. No dominant hero game, no oversized mascot.\nREFERENCE FOR THE CAT GAME: The supporting Meowdoku image is an actual gameplay screenshot. Use ONLY its white-framed colored-region puzzle board with small ragdoll CAT-HEAD tokens and white X elimination marks, and ignore ALL score, controls, hearts, Chinese UI labels and other screenshot UI. Show a compact simplified 6×6 board with connected pastel color regions and roughly four tiny cat-head tokens, some white Xs and empty cells. Each placed cat should occupy its own different row and column, not touch another cat even diagonally. The cat game is just ONE of four equal scenes. ALL cats remain small tokens INSIDE this board; no separate large kitten, no full-body cat, no large cat-face mascot. No Sudoku numbers on this colored cat board.\nSTRICT EXCLUSIONS across whole poster: NO bubble-shooter / bubble cannon / bubble boss characters, NO chess or xiangqi pieces, NO watermelon or fruit-merging imagery, NO fruit decorations. No gamepads, phone mockups, app controls, fake buttons, scores, prices, QR codes, logos or watermarks. No small-print promotional promises. Only the exact specified Chinese copy, plus legitimate digits on a numeric game board if that game is explicitly included. All four scenes fit safely below headline and above footer.\nART DIRECTION: Fresh sunny sky-blue and warm ivory portrait poster, peach and lavender local accents, crisp clean casual-game key art, gentle golden light. FOUR equal gameplay windows blend organically through cream cloud-shaped boundaries, no busy scenery behind the title, no chunky multicolored text outlines. Each of the four games feels large and complete within its equally sized quadrant.\nEXACT COPY: Small bold dark-navy brand line at top \"随手玩一把\". Under it, a much larger bold rounded dark-navy headline on EXACTLY TWO lines, first line \"多种玩法\", second line \"随心切换\". Footer exactly \"休闲小游戏合集\", dark navy. No other writing.\nTOP LEFT / ref1: tall miniature ivory modular skyscraper with blue window pairs, yellow crane suspending one floor above it with a visible small alignment gap, peach clouds and a softly distant blue city. This naturally tall subject fits portrait quadrant fully.\nTOP RIGHT / ref2: central cyan ring linked with pink, purple, lime and orange OPEN C-shaped rings; rounded gaps, small connecting cuffs, one orange ring rotating free with one tiny gold spark. Keep glossy shapes crisp and big.\nBOTTOM LEFT / ref3: ONLY compact pastel colored-region cat puzzle board with a thin white rounded frame, small cat-head tokens and white X marks as specified, same bounding size as the route board in bottom-right. No cat outside the board.\nBOTTOM RIGHT / ref4: compact dark slate 4×4 square-cell route-filling board, coral / turquoise / blue / golden yellow regions with darker thick paths turning 90 degrees through adjacent cells and clear circular endpoints, no hand.\nBalanced 2×2 worlds fill lower middle naturally; narrow pale cloud seams, restrained sparkles, no extra props. Overall message is variety of mini-games, not cats, Sudoku, rings or any single game."
+    },
+    {
+      "id": "portrait-v2-02",
+      "games": [
+        "篮球灌篮",
+        "乒乓球对战",
+        "纸片跳跃",
+        "猫咪数独"
+      ],
+      "original": "02-活力合集-来一局-原图.png",
+      "originalSize": {
+        "width": 941,
+        "height": 1672
+      },
+      "deliveries": [
+        {
+          "file": "750x1334/02-活力合集-来一局-750x1334.png",
+          "width": 750,
+          "height": 1334
+        },
+        {
+          "file": "1080x1920/02-活力合集-来一局-1080x1920.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "720x1280-200KB/02-活力合集-来一局-720x1280.jpg",
+          "width": 720,
+          "height": 1280,
+          "format": "JPEG",
+          "maxBytes": 200000,
+          "bytes": 170179
+        }
+      ],
+      "generationMode": "built-in image_gen",
+      "referenceImages": [
+        "assets/lobby-covers/visual/covers/flappy-dunk/dunk-cover-v2.jpg",
+        "assets/lobby-covers/visual/covers/pingpong/pingpong-cover.png",
+        "assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png",
+        "platform-assets/app物料/通用素材封面/sources/v14-实机截图/meowdoku.png"
+      ],
+      "prompt": "Create ONE polished Chinese portrait promotional poster for a REAL casual MINI-GAME COLLECTION. Strict VERTICAL 9:16 canvas, ideally 1440 by 2560 pixels, full bleed, designed to remain immediately readable as a small 180×320 recommendation thumbnail. This is newly composed PORTRAIT art, NOT a landscape card placed on a tall page. Do not imitate earlier fruit-themed posters.\nLAYOUT AND HIERARCHY: Comfortable 5 percent outer safety margins. Upper 25 percent holds a small centered brand line then a much larger TWO-LINE bold rounded Chinese headline, with clean negative space. Middle/lower 64 percent holds exactly FOUR equal-scale game scenes in a balanced 2×2 arrangement; all four worlds have comparable area, detail and visual weight. Each scene fits entirely inside its quadrant. A modest footer at bottom around 94 percent height carries exactly \"休闲小游戏合集\". Keep important artwork and all text inside safety margins. Large simple visual subjects with breathing room, no hundreds of tiny props. The game scenes communicate real gameplay, not abstract unrelated toys. No dominant hero game, no oversized mascot.\nREFERENCE FOR THE CAT GAME: The supporting Meowdoku image is an actual gameplay screenshot. Use ONLY its white-framed colored-region puzzle board with small ragdoll CAT-HEAD tokens and white X elimination marks, and ignore ALL score, controls, hearts, Chinese UI labels and other screenshot UI. Show a compact simplified 6×6 board with connected pastel color regions and roughly four tiny cat-head tokens, some white Xs and empty cells. Each placed cat should occupy its own different row and column, not touch another cat even diagonally. The cat game is just ONE of four equal scenes. ALL cats remain small tokens INSIDE this board; no separate large kitten, no full-body cat, no large cat-face mascot. No Sudoku numbers on this colored cat board.\nSTRICT EXCLUSIONS across whole poster: NO bubble-shooter / bubble cannon / bubble boss characters, NO chess or xiangqi pieces, NO watermelon or fruit-merging imagery, NO fruit decorations. No gamepads, phone mockups, app controls, fake buttons, scores, prices, QR codes, logos or watermarks. No small-print promotional promises. Only the exact specified Chinese copy, plus legitimate digits on a numeric game board if that game is explicitly included. All four scenes fit safely below headline and above footer.\nART DIRECTION: Dynamic sophisticated midnight-indigo portrait poster, warm orange and cyan highlights, warm-white type, a few graceful light-streak curves between FOUR equal rounded game-world windows. Sparse clean composition, no chaotic particles. Equal four-game presentation, every quadrant complete.\nEXACT COPY: Small centered warm-gold brand line at top \"随手玩一把\". A much larger rounded warm-white headline on EXACTLY TWO lines, first line \"来一局\", second line \"动动手\". Footer \"休闲小游戏合集\", warm gold. No other words.\nTOP LEFT / ref1: orange basketball with two small white wings, no brand marks, flying toward an orange hoop and open white cord net, a small cream moon and atmospheric violet rooftop skyline in the local background. Both ball and net safely contained.\nTOP RIGHT / ref2: bright blue table-tennis table with correct net in perspective, red paddle with light wood handle at front-right, smaller black paddle beyond net at far-left, one orange ball with a short warm motion streak. One clear table-tennis scene.\nBOTTOM LEFT / ref3: a white cut-paper rabbit wearing a red scarf, jumping between three teal notebook-paper platforms with a tiny red coil spring on one; warm cream ruled-paper local backdrop and a few leaves. Keep its paper-cut game style.\nBOTTOM RIGHT / ref4: ONLY modest 6×6 pastel colored-region cat puzzle board, small cat-head tokens and white Xs inside, thin white rounded frame, equal visual scale to other games, no external cat mascot.\nKeep four quadrants comparable and distinct with narrow cream dividing curves, moonlight local to basketball, no theme taking over whole poster. Clean dark header ensures headline is readable at small thumbnail size."
+    },
+    {
+      "id": "portrait-v2-03",
+      "games": [
+        "猫咪数独",
+        "木框拼图",
+        "保护狗头",
+        "纸片跳跃"
+      ],
+      "original": "03-暖阳合集-放松一下-原图.png",
+      "originalSize": {
+        "width": 941,
+        "height": 1672
+      },
+      "deliveries": [
+        {
+          "file": "750x1334/03-暖阳合集-放松一下-750x1334.png",
+          "width": 750,
+          "height": 1334
+        },
+        {
+          "file": "1080x1920/03-暖阳合集-放松一下-1080x1920.png",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "file": "720x1280-200KB/03-暖阳合集-放松一下-720x1280.jpg",
+          "width": 720,
+          "height": 1280,
+          "format": "JPEG",
+          "maxBytes": 200000,
+          "bytes": 103666
+        }
+      ],
+      "generationMode": "built-in image_gen",
+      "referenceImages": [
+        "platform-assets/app物料/通用素材封面/sources/v14-实机截图/meowdoku.png",
+        "assets/lobby-covers/visual/covers/sliding-puzzle/sliding-puzzle-cover-v5.jpg",
+        "assets/lobby-covers/visual/covers/cyblockbees/cyblockbees-cover-v2.jpg",
+        "assets/lobby-covers/visual/covers/doodle-jump/lobby-cover.png"
+      ],
+      "prompt": "Create ONE polished Chinese portrait promotional poster for a REAL casual MINI-GAME COLLECTION. Strict VERTICAL 9:16 canvas, ideally 1440 by 2560 pixels, full bleed, designed to remain immediately readable as a small 180×320 recommendation thumbnail. This is newly composed PORTRAIT art, NOT a landscape card placed on a tall page. Do not imitate earlier fruit-themed posters.\nLAYOUT AND HIERARCHY: Comfortable 5 percent outer safety margins. Upper 25 percent holds a small centered brand line then a much larger TWO-LINE bold rounded Chinese headline, with clean negative space. Middle/lower 64 percent holds exactly FOUR equal-scale game scenes in a balanced 2×2 arrangement; all four worlds have comparable area, detail and visual weight. Each scene fits entirely inside its quadrant. A modest footer at bottom around 94 percent height carries exactly \"休闲小游戏合集\". Keep important artwork and all text inside safety margins. Large simple visual subjects with breathing room, no hundreds of tiny props. The game scenes communicate real gameplay, not abstract unrelated toys. No dominant hero game, no oversized mascot.\nREFERENCE FOR THE CAT GAME: The supporting Meowdoku image is an actual gameplay screenshot. Use ONLY its white-framed colored-region puzzle board with small ragdoll CAT-HEAD tokens and white X elimination marks, and ignore ALL score, controls, hearts, Chinese UI labels and other screenshot UI. Show a compact simplified 6×6 board with connected pastel color regions and roughly four tiny cat-head tokens, some white Xs and empty cells. Each placed cat should occupy its own different row and column, not touch another cat even diagonally. The cat game is just ONE of four equal scenes. ALL cats remain small tokens INSIDE this board; no separate large kitten, no full-body cat, no large cat-face mascot. No Sudoku numbers on this colored cat board.\nSTRICT EXCLUSIONS across whole poster: NO bubble-shooter / bubble cannon / bubble boss characters, NO chess or xiangqi pieces, NO watermelon or fruit-merging imagery, NO fruit decorations. No gamepads, phone mockups, app controls, fake buttons, scores, prices, QR codes, logos or watermarks. No small-print promotional promises. Only the exact specified Chinese copy, plus legitimate digits on a numeric game board if that game is explicitly included. All four scenes fit safely below headline and above footer.\nART DIRECTION: Calm sunlit warm-paper portrait promotional poster, cream, sage green and light apricot palette, very subtle leaf shadows near outer edges, comfortable soft light. FOUR equal paper-edged gameplay panels in a neat 2×2 arrangement with thin cream gutters and gentle shadows, not a busy decorated scrapbook. Typography simple and bold, no multicolored 3D outline lettering.\nEXACT COPY: Small centered dark-brown brand line at top \"随手玩一把\". Much larger rounded dark-brown headline on EXACTLY TWO lines, first line \"换个玩法\", second line \"放松一下\". Footer \"休闲小游戏合集\", dark brown. No other text.\nTOP LEFT / ref1: ONLY a thin white-framed compact 6×6 cat puzzle with connected apricot, mint, rose, blue and lavender color regions, four small cat-head tokens in different rows and columns, a few white Xs. No cat or cat-face outside puzzle.\nTOP RIGHT / ref2: warm wooden 3×3 sliding picture puzzle with eight thick illustrated tiles and ONE blank. The picture on the tiles is a sunny seaside window, open book and leafy plant. One small arrow shows a tile sliding into the blank. NO cats in this picture, no numerical puzzle.\nBOTTOM LEFT / ref3: cute anxious orange-and-cream shiba DOG HEAD on green meadow inside one thick black continuous upside-down U-shaped shield anchored to ground at both ends; three comical yellow-black bees fly into the OUTSIDE of the line by a small hanging yellow hive, no bee inside shield. This is only a quadrant, not a big mascot for whole poster.\nBOTTOM RIGHT / ref4: little white paper-cut rabbit with red scarf leaping between three teal lined-paper platforms, a tiny red spring, cream notebook backdrop, a few small simple flowers. Whole rabbit scene stays within quadrant.\nFour equally weighted game panels, clear silhouettes and lots of breathing room, immediate variety at thumbnail size, inviting restful feeling."
+    }
+  ],
+  "uploadRequirements": {
+    "width": 720,
+    "height": 1280,
+    "maxBytes": 200000,
+    "imageCount": 3,
+    "formats": [
+      "JPEG",
+      "JPG",
+      "PNG"
+    ],
+    "source": "用户提供的微信后台上传要求截图"
+  },
+  "recommendedUpload": {
+    "folder": "720x1280-200KB",
+    "archive": "竖版推广图-3张-720x1280-200KB.zip"
+  }
+}

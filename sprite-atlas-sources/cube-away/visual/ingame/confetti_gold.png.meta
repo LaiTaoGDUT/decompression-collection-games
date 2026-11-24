@@ -1,0 +1,94 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "d2bde851-95b9-5810-8ef8-cb3801b9d0e0",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "d2bde851-95b9-5810-8ef8-cb3801b9d0e0@f9941",
+      "displayName": "confetti_gold",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "rawWidth": 44,
+        "rawHeight": 26,
+        "width": 44,
+        "height": 26,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "maxPos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d2bde851-95b9-5810-8ef8-cb3801b9d0e0@6c48a"
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "d2bde851-95b9-5810-8ef8-cb3801b9d0e0@6c48a",
+      "displayName": "confetti_gold",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "d2bde851-95b9-5810-8ef8-cb3801b9d0e0",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": true,
+    "redirect": "d2bde851-95b9-5810-8ef8-cb3801b9d0e0@f9941"
+  }
+}

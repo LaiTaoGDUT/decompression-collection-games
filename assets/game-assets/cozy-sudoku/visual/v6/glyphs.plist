@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>close</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,74},{26,25}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{26,25}}</string>
+			<key>sourceSize</key>
+			<string>{26,25}</string>
+		</dict>
+		<key>nav-left</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{20,32}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{20,32}}</string>
+			<key>sourceSize</key>
+			<string>{20,32}</string>
+		</dict>
+		<key>nav-right</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,38},{20,32}}</string>
+			<key>offset</key>
+			<string>{0.0,0.0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{20,32}}</string>
+			<key>sourceSize</key>
+			<string>{20,32}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>glyphs.png</string>
+		<key>size</key>
+		<string>{30,101}</string>
+		<key>textureFileName</key>
+		<string>glyphs.png</string>
+	</dict>
+</dict>
+</plist>

@@ -56,9 +56,11 @@ class ViewerStore {
                 if (!schema) return { code, name: '未识别的游戏模块 ' + code, error: '当前版本没有此模块的解释规则。' };
                 try {
                     const decoded = decodeModule(payload, schema.numbers.length, schema.stars?.keys.length ?? 0);
+                    const completionOnly = schema.stars?.thresholds?.length === 1;
                     return { code, gameId: schema.gameId, name: labels[schema.gameId] ?? schema.gameId,
+                        completionOnly,
                         fields: schema.numbers.map((field, i) => ({ path: field.path, value: decoded.numbers[i] })),
-                        stars: decoded.stars.map((stars, i) => ({ level: schema.stars.keys[i], stars })).filter(level => level.stars > 0) };
+                        stars: decoded.stars.map((stars, i) => ({ level: schema.stars.keys[i], number: i + 1, stars })).filter(level => level.stars > 0) };
                 } catch { return { code, gameId: schema.gameId, name: labels[schema.gameId] ?? schema.gameId, error: '存档编码无法用当前规则解析。' }; }
             });
             let achievements;

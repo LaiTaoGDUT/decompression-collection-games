@@ -8,6 +8,8 @@
 
 乒乓球（pingpong）的 12 段短音效保存在 `pingpong/visual/audio`，由 `pingpong/banks.json` 列出，正式资源为 `assets/game-assets/pingpong/visual/audio/pingpong-effects.bin`。全部由 `tools/pingpong/make-audio.py` 生成（击球与落台截取自 BudgetPixel AI「Quick Ping Pong Rally」录音，CC BY 4.0，署名见 `THIRD_PARTY_NOTICES.md`；翻牌与按钮为程序合成；提示音为 GeneralUser GS 马林巴与掌声），并自动合包。背景音乐 `court-groove-loop-v1.mp3` 由 `tools/pingpong/make-music.py` 生成，作为独立 AudioClip 放在游戏音频目录。
 
+都市摩天楼（city-bloxx）的 18 段短音效保存在 `city-bloxx/feedback`，由 `city-bloxx/banks.json` 列出，正式资源为 `assets/game-assets/city-bloxx/visual/audio/city-feedback-v2.bin`。音效与独立循环 `assets/game-assets/city-bloxx/audio/skyward-loop.mp3` 由 `tools/audio/city-bloxx` 制作，见其 README。
+
 重新打包：
 
 ```sh
@@ -19,6 +21,8 @@ python3 audio-bank-sources/build.py --game flappy-dunk
 python3 audio-bank-sources/build.py --game flappy-dunk --check
 python3 audio-bank-sources/build.py --game pingpong
 python3 audio-bank-sources/build.py --game pingpong --check
+python3 audio-bank-sources/build.py --game city-bloxx
+python3 audio-bank-sources/build.py --game city-bloxx --check
 npm run verify:audio
 ```
 

@@ -408,9 +408,9 @@ export class LoadingView extends Component implements LoadingPresenter {
         this.loadStartupArtwork(false);
     }
 
-    hideLobbyTransition(): void {
+    hideLobbyTransition(animated = true): void {
         if (!this.lobbyTransitionMode) return;
-        this.hide();
+        this.hide(animated);
     }
 
     /**

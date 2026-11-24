@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>snake_head_front</key>
+		<dict>
+			<key>frame</key>
+			<string>{{94,2},{66,76}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{66,76}}</string>
+			<key>sourceSize</key>
+			<string>{66,76}</string>
+		</dict>
+		<key>snake_head_side</key>
+		<dict>
+			<key>frame</key>
+			<string>{{2,2},{88,68}}</string>
+			<key>offset</key>
+			<string>{0,0}</string>
+			<key>rotated</key>
+			<false/>
+			<key>sourceColorRect</key>
+			<string>{{0.0,0.0},{88,68}}</string>
+			<key>sourceSize</key>
+			<string>{88,68}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key>
+		<integer>2</integer>
+		<key>realTextureFileName</key>
+		<string>snake_heads.png</string>
+		<key>size</key>
+		<string>{162,80}</string>
+		<key>textureFileName</key>
+		<string>snake_heads.png</string>
+	</dict>
+</dict>
+</plist>

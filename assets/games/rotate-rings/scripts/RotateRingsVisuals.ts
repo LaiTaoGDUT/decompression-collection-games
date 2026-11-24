@@ -43,13 +43,13 @@ export class RingGeometryBank {
     private readonly decoded = new Map<number, RingVisualGeometry>();
     readonly first: number;
     readonly count: number;
-    constructor(bytes: Uint8Array) {
+    constructor(bytes: Uint8Array, bankSize = 64) {
         const data = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
         if (data.byteLength < 12 || data.getUint32(0, true) !== 0x33475252 || data.getUint16(10, true)) {
             throw new Error('Invalid RotateRings geometry bank header');
         }
         this.first = data.getUint32(4, true); this.count = data.getUint16(8, true);
-        if (!this.count || this.count > 64 || this.first % 64) throw new Error('Invalid RotateRings geometry bank count');
+        if (!this.count || this.count > bankSize || this.first % bankSize) throw new Error('Invalid RotateRings geometry bank count');
         let offset = 12;
         for (let i = 0; i < this.count; i++) {
             if (offset + 4 > data.byteLength) throw new Error('Truncated RotateRings geometry bank');

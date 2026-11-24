@@ -75,11 +75,26 @@ export class CyBlockBeesPolygonCollider2D extends PolygonCollider2D {
         super.onLoad();
         const adapter = this._shape as unknown as {
             _createShapes(x: number, y: number, offsetX: number, offsetY: number): PolygonShape[];
+            _init(): void;
+            _fixtures: { GetShape(): PolygonShape & { SetupDistanceProxy(proxy: unknown, index: number): void } }[];
         } | null;
         if (!adapter) return;
         const createShapes = adapter._createShapes;
         adapter._createShapes = function (x, y, offsetX, offsetY) {
             return mergeConvexShapes(createShapes.call(this, x, y, offsetX, offsetY));
+        };
+        const initialize = adapter._init;
+        adapter._init = function (): void {
+            initialize.call(this);
+            // Fixture 创建时会 Clone，必须缓存最终原生形状的已舍入顶点。
+            // GJK/TOI 只读距离代理；碰撞流形、质量和原生形状仍使用原来的顶点。
+            for (const fixture of this._fixtures) {
+                const shape = fixture.GetShape();
+                const vertices = shape.m_vertices.slice(0, shape.m_count).map(p => ({ x: p.x, y: p.y }));
+                shape.SetupDistanceProxy = (proxy: { m_vertices: readonly Point[]; m_count: number; m_radius: number }): void => {
+                    proxy.m_vertices = vertices; proxy.m_count = vertices.length; proxy.m_radius = shape.m_radius;
+                };
+            }
         };
     }
 }

@@ -5,11 +5,13 @@ const path = require('node:path');
 const { load, root, plain } = require('../helpers/runtime.cjs');
 const { fixture } = require('../storage/recovery.cjs');
 const { CloudSaveService } = load('assets/services/cloud/CloudSaveService.ts');
+const { AchievementService } = load('assets/services/achievements/AchievementService.ts');
 const { ServerTimeService, canReceiveDailyReward } = load('assets/services/cloud/ServerTimeService.ts');
 const projection = load('assets/services/cloud/CloudSaveProjection.ts');
-const { encodeModule, decodeModule, encodeAchievements } = load('assets/services/cloud/CloudSaveCodec.ts');
+const { encodeModule, decodeModule, encodeAchievements, dayToTimestamp } = load('assets/services/cloud/CloudSaveCodec.ts');
 const { validateSave, mergeProgress, envelope, EMPTY } = require('../../server/decompression-api/protocol.cjs');
 const catalog = JSON.parse(fs.readFileSync(path.join(root, 'assets/resources/configs/cloud-save.json'), 'utf8'));
+const manifests = JSON.parse(fs.readFileSync(path.join(root, 'assets/resources/configs/games.json'), 'utf8')).games;
 const meow = catalog.games.find(g => g.gameId === 'meowdoku');
 const cy = catalog.games.find(g => g.gameId === 'cyblockbees');
 const bubble = catalog.games.find(g => g.gameId === 'bubble-shooter');
@@ -42,6 +44,7 @@ function backend() {
 }
 async function use(data, body, options = {}) {
     const f = fixture(data), remote = options.remote ?? backend(); f.storage.load();
+    new AchievementService(f.storage).migrateEarned(manifests);
     let clock = 0, active;
     const time = new ServerTimeService();
     const c = new CloudSaveService({ storage: f.storage, catalog, time, call: request => remote.call(request),
@@ -53,7 +56,37 @@ async function use(data, body, options = {}) {
 }
 const saves = remote => remote.requests.filter(request => request.op === 'save');
 
+function verifyOfflineTrophies() {
+    for (const [gameId, oldId] of [['meowdoku', 'meowdoku-trophy-v3'], ['meowdoku', 'meowdoku-trophy-v4'],
+        ['rotate-rings', 'rotate-rings-trophy-v1']]) {
+        const manifest = manifests.find(m => m.id === gameId), { id, target, metric } = manifest.achievement;
+        const data = base(), earned = { achievementId: oldId, progress: target, unlockedAt: stamp, celebratedAt: stamp + 123 };
+        data.achievements[gameId] = earned;
+        const f = fixture(data), service = new AchievementService(f.storage);
+        service.migrateEarned(manifests);
+        assert.deepEqual(plain(service.getRecord(manifest)), { ...earned, achievementId: id });
+        assert.equal(service.pending(manifests), undefined);
+        assert.deepEqual(plain(f.storage.snapshot.games), {});
+        const writes = f.writes.length;
+        service.migrateEarned(manifests);
+        assert.equal(f.writes.length, writes);
+        assert.equal(service.report(manifest, metric, 2), false);
+        assert.equal(f.storage.getGameData(gameId).metrics[metric], 2, 'The trophy cannot award new campaign clears');
+        f.storage.dispose();
+        for (const unearned of [{ achievementId: oldId, progress: target }, { ...earned, achievementId: 'unrelated-trophy' }]) {
+            data.achievements[gameId] = unearned;
+            const partial = fixture(data), service = new AchievementService(partial.storage);
+            service.migrateEarned(manifests);
+            assert.equal(service.getRecord(manifest), undefined);
+            assert.equal(partial.writes.length, 0);
+            partial.storage.dispose();
+        }
+    }
+}
+
 async function main() {
+    verifyOfflineTrophies();
+    await require('./cozy.cjs')({ use, base, backend, saves });
     await use(base(), async ({ c, remote, time }) => {
         assert.deepEqual(remote.requests, [{ v: 2, op: 'load', clockOnly: true }], 'Below threshold: anonymous clock only, no player data or analytics');
         assert.equal(c.status.enabled, false); assert.equal(time.day, '2026-10-25');
@@ -79,6 +112,85 @@ async function main() {
     const awarded = base();
     awarded.achievements.meowdoku = { achievementId: meow.achievement.id, progress: 500, unlockedAt: stamp };
     await use(awarded, async ({ c, remote }) => { assert.equal(c.status.enabled, true); assert.equal(saves(remote).length, 1); });
+
+    const legacyMeow = backend();
+    const oldCatTrophies = encodeAchievements({ 2: 20000, 20: 20001 });
+    legacyMeow.saved = { m: { 2: encodeModule([3000, 200]), 20: encodeModule([3500, 300]) }, a: oldCatTrophies };
+    const legacyLocal = base();
+    legacyLocal.cloudSave = { version: 2, device: 'e'.repeat(32), enabled: true };
+    legacyLocal.games.meowdoku = { dataVersion: 7, playCount: 30, metrics: { 'cleared-level': 500 },
+        custom: { meowdokuCleared: 3000, meowdokuHard: { cleared: 200 } } };
+    legacyLocal.achievements.meowdoku = { achievementId: 'meowdoku-trophy-v3', progress: 500, unlockedAt: stamp };
+    await use(legacyLocal, async ({ f, remote, c }) => {
+        assert.equal(f.storage.getGameData('meowdoku').dataVersion, 7, 'Old wire code cannot create a current save');
+        assert.equal(projection.projectGame(meow, f.storage.getGameData('meowdoku')), undefined);
+        f.storage.writeGameData('meowdoku', meowGame(6, 1));
+        await c.pump();
+        assert.deepEqual(plain(decodeModule(remote.saved.m[meow.code], 2).numbers), [6, 1]);
+        assert.equal(remote.saved.m[2], encodeModule([3000, 200]), 'The protocol still accepts legacy clients');
+        assert.equal(remote.saved.m[20], encodeModule([3500, 300]), 'Unchanged v8 saves stay isolated');
+        assert.equal(remote.saved.a, encodeAchievements({ 2: 20000, 20: 20001, 22: 20000 }));
+        assert.equal(f.storage.getAchievement('meowdoku').unlockedAt, dayToTimestamp(20000));
+    }, { remote: legacyMeow });
+    const fresh = base();
+    fresh.cloudSave = { version: 2, device: 'f'.repeat(32), enabled: true };
+    await use(fresh, async ({ f }) => {
+        assert.equal(f.storage.getGameData('meowdoku').dataVersion, meow.dataVersion);
+        assert.equal(f.storage.getGameData('meowdoku').custom.meowdokuCleared, 6);
+        assert.equal(f.storage.getGameData('meowdoku').custom.meowdokuHard.cleared, 1);
+        assert.equal(f.storage.getAchievement('meowdoku').unlockedAt, dayToTimestamp(20000));
+    }, { remote: legacyMeow });
+
+    const rings = catalog.games.find(g => g.gameId === 'rotate-rings');
+    const legacyRings = backend();
+    legacyRings.saved = { m: { 11: encodeModule([344, 40]) }, a: encodeAchievements({ 11: 20000 }) };
+    const returning = base();
+    returning.cloudSave = { version: 2, device: 'b'.repeat(32), enabled: true };
+    returning.games['rotate-rings'] = { dataVersion: 1, playCount: 50, metrics: { 'normal-cleared-level': 344 },
+        custom: { rings: { modes: { normal: { cleared: 344 }, hard: { cleared: 40 } } } } };
+    await use(returning, async ({ f, remote, c }) => {
+        assert.equal(projection.projectGame(rings, f.storage.getGameData('rotate-rings')), undefined);
+        f.storage.writeGameData('rotate-rings', { dataVersion: 2, playCount: 0, custom: { rings: {
+            modes: { normal: { cleared: 5 }, hard: { cleared: 0 } } } } });
+        await c.pump();
+        assert.deepEqual(plain(decodeModule(remote.saved.m[rings.code], 2).numbers), [5, 0]);
+    }, { remote: legacyRings });
+    await use(fresh, async ({ f }) => {
+        const restored = f.storage.getGameData('rotate-rings');
+        assert.equal(restored.dataVersion, 2);
+        assert.equal(restored.custom.rings.modes.normal.current, 6);
+        assert.equal(restored.custom.rings.modes.hard.current, 1);
+        assert.equal(f.storage.getAchievement('rotate-rings').unlockedAt, dayToTimestamp(20000));
+        assert.equal(legacyRings.saved.a, encodeAchievements({ 11: 20000, 21: 20000 }));
+    }, { remote: legacyRings });
+
+    // A previously seeded device repairs missing/late award dates even with no new gameplay.
+    const seeded = base(), remoteAwards = backend();
+    seeded.cloudSave = { version: 2, device: 'c'.repeat(32), enabled: true, seeded: true };
+    seeded.games.meowdoku = meowGame(3, 1);
+    const ringTime = dayToTimestamp(20005) + 12345;
+    seeded.achievements['rotate-rings'] = { achievementId: 'rotate-rings-trophy-v1', progress: 300, unlockedAt: ringTime };
+    remoteAwards.saved = { m: {}, a: encodeAchievements({ 20: 19995, 22: 20010 }) };
+    let reloaded;
+    await use(seeded, async ({ f, remote }) => {
+        assert.equal(f.storage.getAchievement('meowdoku').unlockedAt, dayToTimestamp(19995));
+        assert.equal(f.storage.getAchievement('rotate-rings').unlockedAt, ringTime);
+        assert.equal(remote.saved.a, encodeAchievements({ 20: 19995, 21: 20005, 22: 19995 }));
+        assert.equal(saves(remote).length, 1);
+        reloaded = plain(f.storage.snapshot);
+    }, { remote: remoteAwards });
+    await use(reloaded, async ({ f, remote }) => {
+        assert.deepEqual(plain(decodeModule(projection.projectGame(meow, f.storage.getGameData('meowdoku')), 2).numbers), [3, 1]);
+        assert.equal(f.storage.getGameData('rotate-rings'), undefined);
+        assert.equal(f.storage.getAchievement('rotate-rings').unlockedAt, ringTime);
+        assert.equal(saves(remote).length, 1, 'Restart does not upload the migrated trophies again');
+    }, { remote: remoteAwards });
+    const withoutAwards = backend();
+    withoutAwards.saved = { m: { 2: encodeModule([3000, 200]), 11: encodeModule([344, 40]) }, a: EMPTY };
+    await use(fresh, async ({ f }) => {
+        assert.deepEqual(plain(f.storage.snapshot.achievements), {});
+        assert.deepEqual(plain(f.storage.snapshot.games), {});
+    }, { remote: withoutAwards });
 
     let persistent = base();
     for (let day = 1; day <= 6; day++) {

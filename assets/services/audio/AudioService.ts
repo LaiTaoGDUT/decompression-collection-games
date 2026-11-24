@@ -147,7 +147,7 @@ export class AudioService {
 
     initialize(): void {
         const settings = this.storage.snapshot.settings;
-        // 声音设置只保留 1–10 级；旧的关闭状态迁移为最低档，避免隐藏开关阻止滑条生效。
+        // 声音设置统一为 0–10 级；旧的关闭状态迁移为 0 级，保持静音并由滑条控制。
         this.musicEnabled = true;
         this.soundEnabled = true;
         this.musicLevel = settings.musicEnabled ? normalizeAudioVolumeLevel(settings.musicVolumeLevel) : AUDIO_VOLUME_MIN_LEVEL;

@@ -18,14 +18,14 @@ export class RotateRingsGuide {
         this.dispose(); this.elapsed = 0;
         const model = this.board.model;
         // 演示沿实际可走的路径停止，不能把未解开的实体当作已经消失。
-        if (hint.kind === 'ring') {
+        if (hint.kind === 'ring' && hint.sweep === undefined) {
             const probe = new RotateRingsModel(model.level, model.snapshot()); probe.beginGesture();
             probe.rotateRing(hint.id, hint.target);
             hint = { ...hint, target: probe.angles.get(hint.id)! };
         }
         this.hint = hint;
         if (hint.kind === 'ring') {
-            const ring = model.pose(hint.id), delta = G.angleDiff(hint.target, ring.angle);
+            const ring = model.pose(hint.id), delta = hint.sweep ?? G.angleDiff(hint.target, ring.angle);
             const start = ring.angle + ring.gapDir + Math.max(ring.gapWidth / 2, ring.renderGap / 2) + 24;
             this.board.guidePoints = Array.from({ length: 49 }, (_, index) => {
                 const p = G.polar((ring.inner + ring.outer) / 2, start + delta * index / 48);
@@ -61,7 +61,7 @@ export class RotateRingsGuide {
         hand.getComponent(UIOpacity)!.opacity = Math.round(255 * Math.min(1, phase / .25, (2.6 - phase) / .3));
         if (hint.kind === 'ring') {
             if (model.removedRings.has(hint.id)) { this.dispose(); return; }
-            const ring = model.pose(hint.id), delta = G.angleDiff(hint.target, ring.angle);
+            const ring = model.pose(hint.id), delta = hint.sweep ?? G.angleDiff(hint.target, ring.angle);
             const start = ring.angle + ring.gapDir + Math.max(ring.gapWidth / 2, ring.renderGap / 2) + 24;
             const radius = (ring.inner + ring.outer) / 2, point = G.polar(radius, start + delta * progress);
             const p = this.board.point({ x: ring.x + point.x, y: ring.y + point.y }); hand.setPosition(p.x, p.y);

@@ -37,13 +37,13 @@ export class UpdateReminderService {
         if (!this.disposed) this.roundFinished = true;
     }
 
-    /** 必须在返回按钮的真实 touchend 内同步调用，不能先 await 查询或切换场景。 */
-    requestFromLobbyClick(): void {
+    /** 在真实 touchend 内同步申请；返回是否发起原生面板，供返回流程避开插屏。 */
+    requestFromLobbyClick(): boolean {
         const { platform, storage } = this.options;
         if (this.disposed || this.attemptedThisLaunch || !this.roundFinished || !this.options.canRequest()
             || platform.id !== 'wechat' || !platform.requestUpdateSubscription || this.setting !== 'unknown'
             || storage.snapshot.updateReminder?.accepted
-            || this.now() < (storage.snapshot.updateReminder?.nextPromptAt ?? 0)) return;
+            || this.now() < (storage.snapshot.updateReminder?.nextPromptAt ?? 0)) return false;
 
         this.attemptedThisLaunch = true;
         try {
@@ -51,7 +51,7 @@ export class UpdateReminderService {
             this.save({ accepted: false, nextPromptAt: this.now() + UPDATE_REMINDER_COOLDOWN_MS });
         } catch (error: unknown) {
             console.warn('[UpdateReminder] Failed to persist subscription attempt.', error);
-            return;
+            return false;
         }
 
         let request: Promise<UpdateSubscriptionState>;
@@ -63,6 +63,7 @@ export class UpdateReminderService {
             request = Promise.resolve('failed');
         }
         void this.finishRequest(request);
+        return true;
     }
 
     dispose(): void {

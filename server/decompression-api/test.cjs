@@ -6,7 +6,7 @@ const { createAuth } = require('./auth.cjs');
 const { createHash, createHmac } = require('node:crypto');
 const { createWeChatProvider, createDouyinProvider, createLoginProviders } = require('./login-providers.cjs');
 const { EMPTY, validateSave, mergeProgress, requestHash, schemas, envelope } = require('./protocol.cjs');
-const { encodeModule, decodeModule } = require('./generated/CloudSaveCodec');
+const { encodeModule, decodeModule, encodeAchievements, decodeAchievements } = require('./generated/CloudSaveCodec');
 const appId = 'wx2a5e707ed76bedae';
 const clock = Date.UTC(2026, 9, 24, 17);
 const config = { tokenSecret: '2'.repeat(64), now: () => clock };
@@ -35,6 +35,22 @@ test('request validation rejects unknown fields and invalid timing; hashes ignor
     const b = request({ t: { 'meme-runner': 2, meowdoku: 1 } });
     assert.equal(requestHash(a), requestHash(b));
     assert.notEqual(requestHash(a), requestHash(request({ t: { meowdoku: 2 } })));
+});
+test('new puzzle completions and tower trophies coexist with every retired production module', () => {
+    const old = request({ m: { 13: encodeModule([40]), 14: encodeModule([520, 1000, 30]),
+        16: encodeModule([2, 3, 4]), 17: encodeModule([10, 6]) },
+        t: { 'meme-runner': 1000, 'sling-puck': 2000, 'wrestle-jump': 3000 } });
+    assert.doesNotThrow(() => validateSave(old));
+    const fresh = request({ m: { 18: encodeModule([3, 1], [1]) }, a: encodeAchievements({ 14: 20000, 18: 20001 }), t: { 'cozy-sudoku': 60000 } });
+    assert.doesNotThrow(() => validateSave(fresh));
+    const first = mergeProgress(mergeProgress(null, old), fresh);
+    const next = mergeProgress(first, request({ m: { 18: encodeModule([3, 1], [0, 1]) }, a: encodeAchievements({ 14: 20002 }) }));
+    assert.deepEqual(decodeModule(next.m[18], 2, 600), { numbers: [3, 2], stars: [1, 1] });
+    for (const code of Object.keys(old.m)) assert.equal(next.m[code], old.m[code]);
+    assert.equal(mergeProgress(next, old).m[18], next.m[18], 'An older client cannot remove a new module');
+    assert.deepEqual(decodeAchievements(next.a), { 14: 20000, 18: 20001 });
+    for (const bad of [encodeModule([3, 600], [1]), encodeModule([3, 1], [2]), encodeModule([2, 1], [1])])
+        assert.throws(() => validateSave(request({ m: { 18: bad } })), { code: 'INVALID_MODULE' });
 });
 test('authentication binds app, signature, expiry and trusted WeChat identity', async () => {
     const auth = makeAuth({ fetchImpl: async url => {

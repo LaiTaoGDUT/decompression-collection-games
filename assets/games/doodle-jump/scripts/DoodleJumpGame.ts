@@ -1618,7 +1618,7 @@ export class DoodleJumpGame extends Component implements MiniGame<DoodleJumpServ
         if (result.outcome !== 'completed') {
             this.reviveActionLocked = false;
             this.showResurrectionPrompt(
-                result.outcome === 'skipped' ? '广告未完整观看，可以重试' : undefined,
+                result.outcome === 'skipped' ? '广告未完整观看，可以重试' : '广告暂时无法播放，请稍后再试',
             );
             return;
         }

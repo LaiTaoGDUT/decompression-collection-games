@@ -2,6 +2,10 @@
 export interface CloudNumberField {
     readonly path: string;
     readonly starProgress?: boolean;
+    /** Count all completed entries, including noncontiguous clears identified by stable puzzle IDs. */
+    readonly starCount?: boolean;
+    /** 本模式第一个关卡标记的下标。连续 max 个标记决定该模式的通关数，旧的纯计数对应前 N 关。 */
+    readonly completedFrom?: number;
     readonly metric?: string;
     /** 固定格式字段只接受当前值，不转换其他版本。 */
     readonly constant?: number;
@@ -18,6 +22,8 @@ export interface CloudStarsField {
     readonly thresholds?: readonly number[];
     readonly defaults?: Readonly<Record<string, unknown>>;
     readonly restoreValues?: readonly number[];
+    /** Keep local records for retired puzzles when restoring the current catalog. */
+    readonly preserveUnknown?: boolean;
 }
 
 export interface CloudGameSchema {

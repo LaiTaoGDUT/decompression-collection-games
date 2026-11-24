@@ -1,0 +1,60 @@
+{
+  "checksPassed": true,
+  "compression": {
+    "tool": "tinypng-batch",
+    "processed": 6,
+    "cached": 0,
+    "failed": 0,
+    "savedBytes": 9329748
+  },
+  "images": [
+    {
+      "file": "750x1334/01-晴空合集-随心切换-750x1334.png",
+      "width": 750,
+      "height": 1334,
+      "format": "PNG",
+      "bytes": 261598,
+      "sha256": "10886919aaadceed06a5bb7c959f4a3c4cb0355812b46386ab05bc10568b0bdc"
+    },
+    {
+      "file": "750x1334/02-活力合集-来一局-750x1334.png",
+      "width": 750,
+      "height": 1334,
+      "format": "PNG",
+      "bytes": 315667,
+      "sha256": "adc4f16ff5ebde2f57d6f496e5335b2bcb25ae30dc3b522c78eda84263d11601"
+    },
+    {
+      "file": "750x1334/03-暖阳合集-放松一下-750x1334.png",
+      "width": 750,
+      "height": 1334,
+      "format": "PNG",
+      "bytes": 347933,
+      "sha256": "d5e9b682eb9066fdec47dd081e5b9b94dead8c412cbd344f5012907eabc18f67"
+    },
+    {
+      "file": "1080x1920/01-晴空合集-随心切换-1080x1920.png",
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG",
+      "bytes": 489939,
+      "sha256": "1e06d2302c55f29facfa40727460297345580dcfc9ac02638ad17b01dd5c0672"
+    },
+    {
+      "file": "1080x1920/02-活力合集-来一局-1080x1920.png",
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG",
+      "bytes": 579342,
+      "sha256": "04e740476573b2a9178be81c147e58598ea9ff0c662564a8c04d022cede77993"
+    },
+    {
+      "file": "1080x1920/03-暖阳合集-放松一下-1080x1920.png",
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG",
+      "bytes": 609963,
+      "sha256": "7cc6a6f9883a3cb13a5f62a55b785c2b0181568d9082cda6f2922d9e257654a7"
+    }
+  ]
+}

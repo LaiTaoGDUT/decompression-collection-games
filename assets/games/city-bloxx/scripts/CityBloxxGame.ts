@@ -1,18 +1,20 @@
-import { _decorator, Camera, Canvas, Color, Component, EffectAsset, EventTouch, JsonAsset,
+import { _decorator, AudioClip, Camera, Canvas, Color, Component, director, Director, EffectAsset, EventTouch, JsonAsset,
     Node, SpriteAtlas, Texture2D, TTFFont, UITransform, view } from 'cc';
 import type { GameResult, Unsubscribe } from '../../../core/types/CommonTypes';
 import type { MiniGame, MiniGameContext, MiniGamePauseModel } from '../../../runtime/MiniGame';
 import type { Platform } from '../../../platform/Platform';
 import type { AssetService } from '../../../services/asset/AssetService';
-import type { AudioService } from '../../../services/audio/AudioService';
+import type { AudioService, AudioVoiceScope } from '../../../services/audio/AudioService';
 import { BundleAudioBank } from '../../../services/audio/BundleAudioBank';
 import type { FeedbackService } from '../../../services/feedback/FeedbackService';
 import type { StorageService } from '../../../services/storage/StorageService';
 import type { AdService } from '../../../services/ads/AdService';
 import { calculateSafeContentBounds } from '../../../shared/ui/PlatformSafeLayout';
 import { CityBloxxModel, type CityConfig } from './CityBloxxModel';
+import type { CityRainState } from './CityBloxxRain';
 import { CITY_ASSETS, CityBloxxView, type CityBuildingData } from './CityBloxxView';
 import { CityBloxxScenery, type CityEnvironment } from './CityBloxxScenery';
+import type { CitySkyPanels } from './CityBloxxSky';
 import { CityBloxxHud } from './CityBloxxHud';
 import { cityComboMilestone, cityComboStage, cityPerfectTone } from './CityBloxxFeedback';
 
@@ -32,7 +34,10 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     private renderer?: CityBloxxView;
     private scenery?: CityBloxxScenery;
     private loading?: Promise<void>;
+    private finishWarmup?: () => void;
     private audioBank?: BundleAudioBank;
+    private rainClip?: AudioClip;
+    private rainVoice?: AudioVoiceScope;
     private unsubscribe?: Unsubscribe;
     private skyCamera?: Camera;
     private stage?: Node;
@@ -41,6 +46,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     private rewardPending = false;
     private operation = 0;
     private finalized = false;
+    private discardRound = false;
     private bounds?: ReturnType<typeof calculateSafeContentBounds>;
     private layoutDirty = false;
     private readonly onResize = (): void => { this.layoutDirty = true; };
@@ -54,7 +60,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     private async prepare(context: MiniGameContext<Services>): Promise<void> {
         const assets = context.services.assets;
         const [rules, buildings, coral, blue, lobby, groundTexture, environment, atlas, hudFont,
-            particleEffect, trailLine, trailMask, rainLine] = await Promise.all([
+            particleEffect, trailLine, trailMask, rainLine, skyline, skyPanels, hudAtlas, fxAtlas] = await Promise.all([
             assets.loadAsset(CITY_ASSETS, 'configs/original', JsonAsset),
             assets.loadAsset(CITY_ASSETS, 'configs/buildings', JsonAsset),
             assets.loadAsset(CITY_ASSETS, 'visual/cloudline/floor-coral/texture', Texture2D),
@@ -68,6 +74,10 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
             assets.loadAsset(CITY_ASSETS, 'visual/effects/star-trail-line/texture', Texture2D),
             assets.loadAsset(CITY_ASSETS, 'visual/effects/star-trail-mask/texture', Texture2D),
             assets.loadAsset(CITY_ASSETS, 'visual/effects/rain-line/texture', Texture2D),
+            assets.loadAsset(CITY_ASSETS, 'visual/skyline/city-skyline/texture', Texture2D),
+            assets.loadAsset(CITY_ASSETS, 'configs/sky-panels', JsonAsset),
+            assets.loadAsset(CITY_ASSETS, 'visual/hud/city-hud', SpriteAtlas),
+            assets.loadAsset(CITY_ASSETS, 'visual/fx/city-fx', SpriteAtlas),
         ]);
         if (this.state === 'disposed' || !this.isValid) return;
         this.config = rules.json as CityConfig;
@@ -83,50 +93,98 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.skyCamera = camera.addComponent(Camera); this.skyCamera.projection = Camera.ProjectionType.ORTHO;
         this.skyCamera.clearFlags = Camera.ClearFlag.SOLID_COLOR; this.skyCamera.clearColor = new Color('#C7EAF4');
         this.skyCamera.visibility = SKY_LAYER; this.skyCamera.priority = -10; this.skyCamera.near = .1; this.skyCamera.far = 2000;
-        this.scenery = new CityBloxxScenery(this.node, this.renderer.projection, atlas, this.renderer.backdropFrame, environment.json as CityEnvironment, SKY_LAYER,
-            (x, y, z) => this.renderer!.project(x, y, z), assets, particleEffect, trailLine, trailMask, rainLine);
+        this.scenery = new CityBloxxScenery(this.node, this.renderer.projection, atlas, skyline, environment.json as CityEnvironment, SKY_LAYER,
+            (x, y, z, out) => this.renderer!.project(x, y, z, out), assets, particleEffect, trailLine, trailMask, rainLine,
+            skyPanels.json as CitySkyPanels, fxAtlas,
+            (floor, left, right) => this.renderer!.projectRoof(floor, left, right));
         this.stage = this.make('CityPlayArea', this.node, 750, 1334);
         this.stage.on(Node.EventType.TOUCH_START, this.onTouch, this);
-        this.ui = new CityBloxxHud(this.node, atlas, hudFont, run => {
-            if (!this.rewardPending) run();
-        }, () => { if (this.state === 'playing') this.context?.requestPause(); },
+        const feedback = context.services.feedback;
+        this.ui = new CityBloxxHud(this.node, atlas, hudAtlas, fxAtlas, hudFont, run => {
+            if (!this.rewardPending) { feedback.play('uiButton', { vibrate: false, volume: .8 }); run(); }
+        }, () => {
+            if (this.state !== 'playing') return;
+            feedback.play('uiButton', { vibrate: false, volume: .8 }); this.context?.requestPause();
+        }, () => feedback.play('popup', { vibrate: false, volume: .85 }),
         (x, y, z) => this.renderer!.project(x, y, z));
         this.scenery.placeBelowEffects(this.ui.notice);
-        this.reset(); this.state = 'ready';
-        // Retain the native music; the approved feedback pass adds short,
-        // deterministic cues without consuming the simulation's random stream.
-        this.audioBank = new BundleAudioBank({ bundle: CITY_ASSETS, music: 'audio/endless-music',
-            packedEffects: 'visual/audio/city-feedback-v1', pooledCues: ['drop', 'merge', 'chain', 'milestone'],
-            cues: { drop: 'feedback/land',
-                merge: Array.from({ length: 7 }, (_, i) => 'feedback/perfect-' + i),
-                chain: ['feedback/combo-3', 'feedback/combo-5', 'feedback/combo-10'], milestone: 'feedback/bank' },
+        this.reset(true); this.state = 'ready';
+        // Cues are deterministic and never consume the simulation's random stream.
+        this.audioBank = new BundleAudioBank({ bundle: CITY_ASSETS, music: 'audio/skyward-loop',
+            packedEffects: 'visual/audio/city-feedback-v2',
+            cues: { fold: 'feedback/release', drop: ['feedback/land', 'feedback/foundation'],
+                merge: Array.from({ length: 8 }, (_, i) => 'feedback/perfect-' + i),
+                chain: ['feedback/combo-3', 'feedback/combo-5', 'feedback/combo-10'], milestone: 'feedback/bonus',
+                popup: 'feedback/zone', collision: 'feedback/miss', failure: 'feedback/result',
+                continue: 'feedback/revive', uiButton: 'feedback/button' },
         }, context.services.audio, context.services.feedback, assets);
-        await this.audioBank.initialize();
+        await Promise.all([this.audioBank.initialize(), this.scenery.sky.preload(),
+            assets.loadAudioClip(CITY_ASSETS, 'audio/rain-loop').then(clip => {
+                if (this.state !== 'disposed') this.rainClip = clip;
+            })]);
         if (!this.context || !this.isValid) return;
+        this.rainVoice = context.services.audio.createVoiceScope('music');
         view.on('canvas-resize', this.onResize, this); this.unsubscribe = context.services.platform.onLayoutChange(this.onResize);
         this.layout();
+        await this.warmup();
     }
-    begin(): void { if (this.state === 'ready') this.state = 'playing'; }
+    private warmup(): Promise<void> {
+        const retireWorld = this.renderer!.warmup(), retireScenery = this.scenery!.warmup(), retireHud = this.ui!.warmup();
+        return new Promise(resolve => {
+            let frames = 0, finished = false;
+            const finish = (): void => {
+                if (finished) return;
+                finished = true; clearTimeout(timeout);
+                director.off(Director.EVENT_AFTER_DRAW, afterDraw);
+                this.finishWarmup = undefined; retireWorld(); retireScenery(); retireHud(); resolve();
+            };
+            const afterDraw = (): void => { if (++frames >= 2) finish(); };
+            // Backgrounded views may stop drawing. Runtime cancellation waits for initialize,
+            // so prewarming must settle even before dispose can be called.
+            const timeout = setTimeout(finish, 250);
+            this.finishWarmup = finish; director.on(Director.EVENT_AFTER_DRAW, afterDraw);
+        });
+    }
+    begin(): void {
+        if (this.state !== 'ready') return;
+        this.state = 'playing';
+        this.startWeatherAudio();
+        this.persistRound();
+        // Historical floor records also qualify when the trophy is introduced or a cloud save is restored.
+        const context = this.context!;
+        context.reportAchievementProgress('tower-floors', context.services.storage.getGameData(context.gameId)?.highScore ?? 0);
+    }
     isGameplayActive(): boolean { return this.state === 'playing' && !this.rewardPending; }
     pause(): boolean {
         if (this.state !== 'playing' && this.state !== 'result') return false;
         this.pausedFrom = this.state;
-        this.state = 'paused'; this.audioBank?.stopEffects(); this.context?.services.audio.pauseMusic(); return true;
+        this.state = 'paused'; this.audioBank?.stopEffects(); this.context?.services.audio.pauseMusic();
+        this.persistRound(true); return true;
     }
-    resume(): void { if (this.state === 'paused') { this.state = this.pausedFrom; this.context?.services.audio.resumeMusic(); } }
+    resume(): void {
+        if (this.state !== 'paused') return;
+        this.state = this.pausedFrom; this.context?.services.audio.resumeMusic();
+        this.startWeatherAudio();
+    }
     async restart(context?: MiniGameContext<Services>): Promise<void> {
         if (this.state === 'disposed') return;
         this.operation++; this.rewardPending = false; if (context) this.context = context;
         this.reset(); this.audioBank?.restartMusic(); this.state = 'playing';
+        this.persistRound(true);
         this.context?.services.audio.resumeMusic();
+        this.startWeatherAudio();
     }
     async dispose(): Promise<void> {
         if (this.state === 'disposed') return;
+        // A failed/cancelled initialization must not overwrite the previous round.
+        if (this.state === 'playing' || this.state === 'paused' || this.state === 'result') this.persistRound(true);
         this.state = 'disposed'; this.operation++; this.rewardPending = false;
+        this.finishWarmup?.();
         view.off('canvas-resize', this.onResize, this); this.unsubscribe?.(); this.unsubscribe = undefined;
         this.stage?.off(Node.EventType.TOUCH_START, this.onTouch, this);
         this.context?.services.audio.stopMusic(); this.model?.dispose(); this.model = undefined;
         this.audioBank?.dispose(); this.audioBank = undefined;
+        this.rainVoice?.dispose(); this.rainVoice = undefined; this.rainClip = undefined;
         this.renderer?.dispose(); this.renderer = undefined;
         this.scenery?.dispose(); this.scenery = undefined;
         this.config = undefined;
@@ -156,15 +214,32 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.pauseMenuVisible = false; this.ui?.close();
         if (this.state === 'result') this.showResult();
     }
-    private reset(): void {
+    discardSavedProgress(): void { this.discardRound = true; this.persistRound(true); }
+    private reset(restore = false): void {
         this.audioBank?.stopEffects();
+        this.rainVoice?.stop();
         this.pausedFrom = 'playing'; this.pauseMenuVisible = false;
-        // Draw once per new round; video revival continues the existing round.
-        this.skin = Math.random() < .5 ? 'yellow' : 'blue';
+        const saved = restore ? this.context?.services.storage.getGameData(this.context.gameId)?.custom?.cityRound : undefined;
+        const round = saved && typeof saved === 'object'
+            ? saved as { version?: number; model?: unknown; skin?: string; weather?: CityRainState } : undefined;
+        const weather = round?.weather;
+        const validAppearance = round?.version === 1 && (round.skin === 'yellow' || round.skin === 'blue')
+            && weather && typeof weather.enabled === 'boolean' && typeof weather.clock === 'number'
+            && Number.isFinite(weather.clock) && weather.clock >= 0;
+        const resumed = validAppearance ? CityBloxxModel.restore(this.config!, round.model) : undefined;
+        this.discardRound = false;
+        // Draw once per new round; lobby continuation and video revival retain it.
+        this.skin = resumed ? round!.skin as 'yellow' | 'blue' : Math.random() < .5 ? 'yellow' : 'blue';
         this.renderer?.setSkin(this.skin);
-        this.model?.dispose(); this.model = new CityBloxxModel(this.config!); this.finalized = false;
-        this.scenery?.reset(); this.ui?.reset();
-        this.context?.reportScore(0); this.render();
+        this.model?.dispose(); this.model = resumed ?? new CityBloxxModel(this.config!); this.finalized = false;
+        this.scenery?.reset(resumed ? weather : undefined, resumed); this.ui?.reset();
+        this.context?.reportScore(this.model.maxFloors); this.render();
+    }
+    private startWeatherAudio(): void {
+        if (!this.scenery?.isRaining || !this.rainClip || !this.rainVoice || this.rainVoice.playing) return;
+        // One owned loop under the music slider, alongside the soundtrack.
+        // The audio service handles menu/ad/background suspension and volume.
+        this.rainVoice.play(this.rainClip, .5, true);
     }
     private showResult(): void {
         this.ui?.result(this.model!, () => { void this.revive(); },
@@ -184,8 +259,9 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
                     // The HUD clock is frozen during the video. Retire the
                     // previous miss/landing feedback before play resumes.
                     this.ui?.reset(); this.ui?.revived(); this.state = 'playing';
+                    this.persistRound(true);
                 }
-            } else if (result.errorCode !== 'not-configured') {
+            } else if (!result.feedbackShown) {
                 context.services.platform.showToast(result.outcome === 'skipped'
                     ? '未完成视频，可稍后再试' : '视频暂不可用，请稍后再试');
             }
@@ -205,23 +281,35 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.ui?.advance(dt);
         this.scenery?.advance(dt);
         this.model.advance(dt);
-        for (const event of this.model.events.splice(0)) {
+        let saveRound = false;
+        for (const event of this.model.events) {
             this.scenery?.event(event, this.model);
             if (event.type === 'land') {
                 this.ui?.land(event, this.model);
                 const feedback = this.context?.services.feedback;
-                if (event.floor.base || !event.perfect) feedback?.play('drop', { vibrate: false, volume: .8 });
+                if (event.floor.base || !event.perfect) feedback?.play('drop', {
+                    variant: event.floor.base ? 1 : 0, vibrate: false, volume: .85 });
                 else if (cityComboMilestone(this.model.combo)) feedback?.play('chain', {
                     variant: cityComboStage(this.model.combo).level - 1, vibrate: false, volume: .85 });
                 else feedback?.play('merge', { variant: cityPerfectTone(this.model.combo), vibrate: false, volume: .8 });
                 this.context?.reportScore(this.model.maxFloors); this.saveBest();
+                this.context?.reportAchievementProgress('tower-floors', this.model.maxFloors);
             } else if (event.type === 'bonus') {
                 this.ui?.showBonus(event.people);
                 if (event.people > 0) this.context?.services.feedback.play('milestone', { vibrate: false, volume: .7 });
             }
-            else if (event.type === 'miss') this.ui?.miss(event.lives);
-            else if (event.type === 'result') { this.saveBest(); this.state = 'result'; this.showResult(); }
+            else if (event.type === 'release') this.context?.services.feedback.play('fold', { vibrate: false, volume: .7 });
+            else if (event.type === 'miss') {
+                this.ui?.miss(event.lives); this.context?.services.feedback.play('collision', { volume: .9 });
+                saveRound = event.lives === 0;
+            } else if (event.type === 'revive') this.context?.services.feedback.play('continue', { vibrate: false, volume: .9 });
+            else if (event.type === 'result') {
+                this.saveBest(); this.state = 'result'; this.showResult();
+                this.context?.services.feedback.play('failure', { vibrate: false, volume: .9 });
+            }
         }
+        this.model.events.length = 0;
+        if (saveRound) this.persistRound();
         this.render();
     }
     lateUpdate(): void {
@@ -237,15 +325,36 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
     private saveBest(): void {
         const c = this.context, m = this.model; if (!c || !m) return;
         const old = c.services.storage.getGameData(c.gameId) ?? { dataVersion: 1, playCount: 0 };
+        const highScore = Math.max(old.highScore ?? 0, m.maxFloors);
+        const bestPeople = Math.max(Number(old.custom?.cityBestPeople) || 0, m.people);
+        const bestCombo = Math.max(Number(old.custom?.cityBestCombo) || 0, m.maxCombo);
+        if (old.highScore === highScore && old.custom?.cityBestPeople === bestPeople
+            && old.custom?.cityBestCombo === bestCombo && !Object.prototype.hasOwnProperty.call(old.custom ?? {}, 'cityCoins')) return;
         const custom = { ...old.custom };
         delete custom.cityCoins;
-        c.services.storage.writeGameData(c.gameId, { ...old, highScore: Math.max(old.highScore ?? 0, m.maxFloors),
-            custom: { ...custom, cityBestPeople: Math.max(Number(old.custom?.cityBestPeople) || 0, m.people),
-                cityBestCombo: Math.max(Number(old.custom?.cityBestCombo) || 0, m.maxCombo) } });
+        c.services.storage.writeGameData(c.gameId, { ...old, highScore,
+            custom: { ...custom, cityBestPeople: bestPeople, cityBestCombo: bestCombo } });
+    }
+    private persistRound(flush = false): void {
+        const c = this.context;
+        if (!c || !this.model || !this.scenery) return;
+        // Snapshot at lifecycle boundaries, not on a gameplay timer: serializing
+        // an endless tower during ordinary movement would introduce frame spikes.
+        const snapshot = this.discardRound || this.finalized ? undefined : this.model.snapshot();
+        const old = c.services.storage.getGameData(c.gameId) ?? { dataVersion: 1, playCount: 0 };
+        if (!snapshot && !old.custom?.cityRound) return;
+        const custom = { ...old.custom };
+        if (snapshot) custom.cityRound = { version: 1, model: snapshot, skin: this.skin, weather: this.scenery.weather };
+        else delete custom.cityRound;
+        try {
+            c.services.storage.writeGameData(c.gameId, { ...old, custom });
+            if (flush) c.services.storage.flush();
+        } catch (error: unknown) { console.warn('[CityBloxx] Save failed', error); }
     }
     private finalize(): void {
         if (this.finalized) return;
         this.finalized = true; this.model?.finish(); this.saveBest();
+        this.persistRound(true);
         this.context?.reportRoundFinished?.();
     }
     private result(): GameResult { const m = this.model; return { score: m?.maxFloors ?? 0, duration: m?.time ?? 0,
@@ -257,7 +366,7 @@ export class CityBloxxGame extends Component implements MiniGame<Services> {
         this.stage.setPosition(safe.centerX, safe.centerY); this.stage.getComponent(UITransform)!.setContentSize(safe.width, safe.height);
         // Skin-only: the HUD overlays the original safe viewport. Subtracting
         // card margins here would change the apparent speed and aiming scale.
-        this.renderer?.layout(size.width, size.height, safe.bottomY, safe.topY);
+        this.renderer?.layout(size.width, safe.bottomY, safe.topY, -size.height / 2);
         this.scenery?.layout(size.width, size.height, safe.bottomY, safe.topY);
         this.skyCamera!.orthoHeight = size.height / 2;
         this.ui.layout(size, safe); this.render();

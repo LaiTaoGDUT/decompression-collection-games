@@ -16,7 +16,7 @@ import { FontBinding, setLabelBold } from '../../../services/font/FontBinding';
 import type { RingLevel, RingLevelBank, RingMode, RingPoint, RingProp } from './RotateRingsTypes';
 import { RotateRingsModel } from './RotateRingsModel';
 import { RotateRingsBoard, ringColor } from './RotateRingsBoard';
-import { completeRingLevel, grantRingDailyHints, readRingSave, ringUnlocked, ROTATE_RINGS_SAVE_VERSION, type RotateRingsSave } from './RotateRingsSave';
+import { completeRingLevel, grantRingDailyHints, readRingSave, ringUnlockedLevel, ROTATE_RINGS_SAVE_VERSION, type RotateRingsSave } from './RotateRingsSave';
 import { calculateRingDialogLayout, calculateRingLayout, calculateRingPlayLayout, calculateRingSelectionLayout, RING_DIALOG } from './RotateRingsLayout';
 import { RING_AUDIO, RING_ENCOURAGEMENTS, ringComboTier, RING_THEME as T, RING_TITLE_MUSIC } from './RotateRingsTheme';
 import { PACKED_SPRITE_PATHS } from './PackedSpritePaths';
@@ -39,7 +39,7 @@ interface RingServices {
 }
 interface RingAction { name: string; text: string; primary?: boolean; icon?: string; action: () => void | Promise<void>; }
 interface RingGesture { touch: number; kind: 'ring' | 'pull'; id: string; point: RingPoint; angle: number; changed: boolean;
-    removedBefore: string[]; bombsBefore: number[]; progressBefore: number; }
+    removedBefore: string[]; bombsBefore: number[]; progressBefore: number; guidedSetup?: boolean; }
 interface RingPropBadge { count: Label; number: Node; ad: Node; }
 /** 一条短彩带：扁平纸带沿长度扭转、整体旋转飘落。d0 为首次从顶上落下前的延迟距离，之后到底部就回到顶上，持续不断。 */
 interface RingConfettiPiece { color: Color; x: number; d0: number; speed: number; sway: number; swayRate: number;
@@ -49,7 +49,7 @@ interface RingCompletion { time: number; card: Node; confetti: Graphics; pieces:
     parts: { node: Node; shadow?: Node; sprite?: RotateRingsMeshSprite; color: Color; scale: number; at: number }[]; }
 /** 选关陶瓷环关卡格：各部件分层放置（同类节点相邻以便合批），按压与跳转动画统一缩放这一格的全部部件。 */
 interface RingTile { number: number; x: number; y: number; press: { scale: number }; spin: number;
-    glow: Node; shadow: Node; ring: Node; text: Label; lock: Node; }
+    glow: Node; shadow: Node; ring: Node; text: Label; }
 /** 全屏通关页（参照缤纷填色：主角是刚完成的盘面）：标题、模式关卡标签距顶部安全边界，下一关按钮距底部安全边界；
  * 中间白卡里是这一关开局时的完整盘面缩略（真实网格与材质），卡片弹入后各部件按解开顺序依次弹跳闪光，像把这一关快放一遍；
  * 短彩带从屏幕顶上持续撒落。 */
@@ -68,8 +68,8 @@ const RING_COMPLETE = Object.freeze({
 });
 /** 关内顶部：关卡号在上、解环进度条在下，整体以 headerY 为中心。 */
 const RING_HUD = Object.freeze({ titleSize: 40, titleWidth: 360, titleOffset: 14, flameOffset: 108, barWidth: 236, barHeight: 14, barOffset: -30 });
-/** 选关环：网格单位 → 像素比例、缺口角度、投影下沉、锁扣在缺口处的半径；当前关缓慢转动缺口（度/秒）。 */
-const RING_TILE = Object.freeze({ scale: 26, radius: 1.45, gap: 96, shadowDrop: -.22, lockRadius: 38, spin: 36, currentScale: 1.1, decoScale: 15 });
+/** 选关环：网格单位 → 像素比例、缺口角度、投影下沉；当前关缓慢转动缺口（度/秒）。 */
+const RING_TILE = Object.freeze({ scale: 26, radius: 1.45, gap: 96, shadowDrop: -.22, spin: 36, currentScale: 1.1, decoScale: 15 });
 
 /** 仅通过 Context 使用公共能力；进入即恢复上次关卡，设置菜单可切换两种模式选关。 */
 @ccclass('RotateRingsGame')
@@ -102,7 +102,6 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     private board?: RotateRingsBoard;
     private boardInput?: Node;
     private boardDirty = false;
-    private animationTime = 0;
     /** 关内顶部解环进度条：显示值向目标缓动，变化时才重画。 */
     private progressBar?: { graphics: Graphics; shown: number; target: number; drawn: number };
     private toast?: Label;
@@ -152,13 +151,13 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const catalog = await context.services.assets.loadAsset(RESOURCE_BUNDLE, 'configs/index', JsonAsset);
         if (!this.isValid || generation !== this.generation || (this.state as RingState) === 'disposed') return;
         const bank = catalog.json as RingLevelBank;
-        if (bank?.version !== 1 || !bank.modes?.normal?.length || !bank.modes?.hard?.length || bank.packing?.version !== 2
-            || bank.packing.bankSize !== 64 || !Number.isInteger(bank.packing.meshCount) || bank.packing.meshCount <= 0
+        if (bank?.version !== 2 || !bank.modes?.normal?.length || !bank.modes?.hard?.length || bank.packing?.version !== 2
+            || !Number.isInteger(bank.packing.bankSize) || bank.packing.bankSize < 1 || bank.packing.bankSize > 64 || !Number.isInteger(bank.packing.meshCount) || bank.packing.meshCount <= 0
             || !Number.isInteger(bank.packing.collisionShapeCount) || bank.packing.collisionShapeCount <= 0) {
             throw new Error('RotateRings level catalog is invalid');
         }
         this.bank = bank;
-        this.levelAssets = new RotateRingsLevelAssets(context.services.assets, RESOURCE_BUNDLE, bank.packing.meshCount, bank.packing.collisionShapeCount);
+        this.levelAssets = new RotateRingsLevelAssets(context.services.assets, RESOURCE_BUNDLE, bank.packing.meshCount, bank.packing.collisionShapeCount, bank.packing.bankSize);
         const stored = context.services.storage.getGameData(context.gameId);
         const savedRings = stored?.dataVersion === ROTATE_RINGS_SAVE_VERSION ? stored.custom?.rings : undefined;
         this.save = readRingSave(savedRings, bank, context.services.serverTime?.day);
@@ -166,7 +165,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         this.dailyHintReward = savedRings ? daily : this.save.props.hint;
         this.mode = this.save.mode;
         this.levelNumber = this.save.modes[this.mode].current;
-        context.reportAchievementProgress('normal-cleared-level', this.save.modes.normal.cleared);
+        context.reportAchievementProgress('original-normal-cleared', this.save.modes.normal.cleared);
         this.selectionPage = Math.floor((this.levelNumber - 1) / this.selectionLayout.pageSize);
         this.audioBank = new BundleAudioBank(RING_AUDIO, context.services.audio, context.services.feedback, context.services.assets);
         const requests = Object.keys(PACKED_SPRITE_PATHS).filter(key => key.endsWith('/spriteFrame')).map(key => ({
@@ -302,10 +301,10 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         if (this.state === 'playing' && this.model) {
             this.model.seconds += Math.min(.25, delta);
             this.saveTime += delta;
-            if (this.saveTime >= 1) { this.saveTime = 0; this.persist(); }
+            if (this.saveTime >= 1 && !this.gesture) { this.saveTime = 0; this.persist(); }
         }
-        if (this.board && (this.boardDirty || this.animationTime > 0 || this.board.animating) && this.state !== 'paused') {
-            this.board.draw(delta); this.boardDirty = false; this.animationTime -= delta;
+        if (this.board && (this.boardDirty || this.board.animating) && this.state !== 'paused') {
+            this.board.draw(delta); this.boardDirty = false;
         }
     }
 
@@ -321,7 +320,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const size = view.getVisibleSize(), platform = this.context?.services.platform.getLayoutInfo();
         this.layout = calculateRingLayout(size.height, platform?.safeArea.top,
             size.height - (platform?.safeArea.bottom ?? size.height), platform?.topRightReservedArea?.bottom);
-        this.playLayout = calculateRingPlayLayout(size.height, this.layout.top, this.layout.bottom);
+        this.playLayout = calculateRingPlayLayout(size.height, this.layout.top, this.layout.bottom, size.width);
         const previousSize = this.selectionLayout.pageSize;
         this.selectionLayout = calculateRingSelectionLayout(this.layout.top, this.layout.bottom);
         if (previousSize !== this.selectionLayout.pageSize) this.selectionPage = Math.floor(this.selectionPage * previousSize / this.selectionLayout.pageSize);
@@ -464,7 +463,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const slots: Node[] = [], tiles: RingTile[][] = [];
         for (const slot of [-1, 0, 1]) {
             const node = this.makeNode(track, `LevelSlot${slot}`, 750, selection.gridHeight + 40, slot * 750, 0);
-            const layers = ['Glows', 'Shadows', 'Rings', 'Texts', 'Locks'].map(name => this.makeNode(node, name, 750, selection.gridHeight + 40));
+            const layers = ['Glows', 'Shadows', 'Rings', 'Texts'].map(name => this.makeNode(node, name, 750, selection.gridHeight + 40));
             const list: RingTile[] = [];
             for (let index = 0; index < selection.pageSize; index++) list.push(this.levelTile(layers, index));
             slots.push(node); tiles.push(list);
@@ -477,11 +476,11 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         this.label(page, 'PageNumber', '', 28, 0, selection.pageNumberY, 320, 42, T.ink, true);
         this.iconButton(page, 'PreviousPage', 'left', -306, selection.trayY, () => this.changeSelectionPage(-1));
         this.iconButton(page, 'NextPage', 'right', 306, selection.trayY, () => this.changeSelectionPage(1));
-        for (const [name, caption, primary, x] of [['JumpCurrent', '当前关卡', true, -126], ['JumpLatest', '最新解锁', false, 126]] as const) {
+        for (const [name, caption, primary, x] of [['JumpCurrent', '当前关卡', true, -126], ['JumpLast', '最后一关', false, 126]] as const) {
             const button = this.button(page, name, '', x, selection.trayY, 224, 92, () => {
                 const save = this.save, bank = this.bank; if (!save || !bank) return;
                 const progress = save.modes[this.mode];
-                this.jumpSelection(name === 'JumpCurrent' ? progress.current : ringUnlocked(bank, this.mode, progress));
+                this.jumpSelection(name === 'JumpCurrent' ? progress.current : bank.modes[this.mode].length);
             }, primary);
             const text = button.getChildByName('Text')!; text.setPosition(0, -12);
             const label = text.getComponent(Label)!; label.fontSize = 28; label.lineHeight = 34;
@@ -503,14 +502,14 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     private refreshSelectionMode(): void {
         const view = this.selectionView, page = this.selectionRoot, save = this.save, bank = this.bank;
         if (!view || !page || !save || !bank) return;
-        const progress = save.modes[this.mode], levels = bank.modes[this.mode], unlocked = ringUnlocked(bank, this.mode, progress);
+        const progress = save.modes[this.mode], levels = bank.modes[this.mode];
         this.styleButton(page.getChildByName('NormalMode')!, this.mode === 'normal');
         this.styleButton(page.getChildByName('HardMode')!, this.mode === 'hard');
         this.styleButton(page.getChildByName('JumpCurrent')!, true);
         page.getChildByName('ModeProgress')!.getComponent(Label)!.string = `已通关 ${progress.cleared} / ${levels.length} 关`;
         page.getChildByName('HardFlame')!.active = this.mode === 'hard';
         page.getChildByName('JumpCurrent')!.getChildByName('Text')!.getComponent(Label)!.string = `第 ${progress.current} 关`;
-        page.getChildByName('JumpLatest')!.getChildByName('Text')!.getComponent(Label)!.string = `第 ${unlocked} 关`;
+        page.getChildByName('JumpLast')!.getChildByName('Text')!.getComponent(Label)!.string = `第 ${levels.length} 关`;
         view.pages = Math.ceil(levels.length / this.selectionLayout.pageSize);
         this.selectionPage = Math.max(0, Math.min(view.pages - 1, this.selectionPage));
         this.fillSelectionSlots(); this.refreshSelectionChrome();
@@ -521,34 +520,33 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         node.addComponent(RotateRingsMeshSprite).configure(this.tileMesh!, this.frames!['ring-texture'], shadow ? this.tileShadowMaterial! : this.ringMaterial!);
         return node;
     }
-    /** 关卡格：光晕、投影、陶瓷环、数字和锁扣常驻在各自图层，填充时按关卡状态切换。数字用字符缓存共享字形纹理。 */
+    /** 关卡格：光晕、投影、陶瓷环和数字常驻在各自图层，填充时按关卡状态切换。数字用字符缓存共享字形纹理。 */
     private levelTile(layers: Node[], index: number): RingTile {
         const selection = this.selectionLayout, pagerTop = selection.gridHeight / 2 + 20;
         const x = -248 + index % 5 * 124, y = pagerTop - 62 - Math.floor(index / 5) * selection.rowStep;
-        const [glows, shadows, rings, texts, locks] = layers;
+        const [glows, shadows, rings, texts] = layers;
         const glow = this.image(glows, 'Glow', 'fx_glow', x, y, 150, 150);
         const shadow = this.tileRing(shadows, 'Shadow', x, y, RING_TILE.scale, true), ring = this.tileRing(rings, 'Level-0', x, y, RING_TILE.scale);
         const text = this.label(texts, 'Text', '', 30, x, y + 1, 64, 40, T.ink, true);
         // 字符缓存不支持合成粗体，用同色细描边补足笔画粗细。
         text.cacheMode = Label.CacheMode.CHAR; text.enableOutline = true; text.outlineWidth = 1;
-        const lock = this.image(locks, 'Locked', 'badge_lock', x, y - RING_TILE.lockRadius, 28, 28);
-        return { number: 0, x, y, press: { scale: 1 }, spin: 0, glow, shadow, ring, text, lock };
+        text.outlineColor = text.color;
+        return { number: 0, x, y, press: { scale: 1 }, spin: 0, glow, shadow, ring, text };
     }
-    /** 按压、跳转弹跳与当前关的放大共同决定一格的整体缩放；锁扣跟随缩放留在缺口处。 */
+    /** 按压、跳转弹跳与当前关的放大共同决定一格的整体缩放。 */
     private placeTile(tile: RingTile): void {
         const base = tile.number === this.currentSelectionLevel() ? RING_TILE.currentScale : 1, s = base * tile.press.scale, ring = RING_TILE.scale * s;
         tile.ring.setScale(ring, ring, 1); tile.shadow.setScale(ring, ring, 1);
-        tile.glow.setScale(s, s, 1); tile.text.node.setScale(s, s, 1); tile.lock.setScale(s, s, 1);
-        tile.lock.setPosition(tile.x, tile.y - RING_TILE.lockRadius * s);
+        tile.glow.setScale(s, s, 1); tile.text.node.setScale(s, s, 1);
     }
     private currentSelectionLevel(): number { return this.save?.modes[this.mode].current ?? 0; }
     /** 槽位 -1/0/1 依次放上一页、当前页、下一页；越界的格子隐藏。
-     * 已通关：按关卡序号轮换七色釉、缺口朝向各不相同；当前关：模式主色、光晕呼吸并缓慢转动缺口；未解锁：浅灰釉，缺口朝下卡着一枚锁。 */
+     * 当前关使用模式主色与呼吸光晕，已解锁关卡轮换七色釉，待解锁关卡显示灰色。 */
     private fillSelectionSlots(): void {
         const view = this.selectionView, save = this.save, bank = this.bank;
         if (!view || !save || !bank) return;
         const selection = this.selectionLayout, progress = save.modes[this.mode], levels = bank.modes[this.mode];
-        const unlocked = ringUnlocked(bank, this.mode, progress);
+        const unlocked = ringUnlockedLevel(save.completed, this.mode, levels.length);
         view.track.setPosition(0, 0);
         view.tiles.forEach((list, i) => {
             const pageIndex = this.selectionPage + i - 1;
@@ -558,15 +556,16 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
                 for (const node of [tile.ring, tile.shadow, tile.text.node]) node.active = visible;
                 tile.number = visible ? number : 0; tile.ring.name = `Level-${tile.number}`;
                 Tween.stopAllByTarget(tile.press); tile.press.scale = 1;
-                if (!visible) { tile.glow.active = false; tile.lock.active = false; return; }
-                const locked = number > unlocked, current = number === progress.current && !locked;
-                const color = locked ? T.lockedRing : current ? this.accent() : T.colors[(number - 1) % T.colors.length];
+                if (!visible) { tile.glow.active = false; return; }
+                const current = number === progress.current, locked = number > unlocked;
+                const color = locked ? T.disabledTint : current ? this.accent() : T.colors[(number - 1) % T.colors.length];
                 tile.ring.getComponent(RotateRingsMeshSprite)!.color = ringColor(color);
-                tile.spin = locked ? -90 : current ? 45 : (number * 137.5) % 360;
+                tile.spin = current ? 45 : (number * 137.5) % 360;
                 tile.ring.angle = tile.shadow.angle = tile.spin;
                 tile.text.string = String(number);
-                const ink = ringColor(locked ? T.lockedText : T.ink); tile.text.color = ink; tile.text.outlineColor = ink;
-                tile.lock.active = locked; tile.glow.active = current;
+                tile.text.color = ringColor(locked ? T.muted : T.ink);
+                tile.text.outlineColor = tile.text.color;
+                tile.glow.active = current;
                 if (current) tile.glow.getComponent(Sprite)!.color = ringColor(this.accent(), 150);
                 this.placeTile(tile);
             });
@@ -653,8 +652,6 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     private tapLevelTile(number: number): void {
         if (!this.save || !this.bank) return;
         this.context?.services.feedback.play('uiButton', { vibrate: false });
-        const unlocked = ringUnlocked(this.bank, this.mode, this.save.modes[this.mode]);
-        if (number > unlocked) { this.showToast(`先通关第 ${unlocked} 关即可继续解锁`); return; }
         void this.openLevel(number);
     }
     /** 轨道滑到目标页后轮换槽位内容；delta 为 0 时回弹到原位。 */
@@ -690,7 +687,12 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     private async openLevel(number: number, prepare = false): Promise<void> {
         const context = this.context, bank = this.bank, save = this.save;
         if (!context || !bank || !save || this.busy || this.state === 'disposed') return;
-        if (number < 1 || number > ringUnlocked(bank, this.mode, save.modes[this.mode])) return;
+        if (!Number.isInteger(number) || number < 1 || number > bank.modes[this.mode].length) return;
+        const unlocked = ringUnlockedLevel(save.completed, this.mode, bank.modes[this.mode].length);
+        if (number > unlocked) {
+            this.showToast(`请先通关第 ${unlocked} 关`);
+            return;
+        }
         const generation = ++this.generation, mode = this.mode, previousState = this.state;
         this.busy = true; this.state = 'loading'; this.showToast('正在准备关卡…');
         try {
@@ -736,10 +738,12 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const page = this.newPage('RingPlaying'), play = this.playLayout;
         this.iconButton(page, 'Pause', 'pause', 306, play.headerY, () => this.context?.requestPause());
         // 顶部居中：关卡号 + 解环进度条；困难模式在关卡号左侧加火焰标记。
-        const hud = RING_HUD, title = this.label(page, 'LevelTitle', `第 ${this.levelNumber} 关`, hud.titleSize, 0, play.headerY + hud.titleOffset,
-            hud.titleWidth, hud.titleSize * 1.3, this.mode === 'hard' ? T.hard : T.ink, true);
+        const challenge = this.bank!.modes[this.mode][this.levelNumber - 1].challenge;
+        const titleText = challenge ? `挑战 · 第 ${this.levelNumber} 关` : `第 ${this.levelNumber} 关`;
+        const hud = RING_HUD, title = this.label(page, 'LevelTitle', titleText, hud.titleSize, 0, play.headerY + hud.titleOffset,
+            hud.titleWidth, hud.titleSize * 1.3, challenge ? T.hardDeep : this.mode === 'hard' ? T.hard : T.ink, true);
         title.enableOutline = true; title.outlineColor = ringColor('#FFFFFF'); title.outlineWidth = 3;
-        if (this.mode === 'hard') this.image(page, 'HardFlame', 'hard_flame', -hud.flameOffset, play.headerY + hud.titleOffset, 26, 32);
+        if (this.mode === 'hard' && !challenge) this.image(page, 'HardFlame', 'hard_flame', -hud.flameOffset, play.headerY + hud.titleOffset, 26, 32);
         const bar = this.makeNode(page, 'LevelProgress', hud.barWidth + 8, hud.barHeight + 8, 0, play.headerY + hud.barOffset);
         const progress = this.model.total ? this.model.progress / this.model.total : 0;
         this.progressBar = { graphics: bar.addComponent(Graphics), shown: progress, target: progress, drawn: -1 };
@@ -776,7 +780,8 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         if (this.toastTime < 0 && this.toast) { this.toast.string = ''; this.toastTime = 0; }
         const ring = hit.kind === 'ring' ? this.model.pose(hit.id) : undefined;
         this.model.beginGesture();
-        this.gesture = { ...hit, touch, point, angle: ring ? G.angleTo(ring, point) : 0, changed: false,
+        const hint = this.board?.hint;
+        this.gesture = { ...hit, touch, point, guidedSetup: hint?.id === hit.id && hint.prepareNext, angle: ring ? G.angleTo(ring, point) : 0, changed: false,
             removedBefore: Array.from(this.model.removedRings).concat(Array.from(this.model.removedPulls)),
             bombsBefore: Array.from(this.model.explodedBombs), progressBefore: this.model.progress };
         this.board.selected = hit.id; this.board.hint = undefined; this.boardDirty = true;
@@ -803,13 +808,20 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
             else if (Math.abs(result.moved) > .03) this.context?.services.feedback.play('fold', { minIntervalMs: 150, volume: .5, vibrate: false });
         }
         gesture.point = p;
-        this.renderStatus();
+        this.boardDirty = true;
         event.propagationStopped = true;
     }
     private touchEnd(event: EventTouch): void {
         if (this.gesture?.touch !== event.getID()) { this.waitingTouches.delete(event.getID()); return; }
+        const pullId = this.gesture.kind === 'pull' ? this.gesture.id : undefined;
+        const aligned = this.gesture.guidedSetup && this.gesture.changed, before = this.gesture.progressBefore;
         const waiting = event.getAllTouches().filter(touch => this.waitingTouches.has(touch.getID()));
         this.finishGesture(); this.renderStatus(); this.persist(); this.checkCompletion();
+        const blocker = this.model?.pullObstacle;
+        if (event.type === Node.EventType.TOUCH_END && pullId && blocker && !this.model!.removedPulls.has(pullId)) {
+            this.board?.blocked(blocker); this.boardDirty = true;
+            this.showToast(this.model!.rings.has(blocker) ? '这一头被圆环挡住了' : '这一头被其他部件挡住了');
+        }
         if (this.state === 'playing' && this.board && !this.overlay && !this.dailyReward.active && !this.busy) {
             // 先提交旧拖动的消除，再用存活触点的最新位置命中剩余实体；全程只允许一个活动拖动。
             for (const touch of waiting) {
@@ -819,6 +831,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
                 else this.beginTouchGesture(touch.getID(), point, hit);
             }
         }
+        if (aligned && !this.gesture && this.state === 'playing' && this.model && this.model.progress <= before) this.showHint();
         this.startFirstGuide(); event.propagationStopped = true;
     }
     private finishGesture(): void {
@@ -833,19 +846,17 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
                     const point = this.board!.point(model.bombPoint(index, true));
                     this.effects?.bomb({ x: point.x, y: point.y + this.playLayout.boardY });
                 });
-                this.context?.services.feedback.play('danger', { minIntervalMs: 80 }); this.animationTime = 1;
+                this.context?.services.feedback.play('danger', { minIntervalMs: 80 });
             }
             const released = Array.from(model.removedRings).concat(Array.from(model.removedPulls)).filter(id => gesture.removedBefore.indexOf(id) < 0);
             // 消除由 playPartRelease 播放碎裂声；只脱开卡扣时用轻提示，避免没碎也响碎裂声。
             if (model.progress > gesture.progressBefore) {
                 if (!released.length) this.context?.services.feedback.play('merge', { minIntervalMs: 90, volume: .6, vibrate: false });
-                this.animationTime = .7;
             }
-            if (this.save && gesture.kind === 'ring') this.save.tutorialCompleted = true;
+            if (this.save && this.mode === 'normal' && this.levelNumber === 1 && model.completed) this.save.tutorialCompleted = true;
             this.evaluateCombo(released);
         }
-        if (this.board) { this.board.selected = undefined; this.board.draw(0); }
-        this.boardDirty = true;
+        if (this.board) { this.board.selected = undefined; this.board.draw(0); this.boardDirty = false; }
     }
     private renderStatus(): void {
         const model = this.model; if (!model) return;
@@ -856,7 +867,6 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
             badge.count.string = String(count);
             badge.number.active = !showAd; badge.count.node.active = !showAd; badge.ad.active = showAd;
         });
-        this.boardDirty = true;
     }
     private showHint(): boolean {
         if (this.state !== 'playing' || !this.model || !this.board) return false;
@@ -864,11 +874,11 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const hint = this.model.hint();
         if (!hint) { this.showToast('试试先移动外侧滑杆，或转动相邻圆环的缺口'); return false; }
         this.board.hint = hint; this.guide?.start(hint); this.renderStatus(); this.guide?.update(0); this.boardDirty = true;
-        if (hint.kind === 'ring') this.showToast('转动高亮圆环，把缺口对准小圆标记');
+        if (hint.kind === 'ring') this.showToast(hint.prepareNext ? '先跟着手指轻转圆环，把卡扣摆正' : '沿手指方向转动，把缺口对准小圆标记');
         else {
-            const axis = G.polar(Math.sign(hint.target), this.model.pullAxis(hint.id));
-            const direction = Math.abs(axis.x) > Math.abs(axis.y) ? axis.x > 0 ? '右' : '左' : axis.y > 0 ? '上' : '下';
-            this.showToast(`试着向${direction}拉动高亮滑杆`);
+            const heading = G.norm360(this.model.pullAxis(hint.id) + (hint.target < 0 ? 180 : 0));
+            const direction = ['右', '右上', '上', '左上', '左', '左下', '下', '右下'][Math.round(heading / 45) % 8];
+            this.showToast(hint.prepareNext ? `先向${direction}退回滑杆，给旁边的圆环让位` : `试着向${direction}拉动高亮滑杆`);
         }
         return true;
     }
@@ -886,16 +896,16 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     private requestProp(prop: RingProp): void {
         if (this.state !== 'playing' || !this.model || !this.save || !this.board || this.dailyReward.active || this.busy || this.overlay) return;
         this.finishGesture();
+        if (this.board.hint) { this.showToast('沿手指方向转动圆环，或拉动提示的滑杆'); return; }
+        if (this.guide?.active && this.mode === 'normal' && this.levelNumber === 1 && !this.save.tutorialCompleted) {
+            this.showToast('跟着手指操作即可，首关引导免费'); return;
+        }
         if (this.save.props.hint <= 0) {
             const enabled = this.context!.services.ads.isEnabledForGame(this.context!.gameId);
             this.showDialog('提示已用完', '每天首次进入游戏赠送 3 个提示', [
                 ...(enabled ? [{ name: 'PropReward', text: '看广告补充 3 个', icon: 'icon_ad', primary: true, action: () => this.rewardProp(prop) }] : []),
                 { name: 'PropClose', text: '继续游戏', primary: !enabled, action: () => this.hidePauseMenu() },
             ]); return;
-        }
-        if (this.board.hint) { this.showToast('沿手指方向转动圆环，或拉动提示的滑杆'); return; }
-        if (this.guide?.active && this.mode === 'normal' && this.levelNumber === 1 && !this.save.tutorialCompleted) {
-            this.showToast('先跟着手指滑动圆环，首关引导不会消耗提示'); return;
         }
         if (this.showHint()) {
             this.save.props.hint--; this.context?.services.feedback.play('toggle', { vibrate: false }); this.persist(); this.renderStatus();
@@ -911,7 +921,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
             if ((this.state as RingState) === 'disposed' || this.context !== context || this.model !== model) return;
             if (result.outcome === 'completed') {
                 this.save!.props[prop] = Math.min(999, this.save!.props[prop] + 3); this.renderStatus(); this.persist(); this.showToast('已补充 3 个提示');
-            } else if (result.errorCode !== 'not-configured') this.showToast(result.outcome === 'skipped' ? '广告未完成，未增加提示' : '暂时无法获取提示');
+            } else if (!result.feedbackShown) this.showToast(result.outcome === 'skipped' ? '广告未完成，未增加提示' : '暂时无法获取提示');
         } catch {
             if ((this.state as RingState) !== 'disposed' && this.context === context && this.model === model) this.showToast('暂时无法获取提示');
         } finally { if (this.context === context && this.model === model) this.busy = false; }
@@ -920,7 +930,8 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         if (this.state !== 'playing' || this.mode !== 'normal' || this.levelNumber !== 1 || this.save?.tutorialCompleted
             || this.dailyReward.active || this.overlay || this.gesture || this.guide?.active) return;
         const hint = this.model?.hint(); if (!hint) return;
-        this.guide?.start(hint); this.renderStatus(); this.guide?.update(0); this.boardDirty = true; this.showToast('跟着手指滑动，转动圆环的缺口', true);
+        this.guide?.start(hint); this.renderStatus(); this.guide?.update(0); this.boardDirty = true;
+        this.showToast(hint.kind === 'pull' ? '沿着杆身拖动，两头都可以拉' : '转动圆环，把缺口对准卡扣', true);
     }
     private showDailyHintReward(): void {
         const amount = this.dailyHintReward;
@@ -997,14 +1008,13 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         completeRingLevel(save, bank, this.mode, this.levelNumber, { moves: model.moves, seconds: model.seconds });
         this.renderStatus();
         this.persist(false); this.context?.reportScore(this.clearedTotal()); this.context?.reportRoundFinished?.();
-        if (this.mode === 'normal') this.context?.reportAchievementProgress('normal-cleared-level', save.modes.normal.cleared);
+        if (this.mode === 'normal') this.context?.reportAchievementProgress('original-normal-cleared', save.modes.normal.cleared);
         this.context?.reportEvent?.('level_complete', { mode: this.mode, level: this.levelNumber, sourceLevel: model.level.id,
             moves: model.moves, seconds: Math.round(model.seconds) }, `${this.context.sessionId}:${this.mode}:${this.levelNumber}:complete`);
         this.context?.services.feedback.play('milestone', { vibrate: false });
-        this.boardDirty = true; this.animationTime = 1;
         this.scheduleOnce(() => {
             if (this.state !== 'completed' || this.model !== model) return;
-            this.showCompletion(this.levelNumber === bank.modes[this.mode].length);
+            this.showCompletion(save.modes[this.mode].cleared === bank.modes[this.mode].length);
         }, 1);
     }
 
@@ -1015,7 +1025,8 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
             save.modes[this.mode].current = this.levelNumber;
             save.modes[this.mode].draft = { ...model.snapshot(), comboStreak: this.comboStreak, comboMisses: this.comboMisses };
         }
-        const previous = context.services.storage.getGameData(context.gameId);
+        const stored = context.services.storage.getGameData(context.gameId);
+        const previous = stored?.dataVersion === ROTATE_RINGS_SAVE_VERSION ? stored : undefined;
         try {
             // 保留运行层写入的成就指标等字段，只更新本作自己的存档内容。
             context.services.storage.writeGameData(context.gameId, { ...previous, dataVersion: ROTATE_RINGS_SAVE_VERSION,
@@ -1078,7 +1089,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
     }
     /** 全屏通关页：选关背景铺满，主色柔光托着白卡，卡里是这一关开局的完整盘面；标题挤压弹出，
      * 模式关卡标签与唯一的「下一关」按钮依次浮现。 */
-    private showCompletion(last: boolean): void {
+    private showCompletion(allCleared: boolean): void {
         this.hidePauseMenu();
         const root = this.overlay = this.makeNode(this.node, 'RingComplete', 750, view.getVisibleSize().height), c = RING_COMPLETE;
         root.addComponent(BlockInputEvents);
@@ -1095,7 +1106,7 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const confetti = this.makeNode(root, 'CompleteConfetti', 750, 1334).addComponent(Graphics);
         const pieces = this.confettiPieces();
         // 标题：白色粗体 + 模式深色描边，挤压弹出。
-        const titleText = last ? '全部解开了' : c.titles[Math.floor(Math.random() * c.titles.length)];
+        const titleText = allCleared ? '全部解开了' : c.titles[Math.floor(Math.random() * c.titles.length)];
         const title = this.label(root, 'CompleteTitle', titleText, c.titleSize, 0, 0, 660, c.titleSize * 1.3, '#FFFFFF', true);
         title.enableOutline = true; title.outlineColor = ringColor(this.mode === 'hard' ? T.hardDeep : T.primaryDeep); title.outlineWidth = 6;
         title.enableShadow = true; title.shadowColor = ringColor(T.shadow, 60); title.shadowOffset = new Vec2(0, -5);
@@ -1107,8 +1118,9 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         const tag = this.makeNode(root, 'CompleteTag', tagWidth, tagHeight), pill = tag.addComponent(Graphics);
         pill.fillColor = ringColor('#FFFFFF', 225); pill.roundRect(-tagWidth / 2, -tagHeight / 2, tagWidth, tagHeight, tagHeight / 2); pill.fill();
         this.label(tag, 'CompleteTagText', tagText, 26, 0, 0, tagWidth - 24, tagHeight - 6, this.accent(), true);
-        const next = this.button(root, 'NextLevel', last ? '全部完成 · 返回选关' : '下一关', 0, 0, 480, 104, () => {
-            if (this.levelNumber >= (this.bank?.modes[this.mode].length ?? 0)) this.showSelection(); else void this.openLevel(this.levelNumber + 1);
+        const returnToSelection = allCleared || this.levelNumber === this.bank!.modes[this.mode].length;
+        const next = this.button(root, 'NextLevel', returnToSelection ? '返回选关' : '下一关', 0, 0, 480, 104, () => {
+            if (returnToSelection) this.showSelection(); else void this.openLevel(this.save!.modes[this.mode].current);
         }, true);
         next.getChildByName('Text')!.getComponent(Label)!.fontSize = 34;
         this.completion = { time: 0, card, confetti, pieces, parts };
@@ -1337,7 +1349,6 @@ export class RotateRingsGame extends Component implements MiniGame<RingServices>
         g.strokeColor = ringColor(hex); g.fillColor = ringColor(hex); g.lineWidth = 3;
         if (icon === 'pause') { g.roundRect(-size * .7, -size, size * .45, size * 2, 3); g.roundRect(size * .25, -size, size * .45, size * 2, 3); g.fill(); }
         else if (icon === 'check') { g.moveTo(-size, 0); g.lineTo(-size * .2, -size * .65); g.lineTo(size, size * .65); g.stroke(); }
-        else if (icon === 'lock') { g.roundRect(-size * .75, -size, size * 1.5, size * 1.3, 2); g.stroke(); g.arc(0, size * .25, size * .5, 0, Math.PI, false); g.stroke(); }
         else { const sign = icon === 'right' ? 1 : -1; g.moveTo(-sign * size * .35, size * .7); g.lineTo(sign * size * .35, 0); g.lineTo(-sign * size * .35, -size * .7); g.stroke(); }
     }
 }

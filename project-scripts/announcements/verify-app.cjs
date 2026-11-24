@@ -29,6 +29,9 @@ async function main() {
         assert.equal(initial.games.find((game) => game.id === 'cyblockbees').supportsAds, false, '未接入的游戏不能伪造启用入口');
         assert.equal(initial.games.find((game) => game.id === 'rotate-rings').supportsAds, true);
         assert.ok(initial.placements.some((placement) => placement.key === 'rotateRingsHintRewarded' && placement.gameId === 'rotate-rings'));
+        assert.deepEqual(initial.placements.map((placement) => placement.key).sort(),
+            Object.keys(initial.ads.value.wechat).filter((key) => !['lobbyListCustom', 'lobbyReturnInterstitial'].includes(key)).sort(),
+            '配置页必须展示运行时注册的全部游戏广告位，不能只保留入口开关');
         const before = fs.readFileSync(target, 'utf8');
         function reject(section, change, field) {
             const input = clone(initial[section].value);
@@ -43,6 +46,8 @@ async function main() {
         reject('ads', (input) => { input.games.meowdoku = 'false'; }, 'games.meowdoku');
         reject('ads', (input) => { input.wechat.meowdokuToolRewarded = 'ad\nunit'; }, 'wechat.meowdokuToolRewarded');
         reject('ads', (input) => { input.wechat.rotateRingsHintRewarded = 'ad\nunit'; }, 'wechat.rotateRingsHintRewarded');
+        reject('ads', (input) => { input.wechat.lobbyReturnInterstitial = 'ad\nunit'; }, 'wechat.lobbyReturnInterstitial');
+        reject('ads', (input) => { input.wechat.lobbyListCustom = 'ad\nunit'; }, 'wechat.lobbyListCustom');
         assert.throws(() => store.save('sharing', {}, ''), /配置类型/);
         assert.throws(() => store.save('ads', initial.ads.value, 'stale'), /其他页面/);
 
@@ -51,6 +56,8 @@ async function main() {
         ads.wechat.meowdokuToolRewarded = '  adunit-meowdoku  ';
         ads.games['rotate-rings'] = false;
         ads.wechat.rotateRingsHintRewarded = '  adunit-rings-test  ';
+        ads.wechat.lobbyReturnInterstitial = '  adunit-lobby-test  ';
+        ads.wechat.lobbyListCustom = '  adunit-lobby-list-test  ';
         ads.tapAdUnitId = 'tap-rewarded';
         ads.games.futureGame = true;
         ads.cloudSave = { enabled: true };
@@ -60,6 +67,8 @@ async function main() {
         assert.equal(saved.ads.games.meowdoku.enabled, false);
         assert.equal(saved.ads.games['rotate-rings'].enabled, false);
         assert.equal(saved.ads.wechat.rotateRingsHintRewarded.adUnitId, 'adunit-rings-test');
+        assert.equal(saved.ads.wechat.lobbyReturnInterstitial.adUnitId, 'adunit-lobby-test');
+        assert.equal(saved.ads.wechat.lobbyListCustom.adUnitId, 'adunit-lobby-list-test');
         assert.equal(saved.ads.games.meowdoku.futureSetting, 'keep');
         assert.deepEqual(saved.ads.games.futureGame, config.ads.games.futureGame, '未知广告条目保留原值');
         assert.equal(saved.ads.wechat.meowdokuToolRewarded.futureSetting, 'keep');
@@ -82,6 +91,7 @@ async function main() {
         assert.equal(saved.development.futureSetting, 'keep');
         assert.equal(saved.fonts.futureSetting, 'keep');
         assert.equal(saved.ads.wechat.meowdokuToolRewarded.adUnitId, 'adunit-meowdoku', '发布保存不回滚已保存广告');
+        assert.equal(saved.ads.wechat.lobbyReturnInterstitial.adUnitId, 'adunit-lobby-test', '发布保存不回滚返回插屏配置');
         for (const key of ['sharing', 'cloudSave', 'designResolution', 'timeouts', 'qualityProfiles', 'renderLayers', 'schemaVersion', 'futureSetting']) {
             assert.deepEqual(saved[key], config[key], '非编辑配置保留：' + key);
         }

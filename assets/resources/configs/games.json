@@ -2,88 +2,17 @@
     "schemaVersion": 3,
     "games": [
         {
-            "id": "city-bloxx",
-            "version": "1.0.0",
-            "name": "都市摩天楼",
-            "description": "点击放下楼层，把城市建到云端",
-            "bundle": "game-city-bloxx",
-            "resourceBundle": "game-city-bloxx-assets",
-            "scene": "scenes/CityBloxx",
-            "entryComponent": "CityBloxxGame",
-            "cover": "visual/covers/city-bloxx/city-cover/texture",
+            "id": "cube-away",
+            "version": "0.1.0",
+            "name": "救出小蛇",
+            "description": "旋转立方体，帮小蛇找到畅通的出口！",
+            "bundle": "game-cube-away",
+            "resourceBundle": "game-cube-away-assets",
+            "scene": "scenes/CubeAway",
+            "entryComponent": "CubeAwayGame",
+            "cover": "visual/covers/cube-away/cube-away-cover/texture",
             "orientation": "portrait",
             "renderMode": "3d",
-            "minimumDeviceTier": "low",
-            "minAppVersion": "0.1.0",
-            "enabled": true,
-            "visibility": "development",
-            "preload": [],
-            "tags": [
-                "stack",
-                "timing",
-                "endless"
-            ],
-            "lobbyTags": [
-                "new"
-            ]
-        },
-        {
-            "id": "flappy-dunk",
-            "version": "0.1.0",
-            "name": "篮球灌篮",
-            "description": "振翅飞行，连续空心灌篮！",
-            "bundle": "game-flappy-dunk",
-            "resourceBundle": "game-flappy-dunk-assets",
-            "resourceDirectories": [
-                "visual",
-                "configs"
-            ],
-            "scene": "scenes/FlappyDunk",
-            "entryComponent": "FlappyDunkGame",
-            "cover": "visual/covers/flappy-dunk/dunk-cover-v2/texture",
-            "orientation": "portrait",
-            "renderMode": "2d",
-            "minimumDeviceTier": "low",
-            "minAppVersion": "0.1.0",
-            "enabled": true,
-            "visibility": "public",
-            "preload": [],
-            "tags": [
-                "arcade",
-                "basketball",
-                "endless"
-            ],
-            "achievement": {
-                "id": "flappy-dunk-trophy-v2",
-                "name": "空心大师",
-                "description": "在极限模式的一局游戏中连续空心入网 10 次",
-                "metric": "swish-streak",
-                "target": 10,
-                "unit": "次",
-                "trophy": "dunk",
-                "color": "#E2763F",
-                "lobbyProgress": "best"
-            },
-            "lobbyTags": [
-                "new"
-            ]
-        },
-        {
-            "id": "rotate-rings",
-            "version": "0.1.0",
-            "name": "解个圆环",
-            "description": "转到缺口，解开圆环机关！",
-            "bundle": "game-rotate-rings",
-            "resourceBundle": "game-rotate-rings-assets",
-            "resourceDirectories": [
-                "visual",
-                "configs"
-            ],
-            "scene": "scenes/RotateRings",
-            "entryComponent": "RotateRingsGame",
-            "cover": "visual/covers/rotate-rings/rotate-rings-cover-v5/texture",
-            "orientation": "portrait",
-            "renderMode": "2d",
             "minimumDeviceTier": "low",
             "minAppVersion": "0.1.0",
             "enabled": true,
@@ -92,52 +21,23 @@
             "tags": [
                 "puzzle",
                 "logic",
-                "relaxing"
+                "relaxing",
+                "3d"
+            ],
+            "lobbyTags": [
+                "new"
             ],
             "achievement": {
-                "id": "rotate-rings-trophy-v1",
-                "name": "解环大师",
-                "description": "通关解个圆环 300 关普通关卡",
-                "metric": "normal-cleared-level",
-                "target": 300,
+                "id": "cube-away-trophy-v1",
+                "name": "魔方蛇王",
+                "description": "在魔方小蛇中累计通关 200 关",
+                "metric": "cleared-levels",
+                "target": 200,
                 "unit": "关",
-                "trophy": "ring-knot",
-                "color": "#58A2EC",
+                "trophy": "prism-cube",
+                "color": "#B85D4F",
                 "lobbyProgress": "count"
-            },
-            "lobbyTags": [
-                "new"
-            ]
-        },
-        {
-            "id": "ping-pong",
-            "version": "0.1.0",
-            "name": "乒乓球对战",
-            "description": "双人对决或与机器人较量！",
-            "bundle": "game-pingpong",
-            "resourceBundle": "game-pingpong-assets",
-            "resourceDirectories": [
-                "visual",
-                "configs"
-            ],
-            "scene": "scenes/PingPong",
-            "entryComponent": "PingPongGame",
-            "cover": "visual/covers/pingpong/pingpong-cover/texture",
-            "orientation": "portrait",
-            "renderMode": "2d",
-            "minimumDeviceTier": "low",
-            "minAppVersion": "0.1.0",
-            "enabled": true,
-            "visibility": "public",
-            "preload": [],
-            "tags": [
-                "sports",
-                "ping-pong"
-            ],
-            "twoPlayer": true,
-            "lobbyTags": [
-                "new"
-            ]
+            }
         },
         {
             "id": "meowdoku",
@@ -165,14 +65,49 @@
                 "relaxing"
             ],
             "achievement": {
-                "id": "meowdoku-trophy-v3",
+                "id": "meowdoku-trophy-v5",
                 "name": "猫咪指挥家",
                 "description": "通关猫咪数独第 500 关",
-                "metric": "cleared-level",
+                "metric": "deduction-cleared-level",
                 "target": 500,
                 "unit": "关",
                 "trophy": "cat",
                 "color": "#EBAA72",
+                "lobbyProgress": "count"
+            }
+        },
+        {
+            "id": "cozy-sudoku",
+            "version": "0.1.0",
+            "name": "慢慢数独",
+            "description": "不同规则的数独，等你来挑战",
+            "bundle": "game-cozy-sudoku",
+            "resourceBundle": "game-cozy-sudoku-assets",
+            "scene": "scenes/CozySudoku",
+            "entryComponent": "CozySudokuGame",
+            "cover": "visual/covers/cozy-sudoku/cozy-sudoku-cover/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "logic",
+                "relaxing"
+            ],
+            "lobbyTags": [],
+            "achievement": {
+                "id": "cozy-sudoku-trophy-v1",
+                "name": "悠然宗师",
+                "description": "完成慢慢数独全部 600 关",
+                "metric": "cleared-levels",
+                "target": 600,
+                "unit": "关",
+                "trophy": "sudoku-journal",
+                "color": "#91A76A",
                 "lobbyProgress": "count"
             }
         },
@@ -212,6 +147,147 @@
             }
         },
         {
+            "id": "flappy-dunk",
+            "version": "0.1.0",
+            "name": "篮球灌篮",
+            "description": "振翅飞行，连续空心灌篮！",
+            "bundle": "game-flappy-dunk",
+            "resourceBundle": "game-flappy-dunk-assets",
+            "resourceDirectories": [
+                "visual",
+                "configs"
+            ],
+            "scene": "scenes/FlappyDunk",
+            "entryComponent": "FlappyDunkGame",
+            "cover": "visual/covers/flappy-dunk/dunk-cover-v2/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "arcade",
+                "basketball",
+                "endless"
+            ],
+            "achievement": {
+                "id": "flappy-dunk-trophy-v2",
+                "name": "空心大师",
+                "description": "在极限模式的一局游戏中连续空心入网 10 次",
+                "metric": "swish-streak",
+                "target": 10,
+                "unit": "次",
+                "trophy": "dunk",
+                "color": "#E2763F",
+                "lobbyProgress": "best"
+            },
+            "lobbyTags": []
+        },
+        {
+            "id": "rotate-rings",
+            "version": "0.2.0",
+            "name": "解个圆环",
+            "description": "转到缺口，解开圆环机关！",
+            "bundle": "game-rotate-rings",
+            "resourceBundle": "game-rotate-rings-assets",
+            "resourceDirectories": [
+                "visual",
+                "configs"
+            ],
+            "scene": "scenes/RotateRings",
+            "entryComponent": "RotateRingsGame",
+            "cover": "visual/covers/rotate-rings/rotate-rings-cover-v5/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "puzzle",
+                "logic",
+                "relaxing"
+            ],
+            "achievement": {
+                "id": "rotate-rings-trophy-v2",
+                "name": "解环大师",
+                "description": "通关解个圆环 300 关普通关卡",
+                "metric": "original-normal-cleared",
+                "target": 300,
+                "unit": "关",
+                "trophy": "ring-knot",
+                "color": "#58A2EC",
+                "lobbyProgress": "count"
+            },
+            "lobbyTags": []
+        },
+        {
+            "id": "city-bloxx",
+            "version": "1.0.0",
+            "name": "都市摩天楼",
+            "description": "经典复刻，你能把楼建到太空吗？",
+            "bundle": "game-city-bloxx",
+            "resourceBundle": "game-city-bloxx-assets",
+            "scene": "scenes/CityBloxx",
+            "entryComponent": "CityBloxxGame",
+            "cover": "visual/covers/city-bloxx/city-cover/texture",
+            "orientation": "portrait",
+            "renderMode": "3d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "stack",
+                "timing",
+                "endless"
+            ],
+            "lobbyTags": [],
+            "achievement": {
+                "id": "city-bloxx-trophy-v1",
+                "name": "筑梦银河",
+                "description": "在都市摩天楼抵达「银河彼方」（520 层）",
+                "metric": "tower-floors",
+                "target": 520,
+                "unit": "层",
+                "trophy": "galaxy-tower",
+                "color": "#8674CA",
+                "lobbyProgress": "best"
+            }
+        },
+        {
+            "id": "ping-pong",
+            "version": "0.1.0",
+            "name": "乒乓球对战",
+            "description": "双人对决或与机器人较量！",
+            "bundle": "game-pingpong",
+            "resourceBundle": "game-pingpong-assets",
+            "resourceDirectories": [
+                "visual",
+                "configs"
+            ],
+            "scene": "scenes/PingPong",
+            "entryComponent": "PingPongGame",
+            "cover": "visual/covers/pingpong/pingpong-cover/texture",
+            "orientation": "portrait",
+            "renderMode": "2d",
+            "minimumDeviceTier": "low",
+            "minAppVersion": "0.1.0",
+            "enabled": true,
+            "visibility": "public",
+            "preload": [],
+            "tags": [
+                "sports",
+                "ping-pong"
+            ],
+            "twoPlayer": true,
+            "lobbyTags": []
+        },
+        {
             "id": "cyblockbees",
             "version": "0.2.0",
             "name": "保护狗头",
@@ -226,7 +302,7 @@
             "renderMode": "2d",
             "minimumDeviceTier": "low",
             "minAppVersion": "0.1.0",
-            "enabled": true,
+            "enabled": false,
             "visibility": "public",
             "preload": [],
             "tags": [

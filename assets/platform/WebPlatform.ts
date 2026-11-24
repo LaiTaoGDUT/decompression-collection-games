@@ -105,9 +105,7 @@ export class WebPlatform implements Platform {
                 ? Object.freeze({ ...options.topRightReservedArea })
                 : undefined,
         });
-        this.launchOptions = this.freezeLaunchOptions(
-            options.launchOptions ?? DEFAULT_LAUNCH_OPTIONS,
-        );
+        this.launchOptions = this.freezeLaunchOptions(options.launchOptions ?? DEFAULT_LAUNCH_OPTIONS);
         this.deviceProfile = Object.freeze({
             ...(options.deviceProfile ?? DEFAULT_DEVICE_PROFILE),
         });

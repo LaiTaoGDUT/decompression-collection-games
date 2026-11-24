@@ -214,18 +214,22 @@ function gameCard(game) {
     const fields = el('div', undefined, 'fields');
     game.fields.filter(field => fieldNames[field.path]).forEach(field => {
         const flag = ['metrics.completed-7x7', 'metrics.fast-clears'].includes(field.path);
-        const node = el('div', undefined, 'field'), value = el('strong', flag ? (Number(field.value) ? '已达成' : '未达成') : number(field.value)), unit = fieldUnit(field.path);
-        if (unit) value.append(el('small', unit)); node.append(el('span', fieldNames[field.path]), value); fields.append(node);
+        const completed = game.completionOnly && field.path === 'highScore';
+        const node = el('div', undefined, 'field'), value = el('strong', flag ? (Number(field.value) ? '已达成' : '未达成') : number(field.value)), unit = completed ? '关' : fieldUnit(field.path);
+        if (unit) value.append(el('small', unit)); node.append(el('span', completed ? '已通关' : fieldNames[field.path]), value); fields.append(node);
     });
     card.append(fields);
     if (!fields.childElementCount) card.append(el('p', '此模块的字段可在下方展开查看。', 'muted'));
     if (game.stars.length) {
         const details = el('details'), stars = el('div', undefined, 'stars'), perfect = game.stars.filter(level => level.stars === 3).length;
-        details.append(el('summary', '逐关星级 · ' + game.stars.length + ' 关记录 · ' + perfect + ' 个三星'));
+        details.append(el('summary', game.completionOnly ? '逐关通关 · ' + game.stars.length + ' 关记录'
+            : '逐关星级 · ' + game.stars.length + ' 关记录 · ' + perfect + ' 个三星'));
         game.stars.forEach(level => {
             const cell = el('div', undefined, 'level-star'), value = Math.max(0, Math.min(3, Number(level.stars)));
-            cell.title = level.level + '：' + value + ' 星'; cell.setAttribute('aria-label', cell.title);
-            cell.append(el('small', /^\d+$/.test(level.level) ? '第 ' + level.level + ' 关' : level.level), el('span', '★'.repeat(value), 'star-filled'), el('span', '★'.repeat(3 - value), 'star-empty')); stars.append(cell);
+            cell.title = level.level + (game.completionOnly ? '：已通关' : '：' + value + ' 星'); cell.setAttribute('aria-label', cell.title);
+            if (game.completionOnly) cell.append(el('small', '第 ' + level.number + ' 关'), el('span', '✓', 'star-filled'));
+            else cell.append(el('small', /^\d+$/.test(level.level) ? '第 ' + level.level + ' 关' : level.level), el('span', '★'.repeat(value), 'star-filled'), el('span', '★'.repeat(3 - value), 'star-empty'));
+            stars.append(cell);
         }); details.append(stars); card.append(details);
     }
     if (game.fields.length) {

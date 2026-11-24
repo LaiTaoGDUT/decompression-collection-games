@@ -1,5 +1,5 @@
 /**
- * 原作默认提示流程：已有猫补叉 → 纠正错叉 → R1 必然放置 → R2 行列/颜色锁定
+ * 提示流程：已有猫补叉（含同色格）→ 纠正错叉 → R1 必然放置 → R2 行列/颜色锁定
  * → R3/R4 集合锁定（2～6 个颜色）→ 最短 R4_chain/R5_chain 矛盾链。
  * 提示只读取当前棋盘。答案仅用于原作的错叉纠正，不参与后续逻辑推理。
  */
@@ -36,7 +36,7 @@ export type MeowdokuHintKey =
     | 'HINT_R3_COL'
     | 'HINT_CONTRADICTION';
 
-export interface MeowdokuHint {
+interface MeowdokuHintMove {
     readonly action: MeowdokuHintAction;
     /** `place` 时要放猫的格子。 */
     readonly cell: readonly [number, number];
@@ -44,17 +44,25 @@ export interface MeowdokuHint {
     readonly markCells: readonly (readonly [number, number])[];
     /** 触发这条提示的推理单元。 */
     readonly unit: MeowdokuSolverUnit | null;
-    readonly key: MeowdokuHintKey;
     /** 文案里 `%s` / `%d` 的替换值。 */
     readonly args: readonly (string | number)[];
     /** 原作策略码，用于规则回归和难度计算。 */
     readonly strategy?: string;
+}
+
+export type MeowdokuHint = MeowdokuHintMove & ({
+    readonly key: 'HINT_CONTRADICTION';
     /** 假设目标格放猫后，连续推导出的必然落点和最终矛盾单元。 */
-    readonly chain?: {
+    readonly chain: {
         readonly steps: readonly (readonly [number, number])[];
+        /** 哪一行、列或色区只剩 steps[0] 这个落点。 */
+        readonly firstStepUnit?: MeowdokuSolverUnit;
         readonly contradiction: MeowdokuSolverUnit;
     };
-}
+} | {
+    readonly key: Exclude<MeowdokuHintKey, 'HINT_CONTRADICTION'>;
+    readonly chain?: undefined;
+});
 
 type Cell = [number, number];
 
@@ -101,7 +109,7 @@ interface SolverContext {
     readonly size: number;
     readonly regions: readonly (readonly number[])[];
     readonly board: number[][];
-    /** 是否把「同色格」也一起排除（原作 `hint_func = VALUE_COLOR_EXCLUDE`，默认关）。 */
+    /** 提示入口启用同色排除；落点难度计算沿用原作默认档。 */
     readonly includeRegion?: boolean;
 }
 
@@ -191,6 +199,7 @@ function findMarkHint(context: SolverContext): MeowdokuHint | undefined {
                 push(row + dr, col + dc);
             }
         }
+        const lineAndNeighborCount = markCells.length;
         if (includeRegion) {
             const regionId = context.regions[row]![col]!;
             for (let r = 0; r < size; r += 1) {
@@ -205,7 +214,7 @@ function findMarkHint(context: SolverContext): MeowdokuHint | undefined {
             cell: [row, col],
             markCells,
             unit: { type: 'region', index: context.regions[row]![col]! },
-            key: includeRegion ? 'HINT_R1_MARK_COMBINE' : 'HINT_R1_MARK',
+            key: markCells.length > lineAndNeighborCount ? 'HINT_R1_MARK_COMBINE' : 'HINT_R1_MARK',
             args: [],
             strategy: 'R1_mark',
         };
@@ -407,8 +416,10 @@ function findContradictionHint(context: SolverContext): MeowdokuHint | undefined
             };
             placeChainCat(context, state, row, col);
             const steps: Cell[] = [];
+            let firstStepUnit: MeowdokuSolverUnit | undefined;
             while (steps.length < bestDepth) {
                 let single: Cell | undefined;
+                let singleUnit: MeowdokuSolverUnit | undefined;
                 let contradiction: MeowdokuSolverUnit | undefined;
                 for (const { unit, cells } of units) {
                     const occupied = unit.type === 'row' ? state.rows : unit.type === 'col' ? state.cols : state.regions;
@@ -424,7 +435,10 @@ function findContradictionHint(context: SolverContext): MeowdokuHint | undefined
                         contradiction = unit;
                         break;
                     }
-                    if (count === 1 && !single) single = candidate;
+                    if (count === 1 && !single) {
+                        single = candidate;
+                        singleUnit = unit;
+                    }
                 }
                 if (contradiction) {
                     bestDepth = steps.length;
@@ -432,11 +446,12 @@ function findContradictionHint(context: SolverContext): MeowdokuHint | undefined
                         action: 'mark', cell: [row, col], markCells: [[row, col]], unit: contradiction,
                         key: 'HINT_CONTRADICTION', args: [bestDepth],
                         strategy: bestDepth <= 2 ? 'R4_chain' : 'R5_chain',
-                        chain: { steps, contradiction },
+                        chain: { steps, firstStepUnit, contradiction },
                     };
                     break;
                 }
                 if (!single) break;
+                if (!steps.length) firstStepUnit = singleUnit;
                 steps.push(single);
                 placeChainCat(context, state, single[0], single[1]);
             }
@@ -454,7 +469,7 @@ export function solveMeowdokuHint(
     regions: readonly (readonly number[])[],
     solution?: readonly number[],
 ): MeowdokuHint | undefined {
-    const context = buildContext(size, regions, board);
+    const context: SolverContext = { ...buildContext(size, regions, board), includeRegion: true };
     return findMarkHint(context)
         ?? findWrongMarkHint(context, solution)
         ?? findPlaceHint(context)

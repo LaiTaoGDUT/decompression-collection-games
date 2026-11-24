@@ -44,6 +44,8 @@ export interface GameAdFeatureConfig {
 }
 
 export interface WeChatAdConfig {
+    readonly lobbyListCustom: AdPlacementConfig;
+    readonly lobbyReturnInterstitial: AdPlacementConfig;
     readonly watermelonReviveRewarded: AdPlacementConfig;
     readonly chessEndlessReviveRewarded: AdPlacementConfig;
     readonly desktopCleanupRewarded: AdPlacementConfig;
@@ -55,6 +57,7 @@ export interface WeChatAdConfig {
     readonly multiColorFillHintRewarded: AdPlacementConfig;
     readonly cityBloxxReviveRewarded: AdPlacementConfig;
     readonly rotateRingsHintRewarded: AdPlacementConfig;
+    readonly cubeAwayReviveRewarded: AdPlacementConfig;
 }
 
 export interface AdsConfig {
@@ -217,8 +220,11 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             'multi-color-fill': { enabled: true },
             'city-bloxx': { enabled: true },
             'rotate-rings': { enabled: true },
+            'cube-away': { enabled: true },
         },
         wechat: {
+            lobbyListCustom: { adUnitId: '' },
+            lobbyReturnInterstitial: { adUnitId: '' },
             watermelonReviveRewarded: {
                 adUnitId: '',
             },
@@ -248,6 +254,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
             },
             cityBloxxReviveRewarded: { adUnitId: '' },
             rotateRingsHintRewarded: { adUnitId: '' },
+            cubeAwayReviveRewarded: { adUnitId: '' },
         },
         tap: { rewardedVideo: { adUnitId: '' } },
     },

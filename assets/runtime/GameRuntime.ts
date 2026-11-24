@@ -15,6 +15,7 @@ import type { AnalyticsService } from '../services/analytics/AnalyticsService';
 import type { StorageService } from '../services/storage/StorageService';
 import type { AchievementService } from '../services/achievements/AchievementService';
 import type { UpdateReminderService } from '../services/notifications/UpdateReminderService';
+import { LOBBY_RETURN_INTERSTITIAL, type AdService } from '../services/ads/AdService';
 import type { GameLoader } from './GameLoader';
 import type { GameManifest } from './GameManifest';
 import type {
@@ -52,7 +53,7 @@ export interface LoadingPresenter {
     showRestart?(message: string): void;
     updateProgress(message: string, progress: number): void;
     waitForCompletion?(): Promise<void>;
-    hideLobbyTransition?(): void;
+    hideLobbyTransition?(animated?: boolean): void;
     hideRestart?(): void;
     hide(): void;
 }
@@ -70,6 +71,7 @@ export interface GameErrorPresenter {
 }
 
 interface ExitOptions {
+    readonly showReturnInterstitial?: boolean;
     readonly skipSessionFinalization?: boolean;
     readonly bestEffortDiscard?: boolean;
 }
@@ -103,6 +105,7 @@ export interface GameRuntimeTimeouts {
 }
 
 interface GameRuntimeServices {
+    readonly ads?: Pick<AdService, 'showInterstitial'>;
     readonly assets?: AssetService;
     readonly storage?: StorageService;
     readonly achievements?: AchievementService;
@@ -413,20 +416,22 @@ export class GameRuntime {
                 new Error('No active game can return to lobby.')));
         }
 
+        let subscriptionRequested = false;
         try {
             // 部分游戏在失败页点击返回时才固化结果，必须在申请前记录完整结算。
             if (result?.completed) this.services.updateReminder?.recordRoundFinished();
-            this.services.updateReminder?.requestFromLobbyClick();
+            subscriptionRequested = this.services.updateReminder?.requestFromLobbyClick() === true;
         } catch (error: unknown) {
             console.warn('[GameRuntime] Update subscription did not block return to lobby.', error);
         }
-        return this.startExit(result, result?.completed ? 'completed' : 'exit', true);
+        return this.startExit(result, result?.completed ? 'completed' : 'exit', true, !subscriptionRequested);
     }
 
     private startExit(
         result?: GameResult,
         intent: 'exit' | 'restart' | 'completed' = 'exit',
         afterInput = false,
+        showReturnInterstitial = false,
     ): Promise<void> {
         if (this.leaving) {
             return this.leaving;
@@ -436,7 +441,7 @@ export class GameRuntime {
         const leaving = afterInput ? Promise.resolve().then(() => {
             this.hidePausePresenter();
             this.hideResultPresenter();
-            return this.performExit(result, intent);
+            return this.performExit(result, intent, { showReturnInterstitial });
         }) : this.performExit(result, intent);
         this.leaving = leaving;
         const clearLeaving = (): void => {
@@ -1003,7 +1008,8 @@ export class GameRuntime {
                 throw new GameRuntimeError('lobby', manifest.id, cause);
             } finally {
                 if (lobbyTransitionVisible) {
-                    this.loading?.hideLobbyTransition?.();
+                    // 插屏下方直接显示已就绪的大厅，不保留大厅壳层的淡出动画。
+                    this.loading?.hideLobbyTransition?.(!options.showReturnInterstitial);
                     lobbyTransitionVisible = false;
                 }
             }
@@ -1021,6 +1027,21 @@ export class GameRuntime {
 
             if (releaseError) {
                 throw releaseError;
+            }
+
+            if (options.showReturnInterstitial) {
+                // 壳层收起后再绘制一帧，保证插屏出现时下方已经是大厅。
+                // leaving 锁保持到广告结束，避免迟到的广告覆盖下一局。
+                await this.waitForLobbyPresentation();
+                try {
+                    await this.services.ads?.showInterstitial({
+                        placement: LOBBY_RETURN_INTERSTITIAL,
+                        gameId: manifest.id,
+                        sessionId: session.id,
+                    });
+                } catch (error: unknown) {
+                    console.warn('[GameRuntime] Interstitial ad did not block return to lobby.', error);
+                }
             }
         } catch (error: unknown) {
             if (this.stateMachine.currentState === 'playing') {

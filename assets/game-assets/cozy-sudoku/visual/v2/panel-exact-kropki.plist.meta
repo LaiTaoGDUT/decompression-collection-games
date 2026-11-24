@@ -1,0 +1,63 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "cd614a7e-79cc-59a7-9212-853cd4809bdf",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "73ffe": {
+      "importer": "sprite-frame",
+      "uuid": "cd614a7e-79cc-59a7-9212-853cd4809bdf@73ffe",
+      "displayName": "",
+      "id": "73ffe",
+      "name": "panel-exact-kropki",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0.0,
+        "offsetY": 0.0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 626,
+        "height": 893,
+        "rawWidth": 626,
+        "rawHeight": 893,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "7a83ef90-2cc7-5f87-b86b-d442894c35bb@6c48a",
+        "atlasUuid": "cd614a7e-79cc-59a7-9212-853cd4809bdf",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "panel-exact-kropki.png",
+    "format": 2,
+    "uuid": "cd614a7e-79cc-59a7-9212-853cd4809bdf",
+    "textureUuid": "7a83ef90-2cc7-5f87-b86b-d442894c35bb@6c48a"
+  }
+}

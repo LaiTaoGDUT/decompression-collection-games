@@ -12,7 +12,7 @@ export class RotateRingsLevelAssets {
     private disposed = false;
     private collisions?: Promise<RingPoint[][][]>;
     constructor(private readonly assets: AssetService, private readonly bundle: string, private readonly meshCount: number,
-        private readonly collisionShapeCount: number) {}
+        private readonly collisionShapeCount: number, private readonly bankSize = 64) {}
 
     async load(id: number): Promise<{ level: RingLevel; visuals: RingLevelVisuals }> {
         if (this.disposed) throw new Error('RotateRings level assets disposed');
@@ -36,7 +36,7 @@ export class RotateRingsLevelAssets {
                 || !Number.isInteger(ref[2]) || ref[2] < 0 || ref[2] > 0xffffff) throw new Error('Invalid RotateRings mesh reference');
             ids.add(ref[0]);
         }
-        const bankIds = Array.from(new Set(refs.map(ref => Math.floor(ref[1] / 64))));
+        const bankIds = Array.from(new Set(refs.map(ref => Math.floor(ref[1] / this.bankSize))));
         const banks = await Promise.all(bankIds.map(index => this.loadBank(index)));
         if (this.disposed) throw new Error('RotateRings level assets disposed');
         // 只保留当前关所需的库和最近访问的少量库；压缩归档仍驻留，可离线重建被淘汰的库。
@@ -47,7 +47,7 @@ export class RotateRingsLevelAssets {
         }
         const visuals: RingLevelVisuals = {};
         refs.forEach(([name, index, color]) => {
-            const geometry = banks[bankIds.indexOf(Math.floor(index / 64))].get(index);
+            const geometry = banks[bankIds.indexOf(Math.floor(index / this.bankSize))].get(index);
             visuals[name] = { ...geometry, color: ringSkinColor('#' + ('000000' + color.toString(16)).slice(-6).toUpperCase()) };
         });
         return { level, visuals };
@@ -91,8 +91,8 @@ export class RotateRingsLevelAssets {
         }
         const promise = this.loadArchive('geometry').then(archive => {
             if (this.disposed) throw new Error('RotateRings level assets disposed');
-            const bank = new RingGeometryBank(unpackRingBytes(archive.get(index)));
-            if (bank.first !== index * 64 || bank.count !== Math.min(64, this.meshCount - bank.first)) {
+            const bank = new RingGeometryBank(unpackRingBytes(archive.get(index)), this.bankSize);
+            if (bank.first !== index * this.bankSize || bank.count !== Math.min(this.bankSize, this.meshCount - bank.first)) {
                 throw new Error('RotateRings geometry bank mismatch');
             }
             return bank;

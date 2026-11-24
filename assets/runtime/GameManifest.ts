@@ -3,7 +3,7 @@ import type { DevicePerformanceTier, ScreenOrientation } from '../core/types/Com
 export const LOBBY_PROMOTION_TAGS = ['hot', 'new'] as const;
 export type LobbyPromotionTag = (typeof LOBBY_PROMOTION_TAGS)[number];
 
-export const TROPHY_STYLES = ['watermelon', 'rook', 'neon', 'puzzle', 'tidy', 'rocket', 'bubble', 'cat', 'bee-shield', 'color-route', 'ring-knot', 'dunk'] as const;
+export const TROPHY_STYLES = ['watermelon', 'rook', 'neon', 'puzzle', 'tidy', 'rocket', 'bubble', 'cat', 'bee-shield', 'color-route', 'ring-knot', 'dunk', 'galaxy-tower', 'sudoku-journal', 'prism-cube'] as const;
 export type TrophyStyle = (typeof TROPHY_STYLES)[number];
 
 /**

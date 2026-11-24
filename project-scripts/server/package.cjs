@@ -12,7 +12,7 @@ const { loadMigrations } = require('../../server/decompression-api/migrate.cjs')
 const source = path.join(root, 'server/decompression-api');
 const files = [
     'app.cjs', 'auth.cjs', 'login-providers.cjs', 'index.cjs', 'protocol.cjs', 'store.cjs', 'migrate.cjs', 'migrations/manifest.json',
-    'package.json', 'package-lock.json', 'test.cjs', 'postgres.test.cjs', 'migrations.postgres.test.cjs',
+    'package.json', 'package-lock.json', 'retired-games.json', 'test.cjs', 'postgres.test.cjs', 'migrations.postgres.test.cjs',
     'update.sh', 'deploy-native.sh', 'configure-wechat-secret.sh', 'backup-native.sh', 'nginx.conf',
     'decompression-api.service', 'decompression-api-backup.service',
     'decompression-api-backup.timer', 'decompression-data.service', 'install-data-viewer.sh', 'DATA_VIEWER.md',

@@ -40,34 +40,69 @@ function projectGame(schema, save) {
     if (schema.numbers.some(field => field.constant !== undefined && readPath(save, field.path) !== field.constant))
         return undefined;
     const starField = schema.stars;
+    const entries = starField && readPath(save, starField.path);
     const stars = starField === null || starField === void 0 ? void 0 : starField.keys.map(key => {
-        let value = readPath(save, `${starField.path}.${key}`);
+        let value = readPath(entries, key);
         if (starField.valuePath)
             value = readPath(value, starField.valuePath);
         return starField.thresholds ? starField.thresholds.filter(threshold => (0, CloudSaveCodec_1.uint)(value) >= threshold).length : (0, CloudSaveCodec_1.uint)(value, 3);
     });
     const numbers = schema.numbers.map(field => {
-        var _a;
+        var _a, _b;
         let raw = readPath(save, field.path);
+        if (field.completedFrom !== undefined && entries)
+            return completedInRange(stars, field.completedFrom, field.max);
         if (field.starProgress) {
             let cleared = 0;
             while (stars === null || stars === void 0 ? void 0 : stars[cleared])
                 cleared++;
             raw = cleared;
         }
-        return (0, CloudSaveCodec_1.uint)(Math.max((0, CloudSaveCodec_1.uint)(raw), field.metric ? (0, CloudSaveCodec_1.uint)((_a = save.metrics) === null || _a === void 0 ? void 0 : _a[field.metric]) : 0), field.max);
+        if (field.starCount)
+            return (0, CloudSaveCodec_1.uint)((_a = stars === null || stars === void 0 ? void 0 : stars.filter(value => value > 0).length) !== null && _a !== void 0 ? _a : 0, field.max);
+        return (0, CloudSaveCodec_1.uint)(Math.max((0, CloudSaveCodec_1.uint)(raw), field.metric ? (0, CloudSaveCodec_1.uint)((_b = save.metrics) === null || _b === void 0 ? void 0 : _b[field.metric]) : 0), field.max);
     });
     return (0, CloudSaveCodec_1.encodeModule)(numbers, stars);
 }
-function moduleRank(schema, payload) {
+function completedInRange(stars, start, length) {
+    let count = 0;
+    for (let i = start; i < start + length && i < stars.length; i++)
+        if (stars[i])
+            count++;
+    return count;
+}
+// 逐关开放前的云存档只有两个连续通关计数。展开后可与任意设备的跳关记录取并集。
+function decodeProgress(schema, payload) {
     var _a, _b;
-    const { numbers } = (0, CloudSaveCodec_1.decodeModule)(payload, schema.numbers.length, (_b = (_a = schema.stars) === null || _a === void 0 ? void 0 : _a.keys.length) !== null && _b !== void 0 ? _b : 0);
+    const decoded = (0, CloudSaveCodec_1.decodeModule)(payload, schema.numbers.length, (_b = (_a = schema.stars) === null || _a === void 0 ? void 0 : _a.keys.length) !== null && _b !== void 0 ? _b : 0);
+    if (!decoded.stars.length) {
+        schema.numbers.forEach((field, i) => {
+            if (field.completedFrom === undefined)
+                return;
+            const count = decoded.numbers[i];
+            if (count > field.max)
+                throw new Error('Invalid cloud completion count.');
+            for (let n = 0; n < count; n++)
+                decoded.stars[field.completedFrom + n] = 1;
+        });
+    }
+    return decoded;
+}
+function moduleRank(schema, payload) {
+    var _a;
+    const { numbers, stars } = decodeProgress(schema, payload);
     numbers.forEach((n, i) => {
         var _a;
         const field = schema.numbers[i];
         if (n > ((_a = field.max) !== null && _a !== void 0 ? _a : Number.MAX_SAFE_INTEGER) || (field.constant !== undefined && n !== field.constant))
             throw new Error('Invalid cloud field value.');
+        if (field.starCount && n !== stars.filter(value => value > 0).length)
+            throw new Error('Invalid cloud completion count.');
+        if (field.completedFrom !== undefined && n !== completedInRange(stars, field.completedFrom, field.max))
+            throw new Error('Invalid cloud completion count.');
     });
+    if (((_a = schema.stars) === null || _a === void 0 ? void 0 : _a.thresholds) && stars.some(value => value > schema.stars.thresholds.length))
+        throw new Error('Invalid cloud stars value.');
     const rank = schema.rank.reduce((sum, i) => sum + numbers[i], 0);
     if (!Number.isSafeInteger(rank))
         throw new Error('Invalid cloud progress.');
@@ -77,7 +112,7 @@ function moduleRank(schema, payload) {
 function mergeModule(schema, left, right) {
     if (!left && !right)
         return undefined;
-    const decode = (value) => { var _a, _b; moduleRank(schema, value); return (0, CloudSaveCodec_1.decodeModule)(value, schema.numbers.length, (_b = (_a = schema.stars) === null || _a === void 0 ? void 0 : _a.keys.length) !== null && _b !== void 0 ? _b : 0); };
+    const decode = (value) => { moduleRank(schema, value); return decodeProgress(schema, value); };
     if (!left) {
         decode(right);
         return right;
@@ -96,6 +131,10 @@ function mergeModule(schema, left, right) {
                 cleared++;
             values[i] = cleared;
         }
+        if (field.starCount)
+            values[i] = stars.filter(value => value > 0).length;
+        if (field.completedFrom !== undefined)
+            values[i] = completedInRange(stars, field.completedFrom, field.max);
     });
     return (0, CloudSaveCodec_1.encodeModule)(values, stars);
 }
@@ -111,13 +150,13 @@ function progressImprovements(schema, previous, next) {
     return added;
 }
 function restoreGame(schema, payload, local) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     moduleRank(schema, payload);
-    const decoded = (0, CloudSaveCodec_1.decodeModule)(payload, schema.numbers.length, (_b = (_a = schema.stars) === null || _a === void 0 ? void 0 : _a.keys.length) !== null && _b !== void 0 ? _b : 0);
+    const decoded = decodeProgress(schema, payload);
     // 只覆盖云协议明确包含的进度字段，保留本地道具、每日领取标记和有效棋盘。
     const result = (local === null || local === void 0 ? void 0 : local.dataVersion) === schema.dataVersion ? JSON.parse(JSON.stringify(local))
         : { dataVersion: schema.dataVersion, playCount: 0, highScore: 0, lastPlayedAt: 0 };
-    Object.keys((_c = schema.defaults) !== null && _c !== void 0 ? _c : {}).forEach(path => {
+    Object.keys((_a = schema.defaults) !== null && _a !== void 0 ? _a : {}).forEach(path => {
         if (readPath(result, path) === undefined)
             setPath(result, path, JSON.parse(JSON.stringify(schema.defaults[path])));
     });
@@ -128,11 +167,19 @@ function restoreGame(schema, payload, local) {
         (_a = field.restoreAlso) === null || _a === void 0 ? void 0 : _a.forEach(extra => {
             if (extra.preserveWhen && readPath(result, extra.preserveWhen))
                 return;
-            setPath(result, extra.path, (0, CloudSaveCodec_1.uint)(value + extra.offset, extra.max));
+            let progress = value;
+            if (field.completedFrom !== undefined) {
+                progress = 0;
+                while (progress < field.max && decoded.stars[field.completedFrom + progress])
+                    progress++;
+            }
+            setPath(result, extra.path, (0, CloudSaveCodec_1.uint)(progress + extra.offset, extra.max));
         });
     });
     if (schema.stars) {
-        const field = schema.stars, values = {};
+        const field = schema.stars, previous = readPath(result, field.path);
+        const values = field.preserveUnknown && previous && typeof previous === 'object' && !Array.isArray(previous)
+            ? { ...previous } : {};
         field.keys.forEach((key, index) => {
             var _a, _b, _c;
             const stars = (_a = decoded.stars[index]) !== null && _a !== void 0 ? _a : 0;
@@ -153,7 +200,7 @@ function restoreGame(schema, payload, local) {
     if (schema.achievement) {
         const value = schema.achievement.threeStars ? decoded.stars.filter(n => n === 3).length
             : decoded.numbers[schema.achievement.field];
-        result.metrics = { ...((_d = result.metrics) !== null && _d !== void 0 ? _d : {}), [schema.achievement.metric]: (0, CloudSaveCodec_1.uint)(value) };
+        result.metrics = { ...((_b = result.metrics) !== null && _b !== void 0 ? _b : {}), [schema.achievement.metric]: (0, CloudSaveCodec_1.uint)(value) };
     }
     return result;
 }
@@ -183,6 +230,12 @@ function validateCatalog(value) {
         for (const field of game.numbers) {
             if (!pathOk(field.path))
                 throw new Error('Invalid cloud path.');
+            if (field.completedFrom !== undefined && (!Number.isInteger(field.completedFrom) || field.completedFrom < 0
+                || !Number.isInteger(field.max) || field.max < 1 || !game.stars || field.completedFrom + field.max > game.stars.keys.length
+                || field.starCount || field.starProgress))
+                throw new Error('Invalid cloud completion range.');
+            if (field.starCount !== undefined && (typeof field.starCount !== 'boolean' || !game.stars || field.starProgress))
+                throw new Error('Invalid cloud completion field.');
             if (field.record !== undefined && typeof field.record !== 'boolean')
                 throw new Error('Invalid cloud record field.');
             if (field.constant !== undefined && (!Number.isSafeInteger(field.constant) || field.constant < 0
@@ -200,7 +253,9 @@ function validateCatalog(value) {
         Object.keys((_d = game.defaults) !== null && _d !== void 0 ? _d : {}).forEach(path => { if (!pathOk(path))
             throw new Error('Invalid cloud default.'); });
         if (game.stars && (!pathOk(game.stars.path) || game.stars.keys.length > 8192
-            || game.stars.keys.some(key => !pathOk(key))))
+            || new Set(game.stars.keys).size !== game.stars.keys.length
+            || game.stars.keys.some(key => !pathOk(key))
+            || (game.stars.preserveUnknown !== undefined && typeof game.stars.preserveUnknown !== 'boolean')))
             throw new Error('Invalid stars schema.');
         const a = game.achievement;
         if (a) {

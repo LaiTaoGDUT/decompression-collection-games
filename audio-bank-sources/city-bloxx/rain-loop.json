@@ -1,0 +1,20 @@
+{
+  "source": "https://opengameart.org/content/40-cc0-water-splash-slime-sfx",
+  "author": "rubberduck",
+  "license": "CC0",
+  "sourceFile": "loop_rain.ogg",
+  "output": "assets/game-assets/city-bloxx/audio/rain-loop.mp3",
+  "processing": "ffmpeg -i loop_rain.ogg -af highpass=f=150,lowpass=f=7500,volume=13dB -ar 44100 -ac 1 -c:a libmp3lame -b:a 96k rain-loop.mp3",
+  "durationSeconds": 6.826553287981859,
+  "integratedLUFS": -20.0,
+  "truePeakDbFS": -2.0,
+  "gameGain": 0.5,
+  "loopAnalysis": {
+    "samples": 301051,
+    "rmsDb": -22.46375092959431,
+    "dcOffset": 6.009921674627539e-06,
+    "loopJump": 0.08843355253338814,
+    "internalJumpP99": 0.09633679687976837,
+    "bytes": 82800
+  }
+}

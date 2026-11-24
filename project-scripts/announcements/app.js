@@ -117,9 +117,13 @@ function renderAdsForm() {
         rows.appendChild(row);
     });
     games.appendChild(rows);
+    const interstitial = appCard('返回大厅插屏', '用户主动返回并显示大厅后尝试展示；无广告、频控或订阅弹窗时跳过。');
+    interstitial.appendChild(appInput('ads', 'wechat.lobbyReturnInterstitial', '微信插屏广告单元 ID', '留空关闭返回插屏；使用插屏类型的广告位。'));
+    const inline = appCard('大厅列表卡片广告', '原生模板横幅独占一行，插在当前列表前两个游戏之后；无广告时自动收起。');
+    inline.appendChild(appInput('ads', 'wechat.lobbyListCustom', '微信原生模板广告单元 ID', '使用 20:7 横幅卡片广告位；留空关闭。'));
     const tap = appCard('Tap 共用激励视频', 'Tap 平台的所有游戏共用一个激励视频广告单元。');
     tap.appendChild(appInput('ads', 'tapAdUnitId', 'Tap 广告单元 ID', '留空表示未配置。'));
-    form.append(games, tap);
+    form.append(games, inline, interstitial, tap);
     renderAppSummaries();
 }
 
@@ -157,7 +161,9 @@ function renderAppSummaries() {
     const ads = $('ads-summary');
     ads.textContent = '';
     summaryChip(ads, '广告入口已开启', Object.values(appDrafts.ads.games).filter(Boolean).length + ' / ' + Object.keys(appDrafts.ads.games).length);
-    summaryChip(ads, '微信广告位已填写', Object.values(appDrafts.ads.wechat).filter((id) => id.trim()).length + ' / ' + appState.placements.length);
+    summaryChip(ads, '微信激励广告位已填写', appState.placements.filter((placement) => appDrafts.ads.wechat[placement.key].trim()).length + ' / ' + appState.placements.length);
+    summaryChip(ads, '返回大厅插屏', appDrafts.ads.wechat.lobbyReturnInterstitial.trim() ? '已填写' : '关闭');
+    summaryChip(ads, '大厅卡片广告', appDrafts.ads.wechat.lobbyListCustom.trim() ? '已填写' : '关闭');
     summaryChip(ads, 'Tap 广告位', appDrafts.ads.tapAdUnitId.trim() ? '已填写' : '未配置');
     summaryChip(ads, '已保存的广告模式', appSavedState.release.value.mockAds ? '模拟广告（Tap 除外）' : '平台广告');
     appState.placements.forEach((placement) => {

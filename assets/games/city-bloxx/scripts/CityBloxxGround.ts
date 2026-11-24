@@ -3,7 +3,7 @@ import type { AssetService } from '../../../services/asset/AssetService';
 
 type Point = [number, number, number];
 interface Geometry { positions: number[]; colors: number[]; uvs: number[]; indices: number[]; }
-export const CITY_GROUND = Object.freeze({ surfaceY: -.22, backZ: -2.4, cell: .45, textureSpan: 1.8, pavingColor: '#D3D1C6' });
+export const CITY_GROUND = Object.freeze({ surfaceY: -.22, backZ: -2.4, cell: .45, textureSpan: 1.8, pavingColor: '#E6C8A2' });
 const PLAZA_Y = CITY_GROUND.surfaceY;
 
 /** A paved plaza and beveled plinth. The playable foundation surface remains exactly y=0. */
@@ -25,7 +25,7 @@ export class CityBloxxGround {
         this.upload('CityPavedPlaza', paving, this.material(texture));
 
         const stone = geometry();
-        slab(stone, 0, 0, 2.24, 1.84, PLAZA_Y, -.13, .11, '#BAC6C7');
+        slab(stone, 0, 0, 2.24, 1.84, PLAZA_Y, -.13, .11, '#CDB792');
         slab(stone, 0, 0, 2.10, 1.70, -.13, -.105, .11, '#C9A76A');
         slab(stone, 0, 0, 2.05, 1.65, -.105, 0, .12, '#F5F0E4');
         rect(stone, 0, 0, 1.48, 1.12, .001, '#E1E5DF');
@@ -39,7 +39,7 @@ export class CityBloxxGround {
         }
         // Narrow curb inlays add depth to the plaza without blocking the tower.
         for (const sx of [-1, 1]) {
-            slab(stone, sx * 1.8, 3.1, .10, 8.4, PLAZA_Y, -.185, .035, '#A9BDBD');
+            slab(stone, sx * 1.8, 3.1, .10, 8.4, PLAZA_Y, -.185, .035, '#C7AE88');
             rect(stone, sx * 1.72, 3.1, .018, 8.4, -.213, '#D2B77E');
         }
         this.upload('CityFoundationPlinth', stone, this.material());

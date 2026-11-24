@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "activeId": "v0.0.9-20261021-6d4451",
+  "activeId": "v0.0.10-20261106-fc01c3",
   "announcements": [
     {
       "id": "v0.1.0-20261011-7834ff",
@@ -81,6 +81,30 @@
       ],
       "createdAt": "2026-10-21T12:40:07.081Z",
       "updatedAt": "2026-10-21T12:51:40.588Z"
+    },
+    {
+      "id": "v0.0.10-20261106-fc01c3",
+      "version": "0.0.11",
+      "date": "2026-11-23",
+      "newGames": [
+        {
+          "gameId": "cube-away",
+          "text": "旋转立方体，帮小蛇找到畅通的出口！"
+        }
+      ],
+      "features": [
+        {
+          "gameId": "meowdoku",
+          "text": "关卡全面焕新，等你来挑战！"
+        },
+        {
+          "gameId": "rotate-rings",
+          "text": "关卡全面焕新，等你来挑战！"
+        }
+      ],
+      "fixes": [],
+      "createdAt": "2026-11-06T03:27:49.662Z",
+      "updatedAt": "2026-11-23T11:33:06.232Z"
     }
   ]
 }

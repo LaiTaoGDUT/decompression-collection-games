@@ -44,3 +44,6 @@ tests/
 .workspace/
 server/decompression-api/.env
 server/decompression-api/backups/
+
+# 推广视频体积大，只留在本地
+platform-assets/app物料/推广视频/

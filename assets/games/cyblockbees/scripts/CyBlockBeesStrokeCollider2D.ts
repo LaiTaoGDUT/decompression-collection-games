@@ -10,6 +10,15 @@ interface Edge {
     m_hasVertex0: boolean; m_hasVertex3: boolean;
 }
 interface Segment { a: Point; b: Point; before?: Point; after?: Point; deviation?: number; }
+interface StrokeFixture {
+    m_shape: StrokeShape;
+    m_proxies: { childIndex: number; treeNode: unknown;
+        aabb: { lowerBound: { data: Float32Array }; upperBound: { data: Float32Array } } }[];
+    m_body: { m_world: { m_contactManager: { m_broadPhase: {
+        MoveProxy(node: unknown, bounds: unknown, displacement: Point): void;
+    } } } };
+    SynchronizeProxies(first: Transform, second: Transform, displacement: Point): void;
+}
 const pointKey = (p: Point): string => `${Math.round(p.x * PTM * 1e4)}:${Math.round(p.y * PTM * 1e4)}`;
 
 /** 带宽度的连续边链，交给 Box2D 的 chain contact 处理相邻边的法线。
@@ -21,6 +30,7 @@ class StrokeShape {
     readonly m_vertices: Point[];
     readonly m_count: number;
     private readonly edges: Segment[];
+    private readonly distanceVertices: Point[][];
     private area = 0;
     private weightedX = 0;
     private weightedY = 0;
@@ -30,6 +40,7 @@ class StrokeShape {
         // Shape.Clone 只复制不可变几何与积分结果，不能再次运行覆盖证明和几何构建。
         if (copy) {
             this.m_vertices = copy.m_vertices; this.m_count = copy.m_count; this.edges = copy.edges;
+            this.distanceVertices = copy.distanceVertices;
             this.area = copy.area; this.weightedX = copy.weightedX; this.weightedY = copy.weightedY; this.inertia = copy.inertia;
             return;
         }
@@ -59,6 +70,11 @@ class StrokeShape {
         // chain fixture 和 child edge 必须使用相同半径，接触流形/CCD/求解器才能一致。
         this.m_radius += resolved.reduce((maximum, edge) => Math.max(maximum, edge.deviation ?? 0), 0);
         this.edges = compactCoveredEdges(resolved, this.m_radius);
+        // 原来每次 TOI 都 Copy 到 b2Vec2 的 Float32Array。几何只读，预先完成相同的
+        // Float32 舍入并共享顶点；距离算法只读取这些点，不需要逐次复制或访问 x/y getter。
+        this.distanceVertices = this.edges.map(({ a, b }) => [
+            { x: Math.fround(a.x), y: Math.fround(a.y) }, { x: Math.fround(b.x), y: Math.fround(b.y) },
+        ]);
     }
     Clone(): StrokeShape { return new StrokeShape(this.m_vertices, this.m_radius, this); }
     GetType(): number { return this.m_type; }
@@ -69,10 +85,38 @@ class StrokeShape {
         edge.m_hasVertex0 = !!part.before; edge.m_hasVertex3 = !!part.after;
         edge.m_vertex0.Copy(part.before ?? part.a); edge.m_vertex3.Copy(part.after ?? part.b);
     }
-    SetupDistanceProxy(proxy: { m_vertices: NativeVector[]; m_buffer: NativeVector[]; m_count: number; m_radius: number }, index: number): void {
-        const part = this.edges[index]; proxy.m_vertices = proxy.m_buffer;
-        proxy.m_vertices[0].Copy(part.a); proxy.m_vertices[1].Copy(part.b);
+    SetupDistanceProxy(proxy: { m_vertices: Point[]; m_count: number; m_radius: number }, index: number): void {
+        proxy.m_vertices = this.distanceVertices[index];
         proxy.m_count = 2; proxy.m_radius = this.m_radius;
+    }
+    /** 与 b2FixtureProxy.Synchronize 相同的逐边包围盒和提交顺序。
+     * 长线会在每次 CCD 修正后同步全部子边；一次读取两个变换，直接生成合并范围，
+     * 避免每条边两次 ComputeAABB 和 Combine2 的临时向量读写。
+     * 每个端点范围仍先按 Float32 舍入，再取并集，不能改变原生代理和接触顺序。
+     */
+    synchronizeProxies(fixture: StrokeFixture, first: Transform, second: Transform, displacement: Point): void {
+        const x1 = first.p.x, y1 = first.p.y, c1 = first.q.c, s1 = first.q.s;
+        const x2 = second.p.x, y2 = second.p.y, c2 = second.q.c, s2 = second.q.s;
+        const same = first === second, radius = this.m_radius;
+        const broad = fixture.m_body.m_world.m_contactManager.m_broadPhase;
+        for (const proxy of fixture.m_proxies) {
+            const { a, b } = this.edges[proxy.childIndex];
+            const ax = x1 + c1 * a.x - s1 * a.y, ay = y1 + s1 * a.x + c1 * a.y;
+            const bx = x1 + c1 * b.x - s1 * b.y, by = y1 + s1 * b.x + c1 * b.y;
+            let lx = Math.fround(Math.min(ax, bx) - radius), ly = Math.fround(Math.min(ay, by) - radius);
+            let ux = Math.fround(Math.max(ax, bx) + radius), uy = Math.fround(Math.max(ay, by) + radius);
+            if (!same) {
+                const ax2 = x2 + c2 * a.x - s2 * a.y, ay2 = y2 + s2 * a.x + c2 * a.y;
+                const bx2 = x2 + c2 * b.x - s2 * b.y, by2 = y2 + s2 * b.x + c2 * b.y;
+                lx = Math.min(lx, Math.fround(Math.min(ax2, bx2) - radius));
+                ly = Math.min(ly, Math.fround(Math.min(ay2, by2) - radius));
+                ux = Math.max(ux, Math.fround(Math.max(ax2, bx2) + radius));
+                uy = Math.max(uy, Math.fround(Math.max(ay2, by2) + radius));
+            }
+            const lower = proxy.aabb.lowerBound.data, upper = proxy.aabb.upperBound.data;
+            lower[0] = lx; lower[1] = ly; upper[0] = ux; upper[1] = uy;
+            broad.MoveProxy(proxy.treeNode, proxy.aabb, displacement);
+        }
     }
     ComputeAABB(bounds: { lowerBound: Point; upperBound: Point }, transform: Transform, index: number): void {
         const { a, b } = this.edges[index], { p, q } = transform;
@@ -260,10 +304,20 @@ export class CyBlockBeesStrokeCollider2D extends PolygonCollider2D {
     radius = 1;
     protected onLoad(): void {
         super.onLoad();
-        const shape = this._shape as unknown as { _createShapes(x: number, y: number, offsetX: number, offsetY: number): unknown[] } | null;
+        const shape = this._shape as unknown as {
+            _createShapes(x: number, y: number, offsetX: number, offsetY: number): unknown[];
+            _init(): void; _fixtures: StrokeFixture[];
+        } | null;
         if (!shape) return;
         shape._createShapes = (x, y, offsetX, offsetY) => [new StrokeShape(this.points.map(p =>
             ({ x: (offsetX + (p.x + this.offset.x) * x) / PTM, y: (offsetY + (p.y + this.offset.y) * y) / PTM })),
         this.radius * Math.abs(x) / PTM)];
+        const initialize = shape._init;
+        shape._init = function (): void {
+            initialize.call(this);
+            for (const fixture of this._fixtures) fixture.SynchronizeProxies = function (first, second, displacement): void {
+                this.m_shape.synchronizeProxies(this, first, second, displacement);
+            };
+        };
     }
 }

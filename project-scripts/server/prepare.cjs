@@ -21,10 +21,20 @@ function prepare(check = false) {
             + ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2019, module: ts.ModuleKind.CommonJS,
                 newLine: ts.NewLineKind.LineFeed } }).outputText;
     }
-    files['catalog.json'] = JSON.stringify(JSON.parse(fs.readFileSync(path.join(root, 'assets/resources/configs/cloud-save.json'), 'utf8'))) + '\n';
+    const catalog = JSON.parse(fs.readFileSync(path.join(root, 'assets/resources/configs/cloud-save.json'), 'utf8'));
+    // Removing a game from the lobby must not invalidate still-installed clients or reuse its wire code.
+    const retired = JSON.parse(fs.readFileSync(path.join(root, 'server/decompression-api/retired-games.json'), 'utf8'));
+    for (const { schema } of retired) {
+        if (catalog.games.some(game => game.code === schema.code || game.gameId === schema.gameId))
+            throw new Error(`退役游戏协议冲突：${schema.gameId} / ${schema.code}`);
+        catalog.games.push(schema);
+    }
+    catalog.games.sort((a, b) => a.code - b.code);
+    files['catalog.json'] = JSON.stringify(catalog) + '\n';
     const games = JSON.parse(fs.readFileSync(path.join(root, 'assets/resources/configs/games.json'), 'utf8')).games;
-    files['games.json'] = JSON.stringify(games.map(game => game.id)) + '\n';
-    files['game-labels.json'] = JSON.stringify(Object.fromEntries(games.map(game => [game.id, game.name]))) + '\n';
+    files['games.json'] = JSON.stringify(Array.from(new Set(games.map(game => game.id).concat(retired.map(game => game.schema.gameId))))) + '\n';
+    files['game-labels.json'] = JSON.stringify(Object.fromEntries(games.map(game => [game.id, game.name])
+        .concat(retired.map(game => [game.schema.gameId, game.name])))) + '\n';
     for (const [name, contents] of Object.entries(files)) {
         const destination = path.join(output, name);
         if (check) {

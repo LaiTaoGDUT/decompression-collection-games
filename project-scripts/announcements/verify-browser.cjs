@@ -95,17 +95,23 @@ async function main() {
         await page.waitForFunction(() => document.querySelector('#game-status').textContent === '已重新读取配置');
         assert.equal(await page.locator('#game-field-version').inputValue(), cat.version);
 
-        await page.locator('#game-up').click();
+        const oldIndex = catalog.games.findIndex((game) => game.id === 'meowdoku');
+        const move = oldIndex > 0 ? -1 : 1;
+        await page.locator(move < 0 ? '#game-up' : '#game-down').click();
         await page.locator('#game-save').click();
         await page.waitForFunction(() => document.querySelector('#game-status').textContent.includes('Cocos 资源已刷新'));
         const reordered = JSON.parse(fs.readFileSync(path.join(root, GAMES_FILE), 'utf8'));
-        const oldIndex = catalog.games.findIndex((game) => game.id === 'meowdoku');
-        assert.equal(reordered.games[oldIndex - 1].id, 'meowdoku');
-        assert.deepEqual(reordered.games[oldIndex - 1].achievement, originalCat.achievement);
+        assert.equal(reordered.games[oldIndex + move].id, 'meowdoku');
+        assert.deepEqual(reordered.games[oldIndex + move].achievement, originalCat.achievement);
 
         // 广告与发布的草稿、保存范围和冲突版本彼此独立。
         await page.locator('#tab-ads').click();
         assert.equal(await page.locator('#ads-field-games-cyblockbees').count(), 0, '未接入广告的游戏不可伪造配置');
+        for (const key of ['cityBloxxReviveRewarded', 'flappyDunkReviveRewarded']) {
+            const input = page.locator('#ads-field-wechat-' + key);
+            assert.equal(await input.inputValue(), originalApp.ads.wechat[key].adUnitId, '读取已有独立广告位');
+            await input.fill('adunit-browser-' + key);
+        }
         await page.locator('#ads-field-games-meowdoku').uncheck();
         await page.locator('#ads-field-wechat-meowdokuToolRewarded').fill('adunit-browser-test');
         await page.locator('#ads-field-tapAdUnitId').fill('tap-browser-test');
@@ -122,6 +128,12 @@ async function main() {
         await page.waitForFunction(() => document.querySelector('#ads-status').textContent.includes('Cocos 资源已刷新'));
         let savedApp = JSON.parse(fs.readFileSync(path.join(root, APP_FILE), 'utf8'));
         assert.equal(savedApp.ads.wechat.meowdokuToolRewarded.adUnitId, 'adunit-browser-test');
+        for (const key of ['cityBloxxReviveRewarded', 'flappyDunkReviveRewarded']) {
+            assert.equal(savedApp.ads.wechat[key].adUnitId, 'adunit-browser-' + key, '独立广告位保存到对应运行时配置');
+        }
+        for (const key of Object.keys(originalApp.ads.wechat).filter((key) => !['meowdokuToolRewarded', 'cityBloxxReviveRewarded', 'flappyDunkReviveRewarded'].includes(key))) {
+            assert.deepEqual(savedApp.ads.wechat[key], originalApp.ads.wechat[key], '修改独立广告位不影响其他广告位');
+        }
         assert.equal(savedApp.ads.games.meowdoku.enabled, false);
         assert.equal(savedApp.appVersion, originalApp.appVersion, '广告保存不能提交发布草稿');
         assert.deepEqual(savedApp.development, originalApp.development);

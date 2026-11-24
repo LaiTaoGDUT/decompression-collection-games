@@ -15,58 +15,65 @@ function rotatePoint(p: RingPoint, angle: number): RingPoint {
     return { x: p.x * c - p.y * s, y: p.x * s + p.y * c };
 }
 
-/** 开局按完整旋转包络适配；局内旋转、消除和引导均不改变棋盘比例或中心。 */
-export function fitRingBoard(level: RingLevel, width: number, height: number, visuals?: RingLevelVisuals,
-    safetyWidth = width, safetyHeight = height): RingBoardTransform {
-    const points: RingPoint[] = [];
+/** 计算部件完整的旋转和滑动包络。局内只改变视口，部件的初始范围固定。 */
+function measureRingBoard(level: RingLevel, visuals?: RingLevelVisuals) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    function include(x: number, y: number, radius = 0): void {
+        minX = Math.min(minX, x - radius); maxX = Math.max(maxX, x + radius);
+        minY = Math.min(minY, y - radius); maxY = Math.max(maxY, y + radius);
+    }
     for (const r of level.rings) {
         const mesh = visuals?.[r.id];
-        const radius = Math.max(r.outer, ...r.pins.map(p => p.radius + Math.hypot(p.mouthSize.x, p.mouthSize.y) / 2),
-            ...level.bombs.filter(b => b.ringId === r.id).map(b => Math.hypot(b.x, b.y) + b.radius)) + .25;
-        points.push({ x: r.x - radius, y: r.y - radius }, { x: r.x + radius, y: r.y + radius });
+        let radius = Math.max(r.outer, ...r.pins.map(p => p.radius + Math.hypot(p.mouthSize.x, p.mouthSize.y) / 2),
+            ...level.bombs.filter(b => b.ringId === r.id).map(b => Math.hypot(b.x, b.y) + b.radius));
         if (mesh) for (let i = 0; i < mesh.vertices.length; i += 4) {
-            const reach = Math.hypot(mesh.vertices[i], mesh.vertices[i + 1]);
-            points.push({ x: r.x - reach, y: r.y - reach }, { x: r.x + reach, y: r.y + reach });
+            radius = Math.max(radius, Math.hypot(mesh.vertices[i], mesh.vertices[i + 1]));
         }
+        // 将入场回弹的余量留在最终外缘，网格有时比碰撞体更宽。
+        include(r.x, r.y, radius + .25);
     }
     for (const p of level.pullObjects) {
         const mesh = visuals?.[p.id], travel = G.polar(.9, pullAxisAngle(p));
-        const local: RingPoint[] = [];
-        if (mesh) for (let i = 0; i < mesh.vertices.length; i += 4) {
-            const q = rotatePoint({ x: mesh.vertices[i], y: mesh.vertices[i + 1] }, p.angle);
-            local.push({ x: p.x + q.x, y: p.y + q.y });
-        } else local.push(...G.polygonWorld(p.polyLocal, p.x, p.y, p.angle));
-        for (const point of local) for (const sign of [0, ...(p.negative ? [-1] : []), ...(p.positive ? [1] : [])]) {
-            points.push({ x: point.x + travel.x * sign, y: point.y + travel.y * sign });
-        }
+        const cos = Math.cos(p.angle * G.DEG), sin = Math.sin(p.angle * G.DEG);
+        const vertex = (x: number, y: number) => {
+            const cx = p.x + (x * cos - y * sin), cy = p.y + (x * sin + y * cos);
+            include(cx, cy);
+            include(cx - travel.x, cy - travel.y);
+            include(cx + travel.x, cy + travel.y);
+        };
+        if (mesh) for (let i = 0; i < mesh.vertices.length; i += 4) vertex(mesh.vertices[i], mesh.vertices[i + 1]);
+        else for (const v of p.polyLocal) vertex(v.x, v.y);
     }
     for (const f of level.fixedObjects) {
-        for (const poly of f.polygons) points.push(...G.polygonWorld(poly, f.x, f.y, f.angle));
+        for (const poly of f.polygons) for (const v of G.polygonWorld(poly, f.x, f.y, f.angle)) include(v.x, v.y);
     }
     if (level.bombs.length) {
         const pose = new RotateRingsModel(level);
         for (let i = 0; i < level.bombs.length; i++) {
             const bomb = level.bombs[i], radius = bomb.radius;
             if (bomb.ringId) {
-                const host = level.rings.find(r => r.id === bomb.ringId)!;
+                const host = pose.rings.get(bomb.ringId)!;
                 const reach = Math.max(Math.hypot(bomb.x, bomb.y), Math.hypot(bomb.visual?.x ?? bomb.x, bomb.visual?.y ?? bomb.y)) + radius;
-                points.push({ x: host.x - reach, y: host.y - reach }, { x: host.x + reach, y: host.y + reach });
+                include(host.x, host.y, reach);
                 continue;
             }
+            const host = bomb.pullId ? pose.pulls.get(bomb.pullId) : undefined;
+            const travel = host ? G.polar(.9, pullAxisAngle(host)) : undefined;
             for (const visual of [false, true]) {
                 const p = pose.bombPoint(i, visual);
-                const host = bomb.pullId ? level.pullObjects.find(pull => pull.id === bomb.pullId) : undefined;
-                const travel = host ? G.polar(.9, pullAxisAngle(host)) : { x: 0, y: 0 };
-                for (const sign of [0, ...(host?.negative ? [-1] : []), ...(host?.positive ? [1] : [])]) {
-                    points.push({ x: p.x + travel.x * sign - radius, y: p.y + travel.y * sign - radius },
-                        { x: p.x + travel.x * sign + radius, y: p.y + travel.y * sign + radius });
-                }
+                include(p.x, p.y, radius);
+                if (travel) include(p.x - travel.x, p.y - travel.y, radius);
+                if (travel) include(p.x + travel.x, p.y + travel.y, radius);
             }
         }
     }
-    if (!points.length) return { scale: 1, centerX: 0, centerY: 0 };
-    const minX = Math.min(...points.map(p => p.x)), maxX = Math.max(...points.map(p => p.x));
-    const minY = Math.min(...points.map(p => p.y)), maxY = Math.max(...points.map(p => p.y));
+    return { minX, maxX, minY, maxY };
+}
+
+function fitMeasuredBoard(level: RingLevel, extent: ReturnType<typeof measureRingBoard>,
+    width: number, height: number, safetyWidth: number, safetyHeight: number): RingBoardTransform {
+    const { minX, maxX, minY, maxY } = extent;
+    if (minX === Infinity) return { scale: 1, centerX: 0, centerY: 0 };
     const bounds = level.referenceBounds;
     if (bounds && bounds.maxX > bounds.minX && bounds.maxY > bounds.minY) {
         const centerX = (bounds.minX + bounds.maxX) / 2, centerY = (bounds.minY + bounds.maxY) / 2;
@@ -75,11 +82,18 @@ export function fitRingBoard(level: RingLevel, width: number, height: number, vi
         return { centerX, centerY, scale: Math.min(RING_MAX_BOARD_SCALE, width / (bounds.maxX - bounds.minX),
             height / (bounds.maxY - bounds.minY), safetyWidth / (reachX * 2), safetyHeight / (reachY * 2)) };
     }
-    return { scale: Math.min(RING_MAX_BOARD_SCALE, (width - 40) / Math.max(1, maxX - minX), (height - 40) / Math.max(1, maxY - minY)),
+    return { scale: Math.min(RING_MAX_BOARD_SCALE, Math.min(width, safetyWidth) / Math.max(1, maxX - minX),
+        Math.min(height, safetyHeight) / Math.max(1, maxY - minY)),
         centerX: (minX + maxX) / 2, centerY: (minY + maxY) / 2 };
 }
 
+export function fitRingBoard(level: RingLevel, width: number, height: number, visuals?: RingLevelVisuals,
+    safetyWidth = width, safetyHeight = height): RingBoardTransform {
+    return fitMeasuredBoard(level, measureRingBoard(level, visuals), width, height, safetyWidth, safetyHeight);
+}
+
 export class RotateRingsBoard {
+    private readonly extent: ReturnType<typeof measureRingBoard>;
     readonly transform: RingBoardTransform;
     selected?: string;
     hint?: RingHint;
@@ -101,7 +115,8 @@ export class RotateRingsBoard {
         private readonly visuals?: RingLevelVisuals, private readonly frames?: Readonly<Record<string, SpriteFrame>>, entry = false,
         material?: Material, private safetyWidth = width, private safetyHeight = height, shadowMaterial?: Material,
         private readonly onRelease?: (id: string, angle: number) => void) {
-        this.transform = fitRingBoard(model.level, width, height, visuals, safetyWidth, safetyHeight);
+        this.extent = measureRingBoard(model.level, visuals);
+        this.transform = fitMeasuredBoard(model.level, this.extent, width, height, safetyWidth, safetyHeight);
         this.clock = entry ? 0 : 999;
         model.removedRings.forEach(id => this.removed.add(id));
         model.removedPulls.forEach(id => this.removed.add(id));
@@ -139,13 +154,13 @@ export class RotateRingsBoard {
             }
         }
     }
+
     resize(width: number, height: number, safetyWidth = width, safetyHeight = height): void {
-        this.reframe(width, height, safetyWidth, safetyHeight);
-        this.draw();
+        if (this.reframe(width, height, safetyWidth, safetyHeight)) this.draw();
     }
     reframe(width: number, height: number, safetyWidth = width, safetyHeight = height): boolean {
         this.safetyWidth = safetyWidth; this.safetyHeight = safetyHeight;
-        const next = fitRingBoard(this.model.level, width, height, this.visuals, safetyWidth, safetyHeight);
+        const next = fitMeasuredBoard(this.model.level, this.extent, width, height, safetyWidth, safetyHeight);
         const changed = Math.abs(next.scale - this.transform.scale) > .0001
             || next.centerX !== this.transform.centerX || next.centerY !== this.transform.centerY;
         Object.assign(this.transform, next); return changed;
@@ -187,20 +202,23 @@ export class RotateRingsBoard {
     world(p: RingPoint): RingPoint { const t = this.transform; return { x: p.x / t.scale + t.centerX, y: p.y / t.scale + t.centerY }; }
     hit(p: RingPoint): { kind: 'ring' | 'pull'; id: string } | undefined {
         const world = this.world(p), tolerance = 16 / this.transform.scale;
+        let best: { kind: 'ring' | 'pull'; id: string } | undefined, nearest = Infinity;
         for (const pull of this.model.level.pullObjects.slice().reverse()) {
             if (this.model.removedPulls.has(pull.id)) continue;
-            const poly = this.model.pullPolygon(pull.id);
-            if (G.pointInPolygon(world, poly) || poly.some(v => G.distance(v, world) < tolerance)) return { kind: 'pull', id: pull.id };
+            const distance = G.polygonTouchDistance(world, this.model.pullPolygon(pull.id));
+            if (distance <= tolerance && distance < nearest) {
+                nearest = distance; best = { kind: 'pull', id: pull.id };
+            }
         }
-        const ranked = this.model.level.rings.filter(r => !this.model.removedRings.has(r.id))
-            .map(r => ({ r, distance: Math.abs(G.distance(world, r) - (r.inner + r.outer) / 2) }))
-            .sort((a, b) => a.distance - b.distance);
-        for (const { r } of ranked) {
-            // 引导期间按正在显示的圆环命中，用户点到手指演示的位置即可接管，不会点进真实姿态的缺口。
-            const pose = this.model.pose(r.id, this.guideAngle?.id === r.id ? this.guideAngle.angle : undefined);
-            if (G.pointNearRingBand(world, pose, tolerance)) return { kind: 'ring', id: r.id };
+        for (const ring of this.model.level.rings) {
+            if (this.model.removedRings.has(ring.id) || G.distance(world, ring) > ring.outer + tolerance) continue;
+            const pose = this.model.pose(ring.id, this.guideAngle?.id === ring.id ? this.guideAngle.angle : undefined);
+            const distance = G.ringTouchDistance(world, pose);
+            if (distance <= tolerance && distance < nearest) {
+                nearest = distance; best = { kind: 'ring', id: ring.id };
+            }
         }
-        return undefined;
+        return best;
     }
     draw(delta = 0): void {
         this.clock += delta;
@@ -226,23 +244,13 @@ export class RotateRingsBoard {
                 }
                 const axis = G.polar(this.model.offsets.get(pull.id) || 0, pullAxisAngle(pull)), p = this.point({ x: pull.x + axis.x, y: pull.y + axis.y });
                 original.setPosition(p.x, p.y); original.angle = pull.angle; original.setScale(scale, scale, 1);
-                original.getComponent(RotateRingsMeshSprite)!.color = this.hint?.id === pull.id ? this.hintColor : this.partColors.get(pull.id)!;
+                const blocked = this.clock - (this.blockedAt.get(pull.id) ?? -999) < RING_MOTION.blockedShakeDuration;
+                original.getComponent(RotateRingsMeshSprite)!.color = blocked || this.hint?.id === pull.id ? this.hintColor : this.partColors.get(pull.id)!;
                 this.syncShadow(pull.id, original);
                 continue;
             }
             if (this.model.removedPulls.has(pull.id)) continue;
             this.polygon(this.model.pullPolygon(pull.id), this.selected === pull.id || this.hint?.id === pull.id ? T.gold : '#AAA99C');
-            const axis = G.polar(1, pullAxisAngle(pull)), offset = this.model.offsets.get(pull.id) || 0;
-            const c = this.point({ x: pull.x + axis.x * offset, y: pull.y + axis.y * offset });
-            const size = Math.max(8, Math.min(18, scale * .6));
-            g.lineWidth = 2.5; g.strokeColor = ringColor('#FFFEFA');
-            for (const sign of [-1, 1]) {
-                if (sign < 0 ? !pull.negative : !pull.positive) continue;
-                const x = c.x + axis.x * size * sign, y = c.y + axis.y * size * sign;
-                g.moveTo(x - axis.y * size * .35 - axis.x * size * .45 * sign, y + axis.x * size * .35 - axis.y * size * .45 * sign);
-                g.lineTo(x, y);
-                g.lineTo(x + axis.y * size * .35 - axis.x * size * .45 * sign, y - axis.x * size * .35 - axis.y * size * .45 * sign); g.stroke();
-            }
         }
         for (const ring of this.model.level.rings) {
             const c = this.point(ring), hex = T.colors[(ring.index - 1) % T.colors.length];
@@ -252,6 +260,7 @@ export class RotateRingsBoard {
                 if (removed && !this.removed.has(ring.id)) { this.removed.add(ring.id); this.onRelease?.(ring.id, this.model.angles.get(ring.id)!); }
                 original.active = !removed;
                 if (removed) { this.syncShadow(ring.id, original); continue; }
+                original.getComponent(RotateRingsMeshSprite)!.color = this.hint?.id === ring.id ? this.hintColor : this.partColors.get(ring.id)!;
                 const entrance = Math.max(0, Math.min(1, (this.clock - (ring.index - 1) * RING_MOTION.waveInterval) / RING_MOTION.waveDuration));
                 const size = ringCurve(RING_MOTION.scaleCurve.m_Curve, entrance);
                 original.setScale(scale * size, scale * size, 1);
@@ -315,8 +324,14 @@ export class RotateRingsBoard {
         }
         if (this.hint?.kind === 'ring' && !this.model.removedRings.has(this.hint.id)) {
             const r = this.model.pose(this.hint.id), c = this.point(r), a = this.hint.target + r.gapDir;
-            const q = G.polar(r.outer * scale + 16, a);
-            g.lineWidth = 3; g.strokeColor = ringColor(T.primary, 180); g.circle(c.x + q.x, c.y + q.y, 12); g.stroke();
+            const axis = G.polar(1, a), radius = 12, stroke = 3, inset = radius + stroke / 2;
+            // 靠边时让标记沿缺口方向靠近环身，保持整圈可见。
+            const reach = (center: number, unit: number, size: number) => Math.abs(unit) < 1e-8 ? Infinity
+                : (size / 2 - inset - Math.sign(unit) * center) / Math.abs(unit);
+            const distance = Math.max(0, Math.min(r.outer * scale + 16, reach(c.x, axis.x, this.safetyWidth),
+                reach(c.y, axis.y, this.safetyHeight)));
+            g.lineWidth = stroke; g.strokeColor = ringColor(T.primary, 180);
+            g.circle(c.x + axis.x * distance, c.y + axis.y * distance, radius); g.stroke();
         }
     }
     private addSpriteShadow(original: Node, layer: Node, frame: SpriteFrame): void {

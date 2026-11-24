@@ -1,0 +1,109 @@
+{
+  "ver": "1.0.8",
+  "importer": "sprite-atlas",
+  "imported": true,
+  "uuid": "902be4ac-2976-5650-b1c9-a88d768df10f",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {
+    "e2334": {
+      "importer": "sprite-frame",
+      "uuid": "902be4ac-2976-5650-b1c9-a88d768df10f@e2334",
+      "displayName": "",
+      "id": "e2334",
+      "name": "snake_head_front",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 94,
+        "trimY": 2,
+        "width": 66,
+        "height": 76,
+        "rawWidth": 66,
+        "rawHeight": 76,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "e7703b17-7a99-50d7-ba21-cbbd2696c1bc@6c48a",
+        "atlasUuid": "902be4ac-2976-5650-b1c9-a88d768df10f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "5120b": {
+      "importer": "sprite-frame",
+      "uuid": "902be4ac-2976-5650-b1c9-a88d768df10f@5120b",
+      "displayName": "",
+      "id": "5120b",
+      "name": "snake_head_side",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 2,
+        "trimY": 2,
+        "width": 88,
+        "height": 68,
+        "rawWidth": 88,
+        "rawHeight": 68,
+        "packable": false,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [],
+          "indexes": [],
+          "uv": [],
+          "nuv": [],
+          "minPos": [],
+          "maxPos": []
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "e7703b17-7a99-50d7-ba21-cbbd2696c1bc@6c48a",
+        "atlasUuid": "902be4ac-2976-5650-b1c9-a88d768df10f",
+        "trimType": "custom",
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "atlasTextureName": "snake_heads.png",
+    "format": 2,
+    "uuid": "902be4ac-2976-5650-b1c9-a88d768df10f",
+    "textureUuid": "e7703b17-7a99-50d7-ba21-cbbd2696c1bc@6c48a"
+  }
+}
