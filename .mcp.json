@@ -8,6 +8,11 @@
         "COCOS_MCP_HTTP_URL": "http://127.0.0.1:3001/mcp",
         "COCOS_MCP_HTTP_TIMEOUT_MS": "180000"
       }
+    },
+    "rea": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "rea-agents@6.7.0", "mcp"]
     }
   }
 }

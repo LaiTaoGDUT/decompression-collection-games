@@ -1,35 +1,37 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "apk-reverse": {
       "source": "newliver666/apk-reverse",
       "sourceType": "github",
       "skillPath": "skills/apk-reverse/SKILL.md",
-      "computedHash": "ea63fbab44535f88a57fe4587dcfd15a9a04fc8ed3c311b16f81f5ab53305b8d"
+      "computedHash": ""
     },
     "grill-me": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/productivity/grill-me/SKILL.md",
-      "computedHash": "9cdbb4b8f7a3aeaef82e6230c9e823500d4a8a1214c726cf342cf9829d34fc7d"
+      "computedHash": ""
     },
     "grill-with-docs": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/engineering/grill-with-docs/SKILL.md",
-      "computedHash": "35e62aa423aaeab6a414bcac273f56dfb17802ef2334b41b6a3b00f28196c8cf"
+      "computedHash": ""
     },
     "grilling": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/productivity/grilling/SKILL.md",
-      "computedHash": "4dd886b0196bf43729d954ae326016f2bd9f5f79d892500b407c33a753362f14"
+      "computedHash": "7e2b96501235f1cbfb2a8dad79cb89d40272004822a0ec461923a5b3a6606f87"
     },
     "reverse-engineer-anything": {
       "source": "morluto/rea",
+      "commit": "46b73f5b8116ac71333a0c37980f166c13bedd4e",
       "sourceType": "github",
       "skillPath": ".agents/skills/reverse-engineer-anything/SKILL.md",
-      "computedHash": "cae64595905f3bea4cb2c808fb54dfcc4ac23f3b0f49b1f03208aa3cf9a5b1d7"
+      "computedHash": "d41e64caf770b8b373b3bb9491e824d22e1c996cab76a52dfe8d46a78152198c",
+      "installMode": "copy"
     }
   }
 }
